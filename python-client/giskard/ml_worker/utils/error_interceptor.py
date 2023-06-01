@@ -37,9 +37,11 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
         rich_status = Status(code=code, message=e.__class__.__name__, details=[detail])
         await context.abort_with_status(rpc_status.to_status(rich_status))
 
-    async def intercept_service(self, continuation: Callable[[grpc.HandlerCallDetails],
-                                                             Awaitable[grpc.RpcMethodHandler]],
-                                handler_call_details: grpc.HandlerCallDetails) -> grpc.RpcMethodHandler:
+    async def intercept_service(
+        self,
+        continuation: Callable[[grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]],
+        handler_call_details: grpc.HandlerCallDetails,
+    ) -> grpc.RpcMethodHandler:
         def _wrapper(behavior):
             @functools.wraps(behavior)
             async def wrapper(request, context: aio.ServicerContext):
@@ -57,8 +59,7 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
             return wrapper
 
         handler = await continuation(handler_call_details)
-        if handler and (handler.request_streaming or
-                        handler.response_streaming):
+        if handler and (handler.request_streaming or handler.response_streaming):
             return handler
 
         return wrap_server_method_handler(_wrapper, handler)

@@ -3,15 +3,17 @@ package ai.giskard.service;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.jobs.JobType;
+import ai.giskard.repository.ml.*;
+import ai.giskard.web.dto.TestCatalogDTO;
+import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -19,10 +21,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
 @Transactional
@@ -36,7 +38,10 @@ public class TestSuiteService {
     private final ModelRepository modelRepository;
     private final GiskardMapper giskardMapper;
     private final CodeTestTemplateService testTemplateService;
-
+    private final TestSuiteNewRepository testSuiteNewRepository;
+    private final TestService testService;
+    private final TestSuiteExecutionService testSuiteExecutionService;
+    private final JobService jobService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -92,9 +97,7 @@ public class TestSuiteService {
         ProjectModel model = suite.getModel();
 
         if (model.getModelType() == ModelType.CLASSIFICATION) {
-            model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
-                substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
-            });
+            model.getClassificationLabels().stream().findFirst().ifPresent(label -> substitutions.putIfAbsent("CLASSIFICATION LABEL", label));
         }
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
@@ -118,5 +121,66 @@ public class TestSuiteService {
 
         StringSubstitutor sub = new StringSubstitutor(substitutions, "{{", "}}");
         return sub.replace(code);
+    }
+
+    public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
+        TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
+        TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
+
+        Map<String, String> res = new HashMap<>();
+
+        suite.getTests().forEach(test -> {
+            Collection<TestFunctionArgumentDTO> signatureArgs = catalog.getTests().get(test.getTestId()).getArguments().values();
+            ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
+
+            signatureArgs.stream()
+                .filter(a -> !a.isOptional())
+                .forEach(a -> {
+                    String name = null;
+                    if (!providedInputs.containsKey(a.getName())) {
+                        name = a.getName();
+                    } else if (providedInputs.get(a.getName()).isAlias()) {
+                        name = providedInputs.get(a.getName()).getValue();
+                    }
+                    if (name != null) {
+                        if (res.containsKey(name) && !a.getType().equals(res.get(name))) {
+                            throw new IllegalArgumentException("Variable with name %s is declared as %s and %s at the same time".formatted(a.getName(), res.get(a.getName()), a.getType()));
+                        }
+                        res.put(name, a.getType());
+                    }
+                });
+        });
+        return res;
+    }
+
+
+    @Transactional
+    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
+        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
+            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+
+        TestSuiteExecution execution = new TestSuiteExecution(testSuite);
+        execution.setInputs(inputs.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
+
+        verifyAllInputProvided(inputs, testSuite, suiteInputs);
+
+        return jobService.undetermined(() ->
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
+            testSuite.getProject().getMlWorkerType());
+    }
+
+    private static void verifyAllInputProvided(Map<String, String> providedInputs,
+                                               TestSuiteNew testSuite,
+                                               Map<String, String> requiredInputs) {
+        List<String> missingInputs = requiredInputs.keySet().stream()
+            .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
+            .toList();
+        if (!missingInputs.isEmpty()) {
+            throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
+                .formatted(String.join(", ", missingInputs), testSuite.getName()));
+        }
     }
 }
