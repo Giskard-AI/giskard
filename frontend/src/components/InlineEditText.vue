@@ -44,8 +44,8 @@ import { computed, ref } from 'vue';
 
 const props = withDefaults(defineProps<{
   text: string,
-  canEdit: boolean,
-  editText: string
+  canEdit?: boolean,
+  editText?: string
 }>(), {
   canEdit: true,
   editText: "Rename"
