@@ -47,6 +47,9 @@ class MockedClient:
             self.mocked_requests.register_uri(requests_mock.POST, api_pattern, json={})
             self.mocked_requests.register_uri(requests_mock.PUT, api_pattern, json={})
 
+        self.mocked_requests.register_uri(requests_mock.GET,
+                                          'http://giskard-host:12345/api/v2/project?key=test_project_key',
+                                          json={'key': 'test_project_key', 'id': 1})
         self.mocked_requests.register_uri(requests_mock.GET, self.ml_worker_connect_url_pattern,
                                           json={
                                               "externalMlWorkerEntrypointPort": 40051,

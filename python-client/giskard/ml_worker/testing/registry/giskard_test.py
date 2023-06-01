@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 from typing import Union, Callable, Any, Optional
 
-from giskard import test
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
@@ -27,6 +26,7 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
+            from giskard import test
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
@@ -100,6 +100,7 @@ class GiskardTestMethod(GiskardTest):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
+            from giskard import test
             test(test_function)
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_function, meta)

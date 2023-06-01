@@ -9,12 +9,12 @@ import pandas as pd
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
-from giskard import test
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.generated.ml_worker_pb2 import TestMessage, TestMessageType
+from giskard.ml_worker.testing.registry.decorators import test
+from giskard.models.base import BaseModel
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -408,7 +408,7 @@ def test_drift_earth_movers_distance(
 def test_drift_prediction_psi(
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         max_categories: int = 10,
         threshold: float = 0.2,
         psi_contribution_percent: float = 0.2,
@@ -425,7 +425,7 @@ def test_drift_prediction_psi(
             Slice of the actual dataset
         reference_slice(Dataset):
             Slice of the reference dataset
-        model(Model):
+        model(BaseModel):
             Model used to compute the test
         threshold(float):
             Threshold value for PSI
@@ -503,7 +503,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
 def test_drift_prediction_chi_square(
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         max_categories: int = 10,
         threshold: float = 0.05,
         chi_square_contribution_percent: float = 0.2,
@@ -520,7 +520,7 @@ def test_drift_prediction_chi_square(
             Slice of the actual dataset
         reference_slice(Dataset):
             Slice of the reference dataset
-        model(Model):
+        model(BaseModel):
             Model used to compute the test
         threshold(float):
             Threshold value of p-value of Chi-Square
@@ -585,7 +585,7 @@ def _test_series_drift_chi(
 def test_drift_prediction_ks(
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label: str = None,
         threshold: float = None,
 ) -> TestResult:
@@ -602,7 +602,7 @@ def test_drift_prediction_ks(
             Slice of the actual dataset
         reference_slice(Dataset):
             Slice of the reference dataset
-        model(Model):
+        model(BaseModel):
             Model used to compute the test
         threshold(float):
             Threshold for p-value of Kolmogorov-Smirnov test
@@ -672,7 +672,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
 def test_drift_prediction_earth_movers_distance(
         reference_slice: Dataset,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label: str = None,
         threshold: float = 0.2,
 ) -> TestResult:
@@ -693,7 +693,7 @@ def test_drift_prediction_earth_movers_distance(
             slice of the reference dataset
         actual_slice(Dataset):
             slice of the actual dataset
-        model(Model):
+        model(BaseModel):
             uploaded model
         classification_label:
             one specific label value from the target column for classification model
