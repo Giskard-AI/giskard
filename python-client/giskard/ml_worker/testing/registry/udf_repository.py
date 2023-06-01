@@ -26,7 +26,11 @@ def load_config() -> GitConfig:
     )
 
 
-def init_udf_repository() -> bool:
+def init_udf_repository(udf_enabled: bool = False) -> bool:
+    # Experimental feature, disabled by default
+    if not udf_enabled:
+        return False
+
     try:
         config = load_config()
 
