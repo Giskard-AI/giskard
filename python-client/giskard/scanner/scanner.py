@@ -1,4 +1,6 @@
+import warnings
 from typing import Optional, Sequence
+
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from ..core.model_validation import validate_model
@@ -20,9 +22,15 @@ class Scanner:
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
-        issues = []
-        for detector in detectors:
-            issues.extend(sorted(detector.run(model, dataset), key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR])
+        # @TODO: this should be selective to specific warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            issues = []
+            for detector in detectors:
+                issues.extend(
+                    sorted(detector.run(model, dataset), key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+                )
 
         return ScanResult(issues)
 
