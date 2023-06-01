@@ -56,6 +56,7 @@
     "ai.giskard.web.dto.DataUploadParamsDTO": "DataUploadParamsDTO",
     "ai.giskard.web.dto.ml.write.TestSuitePostDTO": "TestSuitePostDTO",
     "ai.giskard.domain.ml.ModelLanguage": "ModelLanguage",
+    "ai.giskard.web.dto.ml.TestSuiteExecutionDTO": "TestSuiteExecutionDTO",
     "ai.giskard.web.dto.FeedbackDTO": "FeedbackDTO",
     "ai.giskard.web.dto.TestSuiteNewDTO": "TestSuiteNewDTO",
     "ai.giskard.domain.ml.ModelType": "ModelType",

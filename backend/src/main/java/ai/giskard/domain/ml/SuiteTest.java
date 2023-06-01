@@ -28,4 +28,5 @@ public class SuiteTest {
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
     private List<TestInput> testInputs = new java.util.ArrayList<>();
+
 }

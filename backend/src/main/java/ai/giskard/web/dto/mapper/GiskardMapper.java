@@ -174,6 +174,7 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "project", source = "projectKey")
+    @Mapping(target = "executions", ignore = true)
     TestSuiteNew fromDTO(TestSuiteNewDTO dto);
 
     @Mapping(target = "id", ignore = true)
@@ -202,11 +203,14 @@ public interface GiskardMapper {
     @Mapping(target = "projectKey", source = "project.key")
     TestSuiteNewDTO toDTO(TestSuiteNew suite);
 
-    default Map<String, TestInputDTO> map(List<TestInput> value){
+    default Map<String, TestInputDTO> map(List<TestInput> value) {
         return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
     }
-    default List<TestInput> map(Map<String, TestInputDTO> value){
+
+    default List<TestInput> map(Map<String, TestInputDTO> value) {
         return value.values().stream().map(this::fromDTO).toList();
     }
 
+    @Mapping(target = "suiteId", source = "suite.id")
+    TestSuiteExecutionDTO toDto(TestSuiteExecution save);
 }

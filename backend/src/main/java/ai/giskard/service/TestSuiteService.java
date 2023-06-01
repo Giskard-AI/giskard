@@ -5,19 +5,19 @@ import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.*;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.SingleTestResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
+import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.RunTestSuiteRequest;
-import ai.giskard.worker.TestFunction;
-import ai.giskard.worker.TestRegistryResponse;
-import ai.giskard.worker.TestSuiteResultMessage;
+import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.protobuf.Empty;
@@ -51,6 +51,7 @@ public class TestSuiteService {
     private final MLWorkerService mlWorkerService;
     private final ProjectRepository projectRepository;
     private final TestArgumentService testArgumentService;
+    private final TestSuiteExecutionRepository testSuiteExecutionRepository;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -163,7 +164,7 @@ public class TestSuiteService {
     }
 
 
-    public Map<String, String> executeTestSuite(Long projectId, Long suiteId, Map<String, Object> inputs) {
+    public TestSuiteExecutionDTO executeTestSuite(Long projectId, Long suiteId, Map<String, Object> inputs) {
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(projectId).isUsingInternalWorker())) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = response.getTestsMap().values().stream()
@@ -189,10 +190,22 @@ public class TestSuiteService {
                 builder.addFixedArguments(testArgumentService.buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId())));
             }
 
-            TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
+            TestSuiteExecution execution = new TestSuiteExecution(testSuite);
+            try {
+                TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
 
-            // TODO
-            return null;
+                execution.setResult(testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
+                execution.setResults(testSuiteResultMessage.getResultsList().stream()
+                    .collect(Collectors.toMap(NamedSingleTestResult::getName,
+                        namedSingleTestResult -> new SingleTestResultDTO(namedSingleTestResult.getResult()))));
+            } catch (Exception e) {
+                log.error("Error while executing test suite {}", testSuite.getName(), e);
+
+                execution.setResult(TestResult.ERROR);
+            }
+
+            return giskardMapper.toDto(testSuiteExecutionRepository.save(execution));
+
         }
     }
 
