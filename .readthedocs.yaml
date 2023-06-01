@@ -9,12 +9,11 @@ build:
     ##      - sphinx-apidoc -o python-client/docs python-client/giskard
     post_create_environment:
       - pip install pdm
-      - which python
-#      - pdm config python.use_venv false
-    post_install:
-      - sh -c "which python && cd python-client && pdm config python.use_venv false && pdm info && pdm install -G doc && pdm config && pip list"
-#      - pip install -r python-client/requirements.txt
-
+      - pdm export -p python-client --without-hashes -G doc -o requirements-sphinx.txt
 
 sphinx:
   configuration: python-client/docs/conf.py
+
+python:
+  install:
+    - requirements: requirements-sphinx.txt
