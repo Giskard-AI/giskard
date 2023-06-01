@@ -12,7 +12,7 @@ name = "torch"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test = "pytest -n 4 -c pyproject.toml --cov=giskard tests --cov-report=xml"
+test = "pytest -n 8 -c pyproject.toml --cov=giskard tests --cov-report=xml"
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
 
@@ -78,7 +78,7 @@ include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
 [tool.setuptools.package-data]
-giskard = ["**/*.html", "**/*.css", "**/*.js", "*titanic.csv"]
+giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*titanic.csv"]
 
 [project.scripts]
 giskard = "giskard.cli:cli"
