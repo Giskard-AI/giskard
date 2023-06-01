@@ -572,6 +572,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
     `save` method. Subclasses should implement the `save_with_mlflow` method to provide their own MLFlow-specific model
     saving functionality.
     """
+
     def save(self, local_path: Union[str, Path]) -> None:
         """
         MLFlow requires a target directory to be empty before the model is saved, thus we have to call
