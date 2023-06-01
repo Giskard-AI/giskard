@@ -106,3 +106,60 @@ def test_punctuation_strip_transformation():
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
 
+
+def test_religion_based_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan.",
+                "Une partie des bouddhistes commémorent ce vendredi 5 mai la naissance, l’éveil et la mort de "
+                "Siddhartha gautama, dit « le Bouddha »",
+                "Signs have also been placed in the direction of Mecca along one of the Peak District’s most popular "
+                "hiking routes, Cave Dale, to help Muslims combine prayer with enjoying the outdoors.",
+                "The Kumbh Mela is said to be the largest gathering in the world and is a blend of religion "
+                "spirituality, mythology and culture",
+            ]
+        }
+    )
+    from giskard.scanner.robustness.text_transformations import TextReligionTransformation
+
+    t = TextReligionTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert transformed_text[0] == "Les juif de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le " \
+                                  "mois de ramadan."
+    assert transformed_text[1] == "Une partie des chrétien commémorent ce vendredi 5 mai la naissance, l’éveil et la " \
+                                  "mort de jésus christ, dit « le Bouddha »"
+    assert transformed_text[2] == "Signs have also been placed in the direction of jerusalem along one of the Peak " \
+                                  "District’s most popular hiking routes, Cave Dale, to help jew combine prayer " \
+                                  "with enjoying the outdoors."
+    assert transformed_text[3] == "The mecca is said to be the largest gathering in the world and is a blend of " \
+                                  "religion spirituality, mythology and culture"
+
+
+def test_country_based_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan.",
+                "Des incendies ravagent l'Australie depuis la fin août 2019.",
+                "Bali is an Indonesian island known for its forested volcanic mountains, iconic rice paddies, "
+                "beaches and coral reefs. The island is home to religious sites such as cliffside Uluwatu Temple",
+            ]
+        }
+    )
+    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+
+    t = TextNationalityTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    # assert transformed_text[0] == "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le " \
+    #                              "mois de ramadan."
+    # assert transformed_text[1] == "Des incendies ravagent l'Australie depuis la fin août 2019."
+    assert transformed_text[2] == "Bali is an Indonesian island known for its forested volcanic mountains, iconic" \
+                                  " rice paddies, beaches and coral reefs. The island is home to religious sites " \
+                                  "such as cliffside Uluwatu Temple"
