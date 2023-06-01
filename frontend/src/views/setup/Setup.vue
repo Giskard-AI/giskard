@@ -46,7 +46,9 @@
               Giskard server requires a license. A <span class="font-weight-bold">free</span> license can be obtained by
               registered using the form below. The license will be sent by email.
             </p>
-            <p>If you already have one, you can <a @click="step = 2">upload it</a>.</p>
+            <p>If you already have one, you can
+                <v-btn color="primary" @click="step = 2" x-small>upload it</v-btn>
+            </p>
             <ValidationObserver ref="observer" v-slot="{ invalid }">
               <v-form @keyup.enter="submit" style="max-width: 500px" class="pl-2">
                 <ValidationProvider name="First name" mode="eager" rules="required" v-slot="{errors}">
@@ -96,16 +98,6 @@
             <p>Your Giskard setup is now complete. You can now refresh this page or click the button below to open
               Giskard.</p>
 
-            <v-checkbox dense v-model="analyticsAgree" class="pl-2">
-              <template v-slot:label>
-                <div>
-                  <div>I agree to send anonymous usage reports</div>
-                  <div class="caption">This information helps us improve the product and fix bugs 🐞 sooner.
-                    This parameter can be later changed in the settings
-                  </div>
-                </div>
-              </template>
-            </v-checkbox>
             <v-btn color="primary" large @click="finalizeSetup()">Launch Giskard</v-btn>
           </v-stepper-content>
         </v-stepper>
@@ -138,7 +130,7 @@ const email = ref<string>("");
 const companyName = ref<string>("");
 const termsOfServiceAgree = ref<boolean>(false);
 const newsLetterAgree = ref<boolean>(false);
-const analyticsAgree = ref<boolean>(false);
+const analyticsAgree = ref<boolean>(true);
 
 const licenseRequestSubmitted = ref<boolean>(false);
 
