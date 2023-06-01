@@ -21,7 +21,10 @@
                                  :test="registryByUuid[suiteTest.testUuid]"
                                  :model-value="editedInputs"
                                  :project-id="projectId"
-                                 :inputs="inputType"/>
+                                 :inputs="inputType"
+                                 @invalid="i => invalid = i"
+                                 @result="v => result = v"
+          />
           <v-row>
             <v-col>
               <v-expansion-panels flat @change="resizeEditor">
@@ -47,7 +50,7 @@
                   <v-icon>mdi-bug</v-icon>
                   Debug
               </v-btn>
-              <v-btn color="primary" @click="() => saveEditedInputs(close)">
+              <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
                   <v-icon>save</v-icon>
                   Save
               </v-btn>
@@ -83,24 +86,27 @@ const {models, datasets, projectId, suite, inputs, registry} = storeToRefs(useTe
 const {reload} = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+const result = ref<{ [input: string]: TestInputDTO }>({});
 const editor = ref(null)
 
 const sortedArguments = computed(() => {
-  if (!test) {
-    return [];
-  }
+    if (!test) {
+        return [];
+    }
 
-  return _.sortBy(_.values(test.args), value => {
-    return !_.isUndefined(suiteTest.testInputs[value.name]);
-  }, 'name');
+    return _.sortBy(_.values(test.args), value => {
+        return !_.isUndefined(suiteTest.testInputs[value.name]);
+    }, 'name');
 })
 
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
+const invalid = ref(false);
+
 function resizeEditor() {
-  setTimeout(() => {
-    editor.value.editor.layout();
-  })
+    setTimeout(() => {
+        editor.value.editor.layout();
+    })
 }
 
 onMounted(() => {
@@ -111,15 +117,11 @@ onMounted(() => {
             };
             return e;
         }, {});
+
 });
 
 async function saveEditedInputs(close) {
-    if (editedInputs.value === null) {
-        return;
-    }
-
-    await api.updateTestInputs(projectId.value!, suite.value!.id!, test.uuid, Object.values(editedInputs.value))
-    editedInputs.value = null;
+    await api.updateTestInputs(projectId.value!, suite.value!.id!, suiteTest.id!, Object.values(result.value))
 
     await reload();
     close();
@@ -130,6 +132,7 @@ const inputType = computed(() => chain(sortedArguments.value)
     .mapValues('type')
     .value()
 );
+
 </script>
 
 <style scoped>

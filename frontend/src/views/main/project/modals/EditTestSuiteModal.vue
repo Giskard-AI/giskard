@@ -25,7 +25,9 @@
                                 <TestInputListSelector
                                     :model-value="editedInputs"
                                     :project-id="projectId"
-                                    :inputs="inputTypes"/>
+                                    :inputs="inputTypes"
+                                    @invalid="i => invalidInputs = i"
+                                    @result="v => result = v"/>
                             </v-col>
                         </v-row>
                     </v-card-text>
@@ -38,7 +40,7 @@
                             color="primary"
                             text
                             @click="submit(close)"
-                            :disabled="invalid"
+                            :disabled="invalid || invalidInputs"
                             :loading="isLoading"
                         >
                             Update
@@ -74,6 +76,8 @@ const router = useRouter();
 const {updateTestSuite, inputs} = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+const invalidInputs = ref(false);
+const result = ref<{ [input: string]: TestInputDTO }>({});
 
 const inputTypes = computed(() => Object.entries(inputs)
     .reduce((result, [name, {type}]) => {
@@ -98,7 +102,7 @@ async function submit(close) {
     await updateTestSuite(projectKey, {
         ...suite,
         name: name.value,
-        testInputs: Object.values(editedInputs.value)
+        testInputs: Object.values(result.value)
     }).finally(() => isLoading.value = false);
 
     dialog.value = false;

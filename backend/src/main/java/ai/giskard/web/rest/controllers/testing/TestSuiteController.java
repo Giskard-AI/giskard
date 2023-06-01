@@ -108,14 +108,14 @@ public class TestSuiteController {
         return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
     }
 
-    @PutMapping("project/{projectId}/suite/{suiteId}/test/{testUuid}/inputs")
+    @PutMapping("project/{projectId}/suite/{suiteId}/test/{testId}/inputs")
     @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
     @Transactional
     public TestSuiteDTO updateTestInputs(@PathVariable("projectId") long projectId,
                                          @PathVariable("suiteId") long suiteId,
-                                         @PathVariable("testUuid") @NotBlank String testUuid,
+                                         @PathVariable("testId") long testId,
                                          @Valid @RequestBody List<@Valid TestInputDTO> inputs) {
-        return testSuiteService.updateTestInputs(suiteId, testUuid, inputs);
+        return testSuiteService.updateTestInputs(suiteId, testId, inputs);
     }
 
     @DeleteMapping("project/{projectKey}/suite/{suiteId}/suite-test/{suiteTestId}")

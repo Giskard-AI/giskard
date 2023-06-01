@@ -106,12 +106,12 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, List<TestInputDTO> inputs) {
+    public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<TestInputDTO> inputs) {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
-            .filter(t -> testUuid.equals(t.getTestFunction().getUuid().toString()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testUuid));
+                .filter(t -> testId == t.getId())
+                .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 
