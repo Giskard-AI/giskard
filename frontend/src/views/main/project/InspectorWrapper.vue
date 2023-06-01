@@ -48,10 +48,10 @@
           <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
           <v-icon v-else>mdi-shuffle-variant</v-icon>
         </v-btn>
-        <v-btn :disabled='!canPrevious()' icon @click='previous'>
+        <v-btn :disabled='!canPrevious' icon @click='previous'>
           <v-icon>mdi-skip-previous</v-icon>
         </v-btn>
-        <v-btn :disabled='!canNext()' icon @click='next'>
+        <v-btn :disabled='!canNext' icon @click='next'>
           <v-icon>mdi-skip-next</v-icon>
         </v-btn>
         <span class='caption grey--text' v-if="totalRows > 0">
@@ -108,14 +108,9 @@
   </v-container>
 </template>
 
-<script lang='ts'>
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import OverlayLoader from '@/components/OverlayLoader.vue';
-import PredictionResults from './PredictionResults.vue';
-import PredictionExplanations from './PredictionExplanations.vue';
-import TextExplanation from './TextExplanation.vue';
+<script setup lang='ts'>
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue';
 import { api } from '@/api';
-import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import { CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO } from '@/generated-sources';
@@ -124,7 +119,7 @@ import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
 import SliceDropdown from "@/components/slice/SliceDropdown.vue";
 
-type CreatedFeedbackCommonDTO = {
+interface CreatedFeedbackCommonDTO {
   targetFeature?: string | null;
   userData: string;
   modelId: string;
@@ -132,259 +127,242 @@ type CreatedFeedbackCommonDTO = {
   originalData: string;
   projectId: number
 };
-@Component({
-  components: {
-    SliceDropdown,
-    OverlayLoader,
-    Inspector,
-    PredictionResults,
-    FeedbackPopover,
-    PredictionExplanations,
-    TextExplanation,
-    InspectionFilter
-  }
-})
-export default class InspectorWrapper extends Vue {
-  @Prop() inspectionId!: number;
-  @Prop() projectId!: number;
-  @Prop() isProjectOwnerOrAdmin!: boolean;
 
-  inspection: InspectionDTO | null = null;
-  mouseTrap = new Mousetrap();
-  loadingData = false;
-  loadingSlice = false; // specific boolean for slice loading because it can take a while...
-  inputData = {};
-  originalData = {};
-  rowNb: number = 0;
-  shuffleMode: boolean = false;
-  dataErrorMsg = '';
-
-  feedbackPopupToggle = false;
-  feedback: string = '';
-  feedbackChoice = null;
-  feedbackError: string = '';
-  feedbackSubmitted: boolean = false;
-  labels: string[] = [];
-  filter: Filter = { type: RowFilterType.ALL };
-
-  totalRows = 0;
-  mt = ModelType;
-  rows: Record<string, any>[] = [];
-  numberOfRows: number = 0;
-  itemsPerPage = 200;
-  rowIdxInPage: number = 0;
-  regressionThreshold: number = 0.1;
-  percentRegressionUnit = true;
-  RowFilterType = RowFilterType;
-
-  get commonFeedbackData(): CreatedFeedbackCommonDTO {
-    return {
-      projectId: parseInt(this.$router.currentRoute.params.id),
-      modelId: this.inspection!.model.id,
-      datasetId: this.inspection!.dataset.id,
-      targetFeature: this.inspection!.dataset.target,
-      userData: JSON.stringify(this.inputData),
-      originalData: JSON.stringify(this.originalData)
-    };
-  }
-
-  isDefined(val: any) {
-    return !_.isNil(val);
-  }
-
-  async init() {
-    this.inspection = await api.getInspection(this.inspectionId);
-  }
-
-  async mounted() {
-    this.labels = await api.getLabelsForTarget(this.inspectionId);
-    await this.init();
-  }
-
-  bindKeys() {
-    this.mouseTrap.bind('left', this.previous);
-    this.mouseTrap.bind('right', this.next);
-  }
-
-  resetKeys() {
-    this.mouseTrap.reset();
-  }
-
-  public canPrevious() {
-    return !this.shuffleMode && this.rowNb > 0;
-  }
-
-  public canNext() {
-    return this.rowNb < this.totalRows - 1;
-  }
-
-  /**
-   * Call on active tab
-   */
-  async activated() {
-    this.bindKeys();
-    await this.init();
-  }
-
-  deactivated() {
-    this.resetKeys();
-  }
-
-  public next() {
-    if (this.canNext()) {
-      this.clearFeedback();
-      this.rowNb += 1;
-      this.debouncedUpdateRow();
-    }
-  }
-
-  public previous() {
-    if (this.canPrevious()) {
-      this.clearFeedback();
-      this.rowNb -= 1;
-      this.debouncedUpdateRow();
-    }
-  }
-
-  public clearFeedback() {
-    this.feedback = '';
-    this.feedbackError = '';
-    this.feedbackSubmitted = false;
-    this.feedbackChoice = null;
-    this.feedbackPopupToggle = false;
-  }
-
-  public async submitGeneralFeedback() {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'general',
-      feedbackChoice: this.feedbackChoice,
-      feedbackMessage: this.feedback
-    };
-    try {
-      this.feedbackSubmitted = true;
-      await this.doSubmitFeedback(feedback);
-      this.feedbackPopupToggle = false;
-    } catch (err) {
-      this.feedbackError = err.response.data.detail;
-    }
-  }
-
-  public async submitValueFeedback(userData: object) {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'value',
-      ...userData
-    };
-    await this.doSubmitFeedback(feedback);
-  }
-
-  public async submitValueVariationFeedback(userData: object) {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'value perturbation',
-      ...userData
-    };
-    await this.doSubmitFeedback(feedback);
-  }
-
-  private debouncedUpdateRow = _.debounce(async () => {
-    await this.updateRow(false);
-  }, 150);
-
-
-  @Watch('inspection.id')
-  @Watch('regressionThreshold')
-  @Watch('filter', { deep: true, immediate: false })
-  @Watch('shuffleMode')
-  @Watch('percentRegressionUnit')
-  async applyFilter(nv, ov) {
-    if (JSON.stringify(nv) === JSON.stringify(ov)) {
-      return;
-    }
-    await this.updateRow(true);
-  }
-
-  async updateRow(forceFetch) {
-    await this.fetchRows(this.rowNb, forceFetch);
-    this.assignCurrentRow(forceFetch)
-  }
-
-  /**
-   * Calling fetch rows if necessary, i.e. when start or end of the page
-   * @param rowIdxInResults index of the row in the results
-   * @param forceFetch
-   */
-  public async fetchRows(rowIdxInResults: number, forceFetch: boolean) {
-    const remainder = rowIdxInResults % this.itemsPerPage;
-    const newPage = Math.floor(rowIdxInResults / this.itemsPerPage);
-    if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
-      await this.fetchRowsByRange(newPage * this.itemsPerPage, (newPage + 1) * this.itemsPerPage);
-    }
-  }
-
-  /**
-   * Requesting the filtered rows in a given range
-   * @param minRange
-   * @param maxRange
-   */
-  public async fetchRowsByRange(minRange: number, maxRange: number) {
-    const props = {
-      'modelId': this.inspection?.model.id,
-      'minRange': minRange,
-      'maxRange': maxRange,
-      'isRandom': this.shuffleMode
-    };
-    const response = await api.getDataFilteredByRange(this.inspection?.id, props, this.filter);
-    this.rows = response.data;
-    this.numberOfRows = response.rowNb;
-  }
-
-  private assignCurrentRow(forceFetch: boolean) {
-    this.rowIdxInPage = this.rowNb % this.itemsPerPage;
-    this.loadingData = true;
-
-    this.inputData = this.rows[this.rowIdxInPage];
-    this.originalData = { ...this.inputData }; // deep copy to avoid caching mechanisms
-    this.dataErrorMsg = '';
-    this.loadingData = false;
-    this.totalRows = this.numberOfRows;
-    if (forceFetch) {
-      this.rowNb = 0;
-    }
-  }
-
-  private resetInput() {
-    this.inputData = { ...this.originalData };
-  }
-
-  private async doSubmitFeedback(payload: CreateFeedbackDTO) {
-    mixpanel.track('Submit feedback', {
-      datasetId: payload.datasetId,
-      feedbackChoice: payload.feedbackChoice,
-      feedbackType: payload.feedbackType,
-      modelId: payload.modelId,
-      projectId: payload.projectId
-    });
-    await api.submitFeedback(payload, payload.projectId);
-  }
-
-  private async applySlice(slice: SliceDTO) {
-    this.loadingSlice = true;
-    this.filter.sliceId = slice.id;
-    await this.updateRow(true);
-    this.loadingSlice = false;
-    mixpanel.track('Apply slice', { sliceId: this.filter.sliceId });
-  }
-
-  private async clearSlice() {
-    this.loadingSlice = true;
-    this.filter.sliceId = 0;
-    await this.updateRow(true);
-    this.loadingSlice = false;
-  }
-
+interface Props {
+  inspectionId: number;
+  projectId: number;
+  isProjectOwnerOrAdmin: boolean;
 }
+
+const props = defineProps<Props>();
+
+const inspection = ref<InspectionDTO | null>(null);
+const mouseTrap = new Mousetrap();
+const loadingData = ref(false);
+const loadingSlice = ref(false); // specific boolean for slice loading because it can take a while...
+const inputData = ref({});
+const originalData = ref<any>({});
+const rowNb = ref(0);
+const shuffleMode = ref(false);
+const dataErrorMsg = ref('');
+
+const feedbackPopupToggle = ref(false);
+const feedback = ref('');
+const feedbackChoice = ref(null);
+const feedbackError = ref('');
+const feedbackSubmitted = ref(false);
+const labels = ref<string[]>([]);
+const filter = ref<Filter>({ type: RowFilterType.ALL });
+
+const totalRows = ref(0);
+const mt = ModelType;
+const rows = ref<Record<string, any>[]>([]);
+const numberOfRows = ref(0);
+const itemsPerPage = 200;
+const rowIdxInPage = ref(0);
+const regressionThreshold = ref(0.1);
+const percentRegressionUnit = ref(true);
+
+const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
+const canNext = computed(() => !shuffleMode.value && rowNb.value < totalRows.value - 1);
+
+function commonFeedbackData(): CreatedFeedbackCommonDTO {
+  return {
+    targetFeature: inspection.value?.dataset.target,
+    userData: JSON.stringify(inputData.value),
+    modelId: inspection.value!.model.id,
+    datasetId: inspection.value!.dataset.id,
+    originalData: JSON.stringify(originalData.value),
+    projectId: props.projectId
+  };
+}
+
+function clearFeedback() {
+  feedback.value = '';
+  feedbackError.value = '';
+  feedbackSubmitted.value = false;
+  feedbackChoice.value = null;
+  feedbackPopupToggle.value = false;
+}
+
+function isDefined(val: any): boolean {
+  return !_.isNil(val);
+}
+
+function previous() {
+  if (canPrevious.value) {
+    clearFeedback();
+    rowNb.value -= 1;
+    debouncedUpdateRow();
+  }
+}
+
+function next() {
+  if (canNext.value) {
+    clearFeedback();
+    rowNb.value += 1;
+    debouncedUpdateRow();
+  }
+}
+
+async function submitGeneralFeedback() {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'general',
+    feedbackChoice: feedbackChoice.value,
+    feedbackMessage: feedback.value
+  };
+
+  try {
+    feedbackSubmitted.value = true;
+    await doSubmitFeedback(newFeedback);
+    feedbackPopupToggle.value = false;
+  } catch (err) {
+    feedbackError.value = err.response.data.detail;
+  }
+}
+
+async function submitValueFeedback(userData: object) {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'value',
+    ...userData
+  };
+  await doSubmitFeedback(newFeedback);
+}
+
+async function submitValueVariationFeedback(userData: object) {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'value perturbation',
+    ...userData
+  };
+  await doSubmitFeedback(newFeedback);
+}
+
+const debouncedUpdateRow = _.debounce(async () => {
+  await updateRow(false);
+}, 150);
+
+async function applyFilter(nv, ov) {
+  if (JSON.stringify(nv) === JSON.stringify(ov)) {
+    return;
+  }
+  await updateRow(true);
+}
+
+watch(() => [
+  inspection.value?.id,
+  regressionThreshold.value,
+  filter.value,
+  shuffleMode.value,
+  percentRegressionUnit.value
+], async (nv, ov) => applyFilter(nv, ov), { deep: true, immediate: false });
+
+async function updateRow(forceFetch) {
+  await fetchRows(rowNb.value, forceFetch);
+  assignCurrentRow(forceFetch)
+}
+
+/**
+ * Calling fetch rows if necessary, i.e. when start or end of the page
+ * @param rowIdxInResults index of the row in the results
+ * @param forceFetch
+ */
+async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
+  const remainder = rowIdxInResults % itemsPerPage;
+  const newPage = Math.floor(rowIdxInResults / itemsPerPage);
+  if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
+    await fetchRowsByRange(newPage * itemsPerPage, (newPage + 1) * itemsPerPage);
+  }
+}
+
+/**
+ * Requesting the filtered rows in a given range
+ * @param minRange
+ * @param maxRange
+ */
+async function fetchRowsByRange(minRange: number, maxRange: number) {
+  const propsData = {
+    'modelId': inspection.value?.model.id,
+    'minRange': minRange,
+    'maxRange': maxRange,
+    'isRandom': shuffleMode.value
+  };
+
+  const response = await api.getDataFilteredByRange(inspection.value?.id, propsData, filter.value);
+  rows.value = response.data;
+  numberOfRows.value = response.rowNb;
+}
+
+function assignCurrentRow(forceFetch: boolean) {
+  rowIdxInPage.value = rowNb.value % itemsPerPage;
+  loadingData.value = true;
+
+  inputData.value = rows.value[rowIdxInPage.value];
+  originalData.value = { ...inputData.value }; // deep copy to avoid caching mechanisms
+  dataErrorMsg.value = '';
+  loadingData.value = false;
+  totalRows.value = numberOfRows.value;
+  if (forceFetch) {
+    rowNb.value = 0;
+  }
+}
+
+function resetInput() {
+  inputData.value = { ...originalData.value };
+}
+
+async function doSubmitFeedback(payload: CreateFeedbackDTO) {
+  mixpanel.track('Submit feedback', {
+    datasetId: payload.datasetId,
+    feedbackChoice: payload.feedbackChoice,
+    feedbackType: payload.feedbackType,
+    modelId: payload.modelId,
+    projectId: payload.projectId
+  });
+  await api.submitFeedback(payload, payload.projectId);
+}
+
+async function applySlice(slice: SliceDTO) {
+  loadingSlice.value = true;
+  filter.value.sliceId = slice.id;
+  await updateRow(true);
+  loadingSlice.value = false;
+  mixpanel.track('Apply slice', { sliceId: filter.value.sliceId });
+}
+
+async function clearSlice() {
+  loadingSlice.value = true;
+  filter.value.sliceId = 0;
+  await updateRow(true);
+  loadingSlice.value = false;
+}
+
+
+function bindKeys() {
+  mouseTrap.bind('left', previous);
+  mouseTrap.bind('right', next);
+}
+
+function resetKeys() {
+  mouseTrap.reset();
+}
+
+
+async function init() {
+  inspection.value = await api.getInspection(props.inspectionId);
+}
+
+onMounted(async () => {
+  labels.value = await api.getLabelsForTarget(props.inspectionId);
+  bindKeys();
+  await init();
+});
+
+onUnmounted(() => {
+  resetKeys();
+});
 </script>
 
 <style scoped>
