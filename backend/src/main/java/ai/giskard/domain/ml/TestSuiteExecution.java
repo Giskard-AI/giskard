@@ -2,6 +2,7 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ public class TestSuiteExecution extends BaseEntity {
 
 
     @ManyToOne
+    @JsonIgnore
     private TestSuite suite;
 
     @Column(columnDefinition = "VARCHAR")
