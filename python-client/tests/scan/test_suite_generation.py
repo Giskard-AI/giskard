@@ -14,7 +14,7 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
                 metric=Accuracy(),
                 metric_value_reference=0.8,
                 metric_value_slice=0.5,
-                slice_fn=lambda x: x,
+                slice_fn=lambda x: True,
                 slice_size=100,
                 threshold=0.1,
             ),
@@ -26,3 +26,5 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
     assert isinstance(test_suite, Suite)
     assert test_suite.name == "Custom name"
     assert len(test_suite.tests) == 1
+
+    test_suite.run()
