@@ -16,5 +16,9 @@ def map_to_tuples(data: Iterator):
 
 def np_types_to_native(some_list: List):
     if some_list is not None:
-        return [i.item() if isinstance(i, np.generic) else i for i in some_list]
+        return [np_type_to_native(i) for i in some_list]
     return some_list
+
+
+def np_type_to_native(i):
+    return i.item() if isinstance(i, np.generic) else i
