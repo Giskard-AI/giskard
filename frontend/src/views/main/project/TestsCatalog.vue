@@ -183,48 +183,37 @@ const selectedTestUsage = computed(() => {
         return '';
     }
 
-    let imports = 'from giskard import ';
     let content = '';
 
     const requiredArgs = selected.value.args.filter(arg => !arg.optional && arg.name !== 'kwargs');
-    let uniqueImports = chain(requiredArgs)
-        .map('type')
-        .uniq()
-        .value();
-    uniqueImports = uniqueImports.filter(i => i !== 'str');
-    uniqueImports.push(selected.value.name);
+    const uniqueImports = [
+        ...chain(requiredArgs)
+            .map('type')
+            .uniq()
+            .value()
+            .filter(i => i !== 'str'),
+        selected.value.name
+    ];
 
-    imports += uniqueImports.join(', ');
+    content += `from giskard import ${uniqueImports.join(', ')}`;
+    content += '\n\n';
 
-    for (const [index, arg] of requiredArgs.entries()) {
+    requiredArgs.forEach(arg => {
         content += `${arg.name} = ${arg.type}(...)`;
         content += '\n';
-    }
-
+    })
     content += '\n';
-    content += 'test_result, passed = ';
-    content += selected.value.name + '(';
-    for (const [index, arg] of selected.value.args.entries()) {
-        if (arg.name === 'kwargs') {
-            content += '**';
-        }
 
-        content += arg.name;
-
-        if (arg.optional) {
-            content += '=';
-            content += arg.defaultValue;
-        }
-
-        if (index < selected.value.args.length - 1) {
-            content += ', ';
-        }
-    }
-    content += ')';
+    const parametersWithDefaults = selected.value.args.map(arg => {
+        if (arg.name === 'kwargs') return '**kwargs';
+        if (arg.optional) return `${arg.name}=${arg.defaultValue}`;
+        return arg.name;
+    });
+    content += `test_result, passed = (${parametersWithDefaults.join(', ')})`;
     content += '\n\n';
+
     content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
 
-    content = imports + '\n\n' + content;
     return content;
 })
 
