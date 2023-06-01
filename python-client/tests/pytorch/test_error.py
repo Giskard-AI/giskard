@@ -35,7 +35,7 @@ def test_error():
         data_preprocessing_function=preproc_func,
     )
 
-    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
+    my_test_dataset = Dataset(df.head(), name="test dataset", target="y")
 
     with pytest.raises(Exception) as e:
         validate_model(my_model, validate_ds=my_test_dataset)

@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from typing import Optional, Iterable, Callable
+from typing import Optional, Iterable
 
-from .base import BaseModel, ModelMeta, ModelType, ModelPredictionResults
+from .base import BaseModel, ModelType, ModelPredictionResults
 from ..datasets.base import Dataset
 
 
