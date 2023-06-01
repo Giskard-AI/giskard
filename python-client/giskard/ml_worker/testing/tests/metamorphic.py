@@ -26,6 +26,7 @@ def _prediction_ratio(prediction, perturbed_prediction):
     return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
 
+@timer("Perturb and predict data")
 def _perturb_and_predict(
         ds: Dataset,
         model: BaseModel,
