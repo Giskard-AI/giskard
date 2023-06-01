@@ -28,7 +28,7 @@
           <v-divider class="my-2"></v-divider>
           <h3 class="font-weight-light mb-3">Or send your users the generated link:</h3>
           <div class="mb-2">
-            <v-btn small tile color="primary" class="grey--text text--darken-4" @click="generateLink">Generate</v-btn>
+            <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateLink">Generate</v-btn>
             <v-btn v-if="link" small tile color="secondary" class="ml-2" @click="copyLink">
               Copy<v-icon right dark>mdi-content-copy</v-icon>
             </v-btn>
