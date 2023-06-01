@@ -31,20 +31,16 @@ input_types = {
 @pytest.fixture()
 def enron_data() -> Dataset:
     logger.info("Fetching Enron Data")
+    df = pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
+    df.drop(columns="Unnamed: 0", inplace=True)
     return Dataset(
-        df=pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]),
-        target="Target",
-        column_types=input_types,
-    )
+        df=df,
+        target="Target", column_types=input_types)
 
 
 @pytest.fixture()
 def enron_test_data(enron_data):
-    return Dataset(
-        df=pd.DataFrame(enron_data.df).drop(columns=["Target"]),
-        column_types=input_types,
-        target=None,
-    )
+    return Dataset(df=pd.DataFrame(enron_data.df).drop(columns=["Target"]), target=None, column_types=input_types)
 
 
 @pytest.fixture()

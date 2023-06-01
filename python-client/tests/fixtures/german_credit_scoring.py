@@ -51,12 +51,7 @@ def german_credit_data() -> Dataset:
         keep_default_na=False,
         na_values=["_GSK_NA_"],
     )
-    return Dataset(
-        df=df,
-        name='Test german credit scoring dataset',
-        target="default",
-        column_types=input_types,
-    )
+    return Dataset(df=df, name='Test german credit scoring dataset', target="default", column_types=input_types)
 
 
 @pytest.fixture()
@@ -93,11 +88,7 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
 @pytest.fixture()
 def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
-    return Dataset(
-        df=df,
-        column_types=input_types,
-        target=None,
-    )
+    return Dataset(df=df, target=None, column_types=input_types)
 
 
 @pytest.fixture()

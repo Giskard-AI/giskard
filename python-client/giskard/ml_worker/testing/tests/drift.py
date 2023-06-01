@@ -15,6 +15,7 @@ from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -158,8 +159,6 @@ def _validate_series_notempty(actual_series, reference_series):
 
 
 def _extract_series(actual_ds, reference_ds, column_name, feature_type):
-    actual_ds.df.reset_index(drop=True, inplace=True)
-    reference_ds.df.reset_index(drop=True, inplace=True)
     _validate_column_name(actual_ds, reference_ds, column_name)
     _validate_feature_type(actual_ds, column_name, feature_type)
     _validate_feature_type(reference_ds, column_name, feature_type)
@@ -208,8 +207,15 @@ def test_drift_psi(actual_dataset: Dataset, reference_dataset: Dataset, column_n
         passed:
             TRUE if total_psi <= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_psi"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "category")
 
     messages, passed, total_psi = _test_series_drift_psi(
@@ -270,8 +276,15 @@ def test_drift_chi_square(actual_dataset: Dataset, reference_dataset: Dataset, c
         passed:
             TRUE if metric > threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_chi_square"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "category")
 
     messages, p_value, passed = _test_series_drift_chi(
@@ -326,8 +339,15 @@ def test_drift_ks(actual_dataset: Dataset, reference_dataset: Dataset, column_na
         passed:
             TRUE if metric >= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_ks"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "numeric")
 
     result = _calculate_ks(actual_series, reference_series)
@@ -378,8 +398,15 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
         passed:
             TRUE if metric <= threshold
     """
-    actual_series, reference_series = _extract_series(actual_dataset.slice(slicing_function),
-                                                      reference_dataset.slice(slicing_function),
+    if slicing_function:
+        test_name = "test_drift_earth_movers_distance"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
+    actual_series, reference_series = _extract_series(actual_dataset,
+                                                      reference_dataset,
                                                       column_name, "numeric")
 
     metric = _calculate_earth_movers_distance(actual_series, reference_series)
@@ -405,7 +432,7 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
 
 
 @test(name='Label drift (PSI)')
-def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
+def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                               slicing_function: SlicingFunction = None, max_categories: int = 10,
                               threshold: float = 0.2, psi_contribution_percent: float = 0.2):
     """
@@ -416,12 +443,12 @@ def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Datase
     for females between reference and actual sets is below 0.2
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -445,10 +472,13 @@ def test_drift_prediction_psi(actual_dataset: Dataset, reference_dataset: Datase
         messages:
             Psi result message
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
+    if slicing_function:
+        test_name = "test_drift_prediction_psi"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
     messages, passed, total_psi = _test_series_drift_psi(
@@ -499,10 +529,9 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
 
 
 @test(name='Label drift (Chi-squared)')
-def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                                     slicing_function: SlicingFunction = None,
-                                     max_categories: int = 10, threshold: float = 0.05,
-                                     chi_square_contribution_percent: float = 0.2):
+def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+                                     slicing_function: SlicingFunction = None, max_categories: int = 10,
+                                     threshold: float = 0.05, chi_square_contribution_percent: float = 0.2):
     """
     Test if the Chi Square value between the reference and actual datasets is below the threshold
     for the classification labels predictions for a given slice
@@ -511,12 +540,12 @@ def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset:
     for females between reference and actual sets is below 0.05
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -540,10 +569,13 @@ def test_drift_prediction_chi_square(actual_dataset: Dataset, reference_dataset:
         messages:
             Message describing if prediction is drifting or not
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
+    if slicing_function:
+        test_name = "test_drift_prediction_chi_square"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
+
     prediction_reference = pd.Series(model.predict(reference_dataset).prediction)
     prediction_actual = pd.Series(model.predict(actual_dataset).prediction)
 
@@ -582,9 +614,9 @@ def _test_series_drift_chi(
 
 @test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
-                             slicing_function: SlicingFunction = None,
-                             classification_label: str = None, threshold: float = None) -> TestResult:
+def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
+                             slicing_function: SlicingFunction = None, classification_label: str = None,
+                             threshold: float = None) -> TestResult:
     """
     Test if the pvalue of the KS test for prediction between the reference and actual datasets for
      a given subpopulation is above the threshold
@@ -594,12 +626,12 @@ def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset
      rejected at 5% level and that we cannot assume drift for this variable.
 
     Args:
+        model(BaseModel):
+            Model used to compute the test
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            Model used to compute the test
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
@@ -619,10 +651,12 @@ def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset
         messages:
             Kolmogorov-Smirnov result message
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
+    if slicing_function:
+        test_name = "test_drift_prediction_ks"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
 
     prediction_reference = (
         pd.Series(model.predict(reference_dataset).all_predictions[classification_label].values)
@@ -665,7 +699,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
 
 @test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
 @validate_classification_label
-def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
+def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset: Dataset, reference_dataset: Dataset,
                                                 slicing_function: SlicingFunction = None,
                                                 classification_label: str = None, threshold: float = 0.2) -> TestResult:
     """
@@ -681,12 +715,12 @@ def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, referen
     for females between reference and actual sets is below 0.2
 
     Args:
+        model(BaseModel):
+            uploaded model
         actual_dataset(Dataset):
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        model(BaseModel):
-            uploaded model
         slicing_function(SlicingFunction):
             Slicing function to be applied on both actual and reference datasets
         classification_label:
@@ -701,10 +735,12 @@ def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, referen
             Earth Mover's Distance value
 
     """
-    actual_dataset = actual_dataset.slice(slicing_function)
-    reference_dataset = reference_dataset.slice(slicing_function)
-    actual_dataset.df.reset_index(drop=True, inplace=True)
-    reference_dataset.df.reset_index(drop=True, inplace=True)
+    if slicing_function:
+        test_name = "test_drift_prediction_earth_movers_distance"
+        actual_dataset = actual_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=actual_dataset, dataset_name="actual_dataset", test_name=test_name)
+        reference_dataset = reference_dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=reference_dataset, dataset_name="reference_dataset", test_name=test_name)
 
     prediction_reference = (
         model.predict(reference_dataset).all_predictions[classification_label].values
