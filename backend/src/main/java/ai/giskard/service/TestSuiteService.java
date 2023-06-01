@@ -19,7 +19,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -88,7 +91,7 @@ public class TestSuiteService {
 
         ProjectModel model = suite.getModel();
 
-        if (model.getModelType().isClassification()) {
+        if (model.getModelType() == ModelType.CLASSIFICATION) {
             model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
                 substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
             });

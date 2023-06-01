@@ -264,28 +264,28 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async deleteDatasetFile(datasetId: number) {
+    async deleteDatasetFile(datasetId: string) {
         return apiV2.delete<unknown, MessageDTO>(`/dataset/${datasetId}`);
     },
-    async prepareDeleteDataset(datasetId: number) {
+    async prepareDeleteDataset(datasetId: string) {
         return apiV2.get<unknown, PrepareDeleteDTO>(`/dataset/prepare-delete/${datasetId}`);
     },
-    async prepareDeleteModel(modelId: number) {
+    async prepareDeleteModel(modelId: string) {
         return apiV2.get<unknown, PrepareDeleteDTO>(`/models/prepare-delete/${modelId}`);
     },
-    async deleteModelFiles(modelId: number) {
+    async deleteModelFiles(modelId: string) {
         return apiV2.delete<unknown, MessageDTO>(`/models/${modelId}`);
     },
     downloadModelFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
-    downloadDataFile(id: number) {
+    downloadDataFile(id: string) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
-    async peekDataFile(datasetId: number) { //TODO
+    async peekDataFile(datasetId: string) { //TODO
         return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, {params: {offset: 0, size: 10}});
     },
-    async getFeaturesMetadata(datasetId: number) {
+    async getFeaturesMetadata(datasetId: string) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
@@ -300,18 +300,7 @@ export const api = {
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
     },
-    async uploadDataFile(projectKey: string, fileData: any) {
-        const formData = new FormData();
-        formData.append('metadata',
-            new Blob([JSON.stringify({"projectKey": projectKey})], {
-                type: "application/json"
-            }));
-        formData.append('file', fileData);
-        const config = authHeaders(getLocalToken());
-        config.headers['content-type'] = 'multipart/form-data';
-        return apiV2.post<unknown, DatasetDTO>(`/project/data/upload`, formData, config);
-    },
-    async predict(modelId: number, datasetId: number, inputData: { [key: string]: string }, controller: AbortController) {
+    async predict(modelId: string, datasetId: string, inputData: { [key: string]: string }, controller: AbortController) {
         const data: PredictionInputDTO = {
             datasetId: datasetId,
             features: inputData
@@ -322,12 +311,12 @@ export const api = {
     async prepareInspection(payload: InspectionCreateDTO) {
         return apiV2.post<unknown, InspectionDTO>(`/inspection`, payload);
     },
-    async explain(modelId: number, datasetId: number, inputData: object, controller: AbortController) {
+    async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`,
             {features: inputData},
             {signal: controller.signal});
     },
-    async explainText(modelId: number, datasetId: number, inputData: object, featureName: string) {
+    async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
         return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
             {
                 features: inputData

@@ -18,7 +18,7 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
     results = tests.statistical.test_right_label(
         actual_slice=data.slice(lambda df: df.head(len(df) // 2)),
         model=model,
-        classification_label=model.classification_labels[label],
+        classification_label=model.meta.classification_labels[label],
         threshold=threshold,
     )
 
@@ -45,7 +45,7 @@ def test_statistical_filtered(
     results = tests.statistical.test_right_label(
         actual_slice=data.slice(lambda df: df.head(10)),
         model=model,
-        classification_label=model.classification_labels[label],
+        classification_label=model.meta.classification_labels[label],
         threshold=threshold,
     )
 
@@ -71,7 +71,7 @@ def test_output_in_range_clf(
     results = tests.statistical.test_output_in_range(
         actual_slice=data.slice(lambda df: df.head(len(df) // 2)),
         model=model,
-        classification_label=model.classification_labels[label],
+        classification_label=model.meta.classification_labels[label],
         min_range=0.3,
         max_range=0.7,
         threshold=threshold,
