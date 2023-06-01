@@ -82,8 +82,18 @@ def single_binary_result(test_results: List):
 
 class Suite:
     """
-    The Test Suite class is used to group and execute a collection of test cases. It provides methods to add new tests,
-    execute all tests, and save the suite to a Giskard instance.
+    A class representing a test suite that groups a collection of test cases together. The Suite class provides
+    methods to add new tests, execute all tests, and save the suite to a Giskard instance.
+
+    Attributes:
+        id : int
+            An integer identifying the suite.
+        tests : List[TestPartial]
+            A list of TestPartial objects representing the test cases in the suite.
+        suite_params : Mapping[str, SuiteInput]
+            A mapping of suite parameters with their corresponding SuiteInput objects.
+        name : str
+            A string representing the name of the suite.
     """
 
     id: int

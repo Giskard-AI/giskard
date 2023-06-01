@@ -56,13 +56,15 @@ def validate_column_types(ds: Dataset):
 
 def validate_numeric_columns(ds: Dataset):
     for col, col_type in ds.column_types.items():
+        if col == ds.target:
+            continue
         if col_type == SupportedColumnTypes.NUMERIC.value:
             try:
                 pd.to_numeric(ds.df[col])
             except ValueError:
                 warning(
-                    f"You declared your column '{col}' as 'numeric' but we were unable to cast it. "
-                    f"Please check that you declared the type of '{col}' correctly in 'column_types'.")
+                    f"You declared your column '{col}' as 'numeric' but it contains non-numeric values. "
+                    f"Please check if you declared the type of '{col}' correctly in 'column_types'.")
 
 
 def validate_column_categorization(ds: Dataset):
