@@ -15,6 +15,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Deprecated
 public class TestSuite extends AbstractAuditingEntity {
     @Id
     @GeneratedValue
