@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -6,11 +7,19 @@ from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+
+
+def titanic_df():
+    df = pd.read_csv("titanic.csv")
+    df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
+    _classification_labels = {0: "no", 1: "yes"}
+    df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
+    return df
 
 
 def titanic():
-    df = pd.read_csv("https://raw.githubusercontent.com/Giskard-AI/giskard-examples/main/datasets/titanic_train.csv")
-    df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
+    df = titanic_df()
     cat_cols = ['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]
     num_cols = ["PassengerId", "Age", "Fare"]
     text_cols = ["Name"]
@@ -47,3 +56,35 @@ def titanic():
     test_data = pd.concat([X_test, Y_test], axis=1)
 
     return clf, test_data
+
+
+def titanic_pipeline():
+    clf, _ = titanic()
+
+    def preprocessor(df):
+        return clf[0].transform(df)
+
+    return preprocessor, clf[1]
+
+
+def linear_df():
+    df = pd.DataFrame({"x": np.arange(100),
+                       "y": np.arange(100)})
+    return df
+
+
+def linear():
+    df = linear_df()
+
+    reg = LinearRegression()
+    reg.fit(df["x"].to_numpy().reshape(100, 1), df["y"].to_numpy().reshape(100, 1))
+    return reg, df
+
+
+def linear_pipeline():
+    reg, _ = linear()
+
+    def preprocessor(df):
+        return df["x"].to_numpy().reshape(len(df["x"]), 1)
+
+    return preprocessor, reg

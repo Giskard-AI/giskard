@@ -38,6 +38,7 @@ interface State {
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
+    tryResult: TestSuiteExecutionDTO | null,
     trackedJobs: { [uuid: string]: JobDTO },
     statusFilter: string,
     searchFilter: string
@@ -54,6 +55,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
         datasets: {},
         models: {},
         executions: [],
+        tryResult: null,
         trackedJobs: {},
         statusFilter: statusFilterOptions[0].label,
         searchFilter: ''
@@ -106,6 +108,9 @@ export const useTestSuiteStore = defineStore('testSuite', {
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
             return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+        },
+        async tryTestSuite(input: Array<FunctionInputDTO>) {
+            this.tryResult = await api.tryTestSuite(this.projectId!, this.suiteId!, input);
         },
         async trackJob(uuid: string) {
             const result = await trackJob(uuid, (res) => this.trackedJobs = {
