@@ -155,6 +155,3 @@ def test_linear_regression_pytorch_dataloader():
         assert req.headers.get("Authorization") == auth
         assert int(req.headers.get("Content-Length")) > 0
         assert req.headers.get("Content-Type") == "application/json"
-
-if __name__ == "__main__":
-    test_linear_regression_pytorch_dataloader()
