@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.validation.constraints.NotNull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -273,7 +274,6 @@ public class InitService {
 
     private List<String> copyResource(Project project, String artifactType) throws IOException {
         Resource[] artifactResources;
-        List<String> artifactIds = new ArrayList<>();
 
         Path originalRoot = Paths.get("demo_projects", project.getKey(), artifactType);
 
@@ -286,12 +286,38 @@ public class InitService {
             return Collections.emptyList();
         }
 
+        if (artifactResources[0] instanceof ClassPathResource) {
+            return loadClasspathArtifacts(artifactType, artifactResources, originalRoot, project.getKey());
+        } else {
+            return loadFilesystemArtifacts(artifactType, originalRoot, resolver, project.getKey());
+        }
+    }
+
+    private List<String> loadFilesystemArtifacts(String artifactType, Path originalRoot, PathMatchingResourcePatternResolver resolver, @NotNull String projectKey) throws IOException {
+        List<String> res = new ArrayList<>();
+        for (Resource resource : resolver.getResources(originalRoot.resolve("*").toString())) {
+            if (!resource.getFile().isDirectory()) {
+                continue;
+            }
+            String resourceId = resource.getFilename();
+            assert resourceId != null;
+
+            res.add(resourceId);
+            FileUtils.copyDirectory(resource.getFile(),
+                fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(resourceId).toFile());
+        }
+        return res;
+    }
+
+
+    private List<String> loadClasspathArtifacts(String artifactType, Resource[] artifactResources, Path originalRoot, @NotNull String projectKey) throws IOException {
+        List<String> artifactIds = new ArrayList<>();
         for (Resource resource : artifactResources) {
             byte[] content = resource.getInputStream().readAllBytes();
 
             Path resourcePath = Paths.get(((ClassPathResource) resource).getPath());
             Path relativeResourcePath = originalRoot.relativize(resourcePath);
-            Path destination = fileLocationService.resolvedProjectHome(project.getKey()).resolve(artifactType).resolve(relativeResourcePath);
+            Path destination = fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(relativeResourcePath);
 
             if (relativeResourcePath.getNameCount() == 1 && !relativeResourcePath.getName(0).toString().isEmpty()) {
                 artifactIds.add(relativeResourcePath.getName(0).toString());
