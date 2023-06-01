@@ -21,6 +21,8 @@ guides/slice/index
 guides/transformation/index
 guides/test-suite/index
 guides/cicd/index
+guides/installation_app/index
+guides/upload/index
 ```
 
 ```{toctree}
