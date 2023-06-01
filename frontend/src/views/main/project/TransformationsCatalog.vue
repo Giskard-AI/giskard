@@ -41,7 +41,8 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="transformationFunction.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(transformationFunction.tags)"
+                                                <v-chip class="mr-2"
+                                                        v-for="tag in alphabeticallySorted(transformationFunction.tags)"
                                                         x-small
                                                         :color="pasterColor(tag)">
                                                     {{ tag }}
@@ -179,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import _, {chain} from "lodash";
+import {chain} from "lodash";
 import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
@@ -193,6 +194,7 @@ import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
+import {alphabeticallySorted} from "@/utils/comparators";
 import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 
@@ -220,12 +222,6 @@ function resizeEditor() {
     setTimeout(() => {
         editor.value.editor.layout();
     })
-}
-
-function sorted(arr: any[]) {
-    const res = _.cloneDeep(arr);
-    res.sort()
-    return res;
 }
 
 const hasGiskardFilters = computed(() => {
