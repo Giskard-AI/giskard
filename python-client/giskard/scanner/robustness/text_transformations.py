@@ -8,6 +8,7 @@ from ... import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from .entity_swap import religion_dict_en, religion_dict_fr
 
 
 class TextTransformation(TransformationFunction):
@@ -111,7 +112,7 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return text.translate(str.maketrans('', '', self._punctuation))
 
 
-class TextGenderTransformation(TextTransformation):
+class TextDictBasedTransformation(TextTransformation):
     name = "Switch gender"
     needs_dataset = True
 
@@ -138,7 +139,13 @@ class TextGenderTransformation(TextTransformation):
         return new_text
 
     def _switch(self, word, language):
-        if language is pd.NA:
+        raise NotImplementedError()
+
+
+class TextGenderTransformation(TextDictBasedTransformation):
+
+    def _switch(self, word, language):
+        if pd.isna(language):
             return word
         elif (language == "en") and (word.lower() in gender_switch_en):
             return [word, gender_switch_en[word.lower()]]
@@ -146,3 +153,4 @@ class TextGenderTransformation(TextTransformation):
             return [word, gender_switch_fr[word.lower()]]
         else:
             return word
+
