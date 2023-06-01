@@ -84,18 +84,24 @@
                                         Run
                                     </v-btn>
                                 </div>
-
                                 <TestExecutionResultBadge v-if="testResult" :result="testResult" />
-                                <!-- <v-row style="height: 150px" v-if="testResult">
-                                    <v-col>
-                                        
-                                    </v-col>
-                                </v-row> -->
-
                             </div>
 
                             <v-divider></v-divider>
 
+
+                            <div id="usage-group" class="py-4">
+                                <div class="d-flex">
+                                    <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
+                                    <span class="group-title">Usage</span>
+                                </div>
+
+                                <div class="d-flex flex-column mt-2 mb-4">
+                                    <CodeSnippet></CodeSnippet>
+                                </div>
+                            </div>
+
+                            <v-divider></v-divider>
 
                             <div id="code-group" class="py-4">
                                 <div class="d-flex">
@@ -104,13 +110,7 @@
                                 </div>
 
                                 <div class="d-flex flex-column mt-2">
-                                    <span class="py-2">Test definition</span>
                                     <CodeSnippet :codeContent="selected.code"></CodeSnippet>
-                                </div>
-
-                                <div class="d-flex flex-column mt-4">
-                                    <span class="py-2">Example usage</span>
-                                    <CodeSnippet></CodeSnippet>
                                 </div>
                             </div>
                         </div>
@@ -255,10 +255,12 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .test-description {
-    font-family: 'Roboto', sans-serif;
     white-space: break-spaces;
     font-size: 1rem;
     line-height: 1.5rem;
+    word-spacing: 0.25rem;
+    opacity: 0.8;
+    font-weight: 500;
 }
 
 .group-title {
@@ -268,9 +270,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .group-icon {
-    color: rgba($color: #000000, $alpha: 0.7);
+    // color: rgba($color: #000000, $alpha: 0.7);
+    color: #087038;
     font-size: 1.25rem;
-    margin-top: 0.4rem;
+    margin-top: 0.3rem;
 }
 
 #test-name {
