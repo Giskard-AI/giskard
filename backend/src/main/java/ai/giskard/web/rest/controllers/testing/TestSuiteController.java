@@ -7,6 +7,8 @@ import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.GenerateTestSuiteDTO;
+import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestSuiteCompleteDTO;
 import ai.giskard.web.dto.TestSuiteDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
