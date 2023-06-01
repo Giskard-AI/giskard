@@ -1,4 +1,4 @@
-# 🔪 Slice your dataset
+# Slice your dataset
 
 :::{warning}
 First you'll need to create a dataset,
