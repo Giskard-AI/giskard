@@ -6,6 +6,9 @@ from .registry import DetectorRegistry
 from .result import ScanResult
 
 
+MAX_ISSUES_PER_DETECTOR = 15
+
+
 class Scanner:
     def __init__(self, params: Optional[dict] = None):
         self.params = params or dict()
@@ -19,7 +22,7 @@ class Scanner:
 
         issues = []
         for detector in detectors:
-            issues.extend(detector.run(model, dataset))
+            issues.extend(sorted(detector.run(model, dataset), key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR])
 
         return ScanResult(issues)
 
