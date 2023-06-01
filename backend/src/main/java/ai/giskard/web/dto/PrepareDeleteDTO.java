@@ -20,6 +20,7 @@ public class PrepareDeleteDTO {
         public String message;
     }
 
+    @Deprecated
     public static class LightTestSuite {
         public long id;
         public long projectId;
