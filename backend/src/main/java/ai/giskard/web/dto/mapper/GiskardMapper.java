@@ -206,7 +206,7 @@ public interface GiskardMapper {
     }
 
     @Mapping(target = "suiteId", source = "suite.id")
-    TestSuiteExecutionDTO toDto(TestSuiteExecution save);
+    TestSuiteExecutionDTO toDTO(TestSuiteExecution save);
 
     List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
 
