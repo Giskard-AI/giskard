@@ -73,7 +73,7 @@ def my_func1(df: pd.DataFrame, threshold: int):
     df['Age'] = df['Age'] > threshold
     return df
 
-dataset.slice(my_func1(threshold=20))turn df.head(n)
+dataset.slice(my_func1(threshold=20))
 ```
 ::::
 
