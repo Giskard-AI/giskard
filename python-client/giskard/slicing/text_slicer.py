@@ -145,7 +145,6 @@ class TextSlicer(BaseSlicer):
 
         _data = []
         for token, token_counts, token_remainders in zip(tokens[mask], counts[mask], remainders[mask]):
-            print(token_counts, token_remainders)
             stat, pvalue, *_ = stats.chi2_contingency([token_counts, token_remainders])
             if pvalue < 1e-3:
                 _data.append({"statistic": stat, "token": token})
