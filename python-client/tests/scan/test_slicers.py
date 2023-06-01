@@ -76,3 +76,13 @@ def test_text_slicer_enforces_cast_to_string():
     slicer = TextSlicer(dataset)
     slices = slicer.find_metadata_slices("feature1", "loss")
     assert len(slices) > 0
+
+
+def test_text_slicer_warns_if_vocabulary_is_empty():
+    df = pd.DataFrame({"feature1": ["and", "", "and", "to"], "loss": [1, 2, 1, 2]})
+    dataset = wrap_dataset(df)
+    slicer = TextSlicer(dataset)
+    with pytest.warns(match="Could not get meaningful tokens"):
+        slices = slicer.find_top_tokens_slices("feature1", "loss")
+
+    assert len(slices) == 0
