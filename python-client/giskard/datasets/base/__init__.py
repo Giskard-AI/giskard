@@ -340,7 +340,7 @@ class Dataset(ColumnMetadataMixin):
                     column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
             df_columns = set(df_columns) - set(cat_columns)
 
-        for col in [col for col in df_columns if not col.startswith(GISKARD_COLUMN_PREFIX)]:
+        for col in self.columns:
             if col == self.target:
                 continue
             # inference of categorical columns
@@ -510,7 +510,7 @@ class Dataset(ColumnMetadataMixin):
 
     @property
     def columns(self):
-        return self.df.columns
+        return [col for col in self.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]
 
     def __len__(self):
         return len(self.df)

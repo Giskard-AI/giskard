@@ -64,7 +64,7 @@ def german_credit_catboost_raw_model(german_credit_data):
 
     columns_to_encode = [key for key in column_types.keys() if column_types[key] == "category"]
 
-    credit = german_credit_data.df
+    credit = german_credit_data.df[german_credit_data.columns]
 
     Y = credit["default"]
     X = credit.drop(columns="default")
