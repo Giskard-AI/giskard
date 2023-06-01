@@ -6,23 +6,47 @@
           <v-list-item-content>
             <v-list-item-title>{{ input.name }}</v-list-item-title>
             <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
+            <v-list-item-action-text v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
+              Optional. Default:
+              <code>{{ props.test.args.find(a => a.name === input.name).defaultValue }}</code></v-list-item-action-text>
           </v-list-item-content>
         </v-col>
         <v-col>
-          <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                           v-if="input.type === 'Dataset'" :value.sync="props.modelValue[input.name]"/>
-          <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                         v-if="input.type === 'Model'" :value.sync="props.modelValue[input.name]"/>
-          <v-text-field
-              :step='input.type === "float" ? 0.1 : 1'
-              v-model="props.modelValue[input.name]"
-              v-if="['float', 'int'].includes(input.type)"
-              hide-details
-              single-line
-              type="number"
-              outlined
-              dense
-          />
+          <template v-if="!editing">
+            <span v-if="props.testInputs[input.name]?.isAlias">
+                    {{ props.testInputs[input.name].value }}
+                  </span>
+            <span v-else-if="input.name in props.testInputs && input.type === 'Model'">
+                    {{
+                models[props.testInputs[input.name].value].name ?? models[props.testInputs[input.name].value].id
+              }}
+                  </span>
+            <span v-else-if="input.name in props.testInputs && input.type === 'Dataset'">
+                    {{
+                datasets[props.testInputs[input.name].value].name ?? datasets[props.testInputs[input.name].value].id
+              }}
+                  </span>
+            <span v-else-if="input && input.name in props.testInputs">{{
+                props.testInputs[input.name].value
+              }}</span>
+          </template>
+          <template v-else-if="props.modelValue">
+            <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
+                             v-if="input.type === 'Dataset'" :value.sync="props.modelValue[input.name]"/>
+            <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
+                           v-else-if="input.type === 'Model'" :value.sync="props.modelValue[input.name]"/>
+            <v-text-field
+                :step='input.type === "float" ? 0.1 : 1'
+                v-model="props.modelValue[input.name]"
+                v-else-if="['float', 'int'].includes(input.type)"
+                hide-details
+                single-line
+                type="number"
+                outlined
+                dense
+            />
+          </template>
+
         </v-col>
       </v-row>
     </v-list-item>
@@ -32,12 +56,20 @@
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {computed} from 'vue';
+import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
 const props = defineProps<{
+  testInputs?: { [key: string]: TestInputDTO },
+  test?: TestFunctionDTO,
   projectId: number,
   inputs: { [name: string]: string },
-  modelValue: { [name: string]: any }
+  modelValue?: { [name: string]: any },
+  editing: boolean
 }>();
+
+const {models, datasets} = storeToRefs(useTestSuiteStore());
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,

@@ -23,6 +23,7 @@
 
         <v-card-text>
           <TestInputListSelector
+              editing
               :model-value="testSuiteInputs"
               :inputs="props.inputs"
               :project-id="props.projectId"
