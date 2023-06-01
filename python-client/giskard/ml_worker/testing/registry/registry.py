@@ -104,7 +104,13 @@ class GiskardTestRegistry:
     _tests: Dict[str, TestFunction] = {}
 
     def register(self, func: types.FunctionType, name=None, tags=None):
-        if Path(inspect.getfile(func)).is_relative_to(plugins_root):
+        try:
+            # is_relative_to is only available from python 3.9
+            is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
+        except ValueError:
+            is_relative = False
+
+        if is_relative:
             full_name = _get_plugin_method_full_name(func)
         else:
             full_name = f"{func.__module__}.{func.__name__}"

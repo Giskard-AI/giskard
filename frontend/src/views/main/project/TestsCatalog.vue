@@ -60,9 +60,9 @@
                       <v-col>
                         <template v-if="tryMode">
                           <DatasetSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                           v-if="a.type === 'GiskardDataset'" :value.sync="testArguments[a.name]"/>
+                                           v-if="a.type === 'Dataset'" :value.sync="testArguments[a.name]"/>
                           <ModelSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                         v-if="a.type === 'GiskardModel'" :value.sync="testArguments[a.name]"/>
+                                         v-if="a.type === 'Model'" :value.sync="testArguments[a.name]"/>
                           <v-text-field
                               :step='a.type === "float" ? 0.1 : 1'
                               v-model="testArguments[a.name]"
