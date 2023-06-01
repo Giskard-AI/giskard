@@ -79,7 +79,7 @@ class PerformanceScan:
 
     def _diff_test(self, slice_fn, model, dataset, test, threshold):
         # Convert slice to Giskard Dataframe
-        sliced_dataset = self.dataset.slice(slice_fn)
+        sliced_dataset = dataset.slice(slice_fn)
         # target_col=self.dataset.target,
         # column_types=self.dataset.column_types
 
