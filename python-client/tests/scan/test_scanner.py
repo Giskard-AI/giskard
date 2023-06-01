@@ -29,3 +29,16 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
     with pytest.raises(RuntimeError):
         scanner.analyze(german_credit_model, german_credit_data)
+
+def test_scanner_without_dataset():
+    from langchain import LLMChain, PromptTemplate
+    from langchain.chat_models import ChatOpenAI
+    from giskard import Model
+
+    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    prompt = PromptTemplate(template="{input}", input_variables=["input"])
+    chain = LLMChain(prompt=prompt, llm=llm)
+
+    model = Model(chain, model_type='generative')
+    scanner = Scanner()
+    assert scanner.analyze(model)
