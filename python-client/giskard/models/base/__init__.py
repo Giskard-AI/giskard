@@ -62,7 +62,7 @@ class BaseModel(ABC):
                     f'Invalid model type value "{model_type}". Available values are: {available_values}'
                 ) from e
 
-        if classification_labels:
+        if classification_labels is not None:
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError(
                     "Duplicates are found in 'classification_labels', please only provide unique values."
