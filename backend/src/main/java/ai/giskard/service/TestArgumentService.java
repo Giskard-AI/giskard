@@ -65,7 +65,9 @@ public class TestArgumentService {
                 );
             }
             case "float" -> argumentBuilder.setFloat(Float.parseFloat(inputValue));
-            case "string" -> argumentBuilder.setString(inputValue);
+            case "int" -> argumentBuilder.setInt(Integer.parseInt(inputValue));
+            case "str" -> argumentBuilder.setStr(inputValue);
+            case "bool" -> argumentBuilder.setBool(Boolean.parseBoolean(inputValue));
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", testInputTypes.get(inputName)));
         }
