@@ -15,6 +15,7 @@ import {trackJob} from '@/utils/job-utils';
 import {useMainStore} from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import {TYPE} from "vue-toastification";
 
 interface State {
     projectId: number | null,
@@ -110,12 +111,12 @@ export const useTestSuiteStore = defineStore('testSuite', {
             if (result && result.state !== JobState.ERROR) {
                 mainStore.addNotification({
                     content: 'Test suite execution has been executed successfully',
-                    color: 'success'
+                    color: TYPE.SUCCESS
                 });
             } else {
                 mainStore.addNotification({
                     content: 'An error has happened during the test suite execution',
-                    color: 'error'
+                    color: TYPE.ERROR
                 });
             }
 

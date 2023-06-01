@@ -35,18 +35,19 @@ const emit = defineEmits(['createDebuggingSession'])
 
 async function createNewDebuggingSession() {
     loading.value = true;
-    const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
-    datasetId: selectedDataset.value!.id,
-    modelId: selectedModel.value!.id,
-    name: sessionName.value,
-        sample: true
-    });
-    loading.value = false;
+    try {
+        const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
+            datasetId: selectedDataset.value!.id,
+            modelId: selectedModel.value!.id,
+            name: sessionName.value,
+            sample: true
+        });
 
-
-    closeDialog();
-
-  emit('createDebuggingSession', newDebuggingSession);
+        closeDialog();
+        emit('createDebuggingSession', newDebuggingSession);
+    } finally {
+        loading.value = false;
+    }
 }
 
 function closeDialog() {
@@ -95,7 +96,7 @@ onActivated(() => {
         <v-card-actions>
           <v-btn text @click="closeDialog">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues"  :loading="loading">Create</v-btn>
+          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues" :loading="loading">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

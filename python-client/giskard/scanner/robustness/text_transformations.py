@@ -6,37 +6,6 @@ from .entity_swap import typos, gender_switch_en
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
-from ...ml_worker.testing.registry.transformation_function import transformation_function
-
-
-@transformation_function(row_level=False)
-def text_uppercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    df = df.copy()
-    df[column] = df[column].str.upper()
-    return df
-
-
-text_uppercase.name = "Transform to uppercase"
-
-
-@transformation_function(row_level=False)
-def text_lowercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    df = df.copy()
-    df[column] = df[column].str.lower()
-    return df
-
-
-text_lowercase.name = "Transform to lowercase"
-
-
-@transformation_function(row_level=False)
-def text_titlecase(df: pd.DataFrame, column: str) -> pd.DataFrame:
-    df = df.copy()
-    df[column] = df[column].str.title()
-    return df
-
-
-text_titlecase.name = "Transform to title case"
 
 
 class TextTransformation(TransformationFunction):
@@ -53,9 +22,9 @@ class TextTransformation(TransformationFunction):
         self.meta.tags = ["pickle", "scan"]
         self.meta.doc = 'Automatically generated transformation function'
 
-    def execute(self, data: pd.DataFrame):
-        data = data.copy()
-        data[self.column] = data[self.column].apply(self.make_perturbation)
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        feature_data = data[self.column].dropna().astype(str)
+        data.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation)
         return data
 
     def make_perturbation(self, text: str) -> str:
@@ -63,6 +32,33 @@ class TextTransformation(TransformationFunction):
 
     def _should_save_locally(self) -> bool:
         return True
+
+
+class TextUppercase(TextTransformation):
+    name = "Transform to uppercase"
+
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        feature_data = data[self.column].dropna().astype(str)
+        data.loc[feature_data.index, self.column] = feature_data.str.upper()
+        return data
+
+
+class TextLowercase(TextTransformation):
+    name = "Transform to lowercase"
+
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        feature_data = data[self.column].dropna().astype(str)
+        data.loc[feature_data.index, self.column] = feature_data.str.lower()
+        return data
+
+
+class TextTitleCase(TextTransformation):
+    name = "Transform to title case"
+
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        feature_data = data[self.column].dropna().astype(str)
+        data.loc[feature_data.index, self.column] = feature_data.str.title()
+        return data
 
 
 class TextTypoTransformation(TextTransformation):

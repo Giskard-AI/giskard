@@ -122,6 +122,7 @@ import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
 import {useRouter} from "vue-router/composables";
 import mixpanel from "mixpanel-browser";
+import {TYPE} from "vue-toastification";
 
 const router = useRouter();
 
@@ -163,10 +164,13 @@ async function submit() {
         tos: termsOfServiceAgree.value
       });
       step.value = 2;
-      licenseRequestSubmitted.value = true;
-      mainStore.addNotification({color: 'success', content: "License request submitted, please check your email!"});
+        licenseRequestSubmitted.value = true;
+        mainStore.addNotification({
+            color: TYPE.SUCCESS,
+            content: "License request submitted, please check your email!"
+        });
     } catch (e: AxiosError) {
-      mainStore.addNotification({color: 'error', content: e.response?.data.toString()});
+        mainStore.addNotification({color: TYPE.ERROR, content: e.response?.data.toString()});
     } finally {
       loading.value = false;
     }
@@ -192,8 +196,8 @@ async function onFileUpdate(event) {
       step.value = 3;
     } else {
       mainStore.addNotification({
-        color: 'error',
-        content: 'License file format is not valid.'
+          color: TYPE.ERROR,
+          content: 'License file format is not valid.'
       });
     }
   };
