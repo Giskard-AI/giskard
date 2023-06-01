@@ -116,10 +116,11 @@ class Dataset:
         self.data_processor.add_step(slicing_function)
         return self
 
-    def slice(self, slicing_function: SlicingFunction, row_level=True):
-        if inspect.isfunction(slicing_function):
-            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+    def slice(self, slicing_function: SlicingFunction):
+        if slicing_function:
+            return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        else:
+            return self
 
     def process(self):
         return self.data_processor.apply(self)

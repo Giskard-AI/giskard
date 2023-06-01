@@ -40,7 +40,7 @@ def test_right_label(
 
     Returns:
       actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
       metrics:
           The ratio of rows with the right classification label over the total of rows in the slice
       passed:
@@ -103,7 +103,7 @@ def test_output_in_range(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         metrics:
             The proportion of rows in the right range inside the slice
         passed:

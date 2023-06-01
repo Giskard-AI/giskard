@@ -195,7 +195,7 @@ def test_metamorphic_invariance(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         message:
           Test result message
         metric:
@@ -249,7 +249,7 @@ def test_metamorphic_increasing(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         message:
           Test result message
         metric:
@@ -302,7 +302,7 @@ def test_metamorphic_decreasing(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of actual_ds tested
         message:
           Test result message
         metric:
@@ -379,7 +379,7 @@ def test_metamorphic_decreasing_t_test(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         message:
             Test result message
         metric:
@@ -428,7 +428,7 @@ def test_metamorphic_increasing_t_test(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         message:
             Test result message
         metric:
@@ -485,7 +485,7 @@ def test_metamorphic_invariance_t_test(
 
     Returns:
           actual_slices_size:
-              Length of actual_slice tested
+              Length of actual_ds tested
           message:
               Test result message
           metric:
@@ -561,7 +561,7 @@ def test_metamorphic_decreasing_wilcoxon(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         message:
             Test result message
         metric:
@@ -609,7 +609,7 @@ def test_metamorphic_increasing_wilcoxon(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         message:
             Test result message
         metric:
@@ -662,7 +662,7 @@ def test_metamorphic_invariance_wilcoxon(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of actual_ds tested
         message:
             Test result message
         metric:
