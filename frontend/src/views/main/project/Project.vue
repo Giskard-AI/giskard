@@ -186,7 +186,6 @@ async function deleteProject() {
 }
 
 onMounted(async () => {
-  // make sure project is loaded first
   await projectStore.getProject({ id: props.id });
   await mainStore.getCoworkers();
   await projectArtifactsStore.setProjectId(props.id, false);
