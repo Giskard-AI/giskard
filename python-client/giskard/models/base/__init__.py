@@ -112,7 +112,8 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.model_cache = ModelCache(classification_labels=classification_labels)
+        self.model_cache = ModelCache(is_classification=model_type == SupportedModelTypes.CLASSIFICATION,
+                                      classification_labels=classification_labels)
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -269,11 +270,7 @@ class BaseModel(ABC):
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
             self.model_cache.set_cache(dataset.df[missing][GISKARD_HASH_COLUMN], raw_prediction)
-
-            try:
-                cached_predictions[missing] = raw_prediction
-            except TypeError:
-                assert False, f'{list(map(self.model_cache.prediction_cache.get, dataset.df[GISKARD_HASH_COLUMN].values))} - {raw_prediction.shape}'
+            cached_predictions[missing] = raw_prediction
 
         if self.is_regression:
             result = ModelPredictionResults(
@@ -412,7 +409,8 @@ class BaseModel(ABC):
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
-        model.model_cache = ModelCache(prediction_cache, meta.classification_labels)
+        model.model_cache = ModelCache(prediction_cache, meta.model_type == SupportedModelTypes.CLASSIFICATION,
+                                       meta.classification_labels)
         return model
 
     @classmethod
