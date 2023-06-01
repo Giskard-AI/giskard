@@ -45,6 +45,12 @@ class TextTransformation(TransformationFunction):
     def __init__(self, column):
         self.column = column
 
+        # @TODO: fix this
+        def func(x):
+            return x
+
+        super().__init__(func, row_level=False, cell_level=False)
+
     def execute(self, data: pd.DataFrame):
         data = data.copy()
         data[self.column] = data[self.column].apply(self.make_perturbation)

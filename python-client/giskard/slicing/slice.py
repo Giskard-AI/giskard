@@ -137,6 +137,7 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def __init__(self, query: Query):
         self.query = query
+        super().__init__(self.query.run, row_level=False, cell_level=False)
 
     def execute(self, data: pd.DataFrame):
         return self.query.run(data)
