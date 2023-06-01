@@ -5,6 +5,7 @@ import posixpath
 from pathlib import Path
 from typing import List
 from urllib.parse import urljoin
+from uuid import UUID
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
@@ -145,7 +146,7 @@ class GiskardClient:
             print(f"Project created with a key : {actual_project_key}")
         return Project(self._session, actual_project_key, actual_project_id, analytics=self.analytics)
 
-    def load_model_meta(self, project_key: str, uuid: str) -> ModelMeta:
+    def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
         return res
 
@@ -161,7 +162,7 @@ class GiskardClient:
     def save_model_meta(
             self,
             project_key: str,
-            model_id: str,
+            model_id: UUID,
             meta: ModelMeta,
             python_version: str,
             size: int
@@ -175,7 +176,7 @@ class GiskardClient:
             "classificationLabels": meta.classification_labels,
             "loader_module": meta.loader_module,
             "loader_class": meta.loader_class,
-            "id": model_id,
+            "id": str(model_id),
             "project": project_key,
             "name": meta.name,
             "size": size

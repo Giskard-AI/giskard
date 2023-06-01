@@ -1,21 +1,19 @@
-import torch
-import pandas as pd
-import pytest
-from scipy import special
+import re
 
+import httpretty
+import pandas as pd
+import torch
+import torchtext.functional as F
 import torchtext.transforms as T
+from scipy import special
 from torch.hub import load_state_dict_from_url
 from torch.utils.data import DataLoader
-from torchtext.datasets import SST2
-import torchtext.functional as F
 from torchdata.datapipes.iter import IterableWrapper
+from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
 
-from giskard.client.giskard_client import GiskardClient
 from giskard import PyTorchModel, Dataset
-
-import re
-import httpretty
+from giskard.client.giskard_client import GiskardClient
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
@@ -24,8 +22,10 @@ content_type = "application/json"
 model_name = "uploaded model"
 b_content_type = b"application/json"
 
+
 def my_softmax(x):
     return special.softmax(x, axis=1)
+
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -53,14 +53,15 @@ input_dim = 768
 classifier_head = RobertaClassificationHead(num_classes=num_classes, input_dim=input_dim)
 model = XLMR_BASE_ENCODER.get_model(head=classifier_head).to(device)
 
+
 # Transform the raw dataset using non-batched API (i.e apply transformation line by line)
 def apply_transform(x):
     return text_transform(x[0]), x[1]
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
-#@pytest.mark.skip(reason="WIP")
-def test_sst2_pytorch_dataloader():
 
+@httpretty.activate(verbose=True, allow_net_connect=False)
+# @pytest.mark.skip(reason="WIP")
+def test_sst2_pytorch_dataloader():
     def collate_batch(batch):
         input = F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
         return input
@@ -71,7 +72,7 @@ def test_sst2_pytorch_dataloader():
         test_datapipe_transformed = test_datapipe_transformed.rows2columnar(["token_ids", "target"])
         return DataLoader(test_datapipe_transformed, batch_size=None, collate_fn=collate_batch)
 
-    classification_labels =['0', '1']
+    classification_labels = ['0', '1']
     my_model = PyTorchModel(name='SST2-XLMR_BASE_ENCODER',
                             clf=model,
                             feature_names=['text'],
@@ -91,9 +92,9 @@ def test_sst2_pytorch_dataloader():
     httpretty.register_uri(httpretty.POST, models_url_pattern)
 
     client = GiskardClient(url, token)
-    model_id = my_model.save(client, 'test-project', my_test_dataset)
+    my_model.upload(client, 'test-project', my_test_dataset)
 
-    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", model_id)
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(my_model.id))
 
     artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
     assert len(artifact_requests) > 0
@@ -107,6 +108,7 @@ def test_sst2_pytorch_dataloader():
         assert req.headers.get("Authorization") == auth
         assert int(req.headers.get("Content-Length")) > 0
         assert req.headers.get("Content-Type") == "application/json"
+
 
 if __name__ == "__main__":
     test_sst2_pytorch_dataloader()
