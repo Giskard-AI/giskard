@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
@@ -21,15 +22,11 @@ class ModelBiasDetector:
         self.threshold = threshold
         self.method = method
 
-    def run(
-        self,
-        model: Optional[BaseModel],
-        dataset: Optional[Dataset],
-    ):
-        if model is None:
-            raise ValueError("You need to provide a model to test.")
-        if dataset is None:
-            raise ValueError("You need to provide an evaluation dataset.")
+    def run(self, model: BaseModel, dataset: Dataset):
+        # Check if we have enough data to run the scan
+        if len(dataset) < 100:
+            logging.warning("Skipping model bias scan: the dataset is too small.")
+            return []
 
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
