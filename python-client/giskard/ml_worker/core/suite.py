@@ -115,6 +115,8 @@ class Suite:
 
     def save(self, client: GiskardClient, project_key: str):
         self.id = client.save_test_suite(self.to_dto(client, project_key))
+        project_id = client.get_project(project_key).project_id
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str):
