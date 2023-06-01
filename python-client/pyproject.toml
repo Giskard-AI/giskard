@@ -95,6 +95,9 @@ httpretty = "^1.1.4"
 pytest-cov = "^3.0.0"
 pytest = "^7.1.2"
 catboost = "^1.1"
+torch = "^1.13.1"
+torchdata = "^0.5.1"
+torchtext = "^0.14.1"
 
 [tool.black]
 # https://github.com/psf/black
