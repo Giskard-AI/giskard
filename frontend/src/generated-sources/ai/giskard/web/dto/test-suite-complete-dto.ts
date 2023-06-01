@@ -1,6 +1,6 @@
 import type {DatasetDTO} from './ml/dataset-dto';
 import type {ModelDTO} from './ml/model-dto';
-import type {TestCatalogDTO} from './test-catalog-dto';
+import type {TestFunctionDTO} from './test-function-dto';
 import type {TestSuiteExecutionDTO} from './ml/test-suite-execution-dto';
 import type {TestSuiteNewDTO} from './test-suite-new-dto';
 
@@ -12,6 +12,6 @@ export interface TestSuiteCompleteDTO {
     executions: TestSuiteExecutionDTO[];
     inputs: {[key: string]: string};
     models: ModelDTO[];
-    registry: TestCatalogDTO;
+    registry: TestFunctionDTO[];
     suite: TestSuiteNewDTO;
 }

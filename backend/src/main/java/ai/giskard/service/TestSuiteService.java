@@ -182,7 +182,7 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNewDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
+    public TestSuiteNewDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
         TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
