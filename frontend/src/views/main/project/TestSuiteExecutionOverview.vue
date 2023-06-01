@@ -1,8 +1,6 @@
 <template>
   <v-container v-if="hasTest">
     <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
-
-
     <div class="d-flex mt-4 mb-4">
       <v-select
           v-model="statusFilter"
