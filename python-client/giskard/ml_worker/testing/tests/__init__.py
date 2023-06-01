@@ -3,7 +3,7 @@ from giskard.ml_worker.testing.tests import performance
 from giskard.ml_worker.testing.tests import statistical
 
 __all__ = [
-    'statistical.py',
+    'statistical',
     'performance',
     'drift',
 ]

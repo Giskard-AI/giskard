@@ -276,13 +276,6 @@ class GiskardClient:
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())
 
-    def save_test_function_registry(self, metas: List[TestFunctionMeta]):
-        self._session.post("tests/registry", json=[meta.to_json() for meta in metas])
-
-        print(
-            f"Functions successfully uploaded = {len(metas)} functions"
-        )
-
     def get_server_info(self):
         return self._session.get("settings/ml-worker-connect").json()
 
