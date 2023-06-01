@@ -1,31 +1,35 @@
 <template>
-  <v-row v-if="suite">
-    <v-col cols="3">
-      <v-list three-line v-if="suite.tests">
-        <v-list-item-group v-model="selectedTest" color="primary" mandatory>
-          <template v-for="(test) in suite.tests">
-            <v-divider/>
-            <v-list-item :value="test">
-              <v-list-item-content>
-                <v-list-item-title v-text="registryByTestUuid[test.testUuid].name"
-                                   class="test-title"></v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-        </v-list-item-group>
-      </v-list>
-    </v-col>
-    <v-col v-if="selectedTest">
-      <v-row>
-        <v-col>
-          <TestSuiteTestDetails
-              :test="registryByTestUuid[selectedTest.testUuid]"
-              :inputs="selectedTest.testInputs"
-              :executions="testSuiteResults[selectedTest.testUuid]"/>
+  <div class="vc">
+    <v-container class="main-container vc" >
+      <v-row v-if="suite" class="fill-height">
+        <v-col cols="3" class="vc fill-height">
+          <v-list three-line v-if="suite.tests">
+            <v-list-item-group v-model="selectedTest" color="primary" mandatory>
+              <template v-for="(test) in suite.tests">
+                <v-divider/>
+                <v-list-item :value="test">
+                  <v-list-item-content>
+                    <v-list-item-title v-text="registryByTestUuid[test.testId].name"
+                                       class="test-title"></v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-list-item-group>
+          </v-list>
+        </v-col>
+        <v-col v-if="selectedTest" class="vc fill-height">
+          <v-row>
+            <v-col>
+              <TestSuiteTestDetails
+                  :test="registryByTestUuid[selectedTest.testUuid]"
+                  :inputs="selectedTest.testInputs"
+                  :executions="testSuiteResults[selectedTest.testUuid]"/>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
-    </v-col>
-  </v-row>
+    </v-container>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -51,3 +55,10 @@ watch(() => suite.value, () => {
 const registryByTestUuid = computed(() => chain(registry.value).keyBy('uuid').value())
 
 </script>
+
+<style scoped lang="scss">
+.main-container {
+  width: 100%;
+  max-width: 100%;
+}
+</style>

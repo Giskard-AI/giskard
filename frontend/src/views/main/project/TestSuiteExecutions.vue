@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="vc">
     <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs
           :items="executionBreadcrumbs"
@@ -9,55 +9,57 @@
         <v-icon>compare</v-icon>
       </v-btn>
     </div>
-    <v-progress-linear
-        indeterminate
-        v-if="executionsAndJobs === undefined"
-        color="primary"
-        class="mt-2"
-    ></v-progress-linear>
-    <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
-    <v-row v-else>
-      <v-col cols="3">
-        <v-list three-line>
-          <v-list-item-group color="primary" mandatory>
-            <div v-for="e in executionsAndJobs" :key="e.date">
-              <v-divider/>
-              <v-list-item v-if="e.disabled" disabled>
-                <v-list-item-content>
-                  <v-list-item-title>
-                    {{ e.date | date }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="e.color">
-                      {{ e.state }}
-                    </v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item v-else
-                           :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
-                <v-list-item-content>
-                  <v-list-item-title>
-                    <div class="d-flex justify-space-between">
-                      <span>{{ e.execution.executionDate | date }}</span>
-                      <TestResultHeatmap :results="executionResults(e.execution)"/>
-                    </div>
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="e.color">
-                      {{ e.state }}
-                    </v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </div>
-          </v-list-item-group>
-        </v-list>
-      </v-col>
-      <v-col>
-        <router-view></router-view>
-      </v-col>
-    </v-row>
+    <v-container class="main-container vc">
+      <v-progress-linear
+          indeterminate
+          v-if="executionsAndJobs === undefined"
+          color="primary"
+          class="mt-2"
+      ></v-progress-linear>
+      <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
+      <v-row v-else class="fill-height">
+        <v-col cols="3" class="vc fill-height">
+          <v-list three-line>
+            <v-list-item-group color="primary" mandatory>
+              <div v-for="e in executionsAndJobs" :key="e.date">
+                <v-divider/>
+                <v-list-item v-if="e.disabled" disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      {{ e.date | date }}
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip class="mr-2" x-small :color="e.color">
+                        {{ e.state }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item v-else
+                             :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      <div class="d-flex justify-space-between">
+                        <span>{{ e.execution.executionDate | date }}</span>
+                        <TestResultHeatmap :results="executionResults(e.execution)"/>
+                      </div>
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip class="mr-2" x-small :color="e.color">
+                        {{ e.state }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </div>
+            </v-list-item-group>
+          </v-list>
+        </v-col>
+        <v-col class="vc fill-height">
+          <router-view></router-view>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -129,7 +131,7 @@ const executionItem = {
 
 const route = useRoute();
 
-const selectedExecution = computed(() => executions.value.find(e => e.id === route.params.executionId));
+const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId));
 
 const executionBreadcrumbs = computed(() =>
     !selectedExecution.value ? [executionItem] : [
@@ -185,3 +187,10 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped lang="scss">
+.main-container {
+  width: 100%;
+  max-width: 100%;
+}
+</style>
