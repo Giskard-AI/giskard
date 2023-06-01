@@ -21,12 +21,10 @@ import static ai.giskard.utils.GiskardStringUtils.escapePythonVariable;
 
 public class SlicingFunctionService extends DatasetProcessFunctionService<SlicingFunction, SlicingFunctionDTO> {
 
-    private final GiskardMapper giskardMapper;
     private final SlicingFunctionRepository slicingFunctionRepository;
 
     public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository, GiskardMapper giskardMapper) {
         super(slicingFunctionRepository, giskardMapper);
-        this.giskardMapper = giskardMapper;
         this.slicingFunctionRepository = slicingFunctionRepository;
     }
 
