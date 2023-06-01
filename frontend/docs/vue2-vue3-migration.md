@@ -146,3 +146,29 @@ const router = useRouter();
 
 // route.query... 
 ```
+
+### Migrating emits
+
+Vue 2
+```ts
+class X { // Ignore class, just for render
+    @Emit('myEmit')
+    public thisWillEmit() {
+        this.myData = 10;
+    }
+}
+```
+
+Vue 3
+
+```ts 
+import {defineEmits} from "vue";
+
+const emit = defineEmits(['myEmit']);
+
+function thisWillEmit() {
+    myData.value = 10;
+    emit('myEmit');
+}
+
+```
