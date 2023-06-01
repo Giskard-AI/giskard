@@ -31,7 +31,7 @@
     </div>
 
     <div v-if="props.executions?.length > 0">
-      <div class="d-flex align-content-space-between">
+      <div class="d-flex justify-space-between align-center">
         <p class="text-h6">Results</p>
         <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testId: props.test.id}}">
           Compare executions
