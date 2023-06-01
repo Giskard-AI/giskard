@@ -1,15 +1,7 @@
 <template>
   <v-container>
-    <div class="d-flex">
-      <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest"/>
-      <div class="flex-grow-1"/>
-      <v-btn icon @click="openLogs" color="secondary">
-        <v-icon>text_snippet</v-icon>
-      </v-btn>
-      <v-btn icon @click="openSettings" color="secondary">
-        <v-icon>settings</v-icon>
-      </v-btn>
-    </div>
+    <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
+
 
     <div class="d-flex mt-4 mb-4">
       <v-select
@@ -37,10 +29,6 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, onMounted, ref, watch} from 'vue';
 import {chain} from 'lodash';
-import {$vfm} from 'vue-final-modal';
-import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
-import {api} from '@/api';
-import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
@@ -98,28 +86,6 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
     })
     .value()
 );
-
-async function openSettings() {
-  const project = await api.getProject(projectId.value!)
-  $vfm.show({
-    component: CreateTestSuiteModal,
-    bind: {
-      projectKey: project.key,
-      projectId: project.id,
-      suite: suite.value
-    }
-  });
-}
-
-function openLogs() {
-  $vfm.show({
-    component: ExecutionLogsModal,
-    bind: {
-      logs: props.execution?.logs
-    }
-  });
-}
-
 </script>
 
 <style scoped lang="scss">

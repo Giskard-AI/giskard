@@ -3,7 +3,7 @@
     <v-col v-for="comparison in executionComparisons" :key="comparison.execution.id" class="pa-2" cols="auto">
       <v-card>
         <v-card-title>
-          <TestSuiteExecutionHeader :execution="comparison.execution" :tests="comparison.tests"/>
+          <TestSuiteExecutionHeader :execution="comparison.execution" :tests="comparison.tests" compact/>
         </v-card-title>
         <v-card-text>
           <SuiteTestExecutionList :tests="comparison.tests" compact/>

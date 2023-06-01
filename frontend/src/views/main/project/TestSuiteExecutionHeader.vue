@@ -1,5 +1,5 @@
 <template>
-  <div style="display: contents">
+  <div class="d-flex w100">
     <v-icon
         :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
         size="64">{{
@@ -21,6 +21,13 @@
         } ">Success ratio: {{ successRatio.passed }} /
         {{ successRatio.executed }}</h4>
     </div>
+    <div class="flex-grow-1"/>
+    <v-btn icon @click="openLogs" color="secondary">
+      <v-icon>text_snippet</v-icon>
+    </v-btn>
+    <v-btn icon @click="openSettings" color="secondary" v-if="!compact">
+      <v-icon>settings</v-icon>
+    </v-btn>
   </div>
 </template>
 
@@ -35,6 +42,12 @@ import {
 } from '@/generated-sources';
 import {computed} from 'vue';
 import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
+import {api} from '@/api';
+import {$vfm} from 'vue-final-modal';
+import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
+import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
 const props = defineProps<{
   tests: {
@@ -42,8 +55,12 @@ const props = defineProps<{
     test: TestFunctionDTO,
     result?: SuiteTestExecutionDTO
   }[],
-  execution?: TestSuiteExecutionDTO
+  execution?: TestSuiteExecutionDTO,
+  compact: boolean
 }>();
+
+const {suite, projectId} = storeToRefs(useTestSuiteStore());
+
 
 const testResultIcon = computed(() => {
   if (!props.execution) {
@@ -70,5 +87,26 @@ const successRatio = computed(() => ({
 
 const successColor = computed(() => successRatio.value.executed === 0 ? Colors.PASS :
     rgbToHex(pickHexLinear(SUCCESS_GRADIENT, successRatio.value.passed / successRatio.value.executed)));
+
+async function openSettings() {
+  const project = await api.getProject(projectId.value!)
+  $vfm.show({
+    component: CreateTestSuiteModal,
+    bind: {
+      projectKey: project.key,
+      projectId: project.id,
+      suite: suite.value
+    }
+  });
+}
+
+function openLogs() {
+  $vfm.show({
+    component: ExecutionLogsModal,
+    bind: {
+      logs: props.execution?.logs
+    }
+  });
+}
 </script>
 
