@@ -32,7 +32,7 @@
                 Add to test suite
               </v-btn>
             </div>
-<!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
+            <!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
             <div class="vc overflow-x-hidden pr-5">
 
               <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
@@ -107,11 +107,11 @@ import {pasterColor} from "@/utils";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import AddTestToTestSuiteModal from "@/views/main/project/AddTestToTestSuiteModal.vue"
 
-defineProps<{
+let props = defineProps<{
   projectId: number
-}>()
+}>();
+
 
 let registry = ref(null);
 let selected = ref(null);
@@ -122,7 +122,7 @@ let testResult = ref(null);
 let openFeedbackDetail = false
 
 async function runTest() {
-  testResult.value = await api.runAdHocTest(selected.value.id, testArguments.value);
+  testResult.value = await api.runAdHocTest(props.projectId, selected.value.id, testArguments.value);
 }
 
 
@@ -159,7 +159,7 @@ const testFunctions = computed(() => {
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestsRegistry();
+  registry.value = await api.getTestsRegistry(props.projectId);
   if (testFunctions) {
     selected.value = testFunctions[0];
   }

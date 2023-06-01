@@ -12,6 +12,7 @@ import pkg_resources
 import psutil
 import tqdm
 
+import giskard
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.core.model_explanation import (
     explain,

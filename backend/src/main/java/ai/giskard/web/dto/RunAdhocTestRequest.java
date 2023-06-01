@@ -12,6 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 @UIModel
 public class RunAdhocTestRequest {
+    private Long projectId;
     private String testId;
     private Map<String, Object> inputs;
 }
