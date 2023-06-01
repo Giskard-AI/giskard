@@ -27,6 +27,9 @@ import { onActivated } from "vue";
 import { useCatalogStore } from "@/stores/catalog";
 import { storeToRefs } from "pinia";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import { useRouter } from "vue-router/composables";
+
+const router = useRouter();
 
 let props = defineProps<{
     projectId: number,
@@ -36,6 +39,10 @@ let props = defineProps<{
 const catalogStore = useCatalogStore();
 const { catalog } = storeToRefs(catalogStore);
 
-onActivated(async () => await catalogStore.loadCatalog(props.projectId));
+const defaultRoute = 'project-catalog-datasets';
 
+onActivated(async () => {
+    await catalogStore.loadCatalog(props.projectId)
+    await router.push({ name: defaultRoute });
+});
 </script>
