@@ -95,7 +95,7 @@ def test_text_slicer_does_not_fail_when_loss_is_constant():
             "loss": [1, 1, 1] * 100,
         }
     )
-    dataset = wrap_dataset(df)
+    dataset = Dataset(df)
     slicer = TextSlicer(dataset)
     slices = slicer.find_slices(["text"], "loss")
 
