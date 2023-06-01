@@ -79,17 +79,17 @@ class PerformanceScan:
         # Keep only slices of size at least 5% of the dataset
         slices = [s for s in slices if len(dataset.slice(s)) / len(dataset) >= 0.05]
 
-        issues = self._find_issues(slices, model, dataset, tests, threshold)
+        issues = self._find_issues(slices, model, dataset, meta, tests, threshold)
 
         return PerformanceScanResult(issues)
 
-    def _find_issues(self, slices, model, dataset, tests, threshold):
+    def _find_issues(self, slices, model, dataset, dataset_meta, tests, threshold):
         issues = []
         for s in slices:
             for test in tests:
                 test_result = self._diff_test(s, model, dataset, test, threshold)
                 if not test_result.passed:
-                    issues.append(Issue(s, model, dataset, test_result, self._get_test_name(test)))
+                    issues.append(Issue(s, model, dataset, dataset_meta, test_result, self._get_test_name(test)))
 
         return issues
 
@@ -195,6 +195,12 @@ class PerformanceScanResult(ScanResult):
 
         return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
+    def _ipython_display_(self):
+        from IPython.core.display import HTML, display
+
+        html = self._repr_html_()
+        display(HTML(html, metadata=dict(isolated=True)))
+
     def _repr_html_(self):
         tab_header = f"""
 <!-- TAB HEADER -->
@@ -256,43 +262,71 @@ tailwind.config = {{
 </script>
 </head>
 <body>
-        <div class="dark">
-<div class="dark:text-white dark:bg-zinc-900">
+<div class="dark">
+<div id="gsk-scan" class="dark:text-white dark:bg-zinc-900">
 {tab_header}
 {main_content}
 </div>
 </div>
+<script type="text/javascript">
+(function() {{
+        console.log("Loading Giskard Scan");
+        let rows = document.querySelectorAll("#gsk-scan .gsk-issue")
+        rows.forEach(rowEl => {{
+            rowEl.addEventListener("click", (event) => {{
+                event.preventDefault()
+                rowEl.classList.toggle("open")
+                rowEl.classList.toggle("bg-zinc-700")
+            }})
+        }});
+}})()
+</script>
 </body>
-
 </html>
 """
-        escaped = html.replace('"', "&quot;")
+        return html
+        # escaped = html.replace('"', "&quot;")
 
-        return f'<iframe srcdoc="{escaped}" style="width: 100%; height: 100vh; border: none;"></iframe>'
+        # return f'<iframe srcdoc="{escaped}" style="width: 100%; height: 100vh; border: none;"></iframe>'
 
     def _make_issues_table_html(self):
         rows = ""
         for issue in self.issues:
             tr = issue.test_results
             rows += f"""
-<tr class="first:border-t border-b border-zinc-400 text-left">
-    <td class="p-3">
-        <code class="mono text-blue-300">
-            {issue.slice_fn}
-        </code>
-    </td>
-    <td class="p-3">
-        {issue.test_name}
-    </td>
-    <td class="p-3">
-        <span class="{'text-red-400' if issue.is_major else 'text-amber-200'}">−{tr.metric*100:.2f}% than global</span>
-    </td>
-    <td class="p-3">
-        <span class="text-gray-400">
-            {tr.actual_slices_size[0]} samples ({100 * (tr.actual_slices_size[0] / tr.reference_slices_size[0]):.2f}%)
-        </span>
-    </td>
-</tr>
+<tbody class="first:border-t border-b border-zinc-400">
+    <tr class="gsk-issue group peer text-left cursor-pointer hover:bg-zinc-700">
+        <td class="p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-[.open]:rotate-90">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+        </td>
+        <td class="p-3">
+            <code class="mono text-blue-300">
+                {issue.slice_fn}
+            </code>
+        </td>
+        <td class="p-3">
+            {issue.test_name}
+        </td>
+        <td class="p-3">
+            <span class="{'text-red-400' if issue.is_major else 'text-amber-200'}">−{tr.metric*100:.2f}% than global</span>
+        </td>
+        <td class="p-3">
+            <span class="text-gray-400">
+                {tr.actual_slices_size[0]} samples ({100 * (tr.actual_slices_size[0] / tr.reference_slices_size[0]):.2f}%)
+            </span>
+        </td>
+    </tr>
+    <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-400 bg-zinc-700">
+        <td colspan="5" class="p-3">
+            <h4 class="uppercase w-100">Examples</h4>
+            {issue.examples(3).to_html()}
+        </td>
+    </tr>
+</tbody>
 """
 
         return f"""
