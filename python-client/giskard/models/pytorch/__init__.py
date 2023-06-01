@@ -13,20 +13,22 @@ from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model
 from giskard.path_utils import get_size
 class TorchMinimalDataset(torch_dataset):
-    def __init__(self, df: pd.DataFrame):
+    def __init__(self, df: pd.DataFrame, torch_dtype=torch.float32):
         self.entries = df
+        self.torch_dtype = torch_dtype
 
     def __len__(self):
         return len(self.entries)
 
     def __getitem__(self, idx):
-        return list(self.entries.iloc[idx])
+        return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=self.torch_dtype)
 
 
 class PyTorchModel(Model):
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
+                 torch_dtype= torch.float32,
                  device='cpu',
                  name: str = None,
                  data_preprocessing_function=None,
@@ -40,6 +42,7 @@ class PyTorchModel(Model):
         super().__init__(clf, model_type, name, data_preprocessing_function, model_postprocessing_function,
                          feature_names, classification_threshold, classification_labels, loader_module, loader_class)
         self.device=device
+        self.torch_dtype=torch_dtype
 
     @classmethod
     def read_model_from_local_dir(cls, local_path):
@@ -78,7 +81,7 @@ class PyTorchModel(Model):
         # Use isinstance to check if o is an instance of X or any subclass of X
         # Use is to check if the type of o is exactly X, excluding subclasses of X
         if isinstance(data, pd.DataFrame):
-            data = TorchMinimalDataset(data)
+            data = TorchMinimalDataset(data, self.torch_dtype)
         elif not isinstance(data, torch_dataset) and not isinstance(data, DataLoader):
             with torch.no_grad():
                 predictions = self.clf(*data)
@@ -87,7 +90,10 @@ class PyTorchModel(Model):
         if not predictions:
             with torch.no_grad():
                 for entry in data:
-                    predictions.append(self.clf(*entry).detach().numpy()[0])
+                    try: # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+                        predictions.append(self.clf(*entry).detach().numpy().squeeze())
+                    except: # for the case of 1 input
+                        predictions.append(self.clf(entry).detach().numpy().squeeze())
             predictions = np.array(predictions)
 
         if self.model_postprocessing_function:
