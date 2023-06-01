@@ -94,8 +94,6 @@ class DatasetMeta:
     target: str
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
-    number_of_rows: int
-    category_features: Dict[str, List[str]]
 
 
 @dataclass
