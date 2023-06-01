@@ -28,7 +28,7 @@ def test_right_label(
        actual_slice(Dataset):
           Slice of the  actual dataset
       model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
       classification_label(str):
           Classification label you want to test
       threshold(float):
@@ -89,7 +89,7 @@ def test_output_in_range(
         actual_slice(Dataset):
             Slice of the actual dataset
         model(BaseModel):
-            BaseModel used to compute the test
+            Model used to compute the test
         classification_label(str):
             Optional. Classification label you want to test
         min_range(float):

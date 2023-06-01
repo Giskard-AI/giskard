@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from mlflow.pyfunc import PyFuncModel
-from pydantic import BaseModel
+from pydantic import Model
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
@@ -30,7 +30,7 @@ MODEL_CLASS_PKL = "ModelClass.pkl"
 logger = logging.getLogger(__name__)
 
 
-class ModelPredictionResults(BaseModel):
+class ModelPredictionResults(Model):
     raw: Any
     prediction: Any
     raw_prediction: Any

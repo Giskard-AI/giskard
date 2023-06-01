@@ -185,7 +185,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
               Dataset used to compute the test
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
@@ -238,7 +238,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
               Dataset used to compute the test
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
@@ -291,7 +291,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
               Dataset used to compute the test
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
               and a perturbation lambda function as value
@@ -373,7 +373,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
                 Dataset used to compute the test
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
@@ -423,7 +423,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
                 Dataset used to compute the test
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
@@ -481,7 +481,7 @@ class MetamorphicTests(AbstractTestCollection):
               df(Dataset):
                   Dataset used to compute the test
               model(BaseModel):
-                  BaseModel used to compute the test
+                  Model used to compute the test
               perturbation_dict(dict):
                   Dictionary of the perturbations. It provides the perturbed features as key
                   and a perturbation lambda function as value
@@ -559,7 +559,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
                 Dataset used to compute the test
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
@@ -609,7 +609,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
                 Dataset used to compute the test
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
@@ -662,7 +662,7 @@ class MetamorphicTests(AbstractTestCollection):
             df(Dataset):
                 Dataset used to compute the test
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
                 and a perturbation lambda function as value
