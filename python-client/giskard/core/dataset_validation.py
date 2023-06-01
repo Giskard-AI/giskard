@@ -1,10 +1,11 @@
 from typing import Hashable
+
 import pandas as pd
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
 from giskard.datasets import low_stat_threshold
-from giskard.datasets.base import Dataset, GISKARD_COLUMN_PREFIX
+from giskard.datasets.base import Dataset
 
 
 def validate_target(ds: Dataset):
@@ -78,7 +79,7 @@ def validate_column_types(ds: Dataset):
 
     df_columns_set = set(ds.columns)
     df_columns_set.discard(ds.target)
-    column_types_set = set([col for col in ds.column_types.keys() if not str(col).startswith(GISKARD_COLUMN_PREFIX)])
+    column_types_set = set(ds.column_types.keys())
     column_types_set.discard(ds.target)
 
     if column_types_set < df_columns_set:

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Optional, List, Union
 
 import numpy as np
+import pandas
 import pandas as pd
 import yaml
 from pandas.api.types import is_list_like
@@ -26,9 +27,6 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
-
-GISKARD_COLUMN_PREFIX = '__GISKARD_'
-GISKARD_HASH_COLUMN = f'{GISKARD_COLUMN_PREFIX}HASH__'
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +85,10 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        df = ds.df
-        df.loc[df[dataset.df.loc[df.index].ne(df)].dropna(how='all').index, GISKARD_HASH_COLUMN] = float('NaN')
-        from ...core.dataset_caching import generate_row_hashes
-        generate_row_hashes(ds)
+        if dataset._dataset_hash is not None:
+            df = ds.df
+            ds._dataset_hash = dataset._dataset_hash.loc[df.index]
+            ds._dataset_hash.loc[df[dataset.df.loc[df.index].ne(df)].dropna(how='all').index] = float('NaN')
 
         if len(self.pipeline):
             ds.data_processor = self
@@ -133,17 +131,20 @@ class Dataset(ColumnMetadataMixin):
     df: pd.DataFrame
     id: uuid.UUID
     data_processor: DataProcessor
+    _dataset_hash: Optional[pd.Series]
+    _dataset_hash_initialized: False
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True,
+            dataset_hash: Optional[pd.DataFrame] = None
     ) -> None:
         """
         Initializes a Dataset object.
@@ -198,9 +199,7 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-
-        from ...core.dataset_caching import generate_row_hashes
-        generate_row_hashes(self)
+        self._dataset_hash = dataset_hash
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
@@ -224,13 +223,29 @@ class Dataset(ColumnMetadataMixin):
         self.data_processor.add_step(transformation_function)
         return self
 
+    def dataset_hash(self):
+        if not self._dataset_hash_initialized:
+            if self._dataset_hash is not None:
+                unknown_values = self._dataset_hash.isna()
+                self._dataset_hash[unknown_values] = list(
+                    map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
+                        self.df.loc[unknown_values].values))
+            else:
+                self._dataset_hash = pandas.Series(
+                    map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
+                        self.df.values), index=self.df.index)
+
+            self._dataset_hash_initialized = True
+
+        return self._dataset_hash
+
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -378,8 +393,7 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
-        return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items() if
-                not str(key).startswith(GISKARD_COLUMN_PREFIX)}
+        return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items()}
 
     def upload(self, client: GiskardClient, project_key: str):
         """
@@ -487,10 +501,6 @@ class Dataset(ColumnMetadataMixin):
     def cat_columns(self):
         return self._cat_columns(self.meta)
 
-    @property
-    def data_hash(self):
-        return xxh3_128_hexdigest(''.join(self.df[GISKARD_HASH_COLUMN]))
-
     def save(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:
             uncompressed_bytes = save_df(self.df)
@@ -522,7 +532,7 @@ class Dataset(ColumnMetadataMixin):
 
     @property
     def columns(self):
-        return [col for col in self.df.columns if not str(col).startswith(GISKARD_COLUMN_PREFIX)]
+        return self.df.columns
 
     def __len__(self):
         return len(self.df)
