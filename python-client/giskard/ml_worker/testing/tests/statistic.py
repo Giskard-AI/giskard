@@ -13,9 +13,10 @@ from giskard.models.base import BaseModel
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
 def test_right_label(
-        actual_slice: Dataset,
+        dataset: Dataset,
         model: BaseModel,
         classification_label: str,
+        slicing_function: SlicingFunction = None,
         threshold: float = 0.5,
 ) -> TestResult:
     """
@@ -29,12 +30,14 @@ def test_right_label(
 
 
     Args:
-       actual_slice(Dataset):
-          Slice of the  actual dataset
+       dataset(Dataset):
+          Dataset used to compute the test
       model(BaseModel):
           Model used to compute the test
       classification_label(str):
           Classification label you want to test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
       threshold(float):
           Threshold for the percentage of passed rows
 
@@ -46,14 +49,15 @@ def test_right_label(
       passed:
           TRUE if passed_ratio > threshold
     """
-    actual_slice.df.reset_index(drop=True, inplace=True)
-    prediction_results = model.predict(actual_slice).prediction
+    dataset = dataset.slice(slicing_function)
+    dataset.df.reset_index(drop=True, inplace=True)
+    prediction_results = model.predict(dataset).prediction
 
-    passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
+    passed_idx = dataset.df.loc[prediction_results == classification_label].index.values
 
-    passed_ratio = len(passed_idx) / len(actual_slice)
+    passed_ratio = len(passed_idx) / len(dataset)
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
+        actual_slices_size=[len(dataset)],
         metric=passed_ratio,
         passed=bool(passed_ratio > threshold),
     )
@@ -62,8 +66,9 @@ def test_right_label(
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
 def test_output_in_range(
-    actual_slice: Dataset,
+    dataset: Dataset,
     model: BaseModel,
+    slicing_function: SlicingFunction = None,
     classification_label: str = None,
     min_range: float = 0.3,
     max_range: float = 0.7,
@@ -88,10 +93,12 @@ def test_output_in_range(
 
 
     Args:
-        actual_slice(Dataset):
-            Slice of the actual dataset
+       dataset(Dataset):
+          Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
         classification_label(str):
             Optional. Classification label you want to test
         min_range(float):
@@ -109,10 +116,11 @@ def test_output_in_range(
         passed:
             TRUE if metric > threshold
     """
+    dataset = dataset.slice(slicing_function)
     results_df = pd.DataFrame()
-    actual_slice.df.reset_index(drop=True, inplace=True)
+    dataset.df.reset_index(drop=True, inplace=True)
 
-    prediction_results = model.predict(actual_slice)
+    prediction_results = model.predict(dataset)
 
     if model.is_regression:
         results_df["output"] = prediction_results.raw_prediction
@@ -123,14 +131,14 @@ def test_output_in_range(
     else:
         raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
 
-    passed_idx = actual_slice.df.loc[
+    passed_idx = dataset.df.loc[
         (results_df["output"] <= max_range) & (results_df["output"] >= min_range)
         ].index.values
 
-    passed_ratio = len(passed_idx) / len(actual_slice)
+    passed_ratio = len(passed_idx) / len(dataset)
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
+        actual_slices_size=[len(dataset)],
         metric=passed_ratio,
         passed=bool(passed_ratio >= threshold),
     )
@@ -138,11 +146,12 @@ def test_output_in_range(
 
 # TODO: support type in the future
 def test_disparate_impact(
-        gsk_dataset: Dataset,
-        protected_slice: SlicingFunction,
-        unprotected_slice: SlicingFunction,
+        dataset: Dataset,
+        protected_slicing_function: SlicingFunction,
+        unprotected_slicing_function: SlicingFunction,
         model: BaseModel,
         positive_outcome,
+        slicing_function: SlicingFunction = None,
         min_threshold=0.8,
         max_threshold=1.25,
 ) -> TestResult:
@@ -150,7 +159,7 @@ def test_disparate_impact(
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
     Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
     it trained on. The Disparate Impact (DI) is only valid for classification models and is computed as the ratio
-    between the average count of correct predictions for the protected_slice over the unprotected_slice given a
+    between the average count of correct predictions for the protected slice over the unprotected one given a
     certain positive_outcome.
 
     Description: Calculate the Disparate Impact between a protected and unprotected slice of a dataset. Otherwise
@@ -168,16 +177,18 @@ def test_disparate_impact(
     women.
 
     Args:
-          gsk_dataset(Dataset):
+          dataset(Dataset):
               Dataset used to compute the test
-          protected_slice:
-              Slice that defines the protected group from the full dataset given
-          unprotected_slice:
-              Slice that defines the unprotected group from the full dataset given
+          protected_slicing_function:
+              Slicing function that defines the protected group from the full dataset given
+          unprotected_slicing_function:
+              Slicing function that defines the unprotected group from the full dataset given
           model(BaseModel):
               Model used to compute the test
           positive_outcome(str or float):
               The target value that is considered a positive outcome in the dataset
+          slicing_function(SlicingFunction):
+              Slicing function to be applied on the dataset
           min_threshold(float):
               Threshold below which the DI test is considered to fail, by default 0.8
           max_threshold(float):
@@ -189,15 +200,15 @@ def test_disparate_impact(
           passed:
               TRUE if the disparate impact ratio > min_threshold && disparate impact ratio < max_threshold
     """
-
+    dataset = dataset.slice(slicing_function)
     if positive_outcome not in list(model.meta.classification_labels):
         raise ValueError(
             f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
         )
 
-    gsk_dataset.df.reset_index(drop=True, inplace=True)
-    protected_ds = gsk_dataset.slice(protected_slice)
-    unprotected_ds = gsk_dataset.slice(unprotected_slice)
+    dataset.df.reset_index(drop=True, inplace=True)
+    protected_ds = dataset.slice(protected_slicing_function)
+    unprotected_ds = dataset.slice(unprotected_slicing_function)
 
     if protected_ds.df.equals(unprotected_ds.df):
         raise ValueError(
