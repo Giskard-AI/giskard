@@ -34,7 +34,7 @@ import {useTestSuiteStore} from "@/stores/test-suite";
 import {computed, ref} from "vue";
 import {chain} from "lodash";
 import {extend} from "vee-validate";
-import {TestInputDTO} from "@/generated-sources";
+import {TestInputDTO} from "@/generated-sources/ai/giskard/web/dto/test-input-dto";
 
 const props = defineProps<{
     name: string,
@@ -47,11 +47,10 @@ const {suite} = useTestSuiteStore();
 
 const emit = defineEmits(['save']);
 
-const existingAliases = computed(() =>
-    chain([
-        ...suite!.testInputs,
+const existingAliases = computed(() => chain([
+        ...suite!.functionInputs,
         ...chain(suite!.tests)
-            .flatMap(test => Object.values(test.testInputs))
+            .flatMap(test => Object.values(test.functionInputs))
             .filter(input => input.isAlias)
             .value()
     ])
