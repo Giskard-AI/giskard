@@ -56,7 +56,6 @@
                 <v-radio label="No" value="1"></v-radio>
               </v-radio-group>
             </div>
-            <!-- <v-btn color="primary" class="ml-1" @click="step = 2" small>upload it</v-btn> -->
             <div class="pl-6 py-4" v-show="hasLicense === '1'">
               <span class="has-license-question pb-2">Fill the form below to get your license</span>
               <ValidationObserver ref="observer" v-slot="{ invalid }">
@@ -119,13 +118,13 @@
 
 <script setup lang="ts">
 
-import { ref } from "vue";
-import axios, { AxiosError } from "axios";
-import { useMainStore } from "@/stores/main";
-import { api } from "@/api";
-import { useRouter } from "vue-router/composables";
+import {ref} from "vue";
+import axios, {AxiosError} from "axios";
+import {useMainStore} from "@/stores/main";
+import {api} from "@/api";
+import {useRouter} from "vue-router/composables";
 import mixpanel from "mixpanel-browser";
-import { TYPE } from "vue-toastification";
+import {TYPE} from "vue-toastification";
 
 const router = useRouter();
 
