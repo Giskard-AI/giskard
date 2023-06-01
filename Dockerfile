@@ -9,7 +9,6 @@ ARG FRONTEND_ENV=production
 ENV _JAVA_OPTIONS="-Xmx4048m -Xms512m" \
     SPRING_PROFILES_ACTIVE=prod \
     MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=false \
-    SPRING_DATASOURCE_USERNAME=postgres \
     VUE_APP_ENV=${FRONTEND_ENV} \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -19,7 +18,13 @@ ENV _JAVA_OPTIONS="-Xmx4048m -Xms512m" \
 
 WORKDIR /app
 # unnecessary files are filtered out by .dockerignore
-COPY . .
+COPY python-client python-client
+COPY frontend frontend
+COPY backend backend
+COPY common common
+COPY gradle gradle
+
+COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
 
 RUN ./gradlew clean package -Pprod --parallel --info --stacktrace
 
@@ -37,47 +42,41 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y \
-    postgresql \
-    nginx \
-    openjdk-17-jre-headless \
-    supervisor \
-    git
+    postgresql nginx openjdk-17-jre-headless supervisor git gettext-base
 
-ENV PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv" \
-    PGDATA=/var/lib/postgresql/data/pgdata \
-    SPRING_DATASOURCE_USERNAME=postgres \
-    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/app \
-    SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/app \
-    GSK_HOST=0.0.0.0
+ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
+    SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/postgres \
+    GSK_HOST=0.0.0.0 \
+    GSK_HOME=/home/giskard-home \
+    GSK_DIST_PATH=/opt/giskard
 
-ENV PATH="$VENV_PATH/bin:$PATH" \
-    PYTHONPATH=$PYSETUP_PATH
+ENV VENV_PATH=$GSK_DIST_PATH/internal-mlworker-venv
 
+ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/13/bin:$PATH" \
+    PGDATA=$GSK_HOME/database
 
-WORKDIR /app
+WORKDIR $GSK_DIST_PATH
 
 COPY --from=build /app/python-client/.venv-prod $VENV_PATH
-COPY --from=build /app/backend/build/libs/backend*.jar /app/backend/lib/giskard.jar
-COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY --from=build /app/backend/build/libs/backend*.jar $GSK_DIST_PATH/backend/giskard.jar
+COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist
 
-COPY supervisord.conf /app/supervisord.conf
-COPY frontend/packaging/nginx_single_dockerfile.conf /etc/nginx/sites-enabled/default.conf
+COPY supervisord.conf ./
+COPY packaging/nginx.conf.template $GSK_DIST_PATH/frontend/
 
-RUN rm /etc/nginx/sites-enabled/default; \
-    mkdir /var/lib/postgresql/data /root/giskard-home;
+RUN rm /etc/nginx/sites-enabled/default
 
-RUN useradd -u 1000 postgres; exit 0
-RUN usermod -u 1000 postgres; exit 0
+ARG GISKARD_UID=50000
 
-RUN chown -R 1000:1000 /var/run/postgresql && \
-    chown -R 1000:1000 /var/log/nginx && \
-    chown -R 1000:1000 /var/lib/nginx && \
-    chown -R 1000:1000 /etc/nginx && \
-    chown -R 1000:1000 /root/giskard-home && \
-    chown -R 1000:1000 /var/lib/postgresql/data && \
-    chown -R 1000:1000 /run && \
-    chown -R 1000:1000 $PYSETUP_PATH && \
-    chown -R 1000:1000 /app
+RUN adduser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password \
+       --quiet "giskard" --uid "${GISKARD_UID}" --gid "0" --home "${GSK_HOME}" && \
+    mkdir -p ${GSK_DIST_PATH} ${GSK_HOME}/run && chown -R "giskard:0" "${GSK_HOME}" ${GSK_DIST_PATH}
 
-ENTRYPOINT ["supervisord", "-c", "/app/supervisord.conf"]
+RUN chown -R giskard:0 /var/run/postgresql /var/lib/nginx
+
+
+USER giskard
+
+RUN initdb -D $PGDATA
+
+ENTRYPOINT ["supervisord", "-c", "/opt/giskard/supervisord.conf"]
