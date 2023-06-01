@@ -3,7 +3,8 @@
     <v-row>
       <v-col :align="'right'">
         <div class="d-flex flex-row-reverse">
-          <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+          <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"
+                             @uuid="onExecutionScheduled"/>
           <v-btn text @click="loadData()" color="secondary">Reload
             <v-icon right>refresh</v-icon>
           </v-btn>
@@ -76,7 +77,8 @@
                                  :models="allModels"
                                  :datasets="allDatasets"
                                  :inputTypes="inputs"
-                                 :executions="executions"/>
+                                 :executions="executions"
+                                  :tracked-executions="trackedJobs"/>
           </v-tab-item>
           <v-tab-item :transition="false">
             <TestSuiteCompareExecutions
@@ -116,6 +118,9 @@ import {ArrayReducers} from '@/utils/array-reducers';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
 import TestSuiteCompareTest from '@/views/main/project/TestSuiteCompareTest.vue';
+import {commitAddNotification} from '@/store/main/mutations';
+import store from '@/store';
+import {useTrackJob} from '@/utils/use-track-job';
 
 const props = defineProps<{
   projectId: number,
@@ -193,4 +198,18 @@ useRouterTabsSynchronization([
   'test-suite-new-compare-executions',
   'test-suite-new-compare-test'
 ], tab);
+
+const {
+  trackedJobs,
+  addJob
+} = useTrackJob();
+async function onExecutionScheduled(jobUuid: string) {
+  const result = await addJob(jobUuid);
+  if (result) {
+    commitAddNotification(store, {content: 'Test suite execution has been executed successfully', color: 'success'});
+  } else {
+    commitAddNotification(store, {content: 'An error has happened during the test suite execution', color: 'error'});
+  }
+  await loadData();
+}
 </script>

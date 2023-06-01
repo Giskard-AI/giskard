@@ -11,30 +11,41 @@
     </div>
     <v-progress-linear
         indeterminate
-        v-if="props.executions === undefined"
+        v-if="executionsAndJobs === undefined"
         color="primary"
         class="mt-2"
     ></v-progress-linear>
-    <p v-else-if="props.executions.length === 0">No execution has been performed yet!</p>
+    <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
           <v-list-item-group color="primary" mandatory>
-            <template v-for="execution in props.executions">
+            <template v-for="e in executionsAndJobs">
               <v-divider/>
-              <v-list-item
-                  :to="{name: 'test-suite-new-execution', params: {executionId: execution.id}}"
-                           :disabled="!execution.completionDate">
+              <v-list-item v-if="e.disabled" disabled>
+                <v-list-item-content>
+                  <v-list-item-title>
+                      {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <v-chip class="mr-2" x-small :color="e.state">
+                      {{ e.state }}
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item v-else
+                           :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
                 <v-list-item-content>
                   <v-list-item-title>
                     <div class="d-flex justify-space-between">
-                      <span>{{ execution.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
-                      <TestResultHeatmap :results="executionResults(execution)"/>
+                      <span>{{ e.execution.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
+                      <TestResultHeatmap :results="executionResults(e.execution)"/>
                     </div>
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
-                      {{ executionStatusMessage(execution) }}
+                    <v-chip class="mr-2" x-small :color="executionStatusColor(e.execution)">
+                      {{ executionStatusMessage(e.execution) }}
                     </v-chip>
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -60,7 +71,7 @@
 <script setup lang="ts">
 
 import {computed, ref, toRef} from 'vue';
-import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {DatasetDTO, JobDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
@@ -75,7 +86,8 @@ const props = defineProps<{
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
   inputTypes: { [name: string]: string },
-  executions?: TestSuiteExecutionDTO[]
+  executions?: TestSuiteExecutionDTO[],
+  trackedExecutions: { [uuid: string]: JobDTO}
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
@@ -89,7 +101,7 @@ function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
     case TestResult.FAILED:
       return "fail";
     default:
-      return "in progress";
+      return "N/A";
   }
 }
 
@@ -126,4 +138,37 @@ function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
 
 useRouterParamSynchronization('test-suite-new-execution', 'executionId', toRef(props, 'executions'), selectedExecution, 'id');
 
+type ExecutionTabItem = {
+  date: any,
+  disabled: boolean,
+  state: string,
+  execution?: TestSuiteExecutionDTO
+}
+
+const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
+  if (props.executions === undefined) {
+    return undefined;
+  }
+
+  const res: ExecutionTabItem[] = [];
+
+  return  res
+      .concat(props.executions
+          .map(e => ({
+            date: e.executionDate,
+            disabled: false,
+            state: executionStatusMessage(e),
+            color: executionStatusColor(e),
+            execution: e
+          })))
+      .concat(Object.values(props.trackedExecutions)
+          .map(j => ({
+            date: j.scheduledDate,
+            disabled: true,
+            state: 'todo',
+            color: 'todo'
+          })))
+      // TODO check why not working
+      .sort((l, r) => l.date - r.date);
+})
 </script>

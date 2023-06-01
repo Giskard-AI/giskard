@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 @UIModel
 @Setter
 @NoArgsConstructor
-public class TestSuiteExecutionDTO extends WorkerJobDTO {
+public class TestSuiteExecutionDTO {
     Long id;
     Long suiteId;
     private Map<String, String> inputs;
@@ -23,4 +24,6 @@ public class TestSuiteExecutionDTO extends WorkerJobDTO {
     @UINullable
     private List<SuiteTestExecutionDTO> results;
 
+    private Date executionDate;
+    private Date completionDate;
 }

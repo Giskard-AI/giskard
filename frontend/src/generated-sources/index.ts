@@ -13,6 +13,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
+    'ai.giskard.jobs.JobState' : 'JobState',
+    'ai.giskard.jobs.JobType' : 'JobType',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO' : 'MLWorkerInfoDTO.PlatformInfoDTO',
@@ -28,6 +30,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
+    'ai.giskard.web.dto.JobDTO' : 'JobDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
     'ai.giskard.web.dto.ml.CodeBasedTestPresetDTO' : 'CodeBasedTestPresetDTO',
@@ -49,7 +52,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.TestSuiteExecutionDTO' : 'TestSuiteExecutionDTO',
     'ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO' : 'TestTemplateExecutionResultDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
-    'ai.giskard.web.dto.ml.WorkerJobDTO' : 'WorkerJobDTO',
     'ai.giskard.web.dto.ml.write.FilePostDTO' : 'FilePostDTO',
     'ai.giskard.web.dto.ml.write.ModelPostDTO' : 'ModelPostDTO',
     'ai.giskard.web.dto.ml.write.TestSuitePostDTO' : 'TestSuitePostDTO',
@@ -95,6 +97,8 @@ export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/domain/mlworker-type';
+export * from './ai/giskard/jobs/job-state';
+export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
@@ -108,6 +112,7 @@ export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
+export * from './ai/giskard/web/dto/job-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';
 export * from './ai/giskard/web/dto/ml/code-based-test-preset-dto';
@@ -129,7 +134,6 @@ export * from './ai/giskard/web/dto/ml/test-suite-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-execution-dto';
 export * from './ai/giskard/web/dto/ml/test-template-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
-export * from './ai/giskard/web/dto/ml/worker-job-dto';
 export * from './ai/giskard/web/dto/ml/write/file-post-dto';
 export * from './ai/giskard/web/dto/ml/write/model-post-dto';
 export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';

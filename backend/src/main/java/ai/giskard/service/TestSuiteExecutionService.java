@@ -17,7 +17,6 @@ import com.google.protobuf.Empty;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,10 +43,8 @@ public class TestSuiteExecutionService {
         return giskardMapper.testSuiteExecutionToDTOs(testSuiteExecutionRepository.findAllBySuiteIdOrderByExecutionDateDesc(suiteId));
     }
 
-    @Async
-    @Transactional
-    public void executeScheduledTestSuite(long testSuiteExecutionId, Map<String, String> suiteInputs) {
-        TestSuiteExecution execution = testSuiteExecutionRepository.getById(testSuiteExecutionId);
+    @Transactional(noRollbackFor = Exception.class)
+    public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
 
         try (MLWorkerClient client = mlWorkerService.createClient(execution.getSuite().getProject().isUsingInternalWorker())) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
@@ -80,6 +77,7 @@ public class TestSuiteExecutionService {
         } catch (Exception e) {
             log.error("Error while executing test suite {}", execution.getSuite().getName(), e);
             execution.setResult(TestResult.ERROR);
+            throw e;
         } finally {
             execution.setCompletionDate(new Date());
             testSuiteExecutionRepository.save(execution);

@@ -62,6 +62,8 @@ const props = defineProps<{
   inputs: { [name: string]: string }
 }>();
 
+const emit = defineEmits(['uuid']);
+
 const dialog = ref<boolean>(false);
 const running = ref<boolean>(false);
 
@@ -95,8 +97,9 @@ async function executeTestSuite() {
   running.value = true;
 
   try {
-    await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
+    const jobUuid = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
     commitAddNotification(store, {content: 'Test suite execution has been scheduled', color: 'success'});
+    emit('uuid', jobUuid);
   } finally {
     running.value = false;
     dialog.value = false;

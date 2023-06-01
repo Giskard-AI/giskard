@@ -37,9 +37,6 @@
             </column>
             <column name="completion_date" type="TIMESTAMP"/>
             <column name="execution_date" type="TIMESTAMP"/>
-            <column name="ml_worker_type" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
             <column name="inputs" type="VARCHAR"/>
             <column name="result" type="VARCHAR(255)"/>
             <column name="suite_id" type="BIGINT"/>
