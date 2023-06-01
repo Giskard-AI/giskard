@@ -1,9 +1,11 @@
+import inspect
 from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
 
 from giskard.core.core import ModelType
+from giskard.models.base import CloudpickleBasedModel
 from giskard.core.validation import configured_validate_arguments
 
 ml_libraries = {
@@ -20,14 +22,24 @@ def get_class(_lib, _class):
 
 
 def infer_giskard_cls(model: Any):
-    for _giskard_class, _base_libs in ml_libraries.items():
-        try:
-            giskard_cls = get_class(*_giskard_class)
-            base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
-            if isinstance(model, tuple(base_libs)):
-                return giskard_cls
-        except ImportError:
-            return None
+    if inspect.isfunction(model):
+        class WrappedPredictionFunction(CloudpickleBasedModel):
+            def model_predict(self, df):
+                return model(df)
+
+        return WrappedPredictionFunction
+
+    else:
+        for _giskard_class, _base_libs in ml_libraries.items():
+            try:
+                giskard_cls = get_class(*_giskard_class)
+                base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
+                if isinstance(model, tuple(base_libs)):
+                    return giskard_cls
+            except ImportError:
+                pass
+
+    return None
 
 
 @configured_validate_arguments
@@ -96,7 +108,7 @@ def wrap_model(model,
                            **kwargs)
     else:
         raise ValueError(
-            'We could not infer your model library. We currently only support models from:'
+            'We could not infer your model library. We currently only support functions or models from:'
             '\n- sklearn'
             '\n- catboost'
             '\n- pytorch'
