@@ -249,4 +249,13 @@ public class InspectionService {
     public void deleteInspection(Long inspectionId) {
         inspectionRepository.deleteById(inspectionId);
     }
+
+    public Inspection updateInspectionName(Long inspectionId, String name) throws EntityNotFoundException {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        if (inspection == null) {
+            throw new EntityNotFoundException(INSPECTION, inspectionId);
+        }
+        inspection.setName(name);
+        return inspectionRepository.save(inspection);
+    }
 }

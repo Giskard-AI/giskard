@@ -124,4 +124,16 @@ public class InspectionController {
     public void deleteInspection(@PathVariable @NotNull Long id) {
         inspectionService.deleteInspection(id);
     }
+
+    /**
+     *
+     * @param id
+     * @param createDTO
+     * @return updated inspection
+     * @throws EntityNotFoundException
+     */
+    @PutMapping("/inspections/{id}")
+    public InspectionDTO updateInspectionName(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
+        return giskardMapper.toDTO(inspectionService.updateInspectionName(id, createDTO.getName()));
+    }
 }
