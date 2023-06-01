@@ -10,8 +10,9 @@
           <v-card-text>
             <v-row>
               <v-col cols=12>
-                <ValidationProvider name="Tes suite" mode="eager" rules="required" v-slot="{ errors }">
-                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details></v-select>
+                <ValidationProvider name="Test suite" mode="eager" rules="required" v-slot="{ errors }">
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="[...testSuites, { id: 'create-new', name: '+ New test suite' }]" :item-text="'name'" :item-value="'id'" dense hide-details @change="checkIfCreateNew">
+                  </v-select>
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Fixed inputs</p>
                 <p>Specify inputs that will be constant during each execution of the test.<br />
@@ -43,6 +44,7 @@ import { FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO } from '@
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { chain } from 'lodash';
 import { useMainStore } from "@/stores/main";
+import { TYPE } from 'vue-toastification';
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
@@ -99,9 +101,30 @@ async function submit(close) {
   await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
   await mainStore.addNotification({
     content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
-    color: 'success'
+    color: TYPE.SUCCESS
   });
   close();
+}
+
+async function checkIfCreateNew() {
+  if (selectedSuite.value === 'create-new') {
+    await createTestSuite();
+  }
+}
+
+async function createTestSuite() {
+  const project = await api.getProject(projectId)
+  const suite = await api.createTestSuite(project.key, {
+    id: null,
+    name: `Test suite for ${test.name}`,
+    projectKey: project.key,
+    testInputs: [],
+    tests: []
+  });
+
+  await loadData();
+
+  selectedSuite.value = testSuites.value.slice(-1)[0].id;
 }
 
 </script>
