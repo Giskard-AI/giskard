@@ -1,10 +1,11 @@
+from abc import ABC, abstractmethod
 from typing import Sequence, List, Optional
 
 from .slice import QueryBasedSliceFunction
 from ..datasets.base import Dataset
 
 
-class BaseSlicer:
+class BaseSlicer(ABC):
     def __init__(
         self,
         dataset: Dataset,
@@ -19,5 +20,6 @@ class BaseSlicer:
         self.min_deviation = min_deviation
         self.abs_deviation = abs_deviation
 
-    def find_slices(self) -> List[QueryBasedSliceFunction]:
-        raise NotImplementedError()
+    @abstractmethod
+    def find_slices(self, features, target=None) -> List[QueryBasedSliceFunction]:
+        ...
