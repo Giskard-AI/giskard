@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestFunctionService;
+import ai.giskard.service.ml.MLWorkerCacheService;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,13 @@ public class TestFunctionController {
     private final GiskardMapper giskardMapper;
     private final TestFunctionRepository testFunctionRepository;
     private final TestFunctionService testFunctionService;
+    private final MLWorkerCacheService mlWorkerCacheService;
 
+    // TODO: move since it's not test anymore
     @GetMapping("/tests")
-    @Transactional(readOnly = true)
-    public List<TestFunctionDTO> findAll(@RequestParam long projectId) {
-        return testFunctionService.findAll(projectId);
+    @Transactional()
+    public List<TestFunctionDTO> getCatalog(@RequestParam long projectId) {
+        return mlWorkerCacheService.getCatalog(projectId);
     }
 
     @GetMapping("/tests/{testUuid}")
