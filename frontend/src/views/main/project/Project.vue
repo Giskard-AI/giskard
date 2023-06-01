@@ -228,8 +228,6 @@ onMounted(async () => {
   await projectArtifactsStore.setProjectId(props.id, false);
 
   if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
-    console.log('Datasets length', projectArtifactsStore.datasets.length);
-    console.log('Models length', projectArtifactsStore.models.length);
     openQuickStart.value = true;
   }
 })
