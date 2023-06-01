@@ -41,10 +41,6 @@ function closeInspectionDialog() {
   showInspectionDialog.value = false;
 }
 
-function openInspection(id: number) {
-  console.log("Open inspection " + id);
-}
-
 function logInspection(inspection: any) {
   console.log(inspection);
 }
@@ -73,7 +69,7 @@ onActivated(() => loadInspections());
         </v-col>
         <v-col cols="8">
           <div class="d-flex flex-row-reverse pb-4">
-            <InspectionDialog v-bind:project-id="projectId"></InspectionDialog>
+            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="logInspection"></InspectionDialog>
           </div>
         </v-col>
       </v-row>
@@ -122,7 +118,7 @@ onActivated(() => loadInspections());
         <h1 class="headline bold">No debugging sessions found</h1>
         <p class="create-inspection-message">You haven't created any debugging session for this project. Please, create a new one in order to use this functionality.</p>
       </v-alert>
-      <InspectionDialog v-bind:project-id="projectId"></InspectionDialog>
+      <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="logInspection"></InspectionDialog>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
