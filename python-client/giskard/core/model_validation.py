@@ -51,7 +51,7 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
         prediction = model.predict(validation_ds)
     except Exception as e:
         raise ValueError(
-            "Invalid prediction_function input.\n"
+            "Invalid model.predict() input.\n"
             "Please make sure that model.predict(dataset) does not return an error "
             "message before uploading in Giskard"
         ) from e
