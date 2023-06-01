@@ -17,7 +17,7 @@ from ..utils import map_to_tuples
 
 TorchDType = Literal[
     "float32", "float", "float64", "double", "complex64", "cfloat", "float16",
-    "half", "bfloat16", "uint8", "int8", "int16", "short", "int32", "int", "int64", "long", "bool",]
+    "half", "bfloat16", "uint8", "int8", "int16", "short", "int32", "int", "int64", "long", "bool"]
 
 
 def string_to_torch_dtype(torch_dtype_string: TorchDType):
