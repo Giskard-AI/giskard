@@ -1,6 +1,6 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="72" color="primaryLight">
+    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
           <v-list-item to="/">
@@ -40,6 +40,13 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
+            <v-list-item :to="{ name: 'project-properties' }" value="properties">
+              <v-list-item-content>
+                <v-icon>mdi-file-cog-outline</v-icon>
+                <div class="caption">Properties</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
           </div>
         </v-list>
         <v-spacer></v-spacer>
@@ -52,6 +59,13 @@
                 </template>
                 <span>{{ warningMessage }}</span>
               </v-tooltip>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider />
+          <v-list-item to="/main/projects" exact>
+            <v-list-item-content>
+              <v-icon>web</v-icon>
+              <div class="caption">Projects</div>
             </v-list-item-content>
           </v-list-item>
           <v-divider />
