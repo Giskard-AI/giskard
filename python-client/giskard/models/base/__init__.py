@@ -68,6 +68,7 @@ class BaseModel(ABC):
 
             If duplicate values are found in the classification_labels.
     """
+
     should_save_model_class = False
     id: uuid.UUID = None
     _cache: ModelCache
@@ -112,9 +113,7 @@ class BaseModel(ABC):
         if classification_labels is not None:
             classification_labels = list(classification_labels)
             if len(classification_labels) != len(set(classification_labels)):
-                raise ValueError(
-                    "Duplicates are found in 'classification_labels', please only provide unique values."
-                )
+                raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
         self._cache = ModelCache()
 
@@ -154,7 +153,8 @@ class BaseModel(ABC):
 
     def save_meta(self, local_path):
         with open(Path(local_path) / META_FILENAME, "w") as f, open(
-                Path(local_path) / CACHE_CSV_FILENAME, "wb") as pred_f:
+            Path(local_path) / CACHE_CSV_FILENAME, "wb"
+        ) as pred_f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -444,15 +444,15 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -481,12 +481,12 @@ class WrapperModel(BaseModel, ABC):
             sign_len = len(signature(self.data_preprocessing_function).parameters)
             if sign_len != 1:
                 raise ValueError(
-                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided.")
+                    f"data_preprocessing_function only takes 1 argument (a pandas.DataFrame) but {sign_len} were provided."
+                )
         if self.model_postprocessing_function:
             sign_len = len(signature(self.model_postprocessing_function).parameters)
             if sign_len != 1:
-                raise ValueError(
-                    f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
+                raise ValueError(f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
 
     def _postprocess(self, raw_predictions):
         # User specified a custom postprocessing function
@@ -658,7 +658,8 @@ class CloudpickleBasedModel(WrapperModel, ABC):
         except ValueError:
             raise ValueError(
                 "We couldn't save your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+                "serialisation method by overriding the save_model() and load_model() methods."
+            )
 
     @classmethod
     def load_model(cls, local_dir):
@@ -671,7 +672,8 @@ class CloudpickleBasedModel(WrapperModel, ABC):
         else:
             raise ValueError(
                 "We couldn't load your model with cloudpickle. Please provide us with your own "
-                "serialisation method by overriding the save_model() and load_model() methods.")
+                "serialisation method by overriding the save_model() and load_model() methods."
+            )
 
 
 class CustomModel(BaseModel, ABC):
