@@ -71,10 +71,11 @@ class DataProcessor:
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
         ds = dataset.copy()
+        is_slicing_only = True
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
-
+            is_slicing_only = is_slicing_only and isinstance(step, SlicingFunction)
             df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
             ds = Dataset(
                 df=df,
@@ -90,6 +91,10 @@ class DataProcessor:
 
         if len(self.pipeline):
             ds.data_processor = self
+
+        # If dataset had metadata, copy it to the new dataset
+        if is_slicing_only and hasattr(dataset, "column_meta"):
+            ds.load_metadata_from_instance(dataset.column_meta)
 
         return ds
 
@@ -563,7 +568,17 @@ class Dataset(ColumnMetadataMixin):
         )
 
     def copy(self):
-        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
+        dataset = Dataset(
+            df=self.df.copy(),
+            target=self.target,
+            column_types=self.column_types.copy(),
+            validation=False,
+        )
+
+        if hasattr(self, "column_meta"):
+            dataset.load_metadata_from_instance(self.column_meta)
+
+        return dataset
 
 
 def _cast_to_list_like(object):
