@@ -1,6 +1,5 @@
-import tempfile
 from typing import List, Iterable
-import importlib
+
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
@@ -18,17 +17,6 @@ def validate_model(
 ):
     model_type = model.meta.model_type
 
-    loaded_model, loaded_data_prep_fn, loaded_model_postp_fn = validate_model_save_load(model)
-    loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
-    model = loader_class(
-        clf=loaded_model,
-        data_preprocessing_function=loaded_data_prep_fn,
-        model_postprocessing_function=loaded_model_postp_fn,
-        model_type=model.meta.model_type,
-        feature_names=model.meta.feature_names,
-        classification_labels=model.meta.classification_labels,
-        classification_threshold=model.meta.classification_threshold
-    )
     if model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
@@ -64,7 +52,7 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        raise ValueError("Invalid prediction_function input.\n" #TODO: Change prediction_function
+        raise ValueError("Invalid prediction_function input.\n"  # TODO: Change prediction_function
                          "Please make sure that your_model.predict(dataset) does not return an error "
                          "message before uploading in Giskard") from e
 
@@ -85,29 +73,12 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
                 "after being invoked for the same data multiple times.")
 
 
-def validate_model_save_load(model: Model):
-    """
-    Validates if the model can be pickled and un-pickled using cloud pickle
-    """
-    try:
-        loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
-        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
-            model.save_to_local_dir(f)
-            model.save_data_preprocessing_function(f)
-            model.save_model_postprocessing_function(f)
-            loaded_model = loader_class.read_model_from_local_dir(f)
-            loaded_data_prep_fn = loader_class.read_data_preprocessing_function_from_artifact(f)
-            loaded_model_postp_fn = loader_class.read_model_postprocessing_function_from_artifact(f)
-            return loaded_model, loaded_data_prep_fn, loaded_model_postp_fn
-    except Exception as e:
-        raise ValueError("Failed to validate model saving and loading from local disk") from e
-
-
 def validate_data_preprocessing_function(f):
     if not callable(f):
         raise ValueError(
             f"Invalid data_preprocessing_function parameter: {f}. Please specify Python function."
         )
+
 
 def validate_model_postprocessing_function(f):
     if not callable(f):
