@@ -153,7 +153,7 @@ public class TestController {
                         );
                     }
                     case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
-                    case "string" -> argumentBuilder.setString((String) inputValue);
+                    case "str" -> argumentBuilder.setString((String) inputValue);
                     default ->
                         throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
                 }
