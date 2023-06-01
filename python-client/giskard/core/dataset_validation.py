@@ -56,6 +56,8 @@ def validate_column_types(ds: Dataset):
 
 def validate_numeric_columns(ds: Dataset):
     for col, col_type in ds.column_types.items():
+        if col == ds.target:
+            continue
         if col_type == SupportedColumnTypes.NUMERIC.value:
             try:
                 pd.to_numeric(ds.df[col])
