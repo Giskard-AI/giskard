@@ -43,7 +43,8 @@
                     >
                       <td>
                         <v-select
-                            v-model="input.name"
+                            :value="input.name"
+                            @change="handleInputNameChanged(input, value);"
                             :items="[input.name, ...availableArguments]"
                         ></v-select>
                       </td>
@@ -86,7 +87,7 @@
                   </template>
                 </v-simple-table>
                 <v-btn :disabled="availableArguments.length === 0"
-                       @click="() => suiteInputs.push({name: availableArguments[0], type: typesByName[availableArguments[0]][0], value: ''})">
+                       @click="() => suiteInputs.push({name: availableArguments[0], type: typesByName[availableArguments[0]][0], value: null})">
                   Add input
                 </v-btn>
               </v-col>
@@ -172,6 +173,12 @@ const typesByName = computed(() => registry.value === null ? {} :
 const argumentNames = computed(() => Object.keys(typesByName.value));
 const availableArguments = computed(() => argumentNames.value
     .filter(name => suiteInputs.value.find(input => input.name === name) === undefined))
+
+function handleInputNameChanged(input: GenerateTestSuiteInputDTO, value: string) {
+  input.name = value;
+  input.type = typesByName[value][0];
+  input.value = null
+}
 </script>
 
 <style scoped>
@@ -187,6 +194,7 @@ const availableArguments = computed(() => argumentNames.value
   flex-direction: column;
   margin: 0 1rem;
   padding: 1rem;
+  min-width: 50vw;
 }
 
 </style>
