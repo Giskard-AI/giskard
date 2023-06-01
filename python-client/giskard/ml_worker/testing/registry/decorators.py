@@ -67,5 +67,5 @@ def _set_return_type(fn, return_type):
     fn.__signature__ = sig
 
     annotations = fn.__annotations__.copy()
-    annotations['return'] = GiskardTestMethod
+    annotations['return'] = return_type
     fn.__annotations__ = annotations
