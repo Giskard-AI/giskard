@@ -164,10 +164,9 @@ class GiskardTestRegistry:
                         name=parameter.name,
                         type=parameter.annotation.__qualname__,
                         optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
-                        default=None,
-                        argOrder=idx
-                        if parameter.default == inspect.Parameter.empty
+                        default=None if parameter.default == inspect.Parameter.empty
                         else parameter.default,
+                        argOrder=idx
                     )
                     for idx, parameter in enumerate(parameters.values())
                     if name != 'self'
