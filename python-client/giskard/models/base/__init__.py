@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import pydantic
 import yaml
+from pandas.errors import EmptyDataError
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -371,11 +372,14 @@ class BaseModel(ABC):
                     loader_class=saved_meta["loader_class"],
                 )
 
-                prediction_cache = pd.read_csv(
-                    ZstdDecompressor().stream_reader(pred_f),
-                    keep_default_na=False,
-                    na_values=["_GSK_NA_"],
-                )
+                try:
+                    prediction_cache = pd.read_csv(
+                        ZstdDecompressor().stream_reader(pred_f),
+                        keep_default_na=False,
+                        na_values=["_GSK_NA_"],
+                    )
+                except EmptyDataError:
+                    prediction_cache = None
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
@@ -394,11 +398,14 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
-                prediction_cache = pd.read_csv(
-                    ZstdDecompressor().stream_reader(pred_f),
-                    keep_default_na=False,
-                    na_values=["_GSK_NA_"],
-                )
+                try:
+                    prediction_cache = pd.read_csv(
+                        ZstdDecompressor().stream_reader(pred_f),
+                        keep_default_na=False,
+                        na_values=["_GSK_NA_"],
+                    )
+                except EmptyDataError:
+                    prediction_cache = None
 
         clazz = cls.determine_model_class(meta, local_dir)
 
