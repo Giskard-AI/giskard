@@ -2,9 +2,10 @@ import logging
 import os
 
 import click
-import docker
 import requests
 import yaml
+
+import docker
 
 giskard_home_path = os.path.expanduser("~/giskard-home")
 giskard_settings_path = giskard_home_path + "/giskard-settings.yml"
@@ -63,8 +64,7 @@ def start(attached):
     else:
         version = settings["version"]
 
-    if not _check_downloaded(version.replace('v', '')):
-        _download_dockerfile(version)
+    _download_dockerfile(version.replace('v', ''))
 
     try:
         container = client.containers.get("giskard-server")
@@ -103,8 +103,12 @@ def restart():
 
 
 @server.command("logs")
-def logs():
-    print("Not implemented yet.")
+@click.argument("service", default="backend", type=click.Choice(["backend", "frontend", "worker"]), required=True)
+def logs(service):
+    """\b
+    Prints logs for selected service.
+    """
+    logger.info(f"Logs for {service}")
 
 
 @server.command("update")
@@ -117,10 +121,29 @@ def update(version):
         version = _fetch_latest_tag()
 
     logger.info(f"Updating Giskard Server to version {version}")
-    if not _check_downloaded(version.replace('v', '')):
-        _download_dockerfile(version)
+    _download_dockerfile(version.replace('v', ''))
 
     logger.info("Giskard Server updated.")
+
+
+@server.command("info")
+def info():
+    """\b
+    Get information about the Giskard Server.
+    """
+    settings = _get_settings()
+    if not settings:
+        logger.info(f"Giskard Server is not installed. Install using $giskard server start")
+        return
+    else:
+        version = settings["version"]
+
+    logger.info(f"Giskard Server {version} is installed.")
+
+    latest = _fetch_latest_tag()
+
+    if version != latest:
+        logger.info(f"A new version is available: {latest}")
 
 
 def _check_downloaded(ver: str):
@@ -132,9 +155,11 @@ def _check_downloaded(ver: str):
         return False
 
 
+# Version: X.Y.Z
 def _download_dockerfile(version):
-    logger.info(f"Downloading image for version {version}")
-    # TODO: Download the docker image from release artifacts...
+    if not _check_downloaded(version):
+        logger.info(f"Downloading image for version {version}")
+        client.images.pull("giskardai/giskard", tag=version.replace('v', ''))
 
 
 # Returns the latest tag from the GitHub API
