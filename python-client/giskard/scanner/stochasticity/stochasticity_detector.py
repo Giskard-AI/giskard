@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from giskard import Dataset
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
@@ -16,11 +17,21 @@ class StochasticityDetector:
 
         prediction_1 = model.predict(reduced_dataset).raw
         prediction_2 = model.predict(reduced_dataset).raw
+        changed_samples = ~(np.isclose(prediction_1, prediction_2).all(axis=-1))
 
-        if np.isclose(prediction_1, prediction_2).all():
-            return []
+        fail_samples = pd.DataFrame(
+            columns=["First prediction", "Second prediction"],
+            index=reduced_dataset.df.loc[changed_samples].index,
+        )
+        fail_samples["First prediction"] = list(prediction_1[changed_samples])
+        fail_samples["Second prediction"] = list(prediction_2[changed_samples])
 
-        return [StochasticityIssue(model, dataset, level="medium")]
+        return [StochasticityIssue(model, dataset, level="medium", info=StochasticityInfo(samples=fail_samples))]
+
+
+@dataclass
+class StochasticityInfo:
+    samples: pd.DataFrame
 
 
 class StochasticityIssue(Issue):
@@ -32,7 +43,7 @@ class StochasticityIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return "Prediction"
+        return "Stochasticity"
 
     @property
     def deviation(self) -> str:
@@ -40,10 +51,10 @@ class StochasticityIssue(Issue):
 
     @property
     def description(self) -> str:
-        return ""
+        return f"We found {len(self.info.samples)} examples for which your model provides a different output at each execution."
 
     def examples(self, n=3) -> pd.DataFrame:
-        return pd.DataFrame()
+        return self.info.samples.head(n)
 
     @property
     def importance(self) -> float:

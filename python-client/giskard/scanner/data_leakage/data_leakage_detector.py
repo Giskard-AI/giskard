@@ -69,7 +69,7 @@ class DataLeakageIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "Your model may have some data leakage. For example, your model provides different results depending on whether it’s run on a single sample or the whole dataset."
+        return f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch."
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.samples.head(n)
