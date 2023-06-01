@@ -81,6 +81,7 @@ jobs:
         run: |
           docker buildx build \
           --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:latest \
           --tag $IMAGE:${{ steps.tag.outputs.version }} \
           --push \
           frontend

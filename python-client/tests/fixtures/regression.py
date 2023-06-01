@@ -4,7 +4,6 @@ from sklearn.metrics import mean_squared_error
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.core.model import Model
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 
@@ -40,7 +39,7 @@ def linear_regression_diabetes_raw():
 
 
 @pytest.fixture()
-def linear_regression_diabetes(linear_regression_diabetes_raw) -> Model:
+def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
     diabetes = datasets.load_diabetes()
     return SKLearnModel(
         clf=linear_regression_diabetes_raw,
