@@ -16,7 +16,7 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes, ColumnType
+from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
 from giskard.ml_worker.testing.registry.transformation_function import (
@@ -521,10 +521,6 @@ class Dataset:
             target=self.target,
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
         )
-
-    @property
-    def columns(self):
-        return self.df.columns.values
 
 
 def _cast_to_list_like(object):
