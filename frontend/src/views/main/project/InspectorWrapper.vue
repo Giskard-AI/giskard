@@ -5,7 +5,7 @@
       <v-toolbar id='data-explorer-toolbar' flat>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
-            <v-icon v-on="on" class="pr-5" small>info</v-icon>
+            <v-icon v-on="on" class="pr-5" medium>info</v-icon>
           </template>
           <h3> Inspection </h3>
           <div class="d-flex">
@@ -43,7 +43,7 @@
             <div class="pl-5"> {{ inspection.dataset.name }}</div>
           </div>
         </v-tooltip>
-        <span class='subtitle-2 mr-2'>Dataset Explorer</span>
+        <span class='subtitle-1 mr-2'>Dataset Explorer</span>
         <v-btn icon @click='shuffleMode = !shuffleMode'>
           <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
           <v-icon v-else>mdi-shuffle-variant</v-icon>
