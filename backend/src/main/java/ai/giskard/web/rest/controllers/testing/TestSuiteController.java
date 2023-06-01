@@ -2,12 +2,11 @@ package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.SaveTestSuiteRequestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.*;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
@@ -64,7 +64,16 @@ public class TestSuiteController {
         return giskardMapper.testSuiteToTestSuiteDTO(testSuite);
     }
 
-    @PostMapping("suites/execute")
+
+    @PostMapping("project/{projectKey}/suite")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public String saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody SaveTestSuiteRequestDTO dto) {
+
+        return null;
+    }
+
+    @PostMapping("project/{projectKey}/suites")
     public List<TestExecutionResultDTO> executeTestSuite(@Valid @RequestBody ExecuteTestSuiteRequest request) {
         return testService.executeTestSuite(request.getSuiteId());
     }

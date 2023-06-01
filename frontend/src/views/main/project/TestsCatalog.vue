@@ -1,5 +1,5 @@
 <template>
-  <div class="vc">
+  <div class="vc mt-2 pb-0">
     <div class="vc">
       <v-container class="main-container vc">
         <v-row class="fill-height">
