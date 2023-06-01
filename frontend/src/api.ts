@@ -377,6 +377,9 @@ export const api = {
     async executeTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
+    async tryTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/try`, inputs);
+    },
     async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: FunctionInputDTO[]) {
         return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
     },
