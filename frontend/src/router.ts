@@ -193,7 +193,7 @@ export default new Router({
                     {
                       path: 'datasets',
                       name: 'project-catalog-datasets',
-                      component: () => import('./views/main/project/DatasetsCatalog.vue'),
+                      component: () => import('./views/main/project/Datasets.vue'),
                       props: route => {
                         return {
                           projectId: Number(route.params.id),
