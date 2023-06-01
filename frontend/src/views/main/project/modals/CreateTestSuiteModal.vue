@@ -19,7 +19,9 @@
                 <ValidationProvider name="Test suite name" rules="required" v-slot="{errors}">
                   <v-text-field label="Test suite name" autofocus v-model="name" :error-messages="errors" outlined></v-text-field>
                 </ValidationProvider>
-                <v-switch v-model="shouldCreateAutoTests" :label="'Create tests automatically'" disabled></v-switch>
+                <TestInputListSelector :inputs="inputs"
+                                       :model-value="suiteInputs"
+                                       :project-id="projectId" />
               </v-col>
             </v-row>
           </v-card-text>
@@ -48,31 +50,36 @@
 import {ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
-import {TestSuiteNewDTO} from '@/generated-sources';
+import {GenerateTestSuiteDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
+import TestInputListSelector from '@/components/TestInputListSelector.vue';
 
-const { projectKey } = defineProps<{
-  projectKey: string
+const { projectKey, projectId } = defineProps<{
+  projectKey: string,
+  projectId: number
 }>();
 
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
-const shouldCreateAutoTests = ref<boolean>(false);
+const suiteInputs = ref<{[input: string]: string}>({})
+
+const inputs = {
+  model: 'Model',
+  actualDataset: 'Dataset',
+  referenceDataset: 'Dataset'
+}
 
 const router = useRouter();
 
 async function submit(close) {
   mixpanel.track('Create test suite v2', {
-    projectKey,
-    shouldGenerateTests: shouldCreateAutoTests.value
+    projectKey
   });
 
-  const createdTestSuiteId = await api.createTestSuitesNew(projectKey, {
-    id: null,
+  const createdTestSuiteId = await api.generateTestSuite(projectKey, {
     name: name.value,
-    tests: [],
-    projectKey: projectKey
-  } as TestSuiteNewDTO, shouldCreateAutoTests.value);
+    ...suiteInputs.value
+  } as GenerateTestSuiteDTO);
 
   dialog.value = false;
   await router.push({name: 'test-suite-new', params: {suiteId: createdTestSuiteId.toString()}});

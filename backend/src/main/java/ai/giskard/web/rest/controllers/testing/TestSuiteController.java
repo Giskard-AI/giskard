@@ -8,6 +8,7 @@ import ai.giskard.repository.ml.TestSuiteNewRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
+import ai.giskard.web.dto.GenerateTestSuiteDTO;
 import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.TestSuiteNewDTO;
@@ -78,11 +79,16 @@ public class TestSuiteController {
                               @RequestParam(defaultValue = "false") boolean shouldGenerateTests) {
         TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
 
-        if (shouldGenerateTests) {
-            // TODO: generate test automatically
-        }
-
         return savedSuite.getId();
+    }
+
+
+    @PostMapping("project/{projectKey}/suites-new/generate")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public Long generateTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
+                              @Valid @RequestBody GenerateTestSuiteDTO dto) {
+        return testSuiteService.generateTestSuite(projectKey, dto);
     }
 
     @GetMapping("project/{projectId}/suites-new")

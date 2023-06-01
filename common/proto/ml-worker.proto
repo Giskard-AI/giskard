@@ -21,6 +21,7 @@ service MLWorker {
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
   rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
+  rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -265,4 +266,26 @@ message TestRegistryResponse{
 message MLWorkerErrorInfo{
   string error = 1;
   string stack = 2;
+}
+
+message GenerateTestSuiteRequest{
+  string project_key = 1;
+  optional ArtifactRef model = 2;
+  optional ArtifactRef actual_dataset = 3;
+  optional ArtifactRef reference_dataset = 4;
+}
+
+message GenerateTestSuiteResponse{
+  repeated GeneratedTest tests = 1;
+}
+
+message GeneratedTest{
+  string test_id = 1;
+  repeated GeneratedTestInput inputs = 2;
+}
+
+message GeneratedTestInput{
+  string name = 1;
+  string value = 2;
+  bool is_alias = 3;
 }

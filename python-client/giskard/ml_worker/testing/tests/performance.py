@@ -1,6 +1,11 @@
 """Performance tests"""
 import numpy as np
 import pandas as pd
+from giskard import test
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -11,12 +16,6 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-
-from giskard import test
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
 
 def _verify_target_availability(dataset):
@@ -185,7 +184,7 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     )
 
 
-@test(name='F1', tags=['performance'])
+@test(name='F1', tags=['performance', 'classification'])
 def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice

@@ -33,6 +33,7 @@
     "ai.giskard.web.dto.SuiteTestDTO": "SuiteTestDTO",
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.FeatureMetadataDTO": "FeatureMetadataDTO",
+    "ai.giskard.web.dto.GenerateTestSuiteDTO": "GenerateTestSuiteDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
     "ai.giskard.web.dto.ExplainTextResponseDTO": "ExplainTextResponseDTO",
     "ai.giskard.web.dto.JWTToken": "JWTToken",

@@ -3,7 +3,9 @@ import os
 import platform
 import re
 import sys
+from typing import Optional, Tuple
 
+import giskard
 import google.protobuf
 import grpc
 import numpy as np
@@ -11,8 +13,6 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-
-import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -29,6 +29,7 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
+from google.protobuf.empty_pb2 import Empty
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +222,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ExplainTextResponse(
             weights={
                 k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
-                for k in map_features_weight },
+                for k in map_features_weight},
             words=list_words
         )
 
@@ -320,6 +321,47 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
             for test in tests_registry.get_all().values()
         })
+
+    def generateTestSuite(
+            self,
+            request: GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
+    ) -> GenerateTestSuiteResponse:
+        model = self.load_model_if_defined(request.model)
+        actual_dataset = self.load_dataset_if_defined(request.actual_dataset)
+        reference_dataset = self.load_dataset_if_defined(request.reference_dataset)
+
+        suite = Suite().generate_tests(model, actual_dataset, reference_dataset)\
+            .to_dto(self.client, request.project_key)
+
+        return GenerateTestSuiteResponse(
+            tests=[
+                GeneratedTest(
+                    test_id=test.testId,
+                    inputs=[
+                        GeneratedTestInput(
+                            name=i.name,
+                            value=i.value,
+                            is_alias=i.is_alias
+                        )
+                        for i in test.testInputs.values()
+                    ]
+                )
+                for test in suite.tests
+            ]
+        )
+
+    def load_model_if_defined(self, model: ArtifactRef) -> Optional[Tuple[ArtifactRef, Model]]:
+        if model.id != '':
+            return model, Model.load(self.client, model.project_key, model.id)
+        else:
+            return None
+
+    def load_dataset_if_defined(self, dataset: ArtifactRef) -> Optional[Tuple[ArtifactRef, Dataset]]:
+        if dataset.id != '':
+            return dataset, Dataset.load(self.client, dataset.project_key, dataset.id)
+        else:
+            return None
 
     @staticmethod
     def pandas_df_to_proto_df(df):
