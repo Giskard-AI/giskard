@@ -8,8 +8,10 @@ from giskard.client.project import Project
 from giskard.datasets import wrap_dataset
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
+from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.decorators import test
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
@@ -104,7 +106,9 @@ __all__ = [
     'slicing_function',
     'transformation_function',
     'SuiteInput',
-    'SlicingFunction'
+    'SlicingFunction',
+    'TestResult',
+    'GiskardTest'
 ]
 try:
     from giskard.models.catboost import CatboostModel

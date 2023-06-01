@@ -50,6 +50,10 @@ notebook will be shown below.
 
 ## 3. Execute a Giskard test
 
+:::{hint}
+You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
+:::
+
 ::::{tab-set}
 :::{tab-item} Drift tests
 
@@ -64,7 +68,7 @@ result = test_drift_prediction_ks(reference_slice=train_df,
                                   actual_slice=test_df,
                                   model=my_model,
                                   classification_label='CALIFORNIA CRISIS',
-                                  threshold=0.5)
+                                  threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -74,7 +78,7 @@ print(f"Metric: {result.metric}")
 **Description:**
 
 &#x20;In order to execute the test provided by Giskard. You first need to wrap your dataset and model into Giskard's
-one. Then you simply need to call the test, it will return a **TestResult**.
+one. Then you need to initialize the test and execute it, it will return a **TestResult** or a **bool**.
 
 :::
 
@@ -86,7 +90,7 @@ from giskard import wrap_model, wrap_dataset, test_f1
 my_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
-result = test_f1(actual_slice=dataset, model=my_model)
+result = test_f1(actual_slice=dataset, model=my_model).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -95,15 +99,37 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Metamorphic tets
 
 ```python
-# TODO migrate metamorphic v1 to v2
+from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
+
+my_model = wrap_model(...)
+dataset = wrap_dataset(...)
+
+
+@transformation_function
+def add_three_years(row):
+    row['Age'] = row['Age'] + 3
+    return row
+
+
+result = test_metamorphic_invariance(dataset, my_model, add_three_years).execute()
+print(f"result: {result.passed} with metric {result.metric}")
 ```
+
+See [🔪 Create slices and transformations function / Transformation](../create-slices-and-transformation-functions/index.md#transformation)
+to see how to create custom transformations
 
 :::
 
 :::{tab-item} Statistic tests
 
-```
-# TODO migrate statistics v1 to v2
+```python
+from giskard import wrap_model, wrap_dataset, test_right_label
+
+my_model = wrap_model(...)
+dataset = wrap_dataset(...)
+
+result = test_right_label(dataset, my_model, 'SUCCESS').execute()
+print(f"result: {result.passed} with metric {result.metric}")
 ```
 
 :::
@@ -115,12 +141,15 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Using function
 
 ```python
+from giskard import test, Dataset, TestResult
+
+
 @test(name="Custom Test Example", tags=["quality", "custom"])
 def uniqueness_test_function(dataset: Dataset,
                              column_name: str = None,
                              category: str = None,
                              threshold: float = 0.5):
-    freq_of_cat = self.dataset.df[column_name].value_counts()[category] / (len(dataset.df))
+    freq_of_cat = dataset.df[column_name].value_counts()[category] / (len(dataset.df))
     passed = freq_of_cat < threshold
 
     return TestResult(passed=passed, metric=freq_of_cat)
@@ -136,9 +165,8 @@ class-based method.
 
 * <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
   allowed as your test parameters:
-    * `Dataset` A Giskard
-      dataset, [#2.-create-a-giskard-dataset](upload-your-model/#2.-create-a-giskard-dataset "mention")
-    * `Model` A Giskard model, [#3.-create-a-giskard-model](upload-your-model/#3.-create-a-giskard-model "mention")
+    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
+    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
     * `bool` Either `True` if the test passed or `False` if it failed
@@ -158,6 +186,9 @@ In order to **set metadata** to your test, you need to use the `@test` decorator
 :::{tab-item} Using test class
 
 ```python
+from giskard import GiskardTest, Dataset, TestResult
+
+
 class DataQuality(GiskardTest):
 
     def __init__(self,
@@ -188,9 +219,8 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
   required parameters of your test. **It is also required to call the parent initialization method**
   calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
   **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
-    * `Dataset` A giskard
-      dataset, [#2.-create-a-giskard-dataset](upload-your-model/#2.-create-a-giskard-dataset "mention")
-    * `Model` A giskard model, [#3.-create-a-giskard-model](upload-your-model/#3.-create-a-giskard-model "mention")
+    * `Dataset` A giskard dataset, [wrap your dataset](../scan/index.md#3-wrap-your-dataset)
+    * `BaseModel` A giskard model, [wrap your model](../scan/index.md#2-wrap-your-model)
     * `int/float/bool/str`  Any primitive type can be used
 * <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
   to access all the parameters set by the initialization method. Your method can return two type of results:
@@ -202,7 +232,7 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 :::
 ::::
 
-## 5. Execute a test suite
+## 5. Create & Execute a test suite
 
 ::::{tab-set}
 
