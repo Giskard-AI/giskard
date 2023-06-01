@@ -140,6 +140,8 @@ import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useInspectionStore} from "@/stores/inspection";
 
 interface CreatedFeedbackCommonDTO {
     targetFeature?: string | null;
@@ -148,7 +150,7 @@ interface CreatedFeedbackCommonDTO {
     datasetId: string;
     originalData: string;
     projectId: number
-};
+}
 
 interface Props {
     inspectionId: number;
@@ -198,6 +200,7 @@ const percentRegressionUnit = ref(true);
 
 const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
 const canNext = computed(() => !shuffleMode.value && rowNb.value < totalRows.value - 1);
+const {transformationFunctions} = storeToRefs(useInspectionStore());
 
 function commonFeedbackData(): CreatedFeedbackCommonDTO {
   return {
@@ -354,7 +357,7 @@ async function doSubmitFeedback(payload: CreateFeedbackDTO) {
 }
 
 async function processDataset() {
-    const pipeline = [selectedSlicingFunction.value]
+    const pipeline = [selectedSlicingFunction.value, ...Object.values(transformationFunctions.value)]
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
     loadingProcessedDataset.value = true;
