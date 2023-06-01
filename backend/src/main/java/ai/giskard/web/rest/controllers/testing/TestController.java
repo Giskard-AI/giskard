@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -54,7 +55,8 @@ public class TestController {
                 .setTestUuid(request.getTestUuid());
 
             for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
+                builder.addArguments(testArgumentService
+                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());

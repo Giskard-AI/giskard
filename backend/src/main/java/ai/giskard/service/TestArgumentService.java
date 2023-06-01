@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,7 +32,7 @@ public class TestArgumentService {
 
         for (FunctionInput input : test.getFunctionInputs()) {
             builder.addArguments(buildTestArgument(argumentTypes, input.getName(),
-                input.isAlias() ? globalArguments.get(input.getValue()) : input.getValue(), projectKey));
+                input.isAlias() ? globalArguments.get(input.getValue()) : input.getValue(), projectKey, input.getParams()));
         }
 
         return builder.build();
@@ -42,8 +41,9 @@ public class TestArgumentService {
     public FuncArgument buildTestArgument(Map<String, String> testInputTypes,
                                           String inputName,
                                           String inputValue,
-                                          String projectKey) {
-        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName), Collections.emptyList());
+                                          String projectKey,
+                                          List<FunctionInput> params) {
+        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName), params);
     }
 
 

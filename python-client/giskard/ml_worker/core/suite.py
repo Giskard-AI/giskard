@@ -80,23 +80,29 @@ def single_binary_result(test_results: List):
     return passed
 
 
-def build_test_input_dto(client, p, pname, project_key, uploaded_uuids):
+def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
     if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
         if str(p.id) not in uploaded_uuids:
             p.upload(client, project_key)
         uploaded_uuids.append(str(p.id))
-        return TestInputDTO(name=pname, value=str(p.id))
+        return TestInputDTO(name=pname, value=str(p.id), type=ptype)
     elif issubclass(type(p), Savable):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client)
         uploaded_uuids.append(str(p.meta.uuid))
-        return TestInputDTO(name=pname, value=str(p.meta.uuid),
-                            params=[build_test_input_dto(client, p, pname, project_key, uploaded_uuids) for pname, p in
-                                    p.params.items()])
+
+        from inspect import signature
+        sig = signature(p)
+
+        return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
+                            params=[
+                                build_test_input_dto(client, p, pname, sig.parameters[pname].annotation, project_key,
+                                                     uploaded_uuids) for pname, p in
+                                p.params.items()])
     elif isinstance(p, SuiteInput):
-        return TestInputDTO(name=pname, value=p.name, is_alias=True)
+        return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
     else:
-        return TestInputDTO(name=pname, value=str(p))
+        return TestInputDTO(name=pname, value=str(p), type=ptype)
 
 
 class Suite:
@@ -203,11 +209,16 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
+            from inspect import signature
+            sig = signature(t.giskard_test)
+
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
-                functionInputs={pname: build_test_input_dto(client, p, pname, project_key, uploaded_uuids) for pname, p
-                                in
-                                t.provided_inputs.items()}
+                functionInputs={
+                    pname: build_test_input_dto(client, p, pname, sig.parameters[pname].annotation, project_key,
+                                                uploaded_uuids) for pname, p
+                    in
+                    t.provided_inputs.items()}
             ))
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
