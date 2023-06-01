@@ -1,6 +1,6 @@
 import {ref, Ref} from 'vue';
 import {JobDTO, JobState} from '@/generated-sources';
-import {trackJob} from '@/job-utils';
+import {trackJob} from '@/utils/job-utils';
 
 type UseTrackJob = {
     trackedJobs: Ref<{ [uuid: string]: JobDTO}>,
