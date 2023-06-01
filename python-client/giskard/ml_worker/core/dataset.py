@@ -22,6 +22,7 @@ class Dataset:
     target: str
     feature_types: Dict[str, str]
     df: pd.DataFrame
+    id: uuid.UUID
 
     def __init__(
             self,
@@ -29,7 +30,8 @@ class Dataset:
             name: Optional[str] = None,
             target: Optional[str] = None,
             cat_columns: Optional[List[str]] = None,
-            feature_types: Optional[Dict[str, str]] = None
+            feature_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
@@ -39,6 +41,10 @@ class Dataset:
             self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
         else:
             self.feature_types = feature_types
+        if id is None:
+            self.id = uuid.uuid4()
+        else:
+            self.id = id
 
     @staticmethod
     def extract_column_types(df):
@@ -48,7 +54,8 @@ class Dataset:
         from giskard.core.dataset_validation import validate_dataset
         validate_dataset(self)
 
-        dataset_id = str(uuid.uuid4())
+        dataset_id = str(self.id)
+
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
             if client is not None:
@@ -112,7 +119,9 @@ class Dataset:
             df=df,
             name=meta.name,
             target=meta.target,
-            feature_types=meta.feature_types)
+            feature_types=meta.feature_types,
+            id=uuid.UUID(dataset_id)
+        )
 
     @staticmethod
     def _cat_columns(meta):
