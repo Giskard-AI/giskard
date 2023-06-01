@@ -1,9 +1,9 @@
 import pandas as pd
-from giskard.datasets import wrap_dataset
+from giskard import Dataset
 
 
 def _dataset_from_dict(data):
-    return wrap_dataset(pd.DataFrame(data), target=None)
+    return Dataset(pd.DataFrame(data), target=None)
 
 
 def test_gender_transformation():
@@ -103,5 +103,6 @@ def test_punctuation_strip_transformation():
 
     assert transformed_text[0] == "My UPPERCASE text"
     assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
+    assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[2] == "Another TEXT with → UNICODE ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"

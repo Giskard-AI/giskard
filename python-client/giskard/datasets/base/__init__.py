@@ -51,7 +51,10 @@ class DataProcessor:
             Return a string representation of the DataProcessor object, showing the number of steps in its pipeline.
     """
 
-    pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
+    pipeline: List[Union[SlicingFunction, TransformationFunction]]
+
+    def __init__(self):
+        self.pipeline = []
 
     @configured_validate_arguments
     def add_step(self, processor: Union[SlicingFunction, TransformationFunction]):
@@ -76,6 +79,7 @@ class DataProcessor:
             target=dataset.target,
             cat_columns=dataset.cat_columns,
             column_types=dataset.column_types,
+            validation=False
         )
 
         if len(self.pipeline):
@@ -112,12 +116,12 @@ class Dataset(ColumnMetadataMixin):
             An instance of the `DataProcessor` class used for data processing.
     """
 
-    name: str
-    target: str
+    name: Optional[str]
+    target: Optional[str]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
-    data_processor: DataProcessor = DataProcessor()
+    data_processor: DataProcessor
 
     @configured_validate_arguments
     def __init__(
@@ -128,6 +132,7 @@ class Dataset(ColumnMetadataMixin):
             cat_columns: Optional[List[str]] = [],
             column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None,
+            validation=True
     ) -> None:
         """
         Initializes a Dataset object.
@@ -151,30 +156,34 @@ class Dataset(ColumnMetadataMixin):
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        from giskard.core.dataset_validation import validate_target
 
-        validate_target(self)
+        if validation:
+            from giskard.core.dataset_validation import validate_target
+            validate_target(self)
 
         if not self.df.empty:
             self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
-
-        from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
         if column_types:
             column_types.pop(self.target, None)  # no need for target type
             self.column_types = column_types
-            validate_column_types(self)
+            if validation:
+                from giskard.core.dataset_validation import validate_column_types
+                validate_column_types(self)
         else:
             self.column_types = self._infer_column_types(cat_columns)
-        validate_column_categorization(self)
 
-        from giskard.core.dataset_validation import validate_numeric_columns
+        if validation:
+            from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
+            validate_column_categorization(self)
+            validate_numeric_columns(self)
 
-        validate_numeric_columns(self)
-        print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+
+        self.data_processor = DataProcessor()
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -509,6 +518,7 @@ class Dataset(ColumnMetadataMixin):
             df=df,
             target=self.target if self.target in df.columns else None,
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+            validation=False,
         )
 
 
