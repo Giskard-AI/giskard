@@ -126,13 +126,12 @@ class MLWorkerBridge:
                         raise ConnectionLost()
             finally:
                 await self.close_service_channel()
-        except (IncompleteReadError, ConnectionLost, ConnectionResetError):
+        except (IncompleteReadError, ConnectionLost, ConnectionResetError) as e:
             logger.info("Lost connection to Giskard server, retrying...")
             self.stop()
             await asyncio.sleep(1 + random() * 2)
             await self.start()
-        except IncompleteReadError as e:
-            if not self.stopping:
+            if isinstance(e, IncompleteReadError) and not self.stopping:
                 logger.exception(e)
         except BaseException as e:  # NOSONAR
             logger.exception(e)

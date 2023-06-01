@@ -14,7 +14,7 @@ import java.util.Base64;
 @Getter
 public class MLWorkerSecretKey {
     public static final int KEY_SIZE_BITS = 128;
-    private String keyId = RandomStringUtils.randomAlphanumeric(8).toLowerCase();
+    private String keyId = RandomStringUtils.randomAlphanumeric(8).toLowerCase(); // NOSONAR
     private final SecretKey key;
     private String login;
     private final Instant creationDate = Instant.now();
