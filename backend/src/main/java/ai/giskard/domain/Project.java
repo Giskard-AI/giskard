@@ -29,7 +29,8 @@ import java.util.Set;
 public class Project extends AbstractAuditingEntity {
     @Id
     @Getter
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     private Long id;
 
     @Converter
@@ -90,7 +91,7 @@ public class Project extends AbstractAuditingEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private final Set<Feedback> feedbacks = new HashSet<>();
-    
+
     @Getter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private final Set<Slice> slices = new HashSet<>();
