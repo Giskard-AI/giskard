@@ -54,6 +54,8 @@ class TextPerturbationDetector(Detector):
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
             TextGenderTransformation,
+            TextReligionTransformation,
+            TextNationalityTransformation
         )
 
         return [
@@ -63,6 +65,8 @@ class TextPerturbationDetector(Detector):
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
             TextGenderTransformation,
+            TextReligionTransformation,
+            TextNationalityTransformation
         ]
 
     def _detect_issues(
