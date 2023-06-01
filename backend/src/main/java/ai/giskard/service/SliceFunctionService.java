@@ -6,6 +6,8 @@ import ai.giskard.web.dto.SliceFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 
 public class SliceFunctionService extends CallableService<SliceFunction, SliceFunctionDTO> {
@@ -18,6 +20,14 @@ public class SliceFunctionService extends CallableService<SliceFunction, SliceFu
         this.giskardMapper = giskardMapper;
         this.sliceFunctionRepository = sliceFunctionRepository;
     }
+
+    @Transactional
+    public SliceFunctionDTO save(SliceFunctionDTO sliceFunction) {
+        return giskardMapper.toDTO(sliceFunctionRepository.save(sliceFunctionRepository.findById(sliceFunction.getUuid())
+            .map(existing -> update(existing, sliceFunction))
+            .orElseGet(() -> create(sliceFunction))));
+    }
+
 
     protected SliceFunction create(SliceFunctionDTO dto) {
         SliceFunction function = giskardMapper.fromDTO(dto);
