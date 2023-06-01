@@ -158,8 +158,8 @@ public class DatasetsController {
                 DatasetProcessingFunction.Builder functionBuilder = DatasetProcessingFunction.newBuilder();
 
                 Callable callable = callables.get(processingFunction.getUuid());
-                Map<String, String> argumentTypes = callable.getArgs().stream()
-                    .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+                Map<String, FunctionArgument> arguments = callable.getArgs().stream()
+                    .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
 
                 ArtifactRef artifactRef = ArtifactRef.newBuilder()
                     .setId(callable.getUuid().toString())
@@ -173,7 +173,7 @@ public class DatasetsController {
 
                 for (FunctionInputDTO input : processingFunction.getParams()) {
                     functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(argumentTypes, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
+                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList()));
                 }
 
                 builder.addFunctions(functionBuilder.build());
