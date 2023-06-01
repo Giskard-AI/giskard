@@ -27,12 +27,12 @@ class ModelCache:
 
     def get_cache_or_na(self, key: str):
         try:
-            self.prediction_cache.__getitem__(key)
+            return self.prediction_cache.__getitem__(key)
         except KeyError:
             return self.nan_val
 
     def read_from_cache(self, keys: pd.Series):
-        return np.array(list(self.vectorized_get_cache_or_na(keys)))
+        return self.vectorized_get_cache_or_na(keys)
 
     def set_cache(self, keys: pd.Series, values: List[Any]):
         for i in range(len(keys)):
