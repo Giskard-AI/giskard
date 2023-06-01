@@ -19,10 +19,11 @@
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
-          <v-list-item-group color="primary">
+          <v-list-item-group color="primary" mandatory>
             <template v-for="execution in props.executions">
               <v-divider/>
-              <v-list-item :to="{name: 'test-suite-new-execution', params: {executionId: execution.id}}"
+              <v-list-item
+                  :to="{name: 'test-suite-new-execution', params: {executionId: execution.id}}"
                            :disabled="!execution.completionDate">
                 <v-list-item-content>
                   <v-list-item-title>
@@ -64,8 +65,8 @@ import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionRe
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import moment from 'moment';
-import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 import {Colors} from '@/utils/colors';
+import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 
 const props = defineProps<{
   projectId: number,

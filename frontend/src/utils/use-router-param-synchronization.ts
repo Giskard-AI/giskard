@@ -19,7 +19,7 @@ export default function useRouterParamSynchronization<T>(
         if (route.name === routeName && values.value !== undefined) {
             const routeId = Number(route.params[param]);
 
-            if (Number.isNaN(routeId)) {
+            if (Number.isNaN(routeId) && values.value.length > 0) {
                 await router.push({name: routeName, params: {[param]: values.value[0][id]}});
                 return;
             }
