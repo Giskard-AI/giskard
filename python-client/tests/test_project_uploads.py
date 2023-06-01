@@ -1,33 +1,35 @@
 import warnings
 
+import numpy as np
+import pandas as pd
 import pytest
 from sklearn.dummy import DummyClassifier
 
-from giskard.core.dataset_validation import *
+from giskard.core.core import SupportedFeatureTypes, SupportedModelTypes
+from giskard.core.dataset_validation import validate_column_categorization, validate_feature_types
 from giskard.core.model import ModelPredictionResults
-from giskard.core.model_validation import *
+from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
+from giskard.core.validation import validate_is_pandasdataframe
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.models.sklearn import SKLearnModel
 
 data = np.array(["g", "e", "e", "k", "s"])
 
 
-@pytest.mark.parametrize('pred', [
-    [[0.81, 0.32]],
-    [[0.9, 0.21]],
-    [[1.5, 1]],
-    [[-1, 2]],
-    [[0.9, -0.1]],
-    [[0, -1], [0.8, 0.5]]
-])
+@pytest.mark.parametrize(
+    "pred", [[[0.81, 0.32]], [[0.9, 0.21]], [[1.5, 1]], [[-1, 2]], [[0.9, -0.1]], [[0, -1], [0.8, 0.5]]]
+)
 def test__validate_classification_prediction_warn(pred):
     with pytest.warns():
-        validate_classification_prediction(['one', 'two'],
-                                           np.array(pred))
+        validate_classification_prediction(["one", "two"], np.array(pred))
 
 
-@pytest.mark.parametrize('pred', [
-    [[0.1, 0.2, 0.7]],
-])
+@pytest.mark.parametrize(
+    "pred",
+    [
+        [[0.1, 0.2, 0.7]],
+    ],
+)
 def test__validate_classification_prediction_fail(pred):
     with pytest.raises(ValueError):
         validate_classification_prediction(["one", "two"], np.array(pred))
@@ -54,7 +56,7 @@ def test_validate_deterministic_model():
     ones = np.ones(len(data))
     constant_model = SKLearnModel(
         clf=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
-        model_type=SupportedModelTypes.CLASSIFICATION
+        model_type=SupportedModelTypes.CLASSIFICATION,
     )
     ds = Dataset(df=data)
 
@@ -73,8 +75,10 @@ def test_validate_feature_types(german_credit_data, german_credit_test_data):
     test_ds = german_credit_test_data
     ds = german_credit_data
 
-    with pytest.warns(UserWarning,
-                      match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?"):
+    with pytest.warns(
+            UserWarning,
+            match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+    ):
         validate_column_categorization(test_ds)
 
     test_ds.feature_types = {c: test_ds.feature_types[c] for c in test_ds.feature_types if c != test_ds.target}
@@ -94,9 +98,11 @@ def test_validate_feature_types(german_credit_data, german_credit_test_data):
     assert e.match(r"Missing columns in dataframe according to feature_types: {'non-existing-column'}")
 
     broken_types = dict(test_ds.feature_types)
-    broken_types['people_under_maintenance'] = SupportedFeatureTypes.CATEGORY.value
-    broken_types['sex'] = SupportedFeatureTypes.NUMERIC.value
-    with pytest.warns(UserWarning,
-                      match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?") as w:
+    broken_types["people_under_maintenance"] = SupportedFeatureTypes.CATEGORY.value
+    broken_types["sex"] = SupportedFeatureTypes.NUMERIC.value
+    with pytest.warns(
+            UserWarning,
+            match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+    ):
         test_ds.feature_types = broken_types
         validate_column_categorization(test_ds)
