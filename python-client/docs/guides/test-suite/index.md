@@ -213,7 +213,30 @@ suite.run(dataset=my_updated_dataset)
 :::
 
 :::{tab-item} Shared test input
-![](docs/assets/tests_examples.png)
+```python
+from giskard import demo, Model, Dataset, testing, Suite, SuiteInput, slicing_function
+import pandas as pd
+
+model, df = demo.titanic()
+
+wrapped_model = Model(model=model, model_type="classification")
+wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+@slicing_function(row_level=False, name='female')
+def slice_female(df: pd.DataFrame) -> pd.DataFrame:
+    return df[df.Sex == 'female']
+
+sliced_dataset = wrapped_dataset.slice(slice_female)
+
+shared_input = SuiteInput("dataset", Dataset)
+
+suite = Suite() \
+    .add_test(testing.test_auc(dataset=shared_input, threshold=0.2)) \
+    .add_test(testing.test_f1(dataset=shared_input, threshold=0.2)) \
+    .add_test(testing.test_diff_f1(threshold=0.2, actual_dataset=shared_input))
+
+suite.run(model=wrapped_model, dataset=wrapped_dataset, reference_dataset=sliced_dataset)
+```
 :::
 ::::
 
