@@ -1,12 +1,9 @@
 import collections
 from pathlib import Path
 from typing import Union
-
 import numpy as np
 import pandas as pd
 import yaml
-
-import mlflow
 from giskard.core.core import ModelType
 from giskard.models.base import MLFlowBasedModel
 from ..utils import map_to_tuples
@@ -85,9 +82,11 @@ class PyTorchModel(MLFlowBasedModel):
 
     @classmethod
     def load_clf(cls, local_dir):
+        import mlflow
         return mlflow.pytorch.load_model(local_dir)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
+        import mlflow
         mlflow.pytorch.save_model(self.clf, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
