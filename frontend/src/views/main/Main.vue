@@ -93,16 +93,16 @@
     </v-navigation-drawer>
 
     <div class="pa-0 vertical-container overflow-hidden fill-height">
-      <router-view class="overflow-hidden fill-height"></router-view>
+        <router-view class="overflow-hidden fill-height"></router-view>
     </div>
   </v-main>
 </template>
 
 <script lang="ts" setup>
-import { useUserStore } from "@/stores/user";
-import { useMainStore } from "@/stores/main";
-import { computed, ref } from "vue";
-import { useRoute } from 'vue-router/composables';
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
+import {computed, ref} from "vue";
+import {useRoute} from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
