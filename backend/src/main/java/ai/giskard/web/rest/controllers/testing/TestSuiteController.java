@@ -75,8 +75,7 @@ public class TestSuiteController {
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
     public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
-                              @Valid @RequestBody TestSuiteNewDTO dto,
-                              @RequestParam(defaultValue = "false") boolean shouldGenerateTests) {
+                              @Valid @RequestBody TestSuiteNewDTO dto) {
         TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
 
         return savedSuite.getId();

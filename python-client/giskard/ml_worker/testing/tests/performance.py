@@ -113,7 +113,7 @@ class AucTest(GiskardTest):
     def __init__(self,
                  actual_slice: Dataset = None,
                  model: Model = None,
-                 threshold: float = None):
+                 threshold: float = 0.5):
         """
         Init an AucTest instance, can be passed in Suite.add_test method
         :param actual_slice: Slice of the actual dataset

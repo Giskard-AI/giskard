@@ -191,6 +191,8 @@ class Suite:
             reference_dataset: Optional[InputRef[Dataset]]
     ):
         args = {}
+        for arg in [arg for arg in test_func.args.values() if arg.default is not None]:
+            args[arg.name] = arg.default
 
         if model is None or not contains_tag(test_func, model.arg.meta.model_type.value):
             return
