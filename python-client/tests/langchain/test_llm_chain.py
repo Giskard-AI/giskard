@@ -1,13 +1,15 @@
 import pandas as pd
+import pytest
 from langchain.chains import LLMChain
-from langchain.llms.fake import FakeListLLM
 from langchain.prompts import PromptTemplate
 
 import tests.utils
 from giskard import Dataset, Model
 
 
+@pytest.mark.skip(reason="GSK-1160: FakeListLLM doesn't exist")
 def test_llm_chain():
+    from langchain.llms.fake import FakeListLLM
     responses = [
         "\n\nHueFoots.",
         "\n\nEcoDrive Motors.",
