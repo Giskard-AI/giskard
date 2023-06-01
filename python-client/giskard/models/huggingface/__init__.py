@@ -45,7 +45,7 @@ class HuggingFaceModel(MLFlowBasedModel):
     def clf_predict(self, data):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
-                predictions = self.clf(**data)
+                predictions = self.clf(**data) if isinstance(data, dict) else self.clf(data)
         elif isinstance(self.clf, pipelines.Pipeline):
             _predictions = self.clf(data, top_k=None)
             predictions = []
@@ -53,7 +53,7 @@ class HuggingFaceModel(MLFlowBasedModel):
                 label_score = next(item for item in _predictions if item["label"] == label)
                 predictions.append(label_score['score'])
         else:
-            predictions = self.clf(**data)
+            predictions = self.clf(**data) if isinstance(data, dict) else self.clf(data)
 
         if self.is_classification and hasattr(predictions, 'logits'):
             if isinstance(self.clf, torch.nn.Module):
