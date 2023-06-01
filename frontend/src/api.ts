@@ -459,7 +459,6 @@ export const api = {
         return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
     },
 
-    },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
             headers: {
