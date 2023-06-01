@@ -92,9 +92,6 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
         else:
             return self.func(data, **self.params)
 
-    def _should_save_locally(self) -> bool:
-        return True
-
     def _should_upload(self) -> bool:
         return self.meta.version is None
 

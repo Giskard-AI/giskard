@@ -84,7 +84,11 @@ class GiskardAnalyticsCollector:
 
     @staticmethod
     def machine_based_user_id():
-        return anonymize(str(uuid.getnode()) + os.getlogin())
+        try:
+            return anonymize(str(uuid.getnode()) + os.getlogin())
+        except BaseException:  # noqa
+            # https://bugs.python.org/issue40821
+            return "unknown"
 
 
 analytics = GiskardAnalyticsCollector()
