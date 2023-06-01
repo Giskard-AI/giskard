@@ -3,7 +3,8 @@ import { api } from '@/api';
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import { computed, onActivated, onMounted, ref } from "vue";
+import { computed, onActivated, ref } from "vue";
+
 
 interface Props {
   projectId: number;
@@ -34,8 +35,10 @@ async function createNewInspection() {
     datasetId: selectedDataset.value!.id,
     modelId: selectedModel.value!.id
   });
-  emit('createInspection', inspection);
+
   closeDialog();
+
+  emit('createInspection', inspection);
 }
 
 function closeDialog() {
