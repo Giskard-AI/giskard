@@ -57,6 +57,7 @@ import mixpanel from 'mixpanel-browser';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
+import {TestInputDTO} from '@/generated-sources';
 
 const props = defineProps<{
   projectId: number,
@@ -71,8 +72,9 @@ const dialog = ref<boolean>(false);
 const running = ref<boolean>(false);
 
 const testSuiteInputs = ref<{
-  [name: string]: any
+  [name: string]: TestInputDTO
 }>({});
+
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,
@@ -82,7 +84,7 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
 function isAllParamsSet() {
   return Object.keys(props.inputs)
       .map(name => testSuiteInputs.value[name])
-      .findIndex(param => param === null || param === undefined) === -1;
+      .findIndex(param => param && (param.value === null || param.value.trim() === '')) === -1;
 }
 
 
@@ -90,7 +92,15 @@ function openPopup() {
   if (Object.keys(props.inputs).length === 0) {
     executeTestSuite();
   } else {
-    testSuiteInputs.value = {};
+    testSuiteInputs.value = Object.entries(props.inputs).reduce((result, [name, type]) => {
+      result[name] = {
+        isAlias: false,
+        name,
+        type,
+        value: ''
+      }
+      return result;
+    }, {});
     dialog.value = true;
   }
 }
@@ -100,7 +110,11 @@ async function executeTestSuite() {
   running.value = true;
 
   try {
-    const jobUuid = await api.executeTestSuite(props.projectId, props.suiteId, testSuiteInputs.value);
+    const jobUuid = await api.executeTestSuite(props.projectId, props.suiteId, Object.values(testSuiteInputs.value)
+        .reduce((result, input) => {
+          result[input.name] = input.value;
+          return result;
+        }, {}));
     mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
     // Track job asynchronously
     testSuiteStore.trackJob(jobUuid);
