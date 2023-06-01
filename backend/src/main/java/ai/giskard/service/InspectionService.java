@@ -245,4 +245,8 @@ public class InspectionService {
         inspections.removeIf(inspection -> !inspection.getModel().getProject().getId().equals(projectId));
         return inspections;
     }
+
+    public void deleteInspection(Long inspectionId) {
+        inspectionRepository.deleteById(inspectionId);
+    }
 }

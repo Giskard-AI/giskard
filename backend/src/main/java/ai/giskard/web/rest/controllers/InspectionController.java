@@ -116,5 +116,12 @@ public class InspectionController {
         return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
     }
 
-
+    /**
+     * delete an inspection
+     * @param id id of the inspection
+     */
+    @DeleteMapping("/inspections/{id}")
+    public void deleteInspection(@PathVariable @NotNull Long id) {
+        inspectionService.deleteInspection(id);
+    }
 }
