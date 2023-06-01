@@ -124,12 +124,12 @@ def test_email_classification_bert_custom_model():
     # ---------------------------------------------------------------------------------------
 
     my_model = MyHuggingFaceModel(name=model_name,
-                                          model=model,
-                                          feature_names=['Content'],
-                                          model_type="classification",
-                                          classification_labels=list(classification_labels_mapping.keys()),
-                                          data_preprocessing_function=preprocessing_func,
-                                          model_postprocessing_function=my_softmax)
+                                  model=model,
+                                  feature_names=['Content'],
+                                  model_type="classification",
+                                  classification_labels=list(classification_labels_mapping.keys()),
+                                  data_preprocessing_function=preprocessing_func,
+                                  model_postprocessing_function=my_softmax)
 
     my_test_dataset = Dataset(data_filtered.head(5), name="test dataset", target="Target",
                               cat_columns=['Week_day', 'Month'])
@@ -146,11 +146,11 @@ def test_email_classification_bert_custom_model():
     # ---------------------------------------------------------------------------------------
 
     my_auto_model = MyAutoHuggingFaceModel(name=model_name,
-                                                    model=model,
-                                                    feature_names=['Content'],
-                                                    model_type="classification",
-                                                    classification_labels=list(classification_labels_mapping.keys()),
-                                                    data_preprocessing_function=preprocessing_func,
-                                                    model_postprocessing_function=my_softmax)
+                                           model=model,
+                                           feature_names=['Content'],
+                                           model_type="classification",
+                                           classification_labels=list(classification_labels_mapping.keys()),
+                                           data_preprocessing_function=preprocessing_func,
+                                           model_postprocessing_function=my_softmax)
 
     tests.utils.verify_model_upload(my_auto_model, my_test_dataset)
