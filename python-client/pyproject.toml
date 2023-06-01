@@ -45,6 +45,12 @@ test = [
     "tensorflow>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
     "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
 ]
+doc = [
+    "furo>=2023.3.27",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+    "sphinx-autobuild>=2021.3.14",
+]
 
 [tool.setuptools.packages.find]
 include = ["giskard*"]
