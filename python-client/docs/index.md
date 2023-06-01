@@ -12,11 +12,11 @@ reference/index
 
 Follow our handy guides to get started on the basics as quickly as possible:
 
-- **<project:/guides/deprecated/installation-deprecated/index.md>**
-- **<project:/guides/wrap/index.rst>**
-- **<project:/guides/test-suite/index.md>**
-- **<project:/guides/create-slices-and-transformation-functions/index.rst>**
-- **<project:/guides/test-catalog/index.rst>**
+1. **<project:/guides/installation/index.md>**
+2. **<project:/guides/scan/index.rst>**
+3. **<project:/guides/test-suite/index.md>**
+4. **<project:/guides/create-slices-and-transformation-functions/index.rst>**
+5. **<project:/guides/test-catalog/index.rst>**
 
 ## <project:/reference/index.rst>
 
