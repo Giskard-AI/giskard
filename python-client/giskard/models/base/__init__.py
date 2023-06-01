@@ -26,10 +26,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
-
-from ..utils import np_types_to_native, warn_once
 from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
+from ..utils import np_types_to_native, warn_once
 
 META_FILENAME = "giskard-model-meta.yaml"
 
