@@ -69,7 +69,6 @@ class TextClassificationModel(nn.Module):
         return self.fc(embedded)
 
 
-# @pytest.mark.skip(reason="WIP")
 def test_newspaper_classification_pytorch_dataset():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
