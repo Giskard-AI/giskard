@@ -9,11 +9,11 @@ import javax.persistence.UniqueConstraint;
 import java.io.Serializable;
 
 @Getter
-@Entity(name = "slice_functions")
+@Entity(name = "slicing_functions")
 @Table(uniqueConstraints = {
     @UniqueConstraint(columnNames = {"name", "module", "version"})
 })
 @Setter
 public class SliceFunction extends Callable implements Serializable {
-    
+
 }

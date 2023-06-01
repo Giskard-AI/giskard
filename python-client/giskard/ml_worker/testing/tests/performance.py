@@ -17,7 +17,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slice_function import slicing_function, SliceFunction
+from giskard.ml_worker.testing.registry.slicing_function import slicing_function, SlicingFunction
 from giskard.models.base import BaseModel
 
 
@@ -426,7 +426,7 @@ def test_diff_f1(actual_slice: Dataset,
                  reference_slice: Dataset,
                  model: BaseModel,
                  threshold: float = 0.1,
-                 slice_function: SliceFunction = identity_slicing_function):
+                 slicing_function: SlicingFunction = identity_slicing_function):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 

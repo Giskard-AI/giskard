@@ -18,7 +18,7 @@
 <script setup lang="ts">
 
 
-import {SliceFunctionDTO} from '@/generated-sources';
+import {SlicingFunctionDTO} from '@/generated-sources';
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 
@@ -33,7 +33,7 @@ const emit = defineEmits(['update:value']);
 
 const {sliceFunctions} = storeToRefs(useCatalogStore())
 
-function extractName(sliceFunctionDTO: SliceFunctionDTO) {
+function extractName(sliceFunctionDTO: SlicingFunctionDTO) {
     return sliceFunctionDTO.displayName ?? sliceFunctionDTO.name
 }
 
