@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,7 +61,7 @@ public class ModelController {
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
     @Transactional
-    public ExplainResponseDTO explain(@PathVariable @NotNull String modelId, @PathVariable @NotNull String datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getById(datasetId);
@@ -76,7 +77,7 @@ public class ModelController {
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
     public ModelDTO getModelMeta(@PathVariable("projectKey") @NotNull String projectKey,
-                                 @PathVariable("modelId") @NotNull String modelId) {
+                                 @PathVariable("modelId") @NotNull UUID modelId) {
         return giskardMapper.modelToModelDTO(modelRepository.getById(modelId));
     }
 
@@ -96,7 +97,7 @@ public class ModelController {
 
     @PostMapping("models/explain-text/{featureName}")
     @Transactional
-    public Map<String, String> explainText(@RequestParam @NotNull String modelId, @RequestParam @NotNull String datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public Map<String, String> explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         long projectId = model.getProject().getId();
@@ -106,14 +107,14 @@ public class ModelController {
     }
 
     @DeleteMapping("models/{modelId}")
-    public MessageDTO deleteModel(@PathVariable @NotNull String modelId) {
+    public MessageDTO deleteModel(@PathVariable @NotNull UUID modelId) {
         deletionService.deleteModel(modelId);
         return new MessageDTO("Model {} has been deleted", modelId);
     }
 
     @PostMapping("models/{modelId}/predict")
     @Transactional
-    public PredictionDTO predict(@PathVariable @NotNull String modelId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public PredictionDTO predict(@PathVariable @NotNull UUID modelId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
@@ -128,7 +129,7 @@ public class ModelController {
     }
 
     @GetMapping("models/prepare-delete/{modelId}")
-    public PrepareDeleteDTO prepareModelDelete(@PathVariable @NotNull String modelId) {
+    public PrepareDeleteDTO prepareModelDelete(@PathVariable @NotNull UUID modelId) {
         return usageService.prepareDeleteModel(modelId);
     }
 }

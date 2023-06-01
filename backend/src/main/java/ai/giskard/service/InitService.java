@@ -245,9 +245,9 @@ public class InitService {
     }
 
     private void loadDatasets(Project project) throws IOException {
-        List<String> ids = copyResource(project, "datasets");
+        List<UUID> ids = copyResource(project, "datasets");
 
-        for (String id : ids) {
+        for (UUID id : ids) {
             Path metaPath = fileLocationService.resolvedDatasetPath(project.getKey(), id).resolve("giskard-dataset-meta.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -259,9 +259,9 @@ public class InitService {
     }
 
     private void loadModels(Project project) throws IOException {
-        List<String> ids = copyResource(project, "models");
+        List<UUID> ids = copyResource(project, "models");
 
-        for (String id : ids) {
+        for (UUID id : ids) {
             Path metaPath = fileLocationService.resolvedModelPath(project.getKey(), id).resolve("giskard-model-meta.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -272,7 +272,7 @@ public class InitService {
         }
     }
 
-    private List<String> copyResource(Project project, String artifactType) throws IOException {
+    private List<UUID> copyResource(Project project, String artifactType) throws IOException {
         Resource[] artifactResources;
 
         Path originalRoot = Paths.get("demo_projects", project.getKey(), artifactType);
@@ -293,8 +293,8 @@ public class InitService {
         }
     }
 
-    private List<String> loadFilesystemArtifacts(String artifactType, Path originalRoot, PathMatchingResourcePatternResolver resolver, @NotNull String projectKey) throws IOException {
-        List<String> res = new ArrayList<>();
+    private List<UUID> loadFilesystemArtifacts(String artifactType, Path originalRoot, PathMatchingResourcePatternResolver resolver, @NotNull String projectKey) throws IOException {
+        List<UUID> res = new ArrayList<>();
         for (Resource resource : resolver.getResources(originalRoot.resolve("*").toString())) {
             if (!resource.getFile().isDirectory()) {
                 continue;
@@ -302,7 +302,7 @@ public class InitService {
             String resourceId = resource.getFilename();
             assert resourceId != null;
 
-            res.add(resourceId);
+            res.add(UUID.fromString(resourceId));
             FileUtils.copyDirectory(resource.getFile(),
                 fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(resourceId).toFile());
         }
@@ -310,8 +310,8 @@ public class InitService {
     }
 
 
-    private List<String> loadClasspathArtifacts(String artifactType, Resource[] artifactResources, Path originalRoot, @NotNull String projectKey) throws IOException {
-        List<String> artifactIds = new ArrayList<>();
+    private List<UUID> loadClasspathArtifacts(String artifactType, Resource[] artifactResources, Path originalRoot, @NotNull String projectKey) throws IOException {
+        List<UUID> artifactIds = new ArrayList<>();
         for (Resource resource : artifactResources) {
             byte[] content = resource.getInputStream().readAllBytes();
 
@@ -320,7 +320,7 @@ public class InitService {
             Path destination = fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(relativeResourcePath);
 
             if (relativeResourcePath.getNameCount() == 1 && !relativeResourcePath.getName(0).toString().isEmpty()) {
-                artifactIds.add(relativeResourcePath.getName(0).toString());
+                artifactIds.add(UUID.fromString(relativeResourcePath.getName(0).toString()));
             }
 
             if (content.length == 0) {
