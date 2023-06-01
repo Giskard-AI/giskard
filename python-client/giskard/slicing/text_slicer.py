@@ -83,9 +83,13 @@ class TextSlicer(BaseSlicer):
 
     def _get_top_tokens(self, feature_data, n=30):
         from sklearn.feature_extraction.text import TfidfVectorizer
+        from spacy.lang.fr.stop_words import STOP_WORDS as fr_stop
+        from spacy.lang.en.stop_words import STOP_WORDS as en_stop
+
+        final_stopwords_list = list(fr_stop) + list(en_stop)
 
         text_data = feature_data.values.astype("U")
-        vectorizer = TfidfVectorizer(stop_words="english")
+        vectorizer = TfidfVectorizer(stop_words=final_stopwords_list)
         tfidf = vectorizer.fit_transform(text_data)
 
         vocab = vectorizer.vocabulary_
