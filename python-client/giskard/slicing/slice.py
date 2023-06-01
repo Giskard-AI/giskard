@@ -61,6 +61,21 @@ class ContainsWord(Clause):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, is_not={repr(self.is_not)})"
 
 
+class IsNa(Clause):
+    def __init__(self, column, is_not: bool = False):
+        self.column = column
+        self.is_not = is_not
+
+    def __str__(self) -> str:
+        return f"`{self.column}` ${'is not empty' if self.is_not else 'is empty'}"
+
+    def mask(self, df: pd.DataFrame) -> pd.Series:
+        return df[self.column].isna().ne(self.is_not)
+
+    def init_code(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, is_not={repr(self.is_not)})"
+
+
 class StartsWith(Clause):
     def __init__(self, column, value):
         self.column = column

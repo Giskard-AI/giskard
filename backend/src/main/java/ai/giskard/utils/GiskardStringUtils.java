@@ -19,4 +19,23 @@ public class GiskardStringUtils {
         slug = MULTIDASH.matcher(slug).replaceAll("_");
         return slug.toLowerCase(Locale.ENGLISH);
     }
+
+    public static String escapePythonVariable(String value) {
+        return escapePythonVariable(value, "str");
+    }
+
+    public static String escapePythonVariable(String value, String columnDtype) {
+        if (value == null) {
+            return "None";
+        }
+
+        if (columnDtype.startsWith("int")) {
+            return Long.toString(Long.parseLong(value));
+        } else if (columnDtype.startsWith("float")) {
+            return Double.toString(Double.parseDouble(value));
+        } else {
+            return String.format("'%s'", value.replaceAll("'", "\\'"));
+        }
+    }
+
 }
