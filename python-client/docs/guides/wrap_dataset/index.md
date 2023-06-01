@@ -1,6 +1,6 @@
 # 📦 Wrap your dataset
 
-To scan your model, you need to provide a dataset that can be executed by your model. This dataset can be your train, test, golden or production dataset. 
+To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your train, test, golden or production dataset. 
 
 The `pandas.DataFrame` you provide should contain the **raw data before prepocessing** (categorical encoding, scaling,
 etc.).
