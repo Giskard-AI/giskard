@@ -1,4 +1,4 @@
-# Create custom test suite
+# Create a test suite
 
 :::{warning}
 First you'll need to create a Model and a dataset (And scan your model),
@@ -254,7 +254,7 @@ a test class or a test function.
 :::
 
 :::{tab-item} Shared test input
-![](../assets/tests_examples.png)
+![](../../assets/tests_examples.png)
 :::
 ::::
 
