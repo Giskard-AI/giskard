@@ -14,6 +14,7 @@ service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
+  rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (RunModelResponse) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
@@ -94,11 +95,11 @@ message ExplainResponse{
 
 
 message ExplainTextResponse{
-    message WeightsPerFeature{
-        repeated float weights = 1;
-    }
-    repeated string words = 1;
-    map<string, WeightsPerFeature> weights = 2;
+  message WeightsPerFeature{
+    repeated float weights = 1;
+  }
+  repeated string words = 1;
+  map<string, WeightsPerFeature> weights = 2;
 }
 
 message RunModelForDataFrameResponse{
@@ -137,6 +138,17 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
+message RunTestSuiteRequest {
+  repeated string testId = 1;
+  repeated TestArgument globalArguments = 2;
+  repeated FixedTestArgument fixedArguments = 3;
+}
+
+message FixedTestArgument {
+  string testId = 1;
+  repeated TestArgument arguments = 2;
+}
+
 message TestArgument{
   string name = 1;
   oneof argument{
@@ -166,7 +178,6 @@ message Partial_unexpected_counts {
 message NamedSingleTestResult{
   string name = 1;
   SingleTestResult result = 2;
-
 }
 
 
@@ -202,6 +213,11 @@ message SingleTestResult{
 
 message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
+}
+
+message TestSuiteResultMessage {
+  bool is_pass = 1;
+  repeated NamedSingleTestResult results = 2;
 }
 
 message ArtifactRef{

@@ -16,6 +16,7 @@ from giskard import test
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
 
 def _verify_target_availability(dataset):
@@ -96,6 +97,45 @@ def _test_diff_prediction(
         metric=change_pct,
         passed=change_pct < threshold,
     )
+
+
+@test(name="AUC test class", tags=["performance"])
+class AucTest(GiskardTest):
+    """
+    Test if the model AUC performance is higher than a threshold for a given slice
+
+    Example : The test is passed when the AUC for females is higher than 0.7
+    """
+    actual_slice: Dataset
+    model: Model
+    threshold: float
+
+    def __init__(self,
+                 actual_slice: Dataset = None,
+                 model: Model = None,
+                 threshold: float = None):
+        """
+        Init an AucTest instance, can be passed in Suite.add_test method
+        :param actual_slice: Slice of the actual dataset
+        :param model: Model used to compute the test
+        :param threshold: Threshold value of AUC metrics
+        """
+        self.actual_slice = actual_slice
+        self.model = model
+        self.threshold = threshold
+
+    def execute(self) -> SingleTestResult:
+        """
+
+        :return:
+          actual_slices_size:
+            Length of actual_slice tested
+          metric:
+            The AUC performance metric
+          passed:
+            TRUE if AUC metrics >= threshold
+        """
+        return test_auc(self.actual_slice, self.model, self.threshold)
 
 
 @test(name='AUC', tags=['performance'])

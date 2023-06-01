@@ -141,7 +141,7 @@ class GiskardTestRegistry:
             try:
                 code = inspect.getsource(func)
             except Exception as e:
-                logger.debug(f"Failed to extract test function code {full_name}", e)
+                logger.info(f"Failed to extract test function code {full_name}", e)
 
             self._tests[full_name] = TestFunction(
                 id=full_name,
@@ -156,13 +156,14 @@ class GiskardTestRegistry:
                     name: TestFunctionArgument(
                         name=name,
                         type=parameters[name].annotation.__qualname__,
-                        optional=parameters[name].default != inspect.Parameter.empty,
+                        optional=parameters[name].default != inspect.Parameter.empty
+                                 and parameters[name].default is not None,
                         default=None if parameters[name].default == inspect.Parameter.empty else parameters[
                             name].default
                     )
                     for name in parameters}
             )
-            logger.debug(f"Registered test function: {full_name}")
+            logger.info(f"Registered test function: {full_name}")
 
     @staticmethod
     def _extract_doc(func):
