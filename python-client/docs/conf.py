@@ -21,7 +21,7 @@ extensions = ["myst_parser",
               'sphinx.ext.autodoc',
               'sphinx.ext.linkcode']
 
-autodoc_mock_imports = ["giskard.ml_worker.generated"]
+# autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
