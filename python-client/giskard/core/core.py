@@ -254,10 +254,38 @@ class TestFunctionMeta(CallableMeta):
 
 
 class DatasetProcessFunctionMeta(CallableMeta):
+    cell_level: bool
+    column_type: Optional[str]
+
+    def __init__(self,
+                 callable_obj: Union[Callable, Type] = None,
+                 name: Optional[str] = None,
+                 tags: List[str] = None,
+                 version: Optional[int] = None,
+                 type: str = None,
+                 cell_level: bool = False,
+                 column_type: Optional[str] = None):
+        super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
+        self.cell_level = cell_level
+        self.column_type = column_type
+
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
 
         return {p.name: p for p in parameters}
+
+    def to_json(self):
+        json = super().to_json()
+        return {
+            **json,
+            'cellLevel': self.cell_level,
+            'columnType': self.column_type
+        }
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.cell_level = json["cellLevel"]
+        self.column_type = json["columnType"]
 
 
 DT = TypeVar('DT')
