@@ -35,6 +35,7 @@ import {
     SliceDTO,
     SuiteTestDTO,
     TestFunctionDTO,
+    TestInputDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -370,7 +371,7 @@ export const api = {
     async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
-    async updateTestInputs(projectId: number, suiteId: number, testId: string, inputs: { [key: string]: string }) {
+    async updateTestInputs(projectId: number, suiteId: number, testId: string, inputs: TestInputDTO[]) {
         return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {

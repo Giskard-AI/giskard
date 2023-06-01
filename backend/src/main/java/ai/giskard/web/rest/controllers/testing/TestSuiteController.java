@@ -7,10 +7,7 @@ import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestFunctionService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
-import ai.giskard.web.dto.GenerateTestSuiteDTO;
-import ai.giskard.web.dto.SuiteTestDTO;
-import ai.giskard.web.dto.TestSuiteCompleteDTO;
-import ai.giskard.web.dto.TestSuiteDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -117,7 +114,7 @@ public class TestSuiteController {
     public TestSuiteDTO updateTestInputs(@PathVariable("projectId") long projectId,
                                          @PathVariable("suiteId") long suiteId,
                                          @PathVariable("testUuid") @NotBlank String testUuid,
-                                         @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+                                         @Valid @RequestBody List<@Valid TestInputDTO> inputs) {
         return testSuiteService.updateTestInputs(suiteId, testUuid, inputs);
     }
 

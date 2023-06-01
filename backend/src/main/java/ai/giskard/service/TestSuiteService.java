@@ -99,7 +99,7 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
+    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, List<TestInputDTO> inputs) {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
@@ -109,21 +109,23 @@ public class TestSuiteService {
         verifyAllInputExists(inputs, test);
 
         test.getTestInputs().clear();
-        test.getTestInputs().addAll(inputs.entrySet().stream()
-            .filter(entry -> entry.getValue() != null)
-            .map(entry -> new TestInput(entry.getKey(), entry.getValue(), test))
+        test.getTestInputs().addAll(inputs.stream()
+            .filter(i -> i.getValue() != null)
+            .map(giskardMapper::fromDTO)
             .toList());
+        test.getTestInputs().forEach(input -> input.setTest(test));
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    private void verifyAllInputExists(Map<String, String> providedInputs,
+    private void verifyAllInputExists(List<TestInputDTO> providedInputs,
                                       SuiteTest test) {
         Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
             .map(TestFunctionArgument::getName)
             .collect(Collectors.toSet());
 
-        List<String> nonExistingInputs = providedInputs.keySet().stream()
+        List<String> nonExistingInputs = providedInputs.stream()
+            .map(TestInputDTO::getName)
             .filter(providedInput -> !requiredInputs.contains(providedInput))
             .toList();
 

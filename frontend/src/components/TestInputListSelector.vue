@@ -30,22 +30,43 @@
                 props.testInputs[input.name].value
               }}</span>
           </template>
-          <template v-else-if="props.modelValue">
-            <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                             v-if="input.type === 'Dataset'" :value.sync="props.modelValue[input.name]"/>
-            <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                           v-else-if="input.type === 'Model'" :value.sync="props.modelValue[input.name]"/>
-            <v-text-field
-                :step='input.type === "float" ? 0.1 : 1'
-                v-model="props.modelValue[input.name]"
-                v-else-if="['float', 'int'].includes(input.type)"
-                hide-details
-                single-line
-                type="number"
+          <div v-else-if="props.modelValue" class="d-flex">
+            <template v-if="sharedInputs && sharedInputs.filter(i => i.type === input.type).length > 0">
+              <v-btn icon v-if="!props.modelValue[input.name].isAlias" @click="() => linkInput(input.name, true)">
+                <v-icon>link</v-icon>
+              </v-btn>
+              <v-btn icon v-else @click="() => linkInput(input.name, false)">
+                <v-icon>link_off</v-icon>
+              </v-btn>
+            </template>
+            <template v-if="!props.modelValue[input.name].isAlias">
+              <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
+                               v-if="input.type === 'Dataset'" :value.sync="props.modelValue[input.name].value"/>
+              <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
+                             v-else-if="input.type === 'Model'" :value.sync="props.modelValue[input.name].value"/>
+              <v-text-field
+                  :step='input.type === "float" ? 0.1 : 1'
+                  v-model="props.modelValue[input.name].value"
+                  v-else-if="['float', 'int'].includes(input.type)"
+                  hide-details
+                  single-line
+                  type="number"
+                  outlined
+                  dense
+              />
+            </template>
+            <v-select
+                v-else
+                clearable
                 outlined
+                v-model="props.modelValue[input.name].value"
+                :items="sharedInputs.filter(i => i.type === input.type)"
+                item-text="name"
+                item-value="name"
                 dense
-            />
-          </template>
+                hide-details
+            ></v-select>
+          </div>
 
         </v-col>
       </v-row>
@@ -65,15 +86,23 @@ const props = defineProps<{
   test?: TestFunctionDTO,
   projectId: number,
   inputs: { [name: string]: string },
-  modelValue?: { [name: string]: any },
+  modelValue?: { [name: string]: TestInputDTO },
+  sharedInputs?: Array<TestInputDTO>,
   editing: boolean
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
 
+
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,
   type: props.inputs[name]
 })));
+
+
+function linkInput(name: string, link: boolean) {
+  props.modelValue![name].value = '';
+  props.modelValue![name].isAlias = link;
+}
 
 </script>
