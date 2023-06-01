@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass
 
 from ..issues import Issue, IssueInfo
-from ...models.base import BaseModel
+from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
 
 
@@ -13,6 +13,7 @@ class RobustnessIssueInfo(IssueInfo):
     perturbation_name: str
     fail_ratio: float
     perturbed_data_slice: Dataset
+    perturbed_data_slice_predictions: ModelPredictionResults
     fail_data_idx: list
 
 
@@ -46,11 +47,7 @@ class RobustnessIssue(Issue):
     def examples(self, n=3) -> pd.DataFrame:
         idx = np.random.choice(self.info.fail_data_idx, min(len(self.info.fail_data_idx), n))
 
-        pert_data = self.info.perturbed_data_slice.df.loc[idx, (self.info.feature, self.dataset.target)]
-        examples = self.dataset.df.loc[idx]
-        examples = examples.join(pert_data, rsuffix="_perturbed")
-
-        return examples
+        return self.dataset.df.loc[idx]
 
     @property
     def importance(self) -> float:
