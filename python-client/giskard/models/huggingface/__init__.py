@@ -46,7 +46,7 @@ class HuggingFaceModel(WrapperModel):
             with open(huggingface_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
 
-        return AutoModel.from_pretrained(local_path, from_tf=pytorch_meta["from_tf"]) #AutoModel.from_pretrained(local_path, from_tf=False) #cls.from_tf) #PreTrainedModel.from_pretrained(local_path)
+        return AutoModel.from_pretrained(local_path, from_tf=pytorch_meta["from_tf"])
 
     def save_huggingface_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
@@ -82,7 +82,7 @@ class HuggingFaceModel(WrapperModel):
     def clf_predict(self, data):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
-                predictions = self.clf(**data) #if isinstance(data, dict) else self.clf(data)
+                predictions = self.clf(**data)
         elif isinstance(self.clf, pipelines.Pipeline):
             _predictions = self.clf(data, top_k=None)
             predictions = []
