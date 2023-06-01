@@ -1,7 +1,10 @@
-import pandas as pd
 from unittest import mock
+
+import pandas as pd
+
 from giskard.datasets import Dataset
 from giskard.datasets.metadata import MetadataProviderRegistry, MetadataProvider
+from giskard.datasets.metadata.indexing import ColumnMetadataMixin, MetadataIndexer
 from giskard.datasets.metadata.text_metadata_provider import TextMetadataProvider
 
 
@@ -40,6 +43,22 @@ def test_dataset_metadata_indexer():
     assert "test1" in metadata.columns
     assert "test2" in metadata.columns
     assert metadata["test1"].tolist() == [1, 2]
+
+
+def test_column_metadata_mixin():
+    class Demo(ColumnMetadataMixin):
+        def __init__(self, df):
+            self.df = df
+
+    demo = Demo(pd.DataFrame({"text_feature": ["one", "two"]}))
+
+    assert isinstance(demo.column_meta, MetadataIndexer)
+
+    # Result should be cached
+    instance1 = demo.column_meta
+    instance2 = demo.column_meta
+
+    assert id(instance1) == id(instance2)
 
 
 def test_text_metadata_provider():
