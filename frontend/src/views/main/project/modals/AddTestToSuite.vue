@@ -32,7 +32,7 @@
                 <p class="text-h6 pt-4">Fixed inputs</p>
                 <p>Specify inputs that will be constant during each execution of the test.<br />
                   The inputs left blank will have to be provided at test execution time.</p>
-                <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs" :model-value="testInputs" />
+                <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs" :model-value="testInputs" :doc="doc" />
               </v-col>
             </v-row>
           </v-card-text>
@@ -60,6 +60,7 @@ import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { chain } from 'lodash';
 import { useMainStore } from "@/stores/main";
 import { TYPE } from 'vue-toastification';
+import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
@@ -72,24 +73,26 @@ const dialog = ref<boolean>(false);
 const testSuites = ref<TestSuiteDTO[]>([]);
 const selectedSuite = ref<number | null>(null);
 const testInputs = ref<{ [name: string]: FunctionInputDTO }>({});
+const doc = ref<ParsedDocstring | null>(null);
 
 onMounted(() => loadData());
 
 async function loadData() {
-  testSuites.value = await api.getTestSuites(projectId);
-  selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
-  testInputs.value = test.args.reduce((result, arg) => {
-    result[arg.name] = testArguments[arg.name] ?? {
-      name: arg.name,
-      type: arg.type,
-      isAlias: false,
-      value: '',
-      params: []
-    }
-    return result
-  }, {} as { [name: string]: FunctionInputDTO })
-  testInputs.value['model'].value = null;
-  testInputs.value['dataset'].value = null;
+    doc.value = extractArgumentDocumentation(test)
+    testSuites.value = await api.getTestSuites(projectId);
+    selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
+    testInputs.value = test.args.reduce((result, arg) => {
+      result[arg.name] = testArguments[arg.name] ?? {
+        name: arg.name,
+        type: arg.type,
+        isAlias: false,
+        value: '',
+        params: []
+      }
+      return result
+    }, {} as { [name: string]: FunctionInputDTO })
+    testInputs.value['model'].value = null;
+    testInputs.value['dataset'].value = null;
 }
 
 

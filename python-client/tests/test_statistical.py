@@ -93,5 +93,5 @@ def test_disparate_impact(data, model, request):
     model = request.getfixturevalue(model)
     results = statistical.test_disparate_impact(model=model, dataset=data, protected_slicing_function=SlicingFunction(
         lambda df: df[df.sex == "female"], row_level=False), unprotected_slicing_function=SlicingFunction(
-        lambda df: df[df.sex == "male"], row_level=False), positive_outcome="Not default")
+        lambda df: df[df.sex == "male"], row_level=False), positive_outcome="Not default").execute()
     assert results.passed, f"DI = {results.metric}"

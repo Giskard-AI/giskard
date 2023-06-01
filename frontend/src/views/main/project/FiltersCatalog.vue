@@ -67,7 +67,7 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="selected-func-description pt-2 mb-4">{{ selectedFuncDescription }}</p>
+                                            <p class="selected-func-description pt-2 mb-4">{{ doc.body }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
@@ -102,7 +102,7 @@
                                     </v-row>
                                 </div>
 
-                                <SuiteInputListSelector :editing="true" :modelValue="slicingArguments" :inputs="inputType" :project-id="props.projectId" class="pt-0 mt-0"></SuiteInputListSelector>
+                                <SuiteInputListSelector :editing="true" :modelValue="slicingArguments" :inputs="inputType" :project-id="props.projectId" class="pt-0 mt-0" :doc="doc"></SuiteInputListSelector>
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runSlicingFunction">
@@ -116,17 +116,29 @@
                                             {{
                                                 sliceResult.totalRows
                                             }}</p>
-                                        <DatasetTable :dataset-id="sliceResult.datasetId" :deleted-rows="sliceResult.filteredRows" />
+                                        <DatasetTable :dataset-id="sliceResult.datasetId"
+                                                      :deleted-rows="sliceResult.filteredRows"/>
                                     </v-col>
                                 </v-row>
                             </div>
 
-                            <div id="code-group" class="py-4">
+                            <div id="code-group" class="py-4"
+                                 v-if="selected.processType == DatasetProcessFunctionType.CODE">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
                                     <span class="group-title">Source code</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selected.code"
+                                             :key="selected.name + '_source_code'"></CodeSnippet>
+                            </div>
+                            <div id="code-group" class="py-4"
+                                 v-if="selected.processType == DatasetProcessFunctionType.CLAUSES">
+                                <div class="d-flex">
+                                    <v-icon left class="group-icon pb-1 mr-1">mdi-filter-check</v-icon>
+                                    <span class="group-title">Clauses</span>
+                                </div>
+                                <CodeSnippet class="mt-2" :codeContent="selected.name"
+                                             :key="selected.name + '_source_code'"></CodeSnippet>
                             </div>
                         </div>
                     </v-col>
@@ -141,22 +153,23 @@
 </template>
 
 <script setup lang="ts">
-import { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
-import { editor } from "monaco-editor";
-import { FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO } from "@/generated-sources";
+import {chain} from "lodash";
+import {computed, inject, onActivated, ref, watch} from "vue";
+import {pasterColor} from "@/utils";
+import {editor} from "monaco-editor";
+import {DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import { api } from "@/api";
+import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
-import { alphabeticallySorted } from "@/utils/comparators";
-import IEditorOptions = editor.IEditorOptions;
+import {alphabeticallySorted} from "@/utils/comparators";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import IEditorOptions = editor.IEditorOptions;
 
 let props = defineProps<{
     projectId: number,
@@ -174,14 +187,6 @@ const selectedColumn = ref<string | null>(null);
 let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 
 const panel = ref<number[]>([0]);
-
-const selectedFuncDescription = computed(() => {
-    if (selected.value === null) {
-        return '';
-    }
-
-    return selected.value.doc.split("Args:")[0];
-})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -234,7 +239,7 @@ async function runSlicingFunction() {
     sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
         params,
-        type: 'SLICING'
+        type: 'SLICING',
     }]);
 
 }
@@ -263,6 +268,9 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     .value()
 );
 
+const doc = computed(() => extractArgumentDocumentation(selected.value));
+
+
 </script>
 
 <style scoped lang="scss">
@@ -277,12 +285,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .box-grow {
     flex: 1;
-    /* formerly flex: 1 0 auto; */
     background: green;
     padding: 5px;
     margin: 5px;
     min-height: 0;
-    /* new */
 }
 
 ::v-deep .v-expansion-panel-content__wrap {
