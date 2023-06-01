@@ -94,3 +94,7 @@ True to keep the row or False to filter out the row.
 
 ::::
 :::::
+
+{% hint style="success" %}
+To upload your slicing function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+{% endhint %}
