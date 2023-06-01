@@ -90,17 +90,29 @@ class Model(CloudpickleBasedModel):
                 "\n`model` can be either a model object (classifier, regressor, etc.) or a prediction function."
                 "\nIf a model object is provided, we use a model-tailored serialization method during its upload."
                 "\nIf a prediction function is provided, we use cloudpickle to serialize it.")
-
         else:
             giskard_cls = infer_giskard_cls(model)
             # if the Auto class is overriden (thus != Auto) -> get the methods from the subclass
             # if the Auto class is called (thus == Auto) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
-            methods_holding_class = cls if cls.__name__ != 'Model' else giskard_cls if giskard_cls else CloudpickleBasedModel
-            methods = dict(methods_holding_class.__dict__)
-            output_cls = type(methods_holding_class.__name__, (giskard_cls,), methods)
+            is_overriden = cls.__name__ != 'Model'
+            possibly_overriden_cls = cls if is_overriden else giskard_cls if giskard_cls else CloudpickleBasedModel
 
-            return output_cls(
+            if is_overriden:
+                # Minimally model_predict should be overriden (the abstract method in CloudpickleBasedModel)
+                giskard_cls.model_predict = possibly_overriden_cls.model_predict
+
+                # No need to override save_model and load_model except if we don't support the model library, in which
+                # case giskard_cls == CloudpickleBasedModel.
+                # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
+                if giskard_cls == CloudpickleBasedModel:
+                    giskard_cls.save_model = possibly_overriden_cls.save_model
+                    giskard_cls.load_model = possibly_overriden_cls.load_model
+
+            methods = dict(giskard_cls.__dict__)
+            output_cls = type(possibly_overriden_cls.__name__, (giskard_cls,), methods)
+
+            obj = output_cls(
                 model=model,
                 model_type=model_type,
                 data_preprocessing_function=data_preprocessing_function,
@@ -110,3 +122,9 @@ class Model(CloudpickleBasedModel):
                 classification_threshold=classification_threshold,
                 classification_labels=classification_labels,
                 **kwargs)
+
+            # Important in order for the load method to be executed consistently
+            obj.meta.loader_class = giskard_cls.__name__
+            obj.meta.loader_module = giskard_cls.__module__
+
+            return obj
