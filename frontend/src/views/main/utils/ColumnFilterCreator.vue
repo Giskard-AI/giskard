@@ -40,7 +40,7 @@
                 label="Value"
                 :value="value"
                 @input="handleValueInput"
-                type="number" :disabled="!slicingType"/>
+                type="number" :disabled="!slicingType || !SLICING_TYPE_WITH_VALUE.includes(slicingType)"/>
             <v-select
                 class="input-md"
                 v-else
@@ -48,7 +48,7 @@
                 :value="value"
                 @input="handleValueInput"
                 label="Value"
-                :disabled="!slicingType"
+                :disabled="!slicingType || !SLICING_TYPE_WITH_VALUE.includes(slicingType)"
             />
         </v-col>
     </v-row>
