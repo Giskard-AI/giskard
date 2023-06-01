@@ -23,7 +23,8 @@ def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
     assert (dataset.df.index == original_idx).all()
 
     # Try with an index that is not a sequence of integers
-    dataset = Dataset(dataset.df.set_index(pd.to_datetime(dataset.df.index)), column_types=dataset.column_types)
+    dataset = Dataset(dataset.df.set_index(pd.to_datetime(dataset.df.index)), column_types=dataset.column_types,
+                      target=dataset.target)
     original_idx = dataset.df.index.copy()
 
     _ = test_accuracy(
