@@ -69,14 +69,13 @@ class TextTransformer:
             return token
 
     def _switch_religion(self, token):
-        for key, value in religion_dict.items():
-            if token.lower() in value.values():
-                new_religion = random.choice([k for k in religion_dict.keys() if k != key])
-                new_value = random.choice(
-                    [v for k, v in religion_dict[new_religion].items() if k in value.keys()])
-                return new_value
-            else:
-                return token
+        token_low=token.lower()
+        for word_list in religion_dict.values():
+            if token_low in word_list:
+                word_list.remove(token_low)
+                switch_to_random_word = random.choice(word_list)
+                return switch_to_random_word
+        return token
 
     def _replace_by_mask(self):
         # doc = self.tokenize()
