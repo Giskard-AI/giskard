@@ -1,7 +1,7 @@
 package ai.giskard.domain.ml;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ai.giskard.worker.GeneratedTestInput;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,15 +23,21 @@ public class TestInput {
     @NotNull
     private String name;
 
+    private String type;
+
     private String value;
 
     private boolean isAlias = false;
 
     @ManyToOne
     @JoinColumn(name = "test_id")
-    @NotNull
     @JsonIgnore
     private SuiteTest test;
+
+    @ManyToOne
+    @JoinColumn(name = "suite_id")
+    @JsonIgnore
+    private TestSuite suite;
 
     public TestInput(String name, String value, SuiteTest test) {
         this.name = name;

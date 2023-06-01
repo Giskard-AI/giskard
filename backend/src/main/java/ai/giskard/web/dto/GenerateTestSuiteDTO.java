@@ -12,4 +12,7 @@ public class GenerateTestSuiteDTO {
     private String name;
     @NotNull
     private List<@NotNull GenerateTestSuiteInputDTO> inputs;
+
+    @NotNull
+    private List<@NotNull TestInputDTO> sharedInputs;
 }

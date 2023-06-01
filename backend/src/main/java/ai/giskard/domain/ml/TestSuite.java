@@ -24,6 +24,9 @@ public class TestSuite extends AbstractAuditingEntity {
     private Project project;
 
     @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TestInput> testInputs = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SuiteTest> tests = new java.util.ArrayList<>();
 
     @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL)
