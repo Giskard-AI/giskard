@@ -46,7 +46,7 @@
       <v-text-field v-model="searchFilter" append-icon="search"
                     label="Search" type="text" dense></v-text-field>
     </div>
-    <SuiteTestExecutionList :tests="filteredTest"/>
+    <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
   </v-container>
 </template>
 
