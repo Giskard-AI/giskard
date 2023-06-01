@@ -4,7 +4,7 @@ import pandas as pd
 from giskard import test
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.core.test_result import TestResult
 
 
 @test(name="Right Label", tags=["heuristic"])
@@ -13,7 +13,7 @@ def test_right_label(
         model: Model,
         classification_label: str,
         threshold: float = 0.5,
-) -> SingleTestResult:
+) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
 
@@ -51,7 +51,7 @@ def test_right_label(
     passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
     passed_ratio = len(passed_idx) / len(actual_slice)
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(actual_slice)],
         metric=passed_ratio,
         passed=passed_ratio > threshold,
@@ -66,7 +66,7 @@ def test_output_in_range(
         min_range: float = 0.3,
         max_range: float = 0.7,
         threshold: float = 0.5,
-) -> SingleTestResult:
+) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
 
@@ -130,7 +130,7 @@ def test_output_in_range(
 
     passed_ratio = len(passed_idx) / len(actual_slice)
 
-    return SingleTestResult(
+    return TestResult(
         actual_slices_size=[len(actual_slice)],
         metric=passed_ratio,
         passed=passed_ratio >= threshold,
