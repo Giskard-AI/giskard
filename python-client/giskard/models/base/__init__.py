@@ -293,7 +293,7 @@ class BaseModel(ABC):
             )
         else:
             raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
-        timer.stop(f"Predicted dataset with shape {df.shape}")
+        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 
     @abstractmethod
@@ -310,7 +310,9 @@ class BaseModel(ABC):
         if len(missing.shape) > 1:
             missing = missing.any(axis=1)
 
-        df = self.prepare_dataframe(self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False).df, column_dtypes=dataset.column_dtypes, target=dataset.target))
+        missing_slice = dataset.slice(lambda x: dataset.df[missing], row_level=False)
+        df = self.prepare_dataframe(missing_slice.df, column_dtypes=missing_slice.column_dtypes,
+                                    target=missing_slice.target)
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
