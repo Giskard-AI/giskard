@@ -79,16 +79,16 @@ RUN apt-get update && \
         build-essential vim
 
 RUN pip install --upgrade pip && \
-    pip install -U pip setuptools
-
-RUN curl -sSL https://install.python-poetry.org | python3 -
+    pip install -U pip && \
+    pip install pdm
 
 WORKDIR $PYSETUP_PATH
 
-COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
+COPY ./python-client/pyproject.toml ./python-client/pdm.lock ./
 
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --only main ; fi"
+WORKDIR $PYSETUP_PATH/python-client
+RUN pdm install
 
 RUN pip install  \
     torch==1.12.0 \
