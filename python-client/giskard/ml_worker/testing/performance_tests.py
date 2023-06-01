@@ -34,7 +34,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value of AUC metrics
 
@@ -118,7 +118,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for F1 Score
 
@@ -142,7 +142,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Accuracy
 
@@ -166,7 +166,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Precision
         Returns:
@@ -189,7 +189,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Recall
         Returns:
@@ -216,7 +216,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for RMSE
         Returns:
@@ -239,7 +239,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for MAE
 
@@ -265,7 +265,7 @@ class PerformanceTests(AbstractTestCollection):
             actual_slice(Dataset):
               Slice of actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for R-Squared
 
@@ -329,7 +329,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Accuracy Score difference
         Returns:
@@ -366,7 +366,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for F1 Score difference
 
@@ -399,7 +399,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Precision difference
         Returns:
@@ -436,7 +436,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Recall difference
         Returns:
@@ -469,7 +469,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of reference dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for F1 Score difference
         Returns:
@@ -502,7 +502,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of reference dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for Accuracy difference
         Returns:
@@ -539,7 +539,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of the actual dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for RMSE difference
 
@@ -573,7 +573,7 @@ class PerformanceTests(AbstractTestCollection):
             reference_slice(Dataset):
               Slice of reference dataset
             model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
             threshold(float):
               Threshold value for RMSE difference
         Returns:
