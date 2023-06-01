@@ -47,7 +47,7 @@ class TextClassificationModel(nn.Module):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
 
-@pytest.mark.skip(reason="WIP")
+#@pytest.mark.skip(reason="WIP")
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_text_sentiment_ngrams_tutorial():
 
@@ -179,8 +179,7 @@ def test_text_sentiment_ngrams_tutorial():
 
 
     #=== original implementation
-    def softmax(x):
-        """Compute softmax values for each sets of scores in x."""
+    """def softmax(x):
         return np.exp(x) / np.sum(np.exp(x), axis=0)
 
     def predict_proba(text):
@@ -192,44 +191,10 @@ def test_text_sentiment_ngrams_tutorial():
 
     def prediction_function(df):
         series = df["text"].apply(predict_proba)
-        return np.array(series.tolist())
+        return np.array(series.tolist())"""
 
-    #===
-
-    #TODO: generalize the PyTorchModel by taking properly the case where data_preprocessing_function returns a dataloader
-    #TODO: Only cases that are spotable by running an if check (like dataloader for instance) should be implemented. Is
-    #TODO: the **data a spottable one? What other options could be present?
-
-    #TODO: It doesn't make sense to have 2 solutions for 2 notebooks.
-
-
-    #=== new implementation
     feature_names = ['text']
 
-    #--- one way of doing things (giskard.PyTorchModel wrapping)
-    class my_PyTorchModel(PyTorchModel):
-        def _raw_predict(self, df):
-            def predict_proba(text):
-                with torch.no_grad():
-                    text = torch.tensor(text_pipeline(text))
-                    output = model(text, torch.tensor([0]))
-                    np_output = output.numpy()[0]
-                    return softmax(np_output)
-
-            def prediction_function(df):
-                series = df["text"].apply(predict_proba)
-                return np.array(series.tolist())
-
-            return prediction_function(df)
-
-
-    my_wrapped_model = my_PyTorchModel(name = "my_wrapped_BertForSequenceClassification",
-                            clf = model,
-                            feature_names = feature_names,
-                            model_type = "classification",
-                            classification_labels = list(ag_news_label.values()))
-
-    #--- Another way of doing things (taking clf and preprocessing_function)
     class PandasToTorch(torch_dataset):
         def __init__(self, df: pd.DataFrame):
             # copy original df
@@ -257,22 +222,20 @@ def test_text_sentiment_ngrams_tutorial():
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    #print(my_model._raw_predict(preprocessing_function(df.head())))
+    print(my_model._raw_predict(PandasToTorch(df.head())))
     my_output = my_model.predict(my_test_dataset)
-    #print(my_wrapped_model.predict(my_test_dataset))
+    print(my_output.raw)
 
-    #validate_model(my_wrapped_model, validate_ds=my_test_dataset)
     #validate_model(my_model, validate_ds=my_test_dataset)
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
 
-    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
+    #TODO: ensure that httpretty works
+    """httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models/upload")
     httpretty.register_uri(httpretty.POST, models_url_pattern)
 
     client = GiskardClient(url, token)
     enron = client.create_project('test-project', "Email Classification", "Email Classification")
-    model_id = my_model.save(client, 'test-project', my_test_dataset)
+    model_id = my_model.save(client, 'test-project', my_test_dataset)"""
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()
