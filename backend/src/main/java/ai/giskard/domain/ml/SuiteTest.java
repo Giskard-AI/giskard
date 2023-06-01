@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -35,7 +36,7 @@ public class SuiteTest {
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 
-    public SuiteTest(TestSuiteNew suite, GeneratedTest test) {
+    public SuiteTest(TestSuite suite, GeneratedTest test) {
         this.testId = test.getTestId();
         this.suite = suite;
         this.testInputs.addAll(test.getInputsList().stream()

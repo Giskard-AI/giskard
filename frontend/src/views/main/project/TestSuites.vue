@@ -1,5 +1,13 @@
 <template>
   <v-container fluid class="vc">
+    <div class="d-flex flex-row-reverse pb-4">
+      <v-btn
+          color="primary"
+          @click="createTestSuite"
+      >
+        New test suite
+      </v-btn>
+    </div>
     <v-row>
       <v-card elevation="2"
               :to="{name: 'test-suite', params: {suiteId: suite.id}}"
@@ -18,17 +26,27 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import {TestSuiteDTO} from "@/generated-sources";
+import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
+import {$vfm} from 'vue-final-modal';
+import {TestSuiteDTO} from '@/generated-sources';
 
 const props = defineProps<{
   projectId: number
 }>();
 
-let suites = ref<TestSuiteDTO[]>([]);
+const suites = ref<TestSuiteDTO[]>([]);
 
-onMounted(async () => {
-  suites.value = await api.getTestSuites(props.projectId);
-})
+onMounted(async () => suites.value = await api.getTestSuites(props.projectId))
 
+async function createTestSuite() {
+  const project = await api.getProject(props.projectId)
+  $vfm.show({
+    component: CreateTestSuiteModal,
+    bind: {
+      projectKey: project.key,
+      projectId: project.id
+    }
+  });
+}
 
 </script>

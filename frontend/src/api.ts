@@ -342,7 +342,7 @@ export const api = {
         return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
     async generateTestSuite(projectId: string, generateTestSuite: GenerateTestSuiteDTO) {
-        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites-new/generate`, generateTestSuite);
+        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites/generate`, generateTestSuite);
     },
     async getTestSuite(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}`);

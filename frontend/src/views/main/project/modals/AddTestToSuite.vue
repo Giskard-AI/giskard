@@ -60,24 +60,24 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
-import {SuiteTestDTO, TestDefinitionDTO, TestSuiteNewDTO} from '@/generated-sources';
+import {SuiteTestDTO, TestDefinitionDTO, TestSuiteDTO} from '@/generated-sources';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {chain, isNull} from 'lodash';
 
-const { projectId, test } = defineProps<{
+const {projectId, test} = defineProps<{
   projectId: number,
   test: TestDefinitionDTO
 }>();
 
 const dialog = ref<boolean>(false);
-const testSuites = ref<TestSuiteNewDTO[]>([]);
-const selectedSuite = ref<TestSuiteNewDTO | null>(null);
+const testSuites = ref<TestSuiteDTO[]>([]);
+const selectedSuite = ref<TestSuiteDTO | null>(null);
 const testInputs = ref<{ [name: string]: any }>({});
 
 onMounted(() => loadData());
 
 async function loadData() {
-  testSuites.value = await api.getTestSuitesNew(projectId);
+  testSuites.value = await api.getTestSuites(projectId);
 }
 
 

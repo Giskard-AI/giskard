@@ -1,15 +1,16 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
+import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.web.dto.TestCatalogDTO;
-import ai.giskard.web.dto.TestDefinitionDTO;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
-import ai.giskard.web.dto.TestSuiteDTO;
+import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.*;
@@ -103,7 +104,7 @@ public class TestSuiteService {
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId.equals(t.getTestId()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testId));
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 
@@ -138,15 +139,15 @@ public class TestSuiteService {
         return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
 
-    public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
-        TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
+    public TestSuite addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
+        TestSuite suite = testSuiteRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
         suite.getTests().add(suiteTest);
 
-        return testSuiteNewRepository.save(suite);
+        return testSuiteRepository.save(suite);
     }
 
     @Transactional
@@ -164,14 +165,14 @@ public class TestSuiteService {
 
             GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
 
-            TestSuiteNew suite = new TestSuiteNew();
+            TestSuite suite = new TestSuite();
             suite.setProject(project);
             suite.setName(dto.getName());
             suite.getTests().addAll(response.getTestsList().stream()
                 .map(test -> new SuiteTest(suite, test))
                 .toList());
 
-            return testSuiteNewRepository.save(suite).getId();
+            return testSuiteRepository.save(suite).getId();
         }
     }
 
