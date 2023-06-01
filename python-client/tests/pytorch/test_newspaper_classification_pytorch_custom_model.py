@@ -10,7 +10,6 @@ from torchtext.vocab import build_vocab_from_iterator
 import tests.utils
 from giskard import PyTorchModel, Dataset
 
-
 train_iter = AG_NEWS(split="train")
 test_iter = AG_NEWS(split="test")
 ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
@@ -71,7 +70,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
     feature_names = ["text"]
 
-    class my_PyTorchModel(PyTorchModel):
+    class MyPyTorchModel(PyTorchModel):
         should_save_model_class = True
 
         def model_predict(self, df):
@@ -88,7 +87,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-    my_model = my_PyTorchModel(
+    my_model = MyPyTorchModel(
         name="my_custom_BertForSequenceClassification",
         model=model,
         feature_names=feature_names,
