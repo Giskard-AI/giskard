@@ -136,6 +136,14 @@ export default new Router({
                                     })
                                 },
                                 {
+                                    path: 'llm-inspection',
+                                    name: 'llm-inspector',
+                                    component: () => import('./views/main/project/LlmInspectorWrapper.vue'),
+                                    props: route => ({
+                                        projectId: Number(route.params.id)
+                                    })
+                                },
+                                {
                                     path: 'feedbacks',
                                     name: 'project-feedbacks',
                                     component: () => import('./views/main/project/FeedbackList.vue'),

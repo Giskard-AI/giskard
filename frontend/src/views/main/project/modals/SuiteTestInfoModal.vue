@@ -44,8 +44,14 @@
           </v-row>
         </v-card-text>
           <v-card-actions>
-              <v-btn>Debug</v-btn>
-              <v-btn @click="saveEditedInputs()">Save</v-btn>
+              <v-btn color="green" :to="{name: 'llm-inspector'}" @click="close">
+                  <v-icon>mdi-bug</v-icon>
+                  Debug
+              </v-btn>
+              <v-btn color="primary" @click="saveEditedInputs()">
+                  <v-icon>save</v-icon>
+                  Save
+              </v-btn>
           </v-card-actions>
       </v-card>
     </div>
