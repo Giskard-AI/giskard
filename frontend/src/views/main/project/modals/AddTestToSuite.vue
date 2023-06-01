@@ -114,9 +114,17 @@ async function checkIfCreateNew() {
 
 async function createTestSuite() {
   const project = await api.getProject(projectId)
+  const date = new Date();
+  const formattedDate = date.getFullYear() + '-' +
+    ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + date.getDate()).slice(-2) + ' ' +
+    ('0' + date.getHours()).slice(-2) + ':' +
+    ('0' + date.getMinutes()).slice(-2) + ':' +
+    ('0' + date.getSeconds()).slice(-2);
+
   const suite = await api.createTestSuite(project.key, {
     id: null,
-    name: `Test suite for ${test.name}`,
+    name: `Test suite ${formattedDate}`,
     projectKey: project.key,
     testInputs: [],
     tests: []
@@ -124,7 +132,7 @@ async function createTestSuite() {
 
   await loadData();
 
-  selectedSuite.value = testSuites.value.slice(-1)[0].id!;
+  selectedSuite.value = suite;
 }
 
 </script>
