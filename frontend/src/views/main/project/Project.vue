@@ -8,8 +8,10 @@
         <span class="text-subtitle-1">
           <span class="mr-1">/</span>{{ project.name }}
         </span>
-        <v-btn icon :to="{ name: 'project-overview' }">
-          <v-icon> info </v-icon>
+        <v-btn icon id="no-background-hover" :to="{ name: 'project-overview' }">
+          <span class="group pa-2">
+            <v-icon medium>info</v-icon>
+          </span>
         </v-btn>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -164,7 +166,6 @@ import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { Route } from "vue-router";
 import { getUserFullDisplayName } from "@/utils";
-import ProjectOverviewTooltip from "@/components/ProjectOverviewTooltip.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -291,5 +292,17 @@ async function deleteProject() {
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
+}
+
+#no-background-hover {
+  cursor: default;
+}
+
+#no-background-hover::before {
+  background-color: transparent !important;
+}
+
+#no-background-hover span {
+  cursor: pointer;
 }
 </style>
