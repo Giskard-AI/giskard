@@ -11,4 +11,3 @@ Getting started
 
    installation/index
    test-catalog/index
-
