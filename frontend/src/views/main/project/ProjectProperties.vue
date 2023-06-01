@@ -13,7 +13,7 @@
                   Export
                 </v-list-item-title>
               </v-list-item>
-              <v-list-item link @click="deleteProject">
+              <v-list-item link @click="openDeleteDialog = true">
                 <v-list-item-title class="accent--text">
                   <v-icon dense left color="accent">delete</v-icon>
                   Delete
@@ -146,6 +146,23 @@
         </v-card>
       </v-col>
     </v-row>
+
+
+    <v-dialog persistent max-width="340" v-model="openDeleteDialog">
+      <v-card>
+        <v-card-title>
+          Are you sure you want to delete project?
+        </v-card-title>
+        <v-card-text class="accent--text">
+          All data and files will be lost!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" text @click="openDeleteDialog = false">Cancel</v-btn>
+          <v-btn color="accent" text @click="deleteProject();">Ok</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -161,6 +178,8 @@ import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
+import { useRouter } from "vue-router/composables";
+
 
 
 interface Props {
@@ -172,13 +191,15 @@ const props = withDefaults(defineProps<Props>(), {
   isProjectOwnerOrAdmin: false
 });
 
+const router = useRouter();
+
+const projectStore = useProjectStore();
+
+const openDeleteDialog = ref(false);
 const datasetsComponentRef = ref<any>(null);
 const modelsComponentRef = ref<any>(null);
 
 const project = computed(() => useProjectStore().project(props.projectId))
-const projectStore = useProjectStore();
-
-const emit = defineEmits(['exportProject', 'deleteProject'])
 
 function reloadDataObjects() {
   datasetsComponentRef.value.loadDatasets();
@@ -256,13 +277,20 @@ async function editProject(data: ProjectPostDTO) {
 }
 
 function exportProject() {
-  emit('exportProject', project.value!.id);
-  console.log('export project');
+  mixpanel.track('Export project', { project: project.value!.id });
+  projectStore.exportProject(project.value!.id);
 }
 
-function deleteProject() {
-  emit('deleteProject', project.value!.id);
-  console.log('delete project');
+async function deleteProject() {
+  if (project.value) {
+    try {
+      mixpanel.track('Delete project', { id: project.value!.id });
+      await projectStore.deleteProject({ id: project.value!.id })
+      await router.push('/main/dashboard');
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
 }
 </script>
 
