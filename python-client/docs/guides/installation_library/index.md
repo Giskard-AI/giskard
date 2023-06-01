@@ -22,7 +22,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 
 ## Requirements
 
-Giskard works with Python 3.8, 3.9 and 3.10.
+Giskard works with Python `3.8`, `3.9` and `3.10`.
 
 Below is the list of dependencies to make Giskard work:
 XXXX
@@ -31,7 +31,7 @@ XXXX
 
 While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies for Giskard), please change the version of the conflicting libraries. 
 
-For instance, if you have dependency conflicts with `pandas`, please do
+For instance, if you have dependency conflicts with `pandas`, please do:
 ```sh
 pip uninstall giskard
 pip uninstall pandas
