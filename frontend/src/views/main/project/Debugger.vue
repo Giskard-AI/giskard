@@ -59,7 +59,7 @@ onActivated(() => loadInspections());
     <v-container fluid class="vc" v-if="inspections.length > 0">
       <v-row>
         <v-col cols="4">
-          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection"></v-text-field>
+          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection" disabled></v-text-field>
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
