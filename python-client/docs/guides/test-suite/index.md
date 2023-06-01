@@ -297,7 +297,7 @@ project_name = "enron"
 client = GiskardClient(url, token)
 
 # Create a project
-client.create_project(project_name, "Email Classification", "Email Classification")
+client.create_project(project_name, "Project name", "Small description of the project")
 
 suite = Suite()
 .add_test(test_f1(dataset=wrapped_dataset))
