@@ -1,4 +1,3 @@
-import logging
 import numpy as np
 from typing import Sequence, Optional
 
@@ -10,6 +9,7 @@ from ...models.base import BaseModel
 from ..registry import Detector
 from .issues import RobustnessIssue, RobustnessIssueInfo
 from ..decorators import detector
+from ..logger import logger
 
 
 @detector(name="text_perturbation", tags=["text_perturbation", "robustness", "nlp", "classification", "regression"])
@@ -27,7 +27,10 @@ class TextPerturbationDetector(Detector):
         self.output_sensitivity = output_sensitivity
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logging.debug("Running TextPerturbationDetector")
+        logger.debug(
+            f"TextPerturbationDetector: Running with transformations={[t.name for t in self.transformations]} "
+            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
+        )
 
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [col for col, col_type in dataset.column_types.items() if col_type == "text"]
@@ -66,8 +69,6 @@ class TextPerturbationDetector(Detector):
     ) -> Sequence[Issue]:
         issues = []
         for feature in features:
-            logging.debug(f"Running '{transformation.name}'")
-
             transformation_fn = transformation(column=feature)
             transformed = dataset.transform(transformation_fn)
 
@@ -104,7 +105,9 @@ class TextPerturbationDetector(Detector):
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
 
-            logging.debug(f"Text perturbation '{transformation.name}' fail ratio: {fail_ratio:.2f}")
+            logger.debug(
+                f"TextPerturbationDetector: Testing for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.2f}"
+            )
 
             if fail_ratio >= self.threshold:
                 info = RobustnessIssueInfo(
