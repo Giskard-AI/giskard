@@ -1,7 +1,6 @@
 import Mousetrap from 'mousetrap';
 import {getLocalToken} from '@/utils';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
+import {useMainStore} from "@/stores/main";
 
 export function copyToClipboard(textToCopy) {
     // navigator clipboard api needs a secure context (https)
@@ -30,8 +29,9 @@ export function copyToClipboard(textToCopy) {
 Mousetrap.bind('@ j j', () => {
     let localToken = getLocalToken();
     if (localToken) {
+        const mainStore = useMainStore();
         copyToClipboard(localToken).then(() => {
-            commitAddNotification(store, {content: 'Copied JWT token to clipboard', color: '#262a2d'});
+            mainStore.addNotification({content: 'Copied JWT token to clipboard', color: '#262a2d'});
         });
     }
 });
