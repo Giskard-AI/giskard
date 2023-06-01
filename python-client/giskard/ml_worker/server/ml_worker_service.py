@@ -186,7 +186,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = Model.load(self.client, arg.model.project_key, arg.model.id)
+                value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
             elif arg.HasField('string'):
