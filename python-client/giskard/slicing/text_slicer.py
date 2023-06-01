@@ -65,12 +65,12 @@ class TextSlicer(BaseSlicer):
 
         # Run a slicer for numeric
         slicer = get_slicer(self.slicer, dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "numeric", meta.columns):
+        for col in filter(lambda x: column_types[x] == "numeric" and x.startswith("__gsk__meta__"), meta.columns):
             slices.extend(slicer.find_slices([col]))
 
         # Run a slicer for categorical
         slicer = CategorySlicer(dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "category", meta.columns):
+        for col in filter(lambda x: column_types[x] == "category" and x.startswith("__gsk__meta__"), meta.columns):
             slices.extend(slicer.find_slices([col]))
 
         # @TODO: previous code will create non-working slices, since those are query-based but
