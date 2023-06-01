@@ -4,5 +4,4 @@
 export interface GenerateTestSuiteInputDTO {
     name: string;
     type: string;
-    value: string;
 }
