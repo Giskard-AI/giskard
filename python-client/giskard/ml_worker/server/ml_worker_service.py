@@ -157,7 +157,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
@@ -182,7 +182,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ExplainRequest, context) -> ExplainResponse:
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -195,7 +195,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.feature_types[text_column] != "text":
@@ -214,7 +214,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
@@ -233,7 +233,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         try:
-            model = Model.load(self.client, request.model.project_key, request.model.id)
+            model = Model.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
