@@ -7,6 +7,7 @@ _default_detectors = [
     ".performance.performance_bias_detector",
     ".robustness.text_perturbation_detector",
     ".data_leakage.data_leakage_detector",
+    ".stochasticity.stochasticity_detector",
 ]
 
 
