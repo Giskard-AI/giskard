@@ -2,13 +2,13 @@ import string
 import random
 import pandas as pd
 import re
-import pycld2 as cld2
 
 from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.scanner.robustness.entity_swap import gender_switch_en,gender_switch_fr
+from giskard.scanner.robustness.entity_swap import gender_switch_en, gender_switch_fr
 from .utils import TransformationLanguage
+
 
 @transformation_function(row_level=False)
 def text_uppercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
@@ -42,7 +42,8 @@ text_titlecase.name = "Transform to title case"
 
 class TextTransformation(TransformationFunction):
     row_level = False
-   # Default value
+
+    # Default value
 
     def __init__(self, column):
         self.column = column
@@ -54,24 +55,6 @@ class TextTransformation(TransformationFunction):
 
     def make_perturbation(self, text: str) -> str:
         raise NotImplementedError()
-
-    def _detect_langage(self, text):
-        isreliable, _, details = cld2.detect(text)
-        if isreliable:
-            return details[0][1]
-        else:
-            return TransformationLanguage.ENGLISH #default
-
-    def _set_language_and_dict(self, x):
-        language = self._detect_langage(x)
-        if language == TransformationLanguage.ENGLISH:
-            self.lang_dict = gender_switch_en
-        elif language == TransformationLanguage.FRENCH:
-            self.lang_dict = gender_switch_fr
-        else:
-            self.lang_dict = gender_switch_en
-
-
 
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
@@ -122,15 +105,10 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return text.translate(str.maketrans('', '', string.punctuation))
 
 
-
-
-
 class TextGenderTransformation(TextTransformation):
     name = "Switch gender"
-    language = None
 
     def make_perturbation(self, x):
-
         split_text = x.split()
         new_words = []
         for token in split_text:
@@ -144,10 +122,9 @@ class TextGenderTransformation(TextTransformation):
         return new_text
 
     def _switch(self, word):
-        if word.lower() in gender_switch_en:   # @TODO : Add language switch ie. self.language_dict
+        if word.lower() in gender_switch_en:
             return [word, gender_switch_en[word.lower()]]
+        elif word.lower() in gender_switch_fr:
+            return [word, gender_switch_fr[word.lower()]]
         else:
             return word
-
-
-

@@ -1486,11 +1486,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pycld2"
-version = "0.41"
-summary = "Python bindings around Google Chromium's embedded compact language detection library (CLD2)"
-
-[[package]]
 name = "pycodestyle"
 version = "2.9.1"
 requires_python = ">=3.6"
@@ -2471,7 +2466,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:81c786b4e5f5cf74246ba958fb6608aa2b4452e97416b5804a8d813663eb9228"
+content_hash = "sha256:7ebdce89952970c3cb459d27c246e12d13a116e1d1370c193c2833c1d2ba89f6"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -3976,9 +3971,6 @@ content_hash = "sha256:81c786b4e5f5cf74246ba958fb6608aa2b4452e97416b5804a8d81366
 "pyasn1-modules 0.2.8" = [
     {url = "https://files.pythonhosted.org/packages/88/87/72eb9ccf8a58021c542de2588a867dbefc7556e14b2866d1e40e9e2b587e/pyasn1-modules-0.2.8.tar.gz", hash = "sha256:905f84c712230b2c592c19470d3ca8d552de726050d1d1716282a1f6146be65e"},
     {url = "https://files.pythonhosted.org/packages/95/de/214830a981892a3e286c3794f41ae67a4495df1108c3da8a9f62159b9a9d/pyasn1_modules-0.2.8-py2.py3-none-any.whl", hash = "sha256:a50b808ffeb97cb3601dd25981f6b016cbb3d31fbf57a8b8a87428e6158d0c74"},
-]
-"pycld2 0.41" = [
-    {url = "https://files.pythonhosted.org/packages/21/d2/8b0def84a53c88d0eb27c67b05269fbd16ad68df8c78849e7b5d65e6aec3/pycld2-0.41.tar.gz", hash = "sha256:a42f6e974df8fdd70685c2baa8a9f523069a260e1140ce604fb9f1fb6c3064df"},
 ]
 "pycodestyle 2.9.1" = [
     {url = "https://files.pythonhosted.org/packages/67/e4/fc77f1039c34b3612c4867b69cbb2b8a4e569720b1f19b0637002ee03aff/pycodestyle-2.9.1-py2.py3-none-any.whl", hash = "sha256:d1735fc58b418fd7c5f658d28d943854f8a849b01a5d0a1e6f3f3fdd0166804b"},
