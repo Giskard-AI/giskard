@@ -4,14 +4,18 @@ import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRoute, useRouter } from 'vue-router/composables';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { InspectionDTO } from "@/generated-sources";
+import { useProjectStore } from "@/stores/project";
+import { InspectionDTO, MLWorkerInfoDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+
 
 const route = useRoute();
 const router = useRouter();
 
+const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 
 interface Props {
@@ -19,9 +23,16 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+
 const activeDebuggingSessionId = ref<number | null>(null);
 const searchSession = ref("");
 const openInspectionWrapper = ref(false);
+const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
 
 const filteredSessions = computed(() => {
 
@@ -124,9 +135,23 @@ function handleRouteChanged() {
   openInspectionWrapper.value = route.meta && route.meta.openInspectionWrapper
 }
 
+const isMLWorkerConnected = computed(() => {
+  if (project.value?.mlWorkerType === 'EXTERNAL') {
+    return isWorkerAvailable(false);
+  } else {
+    return isWorkerAvailable(true);
+  }
+});
+
+function isWorkerAvailable(isInternal: boolean): boolean {
+  return allMLWorkerSettings.value.find(value => value.isRemote === !isInternal) !== undefined;
+}
+
 watch(() => route.meta, () => handleRouteChanged());
 
-onMounted(() => {
+onMounted(async () => {
+  await projectStore.getProject({ id: props.projectId });
+  allMLWorkerSettings.value = await api.getMLWorkerSettings();
   debuggingSessionsStore.loadDebuggingSessions(props.projectId);
 })
 
@@ -140,7 +165,7 @@ onActivated(async () => {
 </script>
 
 <template>
-  <div class="vertical-container">
+  <div v-if="isMLWorkerConnected" class="vertical-container">
     <v-container fluid class="vc" v-if="debuggingSessionsStore.debuggingSessions.length > 0">
       <v-row>
         <v-col cols="4">
@@ -207,6 +232,10 @@ onActivated(async () => {
       </div>
     </v-container>
   </div>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <h1 class="pt-16">ML Worker is not connected</h1>
+    <StartWorkerInstructions :mlWorkerType="project?.mlWorkerType" />
+  </v-container>
 </template>
 
 <style scoped>
