@@ -67,7 +67,7 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="selected-func-description pt-2 mb-4">{{ selectedFuncDescription }}</p>
+                                            <p class="selected-func-description pt-2 mb-4">{{ doc.body }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
@@ -102,7 +102,7 @@
                                     </v-row>
                                 </div>
 
-                                <SuiteInputListSelector :editing="true" :modelValue="slicingArguments" :inputs="inputType" :project-id="props.projectId" class="pt-0 mt-0"></SuiteInputListSelector>
+                                <SuiteInputListSelector :editing="true" :modelValue="slicingArguments" :inputs="inputType" :project-id="props.projectId" class="pt-0 mt-0" :doc="doc"></SuiteInputListSelector>
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runSlicingFunction">
@@ -155,6 +155,7 @@ import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import { alphabeticallySorted } from "@/utils/comparators";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 
@@ -174,14 +175,6 @@ const selectedColumn = ref<string | null>(null);
 let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 
 const panel = ref<number[]>([0]);
-
-const selectedFuncDescription = computed(() => {
-    if (selected.value === null) {
-        return '';
-    }
-
-    return selected.value.doc.split("Args:")[0];
-})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -263,6 +256,9 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     .value()
 );
 
+const doc = computed(() => extractArgumentDocumentation(selected.value));
+
+
 </script>
 
 <style scoped lang="scss">
@@ -277,12 +273,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .box-grow {
     flex: 1;
-    /* formerly flex: 1 0 auto; */
     background: green;
     padding: 5px;
     margin: 5px;
     min-height: 0;
-    /* new */
 }
 
 ::v-deep .v-expansion-panel-content__wrap {

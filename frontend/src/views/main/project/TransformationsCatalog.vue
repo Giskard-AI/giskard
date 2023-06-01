@@ -69,7 +69,7 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="selected-func-description pt-2 mb-4">{{ selectedFuncDescription }}</p>
+                                            <p class="selected-func-description pt-2 mb-4">{{ doc.body }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
@@ -104,7 +104,7 @@
                                     </v-row>
                                 </div>
 
-                                <SuiteInputListSelector :editing="true" :model-value="transformationArguments" :inputs="inputType" :project-id="props.projectId" class="suite-input-list-selector" />
+                                <SuiteInputListSelector :editing="true" :model-value="transformationArguments" :inputs="inputType" :project-id="props.projectId" class="suite-input-list-selector" :doc="doc" />
 
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
@@ -162,6 +162,7 @@ import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import { alphabeticallySorted } from "@/utils/comparators";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 
@@ -183,16 +184,6 @@ let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 const panel = ref<number[]>([0]);
 
-const selectedFuncDescription = computed(() => {
-    if (selected.value === null) {
-        return '';
-    }
-
-    if (selected.value.doc === null) {
-        return 'No description available.';
-    }
-    return selected.value.doc.split("Args:")[0];
-})
 monacoOptions.readOnly = true;
 
 function resizeEditor() {
@@ -271,6 +262,8 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     .value()
 );
 
+const doc = computed(() => extractArgumentDocumentation(selected.value));
+
 </script>
 
 <style scoped lang="scss">
@@ -285,12 +278,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .box-grow {
     flex: 1;
-    /* formerly flex: 1 0 auto; */
     background: green;
     padding: 5px;
     margin: 5px;
     min-height: 0;
-    /* new */
 }
 
 ::v-deep .v-expansion-panel-content__wrap {

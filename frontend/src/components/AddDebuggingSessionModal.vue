@@ -21,6 +21,7 @@ const props = defineProps<Props>();
 const datasets = ref<DatasetDTO[]>([]);
 const models = ref<ModelDTO[]>([]);
 const currentStep = ref(1);
+const loading = ref(false);
 
 const dialog = ref(false);
 const sessionName = ref("");
@@ -60,15 +61,20 @@ async function createNewDebuggingSession() {
     return;
   }
 
-  const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
-    datasetId: selectedDataset.value!.id,
-    modelId: selectedModel.value!.id,
-    name: sessionName.value
-  });
+  loading.value = true;
+  try {
+      const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
+          datasetId: selectedDataset.value!.id,
+          modelId: selectedModel.value!.id,
+          name: sessionName.value,
+          sample: true
+      });
 
-  closeDialog();
-
-  emit('createDebuggingSession', newDebuggingSession);
+      closeDialog();
+      emit('createDebuggingSession', newDebuggingSession);
+  } finally {
+      loading.value = false;
+  }
 }
 
 function closeDialog() {
@@ -118,7 +124,7 @@ onActivated(async () => {
         <v-card-actions>
           <v-btn text @click="closeDialog">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues">Create</v-btn>
+          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues" :loading="loading">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
