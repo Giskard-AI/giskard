@@ -38,8 +38,7 @@ import {
 } from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
 import TestInputList from '@/components/TestInputList.vue';
-import {KeyValueUtils} from '@/utils/key-value-utils';
-import {ArrayReducers} from '@/utils/array-reducers';
+import {chain} from 'lodash';
 
 const props = defineProps<{
   executions?: TestSuiteExecutionDTO[],
@@ -66,21 +65,25 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
           .map(execution => ({execution} as ExecutionComparison))
       : [];
 
-  const groupedTestsResults: { [testId: string]: SuiteTestExecutionDTO[] } = results
+  const groupedTestsResults: { [testId: string]: SuiteTestExecutionDTO[] } = chain(results)
       .map(r => r.execution.results ?? [])
-      .reduce((flattened, results) => flattened.concat(results), [])
-      .reduce(ArrayReducers.groupBy(result => result.test.testId), {});
+      .flatten()
+      .groupBy(result => result.test.testId)
+      .value();
 
-  const bestPerformingMetrics: { [testId: string]: number } = KeyValueUtils.mapValues(groupedTestsResults,
-      res => res.map(result => result.metric).reduce((l, r) => Math.max(l, r)))
+  const bestPerformingMetrics: { [testId: string]: number } = chain(groupedTestsResults)
+      .mapValues((res) => res.map(result => result.metric).reduce((l, r) => Math.max(l, r)))
+      .value();
 
   results.forEach(result => {
-    result.tests = result.execution.results
-            ?.reduce(ArrayReducers.toMap(test => test.test.testId, test => ({
-              test,
-              best: bestPerformingMetrics[test.test.testId] === test.metric
-            })), {})
-        ?? {};
+    result.tests = result.execution.results ? chain(result.execution.results)
+            .keyBy(t => t.test.testId)
+            .mapValues(t => ({
+              test: t,
+              best: bestPerformingMetrics[t.test.testId] === t.metric
+            }))
+            .value()
+        : {};
   })
 
   return results;
