@@ -17,8 +17,6 @@
           <v-tab :to="{name:'test-suite-new-tests'}">Tests</v-tab>
           <v-tab :to="{name:'test-suite-new-configuration'}">Configuration</v-tab>
           <v-tab :to="{name:'test-suite-new-execution'}">Execution</v-tab>
-          <v-tab :to="{name:'test-suite-new-compare-executions'}" class="d-none">Compare executions</v-tab>
-          <v-tab :to="{name:'test-suite-new-compare-test'}" class="d-none">Compare tests</v-tab>
         </v-tabs>
       </v-col>
       <v-col cols="10">
