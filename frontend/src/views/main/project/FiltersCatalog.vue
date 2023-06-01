@@ -263,7 +263,7 @@ async function runSlicingFunction() {
     sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
         params,
-        type: 'SLICING'
+        type: 'SLICING',
     }]);
 
 }

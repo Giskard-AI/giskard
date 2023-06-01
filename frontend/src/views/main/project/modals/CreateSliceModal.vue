@@ -33,27 +33,28 @@
 
 <script setup lang="ts">
 
-import {ColumnFilterDTO, DatasetDTO, NoCodeSlicingType, SlicingFunctionDTO} from "@/generated-sources";
+import {DatasetDTO, SlicingFunctionDTO} from "@/generated-sources";
 import {ref} from "vue";
 import ColumnFilterCreator from "@/views/main/utils/ColumnFilterCreator.vue";
 import {v4 as uuidv4} from 'uuid';
 import {useCatalogStore} from "@/stores/catalog";
+import {NoCodeFilter, NoCodeSlicingType} from "@/utils/no-code-slicing-type.enum";
 
 const props = defineProps<{
     dataset: DatasetDTO
 }>();
 
-const columnFilters = ref<Array<Partial<ColumnFilterDTO>>>([{}])
+const columnFilters = ref<Array<Partial<NoCodeFilter>>>([{}])
 
 const emit = defineEmits(['created']);
 
 const CLAUSE_BUILDERS: { [clause in NoCodeSlicingType]: (column: string, value: string) => string } = {
-    [NoCodeSlicingType.IS]: (column, value) => `giskard.slicing.slice.EqualTo(${column}, ${value}, equal=False)`,
-    [NoCodeSlicingType.IS_NOT]: (column, value) => `giskard.slicing.slice.NotEqualTo(${column}, ${value}, equal=False)`,
-    [NoCodeSlicingType.CONTAINS]: (column, value) => `giskard.slicing.slice.StringClause(${column}, ${value}, 'contains')`,
-    [NoCodeSlicingType.DOES_NOT_CONTAINS]: (column, value) => `giskard.slicing.slice.StringClause(${column}, ${value}, 'contains', isNot=True)`,
-    [NoCodeSlicingType.STARTS_WITH]: (column, value) => `giskard.slicing.slice.StringClause(${column}, ${value}, 'startswith')`,
-    [NoCodeSlicingType.ENDS_WITH]: (column, value) => `giskard.slicing.slice.StringClause(${column}, ${value}, 'endswith')`,
+    [NoCodeSlicingType.IS]: (column, value) => `giskard.slicing.slice.EqualTo(${column}, ${value})`,
+    [NoCodeSlicingType.IS_NOT]: (column, value) => `giskard.slicing.slice.NotEqualTo(${column}, ${value})`,
+    [NoCodeSlicingType.CONTAINS]: (column, value) => `giskard.slicing.slice.ContainsWord(${column}, ${value}, is_not=False)`,
+    [NoCodeSlicingType.DOES_NOT_CONTAINS]: (column, value) => `giskard.slicing.slice.ContainsWord(${column}, ${value}, is_not=True)`,
+    [NoCodeSlicingType.STARTS_WITH]: (column, value) => `giskard.slicing.slice.StartsWith(${column}, ${value})`,
+    [NoCodeSlicingType.ENDS_WITH]: (column, value) => `giskard.slicing.slice.EndsWith(${column}, ${value})`,
     [NoCodeSlicingType.IS_EMPTY]: (column, _) => `giskard.slicing.slice.EqualTo(${column}, float('NaN'))`,
     [NoCodeSlicingType.IS_NOT_EMPTY]: (column, _) => `giskard.slicing.slice.NotEqualTo(${column}, float('NaN'))`,
 }
@@ -88,20 +89,20 @@ function escapePython(val?: string | number | null, column?: string): string {
     }
 }
 
-function clauseCode(clause: ColumnFilterDTO) {
+function clauseCode(clause: NoCodeFilter) {
     return CLAUSE_BUILDERS[clause.slicingType](escapePython(clause.column), escapePython(clause.value, clause.column))
 }
 
 function clausesCode() {
-    return `[${columnFilters.value.map((v) => clauseCode(v as ColumnFilterDTO)).join(', ')}]`
+    return `[${columnFilters.value.map((v) => clauseCode(v as NoCodeFilter)).join(', ')}]`
 }
 
-function clauseToString(clause: ColumnFilterDTO) {
+function clauseToString(clause: NoCodeFilter) {
     return `${escapePython(clause.column)} ${CLAUSE_SYMBOLS[clause.slicingType]} ${NO_VALUES.includes(clause.slicingType) ? '' : escapePython(clause.value, clause.column)}`
 }
 
 async function save(close) {
-    const name = columnFilters.value.map((v) => clauseToString(v as ColumnFilterDTO)).join(' & ')
+    const name = columnFilters.value.map((v) => clauseToString(v as NoCodeFilter)).join(' & ')
 
     const dto: SlicingFunctionDTO = {
         uuid: uuidv4(),

@@ -379,7 +379,7 @@ async function processDataset() {
         .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
     loadingProcessedDataset.value = true;
-    dataProcessingResult.value = await api.datasetProcessing(props.projectId, inspection.value!.dataset.id, pipeline)
+    dataProcessingResult.value = await api.datasetProcessing(props.projectId, inspection.value!.dataset.id, pipeline, inspection.value!.sample)
     loadingProcessedDataset.value = false;
 }
 

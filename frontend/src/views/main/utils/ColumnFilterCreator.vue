@@ -57,8 +57,9 @@
 
 <script setup lang="ts">
 
-import {ColumnType, DatasetDTO, NoCodeSlicingType} from "@/generated-sources";
+import {ColumnType, DatasetDTO} from "@/generated-sources";
 import {computed} from "vue";
+import {NoCodeSlicingType} from "@/utils/no-code-slicing-type.enum";
 
 const props = defineProps<{
     dataset: DatasetDTO,

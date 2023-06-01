@@ -480,8 +480,8 @@ export const api = {
             license: license
         });
     },
-    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>) {
+    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
         return apiV2.post<unknown, DatasetProcessingResultDTO>(
-            `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`, functions);
+            `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process?sample=${sample}`, functions);
     },
 };

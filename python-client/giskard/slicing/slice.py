@@ -1,10 +1,11 @@
 # @TODO: simplify this module, don’t need this complexity.
-import operator
 import itertools
-from collections import defaultdict
-from abc import ABC, abstractmethod
-from typing import Callable, Sequence
+import operator
 import re
+from abc import abstractmethod
+from collections import defaultdict
+from typing import Callable, Sequence
+
 import numpy as np
 import pandas as pd
 
@@ -45,18 +46,49 @@ class ComparisonClause(Clause):
 
 
 class ContainsWord(Clause):
+    def __init__(self, column, value, is_not: bool = False):
+        self.column = column
+        self.value = value
+        self.is_not = is_not
+
+    def __str__(self) -> str:
+        return f"`{self.column}` ${'does not contain' if self.is_not else 'contains'} \"{self.value}\""
+
+    def mask(self, df: pd.DataFrame) -> pd.Series:
+        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
+
+    def init_code(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, is_not={repr(self.is_not)})"
+
+
+class StartsWith(Clause):
     def __init__(self, column, value):
         self.column = column
         self.value = value
 
     def __str__(self) -> str:
-        return f"`{self.column}` contains \"{self.value}\""
+        return f"`{self.column}` starts with \"{self.value}\""
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False)
+        return df[self.column].str.lower().str.startswith(self.value.lower())
 
     def init_code(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, {repr(self.method)}, {repr(self.isNot)})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
+
+
+class EndsWith(Clause):
+    def __init__(self, column, value):
+        self.column = column
+        self.value = value
+
+    def __str__(self) -> str:
+        return f"`{self.column}` ends with \"{self.value}\""
+
+    def mask(self, df: pd.DataFrame) -> pd.Series:
+        return df[self.column].str.lower().str.endswith(self.value.lower())
+
+    def init_code(self):
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
 
 
 class GreaterThan(ComparisonClause):
@@ -95,11 +127,10 @@ class EqualTo(ComparisonClause):
 
 
 class NotEqualTo(ComparisonClause):
-    _operator = "!="
+    _operator = operator.ne
 
     def __str__(self) -> str:
         return f"`{self.column}` != {_pretty_str(self.value)}"
-
 
 
 class Query:
