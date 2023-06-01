@@ -40,7 +40,7 @@ class TensorFlowModel(MLFlowBasedModel):
         predictions = self.clf.predict(data)
 
         if self.is_classification and predictions.shape[1] == 1:
-                predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
+            predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
 
         predictions = np.squeeze(np.array(predictions))
 
