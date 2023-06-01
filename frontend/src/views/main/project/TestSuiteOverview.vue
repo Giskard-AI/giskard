@@ -2,41 +2,21 @@
   <v-container v-if="latestExecution === null">
     <p>No execution has been performed yet!</p>
   </v-container>
-  <v-container v-else-if="latestExecution.result === TestResult.ERROR">
-    <p>An error arose during the last test suite execution</p>
-    <v-expansion-panels flat>
-      <v-expansion-panel>
-        <v-expansion-panel-header class="pa-0 text-h6">Logs</v-expansion-panel-header>
-        <v-expansion-panel-content class="pa-0">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon color="primary"
-                     @click=copyLogs
-                     v-bind="attrs"
-                     v-on="on">
-                <v-icon>content_copy</v-icon>
-              </v-btn>
-            </template>
-            <span>Copy logs</span>
-          </v-tooltip>
-          <pre class="log-viewer">{{ latestExecution.logs }}</pre>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-    </v-expansion-panels>
-  </v-container>
   <v-container v-else>
     <h2>
       <v-icon :color="latestExecution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL" size="40">{{
           latestExecution.result === TestResult.PASSED ? 'done' : 'close'
         }}
       </v-icon>
-      Test Suite
-      <span v-if="filteredTest.length === 0"> - No test match the current filter</span>
-      <span v-else> - success ratio {{ filteredTest.filter(test => test.passed).length }} / {{
-          filteredTest.length
+      Test Suite -
+      <span
+          v-if="latestExecution.result === TestResult.ERROR">An error arose during the execution</span>
+      <span v-else-if="filteredTest.length === 0">No test match the current filter</span>
+      <span v-else>success ratio {{ filteredTest.filter(({result}) => result !== undefined && result.passed).length }} / {{
+          filteredTest.filter(({result}) => result !== undefined).length
         }}</span>
     </h2>
-    <div class="d-flex">
+    <div class="d-flex mt-4 mb-4">
       <v-select
           v-model="statusFilter"
           label="Status"
@@ -52,21 +32,21 @@
                     label="Search" type="text" dense></v-text-field>
     </div>
     <v-list-item-group>
-      <template v-for="result in filteredTest">
+      <template v-for="({result, test}) in filteredTest">
         <v-divider/>
         <v-list-item :value="result">
           <v-list-item-icon>
-            <v-icon :color="result.passed ? Colors.PASS : Colors.FAIL" size="40">{{
-                result.passed ? 'done' : 'close'
+            <v-icon :color="getColor(result)" size="40">{{
+                getIcon(result)
               }}
             </v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>
               <div class="d-flex justify-space-between">
-                <span>{{ getTestName(registryByUuid[result.test.testUuid]) }}</span>
+                <span>{{ getTestName(test) }}</span>
                 <div>
-                  <v-tooltip v-if="!result.passed">
+                  <v-tooltip v-if="result !== undefined && !result.passed">
                     <template v-slot:activator="{ on, attrs }">
                       <v-btn
                           class="ma-2"
@@ -86,7 +66,7 @@
               </div>
             </v-list-item-title>
             <v-list-item-subtitle>
-              UUID: {{ result.test.testUuid }}
+              UUID: {{ test.uuid }}
             </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -99,22 +79,24 @@
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {computed, ref} from 'vue';
-import {TestFunctionDTO, TestResult} from '@/generated-sources';
-import {useMainStore} from '@/stores/main';
+import {SuiteTestExecutionDTO, TestFunctionDTO, TestResult} from '@/generated-sources';
 import {Colors} from '@/utils/colors';
 import {chain} from 'lodash';
 
-const {executions, registry, models, datasets} = storeToRefs(useTestSuiteStore());
+const {executions, registry, models, datasets, suite} = storeToRefs(useTestSuiteStore());
 
 const statusFilterOptions = [{
   label: 'All',
   filter: (_) => true
 }, {
   label: 'Passed',
-  filter: (result) => result.passed
+  filter: (result) => result !== undefined && result.passed
 }, {
   label: 'Failed',
-  filter: (result) => !result.passed
+  filter: (result) => result !== undefined && !result.passed
+}, {
+  label: 'Not executed',
+  filter: (result) => result === undefined
 }];
 
 const statusFilter = ref<string>(statusFilterOptions[0].label);
@@ -123,28 +105,21 @@ const searchFilter = ref<string>("");
 const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
-const mainStore = useMainStore();
-
-function copyLogs() {
-  if (latestExecution.value?.logs) {
-    navigator.clipboard.writeText(latestExecution.value.logs);
-    mainStore.addNotification({content: 'Copied logs to clipboard', color: '#262a2d'});
-  }
-}
-
-const filteredTest = computed(() => latestExecution.value === null ? [] : chain(latestExecution.value.results)
-    .filter(result => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
-    .filter((result) => {
+const filteredTest = computed(() => latestExecution.value === null ? [] : chain(suite.value!.tests)
+    .map(suiteTest => ({
+      suiteTest,
+      test: registryByUuid.value[suiteTest.testUuid],
+      result: latestExecution.value!.results?.find(result => result.test.id === suiteTest.id)
+    }))
+    .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
+    .filter(({test}) => {
       const keywords = searchFilter.value.split(' ')
           .map(keyword => keyword.trim().toLowerCase())
           .filter(keyword => keyword !== '');
-
-      const func = registryByUuid.value[result.test.testUuid];
-
       return keywords.filter(keyword =>
-          func.name.toLowerCase().includes(keyword)
-          || func.doc?.toLowerCase()?.includes(keyword)
-          || func.displayName?.toLowerCase()?.includes(keyword)
+          test.name.toLowerCase().includes(keyword)
+          || test.doc?.toLowerCase()?.includes(keyword)
+          || test.displayName?.toLowerCase()?.includes(keyword)
       ).length === keywords.length;
     })
     .value()
@@ -158,6 +133,26 @@ function getTestName(test: TestFunctionDTO) {
     return name;
   } else {
     return tags.reduce((list, tag) => `${list} #${tag}`, '') + ` (${name})`;
+  }
+}
+
+function getColor(result?: SuiteTestExecutionDTO): string {
+  if (result === undefined) {
+    return 'grey';
+  } else if (result.passed) {
+    return Colors.PASS;
+  } else {
+    return Colors.FAIL;
+  }
+}
+
+function getIcon(result?: SuiteTestExecutionDTO): string {
+  if (result === undefined) {
+    return 'block';
+  } else if (result.passed) {
+    return 'done';
+  } else {
+    return 'close';
   }
 }
 </script>
