@@ -1,9 +1,10 @@
+import pytest
 import numpy as np
 from unittest.mock import Mock
 
 from giskard import WrapperModel
 from giskard.core.core import ModelMeta
-
+from functools import partial
 
 def _make_model_mock(labels=["First", "Second", "Third"]):
     model = Mock(WrapperModel)
@@ -11,6 +12,9 @@ def _make_model_mock(labels=["First", "Second", "Third"]):
     meta.classification_labels = labels
     model.meta = meta
     model.model_postprocessing_function = None
+
+    model._possibly_fix_predictions_shape = partial(WrapperModel._possibly_fix_predictions_shape, model)
+
     return model
 
 
@@ -71,6 +75,29 @@ def test_postprocess_fixes_missing_binary_class():
     result = WrapperModel._postprocess(model, data)
 
     assert result.shape == (10, 2)
-    assert (result[:, 0] == data).all()
-    assert np.allclose(result[:, 1], 1 - data)
+    assert (result[:, 0] == data[:, 0]).all()
+    assert np.allclose(result[:, 1], 1 - data[:, 0])
+
+
+def test_raises_error_if_classifier_shape_is_not_right():
+    # Two classes and 3 outputs: wrong
+    model = _make_model_mock(["one", "two"])
+    data = np.random.uniform(size=(10, 3))
+
+    with pytest.raises(ValueError):
+        result = WrapperModel._postprocess(model, data)
+
+    # Three classes and 2 outputs: wrong
+    model = _make_model_mock(["one", "two", "three"])
+    data = np.random.uniform(size=(10, 2))
+    with pytest.raises(ValueError):
+        result = WrapperModel._postprocess(model, data)
+
+    # 4 outputs: still wrong
+    data = np.random.uniform(size=(10, 4))
+    with pytest.raises(ValueError):
+        result = WrapperModel._postprocess(model, data)
+
+
+
 
