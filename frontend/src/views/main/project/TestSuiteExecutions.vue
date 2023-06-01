@@ -82,12 +82,12 @@ import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-s
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
-import moment from 'moment';
 import {Colors} from '@/utils/colors';
 import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import {formatDate} from '@/filters';
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
@@ -148,8 +148,7 @@ const executionBreadcrumbs = computed(() =>
     selectedExecution.value === null ? [executionItem] : [
       executionItem,
       {
-        text: moment(selectedExecution.value.executionDate)
-            .format('MMM Do YY, h:mm:ss a'),
+        text: formatDate(selectedExecution.value.executionDate),
         disabled: false
       }
     ]);
