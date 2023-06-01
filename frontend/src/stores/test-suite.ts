@@ -90,10 +90,6 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-            mainStore.addNotification({
-                content: 'Started test suite execution',
-                color: TYPE.INFO
-            })
             return {
                 trackJob: this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
             }
