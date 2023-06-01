@@ -19,9 +19,9 @@ if [ -n "$1" ]; then
   sed -i '' "s/^version = \".*$/version = \"$1\"/" "$pyprojpath"
   git add "$pyprojpath"
   git commit -m "Version $1"
-  git tag -a "v$1" -m "v$1"
+  git tag -a "python-client-v$1" -m "v$1"
   git push
-  git push origin "v$1"
+  git push origin "python-client-$1"
 else
   echo "New version is not specified"
 fi
