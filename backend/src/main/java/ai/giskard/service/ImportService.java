@@ -88,9 +88,8 @@ public class ImportService {
 
             suite.getTests().forEach(test -> {
                 test.setSuite(suite);
-                test.getTestInputs().forEach(input -> input.setTest(test));
             });
-            
+
             suite.getExecutions().forEach(execution -> execution.setSuite(suite));
 
             testSuiteRepository.save(suite);
