@@ -16,12 +16,12 @@ class DataLeakageDetector:
 
         # Dataset prediction
         ds_predictions = pd.Series(list(model.predict(dataset).raw), dataset.df.index, dtype=object)
-        print(ds_predictions)
-        # @TODO: disable cache
+
+        # @TODO: remember to disable cache
         # Predict on single samples
-        sample_idx = dataset.df.sample(min(len(dataset), 100), random_state=23).index
+        sample_idx = dataset.df.sample(min(len(dataset), 100), random_state=23).index.values
         fail_samples = pd.DataFrame(columns=["Whole-dataset prediction", "Single-sample prediction"])
-        for idx, expected_pred in zip(sample_idx, ds_predictions.loc[sample_idx]):
+        for idx, expected_pred in zip(sample_idx, ds_predictions.loc[sample_idx].values):
             row_dataset = dataset.slice(lambda df: df.loc[[idx]], row_level=False)
             row_pred = model.predict(row_dataset).raw[0]
 

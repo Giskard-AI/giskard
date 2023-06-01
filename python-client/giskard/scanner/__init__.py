@@ -8,6 +8,7 @@ _default_detectors = [
     ".robustness.text_perturbation_detector",
     ".data_leakage.data_leakage_detector",
     ".stochasticity.stochasticity_detector",
+    ".calibration.overconfidence_detector",
 ]
 
 
