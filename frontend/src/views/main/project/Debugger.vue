@@ -98,7 +98,7 @@ onActivated(() => loadDebuggingSessions());
         <v-col cols="8">
           <div class="d-flex justify-end">
             <v-btn v-if="!displayComponents" @click="toggleActiveSession(null)" class="mr-4 pa-2 text--secondary">
-              <v-icon>history</v-icon> Past sessions
+              <v-icon left>history</v-icon>Past sessions
             </v-btn>
             <AddDebuggingSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSession>
           </div>

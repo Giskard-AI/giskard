@@ -73,7 +73,7 @@ onActivated(() => {
     <v-dialog v-model="dialog" width="60vw">
       <template v-slot:activator="{ on, attrs }">
         <v-btn color="primary" v-bind="attrs" v-on="on" @click="resetInputs">
-          <v-icon>add</v-icon>
+          <v-icon left>add</v-icon>
           New debugging session
         </v-btn>
       </template>
