@@ -1,5 +1,6 @@
-import math
 import copy
+import math
+
 import numpy as np
 import pandas as pd
 import xxhash
@@ -159,13 +160,13 @@ def test_model_cache_multiple_index_type():
     assert list(str_idx.index) == list(str_cache.index)
     assert str_cache.isna().all()
 
-    cache_df = model_cache.to_df()
+    cache_df = model_cache._to_df()
     assert len(cache_df) == 0
 
     result = np.array([[1, 2], [3, 4]])
     model_cache.set_cache(pd.Series(hashes[1:]), result)
 
-    cache_df = model_cache.to_df()
+    cache_df = model_cache._to_df()
     assert len(cache_df) == 2
     assert hashes[1:] == list(cache_df.index)
     assert [1, 3] == list(cache_df[0].values)
