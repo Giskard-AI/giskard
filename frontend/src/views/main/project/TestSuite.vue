@@ -21,7 +21,7 @@
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
                      v-if="Object.entries(inputs).length > 0"
-                     @click='() => openRunTestSuite(true)'
+                     @click='compare'
                      color="secondary">
                 <v-icon>compare</v-icon>
                 Compare
@@ -85,6 +85,12 @@ async function openRunTestSuite(compareMode: boolean) {
       previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
     }
   });
+}
+
+async function compare() {
+  if (route.name === 'test-suite-overview') {
+    await openRunTestSuite(true);
+  }
 }
 </script>
 

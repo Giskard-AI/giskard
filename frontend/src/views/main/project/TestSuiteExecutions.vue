@@ -14,21 +14,8 @@
             <v-list-item-group color="primary" mandatory>
               <div v-for="e in executionsAndJobs" :key="e.date">
                 <v-divider/>
-                <v-list-item v-if="e.disabled" disabled>
-                  <v-list-item-icon>
-                    <v-icon :color="e.color" size="40">{{
-                        e.icon
-                      }}
-                    </v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      {{ e.date | date }}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-else
-                             :to="{name: 'test-suite-execution', params: {executionId: e.execution.id}}">
+                <v-list-item :disabled="e.disabled"
+                             :to="e.disabled ? null : {name: 'test-suite-execution', params: {executionId: e.execution.id}}">
                   <v-list-item-icon>
                     <v-icon :color="e.color" size="40">{{
                         e.icon
@@ -38,8 +25,12 @@
                   <v-list-item-content>
                     <v-list-item-title>
                       <div class="d-flex justify-space-between">
-                        <span>{{ e.execution.executionDate | date }}</span>
-                        <TestResultHeatmap :results="executionResults(e.execution)"/>
+                        <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
+                        <template v-if="!e.disabled">
+                          <TestResultHeatmap v-if="compareSelectedExecution === null"
+                                             :results="executionResults(e.execution)"/>
+                          <v-checkbox v-else/>
+                        </template>
                       </div>
                     </v-list-item-title>
                   </v-list-item-content>
@@ -58,7 +49,7 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import {Colors} from '@/utils/colors';
@@ -69,18 +60,6 @@ import {useRoute, useRouter} from 'vue-router/composables';
 
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
-function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
-  switch (execution.result) {
-    case TestResult.PASSED:
-      return "pass";
-    case TestResult.ERROR:
-      return "error";
-    case TestResult.FAILED:
-      return "fail";
-    default:
-      return "N/A";
-  }
-}
 
 function executionStatusIcon(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -118,14 +97,9 @@ function jobStatusColor(job: JobDTO): string {
   }
 }
 
-const executionItem = {
-  text: 'Executions',
-  disabled: true
-};
-
 const route = useRoute();
 
-const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId));
+const compareSelectedExecution = ref<number[] | null>(null);
 
 function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
