@@ -74,6 +74,7 @@ import {useRoute, useRouter} from 'vue-router/composables';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import {chain} from "lodash";
 
 const {
     models,
@@ -198,12 +199,23 @@ async function openRunTestSuite(compareMode: boolean) {
   });
 }
 
+const modelByUuid = computed(() => chain(models.value)
+    .keyBy('id')
+    .value()
+)
+
 function getModel(e: ExecutionTabItem): string | null {
     if (e.disabled || !e.execution) {
         return null;
     }
 
-    return e.execution.inputs.find(e => e.type === 'Model')?.name ?? null;
+    const value = e.execution.inputs.find(e => e.type === 'BaseModel')?.value;
+
+    console.log(value);
+    if (value) {
+        return modelByUuid.value[value]?.name ?? null;
+    }
+    return value ?? null;
 }
 
 </script>
