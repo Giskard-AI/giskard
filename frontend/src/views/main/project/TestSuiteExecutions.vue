@@ -12,7 +12,7 @@
         <v-col cols="3" class="vc fill-height">
           <v-list three-line>
             <v-list-item-group color="primary" mandatory>
-              <div v-for="e in executionsAndJobs" :key="e.date">
+              <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
                 <v-divider/>
                 <v-list-item :disabled="e.disabled"
                              :to="e.disabled ? null : {name: 'test-suite-execution', params: {executionId: e.execution.id}}">

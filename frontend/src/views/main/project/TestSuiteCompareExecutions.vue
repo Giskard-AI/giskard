@@ -2,13 +2,10 @@
   <v-row no-gutters>
     <v-col v-for="comparison in executionComparisons" :key="comparison.execution.id" class="pa-2" cols="auto">
       <v-card>
-        <v-card-title>{{ comparison.execution.completionDate | date }}</v-card-title>
+        <v-card-title>
+          <TestSuiteExecutionHeader :execution="comparison.execution" :tests="comparison.tests"/>
+        </v-card-title>
         <v-card-text>
-          <p class="text-h6">Inputs</p>
-          <TestInputList :models="models" :inputs="comparison.execution.inputs"
-                         :input-types="inputs" :datasets="datasets"/>
-          <p class="text-h6">Test passed: {{ countPassedTests(comparison) }}</p>
-          <p class="text-h6">Best performing tests: {{ countBestPerformingTests(comparison) }}</p>
           <SuiteTestExecutionList :tests="comparison.tests" compact/>
         </v-card-text>
       </v-card>
@@ -20,12 +17,12 @@
 
 import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
-import TestInputList from '@/components/TestInputList.vue';
 import {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {useRoute} from 'vue-router/composables';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
+import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 
 const {executions, models, datasets, inputs, registry, suite} = storeToRefs(useTestSuiteStore());
 

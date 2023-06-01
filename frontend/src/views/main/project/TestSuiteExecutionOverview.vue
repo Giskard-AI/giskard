@@ -1,27 +1,7 @@
 <template>
   <v-container>
     <div class="d-flex">
-      <v-icon
-          :color="!props.execution ? 'grey' : props.execution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL"
-          size="64">{{
-          testResultIcon
-        }}
-      </v-icon>
-      <div>
-        <h2>
-
-          Test Suite
-        </h2>
-        <h4
-            v-if="!props.execution">No execution has been performed yet!</h4>
-        <h4
-            v-else-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
-        <h4 v-else-if="filteredTest.length === 0">No test match the current filter</h4>
-        <h4 v-else-if="executedTests.length > 0" :style="{
-          color: successColor
-        } ">Success ratio: {{ successRatio.passed }} /
-          {{ successRatio.executed }}</h4>
-      </div>
+      <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest"/>
       <div class="flex-grow-1"/>
       <v-btn icon @click="openLogs" color="secondary">
         <v-icon>text_snippet</v-icon>
@@ -54,8 +34,7 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
+import {TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, onMounted, ref, watch} from 'vue';
 import {chain} from 'lodash';
 import {$vfm} from 'vue-final-modal';
@@ -64,6 +43,7 @@ import {api} from '@/api';
 import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
+import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
@@ -95,20 +75,6 @@ const statusFilterOptions = [{
 
 const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
-
-const testResultIcon = computed(() => {
-  if (!props.execution) {
-    return 'block'
-  }
-  switch (props.execution.result) {
-    case TestResult.PASSED:
-      return 'done';
-    case TestResult.FAILED:
-      return 'close';
-    default:
-      return 'error';
-  }
-})
 
 
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
@@ -154,16 +120,6 @@ function openLogs() {
   });
 }
 
-const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
-    : filteredTest.value.filter(({result}) => result !== undefined));
-
-const successRatio = computed(() => ({
-  passed: executedTests.value.filter(({result}) => result!.passed).length,
-  executed: executedTests.value.length
-}))
-
-const successColor = computed(() => successRatio.value.executed === 0 ? Colors.PASS :
-    rgbToHex(pickHexLinear(SUCCESS_GRADIENT, successRatio.value.passed / successRatio.value.executed)));
 </script>
 
 <style scoped lang="scss">
