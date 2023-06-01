@@ -8,8 +8,8 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
-from ml_worker_pb2 import SingleTestResult
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +71,7 @@ class Suite:
         logger.info(f"result: {'success' if result else 'failed'}")
         for (test_name, r) in res.items():
             logger.info(f"{test_name}: {format_test_result(r)}")
-
-        return result, list(res.values())
+        return result, res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
