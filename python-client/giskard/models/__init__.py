@@ -37,9 +37,11 @@ def wrap_model(model,
             if isinstance(model, tuple(base_libs)):
                 origin_library = _base_libs[0][0].split(".")[0]
                 giskard_wrapper = _giskard_class[1]
-                console.print("Your model is from '" + origin_library + "', we successfully wrapped it into our own '"
-                              + giskard_wrapper + "' wrapper.\nSee our API reference documentation for more details.",
-                              style="bold green")
+                console.print("Your '" + origin_library + "' model is successfully wrapped by Giskard's '"
+                              + giskard_wrapper + "' wrapper class.", style="bold green")
+                console.print("Check Giskard's [link=https://giskard.readthedocs.io/en/latest/reference/models/index.html]Models[/link]"
+                              " in the API reference documentation for more details.",
+                              style="bold blue")
                 return giskard_class(model=model,
                                      model_type=model_type,
                                      data_preprocessing_function=data_preprocessing_function,
