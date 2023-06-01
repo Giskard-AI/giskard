@@ -29,4 +29,5 @@ public class ApplicationProperties {
     private int limeNumberSamples;
     private Path home;
     private int externalWorkerHeartbeatIntervalSeconds;
+    private String auth;
 }
