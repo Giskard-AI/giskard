@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from concurrent.futures import ThreadPoolExecutor
 
 import grpc
 from pydantic import AnyHttpUrl
 
+from giskard import cli_utils
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
@@ -28,11 +28,13 @@ async def _start_grpc_server(client: GiskardClient, is_server=False):
 
     port = settings.port if settings.port and is_server else find_free_port()
     add_MLWorkerServicer_to_server(MLWorkerServiceImpl(client, port, not is_server), server)
-    server.add_insecure_port(f"{settings.host}:{port}")
+    worker_id = cli_utils.ml_worker_id(is_server, client.host_url)
+    server_socket = f"unix://{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
+    server.add_insecure_port(server_socket)
     await server.start()
-    logger.info(f"Started ML Worker server on port {port}")
+    logger.info(f"Started ML Worker server on {server_socket}")
     logger.debug(f"ML Worker settings: {settings}")
-    return server, port
+    return server, server_socket
 
 
 async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_key=None):
@@ -43,13 +45,13 @@ async def start_ml_worker(is_server=False, backend_url: AnyHttpUrl = None, api_k
 
     client = GiskardClient(backend_url, api_key) if api_key != 'INTERNAL_ML_WORKER' else None
 
-    server, grpc_server_port = await _start_grpc_server(client, is_server)
+    server, grpc_server_socket = await _start_grpc_server(client, is_server)
     if not is_server:
         logger.info(
             "Remote server host and port are specified, connecting as an external ML Worker"
         )
 
-        tunnel = MLWorkerBridge(grpc_server_port, client)
+        tunnel = MLWorkerBridge(grpc_server_socket, client)
         tasks.append(asyncio.create_task(tunnel.start()))
 
     tasks.append(asyncio.create_task(server.wait_for_termination()))
