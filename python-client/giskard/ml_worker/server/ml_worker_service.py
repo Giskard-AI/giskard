@@ -477,7 +477,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                             value=i.value,
                             is_alias=i.is_alias
                         )
-                        for i in test.testInputs.values()
+                        for i in test.functionInputs.values()
                     ]
                 )
                 for test in suite.tests
