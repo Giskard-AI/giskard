@@ -5,7 +5,6 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.utils.FileUtils;
-import ai.giskard.utils.SelectionBuilder;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -89,10 +88,6 @@ public class DatasetService {
 
         if (rowFilter.getFilter() != null) {
             table = inspectionService.getRowsFiltered(table, rowFilter.getFilter());
-        }
-
-        if (rowFilter.getColumnFilters() != null && rowFilter.getColumnFilters().size() > 0) {
-            table = table.where(new SelectionBuilder(table).and(rowFilter.getColumnFilters()).build());
         }
 
         if (rowFilter.getRemoveRows() != null) {
