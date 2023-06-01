@@ -27,28 +27,8 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 :::
 ::::
 
-## 2. Access the Jupyter notebook to get our examples
 
-```sh
-# Clone giskard-examples
-git clone https://github.com/Giskard-AI/giskard-examples.git
-# Go to giskard-examples directory
-cd giskard-examples
-# Checkout the preview branch
-git checkout poc/function-storage
-# Open the `AI test v2 preview` notebook project with your favorite tool
-```
-
-:::{hint}
-You can generate an API token in the Admin page of Giskard
-:::
-
-### Follow the AI test v2 preview
-
-If you want a quick introduction, you can follow the \`AI test v2 preview\` notebook. All the feature displayed in this
-notebook will be shown below.
-
-## 3. Execute a Giskard test
+## 2. Execute a Giskard test
 
 :::{hint}
 You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
@@ -133,7 +113,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::
 ::::
 
-## 4. Create a custom test
+## 3. Create a custom test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -230,7 +210,7 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 :::
 ::::
 
-## 5. Create & Execute a test suite
+## 4. Create & Execute a test suite
 
 ::::{tab-set}
 
@@ -280,7 +260,7 @@ a test class or a test function.
 :::
 ::::
 
-## 6. Save a test suite
+## 5. Save a test suite
 
 ::::{tab-set}
 :::{tab-item} Test suite saving
