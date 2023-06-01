@@ -1,6 +1,5 @@
 import pandas as pd
 
-from giskard import test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
@@ -164,9 +163,9 @@ def _test_metamorphic(
     )
 
 
-@test(name="Invariance (proportion)")
+# TODO: once perturbation are implemented:@test(name="Invariance (proportion)")
 def test_metamorphic_invariance(
-        df: Dataset, model, perturbation_dict, threshold=0.5, output_sensitivity=None
+        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, output_sensitivity=None
 ) -> TestResult:
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
@@ -219,9 +218,9 @@ def test_metamorphic_invariance(
     )
 
 
-@test(name="Increasing (proportion)")
+# TODO: once perturbation are implemented:@test(name="Increasing (proportion)")
 def test_metamorphic_increasing(
-        df: Dataset, model, perturbation_dict, threshold=0.5, classification_label=None
+        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -274,9 +273,9 @@ def test_metamorphic_increasing(
     )
 
 
-@test(name="Decreasing (proportion)")
+#TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
 def test_metamorphic_decreasing(
-        df: Dataset, model, perturbation_dict, threshold=0.5, classification_label=None
+        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -359,9 +358,9 @@ def _test_metamorphic_t_test(
     )
 
 
-@test(name="Decreasing (t-test)")
+#TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
 def test_metamorphic_decreasing_t_test(
-        df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
+        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -411,9 +410,9 @@ def test_metamorphic_decreasing_t_test(
     )
 
 
-@test(name="Increasing (t-test)")
+#TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
 def test_metamorphic_increasing_t_test(
-        df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
+        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -463,11 +462,10 @@ def test_metamorphic_increasing_t_test(
     )
 
 
-@test(name="Invariance (t-test)")
+#TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
 def test_metamorphic_invariance_t_test(
-
         df: Dataset,
-        model,
+        model: BaseModel,
         perturbation_dict,
         window_size: float,
         critical_quantile: float,
@@ -548,9 +546,9 @@ def _test_metamorphic_wilcoxon(
     )
 
 
-@test(name="Decreasing (Wilcoxon)")
+#TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
 def test_metamorphic_decreasing_wilcoxon(
-        df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
+        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -651,9 +649,9 @@ def test_metamorphic_increasing_wilcoxon(
     )
 
 
-@test(name="Invariance (Wilcoxon)")
+#TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
 def test_metamorphic_invariance_wilcoxon(
-        df: Dataset, model, perturbation_dict, window_size=0.2, critical_quantile=0.05
+        df: Dataset, model: BaseModel, perturbation_dict, window_size=0.2, critical_quantile=0.05
 ) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
