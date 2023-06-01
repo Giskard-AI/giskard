@@ -19,7 +19,6 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -35,6 +34,7 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
@@ -168,7 +168,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             is_pass, results = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result in results.items():
+            for identifier, result in results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
                         id=identifier, result=map_result_to_single_test_result(result)

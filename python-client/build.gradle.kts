@@ -13,16 +13,16 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.7.13"
+        minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("poetry:1.4.0", "importlib-metadata:4.13.0"))
+        pip(listOf("pdm:2.5.0"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
-        module = "poetry"
+        module = "pdm"
         command = "install"
     }
 
@@ -62,14 +62,14 @@ tasks {
     }
 
     create<PythonTask>("lint") {
-        module = "flake8"
-        command = "giskard tests"
+        module = "pdm"
+        command = "lint"
     }
 
     create<PythonTask>("test") {
-        module = "pytest"
+        module = "pdm"
         // add "-n auto" to the pytest command to parallelize the execution
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        command = "test"
     }
 
     idea {
@@ -84,7 +84,7 @@ tasks {
         }
     }
     build {
-        dependsOn("install", "generateProto", "test")
+        dependsOn("install", "test")
     }
 
     create<PythonTask>("start") {
@@ -93,7 +93,7 @@ tasks {
     }
 
     create<PythonTask>("package") {
-        module = "poetry"
+        module = "pdm"
         command = "build"
     }
 }
