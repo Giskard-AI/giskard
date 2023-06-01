@@ -11,7 +11,7 @@ from giskard.core.model import ModelPredictionResults
 from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
 from giskard.core.validation import validate_is_pandasdataframe
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.models.sklearn import SKLearnModel
+from giskard.model.sklearn import SKLearnModel
 
 data = np.array(["g", "e", "e", "k", "s"])
 

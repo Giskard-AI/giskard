@@ -1,10 +1,9 @@
 from importlib import import_module
-from giskard.models.sklearn import SKLearnModel
-from giskard.models.catboost import CatboostModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.tensorflow import TensorFlowModel
-from giskard.models.huggingface import HuggingFaceModel
-
+from giskard.model.sklearn import SKLearnModel
+from giskard.model.catboost import CatboostModel
+from giskard.model.pytorch import PyTorchModel
+from giskard.model.tensorflow import TensorFlowModel
+from giskard.model.huggingface import HuggingFaceModel
 
 # format: dict[GiskardModel: list(tuple(module, base_class))]
 _libraries = {HuggingFaceModel: [("transformers", "PreTrainedModel")],
@@ -21,7 +20,7 @@ def get_class(_lib, _class):
     return getattr(import_module(_lib), _class)
 
 
-def make_model(clf, *args, **kwargs):
+def create(clf, *args, **kwargs):
     for giskard_class, _base_libs in _libraries.items():
         base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
         try:
