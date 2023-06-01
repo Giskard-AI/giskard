@@ -1,53 +1,48 @@
-# Giskard
+# Giskard developer readme
 
 🚧  **WORK IN PROGRESS** 🚧 
-This README is no longer valid, following our migration.
-TODO: rewrite this README from scratch. 
+This readme is in process of creation, some information can be subject to change
 
-## Backend Requirements
+## Requirements
+- Java 17 ([Eclipse Temurin JDK](https://adoptium.net/installation/) for example)
+- Python >= 3.7.13 with `pip`
 
-* [Docker](https://www.docker.com/)
-* [Docker Compose](https://docs.docker.com/compose/install/)
-* [Poetry](https://python-poetry.org/) for Python package and environment management
+## Quick start from sources on localhost
+In order to run Giskard from sources you can run the following command:
+```shell
+./gradlew start --parallel
+```
+Giskard UI will be available at http://localhost:8080/
 
-## Frontend Requirements
+After running the command above there will be 3 modules running:
+- frontend
+- backend
+- ml-worker
 
-* Node.js (with `npm`).
+> When running Giskard in "dev mode" (as above) there's an H2 database that's used instead of a real one, the default location of this H2 database is `$HOME/giskard-home/database` 
 
-## Backend local development
-
-* Start the stack with Docker Compose:
-
-```bash
-docker-compose up -d
+To build the project use
+```shell
+./gradlew build --parallel
 ```
 
-* Now you can open your browser and interact with these URLs:
+This command will build all modules, including:
+- creation of virtual environment inside ml-worker/.venv
+- installing node inside .gradle
+- generating gRPC stubs for backend and ml-worker
 
-Frontend, built with Docker, with routes handled based on the path: http://localhost
 
-Backend, JSON based web API based on OpenAPI: http://localhost/api/
-
-Automatic interactive documentation with Swagger UI (from the OpenAPI backend): http://localhost/docs
-
-Alternative automatic documentation with ReDoc (from the OpenAPI backend): http://localhost/redoc
-
-PGAdmin, PostgreSQL web administration: http://localhost:5050
-
-Note: you can disable (comment) this component in the `docker-compose.yml` file, and instead use your preferred DBAdmin tool (local or web). To do that, you will need to expose the Postgres port (5432) in the `docker-compose.override.yml` file, as in the following:
-
-```bash
-db:
-  ports: 
-    - "5432:5432"
+## Dockerized Giskard execution
+By default Giskard is meant to be run inside Docker, by executing
+```shell
+docker-compose up
 ```
 
-Flower, administration of Celery tasks: http://localhost:5555
-
-Traefik UI, to see how the routes are being handled by the proxy: http://localhost:8090
-
-**Note**: The first time you start your stack, it might take a minute for it to be ready. While the backend waits for the database to be ready and configures everything. You can check the logs to monitor it.
-
+### Building Docker containers
+Use the following command to build docker containers locally
+```shell
+docker-compose build --parallel
+```
 To check the logs, run:
 
 ```bash

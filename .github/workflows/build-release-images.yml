@@ -12,6 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.1.0
 
+      - name: Set up Docker Buildx
+        id: builder
+        uses: docker/setup-buildx-action@master
+
+
+      - name: Append ARM buildx builder from AWS
+        uses: baschny/append-buildx-action@v1
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
+          ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
+
       - name: Set tag name
         id: tag
         run: |
@@ -19,48 +31,64 @@ jobs:
           echo ::set-output name=version::${GITHUB_REF#refs/*/v}
           echo ::set-output name=latest_version::$(git ls-remote --tags origin | grep -Po "v\d+\.\d+\.\d+" | sort -hr | head -1)
 
-      - name: Generate docker config file
-        env:
-          TAG: ${{ steps.tag.outputs.version }}
-        run: |
-          sudo sysctl -w kernel.unprivileged_userns_clone=1
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml
-
-      - name: Build images
-        run: docker-compose -f docker-stack.yml build
-
       - name: Login to Docker registry
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push <current version> images to Docker registry
-        env:
-          TAG: ${{ steps.tag.outputs.version }}
-        run: |
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
-
-      - name: Tag images as <latest>
+      - name: Build <current version>+latest backend image
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         env:
-          TAG: ${{ steps.tag.outputs.version }}
+          IMAGE: docker.io/giskardai/backend
         run: |
-          for image in $(cat docker-stack.yml | grep '^ *image:.*giskard' | cut -d':' -f 2 | tr -d ' '); \
-          do \
-              docker tag "${image}":"${TAG}" "${image}":latest; \
-          done;
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:latest \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --file backend/src/main/docker/app/app.dockerfile \
+          --push \
+          .
 
-      - name: Push <latest> images to ECR
+      - name: Build <current version> backend image
+        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/backend
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --file backend/src/main/docker/app/app.dockerfile \
+          --push \
+          .
+
+      - name: Build <current version>+latest frontend image
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         env:
-          TAG: latest
+          IMAGE: docker.io/giskardai/frontend
         run: |
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:latest \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --push \
+          frontend
+
+      - name: Build <current version> frontend image
+        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/frontend
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --push \
+          frontend
 
       - name: Invoke deployment hook
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-prod 
 
-      - name: Remove containers and volumes
-        run: docker-compose -f docker-stack.yml down -v --remove-orphans
+      - name: Cleanup containers
+        run: docker builder prune --force --keep-storage=10GB

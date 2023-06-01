@@ -1,57 +1,61 @@
-name: Build Docker images and push to registry with dev tag
+name: Build & Push dev images
 
 on:
-  push:
-    branches:
-    - main
-  pull_request:
-    branches:
-      - main
+  schedule:
+    - cron: '0 5 * * *'
+
   workflow_dispatch:
 
 jobs:
   build-images:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3.1.0
-      with:
-        submodules: recursive
+      - name: Checkout code
+        uses: actions/checkout@v3.1.0
 
-    - name: Extract branch name
-      shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
+      - name: Set up Docker Buildx
+        id: builder
+        uses: docker/setup-buildx-action@master
 
-    - name: Generate docker config file
-      env:
-        TAG: dev
-      run: |
-        sudo sysctl -w kernel.unprivileged_userns_clone=1
-        docker-compose -f docker-compose.yml -f docker-compose.dev.yml config > docker-stack.yml 
+
+      - name: "Append ARM buildx builder from AWS"
+        uses: baschny/append-buildx-action@v1
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
+          ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
+
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Login to Docker registry
+        uses: docker/login-action@v2
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/bake-action@master
+        env:
+          TAG: dev
+        with:
+          push: ${{ steps.extract_branch.outputs.branch == 'main' }}
+          set: |
+            *.platform=linux/amd64
+            *.platform=linux/arm64
+
+      - name: Invoke deployment hook
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        run: |
+          curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
+
+      - name: Remove containers and volumes
+        run: |
+          docker-compose down -v --remove-orphans
+          docker builder prune --force --keep-storage=10GB
       
-    - name: Build images
-      run: docker-compose -f docker-stack.yml build
-
-    - name: Login to Docker registry
-      uses: docker/login-action@v2
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Push images to Docker registry
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-      env:
-        TAG: dev
-      run: |
-        docker-compose -f docker-compose.yml -f docker-compose.dev.yml push
-
-    - name: Invoke deployment hook
-      if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-      run: |
-        curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev 
-
-    - name: Remove containers and volumes
-      run: docker-compose -f docker-stack.yml down -v --remove-orphans
 
