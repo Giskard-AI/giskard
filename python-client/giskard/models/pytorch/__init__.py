@@ -1,7 +1,7 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Union, Literal, get_args
+from typing import Union, Literal, get_args, Optional
 
 import mlflow
 import numpy as np
@@ -41,13 +41,23 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
+    """
+    A wrapper class for PyTorch models that extends the functionality of the
+    MLFlowBasedModel class.
+
+    Attributes:
+        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
+        device (str): The device to run the model on.
+        torch_dtype (TorchDType): The data type to be used for input tensors.
+    """
+
     def __init__(
             self,
-            clf,
+            model,
             model_type: ModelType,
             torch_dtype: TorchDType = "float32",
             device="cpu",
-            name: str = None,
+            name: Optional[str] = None,
             data_preprocessing_function=None,
             model_postprocessing_function=None,
             feature_names=None,
@@ -56,7 +66,7 @@ class PyTorchModel(MLFlowBasedModel):
             iterate_dataset=True,
     ) -> None:
         super().__init__(
-            clf=clf,
+            model=model,
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
@@ -71,11 +81,11 @@ class PyTorchModel(MLFlowBasedModel):
         self.iterate_dataset = iterate_dataset
 
     @classmethod
-    def load_clf(cls, local_dir):
+    def load_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.pytorch.save_model(self.clf, path=local_path, mlflow_model=mlflow_meta)
+        mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
         # Fault tolerance: try to convert to the right format in special cases
@@ -89,14 +99,14 @@ class PyTorchModel(MLFlowBasedModel):
             data_iter = iter(data)
         except TypeError as err:
             raise ValueError(
-                f"The data exposed to your clf must be iterable (instead, we got type={type(data)}). "
+                f"The data exposed to your model must be iterable (instead, we got type={type(data)}). "
                 "Make sure that your data or your `data_preprocessing_function` outputs one of the following:\n"
-                "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your clf"
+                "- pandas.DataFrame\n- torch.utils.data.Dataset\n- iterable with elements that are compatible with your model"
             ) from err
 
         try:
             with torch.no_grad():
-                return torch.cat([self.clf(*entry) for entry in map_to_tuples(data_iter)])
+                return torch.cat([self.model(*entry) for entry in map_to_tuples(data_iter)])
         except ValueError as err:
             raise ValueError(
                 "Running your model prediction on one element of your dataset returned an error.\n"
@@ -106,7 +116,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _get_predictions_from_object(self, data):
         try:
-            return self.clf(data)
+            return self.model(data)
         except ValueError as err:
             raise ValueError(
                 "Running your model prediction returned an error.\n"
@@ -114,9 +124,9 @@ class PyTorchModel(MLFlowBasedModel):
                 "returns an object that can be passed as input for your model. "
             ) from err
 
-    def clf_predict(self, data):
-        self.clf.to(self.device)
-        self.clf.eval()
+    def model_predict(self, data):
+        self.model.to(self.device)
+        self.model.eval()
 
         if self.iterate_dataset:
             predictions = self._get_predictions_from_iterable(data)

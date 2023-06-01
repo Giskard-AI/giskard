@@ -1,17 +1,20 @@
 import pandas as pd
 
+from giskard import test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.utils import apply_perturbation_inplace
+from giskard.ml_worker.testing.utils import Direction, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+from ..utils import check_slice_not_empty
 
 
-def _predict_numeric_result(ds: Dataset, model: BaseModel, output_proba=True, classification_label=None):
+def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
     if model.is_regression or not output_proba:
         return model.predict(ds).raw_prediction
     elif model.is_classification and classification_label is not None:
@@ -24,27 +27,22 @@ def _prediction_ratio(prediction, perturbed_prediction):
     return abs(perturbed_prediction - prediction) / prediction if prediction != 0 else abs(perturbed_prediction)
 
 
-def _perturb_and_predict(
-        ds: Dataset,
-        model: BaseModel,
-        perturbation_dict,
-        output_proba=True,
-        classification_label=None,
-):
+@timer("Perturb and predict data")
+def _perturb_and_predict(model: BaseModel, ds: Dataset, transformation_function: TransformationFunction,
+                         output_proba=True, classification_label=None):
     results_df = pd.DataFrame()
-    results_df["prediction"] = _predict_numeric_result(
-        ds, model, output_proba, classification_label
-    )
-    modified_rows = apply_perturbation_inplace(ds.df, perturbation_dict)
-    if len(modified_rows):
-        ds.df = ds.df.iloc[modified_rows]
-        results_df = results_df.iloc[modified_rows]
-        results_df["perturbed_prediction"] = _predict_numeric_result(
-            ds, model, output_proba, classification_label
-        )
-    else:
-        results_df["perturbed_prediction"] = results_df["prediction"]
-    return results_df, len(modified_rows)
+    results_df["prediction"] = _predict_numeric_result(model, ds, output_proba, classification_label)
+
+    perturbed_ds = ds.transform(transformation_function)
+    results_df["perturbed_prediction"] = _predict_numeric_result(model, perturbed_ds, output_proba,
+                                                                 classification_label)
+
+    modified_rows = []
+    for idx, r in ds.df.iterrows():
+        if not r.equals(perturbed_ds.df.loc[idx]):
+            modified_rows.append(idx)
+
+    return results_df.iloc[modified_rows], len(modified_rows)
 
 
 @timer("Compare and predict the data")
@@ -126,26 +124,12 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
     return p_value
 
 
-def _test_metamorphic(
-
-        direction: Direction,
-        actual_slice: Dataset,
-        model,
-        perturbation_dict,
-        threshold: float,
-        classification_label=None,
-        output_sensitivity=None,
-        output_proba=True,
-) -> TestResult:
-    actual_slice.df.reset_index(drop=True, inplace=True)
-
-    results_df, modified_rows_count = _perturb_and_predict(
-        actual_slice,
-        model,
-        perturbation_dict,
-        classification_label=classification_label,
-        output_proba=output_proba,
-    )
+def _test_metamorphic(model, direction: Direction, dataset: Dataset, transformation_function: TransformationFunction,
+                      threshold: float, classification_label=None, output_sensitivity=None,
+                      output_proba=True) -> TestResult:
+    results_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
+                                                           output_proba=output_proba,
+                                                           classification_label=classification_label)
 
     passed_idx, failed_idx = _compare_prediction(
         results_df, model.meta.model_type, direction, output_sensitivity
@@ -155,17 +139,17 @@ def _test_metamorphic(
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
+        actual_slices_size=[len(dataset)],
         metric=passed_ratio,
         passed=bool(passed_ratio > threshold),
         messages=messages,
     )
 
 
-# TODO: once perturbation are implemented:@test(name="Invariance (proportion)")
-def test_metamorphic_invariance(
-        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, output_sensitivity=None
-) -> TestResult:
+@test(name="Invariance (proportion)")
+def test_metamorphic_invariance(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                output_sensitivity: float = None) -> TestResult:
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
 
@@ -181,13 +165,14 @@ def test_metamorphic_invariance(
     more than 50%(threshold 0.5) of males have unchanged outputs
 
     Args:
-        df(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
-        perturbation_dict(dict):
-          Dictionary of the perturbations. It provides the perturbed features as key
-          and a perturbation lambda function as value
+        dataset(Dataset):
+          Dataset used to compute the test
+        transformation_function(TransformationFunction):
+          Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+          Slicing function to be applied on dataset
         window_size(float):
           Threshold of the ratio of invariant rows
         output_sensitivity(float):
@@ -197,7 +182,7 @@ def test_metamorphic_invariance(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of dataset tested
         message:
           Test result message
         metric:
@@ -205,22 +190,26 @@ def test_metamorphic_invariance(
         passed:
           TRUE if metric > threshold
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_invariance")
 
     return _test_metamorphic(
         direction=Direction.Invariant,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         threshold=threshold,
         output_sensitivity=output_sensitivity,
         output_proba=False,
     )
 
 
-# TODO: once perturbation are implemented:@test(name="Increasing (proportion)")
-def test_metamorphic_increasing(
-        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
-):
+@test(name="Increasing (proportion)")
+@validate_classification_label
+def test_metamorphic_increasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                classification_label: str = None):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -236,13 +225,14 @@ def test_metamorphic_increasing(
      default probability is increasing for more than 50% of people in the dataset
 
     Args:
-        df(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
-        perturbation_dict(dict):
-          Dictionary of the perturbations. It provides the perturbed features as key
-          and a perturbation lambda function as value
+        dataset(Dataset):
+          Dataset used to compute the test
+        transformation_function(TransformationFunction):
+          Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+          Slicing function to be applied on dataset
         window_size(float):
           Threshold of the ratio of increasing rows
         classification_label(str):
@@ -250,7 +240,7 @@ def test_metamorphic_increasing(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of dataset tested
         message:
           Test result message
         metric:
@@ -258,24 +248,25 @@ def test_metamorphic_increasing(
         passed:
           TRUE if metric > threshold
     """
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_increasing")
 
     return _test_metamorphic(
         direction=Direction.Increasing,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         classification_label=classification_label,
         threshold=threshold,
     )
 
 
-# TODO: once perturbation are implemented:@test(name="Decreasing (proportion)")
-def test_metamorphic_decreasing(
-        df: Dataset, model: BaseModel, perturbation_dict, threshold=0.5, classification_label=None
-):
+@test(name="Decreasing (proportion)")
+@validate_classification_label
+def test_metamorphic_decreasing(model: BaseModel, dataset: Dataset, transformation_function: TransformationFunction,
+                                slicing_function: SlicingFunction = None, threshold: float = 0.5,
+                                classification_label: str = None):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -291,13 +282,14 @@ def test_metamorphic_decreasing(
      default probability is decreasing for more than 50% of people in the dataset
 
     Args:
-        df(Dataset):
-          Dataset used to compute the test
         model(BaseModel):
           Model used to compute the test
-        perturbation_dict(dict):
-          Dictionary of the perturbations. It provides the perturbed features as key
-          and a perturbation lambda function as value
+        dataset(Dataset):
+          Dataset used to compute the test
+        transformation_function(TransformationFunction):
+          Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+          Slicing function to be applied on dataset
         threshold(float):
           Threshold of the ratio of decreasing rows
         classification_label(str):
@@ -305,7 +297,7 @@ def test_metamorphic_decreasing(
 
     Returns:
         actual_slices_size:
-          Length of actual_slice tested
+          Length of dataset tested
         message:
           Test result message
         metric:
@@ -313,54 +305,45 @@ def test_metamorphic_decreasing(
         passed:
           TRUE if metric > threshold
     """
-
-    assert (
-            not model.is_classification or classification_label in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_metamorphic_decreasing")
 
     return _test_metamorphic(
         direction=Direction.Decreasing,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         classification_label=classification_label,
         threshold=threshold,
     )
 
 
-def _test_metamorphic_t_test(
-
-        direction: Direction,
-        actual_slice: Dataset,
-        model,
-        perturbation_dict,
-        window_size: float,
-        critical_quantile: float,
-        classification_label=None,
-        output_proba=True,
-) -> TestResult:
-    actual_slice.df.reset_index(drop=True, inplace=True)
-
-    result_df, modified_rows_count = _perturb_and_predict(
-        actual_slice, model, perturbation_dict, output_proba=output_proba, classification_label=classification_label
-    )
+def _test_metamorphic_t_test(direction: Direction, model, dataset: Dataset,
+                             transformation_function: TransformationFunction, window_size: float,
+                             critical_quantile: float, classification_label=None, output_proba=True) -> TestResult:
+    result_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
+                                                          output_proba=output_proba,
+                                                          classification_label=classification_label)
 
     p_value = _compare_probabilities_t_test(result_df, direction, window_size, critical_quantile)
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
+        actual_slices_size=[len(dataset)],
         metric=p_value,
         passed=bool(p_value < critical_quantile),
         messages=messages,
     )
 
 
-# TODO: once perturbation are implemented: @test(name="Decreasing (t-test)")
-def test_metamorphic_decreasing_t_test(
-        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
-):
+@test(name="Decreasing (t-test)")
+@validate_classification_label
+def test_metamorphic_decreasing_t_test(model: BaseModel, dataset: Dataset,
+                                       transformation_function: TransformationFunction,
+                                       slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
+                                       classification_label: str = None):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -373,19 +356,20 @@ def test_metamorphic_decreasing_t_test(
              causes a statistically significant probability decrease.
 
     Args:
-        df(Dataset):
-            Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-        perturbation_dict(dict):
-            Dictionary of the perturbations. It provides the perturbed features as key
-            and a perturbation lambda function as value
+        dataset(Dataset):
+            Dataset used to compute the test
+        transformation_function(TransformationFunction):
+            Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+          Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of dataset tested
         message:
             Test result message
         metric:
@@ -393,26 +377,23 @@ def test_metamorphic_decreasing_t_test(
         passed:
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_decreasing_t_test")
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
-    return _test_metamorphic_t_test(
-        direction=Direction.Decreasing,
-        actual_slice=df,
-        model=model,
-        perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
-        window_size=float("nan"),
-        critical_quantile=critical_quantile,
-    )
+    return _test_metamorphic_t_test(direction=Direction.Decreasing, dataset=dataset,
+                                    model=model,
+                                    transformation_function=transformation_function, window_size=float("nan"),
+                                    critical_quantile=critical_quantile, classification_label=classification_label)
 
 
-# TODO: once perturbation are implemented:@test(name="Increasing (t-test)")
-def test_metamorphic_increasing_t_test(
-        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
-):
+@test(name="Increasing (t-test)")
+@validate_classification_label
+def test_metamorphic_increasing_t_test(model: BaseModel, dataset: Dataset,
+                                       transformation_function: TransformationFunction,
+                                       slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
+                                       classification_label: str = None):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -425,19 +406,20 @@ def test_metamorphic_increasing_t_test(
              causes a statistically significant probability increase.
 
     Args:
-        df(Dataset):
-            Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-        perturbation_dict(dict):
-            Dictionary of the perturbations. It provides the perturbed features as key
-            and a perturbation lambda function as value
+        dataset(Dataset):
+            Dataset used to compute the test
+        transformation_function(TransformationFunction):
+            Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+          Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of dataset tested
         message:
             Test result message
         metric:
@@ -445,30 +427,22 @@ def test_metamorphic_increasing_t_test(
         passed:
             TRUE if the p-value of the t-test between (A) and (B) is below the critical value
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_increasing_t_test")
 
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
-
-    return _test_metamorphic_t_test(
-        direction=Direction.Increasing,
-        actual_slice=df,
-        model=model,
-        perturbation_dict=perturbation_dict,
-        classification_label=classification_label,
-        window_size=float("nan"),
-        critical_quantile=critical_quantile,
-    )
+    return _test_metamorphic_t_test(direction=Direction.Increasing, dataset=dataset,
+                                    model=model,
+                                    transformation_function=transformation_function, window_size=float("nan"),
+                                    critical_quantile=critical_quantile, classification_label=classification_label)
 
 
-# TODO: once perturbation are implemented: @test(name="Invariance (t-test)")
-def test_metamorphic_invariance_t_test(
-        df: Dataset,
-        model: BaseModel,
-        perturbation_dict,
-        window_size: float,
-        critical_quantile: float,
-) -> TestResult:
+@test(name="Invariance (t-test)")
+def test_metamorphic_invariance_t_test(model: BaseModel, dataset: Dataset,
+                                       transformation_function: TransformationFunction,
+                                       slicing_function: SlicingFunction = None, window_size: float = 0.2,
+                                       critical_quantile: float = 0.05) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
 
@@ -484,13 +458,14 @@ def test_metamorphic_invariance_t_test(
     perturbed sample is statistically within a window determined by the user.
 
     Args:
-          df(Dataset):
-              Dataset used to compute the test
           model(BaseModel):
               Model used to compute the test
-          perturbation_dict(dict):
-              Dictionary of the perturbations. It provides the perturbed features as key
-              and a perturbation lambda function as value
+          dataset(Dataset):
+              Dataset used to compute the test
+          transformation_function(TransformationFunction):
+              Function performing the perturbations to be applied on dataset.
+          slicing_function(SlicingFunction):
+              Slicing function to be applied on dataset
           window_size(float):
               Probability window in which the mean of the perturbed sample can be in
           critical_quantile(float):
@@ -498,7 +473,7 @@ def test_metamorphic_invariance_t_test(
 
     Returns:
           actual_slices_size:
-              Length of actual_slice tested
+              Length of dataset tested
           message:
               Test result message
           metric:
@@ -506,49 +481,41 @@ def test_metamorphic_invariance_t_test(
           passed:
               TRUE if the p-value of the t-test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_invariance_t_test")
 
-    return _test_metamorphic_t_test(
-        direction=Direction.Invariant,
-        actual_slice=df,
-        model=model,
-        perturbation_dict=perturbation_dict,
-        window_size=window_size,
-        critical_quantile=critical_quantile,
-    )
+    return _test_metamorphic_t_test(direction=Direction.Invariant, dataset=dataset, model=model,
+                                    transformation_function=transformation_function, window_size=window_size,
+                                    critical_quantile=critical_quantile)
 
 
-def _test_metamorphic_wilcoxon(
-        direction: Direction,
-        actual_slice: Dataset,
-        model,
-        perturbation_dict,
-        window_size: float,
-        critical_quantile: float,
-        classification_label=None,
-        output_proba=True,
-) -> TestResult:
-    actual_slice.df.reset_index(drop=True, inplace=True)
-
-    result_df, modified_rows_count = _perturb_and_predict(
-        actual_slice, model, perturbation_dict, output_proba=output_proba, classification_label=classification_label
-    )
+def _test_metamorphic_wilcoxon(direction: Direction, model, dataset: Dataset,
+                               transformation_function: TransformationFunction, window_size: float,
+                               critical_quantile: float, classification_label=None, output_proba=True) -> TestResult:
+    result_df, modified_rows_count = _perturb_and_predict(model, dataset, transformation_function,
+                                                          output_proba=output_proba,
+                                                          classification_label=classification_label)
 
     p_value = _compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)],
+        actual_slices_size=[len(dataset)],
         metric=p_value,
         passed=bool(p_value < critical_quantile),
         messages=messages,
     )
 
 
-# TODO: once perturbation are implemented: @test(name="Decreasing (Wilcoxon)")
-def test_metamorphic_decreasing_wilcoxon(
-        df: Dataset, model: BaseModel, perturbation_dict, critical_quantile=0.05, classification_label=None
-):
+@test(name="Decreasing (Wilcoxon)")
+@validate_classification_label
+def test_metamorphic_decreasing_wilcoxon(model: BaseModel, dataset: Dataset,
+                                         transformation_function: TransformationFunction,
+                                         slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
+                                         classification_label: str = None):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -561,19 +528,20 @@ def test_metamorphic_decreasing_wilcoxon(
              causes a statistically significant probability decrease.
 
     Args:
-        df(Dataset):
-            Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-        perturbation_dict(dict):
-            Dictionary of the perturbations. It provides the perturbed features as key
-            and a perturbation lambda function as value
+        dataset(Dataset):
+            Dataset used to compute the test
+        transformation_function(TransformationFunction):
+            Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+            Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of dataset tested
         message:
             Test result message
         metric:
@@ -581,25 +549,28 @@ def test_metamorphic_decreasing_wilcoxon(
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
-
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_decreasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Decreasing,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
 
 
-def test_metamorphic_increasing_wilcoxon(
-        df: Dataset, model, perturbation_dict, critical_quantile=0.05, classification_label=None
-):
+@test()
+@validate_classification_label
+def test_metamorphic_increasing_wilcoxon(model: BaseModel, dataset: Dataset,
+                                         transformation_function: TransformationFunction,
+                                         slicing_function: SlicingFunction = None, critical_quantile: float = 0.05,
+                                         classification_label: str = None):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -612,19 +583,20 @@ def test_metamorphic_increasing_wilcoxon(
              causes a statistically significant probability increase.
 
     Args:
-        df(Dataset):
-            Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-        perturbation_dict(dict):
-            Dictionary of the perturbations. It provides the perturbed features as key
-            and a perturbation lambda function as value
+        dataset(Dataset):
+            Dataset used to compute the test
+        transformation_function(TransformationFunction):
+            Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+            Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of dataset tested
         message:
             Test result message
         metric:
@@ -632,26 +604,27 @@ def test_metamorphic_increasing_wilcoxon(
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
     """
-
-    assert (
-            not model.is_classification or str(classification_label) in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_increasing_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Increasing,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         classification_label=classification_label,
         window_size=float("nan"),
         critical_quantile=critical_quantile,
     )
 
 
-# TODO: once perturbation are implemented: @test(name="Invariance (Wilcoxon)")
-def test_metamorphic_invariance_wilcoxon(
-        df: Dataset, model: BaseModel, perturbation_dict, window_size=0.2, critical_quantile=0.05
-) -> TestResult:
+@test(name="Invariance (Wilcoxon)")
+def test_metamorphic_invariance_wilcoxon(model: BaseModel, dataset: Dataset,
+                                         transformation_function: TransformationFunction,
+                                         slicing_function: SlicingFunction = None, window_size: float = 0.2,
+                                         critical_quantile: float = 0.05) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
 
@@ -667,13 +640,14 @@ def test_metamorphic_invariance_wilcoxon(
     perturbed sample is statistically within a window determined by the user.
 
     Args:
-        df(Dataset):
-            Dataset used to compute the test
         model(BaseModel):
             Model used to compute the test
-        perturbation_dict(dict):
-            Dictionary of the perturbations. It provides the perturbed features as key
-            and a perturbation lambda function as value
+        dataset(Dataset):
+            Dataset used to compute the test
+        transformation_function(TransformationFunction):
+            Function performing the perturbations to be applied on dataset.
+        slicing_function(SlicingFunction):
+            Slicing function to be applied on dataset
         window_size(float):
             Probability window in which the mean of the perturbed sample can be in
         critical_quantile(float):
@@ -681,7 +655,7 @@ def test_metamorphic_invariance_wilcoxon(
 
     Returns:
         actual_slices_size:
-            Length of actual_slice tested
+            Length of dataset tested
         message:
             Test result message
         metric:
@@ -689,12 +663,16 @@ def test_metamorphic_invariance_wilcoxon(
         passed:
             TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
     """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset",
+                              test_name="test_metamorphic_invariance_wilcoxon")
 
     return _test_metamorphic_wilcoxon(
         direction=Direction.Invariant,
-        actual_slice=df,
+        dataset=dataset,
         model=model,
-        perturbation_dict=perturbation_dict,
+        transformation_function=transformation_function,
         window_size=window_size,
         critical_quantile=critical_quantile,
     )

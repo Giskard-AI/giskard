@@ -199,6 +199,7 @@ public interface GiskardMapper {
     TestSuiteDTO toDTO(TestSuite suite);
 
     @Mapping(target = "testUuid", source = "testFunction.uuid")
+    @Mapping(target = "test", source = "testFunction")
     SuiteTestDTO toDTO(SuiteTest dto);
 
     default Map<String, TestInputDTO> map(List<TestInput> value) {
@@ -214,15 +215,25 @@ public interface GiskardMapper {
 
     List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
 
-    TestFunctionArgumentDTO toDTO(TestFunctionArgument testFunctionArgument);
+    TestFunctionArgumentDTO toDTO(FunctionArgument functionArgument);
 
-    @Mapping(target = "testFunction", ignore = true)
-    TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
+    @Mapping(target = "function", ignore = true)
+    FunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
     TestFunctionDTO toDTO(TestFunction testFunction);
 
     @Mapping(target = "suiteTests", ignore = true)
     TestFunction fromDTO(TestFunctionDTO testFunction);
+
+    SlicingFunction fromDTO(SlicingFunctionDTO testFunction);
+
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    SlicingFunctionDTO toDTO(SlicingFunction testFunction);
+
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    TransformationFunctionDTO toDTO(TransformationFunction testFunction);
+
+    TransformationFunction fromDTO(TransformationFunctionDTO testFunction);
 
 }

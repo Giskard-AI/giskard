@@ -6,9 +6,11 @@ import Vue from "vue";
 import {
     AdminUserDTO,
     AppConfigDTO,
+    CatalogDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
+    DatasetPageDTO,
     ExplainResponseDTO,
     ExplainTextResponseDTO,
     FeatureMetadataDTO,
@@ -34,14 +36,15 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
+    SlicingResultDTO,
     SuiteTestDTO,
-    TestFunctionDTO,
     TestInputDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
     TestTemplateExecutionResultDTO,
     TokenAndPasswordVM,
+    TransformationResultDTO,
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
@@ -324,8 +327,11 @@ export const api = {
     downloadExportedProject(id: number) {
         downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
-    async peekDataFile(datasetId: string) { //TODO
-        return apiV2.get<unknown, any>(`/dataset/${datasetId}/rows`, { params: { offset: 0, size: 10 } });
+    async peekDataFile(datasetId: string) {
+        return this.getDatasetRows(datasetId, 0, 10);
+    },
+    async getDatasetRows(datasetId: string, offset: number, size: number) {
+        return apiV2.get<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, {params: {offset, size}});
     },
     async getFeaturesMetadata(datasetId: string) {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
@@ -473,8 +479,8 @@ export const api = {
             inputs
         });
     },
-    async getTestFunctions(projectId: number) {
-        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`, {
+    async getCatalog(projectId: number) {
+        return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
             params: {
                 projectId
             }
@@ -492,5 +498,15 @@ export const api = {
             allowAnalytics: allowAnalytics,
             license: license
         });
+    },
+    async runAdHocSlicingFunction(slicingFnUuid: string, datasetUuid: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, SlicingResultDTO>(
+            `/slices/${encodeURIComponent(slicingFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
+    },
+    async runAdHocTransformationFunction(transformationFnUuid: string, datasetUuid: string, inputs: {
+        [key: string]: string
+    }) {
+        return apiV2.post<unknown, TransformationResultDTO>(
+            `/transformations/${encodeURIComponent(transformationFnUuid)}/dataset/${encodeURIComponent(datasetUuid)}`, inputs);
     },
 };

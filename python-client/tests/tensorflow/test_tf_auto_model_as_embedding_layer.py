@@ -127,7 +127,7 @@ def test_tf_auto_model_as_embedding_layer():
         return inputs
 
     my_model = TensorFlowModel(name="huggingface_model",
-                               clf=model,
+                               model=model,
                                feature_names=['text'],
                                model_type="classification",
                                classification_labels=['0', '1'],

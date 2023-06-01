@@ -35,6 +35,9 @@ def generate_func_id(name) -> str:
 
 
 def get_object_uuid(func) -> str:
+    if hasattr(func, 'meta'):
+        return func.meta.uuid
+
     func_name = f"{func.__module__}.{func.__name__}"
 
     if func_name.startswith('__main__'):
@@ -50,6 +53,12 @@ def load_plugins():
         importlib.import_module(giskard_tests_module)
     else:
         importlib.reload(sys.modules[giskard_tests_module])
+
+    giskard_functions_module = "giskard.ml_worker.testing.functions"
+    if giskard_functions_module not in sys.modules:
+        importlib.import_module(giskard_functions_module)
+    else:
+        importlib.reload(sys.modules[giskard_functions_module])
 
     if not os.path.exists(plugins_root):
         logger.info(f"Plugins directory doesn't exist: {plugins_root}")

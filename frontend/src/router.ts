@@ -166,15 +166,50 @@ export default new Router({
                                     }
                                 },
                                 {
-                                    path: 'project-tests-catalog',
-                                    name: 'project-tests-catalog',
-                                    component: () => import('./views/main/project/TestsCatalog.vue'),
+                                    path: 'project-catalog',
+                                    name: 'project-catalog',
+                                    component: () => import('./views/main/project/Catalog.vue'),
                                     props: (route) => {
                                         return {
                                             projectId: Number(route.params.id),
                                             suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
                                         }
                                     },
+                                    children: [
+                                        {
+                                            path: 'tests',
+                                            name: 'project-catalog-tests',
+                                            component: () => import('./views/main/project/TestsCatalog.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                                }
+                                            },
+                                        },
+                                        {
+                                            path: 'slicing-functions',
+                                            name: 'project-catalog-slicing-functions',
+                                            component: () => import('./views/main/project/FiltersCatalog.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                                }
+                                            },
+                                        },
+                                        {
+                                            path: 'transformation-functions',
+                                            name: 'project-catalog-transformation-functions',
+                                            component: () => import('./views/main/project/TransformationsCatalog.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                                }
+                                            },
+                                        }
+                                    ]
                                 },
                                 {
                                     path: 'test-suites',

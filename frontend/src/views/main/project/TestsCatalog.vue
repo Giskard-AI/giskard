@@ -77,52 +77,16 @@
                                 <div class="d-flex justify-space-between">
                                     <span class="text-h6">Inputs</span>
                                     <v-btn width="100" small tile outlined @click="tryMode = !tryMode">{{
-                                        tryMode ? 'Cancel' : 'Try it'
+                                            tryMode ? 'Cancel' : 'Try it'
                                         }}
                                     </v-btn>
                                 </div>
-                                <v-list>
-                                    <v-list-item v-for="a in selected.args" class="pl-0 pr-0">
-                                        <v-row>
-                                            <v-col>
-                                                <v-list-item-content>
-                                                    <v-list-item-title>{{ a.name }}</v-list-item-title>
-                                                    <v-list-item-subtitle class="text-caption">{{
-                                                        a.type
-                                                        }}
-                                                    </v-list-item-subtitle>
-                                                    <v-list-item-action-text v-show="!!a.optional">Optional. Default:
-                                                        <code>{{
-                                                            a.defaultValue
-                                                            }}</code>
-                                                    </v-list-item-action-text>
-                                                </v-list-item-content>
-                                            </v-col>
-                                            <v-col>
-                                                <template v-if="tryMode">
-                                                    <DatasetSelector :project-id="projectId" :label="a.name"
-                                                                     :return-object="false"
-                                                                     v-if="a.type === 'Dataset'"
-                                                                     :value.sync="testArguments[a.name]"/>
-                                                    <ModelSelector :project-id="projectId" :label="a.name"
-                                                                   :return-object="false"
-                                                                   v-if="a.type === 'BaseModel'"
-                                                                   :value.sync="testArguments[a.name]"/>
-                                                    <v-text-field
-                                                            :step='a.type === "float" ? 0.1 : 1'
-                                                            v-model="testArguments[a.name]"
-                                                            v-if="['float', 'int'].includes(a.type)"
-                                                            hide-details
-                                                            single-line
-                                                            type="number"
-                                                            outlined
-                                                            dense
-                                                    />
-                                                </template>
-                                            </v-col>
-                                        </v-row>
-                                    </v-list-item>
-                                </v-list>
+                                <SuiteInputListSelector
+                                    :editing="tryMode"
+                                    :model-value="testArguments"
+                                    :inputs="inputType"
+                                    :project-id="props.projectId"
+                                />
                                 <v-row v-show="tryMode">
                                     <v-col :align="'right'">
                                         <v-btn width="100" small tile outlined class="primary" color="white"
@@ -173,30 +137,31 @@ import {api} from "@/api";
 import _, {chain} from "lodash";
 import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
-import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
-import {TestFunctionArgumentDTO, TestFunctionDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
+import {TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
+import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
 let props = defineProps<{
-  projectId: number,
-  suiteId?: number
+    projectId: number,
+    suiteId?: number
 }>();
 
 const editor = ref(null)
 
 const searchFilter = ref<string>("");
-let registry = ref<TestFunctionDTO[]>([]);
+let {testFunctions} = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
-let testArguments = ref({})
+let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 
@@ -204,7 +169,9 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
 async function runTest() {
-  testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, testArguments.value);
+    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, chain(testArguments.value)
+        .mapValues('value')
+        .value());
 }
 
 
@@ -214,28 +181,23 @@ function resizeEditor() {
   })
 }
 
-function castDefaultValueToType(arg: TestFunctionArgumentDTO) {
-  switch (arg.type) {
-    case 'float':
-      return parseFloat(arg.defaultValue)
-    case 'int':
-      return parseInt(arg.defaultValue)
-    default:
-      return arg.defaultValue;
-  }
-}
-
 watch(selected, (value) => {
     testResult.value = null;
     tryMode.value = false;
-    testArguments.value = {}
+
     if (value === null || value === undefined) {
         return;
     }
 
-    for (const arg of value.args) {
-        testArguments.value[arg.name] = castDefaultValueToType(arg);
-    }
+    testArguments.value = chain(value.args)
+        .keyBy('name')
+        .mapValues(arg => ({
+            name: arg.name,
+            isAlias: false,
+            type: arg.type,
+            value: null
+        }))
+        .value()
 });
 
 
@@ -244,17 +206,6 @@ function sorted(arr: any[]) {
   res.sort()
   return res;
 }
-
-const testFunctions = computed(() => {
-    return chain(registry.value)
-        .groupBy(func => `${func.module}.${func.name}`)
-        .mapValues(functions => chain(functions)
-            .maxBy(func => func.version ?? 1)
-            .value())
-        .values()
-        .sortBy('name')
-        .value();
-})
 
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
@@ -277,23 +228,28 @@ const filteredTestFunctions = computed(() => {
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestFunctions(props.projectId);
-  if (testFunctions.value.length > 0) {
-    selected.value = testFunctions.value[0];
-  }
+    if (testFunctions.value.length > 0) {
+        selected.value = testFunctions.value[0];
+    }
 });
 
 function addToTestSuite() {
-  $vfm.show({
-    component: AddTestToSuite,
-    bind: {
-      projectId: props.projectId,
-      test: selected.value,
-      suiteId: props.suiteId,
-      testArguments: testArguments.value
-    }
-  });
+    $vfm.show({
+        component: AddTestToSuite,
+        bind: {
+            projectId: props.projectId,
+            test: selected.value,
+            suiteId: props.suiteId,
+            testArguments: testArguments.value
+        }
+    });
 }
+
+const inputType = computed(() => chain(selected.value?.args ?? [])
+    .keyBy('name')
+    .mapValues('type')
+    .value()
+);
 
 </script>
 

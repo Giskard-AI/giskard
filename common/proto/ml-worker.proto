@@ -13,6 +13,8 @@ package worker;
 service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
+  rpc runAdHocSlicing (RunAdHocSlicingRequest) returns (SlicingResultMessage) {}
+  rpc runAdHocTransformation (RunAdHocTransformationRequest) returns (TransformationResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
   rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
@@ -22,7 +24,7 @@ service MLWorker {
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
-  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
+  rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -144,6 +146,18 @@ message RunAdHocTestRequest {
   repeated TestArgument arguments = 2;
 }
 
+message RunAdHocSlicingRequest {
+  string slicingFunctionUuid = 1;
+  ArtifactRef dataset = 2;
+  repeated TestArgument arguments = 3;
+}
+
+message RunAdHocTransformationRequest {
+  string transformationFunctionUuid = 1;
+  ArtifactRef dataset = 2;
+  repeated TestArgument arguments = 3;
+}
+
 message SuiteTestArgument {
   int64 id = 1;
   string testUuid = 2;
@@ -164,7 +178,8 @@ message TestArgument{
     int32 int = 5;
     string str = 6;
     bool bool = 7;
-
+    ArtifactRef slicingFunction = 8;
+    ArtifactRef transformationFunction = 9;
   }
 }
 
@@ -221,6 +236,24 @@ message SingleTestResult{
 message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
 }
+
+message SlicingResultMessage {
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated uint32 filteredRows = 3;
+}
+
+message TransformationResultMessage {
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated DatasetRowModificationResult modifications = 3;
+}
+
+message DatasetRowModificationResult {
+  uint32 rowId = 1;
+  map<string, string> modifications = 2;
+}
+
 
 message TestSuiteResultMessage {
   bool is_error = 1; // True when an unhandled exception happened (!= test failed)
@@ -310,11 +343,13 @@ message FilterDatasetResponse {
   string error_message = 4;
 }
 
-message TestRegistryResponse{
-  map<string, TestFunction> tests = 1;
+message CatalogResponse{
+  map<string, FunctionMeta> tests = 1;
+  map<string, FunctionMeta> slices = 2;
+  map<string, FunctionMeta> transformations = 3;
 }
 
-message TestFunction{
+message FunctionMeta {
   string uuid = 1;
   string name = 2;
   string displayName = 3;
@@ -325,7 +360,9 @@ message TestFunction{
   repeated TestFunctionArgument args = 8;
   repeated string tags = 9;
   string code = 10;
+  string type = 11;
 }
+
 
 message TestFunctionArgument{
   string name = 1;
