@@ -46,7 +46,7 @@
                     }}</span>
             </div>
             <div class="flex-grow-1"/>
-            <v-btn text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
+            <v-btn v-if="!compact" text x-small @click="editTests" color="rgba(0, 0, 0, 0.6)">
                 <v-icon x-small class="mr-1">settings</v-icon>
                 Edit parameters
             </v-btn>
