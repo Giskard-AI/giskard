@@ -10,31 +10,24 @@
         <message-reply :author="r.user" :createdOn="r.createdOn" :content="r.content"></message-reply>
       </div>
     </div>
-    <div v-if="repliable" class="my-1" :class="{'indented': replies && replies.length}">
-      <v-btn icon small @click="replyBoxToggle = !replyBoxToggle; reply = ''">
-        <v-icon v-if="!openReplyBox" color="primary">mdi-reply</v-icon>
-        <v-icon v-else color="accent" :disabled="!reply && !hideableBox">mdi-close</v-icon>
-      </v-btn>
-      <v-btn icon small color="primary" v-if="openReplyBox" :disabled="!reply" @click="emitSendReply">
-        <v-icon>mdi-send</v-icon>
-      </v-btn>
-      <v-textarea
-          v-if="openReplyBox"
-          v-model="reply"
-          placeholder="Add a reply..."
-          rows=1
-          class="mb-2"
-          no-resize
-          outlined
-          hide-details
-      ></v-textarea>
+    <div v-if="repliable" class="my-1" :class="{ 'indented': replies && replies.length }">
+      <v-textarea class="mb-2 reply-input" v-if="openReplyBox" v-model="reply" placeholder="Add a reply..." rows="1" no-resize outlined hide-details :clearable="false">
+        <template v-slot:append v-if="reply">
+          <v-btn icon small color="accent" @click="replyBoxToggle = !replyBoxToggle; reply = ''">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-btn icon small class="pl-1" color="primary" @click=" emitSendReply ">
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+        </template>
+      </v-textarea>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from "vue";
-import {useUserStore} from "@/stores/user";
+import { computed, ref } from "vue";
+import { useUserStore } from "@/stores/user";
 
 const userStore = useUserStore();
 
