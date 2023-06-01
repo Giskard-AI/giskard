@@ -44,6 +44,7 @@ class Model:
                  model_type: Union[SupportedModelTypes, str],
                  name: str = None,
                  data_preprocessing_function=None,
+                 output_processing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None,
@@ -51,6 +52,7 @@ class Model:
                  loader_class: str = 'Model') -> None:
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
+        self.output_processing_function = output_processing_function
 
         if type(model_type) == str:
             try:
@@ -198,7 +200,10 @@ class Model:
         return self._raw_predict(data)
 
     def _raw_predict(self, data):
-        return self.clf.predict(data)
+        if not self.output_processing_function:
+            return self.clf.predict(data)
+        else:
+            return self.output_processing_function(self.clf.predict(data))
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:
         timer = Timer()

@@ -1,14 +1,6 @@
-import httpretty
-gsk_url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "multipart/form-data; boundary="
-model_name = "uploaded model"
-b_content_type = b"application/json"
-#from giskard.client.giskard_client import GiskardClient
-#from giskard.client.project import GiskardProject
 import pandas as pd
 import numpy as np
+from scipy import special
 import pytest
 import time
 import torch
@@ -20,9 +12,9 @@ from torchtext.vocab import build_vocab_from_iterator
 from torch.utils.data.dataset import random_split
 from torchtext.data.functional import to_map_style_dataset
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset as torch_dataset
 
 from torch import nn
-
 class TextClassificationModel(nn.Module):
 
     def __init__(self, vocab_size, embed_dim, num_class):
@@ -141,7 +133,8 @@ def test_text_sentiment_ngrams_tutorial():
     test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
                                  shuffle=True, collate_fn=collate_batch)
 
-    for epoch in range(1, EPOCHS + 1):
+    #--- training
+    """for epoch in range(1, EPOCHS + 1):
         epoch_start_time = time.time()
         train(train_dataloader)
         accu_val = evaluate(valid_dataloader)
@@ -154,7 +147,7 @@ def test_text_sentiment_ngrams_tutorial():
               'valid accuracy {:8.3f} '.format(epoch,
                                                time.time() - epoch_start_time,
                                                accu_val))
-        print('-' * 59)
+        print('-' * 59)"""
 
     print('Checking the results of test dataset.')
     accu_test = evaluate(test_dataloader)
@@ -174,6 +167,8 @@ def test_text_sentiment_ngrams_tutorial():
     raw_data = { "text": [value[1] for value in test_dataset], "label": [ag_news_label[value[0]] for value in test_dataset]}
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
+
+    #=== original implementation
     def softmax(x):
         """Compute softmax values for each sets of scores in x."""
         return np.exp(x) / np.sum(np.exp(x), axis=0)
@@ -188,19 +183,9 @@ def test_text_sentiment_ngrams_tutorial():
     def prediction_function(df):
         series = df["text"].apply(predict_proba)
         return np.array(series.tolist())
-
-    """GiskardProject._validate_model_is_pickleable(prediction_function)
-
-    classification_labels, model = GiskardProject._validate_model(
-        list(ag_news_label.values()),
-        0.5,
-        ['text'],
-        'classification',
-        prediction_function,
-        'label',
-        df,
-    )"""
-
+    
+    #===
+    
     #TODO: generalize the PyTorchModel by taking properly the case where data_preprocessing_function returns a dataloader
     #TODO: Only cases that are spotable by running an if check (like dataloader for instance) should be implemented. Is
     #TODO: the **data a spottable one? What other options could be present?
@@ -208,9 +193,13 @@ def test_text_sentiment_ngrams_tutorial():
     #TODO: It doesn't make sense to have 2 solutions for 2 notebooks.
 
 
+    #=== new implementation 
+
     from giskard import PyTorchModel, Dataset
 
     feature_names = ['text']
+    
+    #--- one way of doing things (giskard.PyTorchModel wrapping)
     class my_PyTorchModel(PyTorchModel):
         def _raw_predict(self, df):
             def predict_proba(text):
@@ -227,41 +216,51 @@ def test_text_sentiment_ngrams_tutorial():
             return prediction_function(df)
 
 
-    my_model = my_PyTorchModel(name="BertForSequenceClassification",
-                            clf=model,
-                            feature_names=feature_names,
-                            model_type="classification",
-                            classification_labels= list(ag_news_label.values()))
+    my_wrapped_model = my_PyTorchModel(name = "my_wrapped_BertForSequenceClassification",
+                            clf = model,
+                            feature_names = feature_names,
+                            model_type = "classification",
+                            classification_labels = list(ag_news_label.values()))
 
-    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
-
-    #from giskard.core.model_validation import validate_model
-    #validate_model(my_model, validate_ds=my_test_dataset)
-
-
-    # Wrap your dataset with Dataset from Giskard
-    #my_test_dataset = Dataset(data_filtered[['Content','Target']].head(), name="test dataset", target="Target", column_meanings={"Content": "text"})
-
-    # save model and dataset to Giskard server
-    #mid = my_model.save(client, "enron", validate_ds=my_test_dataset)
-    #did = my_test_dataset.save(client, "enron")
-
-    def preprocessing_function(df):
+    #--- Another way of doing things (taking clf and preprocessing_function)
+    """def preprocessing_function(df):
         texts = list(df["text"])
         modified_texts=[]
         for text in texts:
             modified_texts.append(torch.tensor(text_pipeline(text)))
-        return modified_texts
+        return modified_texts"""
 
-    print(my_model.predict(my_test_dataset))
-    print("---")
-    inter = preprocessing_function(df.head())
-    softmax_func = nn.Softmax(dim=1)
-    for entry in inter:
-        with torch.no_grad():
-            model_output = model(entry, torch.tensor([0]))
-            print(softmax_func(model_output).numpy())
+    class CustomTorchDataset(torch_dataset):
+        def __init__(self, df: pd.DataFrame):
+            # try this instead:
+            self.entries = df.copy()
+            self.entries['text'] = df['text'].apply(text_pipeline)
 
+        def __len__(self):
+            return len(self.entries)
+
+        def __getitem__(self, idx):
+            return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
+
+    def preprocessing_function(df):
+        return CustomTorchDataset(df)
+
+    my_model = PyTorchModel(name="my_BertForSequenceClassification",
+                            clf=model,
+                            feature_names=feature_names,
+                            model_type="classification",
+                            classification_labels= list(ag_news_label.values()),
+                            data_preprocessing_function=preprocessing_function,
+                            output_processing_function=special.softmax)
+
+    # defining the giskard dataset
+    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
+
+    #print(my_model._raw_predict(preprocessing_function(df.head())))
+    #print(my_model.predict(my_test_dataset))
+
+    #validate_model(my_model, validate_ds=my_test_dataset)
+    #validate_model(my_model, validate_ds=my_test_dataset)"""
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()
