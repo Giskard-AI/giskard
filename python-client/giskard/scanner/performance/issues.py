@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cache
 
 from ..issues import Issue
 from ...models.base import BaseModel
@@ -31,7 +32,6 @@ class PerformanceIssue(Issue):
     """Performance Issue"""
 
     group = "Performance bias"
-    group_message = "We found some data slices in your dataset on which your model performance is lower than average."
 
     info: PerformanceIssueInfo
 
@@ -70,6 +70,7 @@ class PerformanceIssue(Issue):
             return [self.info.slice_fn.feature]
         return self.model.meta.feature_names or self.dataset.columns
 
+    @cache
     def examples(self, n=3):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction

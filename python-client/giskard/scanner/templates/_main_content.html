@@ -1,6 +1,5 @@
 {% for group, issues in issues_by_group.items() %}
 <div id="{{ group | replace(' ', '_') }}" role="tabpanel" class="m-4 mb-4{% if loop.index > 1 %} hidden{% endif %}">
-    {% if issues[0]|attr("group_message") %}
     <div class="p-3 bg-amber-100/40 rounded-sm w-full flex align-middle">
         <div class="text-amber-100">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -9,11 +8,25 @@
                     d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
         </div>
-        <p class="ml-2 my-1 text-amber-100 text-sm">
-            {{ issues[0]|attr("group_message") }}
-        </p>
+        <div class="ml-2 my-1 text-amber-100 text-sm block">
+            {% if issues[0].__class__.__name__ == "PerformanceIssue" %}
+            <p>
+                We found some data slices in your dataset on which your model performance is lower than average.
+                Performance bias may happen for different reasons:
+                <ul class="list-disc ml-4 my-1">
+                    <li>Not enough examples in the low-performing data slice in the training set</li>
+                    <li>Wrong labels in the training set in the low-performing data slice</li>
+                    <li>Drift between your training set and test set</li>
+                </ul>
+            </p>
+            {% elif issues[0].__class__.__name__ == "RobustnessIssue" %}
+                <p>
+                    Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do not affect your use case.
+                    Volatile results may be caused by overfitting. When your model learned noise (out of distribution), its results may vary against small changes.
+                </p>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
 
     <div class="flex items-center space-x-1">
         <h2 class="uppercase my-4 mr-2 font-medium">Issues</h2>
@@ -31,11 +44,12 @@
 </div>
 {% endfor %}
 
-{% if issues|length < 1 %} <div class="m-4">
+{% if issues|length == 0 %}
+<div class="m-4">
     <div class="p-3 bg-green-100/40 rounded-sm w-full flex align-middle">
         <p class="ml-2 my-1 text-green-50 text-sm">
             We found no issues in your model. Good job!
         </p>
     </div>
-    </div>
-    {% endif %}
+</div>
+{% endif %}
