@@ -1,0 +1,126 @@
+<template>
+    <vue-final-modal
+        v-slot="{ close }"
+        v-bind="$attrs"
+        classes="modal-container"
+        content-class="modal-content"
+        v-on="$listeners"
+    >
+        <v-form @submit.prevent="">
+            <ValidationObserver ref="observer" v-slot="{ invalid }">
+                <v-card>
+                    <v-card-title>
+                        {{ `Edit ${suite?.name}` }}
+                    </v-card-title>
+
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols=12>
+                                <ValidationProvider name="test suite name" rules="required" v-slot="{errors}">
+                                    <v-text-field label="Test suite name" autofocus v-model="name"
+                                                  :error-messages="errors"
+                                                  outlined></v-text-field>
+                                </ValidationProvider>
+                                <h2 v-if="showAdvancedSettings">Inputs</h2>
+                                <TestInputListSelector
+                                    :model-value="editedInputs"
+                                    :project-id="projectId"
+                                    :inputs="inputTypes"/>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+
+                    <v-divider></v-divider>
+
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            color="primary"
+                            text
+                            @click="submit(close)"
+                            :disabled="invalid"
+                            :loading="isLoading"
+                        >
+                            Update
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </ValidationObserver>
+        </v-form>
+    </vue-final-modal>
+</template>
+
+<script setup lang="ts">
+
+import {computed, onMounted, ref} from 'vue';
+import {TestInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {useRouter} from 'vue-router/composables';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import TestInputListSelector from "@/components/TestInputListSelector.vue";
+import {chain} from "lodash";
+
+const {projectKey, projectId, suite} = defineProps<{
+    projectKey: string,
+    projectId: number
+    suite: TestSuiteDTO
+}>();
+
+const dialog = ref<boolean>(false);
+const name = ref<string>('');
+const isLoading = ref<boolean>(false);
+const showAdvancedSettings = ref<boolean>(false);
+
+const router = useRouter();
+const {updateTestSuite, inputs} = useTestSuiteStore();
+
+const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+
+const inputTypes = computed(() => Object.entries(inputs)
+    .reduce((result, [name, {type}]) => {
+        result[name] = type;
+        return result;
+    }, {})
+);
+
+onMounted(() => {
+    if (suite) {
+        name.value = suite.name;
+        editedInputs.value = chain(suite.testInputs)
+            .keyBy('name')
+            .mapValues(v => ({...v}))
+            .value()
+    }
+})
+
+async function submit(close) {
+    isLoading.value = true;
+
+    await updateTestSuite(projectKey, {
+        ...suite,
+        name: name.value,
+        testInputs: Object.values(editedInputs.value)
+    }).finally(() => isLoading.value = false);
+
+    dialog.value = false;
+    close();
+}
+
+</script>
+
+<style scoped>
+::v-deep(.modal-container) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+::v-deep(.modal-content) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin: 0 1rem;
+    padding: 1rem;
+    min-width: 50vw;
+}
+
+</style>
