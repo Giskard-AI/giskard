@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.ArtifactType;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
@@ -12,19 +13,23 @@ import ai.giskard.web.dto.ModelUploadParamsDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ai.giskard.service.FileLocationService.createZSTname;
 
@@ -53,7 +58,7 @@ public class FileUploadService {
         Path modelFilePath = projectModelsPath.resolve(modelFilename);
         long size = modelStream.transferTo(Files.newOutputStream(modelFilePath));
         model.setSize(size);
-        model.setFileName(modelFilename);
+        //model.setFileName(modelFilename);
 
         String requirementsFilename = String.format("model-requirements_%s.txt", savedModel.getId());
         Path requirementsFilePath = projectModelsPath.resolve(requirementsFilename);
@@ -62,7 +67,7 @@ public class FileUploadService {
         } catch (IOException e) {
             throw new GiskardRuntimeException("Error writing requirements file: " + requirementsFilePath, e);
         }
-        model.setRequirementsFileName(requirementsFilename);
+        //model.setRequirementsFileName(requirementsFilename);
         return modelRepository.save(model);
     }
 
@@ -91,11 +96,7 @@ public class FileUploadService {
         ModelType modelType;
         switch (modelParams.getModelType().toLowerCase().trim()) {
             case "classification" -> {
-                if (modelParams.getClassificationLabels().size() > 2) {
-                    modelType = ModelType.MULTICLASS_CLASSIFICATION;
-                } else {
-                    modelType = ModelType.BINARY_CLASSIFICATION;
-                }
+                modelType = ModelType.REGRESSION;
             }
             case "regression" -> modelType = ModelType.REGRESSION;
             default ->
@@ -119,8 +120,7 @@ public class FileUploadService {
         log.info("Decompressing file {}", compressedInputPath);
         try {
             final InputStream compressedInputStream = Files.newInputStream(compressedInputPath);
-            return new CompressorStreamFactory()
-                .createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
+            return new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.ZSTANDARD, compressedInputStream);
         } catch (IOException e) {
             throw new GiskardRuntimeException(String.format("Failed to read file to %s", compressedInputPath), e);
         } catch (CompressorException e) {
@@ -141,11 +141,49 @@ public class FileUploadService {
         dataset.setTarget(target);
         dataset = datasetRepository.save(dataset);
 
-        String fileName = createZSTname("data_", dataset.getId());
-        dataset.setFileName(fileName);
+        String fileName = createZSTname("data_", dataset.getId().toString());
         long size = inputStream.transferTo(Files.newOutputStream(datasetPath.resolve(fileName)));
-        dataset.setSize(size);
 
         return datasetRepository.save(dataset);
+    }
+
+    public void saveArtifact(InputStream uploadedStream, String projectKey, ArtifactType artifactType, String artifactId, String path) throws IOException {
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        Path artifactPath = artifactDirectory.resolve(path);
+        Path tempFile = artifactPath.resolveSibling(artifactPath.getFileName() + ".tmp");
+
+        if (!artifactPath.normalize().startsWith(artifactDirectory.normalize())) {
+            throw new GiskardRuntimeException(String.format("Artifact path %s isn't relative to artifact directory", path));
+        }
+        if (artifactPath.toFile().exists()) {
+            throw new FileAlreadyExistsException(locationService.giskardHome().relativize(artifactPath).toString());
+        }
+        FileUtils.forceMkdirParent(artifactPath.toFile());
+        FileUtils.deleteQuietly(tempFile.toFile());
+
+        try (OutputStream out = new FileOutputStream(tempFile.toFile())) {
+            IOUtils.copy(uploadedStream, out);
+        }
+        Files.move(tempFile, artifactPath);
+    }
+
+    public Set<String> listArtifacts(String projectKey, ArtifactType artifactType, String artifactId) throws IOException {
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        return FileUtils.listFiles(artifactDirectory.toFile(), null, true).stream()
+            .map(file -> artifactDirectory.relativize(file.toPath()).toString())
+            .collect(Collectors.toSet());
+        //try (Stream<Path> stream = Files.list(artifactDirectory)) {
+        //    return stream
+        //        .filter(file -> !Files.isDirectory(file))
+        //        .map(Path::getFileName)
+        //        .map(Path::toString)
+        //        .collect(Collectors.toSet());
+        //}
+    }
+
+    public InputStream getArtifactStream(String projectKey, ArtifactType artifactType, String artifactId, String path) throws FileNotFoundException {
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        Path artifactPath = artifactDirectory.resolve(path);
+        return new FileInputStream(artifactPath.toFile());
     }
 }

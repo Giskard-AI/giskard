@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @UIModel
 public class InspectionCreateDTO {
-    private Long modelId;
-    private Long datasetId;
+    private String modelId;
+    private String datasetId;
 }

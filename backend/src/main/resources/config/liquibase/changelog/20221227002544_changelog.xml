@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-5">
+        <addColumn tableName="datasets">
+            <column name="compressed_size_bytes" type="int8"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-6">
+        <addColumn tableName="datasets">
+            <column name="original_size_bytes" type="int8"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-8">
+        <dropColumn columnName="FILE_NAME" tableName="DATASETS"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-9">
+        <dropColumn columnName="FILE_NAME" tableName="PROJECT_MODELS"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-10">
+        <dropColumn columnName="REQUIREMENTS_FILE_NAME" tableName="PROJECT_MODELS"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1672097148194-11">
+        <dropColumn columnName="SIZE" tableName="DATASETS"/>
+    </changeSet>
+
+    <changeSet id="1672097148194-5" author="andreyavtomonov">
+        <modifyDataType tableName="project_models" columnName="id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="test_suite" columnName="model_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="inspections" columnName="model_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="feedbacks" columnName="model_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="datasets" columnName="id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="test_suite" columnName="actual_dataset_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="test_suite" columnName="reference_dataset_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="feedbacks" columnName="dataset_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="inspections" columnName="dataset_id" newDataType="varchar(32)"/>
+    </changeSet>
+</databaseChangeLog>

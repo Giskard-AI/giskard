@@ -10,9 +10,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.core import SupportedModelTypes
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.core.model import Model
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.sklearn import SKLearnModel
 from tests import path
 
 logger = logging.getLogger(__name__)
@@ -28,9 +30,9 @@ input_types = {
 
 
 @pytest.fixture()
-def enron_data() -> GiskardDataset:
+def enron_data() -> Dataset:
     logger.info("Fetching Enron Data")
-    return GiskardDataset(
+    return Dataset(
         df=pd.read_csv(
             path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]
         ),
@@ -41,7 +43,7 @@ def enron_data() -> GiskardDataset:
 
 @pytest.fixture()
 def enron_test_data(enron_data):
-    return GiskardDataset(
+    return Dataset(
         df=pd.DataFrame(enron_data.df).drop(columns=["Target"]),
         feature_types=input_types,
         target=None,
@@ -49,7 +51,7 @@ def enron_test_data(enron_data):
 
 
 @pytest.fixture()
-def enron_model(enron_data) -> GiskardModel:
+def enron_model(enron_data) -> Model:
     timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
@@ -90,10 +92,9 @@ def enron_model(enron_data) -> GiskardModel:
     model_score = clf.score(X_test, Y_test)
     timer.stop(f"Trained model with score: {model_score}")
 
-    return GiskardModel(
-        prediction_function=clf.predict_proba,
-        model_type="classification",
+    return SKLearnModel(
+        model=clf,
+        model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
-        classification_threshold=0.5,
-        classification_labels=list(clf.classes_),
+        classification_threshold=0.5
     )

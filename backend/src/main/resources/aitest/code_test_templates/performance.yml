@@ -8,8 +8,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -43,8 +43,8 @@ items:
     title: F1
     hint: Test if the F1 score is high enough for a slice
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     isMultipleDatasets: false
     isGroundTruthRequired: true
     # language=Python
@@ -81,8 +81,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -124,8 +124,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -167,8 +167,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -202,8 +202,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -243,8 +243,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -285,8 +285,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -321,8 +321,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -362,8 +362,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -398,8 +398,8 @@ items:
     isMultipleDatasets: false
     isGroundTruthRequired: true
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation

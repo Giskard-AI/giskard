@@ -2,16 +2,16 @@ import pandas as pd
 import numpy as np
 from typing import Callable
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.core.model import Model
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
 class StatisticalTests(AbstractTestCollection):
     def test_right_label(
             self,
-            actual_slice: GiskardDataset,
-            model: GiskardModel,
+            actual_slice: Dataset,
+            model: Model,
             classification_label: str,
             threshold=0.5,
     ) -> SingleTestResult:
@@ -25,9 +25,9 @@ class StatisticalTests(AbstractTestCollection):
         of people with high-salaries are classified as “non default”
 
         Args:
-           actual_slice(GiskardDataset):
+           actual_slice(Dataset):
               Slice of the  actual dataset
-          model(GiskardModel):
+          model(Model):
               Model used to compute the test
           classification_label(str):
               Classification label you want to test
@@ -43,10 +43,10 @@ class StatisticalTests(AbstractTestCollection):
               TRUE if passed_ratio > threshold
         """
         actual_slice.df.reset_index(drop=True, inplace=True)
-        prediction_results = model.run_predict(actual_slice).prediction
+        prediction_results = model.predict(actual_slice).prediction
         assert (
-                classification_label in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
@@ -61,8 +61,8 @@ class StatisticalTests(AbstractTestCollection):
 
     def test_output_in_range(
             self,
-            actual_slice: GiskardDataset,
-            model: GiskardModel,
+            actual_slice: Dataset,
+            model: Model,
             classification_label=None,
             min_range: float = 0.3,
             max_range: float = 0.7,
@@ -85,9 +85,9 @@ class StatisticalTests(AbstractTestCollection):
 
         For Regression : The predicted Sale Price of a house in the city falls in a particular range
         Args:
-            actual_slice(GiskardDataset):
+            actual_slice(Dataset):
                 Slice of the actual dataset
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             classification_label(str):
                 Optional. Classification label you want to test
@@ -109,19 +109,19 @@ class StatisticalTests(AbstractTestCollection):
         results_df = pd.DataFrame()
         actual_slice.df.reset_index(drop=True, inplace=True)
 
-        prediction_results = model.run_predict(actual_slice)
+        prediction_results = model.predict(actual_slice)
 
-        if model.model_type == "regression":
+        if model.is_regression:
             results_df["output"] = prediction_results.raw_prediction
 
-        elif model.model_type == "classification":
+        elif model.is_classification:
             assert (
-                    classification_label in model.classification_labels
-            ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                    classification_label in model.meta.classification_labels
+            ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
             results_df["output"] = prediction_results.all_predictions[classification_label]
 
         else:
-            raise ValueError(f"Prediction task is not supported: {model.model_type}")
+            raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
 
         passed_idx = actual_slice.df.loc[
             (results_df["output"] <= max_range) & (results_df["output"] >= min_range)
@@ -138,10 +138,10 @@ class StatisticalTests(AbstractTestCollection):
         )
 
     def test_disparate_impact(self,
-                              gsk_dataset: GiskardDataset,
+                              gsk_dataset: Dataset,
                               protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
                               unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
-                              model: GiskardModel,
+                              model: Model,
                               positive_outcome,
                               min_threshold=0.8,
                               max_threshold=1.25) -> SingleTestResult:
@@ -168,13 +168,13 @@ class StatisticalTests(AbstractTestCollection):
         women.
 
         Args:
-              gsk_dataset(GiskardDataset):
+              gsk_dataset(Dataset):
                   Dataset used to compute the test
               protected_slice(Callable):
                   Slice that defines the protected group from the full dataset given
               unprotected_slice(Callable):
                   Slice that defines the unprotected group from the full dataset given
-              model(GiskardModel):
+              model(Model):
                   Model used to compute the test
               positive_outcome(str or float):
                   The target value that is considered a positive outcome in the dataset
@@ -206,10 +206,10 @@ class StatisticalTests(AbstractTestCollection):
                 f"The protected and unprotected datasets are equal. Please check that you chose different slices."
             )
 
-        positive_idx = list(model.classification_labels).index(positive_outcome)
+        positive_idx = list(model.meta.classification_labels).index(positive_outcome)
 
-        protected_predictions = np.squeeze(model.run_predict(protected_ds).raw_prediction == positive_idx)
-        unprotected_predictions = np.squeeze(model.run_predict(unprotected_ds).raw_prediction == positive_idx)
+        protected_predictions = np.squeeze(model.predict(protected_ds).raw_prediction == positive_idx)
+        unprotected_predictions = np.squeeze(model.predict(unprotected_ds).raw_prediction == positive_idx)
 
         protected_proba = np.count_nonzero(protected_predictions)/len(protected_ds.df)
         unprotected_proba = np.count_nonzero(unprotected_predictions)/len(unprotected_ds.df)

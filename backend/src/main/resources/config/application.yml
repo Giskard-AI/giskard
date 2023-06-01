@@ -90,8 +90,7 @@ management:
 spring:
   servlet:
     multipart:
-      max-file-size: 1GB
-      max-request-size: 10GB
+      enabled: false
 
   application:
     name: giskard

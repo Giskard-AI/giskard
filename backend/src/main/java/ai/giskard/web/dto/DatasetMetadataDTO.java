@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @UIModel
 public class DatasetMetadataDTO {
-    Long id;
+    String id;
     @UINullable
     private String target;
     private Map<String, FeatureType> featureTypes;

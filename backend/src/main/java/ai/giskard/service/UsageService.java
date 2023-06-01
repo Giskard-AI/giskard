@@ -15,14 +15,14 @@ public class UsageService {
     private final FeedbackRepository feedbackRepository;
     private final GiskardMapper giskardMapper;
 
-    public PrepareDeleteDTO prepareDeleteDataset(Long datasetId) {
+    public PrepareDeleteDTO prepareDeleteDataset(String datasetId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByDatasetId(datasetId)));
         res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByDatasetId(datasetId)));
         return res;
     }
 
-    public PrepareDeleteDTO prepareDeleteModel(Long modelId) {
+    public PrepareDeleteDTO prepareDeleteModel(String modelId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByModelId(modelId)));
         res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByModelId(modelId)));

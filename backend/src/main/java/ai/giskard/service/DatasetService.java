@@ -41,11 +41,11 @@ public class DatasetService {
      * @param datasetId id of the dataset
      * @return the table
      */
-    public Table readTableByDatasetId(@NotNull Long datasetId) {
+    public Table readTableByDatasetId(@NotNull String datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
         Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
-        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
+        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getId()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
@@ -69,7 +69,7 @@ public class DatasetService {
      * @param id dataset's id
      * @return details dto of the dataset
      */
-    public DatasetDetailsDTO getDetails(@NotNull Long id) {
+    public DatasetDetailsDTO getDetails(@NotNull String id) {
         Table table = readTableByDatasetId(id);
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
@@ -77,7 +77,7 @@ public class DatasetService {
         return details;
     }
 
-    public DatasetMetadataDTO getMetadata(@NotNull Long id) {
+    public DatasetMetadataDTO getMetadata(@NotNull String id) {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
@@ -95,14 +95,14 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public Table getRows(@NotNull Long id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public Table getRows(@NotNull String id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         return table.inRange(rangeMin, rangeMax);
     }
 
     @Transactional
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(Long datasetId) {
+    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(String datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 

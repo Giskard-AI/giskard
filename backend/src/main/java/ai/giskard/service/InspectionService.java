@@ -2,6 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
+import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -193,7 +194,7 @@ public class InspectionService {
         Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
+        Selection selection = (inspection.getModel().getModelType() == ModelType.CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
         return selection == null ? table : table.where(selection);
     }
 

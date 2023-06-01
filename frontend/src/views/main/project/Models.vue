@@ -112,7 +112,7 @@ export default class Models extends Vue {
     this.models.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
-  public async deleteModelPickle(id: number, fileName: string) {
+  public async deleteModelPickle(id: string, fileName: string) {
     mixpanel.track('Delete model', {id});
 
     if (await this.$dialog.showAndWait(DeleteModal, {
