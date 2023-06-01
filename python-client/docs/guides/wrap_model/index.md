@@ -242,8 +242,8 @@ wrapped_model = MyCustomModel(
 :::::{tab-set}
 ::::{tab-item} Any function
 
-- **<project:../../guides/tutorials/pytorch/custom_model.md>**
-- **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../../tutorials/pytorch/custom_model.md>**
+- **<project:../../tutorials/huggingface/BertForSequenceClassification_custom.md>**
   ::::
 
 ::::{tab-item} sklearn
@@ -259,7 +259,7 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../../guides/tutorials/sklearn/credit_scoring.md>**
+- **<project:../../tutorials/sklearn/credit_scoring.md>**
   ::::
 
 ::::{tab-item} catboost
@@ -275,21 +275,21 @@ and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklear
 respectively.
 :::
 
-- **<project:../../guides/tutorials/catboost/credit_scoring.md>**
+- **<project:../../tutorials/catboost/credit_scoring.md>**
   ::::
 
 ::::{tab-item} pytorch
 
-- **<project:../../guides/tutorials/pytorch/linear_regression.md>**
-- **<project:../../guides/tutorials/pytorch/sst2_iterable.md>**
-- **<project:../../guides/tutorials/pytorch/torch_dataset.md>**
-- **<project:../../guides/tutorials/pytorch/custom_model.md>**
+- **<project:../../tutorials/pytorch/linear_regression.md>**
+- **<project:../../tutorials/pytorch/sst2_iterable.md>**
+- **<project:../../tutorials/pytorch/torch_dataset.md>**
+- **<project:../../tutorials/pytorch/custom_model.md>**
   ::::
 
 ::::{tab-item} tensorflow
 
-- **<project:../../guides/tutorials/tensorflow/classification_1d.md>**
-- **<project:../../guides/tutorials/tensorflow/classification_tfhub.md>**
+- **<project:../../tutorials/tensorflow/classification_1d.md>**
+- **<project:../../tutorials/tensorflow/classification_tfhub.md>**
   ::::
 
 ::::{tab-item} huggingface
