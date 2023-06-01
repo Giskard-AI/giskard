@@ -13,6 +13,7 @@ from .base import BaseSlicer
 from .stop_words import sw_en, sw_fr
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
+from ..client.python_utils import warning
 
 
 class TextSlicer(BaseSlicer):
@@ -87,7 +88,12 @@ class TextSlicer(BaseSlicer):
     def find_top_tokens_slices(self, feature, target):
         slices = []
 
-        tokens = self._get_top_tokens(self.dataset.df[feature])
+        try:
+            tokens = self._get_top_tokens(self.dataset.df[feature])
+        except ValueError:
+            # Could not get meaningful tokens (e.g. all stop words)
+            warning(f"Could not get meaningful tokens for textual feature {feature}. Are you sure this is text?")
+            return []
 
         for token in tokens:
             slices.append(QueryBasedSliceFunction(Query([StringContains(feature, token)])))

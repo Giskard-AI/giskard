@@ -79,13 +79,12 @@ public class TestSuiteService {
     }
 
     @Transactional
-    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
+    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, List<FunctionInputDTO> inputs) {
         TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
         TransactionUtils.initializeTestSuite(testSuite);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
-        execution.setInputs(inputs.entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
 
         Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId).entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
@@ -99,11 +98,13 @@ public class TestSuiteService {
         }, projectId, JobType.TEST_SUITE_EXECUTION, mlWorkerType);
     }
 
-    private static void verifyAllInputProvided(Map<String, String> providedInputs,
+    private static void verifyAllInputProvided(List<FunctionInputDTO> providedInputs,
                                                TestSuite testSuite,
                                                Map<String, String> requiredInputs) {
+        Set<String> names = providedInputs.stream().map(FunctionInputDTO::getName).collect(Collectors.toSet());
+
         List<String> missingInputs = requiredInputs.keySet().stream()
-            .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
+            .filter(requiredInput -> !names.contains(requiredInput))
             .toList();
         if (!missingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
