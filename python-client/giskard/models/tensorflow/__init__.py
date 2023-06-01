@@ -1,12 +1,10 @@
 import mlflow
-from pathlib import Path
-import yaml
+from typing import Union
+
 import numpy as np
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
-from giskard.path_utils import get_size
-
 
 class TensorFlowModel(MLFlowBasedModel):
     def __init__(self,
