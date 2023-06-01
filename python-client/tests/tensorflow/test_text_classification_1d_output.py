@@ -2,11 +2,8 @@ import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
 
-from giskard.client.giskard_client import GiskardClient
 from giskard import TensorFlowModel, Dataset
 
-import re
-import httpretty
 import tests.utils
 
 data_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
@@ -16,7 +13,6 @@ dataset = tf.keras.utils.get_file("aclImdb_v1", data_url,
                                   cache_subdir='')
 
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_text_classification_1d_output():
 
     batch_size = 32
@@ -92,20 +88,4 @@ def test_text_classification_1d_output():
     # defining the giskard dataset
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Label")
 
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
-    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-
-    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
-    httpretty.register_uri(httpretty.POST, models_url_pattern)
-    httpretty.register_uri(httpretty.GET, settings_url_pattern)
-
-    url = "http://giskard-host:12345"
-    token = "SECRET_TOKEN"
-    client = GiskardClient(url, token)
-    my_model.upload(client, 'test-project', my_test_dataset)
-
-    tests.utils.match_model_id(my_model.id)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
+    tests.utils.verify_model_upload(my_model, my_test_dataset)
