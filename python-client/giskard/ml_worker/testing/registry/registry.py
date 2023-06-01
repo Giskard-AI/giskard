@@ -10,11 +10,12 @@ import types
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional, Dict, Any
 
 import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, TestFunctionArgument
+from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
@@ -116,13 +117,15 @@ def create_test_function_id(func):
 class GiskardTestRegistry:
     _tests: Dict[str, TestFunctionMeta] = {}
 
-    def register(self, func: types.FunctionType, name=None, tags=None):
+    def register(self, func: Any, name=None, tags=None):
         full_name = create_test_function_id(func)
 
         if full_name not in self._tests:
-            # arg_spec = inspect.getfullargspec(func)
-            parameters = inspect.signature(func).parameters
-            args_without_type = [p for p in parameters if parameters[p].annotation == inspect.Parameter.empty]
+            if inspect.isclass(func):
+                parameters = inspect.signature(func.set_params).parameters
+            else:
+                parameters = inspect.signature(func).parameters
+            args_without_type = [p for p in parameters if p != "self" and parameters[p].annotation == inspect.Parameter.empty]
 
             if len(args_without_type):
                 logger.warning(

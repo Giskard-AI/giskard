@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, TypeVar
 
 
 class SupportedModelTypes(Enum):
@@ -14,9 +14,20 @@ class SupportedFeatureTypes(Enum):
     TEXT = "text"
 
 
-@dataclass
 class SavableMeta:
     uuid: Optional[str]
+
+    def __init__(self, uuid: Optional[str]):
+        self.uuid = uuid
+
+    def to_json(self):
+        return {
+            "uuid": self.uuid
+        }
+
+    @classmethod
+    def from_json(cls, json):
+        return cls(uuid=json["uuid"])
 
 
 @dataclass
@@ -44,7 +55,6 @@ class TestFunctionArgument:
     optional: bool
 
 
-@dataclass
 class TestFunctionMeta(SavableMeta):
     code: str
     name: str
@@ -56,24 +66,72 @@ class TestFunctionMeta(SavableMeta):
     tags: List[str]
     version: Optional[int]
 
+    def __init__(self,
+                 uuid: str,
+                 code: str,
+                 name: str,
+                 display_name: str,
+                 module: str,
+                 doc: str,
+                 module_doc: str,
+                 args: Dict[str, TestFunctionArgument],
+                 tags: List[str],
+                 version: Optional[int]):
+        super(TestFunctionMeta, self).__init__(uuid)
+        self.code = code
+        self.name = name
+        self.display_name = display_name
+        self.module = module
+        self.doc = doc
+        self.module_doc = module_doc
+        self.args = args
+        self.tags = tags
+        self.version = version
 
-def test_function_meta_to_json(meta: TestFunctionMeta):
-    return {
-        "uuid": meta.uuid,
-        "name": meta.name,
-        "display_name": meta.display_name,
-        "module": meta.module,
-        "doc": meta.doc,
-        "module_doc": meta.module_doc,
-        "code": meta.code,
-        "tags": meta.tags,
-        "args":
-            [
-                {
-                    "name": arg.name,
-                    "type": arg.type,
-                    "default": arg.default,
-                    "optional": arg.optional
-                } for arg in meta.args.values()
-            ]
-    }
+    def to_json(self):
+        return {
+            "uuid": self.uuid,
+            "name": self.name,
+            "display_name": self.display_name,
+            "module": self.module,
+            "doc": self.doc,
+            "module_doc": self.module_doc,
+            "code": self.code,
+            "tags": self.tags,
+            "args":
+                [
+                    {
+                        "name": arg.name,
+                        "type": arg.type,
+                        "default": arg.default,
+                        "optional": arg.optional
+                    } for arg in self.args.values()
+                ]
+        }
+
+    @classmethod
+    def from_json(cls, json):
+        cls(
+            uuid=json["uuid"],
+            name=json["name"],
+            display_name=json["displayName"],
+            module=json["module"],
+            doc=json["doc"],
+            module_doc=json["moduleDoc"],
+            code=json["code"],
+            tags=json["tags"],
+            version=json["version"],
+            args=
+            {
+                arg["name"]: TestFunctionArgument(
+                    name=arg["name"],
+                    type=arg["type"],
+                    default=arg["defaultValue"],
+                    optional=arg["optional"]
+                ) for arg in json["args"]
+            }
+        )
+
+
+DT = TypeVar('DT')
+SMT = TypeVar('SMT', bound=SavableMeta)

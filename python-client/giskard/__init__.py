@@ -3,7 +3,6 @@
 
 import sys
 
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.client.project import Project
 from giskard.core.model import Model
 from giskard.models.sklearn import SKLearnModel
