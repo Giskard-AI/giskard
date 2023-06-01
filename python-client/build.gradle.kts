@@ -62,11 +62,13 @@ tasks {
     }
 
     create<PythonTask>("lint") {
+        dependsOn("install")
         module = "pdm"
         command = "lint"
     }
 
     create<PythonTask>("test") {
+        dependsOn("install")
         module = "pdm"
         // add "-n auto" to the pytest command to parallelize the execution
         command = "test"
