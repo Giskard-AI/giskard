@@ -1,4 +1,4 @@
-# Execute your test suite in your CI/CD pipeline
+# 🚀 Execute your test suite in your CI/CD pipeline
 
 :::{warning}
 First you'll need to know how to run Giskard's scan function
