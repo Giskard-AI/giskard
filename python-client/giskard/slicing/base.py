@@ -11,7 +11,7 @@ class BaseSlicer:
         dataset: Dataset,
         features: Sequence[str] | None = None,
         target: str | None = None,
-        min_deviation: float = 0.1,
+        min_deviation: float = 0.05,
         abs_deviation: bool = False,
     ):
         self.dataset = dataset
