@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import *
 from typing import List, Any
 
-from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestParameterDTO
+from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -57,7 +57,7 @@ class Suite:
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
-            raise ValueError(f"Missing required parameters: {undefined_params}")
+            raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
@@ -81,16 +81,19 @@ class Suite:
     def save(self, client: GiskardClient, project_key: str):
         suite_tests: list[SuiteTestDTO] = list()
         for t in self.tests:
-            params = list()
+            inputs = {}
             for pname, p in t.provided_inputs.items():
-                value = p
                 if issubclass(type(p), Dataset) or issubclass(type(p), Model):
-                    value = p.save(client, project_key)
-                params.append(TestParameterDTO(name=pname, value=value))
+                    saved_id = p.save(client, project_key)
+                    inputs[pname] = TestInputDTO(name=pname, value=saved_id)
+                elif isinstance(p, SuiteInput):
+                    inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
+                else:
+                    inputs[pname] = TestInputDTO(name=pname, value=p)
 
             suite_tests.append(SuiteTestDTO(
                 testId=create_test_function_id(t.test_func),
-                parameters=params
+                testInputs=inputs
             ))
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self

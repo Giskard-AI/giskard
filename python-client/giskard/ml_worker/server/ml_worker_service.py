@@ -265,8 +265,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> TestRegistryResponse:
         globals()["echo_count"] += 1
-        return TestRegistryResponse(functions=[
-            TestFunction(
+        return TestRegistryResponse(tests={
+            test.id: TestFunction(
                 id=test.id,
                 name=test.name,
                 module=test.module,
@@ -285,7 +285,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             )
             for test in tests_registry.get_all().values()
-        ])
+        })
 
     @staticmethod
     def pandas_df_to_proto_df(df):

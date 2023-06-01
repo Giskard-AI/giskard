@@ -8,11 +8,11 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "test_parameter")
+@Table(name = "test_input")
 @Getter
 @Setter
 @NoArgsConstructor
-public class TestParameter {
+public class TestInput {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -23,14 +23,10 @@ public class TestParameter {
 
     private String value;
 
+    private boolean isAlias = false;
+
     @ManyToOne
     @JoinColumn(name = "test_id")
     @NotNull
     private SuiteTest test;
-
-    public TestParameter(String name, String value, SuiteTest test) {
-        this.name = name;
-        this.value = value;
-        this.test = test;
-    }
 }

@@ -59,7 +59,10 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
-    'ai.giskard.web.dto.TestParameterDTO' : 'TestParameterDTO',
+    'ai.giskard.web.dto.TestCatalogDTO' : 'TestCatalogDTO',
+    'ai.giskard.web.dto.TestDefinitionDTO' : 'TestDefinitionDTO',
+    'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
+    'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestSuiteNewDTO' : 'TestSuiteNewDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
@@ -130,7 +133,10 @@ export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
 export * from './ai/giskard/web/dto/suite-test-dto';
-export * from './ai/giskard/web/dto/test-parameter-dto';
+export * from './ai/giskard/web/dto/test-catalog-dto';
+export * from './ai/giskard/web/dto/test-definition-dto';
+export * from './ai/giskard/web/dto/test-function-argument-dto';
+export * from './ai/giskard/web/dto/test-input-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-suite-new-dto';
 export * from './ai/giskard/web/dto/test-templates-response';

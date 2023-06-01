@@ -17,21 +17,11 @@
 import {ref} from "vue";
 
 const testSuites = ref([])
-testSuites.value = [{
-  name: "Suite 1",
-  arguments: [{
-    name: "mymodel",
-    type: "GiskardModel"
-  }]
-}, {
-  name: "Suite 2"
-}, {
-  name: "Suite 3"
-}];
+
 </script>
 
 <style scoped>
 .v-list-item {
-    border-bottom:1px solid lightgrey;
+  border-bottom: 1px solid lightgrey;
 }
 </style>

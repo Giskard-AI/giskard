@@ -1,9 +1,9 @@
-import type {TestParameterDTO} from './test-parameter-dto';
+import type {TestInputDTO} from './test-input-dto';
 
 /**
  * Generated from ai.giskard.web.dto.SuiteTestDTO
  */
 export interface SuiteTestDTO {
-    parameters: TestParameterDTO[];
     testId: string;
+    testInputs: {[key: string]: TestInputDTO};
 }

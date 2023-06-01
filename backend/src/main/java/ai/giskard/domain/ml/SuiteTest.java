@@ -27,5 +27,5 @@ public class SuiteTest {
     private TestSuiteNew suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
-    private List<TestParameter> parameters = new java.util.ArrayList<>();
+    private List<TestInput> testInputs = new java.util.ArrayList<>();
 }

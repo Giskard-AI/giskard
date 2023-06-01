@@ -15,10 +15,7 @@ import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import org.mapstruct.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(
@@ -190,15 +187,26 @@ public interface GiskardMapper {
 
     @AfterMapping
     default void afterMapping(@MappingTarget SuiteTest test) {
-        test.getParameters().forEach(e -> e.setTest(test));
+        test.getTestInputs().forEach(e -> e.setTest(test));
     }
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "test", ignore = true)
-    TestParameter fromDTO(TestParameterDTO dto);
+    @Mapping(target = "alias", source = "alias")
+    TestInput fromDTO(TestInputDTO dto);
+    TestInputDTO toDTO(TestInput obj);
+
 
     List<TestSuiteNewDTO> toDTO(List<TestSuiteNew> suites);
 
     @Mapping(target = "projectKey", source = "project.key")
     TestSuiteNewDTO toDTO(TestSuiteNew suite);
+
+    default Map<String, TestInputDTO> map(List<TestInput> value){
+        return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
+    }
+    default List<TestInput> map(Map<String, TestInputDTO> value){
+        return value.values().stream().map(this::fromDTO).toList();
+    }
+
 }

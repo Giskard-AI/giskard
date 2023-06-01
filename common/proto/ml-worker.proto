@@ -239,7 +239,7 @@ message TestFunction{
 }
 
 message TestRegistryResponse{
-  repeated TestFunction functions = 1;
+  map<string, TestFunction> tests = 1;
 }
 
 message MLWorkerErrorInfo{

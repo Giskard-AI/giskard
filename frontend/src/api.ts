@@ -28,10 +28,12 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     RoleDTO,
+    TestCatalogDTO,
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
-    TestSuiteDTO, TestSuiteNewDTO,
+    TestSuiteDTO,
+    TestSuiteNewDTO,
     TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
@@ -294,11 +296,17 @@ export const api = {
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
     },
-    async getProjectDatasets(id: number) {
-        return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    async getProjectDatasets(projectId: number) {
+        return axiosProject.get<unknown, DatasetDTO[]>(`/${projectId}/datasets`);
     },
     async getTestSuitesNew(projectId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
+    },
+    async getTestSuiteNew(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
+    },
+    async getTestSuiteNewInputs(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
@@ -385,8 +393,8 @@ export const api = {
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
-    async getTestsRegistry(projectId: number) {
-        return apiV2.get<unknown, Array<any>>(`/testing/tests/test-templates`, {params: {projectId}});
+    async getTestsCatalog(projectId: number) {
+        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
     },
     async runAdHocTest(projectId: number, testId: string, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});

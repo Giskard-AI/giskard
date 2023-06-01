@@ -1,6 +1,8 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-5">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-5">
         <createTable tableName="suite_test">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="suite_testPK"/>
@@ -11,10 +13,13 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-6">
-        <createTable tableName="test_parameter">
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-6">
+        <createTable tableName="test_input">
             <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="test_parameterPK"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="test_inputPK"/>
+            </column>
+            <column name="is_alias" type="BOOLEAN">
+                <constraints nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
@@ -25,7 +30,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-7">
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-7">
         <createTable tableName="test_suite_new">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_suite_newPK"/>
@@ -42,13 +47,13 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-9">
-        <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="test_parameter" constraintName="FK3amt87spv4aosdgotjecr9jn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="suite_test" validate="true"/>
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-9">
+        <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="test_input" constraintName="FK5irxppo64awh117g7y2kn9iyd" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="suite_test" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-10">
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-10">
         <addForeignKeyConstraint baseColumnNames="test_suite" baseTableName="suite_test" constraintName="FKaqhnj6jtpe2weckwsnvg2huy4" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite_new" validate="true"/>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1672355807669-11">
+    <changeSet author="andreyavtomonov (generated)" id="1672439826731-11">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="test_suite_new" constraintName="FKh0gsrnk26awf8ip6aw9ftnpxo" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects" validate="true"/>
     </changeSet>
 </databaseChangeLog>

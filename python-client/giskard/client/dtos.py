@@ -1,19 +1,20 @@
-from typing import List
+from typing import List, Dict, Optional
 
 from pydantic import BaseModel
 
 
-class TestParameterDTO(BaseModel):
+class TestInputDTO(BaseModel):
     name: str
     value: str
+    is_alias: bool = False
 
 
 class SuiteTestDTO(BaseModel):
     testId: str
-    parameters: List[TestParameterDTO]
+    testInputs: Dict[str, TestInputDTO]
 
 
 class TestSuiteNewDTO(BaseModel):
-    name: str
+    name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]
