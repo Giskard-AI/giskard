@@ -6,3 +6,12 @@ with our own :class:`~.giskard.Dataset` class. The wrapping is done via the :fun
 .. autofunction:: giskard.wrap_dataset
 
 .. autoclass:: giskard.Dataset
+
+   .. automethod:: __init__
+   .. automethod:: add_slicing_function
+   .. automethod:: add_transformation_function
+   .. automethod:: slice
+   .. automethod:: transform
+   .. automethod:: process
+   .. automethod:: upload
+   .. automethod:: download
