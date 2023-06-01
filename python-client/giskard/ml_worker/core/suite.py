@@ -75,7 +75,7 @@ class Suite:
         self.tests = []
         self.name = name
 
-    def run(self, **suite_run_args):
+    def run(self, verbose: bool = True, **suite_run_args):
         res: Dict[str, Union[bool, TestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
@@ -85,6 +85,9 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
             res[test_partial.test_identifier] = test_partial.giskard_test.get_builder()(**test_params).execute()
+            if verbose:
+                print(
+                    f"Executed {test_partial.test_identifier} with arguments {test_params}: {res[test_partial.test_identifier]}")
 
         result = single_binary_result(list(res.values()))
 
