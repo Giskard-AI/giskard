@@ -120,7 +120,8 @@ async function executeTestSuite() {
 
   try {
     const results = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
-    // TODO: redirect to execution results once implemented
+    // TODO: Do in background and allow multiple run concurrently
+    // TODO: Add UI to see job running in settings
   } finally {
     running.value = false;
     dialog.value = false;
