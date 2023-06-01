@@ -4,17 +4,19 @@ import pickle
 import sys
 from abc import abstractmethod, ABC
 from pathlib import Path
-from typing import Union, Callable, Optional, Type
+from typing import Union, Callable, Optional
+
+import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, SMT
-from giskard.ml_worker.core.savable import Savable
+from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 from giskard.ml_worker.testing.test_result import TestResult
 
 Result = Union[TestResult, bool]
 
 
-class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
+class GiskardTest(Artifact[TestFunctionMeta], ABC):
     """
     The base class of all Giskard's tests.
 
@@ -31,7 +33,7 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
 
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
-        super(GiskardTest, self).__init__(type(self), meta)
+        super(GiskardTest, self).__init__(meta)
 
     @abstractmethod
     def execute(self) -> Result:
@@ -53,14 +55,16 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
     def _get_uuid(self) -> str:
         return get_object_uuid(type(self))
 
-    def _should_save_locally(self) -> bool:
-        return True
-
-    def _should_upload(self) -> bool:
-        return self.meta.version is None
+    def save(self, local_dir: Path):
+        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+            cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
-    def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
+    def load(cls, local_dir: Path, uuid: str, meta: Optional[TestFunctionMeta]):
+        if meta is None:
+            meta = tests_registry.get_test(uuid)
+            assert meta is not None, f"Cannot find test function {uuid}"
+
         if local_dir.exists():
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
@@ -80,12 +84,6 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
         giskard_test.meta = meta
 
         return giskard_test
-
-    @classmethod
-    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> TestFunctionMeta:
-        meta = tests_registry.get_test(uuid)
-        assert meta is not None, f"Cannot find test function {uuid}"
-        return meta
 
     def get_builder(self):
         return type(self)
@@ -109,7 +107,7 @@ class GiskardTestMethod(GiskardTest):
 
             test()(test_fn)
             meta = tests_registry.get_test(test_uuid)
-        super(GiskardTest, self).__init__(test_fn, meta)
+        super(GiskardTest, self).__init__(meta)
 
     def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
         instance = copy.deepcopy(self)
@@ -137,4 +135,8 @@ class GiskardTestMethod(GiskardTest):
         return "\n".join(output)
 
     def get_builder(self):
-        return GiskardTestMethod(self.data)
+        return GiskardTestMethod(self.test_fn)
+
+    def save(self, local_dir: Path):
+        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+            cloudpickle.dump(self.test_fn, f, protocol=pickle.DEFAULT_PROTOCOL)
