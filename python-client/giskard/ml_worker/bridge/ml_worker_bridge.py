@@ -16,6 +16,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.data_encryptor import DataEncryptor
 from giskard.ml_worker.bridge.error import ConnectionLost
 from giskard.ml_worker.bridge.service_messages import CREATE_CLIENT_CHANNEL, START_INNER_SERVER
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.network import readable_hex
 
 CHANNEL_ID_LENGTH = 8
@@ -56,6 +57,9 @@ class MLWorkerBridge:
 
     @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
     async def start(self):
+        if self.client is not None:
+            self.client.save_test_function_registry(tests_registry.get_all().values())
+
         try:
             await self.connect_to_remote_host()
             await self.send_start_inner_server_message()
