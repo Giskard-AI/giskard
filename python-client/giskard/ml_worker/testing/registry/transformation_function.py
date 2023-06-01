@@ -17,7 +17,6 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
     set_return_type,
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
-from giskard.ml_worker.testing.registry.utils import is_local_function
 
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
