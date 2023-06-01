@@ -5,16 +5,17 @@ import numpy as np
 import pandas as pd
 
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.slicing.bruteforce_slicer import BruteForceSlicer
 from giskard.slicing.category_slicer import CategorySlicer
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 from giskard.slicing.multiscale_slicer import MultiscaleSlicer
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 from .base import BaseSlicer
 from .opt_slicer import OptSlicer
+from .stop_words import sw_en, sw_fr
 from .slice import DataSlice, Query, QueryBasedSliceFunction, StringContains
-from .stop_words import sw_en,sw_fr
+
 
 class TextSlicer(BaseSlicer):
     def find_slices(self, features, target=None):
@@ -123,7 +124,7 @@ _cache = {}
 
 
 # @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
-class TextMetadataSliceFunction(SliceFunction):
+class TextMetadataSliceFunction(SlicingFunction):
     row_level = False
 
     def __init__(self, query: Query, feature: str):
