@@ -117,18 +117,15 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
             test_f1(threshold=0.2, dataset=german_credit_data)
         ).upload(client, "test_project_key")
 
-def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
-    from giskard.client.giskard_client import GiskardClient
-    client = GiskardClient("http://localhost:9000",
-                           "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOIiwiaWQiOjQsInRva2VuX3R5cGUiOiJVSSIsImV4cCI6MTY4MzcyMTIzMH0.cZgrrqRLtnnMH7va86ZG5Rga_ZLCD2iyPMRL52oLc08")
-
-    # import pandas as pd
-    # german_credit_data.df = pd.concat([german_credit_data.df] * 3000)
-    german_credit_data.upload(client, 'test')
-
-    german_credit_model.upload(client, 'test')
-
-    # Suite(name="Test Suite 1") \
-    #     .add_test(test_auc, threshold=0.2, dataset=german_credit_data) \
-    #     .add_test(test_f1, threshold=0.2, dataset=german_credit_data) \
-    #     .save(client, 'credit')
+# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
+#     from giskard.client.giskard_client import GiskardClient
+#     client = GiskardClient("http://localhost:9000",
+#                            "")
+#
+#     german_credit_data.upload(client, 'test')
+#     german_credit_model.upload(client, 'test')
+#
+#     Suite(name="Test Suite 1") \
+#         .add_test(test_auc, threshold=0.2, dataset=german_credit_data) \
+#         .add_test(test_f1, threshold=0.2, dataset=german_credit_data) \
+#         .save(client, 'credit')
