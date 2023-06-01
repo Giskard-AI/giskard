@@ -7,7 +7,7 @@ Getting started
    deprecated/installation-deprecated/index
    wrap/index
    test-suite/index
-   create-slices/index
+   create-slices-and-transformation-functions/index
    troubleshooting/index
    test-catalog/index
 
