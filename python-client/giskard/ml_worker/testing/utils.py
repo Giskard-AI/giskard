@@ -4,10 +4,12 @@ from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.utils.logging import timer
 from enum import Enum
 
+
 class Direction(Enum):
     Invariant = 0
     Increasing = 1
     Decreasing = -1
+
 
 def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
     """
