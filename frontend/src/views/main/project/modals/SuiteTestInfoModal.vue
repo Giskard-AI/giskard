@@ -27,43 +27,13 @@
               </v-btn>
             </div>
           </div>
-          <v-list v-if="editedInputs === null">
-
-            <v-list-item v-for="a in sortedArguments" :key="a.name" class="pl-0 pr-0">
-              <v-row>
-                <v-col>
-                  <v-list-item-content style="border: 1px solid">
-                    <v-list-item-title>{{ a && a.name }}</v-list-item-title>
-                    <v-list-item-avatar>
-                  <span v-if="suiteTest.testInputs[a.name]?.isAlias">
-                    {{ suiteTest.testInputs[a.name].value }}
-                  </span>
-                      <span v-else-if="a.name in suiteTest.testInputs && a.type === 'Model'">
-                    {{
-                          models[suiteTest.testInputs[a.name].value].name ?? models[suiteTest.testInputs[a.name].value].id
-                        }}
-                  </span>
-                      <span v-else-if="a.name in suiteTest.testInputs && a.type === 'Dataset'">
-                    {{
-                          datasets[suiteTest.testInputs[a.name].value].name ?? datasets[suiteTest.testInputs[a.name].value].id
-                        }}
-                  </span>
-                      <span v-else-if="a && a.name in suiteTest.testInputs">{{
-                          suiteTest.testInputs[a.name].value
-                        }}</span>
-                    </v-list-item-avatar>
-                    <v-list-item-subtitle class="text-caption">{{ a.type }}</v-list-item-subtitle>
-                    <v-list-item-action-text v-show="!!a.optional">Optional. Default: <code>{{ a.defaultValue }}</code>
-                    </v-list-item-action-text>
-                  </v-list-item-content>
-                </v-col>
-              </v-row>
-            </v-list-item>
-          </v-list>
-          <TestInputListSelector v-else-if="test.args"
+          <TestInputListSelector v-if="test.args"
+                                 :test-inputs="suiteTest.testInputs"
+                                 :test="registryByUuid[suiteTest.testUuid]"
                                  :model-value="editedInputs"
                                  :project-id="projectId"
-                                 :inputs="inputType"/>
+                                 :inputs="inputType"
+                                 :editing="editedInputs !== null"/>
           <v-row>
             <v-col>
               <v-expansion-panels flat @change="resizeEditor">
@@ -114,7 +84,7 @@ const {suiteTest, test} = defineProps<{
   test: TestFunctionDTO
 }>();
 
-const {models, datasets, projectId, suite, inputs} = storeToRefs(useTestSuiteStore());
+const {models, datasets, projectId, suite, inputs, registry} = storeToRefs(useTestSuiteStore());
 const {reload} = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: string } | null>(null);
@@ -129,6 +99,8 @@ const sortedArguments = computed(() => {
     return !_.isUndefined(suiteTest.testInputs[value.name]);
   }, 'name');
 })
+
+const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 function resizeEditor() {
   setTimeout(() => {
