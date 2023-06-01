@@ -70,7 +70,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
     feature_names = ["text"]
 
-    class my_PyTorchModel(PyTorchModel):
+    class MyPyTorchModel(PyTorchModel):
         should_save_model_class = True
 
         def model_predict(self, df):
@@ -87,7 +87,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-    my_model = my_PyTorchModel(
+    my_model = MyPyTorchModel(
         name="my_custom_BertForSequenceClassification",
         model=model,
         feature_names=feature_names,
@@ -103,7 +103,7 @@ def test_newspaper_classification_pytorch_custom_model():
     tests.utils.verify_model_upload(my_model, my_test_dataset)
 
     # ---- testing Model class
-    class my_autoPyTorchModel(Model):
+    class MyAutoPyTorchModel(Model):
         def model_predict(self, df):
             def predict_proba(text):
                 with torch.no_grad():
@@ -118,7 +118,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-    my_automodel = my_autoPyTorchModel(
+    my_automodel = MyAutoPyTorchModel(
         name="my_custom_BertForSequenceClassification",
         model=model,
         feature_names=feature_names,

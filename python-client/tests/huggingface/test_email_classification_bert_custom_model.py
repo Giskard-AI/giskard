@@ -113,7 +113,7 @@ def test_email_classification_bert_custom_model():
         X_test_tokenized = tokenizer(X_test, padding=True, truncation=True, max_length=512, return_tensors="pt")
         return X_test_tokenized
 
-    class tiny_bert_HuggingFaceModel(HuggingFaceModel):
+    class MyHuggingFaceModel(HuggingFaceModel):
         should_save_model_class = True
 
         def model_predict(self, data):
@@ -123,7 +123,7 @@ def test_email_classification_bert_custom_model():
 
     # ---------------------------------------------------------------------------------------
 
-    my_model = tiny_bert_HuggingFaceModel(name=model_name,
+    my_model = MyHuggingFaceModel(name=model_name,
                                           model=model,
                                           feature_names=['Content'],
                                           model_type="classification",
@@ -137,7 +137,7 @@ def test_email_classification_bert_custom_model():
     tests.utils.verify_model_upload(my_model, my_test_dataset)
 
     # ---- testing Model class
-    class auto_tiny_bert_HuggingFaceModel(Model):
+    class MyAutoHuggingFaceModel(Model):
         def model_predict(self, data):
             with torch.no_grad():
                 predictions = self.model(**data).logits
@@ -145,7 +145,7 @@ def test_email_classification_bert_custom_model():
 
     # ---------------------------------------------------------------------------------------
 
-    my_auto_model = auto_tiny_bert_HuggingFaceModel(name=model_name,
+    my_auto_model = MyAutoHuggingFaceModel(name=model_name,
                                                     model=model,
                                                     feature_names=['Content'],
                                                     model_type="classification",
