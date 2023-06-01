@@ -3,10 +3,13 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.Project;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.service.FileLocationService;
 import ai.giskard.service.ProjectService;
+import ai.giskard.web.dto.PostImportProjectDTO;
+import ai.giskard.web.dto.PrepareImportProjectDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
-import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.NotInDatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,8 +17,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -29,6 +34,7 @@ public class ProjectController {
     private final ProjectService projectService;
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
+    private final FileLocationService locationService;
 
     /**
      * Retrieve the list of projects accessible by the authenticated user
@@ -132,4 +138,17 @@ public class ProjectController {
         return giskardMapper.projectToProjectDTO(project);
     }
 
+    @PostMapping(value = "/project/import/prepare")
+    public PrepareImportProjectDTO prepareImport(@RequestParam("file") MultipartFile zipFile) throws IOException {
+        permissionEvaluator.canWrite();
+        return projectService.prepareImport(zipFile);
+    }
+
+    @PostMapping(value = "/project/import")
+    @Transactional
+    public ProjectDTO importProject(@RequestBody PostImportProjectDTO postImportProject, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
+        permissionEvaluator.canWrite();
+        Project project = projectService.importProject(postImportProject.getMappedUsers(), postImportProject.getPathToMetadataDirectory(), postImportProject.getProjectKey(), userDetails.getUsername());
+        return giskardMapper.projectToProjectDTO(project);
+    }
 }

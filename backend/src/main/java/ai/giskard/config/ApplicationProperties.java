@@ -28,4 +28,5 @@ public class ApplicationProperties {
     private Double regressionThreshold;
     private int limeNumberSamples;
     private Path home;
+    private int externalWorkerHeartbeatIntervalSeconds;
 }
