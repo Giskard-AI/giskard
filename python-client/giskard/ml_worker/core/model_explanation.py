@@ -32,7 +32,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
     input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
-        return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
+        return model.predict_df(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
     example = background_example(df, dataset.feature_types)
     kernel = shap.KernelExplainer(predict_array, example)
@@ -58,7 +58,7 @@ def explain_text(model: Model, input_df: pd.DataFrame,
                  text_column: str, text_document: str, n_samples: int):
     text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
     prediction_function = text_explanation_prediction_wrapper(
-        model.prepare_data_and_predict, input_df, text_column
+        model.predict_df, input_df, text_column
     )
     text_explain_attempts = 10
     try:
