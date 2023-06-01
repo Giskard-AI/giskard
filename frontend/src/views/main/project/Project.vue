@@ -6,7 +6,7 @@
           Projects
         </router-link>
         <span>/</span>
-        <router-link :to="{ name: 'project-overview', params: { id } }">
+        <router-link :to="{ name: 'project-properties', params: { id } }">
           {{ project.name }}
         </router-link>
         <span v-show="currentTab !== null">
@@ -15,9 +15,9 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primary" class="mr-2" :to="{ name: 'project-overview' }">
-        <v-icon dense left>mdi-file-eye-outline</v-icon>
-        Overview
+      <v-btn small tile color="primary" class="mr-2" :to="{ name: 'project-properties' }">
+        <v-icon dense left>mdi-tune</v-icon>
+        Properties
       </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
@@ -128,7 +128,7 @@ const openDeleteDialog = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
 const tabsMap = new Map([
-  ["overview", "Overview"],
+  ["properties", "Properties"],
   ["catalog", "Catalog"],
   ["test-suites", "Test"],
   ["test-suite", "Test"],
