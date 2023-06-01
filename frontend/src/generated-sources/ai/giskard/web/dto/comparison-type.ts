@@ -1,6 +1,7 @@
-import {ColumnType} from "@/generated-sources";
-
-export enum NoCodeSlicingType {
+/**
+ * Generated from ai.giskard.web.dto.ComparisonType
+ */
+export enum ComparisonType {
     IS = 'IS',
     IS_NOT = 'IS_NOT',
     CONTAINS = 'CONTAINS',
@@ -9,11 +10,4 @@ export enum NoCodeSlicingType {
     ENDS_WITH = 'ENDS_WITH',
     IS_EMPTY = 'IS_EMPTY',
     IS_NOT_EMPTY = 'IS_NOT_EMPTY'
-}
-
-export interface NoCodeFilter {
-    column: string,
-    slicingType: NoCodeSlicingType,
-    value?: string,
-    columnType: ColumnType
 }

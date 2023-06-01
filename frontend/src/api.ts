@@ -7,6 +7,7 @@ import {
     AdminUserDTO,
     AppConfigDTO,
     CatalogDTO,
+    ComparisonClauseDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -461,11 +462,8 @@ export const api = {
             }
         });
     },
-    async saveSlicingFunction(slicingFunction: SlicingFunctionDTO) {
-        return apiV2.put<unknown, SlicingFunctionDTO>(`/slices/${encodeURIComponent(slicingFunction.uuid)}`, {
-            ...slicingFunction,
-            type: 'SLICE'
-        })
+    async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
+        return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses)
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
