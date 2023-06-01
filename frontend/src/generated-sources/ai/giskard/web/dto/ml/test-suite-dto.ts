@@ -3,7 +3,7 @@ import type {ModelDTO} from './model-dto';
 import type {ProjectDTO} from './project-dto';
 
 /**
- * Generated from ai.giskard.web.dto.ml.TestSuiteDTO
+ * Generated from ai.giskard.web.dto.ml.TestSuiteDto
  */
 export interface TestSuiteDTO {
     actualDataset: DatasetDTO;

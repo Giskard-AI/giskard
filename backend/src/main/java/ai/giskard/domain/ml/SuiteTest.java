@@ -26,7 +26,9 @@ public class SuiteTest {
 
     @ManyToOne
     @JoinColumn(name = "test_suite")
-    private TestSuiteNew suite;
+    @NotNull
+    @JsonIgnore
+    private TestSuite suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TestInput> testInputs = new java.util.ArrayList<>();
@@ -35,7 +37,7 @@ public class SuiteTest {
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 
-    public SuiteTest(TestSuiteNew suite, GeneratedTest test, TestFunction testFunction) {
+    public SuiteTest(TestSuite suite, GeneratedTest test, TestFunction testFunction) {
         this.suite = suite;
         this.testFunction = testFunction;
         this.testInputs.addAll(test.getInputsList().stream()
