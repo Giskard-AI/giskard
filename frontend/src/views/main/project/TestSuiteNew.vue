@@ -164,7 +164,6 @@ async function loadData() {
 
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
-
 }
 
 watch(() => suite.value, () => {

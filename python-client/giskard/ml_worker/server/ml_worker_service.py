@@ -43,7 +43,8 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     RunTestRequest,
     TestResultMessage,
     UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, RunAdHocTestRequest, NamedSingleTestResult,
+    RunTestSuiteRequest, TestSuiteResultMessage, TestRegistryResponse, TestFunction, TestFunctionArgument, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
@@ -174,7 +175,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = Model.load(self.client, arg.model.project_key, arg.model.id)
+                value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
             elif arg.HasField('string'):
@@ -186,7 +187,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
@@ -211,7 +212,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ExplainRequest, context) -> ExplainResponse:
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
@@ -224,7 +225,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.feature_types[text_column] != "text":
@@ -243,7 +244,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
-        model = Model.load(self.client, request.model.project_key, request.model.id)
+        model = Model.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
@@ -262,7 +263,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         try:
-            model = Model.load(self.client, request.model.project_key, request.model.id)
+            model = Model.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
@@ -354,7 +355,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> TestRegistryResponse:
-        globals()["echo_count"] += 1
         return TestRegistryResponse(tests={
             test.id: TestFunction(
                 id=test.id,
