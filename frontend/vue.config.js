@@ -24,13 +24,7 @@ module.exports = {
     chainWebpack: config => {
         config.plugin('monaco-editor').use(MonacoWebpackPlugin, [
             {
-                languages: ['python'],
-                customLanguages: [
-                    {
-                        label: 'log',
-                        entry: log
-                    }
-                ]
+                languages: ['python']
             }
         ]);
         config.module
