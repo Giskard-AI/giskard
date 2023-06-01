@@ -6,6 +6,7 @@ import uuid
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional, List, Hashable, Union
+from pandas.api.types import is_list_like
 
 import pandas as pd
 import yaml
@@ -15,7 +16,7 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.core import DatasetMeta, SupportedColumnTypes, ColumnType
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.settings import settings
@@ -30,14 +31,14 @@ class Nuniques(Enum):
 
 
 class DataProcessor:
-    pipeline: List[Union[SliceFunction]] = []
+    pipeline: List[SliceFunction] = []
 
-    def add_step(self, processor: Union[SliceFunction]):
+    def add_step(self, processor: SliceFunction):
         if not len(self.pipeline) or self.pipeline[-1] != processor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: 'Dataset', apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False):
         df = dataset.df.copy()
 
         while len(self.pipeline):
@@ -54,12 +55,14 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        ret = Dataset(df=df,
-                      name=dataset.name,
-                      target=dataset.target,
-                      cat_columns=dataset.cat_columns,
-                      column_types=dataset.column_types,
-                      id=dataset.id)
+        ret = Dataset(
+            df=df,
+            name=dataset.name,
+            target=dataset.target,
+            cat_columns=dataset.cat_columns,
+            column_types=dataset.column_types,
+            id=dataset.id,
+        )
 
         if len(self.pipeline):
             ret.data_processor = self
@@ -79,14 +82,14 @@ class Dataset:
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None,
-            infer_column_types: Optional[bool] = False,
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = None,
+        infer_column_types: Optional[bool] = False,
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
     ) -> None:
         if id is None:
             self.id = uuid.uuid4()
@@ -98,7 +101,8 @@ class Dataset:
         if not self.target:
             warning(
                 "You did not provide the optional argument 'target'. "
-                "'target' is the column name in df corresponding to the actual target variable (ground truth).")
+                "'target' is the column name in df corresponding to the actual target variable (ground truth)."
+            )
         self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
@@ -111,7 +115,8 @@ class Dataset:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
             warning(
                 "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset. "
-                "In this case, we assume that there's no categorical columns in your Dataset.")
+                "In this case, we assume that there's no categorical columns in your Dataset."
+            )
 
     def add_slicing_function(self, slicing_function: SliceFunction):
         self.data_processor.add_step(slicing_function)
@@ -127,7 +132,7 @@ class Dataset:
 
     @staticmethod
     def check_hashability(df):
-        df_objects = df.select_dtypes(include='object')
+        df_objects = df.select_dtypes(include="object")
         non_hashable_cols = []
         for col in df_objects.columns:
             if not isinstance(df[col].iat[0], Hashable):
@@ -136,7 +141,8 @@ class Dataset:
         if non_hashable_cols:
             raise TypeError(
                 f"The following columns in your df: {non_hashable_cols} are not hashable. "
-                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict.")
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
+            )
 
     @staticmethod
     def infer_column_types(df, column_dtypes, no_cat=False):
@@ -159,8 +165,11 @@ class Dataset:
             column_types[cat_col] = SupportedColumnTypes.CATEGORY.value
         for col, col_type in column_dtypes.items():
             if col not in cat_columns:
-                column_types[col] = SupportedColumnTypes.NUMERIC.value if is_numeric_dtype(
-                    col_type) else SupportedColumnTypes.TEXT.value
+                column_types[col] = (
+                    SupportedColumnTypes.NUMERIC.value
+                    if is_numeric_dtype(col_type)
+                    else SupportedColumnTypes.TEXT.value
+                )
 
         return column_types
 
@@ -238,8 +247,11 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.column_types.items() if
-                ftype == SupportedColumnTypes.CATEGORY] if meta.column_types else None
+        return (
+            [fname for (fname, ftype) in meta.column_types.items() if ftype == SupportedColumnTypes.CATEGORY]
+            if meta.column_types
+            else None
+        )
 
     @property
     def cat_columns(self):
@@ -274,3 +286,39 @@ class Dataset:
 
     def __len__(self):
         return len(self.df)
+
+    def select_columns(self, columns=None, col_type=None):
+        columns = _cast_to_list_like(columns) if columns is not None else None
+        col_type = _cast_to_list_like(col_type) if col_type is not None else None
+
+        df = self.df.copy()
+
+        if columns is None and col_type is None:
+            # TODO: should probably copy
+            return self
+
+        # Filter by columns
+        if columns is not None:
+            df = df.loc[:, columns]
+
+        # Filter by type
+        if col_type is not None:
+            if not is_list_like(col_type):
+                col_type = [col_type]
+
+            columns = [col for col in df.columns if self.column_types[col] in col_type]
+            df = df.loc[:, columns]
+
+        return Dataset(
+            df=df,
+            target=self.target,
+            column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+        )
+
+    @property
+    def columns(self):
+        return self.df.columns.values
+
+
+def _cast_to_list_like(object):
+    return object if is_list_like(object) else (object,)
