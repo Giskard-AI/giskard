@@ -37,21 +37,7 @@ vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
 vocab.set_default_index(vocab["<unk>"])
 
 text_pipeline = lambda x: vocab(tokenizer(x))
-
-
-class PandasToTorch(torch_dataset):
-    def __init__(self, df: pd.DataFrame):
-        # copy original df
-        self.entries = df.copy()
-        # transformation step
-        self.entries['text'] = df['text'].apply(text_pipeline)
-
-    def __len__(self):
-        return len(self.entries)
-
-    def __getitem__(self, idx):
-        return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
-
+    
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
 
