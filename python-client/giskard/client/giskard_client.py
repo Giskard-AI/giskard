@@ -19,7 +19,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT, SupportedModelTypes
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT
 
 logger = logging.getLogger(__name__)
 
