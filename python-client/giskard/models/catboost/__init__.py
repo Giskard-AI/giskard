@@ -34,15 +34,8 @@ class CatboostModel(MLFlowBasedModel):
         )
 
     def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        if self.is_classification:
-            pyfunc_predict_fn = "predict_proba"
-        elif self.is_regression:
-            pyfunc_predict_fn = "predict"
-        else:
-            raise ValueError("Unsupported model type")
-
         mlflow.catboost.save_model(
-            self.clf, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
+            self.clf, path=local_path, mlflow_model=mlflow_meta
         )
 
     @classmethod
@@ -50,4 +43,4 @@ class CatboostModel(MLFlowBasedModel):
         return mlflow.catboost.load_model(local_dir)
 
     def clf_predict(self, df):
-        return self.clf.predict_proba(df)
+        return self.clf.predict(df)
