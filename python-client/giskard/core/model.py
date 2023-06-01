@@ -37,7 +37,6 @@ class ModelPredictionResults(BaseModel):
     probabilities: Optional[Any]
     all_predictions: Optional[Any]
 
-
 class Model(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
@@ -62,9 +61,7 @@ class Model(ABC):
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=list(classification_labels) if classification_labels is not None else None,
-            classification_threshold=classification_threshold,
-            loader_class=self.__class__.__name__,
-            loader_module=self.__module__
+            classification_threshold=classification_threshold
         )
 
     @property
@@ -97,8 +94,6 @@ class Model(ABC):
                     "threshold": self.meta.classification_threshold,
                     "feature_names": self.meta.feature_names,
                     "classification_labels": self.meta.classification_labels,
-                    "loader_module": self.meta.loader_module,
-                    "loader_class": self.meta.loader_class,
                     "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
@@ -193,46 +188,6 @@ class Model(ABC):
         """
         ...
 
-class WrapperModel(Model, ABC):
-    """
-    A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
-    This class introduces a `data_preprocessing_function` which can be used
-    to preprocess incoming data before it's passed
-    to the underlying model
-    """
-    clf: PyFuncModel
-    data_preprocessing_function: any
-    model_postprocessing_function: any
-
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 name: str = None, feature_names=None,
-                 classification_threshold=0.5, classification_labels=None) -> None:
-
-        super().__init__(model_type=model_type, name=name, feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels)
-        self.clf = clf
-        self.data_preprocessing_function = data_preprocessing_function
-        self.model_postprocessing_function = model_postprocessing_function
-
-    def predict_df(self, df):
-        if self.data_preprocessing_function:
-            df = self.data_preprocessing_function(df)
-        raw_prediction = self.clf_predict(df)
-
-        if not self.model_postprocessing_function:
-            return raw_prediction
-        else:
-            return self.model_postprocessing_function(raw_prediction)
-
-    @abstractmethod
-    def clf_predict(self, df):
-        ...
-
     def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         from giskard.core.model_validation import validate_model
 
@@ -262,61 +217,80 @@ class WrapperModel(Model, ABC):
                     feature_names=saved_meta['feature_names'],
                     classification_labels=saved_meta['classification_labels'],
                     classification_threshold=saved_meta['threshold'],
-                    loader_module=saved_meta['loader_module'],
-                    loader_class=saved_meta['loader_class']
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+            meta = client.load_model_meta(project_key, model_id)
 
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
-            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
-                saved_meta = yaml.load(f, Loader=yaml.Loader)
-            res = client.load_model_meta(project_key, model_id)
-            meta = ModelMeta(
-                name=res['name'],
-                feature_names=res['featureNames'],
-                model_type=SupportedModelTypes[res['modelType']],
-                classification_labels=res['classificationLabels'],
-                classification_threshold=res['threshold'],
-                loader_module=saved_meta['loader_module'],
-                loader_class=saved_meta['loader_class']
-            )
-        clazz = cls.determine_model_class(meta, local_dir)
-        return clazz(
-            clf=clazz.read_model_from_local_dir(local_dir),
-            data_preprocessing_function=clazz.load_data_preprocessing_function(local_dir),
-            model_postprocessing_function=clazz.read_model_postprocessing_function_from_artifact(local_dir),
-            **meta.__dict__
-        )
+        clazz = cls.determine_model_class(local_dir)
+
+        return clazz.load(local_dir, **meta.__dict__)
+
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        class_file = Path(local_dir) / MODEL_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, 'rb') as f:
+                clazz = cloudpickle.load(f)
+                return clazz(**kwargs)
+        else:
+            raise ValueError(
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
+                f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden")
+
+class WrapperModel(Model, ABC):
+    """
+    A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
+    This class introduces a `data_preprocessing_function` which can be used
+    to preprocess incoming data before it's passed
+    to the underlying model
+    """
+    clf: PyFuncModel
+    data_preprocessing_function: any
+
+    def __init__(self,
+                 clf,
+                 model_type: Union[SupportedModelTypes, str],
+                 data_preprocessing_function=None,
+                 name: str = None, feature_names=None,
+                 classification_threshold=0.5, classification_labels=None) -> None:
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
+        self.clf = clf
+        self.data_preprocessing_function = data_preprocessing_function
+
+    def predict_df(self, df):
+        if self.data_preprocessing_function:
+            df = self.data_preprocessing_function(df)
+        raw_prediction = self.clf_predict(df)
+        return raw_prediction
+
+    @abstractmethod
+    def clf_predict(self, df):
+        ...
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
 
         if self.data_preprocessing_function:
             self.save_data_preprocessing_function(local_path)
-        if self.model_postprocessing_function:
-            self.save_model_postprocessing_function(local_path)
 
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
-        with open(Path(local_path) / "giskard-data-preprocessing-function.pkl", 'wb') as f:
+        with open(Path(local_path) / "giskard-data-prep.pkl", 'wb') as f:
             cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def save_model_postprocessing_function(self, local_path: Union[str, Path]):
-        with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", 'wb') as f:
-            cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        return cls(clf=cls.load_clf(local_dir), **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def load_clf(cls, local_dir):
+        ...
 
     @staticmethod
     def load_data_preprocessing_function(local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-preprocessing-function.pkl"
-        if file_path.exists():
-            with open(file_path, 'rb') as f:
-                return cloudpickle.load(f)
-
-    @staticmethod
-    def read_model_postprocessing_function_from_artifact(local_path: str):
-        local_path = Path(local_path)
-        file_path = local_path / "giskard-model-postprocessing-function.pkl"
+        file_path = local_path / "giskard-data-prep.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
