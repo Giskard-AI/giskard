@@ -5,7 +5,7 @@ import sys
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
-from giskard.datasets import dataset
+from giskard.datasets import wrap_dataset
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
@@ -45,7 +45,7 @@ __version__: str = get_version()
 __all__ = [
     'SingleTestResult',
     'Project',
-    'dataset',
+    'wrap_dataset',
     'Dataset',
     'GiskardClient',
     'test',

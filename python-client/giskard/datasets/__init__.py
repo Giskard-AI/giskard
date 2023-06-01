@@ -5,13 +5,13 @@ from giskard.core.validation import configured_validate_arguments
 
 
 @configured_validate_arguments
-def dataset(df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None,
-            infer_column_types: Optional[bool] = False,
-            column_types: Optional[Dict[str, str]] = None):
-    return Dataset(df,
+def wrap_dataset(dataset: pd.DataFrame,
+                 name: Optional[str] = None,
+                 target: Optional[str] = None,
+                 cat_columns: Optional[List[str]] = None,
+                 infer_column_types: Optional[bool] = False,
+                 column_types: Optional[Dict[str, str]] = None):
+    return Dataset(dataset,
                    name,
                    target,
                    cat_columns,
