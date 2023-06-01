@@ -88,7 +88,7 @@
         <v-card-title flat>
           Quick start guide
         </v-card-title>
-        <QuickStartSteepper @close="openQuickStart = false"></QuickStartSteepper>
+        <QuickStartSteepper :project="project" @close="openQuickStart = false"></QuickStartSteepper>
       </v-card>
     </v-dialog>
 
