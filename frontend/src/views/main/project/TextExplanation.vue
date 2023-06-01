@@ -38,9 +38,9 @@
             </v-btn>
           </v-col>
         </v-row>
-        <div v-if="result">
-          <p class="caption text-center">Word contribution (LIME values)</p>
-          <p class="result-paragraph" v-html="result[selectedLabel]"></p>
+        <div v-if="result != null">
+          <p class="caption text-center mb-0">Word contribution (LIME values)</p>
+          <p class="result-paragraph">  <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph></p>
         </div>
       </div>
       <p v-if="errorMsg" class="error--text">
@@ -53,8 +53,12 @@
 <script lang="ts" setup>
 import {ref, watch} from "vue";
 import mixpanel from "mixpanel-browser";
+import { ExplainTextResponseDTO } from '@/generated-sources'
+import TextExplanationParagraph from './TextExplanationParagraph.vue';
 import {api} from "@/api";
 import OverlayLoader from "@/components/OverlayLoader.vue";
+
+
 
 interface Props {
   modelId: string,
@@ -73,8 +77,10 @@ const loading = ref<boolean>(false);
 const selectedFeature = ref<string>(props.textFeatureNames[0]);
 const selectedLabel = ref<string>(props.classificationResult || props.classificationLabels[0]);
 const errorMsg = ref<string>("");
-const result = ref<{ [key: string]: string }>({});
+const result = ref<ExplainTextResponseDTO | null>(null);
 const submitted = ref<boolean>(false);
+const max_weight = ref<number>(0);
+const min_weight = ref<number>(0);
 
 watch(() => props.classificationResult, (value) => {
   if (value && props.classificationLabels.includes(value)) {
@@ -84,9 +90,9 @@ watch(() => props.classificationResult, (value) => {
   }
 });
 
-watch([selectedFeature, props.inputData], () => {
+watch(() => [props.inputData, selectedFeature.value], () => {
   submitted.value = false;
-  result.value = {};
+  result.value = null;
   errorMsg.value = "";
 })
 
@@ -106,8 +112,11 @@ async function getExplanation() {
           selectedFeature.value
       );
       submitted.value = true;
+      max_weight.value = Math.max(...Object.values(result.value.weights).map(elt => Math.max(...elt)))
+      min_weight.value = Math.min(...Object.values(result.value.weights).map(elt => Math.min(...elt))) 
+
     } catch (error) {
-      result.value = {};
+      result.value = null;
       errorMsg.value = error.response.data.detail;
     } finally {
       loading.value = false;
@@ -115,7 +124,7 @@ async function getExplanation() {
   } else {
     // reset
     errorMsg.value = "";
-    result.value = {};
+    result.value = null;
   }
 }
 </script>
