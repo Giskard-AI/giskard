@@ -3,6 +3,7 @@ import warnings
 from time import perf_counter
 from typing import Optional, Sequence
 
+from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
 from .result import ScanResult
@@ -64,7 +65,20 @@ class Scanner:
             verbose=verbose,
         )
 
+        issues = self._postprocess(issues)
+
         return ScanResult(issues)
+
+    def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
+        # If we detected a StochasticityIssue, we will have a possibly false
+        # positive DataLeakageIssue. We remove it here.
+        from .stochasticity.stochasticity_detector import StochasticityIssue
+        from .data_leakage.data_leakage_detector import DataLeakageIssue
+
+        if any(isinstance(issue, StochasticityIssue) for issue in issues):
+            issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
+
+        return issues
 
     def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
         """Returns the detector instances."""
