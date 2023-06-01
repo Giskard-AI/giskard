@@ -9,7 +9,7 @@
               <v-list-item-content>
                 <v-list-item-title v-text="registry.tests[result.test.testId].name"></v-list-item-title>
                 <v-list-item-subtitle>
-                  <v-chip class="mr-2" x-small :color="result.passed ? '#4caf50' : '#f44336'">
+                  <v-chip class="mr-2" x-small :color="result.passed ? Colors.PASS : Colors.FAIL">
                     {{ result.passed ? 'pass' : 'fail' }}
                   </v-chip>
                 </v-list-item-subtitle>
@@ -36,6 +36,7 @@
 import {computed, ref} from 'vue';
 import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestCatalogDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestInputList from '@/components/TestInputList.vue';
+import {Colors} from '@/utils/colors';
 
 const props = defineProps<{
   execution: TestSuiteExecutionDTO,
