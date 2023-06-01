@@ -26,7 +26,16 @@
 </tr>
 <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-500 bg-zinc-700">
     <td colspan="5" class="p-3">
-        <h4 class="font-bold">Examples</h4>
+        <h4 class="font-bold text-sm">Description</h4>
+        <div class="text-sm">
+            <p class="my-2">
+                When we perturb the content of feature “{{ issue.info.feature }}” with the transformation
+                “{{ issue.info.transformation_fn.name }}” (see examples below), your model changes its prediction in about
+                {{(issue.info.fail_ratio * 100)|round(1)|abs }}% of the cases.
+                We expected the predictions not to be affected by this transformation.
+            </p>
+        </div>
+        <h4 class="font-bold mt-4 text-sm">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
             {{ issue.examples(3).to_html(notebook=True) | safe }}
         </div>
