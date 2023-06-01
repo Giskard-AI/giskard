@@ -1,6 +1,11 @@
-# Upload an object in the Giskard server
+# Upload an object to the Giskard server
 
-You can easily upload the following artifacts in the Giskard server: model, dataset and test suite.
+You can easily upload to the Giskard server objects, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
+
+Uploading objects to the Giskard server will help you:
+* **Debug** your model by inspecting the rows that make your test fail
+* **Compare** the results of your test suite for different models
+* Help you create more **insightful tests** based on domain knowledge
 
 ## 1. Install the Giskard server
 To install the Giskard server, please check [Install the Giskard server](docs/guide/install_app/index.md).
@@ -52,6 +57,10 @@ suite = Suite()
 .upload(client, project_name)
 ```
 :::
+
+Then the suite that you uploaded will appear in the test tab of the Giskard server.
+
+
 :::{tab-item} Model upload
 
 ```python
