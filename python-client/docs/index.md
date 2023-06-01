@@ -14,7 +14,7 @@ Follow our handy guides to get started on the basics as quickly as possible:
 
 - **<project:/guides/deprecated/installation-deprecated/index.md>**
 - **<project:/guides/wrap/index.rst>**
-- **<project:/guides/test-suite/index.rst>**
+- ✅  **<project:/guides/test-suite/index.md>**
 - ✅ **<project:/guides/create-slices/index.rst>**
 - ✅ **<project:/guides/test-catalog/index.rst>**
 
