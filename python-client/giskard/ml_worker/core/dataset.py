@@ -33,7 +33,7 @@ class Dataset:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        self.column_meanings = dict(column_meanings)
+        self.column_meanings = dict(column_meanings) if column_meanings else None
         self.column_types = self.df.dtypes.apply(lambda x: x.name).to_dict()
 
     def save(self, client: GiskardClient, project_key: str):
