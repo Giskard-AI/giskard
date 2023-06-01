@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -14,5 +14,5 @@ import java.util.Map;
 public class RunAdhocTestRequest {
     private Long projectId;
     private String testUuid;
-    private Map<String, String> inputs;
+    private List<FunctionInputDTO> inputs;
 }

@@ -161,9 +161,22 @@ export default new Router({
                                     props: (route) => {
                                         return {
                                             projectId: Number(route.params.id),
-                                            activeSessionId: route.params.inspectionId
                                         }
-                                    }
+                                    },
+                                    children: [
+                                        {
+                                            path: ':inspectionId',
+                                            name: 'inspection',
+                                            component: () => import('./views/main/project/InspectorWrapper.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    inspectionId: Number(route.params.inspectionId),
+                                                    projectId: Number(route.params.id),
+                                                }
+                                            },
+                                            meta: { openInspectionWrapper: true }
+                                        }
+                                    ]
                                 },
                                 {
                                     path: 'project-catalog',

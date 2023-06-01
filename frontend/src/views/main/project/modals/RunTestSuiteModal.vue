@@ -78,12 +78,11 @@
 <script setup lang="ts">
 
 import {computed, onMounted, ref} from 'vue';
-import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {RequiredInputDTO, TestInputDTO} from '@/generated-sources';
+import {FunctionInputDTO, RequiredInputDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {chain} from 'lodash';
 
@@ -102,10 +101,10 @@ const running = ref<boolean>(false);
 
 const testSuiteInputs = ref<{
   globalInput: {
-    [name: string]: TestInputDTO
+      [name: string]: FunctionInputDTO
   },
   sharedInputs: {
-    [name: string]: TestInputDTO
+      [name: string]: FunctionInputDTO
   }
 }[]>([]);
 
@@ -135,30 +134,30 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
           isAlias: false,
           name,
           type,
-          value: testSuiteStore.suite!.testInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
+            value: testSuiteStore.suite!.functionInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
         }
         return result;
       }, {});
 }
 
 onMounted(() => {
-  testSuiteInputs.value = props.compareMode ? [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }, {
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }] : [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }];
+    testSuiteInputs.value = props.compareMode ? [{
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }, {
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }] : [{
+        globalInput: createInputs(globalInputs.value),
+        sharedInputs: createInputs(sharedInputs.value),
+    }];
 })
 
 function isAllParamsSet() {
   return testSuiteInputs.value
       .filter(({sharedInputs, globalInput}) => Object.entries(props.inputs)
           .map(([name, {sharedInput}]) => sharedInput ? sharedInputs[name] : globalInput[name])
-          .findIndex(param => param && (param.value === null || param.value.trim() === '')) !== -1)
+          .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
       .length === 0;
 }
 
@@ -169,35 +168,24 @@ async function executeTestSuite(close) {
   running.value = true;
 
   try {
-    const jobUuids = await Promise.all(testSuiteInputs.value.map(input => {
-      new Promise<Promise<void>>((resolve, reject) => {
-        api.executeTestSuite(props.projectId, props.suiteId, [
-          ...Object.values(input.globalInput),
-          ...Object.values(input.sharedInputs)
-        ]
-            .reduce((result, input) => {
-              result[input.name] = input.value;
-              return result;
-            }, {}))
-            .then(jobUuid => {
-              resolve(testSuiteStore.trackJob(jobUuid));
-            })
-            .catch(err => reject(err));
-      })
-    }));
+      const jobUuids = await Promise.all(testSuiteInputs.value.map(input =>
+          testSuiteStore.runTestSuite([
+              ...Object.values(input.globalInput),
+              ...Object.values(input.sharedInputs)
+          ])
+      ));
 
-    if (props.compareMode) {
-      await Promise.all(jobUuids);
-      router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
-    } else {
-      mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
-    }
-    // Track job asynchronously
+      if (props.compareMode) {
+          await Promise.all(jobUuids);
+          await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
+      } else {
+          mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
+      }
+      // Track job asynchronously
   } finally {
-    running.value = false;
-    close();
+      running.value = false;
+      close();
   }
-
 }
 </script>
 

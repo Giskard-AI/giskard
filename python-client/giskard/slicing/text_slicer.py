@@ -13,6 +13,7 @@ from .base import BaseSlicer
 from .stop_words import sw_en, sw_fr
 from .slice import Query, QueryBasedSliceFunction, StringContains
 from .utils import get_slicer
+from ..client.python_utils import warning
 
 
 class TextSlicer(BaseSlicer):
@@ -87,7 +88,12 @@ class TextSlicer(BaseSlicer):
     def find_top_tokens_slices(self, feature, target):
         slices = []
 
-        tokens = self._get_top_tokens(self.dataset.df[feature])
+        try:
+            tokens = self._get_top_tokens(self.dataset.df[feature])
+        except ValueError:
+            # Could not get meaningful tokens (e.g. all stop words)
+            warning(f"Could not get meaningful tokens for textual feature {feature}. Are you sure this is text?")
+            return []
 
         for token in tokens:
             slices.append(QueryBasedSliceFunction(Query([StringContains(feature, token)])))
@@ -122,6 +128,9 @@ class TextSlicer(BaseSlicer):
 def _calculate_text_metadata(feature_data: pd.Series):
     import chardet
 
+    # Ensure this is text encoded as a string
+    feature_data = feature_data.astype(str)
+
     return pd.DataFrame(
         {
             "text_length": feature_data.map(len),
@@ -139,6 +148,9 @@ def _avg_word_length(text):
     return np.mean([len(w) for w in words])
 
 
+_metadata_cache = {}
+
+
 # @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
 class TextMetadataSliceFunction(SlicingFunction):
     row_level = False
@@ -149,15 +161,16 @@ class TextMetadataSliceFunction(SlicingFunction):
 
     def execute(self, data: pd.DataFrame):
         # @TODO: this is the slowest part, should disappear once we support metadata
-        meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
+        import hashlib
 
+        data_id = hashlib.sha256(pd.util.hash_pandas_object(data).values).hexdigest()
+
+        if data_id not in _metadata_cache:
+            _metadata_cache[data_id] = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
+
+        meta = _metadata_cache[data_id]
         data_with_meta = data.join(meta)
         data_filtered = self.query.run(data_with_meta)
-
-        # @TODO: HACK HACK HACK we do this just to avoid returning an empty slice
-        # It will get filtered out later, but we need to return something.
-        if len(data_filtered) == 0:
-            return data_with_meta.loc[:, data.columns].iloc[:1]
 
         return data_filtered.loc[:, data.columns]
 

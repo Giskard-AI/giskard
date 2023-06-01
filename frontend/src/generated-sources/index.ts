@@ -32,6 +32,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
     'ai.giskard.web.dto.FilterDatasetDTO' : 'FilterDatasetDTO',
+    'ai.giskard.web.dto.FunctionInputDTO' : 'FunctionInputDTO',
     'ai.giskard.web.dto.GenerateTestSuiteDTO' : 'GenerateTestSuiteDTO',
     'ai.giskard.web.dto.GenerateTestSuiteInputDTO' : 'GenerateTestSuiteInputDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
@@ -78,7 +79,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
     'ai.giskard.web.dto.TestFunctionDTO' : 'TestFunctionDTO',
-    'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
     'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
     'ai.giskard.web.dto.TestSuiteDTO' : 'TestSuiteDTO',
     'ai.giskard.web.dto.TransformationFunctionDTO' : 'TransformationFunctionDTO',
@@ -126,6 +126,7 @@ export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
 export * from './ai/giskard/web/dto/filter-dataset-dto';
+export * from './ai/giskard/web/dto/function-input-dto';
 export * from './ai/giskard/web/dto/generate-test-suite-dto';
 export * from './ai/giskard/web/dto/generate-test-suite-input-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
@@ -170,7 +171,6 @@ export * from './ai/giskard/web/dto/slicing-result-dto';
 export * from './ai/giskard/web/dto/suite-test-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';
 export * from './ai/giskard/web/dto/test-function-dto';
-export * from './ai/giskard/web/dto/test-input-dto';
 export * from './ai/giskard/web/dto/test-suite-complete-dto';
 export * from './ai/giskard/web/dto/test-suite-dto';
 export * from './ai/giskard/web/dto/transformation-function-dto';

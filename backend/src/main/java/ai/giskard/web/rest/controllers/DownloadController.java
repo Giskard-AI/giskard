@@ -8,7 +8,6 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileLocationService;
-import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ProjectService;
 import ai.giskard.utils.GSKFileUtils;
 import ai.giskard.utils.GiskardStringUtils;
@@ -18,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,9 +39,8 @@ public class DownloadController {
     private final ProjectRepository projectRepository;
 
     @GetMapping("/model/{modelId}")
-    @Transactional
     public ResponseEntity<InputStreamResource> downloadModel(@PathVariable("modelId") UUID modelId) throws IOException {
-        ProjectModel model = modelRepository.getById(modelId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Path path = fileLocationService.resolvedModelPath(model);
@@ -50,9 +49,8 @@ public class DownloadController {
     }
 
     @GetMapping("/dataset/{id}")
-    @Transactional
     public ResponseEntity<InputStreamResource> downloadDataset(@PathVariable("id") UUID datasetId) throws IOException {
-        Dataset dataset = datasetRepository.getById(datasetId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 
         Path path = fileLocationService.resolvedDatasetPath(dataset);
@@ -61,15 +59,15 @@ public class DownloadController {
     }
 
     @GetMapping("/project/{id}/export")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#id)")
     @Transactional
     public @ResponseBody ResponseEntity<byte[]> exportProject(@PathVariable("id") Long id) throws IOException {
-            Project project = this.projectRepository.findById(id).orElseThrow(() -> new GiskardRuntimeException("Could not find your project in the database"));
-            permissionEvaluator.canReadProject(id);
-            byte[] zFile = this.projectService.export(id);
-            HttpHeaders resHeaders = new HttpHeaders();
-            resHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            resHeaders.setContentDispositionFormData("attachment", GiskardStringUtils.toSlug(project.getKey()) + ".zip");
-            return new ResponseEntity<>(zFile, resHeaders ,HttpStatus.OK);
+        Project project = projectRepository.getMandatoryById(id);
+        byte[] zFile = this.projectService.export(id);
+        HttpHeaders resHeaders = new HttpHeaders();
+        resHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        resHeaders.setContentDispositionFormData("attachment", GiskardStringUtils.toSlug(project.getKey()) + ".zip");
+        return new ResponseEntity<>(zFile, resHeaders, HttpStatus.OK);
     }
 
     private ResponseEntity<InputStreamResource> createDecompressedStreamResponse(Path path, String name) throws IOException {

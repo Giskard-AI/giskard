@@ -19,7 +19,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +27,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ImportService {
 
@@ -71,8 +69,8 @@ public class ImportService {
     private void saveImportFeedback(List<Feedback> feedbacks, Project savedProject, Map<UUID, UUID> mapFormerNewIdModel, Map<UUID, UUID> mapFormerNewIdDataset, Map<String, String> importedUsersToCurrent) {
         feedbacks.forEach(feedback -> {
             feedback.setProject(savedProject);
-            feedback.setDataset(datasetRepository.getById(mapFormerNewIdDataset.get(feedback.getDataset().getId())));
-            feedback.setModel(modelRepository.getById(mapFormerNewIdModel.get(feedback.getModel().getId())));
+            feedback.setDataset(datasetRepository.getMandatoryById(mapFormerNewIdDataset.get(feedback.getDataset().getId())));
+            feedback.setModel(modelRepository.getMandatoryById(mapFormerNewIdModel.get(feedback.getModel().getId())));
             feedback.setUser(userRepository.getOneByLogin(importedUsersToCurrent.get(feedback.getUser().getLogin())));
             feedback.getFeedbackReplies().forEach(reply -> {
                 reply.setFeedback(feedback);
@@ -88,9 +86,8 @@ public class ImportService {
 
             suite.getTests().forEach(test -> {
                 test.setSuite(suite);
-                test.getTestInputs().forEach(input -> input.setTest(test));
             });
-            
+
             suite.getExecutions().forEach(execution -> execution.setSuite(suite));
 
             testSuiteRepository.save(suite);

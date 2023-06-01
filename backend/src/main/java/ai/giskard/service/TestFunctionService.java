@@ -6,8 +6,6 @@ import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
-
 @Service
 
 public class TestFunctionService extends CallableService<TestFunction, TestFunctionDTO> {
@@ -22,7 +20,6 @@ public class TestFunctionService extends CallableService<TestFunction, TestFunct
     }
 
 
-    @Transactional
     public TestFunctionDTO save(TestFunctionDTO testFunction) {
         return giskardMapper.toDTO(testFunctionRepository.save(testFunctionRepository.findById(testFunction.getUuid())
             .map(existing -> update(existing, testFunction))
