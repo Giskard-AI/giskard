@@ -1,4 +1,5 @@
-from giskard.models.automodel import AutoModel
+from giskard.models import make_model
+from giskard.core.model import Model
 
 
 def test_sklearn():
@@ -7,10 +8,10 @@ def test_sklearn():
 
     model = LogisticRegression()
     kwargs = {"clf": model, "model_type": "classification"}
-    my_model = SKLearnModel(**kwargs)
-    my_automodel = AutoModel(**kwargs)
-
-    assert my_model.__module__ == my_automodel.__module__
+    my_automodel1 = make_model(**kwargs)
+    assert isinstance(my_automodel1, SKLearnModel)
+    my_automodel2 = Model.auto_make(**kwargs)
+    assert isinstance(my_automodel2, SKLearnModel)
 
 
 def test_catboost():
@@ -19,10 +20,10 @@ def test_catboost():
 
     model = CatBoostClassifier()
     kwargs = {"clf": model, "model_type": "classification", "classification_labels": [""]}
-    my_model = CatboostModel(**kwargs)
-    my_automodel = AutoModel(**kwargs)
-
-    assert my_model.__module__ == my_automodel.__module__
+    my_automodel1 = make_model(**kwargs)
+    assert isinstance(my_automodel1, CatboostModel)
+    my_automodel2 = Model.auto_make(**kwargs)
+    assert isinstance(my_automodel2, CatboostModel)
 
 
 def test_huggingface():
@@ -32,10 +33,10 @@ def test_huggingface():
     model = BertForSequenceClassification.from_pretrained(model_name, num_labels=4, ignore_mismatched_sizes=True)
 
     kwargs = {"clf": model, "model_type": "classification"}
-    my_model = HuggingFaceModel(**kwargs)
-    my_automodel = AutoModel(**kwargs)
-
-    assert my_model.__module__ == my_automodel.__module__
+    my_automodel1 = make_model(**kwargs)
+    assert isinstance(my_automodel1, HuggingFaceModel)
+    my_automodel2 = Model.auto_make(**kwargs)
+    assert isinstance(my_automodel2, HuggingFaceModel)
 
 
 def test_pytorch():
@@ -44,10 +45,10 @@ def test_pytorch():
 
     model = FeedforwardNeuralNetModel(1, 1, 1)
     kwargs = {"clf": model, "model_type": "regression"}
-    my_model = PyTorchModel(**kwargs)
-    my_automodel = AutoModel(**kwargs)
-
-    assert my_model.__module__ == my_automodel.__module__
+    my_automodel1 = make_model(**kwargs)
+    assert isinstance(my_automodel1, PyTorchModel)
+    my_automodel2 = Model.auto_make(**kwargs)
+    assert isinstance(my_automodel2, PyTorchModel)
 
 
 def test_tensorflow():
@@ -60,7 +61,7 @@ def test_tensorflow():
         keras.layers.Dropout(0.2),
         keras.layers.Dense(10, activation='softmax')])
     kwargs = {"clf": model, "model_type": "classification"}
-    my_model = TensorFlowModel(**kwargs)
-    my_automodel = AutoModel(**kwargs)
-
-    assert my_model.__module__ == my_automodel.__module__
+    my_automodel1 = make_model(**kwargs)
+    assert isinstance(my_automodel1, TensorFlowModel)
+    my_automodel2 = Model.auto_make(**kwargs)
+    assert isinstance(my_automodel2, TensorFlowModel)
