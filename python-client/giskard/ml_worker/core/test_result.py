@@ -22,6 +22,7 @@ class TestMessage:
     def __repr__(self):
         return f" - [{self.type}] {self.text}"
 
+
 @dataclass
 class PartialUnexpectedCounts:
     value: List[int]
