@@ -56,12 +56,6 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
           .map(execution => ({execution} as ExecutionComparison))
       : [];
 
-  const groupedTestsResults: { [testId: string]: SuiteTestExecutionDTO[] } = chain(results)
-      .map(r => r.execution.results ?? [])
-      .flatten()
-      .groupBy(result => result.test.testUuid)
-      .value();
-
   results.forEach(result => {
     result.tests = suite.value === null ? [] : suite.value!.tests
         .map(suiteTest => ({
@@ -73,17 +67,6 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
 
   return results;
 });
-
-function countPassedTests(comparison: ExecutionComparison): number {
-  return Object.values(comparison.tests)
-      .filter(({result}) => result?.passed)
-      .length;
-}
-
-function countBestPerformingTests(comparison: ExecutionComparison): number {
-  // TODO
-  return 0;
-}
 
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 

@@ -168,8 +168,9 @@ class Suite:
             test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
             if any([test for test in self.tests if test.test_identifier == test_identifier]):
                 test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
-        elif any([test for test in self.tests if test.test_identifier == test_identifier]):
-            assert f"The test identifier {test_identifier} as already been assigned to a test"
+        else:
+            assert not any([test for test in self.tests if
+                            test.test_identifier == test_identifier]), f"The test identifier {test_identifier} as already been assigned to a test"
 
         self.tests.append(TestPartial(test_fn, params, test_identifier))
 
