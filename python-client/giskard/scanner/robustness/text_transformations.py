@@ -138,7 +138,9 @@ class TextGenderTransformation(TextTransformation):
         return new_text
 
     def _switch(self, word, language):
-        if (language == "en") and (word.lower() in gender_switch_en):
+        if language is pd.NA:
+            return word
+        elif (language == "en") and (word.lower() in gender_switch_en):
             return [word, gender_switch_en[word.lower()]]
         elif (language == "fr") and (word.lower() in gender_switch_fr):
             return [word, gender_switch_fr[word.lower()]]
