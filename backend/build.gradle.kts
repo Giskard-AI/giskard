@@ -392,6 +392,9 @@ tasks {
     register("start") {
         dependsOn("bootRun")
     }
+    register("package") {
+        dependsOn("bootJar")
+    }
 }
 
 
