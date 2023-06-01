@@ -12,8 +12,11 @@ import ai.giskard.worker.*;
 import com.google.protobuf.ByteString;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import io.netty.channel.local.LocalChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.csv.CSVFormat;
@@ -23,9 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.unit.DataSize;
 
+import javax.annotation.Nullable;
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -46,33 +51,33 @@ public class MLWorkerService {
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
 
-    public MLWorkerClient createClient() {
-        return createClient(true);
+
+    @Nullable
+    public MLWorkerClient createClientNoError(boolean isInternal) {
+        try {
+            return createClient(isInternal);
+        } catch (Exception e) {
+            log.error("Failed to create ML Worker client", e);
+            return null;
+        }
     }
 
     public MLWorkerClient createClient(boolean isInternal) {
-        return createClient(isInternal, true);
-    }
-
-    public MLWorkerClient createClient(boolean isInternal, boolean raiseExceptionOnFailure) {
         try {
             ClientInterceptor clientInterceptor = new MLWorkerClientErrorInterceptor();
-            String host = getMlWorkerHost(isInternal);
-            int port = getMlWorkerPort(isInternal);
-            log.info("Creating MLWorkerClient for {}:{}", host, port);
+            SocketAddress address = getMLWorkerAddress(isInternal);
+            log.info("Creating MLWorkerClient for {}", address);
 
-            ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).intercept(clientInterceptor).usePlaintext().maxInboundMessageSize((int) DataSize.ofMegabytes(applicationProperties.getMaxInboundMLWorkerMessageMB()).toBytes()).build();
-
+            ManagedChannel channel = NettyChannelBuilder.forAddress(address).intercept(clientInterceptor).channelType(isInternal ? NioSocketChannel.class : LocalChannel.class)
+                .eventLoopGroup(isInternal ? new NioEventLoopGroup() : mlWorkerTunnelService.getInnerServerDetails().get().group())
+                .usePlaintext().build();
 
             return new MLWorkerClient(channel);
         } catch (Exception e) {
             log.warn("Failed to create ML Worker client", e);
-            if (raiseExceptionOnFailure) {
-                String workerType = isInternal ? "internal" : "external";
-                String fix = isInternal ? "docker-compose up -d ml-worker" : "`giskard worker start -h GISKARD_ADDRESS` in the terminal of the machine that will execute the model. For more details refer to documentation: https://docs.giskard.ai/start/guides/installation/ml-worker";
-                throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker.%nStart it by running %s", workerType, fix), e);
-            }
-            return null;
+            String workerType = isInternal ? "internal" : "external";
+            String fix = isInternal ? "docker-compose up -d ml-worker" : "`giskard worker start -h GISKARD_ADDRESS` in the terminal of the machine that will execute the model. For more details refer to documentation: https://docs.giskard.ai/start/guides/installation/ml-worker";
+            throw new GiskardRuntimeException(String.format("Failed to establish a connection with %s ML Worker.%nStart it by running %s", workerType, fix), e);
         }
     }
 
@@ -128,26 +133,18 @@ public class MLWorkerService {
         return validRows;
     }
 
-    private int getMlWorkerPort(boolean isInternal) {
-        if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
-            return applicationProperties.getMlWorkerPort();
-        } else {
-            return mlWorkerTunnelService.getTunnelPort().orElseThrow(() -> new GiskardRuntimeException("No external worker is connected"));
-        }
+    private boolean isExternalWorkerConnected() {
+        return mlWorkerTunnelService.getInnerServerDetails().isPresent();
     }
 
-    private String getMlWorkerHost(boolean isInternal) {
+    private SocketAddress getMLWorkerAddress(boolean isInternal) {
         if (!isInternal && !isExternalWorkerConnected()) {
             throw new GiskardRuntimeException("No external worker is connected");
         }
         if (isInternal || !applicationProperties.isExternalMlWorkerEnabled()) {
-            return applicationProperties.getMlWorkerHost();
+            return new InetSocketAddress(applicationProperties.getMlWorkerHost(), applicationProperties.getMlWorkerPort());
         }
-        return "localhost";
-    }
-
-    private boolean isExternalWorkerConnected() {
-        return mlWorkerTunnelService.getTunnelPort().isPresent();
+        return mlWorkerTunnelService.getInnerServerDetails().get().localAddress();
     }
 
     @RequiredArgsConstructor

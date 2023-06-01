@@ -230,9 +230,16 @@ class Model(ABC):
         return clazz.load(local_dir, **meta.__dict__)
 
     @classmethod
-    @abstractmethod
     def load(cls, local_dir, **kwargs):
-        ...
+        class_file = Path(local_dir) / MODEL_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, 'rb') as f:
+                clazz = cloudpickle.load(f)
+                return clazz(**kwargs)
+        else:
+            raise ValueError(
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
+                f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden")
 
 
 class WrapperModel(Model, ABC):
