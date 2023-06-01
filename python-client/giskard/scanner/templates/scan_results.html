@@ -1,79 +1,19 @@
 {% block head %}
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        darkMode: 'class'
-    }
-</script>
-<style>
-    table.dataframe {
-        width: 100%;
-        max-width: 100%;
-        overflow: auto;
-    }
+<style>{% include "static/style.css" %}</style>
 
-    .dataframe tr {
-        border-bottom: 1px solid #555;
-    }
-
-    .dataframe td,
-    .dataframe th {
-        padding: 0.5rem;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 <div class="dark">
-    <div id="gsk-scan" class="dark:text-white dark:bg-zinc-900">
+    <div id="gsk-scan" class="dark:text-white dark:bg-zinc-800 rounded border border-gray-500">
         {% include "_tab_header.html" %}
         {% include "_main_content.html" %}
+        {% if issues|length > 0 %}
+        {% include "_code_snippet.html" %}
+        {% endif %}
     </div>
 </div>
 <script type="text/javascript">
-        (function () {
-            console.log("Loading Giskard Scan");
-            let rows = document.querySelectorAll("#gsk-scan .gsk-issue")
-            rows.forEach(rowEl => {
-                {
-                    rowEl.addEventListener("click", (event) => {
-                        {
-                            event.preventDefault()
-                            if (event.target.classList.contains("gsk-debug")) {
-                                {
-                                    alert("Not implemented yet")
-                                    return;
-                                }
-                            }
-
-                            rowEl.classList.toggle("open")
-                            rowEl.classList.toggle("bg-zinc-700")
-                        }
-                    })
-                }
-            });
-
-            const tabs = document.querySelectorAll("#gsk-scan [role='tabpanel']")
-            const tabHeaders = document.querySelectorAll("#gsk-scan [data-tab-target]")
-            tabHeaders.forEach(tabHeader => {
-                tabHeader.addEventListener("click", (event) => {
-                    event.preventDefault()
-                    const tabId = tabHeader.getAttribute("data-tab-target")
-
-                    tabs.forEach(tab => {
-                        tab.classList.add("hidden")
-                    })
-                    tabHeaders.forEach(tabh => {
-                        tabh.classList.remove("active")
-                    })
-
-                    tabHeader.classList.add("active")
-                    console.log(tabId)
-                    document.getElementById(tabId).classList.remove("hidden")
-
-                })
-            })
-
-        })()
+    {% include "static/internal.js" %}
 </script>
 {% endblock %}

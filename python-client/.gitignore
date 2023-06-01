@@ -166,3 +166,6 @@ generated
 .scannerwork
 *.iml.pdm-python
 *pb2*.py
+
+# npm
+node_modules/
