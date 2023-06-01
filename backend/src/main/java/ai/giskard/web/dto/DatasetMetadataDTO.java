@@ -26,5 +26,5 @@ public class DatasetMetadataDTO {
     private Map<String, ColumnType> columnTypes;
     @UINullable
     @JsonAlias("column_dtypes")
-    private Map<String, String> columnDTypes;
+    private Map<String, String> columnDtypes;
 }

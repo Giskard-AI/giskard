@@ -44,7 +44,7 @@ public class Dataset extends AbstractAuditingEntity {
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    private Map<String, String> columnDTypes;
+    private Map<String, String> columnDtypes;
     private String target;
 
     @OneToMany(mappedBy = "dataset", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

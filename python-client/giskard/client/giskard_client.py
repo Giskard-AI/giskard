@@ -157,7 +157,7 @@ class GiskardClient:
             name=res["name"],
             target=res["target"],
             column_types=res["columnTypes"],
-            column_dtypes=res["columnDTypes"],
+            column_dtypes=res["columnDtypes"],
         )
 
     def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
@@ -249,7 +249,7 @@ class GiskardClient:
                 "name": meta.name,
                 "target": meta.target,
                 "columnTypes": meta.column_types,
-                "columnDTypes": meta.column_dtypes,
+                "columnDtypes": meta.column_dtypes,
                 "originalSizeBytes": original_size_bytes,
                 "compressedSizeBytes": compressed_size_bytes,
             },
@@ -262,7 +262,7 @@ class GiskardClient:
                 "name": anonymize(meta.name),
                 "target": anonymize(meta.target),
                 "columnTypes": anonymize(meta.column_types),
-                "columnDTypes": anonymize(meta.column_dtypes),
+                "columnDtypes": anonymize(meta.column_dtypes),
                 "original_size_bytes": original_size_bytes,
                 "compressed_size_bytes": compressed_size_bytes,
             },

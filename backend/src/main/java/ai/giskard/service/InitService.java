@@ -54,11 +54,11 @@ import static java.util.Arrays.stream;
 public class InitService {
 
     private static final Map<String, ColumnType> germanCreditColumnTypes = new HashMap<>();
-    private static final Map<String, String> germanCreditColumnDTypes = new HashMap<>();
+    private static final Map<String, String> germanCreditColumnDtypes = new HashMap<>();
     private static final Map<String, ColumnType> enronColumnTypes = new HashMap<>();
-    private static final Map<String, String> enronColumnDTypes = new HashMap<>();
+    private static final Map<String, String> enronColumnDtypes = new HashMap<>();
     private static final Map<String, ColumnType> zillowColumnTypes = new HashMap<>();
-    private static final Map<String, String> zillowColumnDTypes = new HashMap<>();
+    private static final Map<String, String> zillowColumnDtypes = new HashMap<>();
     public static final String ZILLOW_PROJECT_KEY = "zillow";
     public static final String ENRON_PROJECT_KEY = "enron";
     public static final String GERMAN_CREDIT_PROJECT_KEY = "credit";
@@ -93,7 +93,7 @@ public class InitService {
                     .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Data")
                     .columnTypes(zillowColumnTypes)
-                    .columnDTypes(zillowColumnDTypes)
+                    .columnDtypes(zillowColumnDtypes)
                     .target("SalePrice")
                     .build(),
                 new InspectionSettings()
@@ -110,7 +110,7 @@ public class InitService {
                 DataUploadParamsDTO.builder()
                     .name("Email data")
                     .columnTypes(enronColumnTypes)
-                    .columnDTypes(enronColumnDTypes)
+                    .columnDtypes(enronColumnDtypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build(),
@@ -130,7 +130,7 @@ public class InitService {
                     .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .target("default")
                     .columnTypes(germanCreditColumnTypes)
-                    .columnDTypes(germanCreditColumnDTypes)
+                    .columnDtypes(germanCreditColumnDtypes)
                     .build(),
                 new InspectionSettings()
             )

@@ -43,7 +43,7 @@ public class DatasetService {
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
-        Map<String, tech.tablesaw.api.ColumnType> columnDTypes = dataset.getColumnTypes().entrySet().stream()
+        Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
             .resolve(dataset.getId().toString()).resolve("data.csv.zst");
@@ -52,7 +52,7 @@ public class DatasetService {
         try {
             CsvReadOptions csvReadOptions = CsvReadOptions
                 .builder(fileUploadService.decompressFileToStream(filePath))
-                .columnTypesPartial(columnDTypes)
+                .columnTypesPartial(columnDtypes)
                 .missingValueIndicator("_GSK_NA_")
                 .maxCharsPerColumn(-1)
                 .build();
@@ -82,7 +82,7 @@ public class DatasetService {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
-        metadata.setColumnDTypes(dataset.getColumnDTypes());
+        metadata.setColumnDtypes(dataset.getColumnDtypes());
         metadata.setTarget(dataset.getTarget());
         metadata.setColumnTypes(dataset.getColumnTypes());
         return metadata;
