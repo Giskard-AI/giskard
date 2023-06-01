@@ -27,8 +27,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackDTO' : 'FeedbackDTO',
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
-    'ai.giskard.web.dto.GenerateTestSuiteDTO' : 'GenerateTestSuiteDTO',
     'ai.giskard.web.dto.FilterDatasetDTO' : 'FilterDatasetDTO',
+    'ai.giskard.web.dto.GenerateTestSuiteDTO' : 'GenerateTestSuiteDTO',
+    'ai.giskard.web.dto.GenerateTestSuiteInputDTO' : 'GenerateTestSuiteInputDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
@@ -63,10 +64,10 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
+    'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
     'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
-    'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
     'ai.giskard.web.dto.TestCatalogDTO' : 'TestCatalogDTO',
     'ai.giskard.web.dto.TestDefinitionDTO' : 'TestDefinitionDTO',
@@ -114,6 +115,7 @@ export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
 export * from './ai/giskard/web/dto/filter-dataset-dto';
 export * from './ai/giskard/web/dto/generate-test-suite-dto';
+export * from './ai/giskard/web/dto/generate-test-suite-input-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';
@@ -145,16 +147,16 @@ export * from './ai/giskard/web/dto/post-import-project-dto';
 export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
+export * from './ai/giskard/web/dto/prepare-import-project-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
+export * from './ai/giskard/web/dto/slice-create-dto';
+export * from './ai/giskard/web/dto/slice-put-dto';
+export * from './ai/giskard/web/dto/slice-validate-dto';
 export * from './ai/giskard/web/dto/suite-test-dto';
 export * from './ai/giskard/web/dto/test-catalog-dto';
 export * from './ai/giskard/web/dto/test-definition-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';
 export * from './ai/giskard/web/dto/test-input-dto';
-export * from './ai/giskard/web/dto/prepare-import-project-dto';
-export * from './ai/giskard/web/dto/slice-create-dto';
-export * from './ai/giskard/web/dto/slice-put-dto';
-export * from './ai/giskard/web/dto/slice-validate-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';
 export * from './ai/giskard/web/dto/test-suite-new-dto';
 export * from './ai/giskard/web/dto/test-templates-response';

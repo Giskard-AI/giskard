@@ -10,8 +10,7 @@ from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction, \
-    TestFunctionArgument
+from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction
 from ml_worker_pb2 import ArtifactRef
 
 logger = logging.getLogger(__name__)
@@ -162,89 +161,45 @@ class Suite:
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
-    def generate_tests(
-            self,
-            model: Optional[Union[Model, InputRef[Model]]],
-            actual_dataset: Optional[Union[Dataset, InputRef[Dataset]]],
-            reference_dataset: Optional[Union[Dataset, InputRef[Dataset]]],
-    ):
-        if model is None:
-            return self
-
-        model: Optional[InputRef[Model]] = InputRef.wrap(model)
-        actual_dataset: Optional[InputRef[Dataset]] = InputRef.wrap(actual_dataset)
-        reference_dataset: Optional[InputRef[Dataset]] = InputRef.wrap(reference_dataset)
-
+    def generate_tests(self, args: Dict[str, Any]):
         giskard_tests = [test for test in tests_registry.get_all().values()
                          if contains_tag(test, 'giskard') and not self._contains_test(test)]
 
         for test in giskard_tests:
-            self._add_test_if_suitable(test, model, actual_dataset, reference_dataset)
+            self._add_test_if_suitable(test, args)
 
         return self
 
-    def _add_test_if_suitable(
-            self,
-            test_func: TestFunction,
-            model: Optional[InputRef[Model]],
-            actual_dataset: Optional[InputRef[Dataset]],
-            reference_dataset: Optional[InputRef[Dataset]]
-    ):
-        args = {}
-        for arg in [arg for arg in test_func.args.values() if arg.default is not None]:
-            args[arg.name] = arg.default
+    def _add_test_if_suitable(self, test_func: TestFunction, suite_args: Dict[str, Any]):
+        required_args = [arg for arg in test_func.args.values() if arg.default is None]
 
-        if model is None or not contains_tag(test_func, model.arg.meta.model_type.value):
+        if any([arg for arg in required_args if
+                arg.name not in suite_args or arg.type != type(suite_args[arg.name]).__name__]):
+            # Test is not added if an input  without default value is not specified
+            # or if an input does not match the required type
+            return
+
+        args = {
+            [arg.name]: suite_args[arg.name]
+            for arg in required_args
+        }
+
+        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg not in args]:
+            # Set default value if not provided
+            suite_args[arg.name] = arg.default
+
+        models = [model for model in args if type(model) is Model]
+        if any(models) and not contains_tag(test_func, next(iter(models)).arg.meta.model_type.value):
             return
 
         if contains_tag(test_func, 'ground_truth') \
-                and (actual_dataset is None or actual_dataset.arg.target is None
-                     or reference_dataset is None or reference_dataset.arg.target is None):
+                and any([dataset for dataset in args if type(dataset) is Dataset and dataset.target is None]):
             return
 
-        for model_arg in test_func.args.values():
-            if model_arg.type == 'Model':
-                args[model_arg.name] = model
-
-        actual_reference_dataset_arguments = find_actual_reference_dataset_arguments(test_func)
-        if actual_reference_dataset_arguments is not None:
-            if actual_dataset is None or reference_dataset is None:
-                return
-            else:
-                args[actual_reference_dataset_arguments[0].name] = actual_dataset
-                args[actual_reference_dataset_arguments[1].name] = reference_dataset
-        elif actual_dataset is not None:
-            for model_arg in test_func.args.values():
-                if model_arg.type == 'Dataset':
-                    args[model_arg.name] = actual_dataset
-
-        if contains_tag(test_func, 'classification') and any(model.arg.meta.classification_labels):
-            for model_arg in test_func.args.values():
-                if model_arg.name == 'classification_label':
-                    args[model_arg.name] = model.arg.meta.classification_labels[0]
-
-        self.add_test(test_func.fn, **args)
+        self.add_test(test_func.fn, **suite_args)
 
     def _contains_test(self, test: TestFunction):
         return any(t.test_func == test for t in self.tests)
-
-
-def find_actual_reference_dataset_arguments(test_func: TestFunction) \
-        -> Optional[Tuple[TestFunctionArgument, TestFunctionArgument]]:
-    actual_dataset = [arg for arg in test_func.args.values()
-                      if match_arg_name_and_type(arg, 'actual_dataset', 'Dataset')]
-
-    reference_dataset = [arg for arg in test_func.args.values()
-                         if match_arg_name_and_type(arg, 'reference_dataset', 'Dataset')]
-
-    if len(actual_dataset) == 1 and len(reference_dataset) == 1:
-        return actual_dataset[0], reference_dataset[0]
-    else:
-        return None
-
-
-def match_arg_name_and_type(arg: TestFunctionArgument, name: str, arg_type: str):
-    return arg.name == name and arg.type == arg_type
 
 
 def contains_tag(func: TestFunction, tag: str):

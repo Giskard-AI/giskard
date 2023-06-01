@@ -5,7 +5,6 @@ import re
 import sys
 import time
 from io import StringIO
-from typing import Optional
 
 import google.protobuf
 import grpc
@@ -18,13 +17,13 @@ from google.protobuf.empty_pb2 import Empty
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
+from giskard.core.model import Model, WrapperModel
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite, InputRef
+from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
@@ -132,10 +131,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Executing {test.name}")
         test_result = run_test(test.fn, arguments)
-        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
+        return ml_worker_pb2.TestResultMessage(
+            results=[ml_worker_pb2.NamedSingleTestResult(name=test.id, result=test_result)])
 
-    def runTestSuite(self, request: RunTestSuiteRequest,
-                     context: grpc.ServicerContext) -> TestSuiteResultMessage:
+    def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
+                     context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         tests = list(map(tests_registry.get_test, request.testId))
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
@@ -152,9 +152,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         named_single_test_result = []
         for i in range(len(tests)):
-            named_single_test_result.append(NamedSingleTestResult(name=tests[i].id, result=results[i]))
+            named_single_test_result.append(ml_worker_pb2.NamedSingleTestResult(name=tests[i].id, result=results[i]))
 
-        return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
 
     def parse_test_arguments(self, request_arguments):
         arguments = {}
@@ -162,7 +162,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = Model.load(self.client, arg.model.project_key, arg.model.id)
+                value = WrapperModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
             elif arg.HasField('string'):
@@ -347,7 +347,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
-        globals()["echo_count"] += 1
         return ml_worker_pb2.TestRegistryResponse(tests={
             test.id: ml_worker_pb2.TestFunction(
                 id=test.id,
@@ -372,22 +371,19 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def generateTestSuite(
             self,
-            request: GenerateTestSuiteRequest,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
             context: grpc.ServicerContext,
-    ) -> GenerateTestSuiteResponse:
-        model = self.load_model_if_defined(request.model)
-        actual_dataset = self.load_dataset_if_defined(request.actual_dataset)
-        reference_dataset = self.load_dataset_if_defined(request.reference_dataset)
+    ) -> ml_worker_pb2.GenerateTestSuiteResponse:
+        args = self.parse_test_arguments(request.arguments)
 
-        suite = Suite().generate_tests(model, actual_dataset, reference_dataset)\
-            .to_dto(self.client, request.project_key)
+        suite = Suite().generate_tests(args).to_dto(self.client, request.project_key)
 
-        return GenerateTestSuiteResponse(
+        return ml_worker_pb2.GenerateTestSuiteResponse(
             tests=[
-                GeneratedTest(
+                ml_worker_pb2.GeneratedTest(
                     test_id=test.testId,
                     inputs=[
-                        GeneratedTestInput(
+                        ml_worker_pb2.GeneratedTestInput(
                             name=i.name,
                             value=i.value,
                             is_alias=i.is_alias
@@ -398,18 +394,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 for test in suite.tests
             ]
         )
-
-    def load_model_if_defined(self, model: ArtifactRef) -> Optional[InputRef[Model]]:
-        if model.id != '':
-            return InputRef(Model.load(self.client, model.project_key, model.id), model)
-        else:
-            return None
-
-    def load_dataset_if_defined(self, dataset: ArtifactRef) -> Optional[InputRef[Dataset]]:
-        if dataset.id != '':
-            return InputRef(Dataset.load(self.client, dataset.project_key, dataset.id), dataset)
-        else:
-            return None
 
     @staticmethod
     def pandas_df_to_proto_df(df):
