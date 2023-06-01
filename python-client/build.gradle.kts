@@ -1,3 +1,4 @@
+import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.USER
 import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.VIRTUALENV
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
@@ -22,8 +23,13 @@ tasks {
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
+        var cmd = "install"
+        if (project.hasProperty("prod")) {
+            cmd += " --prod"
+        }
+
         module = "pdm"
-        command = "install"
+        command = cmd
     }
 
     clean {
@@ -57,7 +63,7 @@ tasks {
         module = "grpc_tools.protoc"
 
         command =
-            "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
+                "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
 
     }
 
@@ -95,6 +101,8 @@ tasks {
     }
 
     create<PythonTask>("package") {
+        dependsOn("pipInstall")
+
         module = "pdm"
         command = "build"
     }
