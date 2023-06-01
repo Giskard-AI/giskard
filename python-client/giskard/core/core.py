@@ -130,7 +130,8 @@ class TestFunctionMeta(SavableMeta):
                     name=arg["name"],
                     type=arg["type"],
                     default=arg["defaultValue"],
-                    optional=arg["optional"]
+                    optional=arg["optional"],
+                    argOrder=arg["argOrder"]
                 ) for arg in json["args"]
             }
 
