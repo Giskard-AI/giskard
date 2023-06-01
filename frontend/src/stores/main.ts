@@ -20,7 +20,6 @@ interface State {
     license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    backendReady: boolean;
 }
 
 export const useMainStore = defineStore('main', {
@@ -28,8 +27,7 @@ export const useMainStore = defineStore('main', {
         appSettings: null,
         license: null,
         coworkers: [],
-        notifications: [],
-        backendReady: false
+        notifications: []
     }),
     getters: {
         authAvailable(state: State) {
@@ -87,9 +85,7 @@ export const useMainStore = defineStore('main', {
             this.setAppSettings(response.app);
         },
         async fetchLicense() {
-            this.backendReady = false;
             this.license = await api.getLicense();
-            this.backendReady = true;
         },
         async getUserProfile() {
             const userStore = useUserStore();
