@@ -343,6 +343,7 @@ watch(() => newProjectName.value, (value) => {
 })
 
 function updateCurrentProject(projectId: number) {
+  projectStore.setCurrentProjectId(projectId);
   debuggingSessionsStore.loadDebuggingSessions(projectId);
 }
 
