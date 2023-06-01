@@ -65,7 +65,7 @@ class Model:
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
-            classification_labels=list(classification_labels) if classification_labels else None,
+            classification_labels=list(classification_labels) if classification_labels is not None else None,
             classification_threshold=classification_threshold
         )
 
