@@ -10,6 +10,8 @@
       item-value="id"
       :return-object="returnObject"
       @input="onInput"
+      dense
+      hide-details
   ></v-select>
 </template>
 
@@ -45,6 +47,6 @@ export default class DatasetSelector extends Vue {
 
 <style scoped>
 .dataset-selector {
-  min-width: 300px
+  min-width: 200px
 }
 </style>

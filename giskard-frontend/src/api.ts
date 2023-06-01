@@ -18,7 +18,8 @@ import {
     InspectionDTO,
     JWTToken,
     ManagedUserVM,
-    MessageDTO, MLWorkerInfoDTO,
+    MessageDTO,
+    MLWorkerInfoDTO,
     ModelDTO,
     PasswordResetRequest,
     PredictionDTO,
@@ -372,5 +373,11 @@ export const api = {
     },
     async executeTestSuite(suiteId: number) {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
+    },
+    async getTestsRegistry() {
+        return apiV2.get<unknown, Array<any>>(`/testing/tests/test-templates`);
+    },
+    async runAdHocTest(testId: string, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {testId, inputs});
     },
 };
