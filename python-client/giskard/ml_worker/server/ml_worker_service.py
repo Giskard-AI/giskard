@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -18,7 +19,6 @@ import tqdm
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
@@ -34,6 +34,8 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -48,6 +50,23 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     else:
         raise ValueError(f"Illegal file type: {meta.file_type}")
     return path.exists(), path
+
+
+def map_callable_function(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.CallableFunction(
+            uuid=test.uuid,
+            name=test.name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
@@ -143,6 +162,43 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
+    def runAdHocSlicing(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.SlicingResultMessage:
+        slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        result = dataset.slice(slicing_function)
+
+        return ml_worker_pb2.SlicingResultMessage(
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            filteredRows=dataset.df.index.difference(result.df.index)
+        )
+
+    def runAdHocTransformation(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.TransformationResultMessage:
+        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        result = dataset.transform(transformation_function)
+
+        modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.TransformationResultMessage(
+            datasetId=request.dataset.id,
+            totalRows=len(dataset.df.index),
+            modifications=[
+                ml_worker_pb2.DatasetRowModificationResult(
+                    rowId=row[0],
+                    modifications={key: str(value) for key, value in row[1].items() if not math.isnan(value)}
+                )
+                for row
+                in modified_rows.iterrows()
+            ]
+        )
+
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
@@ -198,6 +254,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
                 value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+            elif arg.HasField("slicingFunction"):
+                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)
+            elif arg.HasField("transformationFunction"):
+                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -413,10 +473,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
-    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
-                        context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
-        # TODO: rename TestRegistryResponse to RegistryResponse, same for function, function argument, ...
-        return ml_worker_pb2.TestRegistryResponse(tests={
+    def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
+        return ml_worker_pb2.CatalogResponse(tests={
             test.uuid: ml_worker_pb2.TestFunction(
                 uuid=test.uuid,
                 name=test.name,
@@ -434,10 +493,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         argOrder=a.argOrder
                     ) for a
                     in test.args.values()
-                ] if isinstance(test, TestFunctionMeta) else None
+                ],
+                type=test.type
             )
             for test in tests_registry.get_all().values()
-        })
+            if test.type == 'TEST'
+        },
+            slices=map_callable_function('SLICE'),
+            transformations=map_callable_function('TRANSFORMATION')
+        )
 
     @staticmethod
     def pandas_df_to_proto_df(df):

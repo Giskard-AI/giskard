@@ -18,7 +18,7 @@
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
                      v-if="hasTest"
-                     :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
+                     :to="{name: 'project-catalog-tests', query: {suiteId: suiteId}}"
                      color="secondary">
                 <v-icon>add</v-icon>
                 Add test
@@ -52,13 +52,14 @@
 
 <script lang="ts" setup>
 
-import {onMounted, watch} from "vue";
+import {onActivated, watch} from "vue";
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import {useCatalogStore} from "@/stores/catalog";
 
 const props = defineProps<{
   projectId: number,
@@ -68,16 +69,18 @@ const props = defineProps<{
 const mainStore = useMainStore();
 const {inputs, executions} = storeToRefs(useTestSuiteStore())
 
-onMounted(() => loadData());
+onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
 
 const {loadTestSuites} = useTestSuiteStore();
+const {loadCatalog} = useCatalogStore();
 
 const router = useRouter();
 const route = useRoute();
 
 async function loadData() {
     await loadTestSuites(props.projectId, props.suiteId);
+    await loadCatalog(props.projectId);
 }
 
 async function openRunTestSuite(compareMode: boolean) {

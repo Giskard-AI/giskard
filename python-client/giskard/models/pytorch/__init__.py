@@ -1,7 +1,7 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Union, Literal, get_args
+from typing import Union, Literal, get_args, Optional
 
 import mlflow
 import numpy as np
@@ -41,13 +41,23 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowBasedModel):
+    """
+    A wrapper class for PyTorch models that extends the functionality of the
+    MLFlowBasedModel class.
+
+    Attributes:
+        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
+        device (str): The device to run the model on.
+        torch_dtype (TorchDType): The data type to be used for input tensors.
+    """
+
     def __init__(
             self,
             model,
             model_type: ModelType,
             torch_dtype: TorchDType = "float32",
             device="cpu",
-            name: str = None,
+            name: Optional[str] = None,
             data_preprocessing_function=None,
             model_postprocessing_function=None,
             feature_names=None,
