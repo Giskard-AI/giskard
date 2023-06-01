@@ -85,18 +85,18 @@ def test_raises_error_if_classifier_shape_is_not_right():
     data = np.random.uniform(size=(10, 3))
 
     with pytest.raises(ValueError):
-        result = WrapperModel._postprocess(model, data)
+        _ = WrapperModel._postprocess(model, data)
 
     # Three classes and 2 outputs: wrong
     model = _make_model_mock(["one", "two", "three"])
     data = np.random.uniform(size=(10, 2))
     with pytest.raises(ValueError):
-        result = WrapperModel._postprocess(model, data)
+        _ = WrapperModel._postprocess(model, data)
 
     # 4 outputs: still wrong
     data = np.random.uniform(size=(10, 4))
     with pytest.raises(ValueError):
-        result = WrapperModel._postprocess(model, data)
+        _ = WrapperModel._postprocess(model, data)
 
 
 def test_should_convert_to_numpy():
