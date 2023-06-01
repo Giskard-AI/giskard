@@ -42,20 +42,24 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col cols="4" v-for="summary in testGroupSummaries">
-        <v-card>
-          <v-card-text>
-            <p class="text-h6 text--primary">
-              {{ summary.tag }} tests
-            </p>
-            <p>Test results: {{ summary.successCount }} / {{ summary.totalTests }}</p>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
     <p class="pt-4 text-h6">Detailed results</p>
-    <TestSuiteExecutionResults :execution="latestExecution" :registry="registry" m
-                               :models="models" :datasets="datasets"/>
+    <v-list-item-group>
+      <template v-for="result in latestExecution.results">
+        <v-divider/>
+        <v-list-item :value="result">
+          <v-list-item-content>
+            <v-list-item-title
+                v-text="getTestName(registryByUuid[result.test.testUuid])"></v-list-item-title>
+            <v-list-item-subtitle>
+              <v-chip class="mr-2" x-small :color="result.passed ? Colors.PASS : Colors.FAIL">
+                {{ result.passed ? 'pass' : 'fail' }}
+              </v-chip>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+    </v-list-item-group>
   </v-container>
 </template>
 
@@ -63,34 +67,15 @@
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {computed} from 'vue';
-import {TestResult} from '@/generated-sources';
+import {TestFunctionDTO, TestResult} from '@/generated-sources';
 import {useMainStore} from '@/stores/main';
 import {Colors} from '@/utils/colors';
 import {chain} from 'lodash';
-import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 
 const {executions, registry, models, datasets} = storeToRefs(useTestSuiteStore());
 
 const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
-
-const testGroupSummaries = computed(() => chain(latestExecution.value?.results ?? [])
-    .map(result => ({
-      result,
-      test: registry.value.find(test => test.uuid === result.test.testUuid)
-    }))
-    .flatMap(({result, test}) => test!.tags
-        .filter(tag => tag !== 'giskard' && tag !== 'pickle')
-        .map(tag => ({
-          tag,
-          result
-        })))
-    .groupBy('tag')
-    .mapValues(res => ({
-      tag: res[0].tag,
-      successCount: res.filter(r => r.result.passed).length,
-      totalTests: res.length
-    }))
-    .value());
+const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 const mainStore = useMainStore();
 
@@ -98,6 +83,17 @@ function copyLogs() {
   if (latestExecution.value?.logs) {
     navigator.clipboard.writeText(latestExecution.value.logs);
     mainStore.addNotification({content: 'Copied logs to clipboard', color: '#262a2d'});
+  }
+}
+
+function getTestName(test: TestFunctionDTO) {
+  const tags = test.tags.filter(tag => tag !== 'giskard' && tag !== 'pickle');
+  const name = test.displayName ?? test.name;
+
+  if (tags.length === 0) {
+    return name;
+  } else {
+    return tags.reduce((list, tag) => `${list} #${tag}`, '') + ` (${name})`;
   }
 }
 </script>
