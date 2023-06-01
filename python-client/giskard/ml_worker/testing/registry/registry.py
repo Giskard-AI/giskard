@@ -158,7 +158,6 @@ class GiskardTestRegistry:
                 module=func.__module__,
                 doc=func_doc,
                 module_doc=inspect.getmodule(func).__doc__.strip() if inspect.getmodule(func).__doc__ else None,
-                fn=func,
                 args={
                     name: TestFunctionArgument(
                         name=name,

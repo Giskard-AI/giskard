@@ -1,9 +1,6 @@
-import types
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
-
-from giskard.ml_worker.core.savable import SavableMeta
 
 
 class SupportedModelTypes(Enum):
@@ -15,6 +12,11 @@ class SupportedFeatureTypes(Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"
+
+
+@dataclass
+class SavableMeta:
+    uuid: Optional[str]
 
 
 @dataclass
