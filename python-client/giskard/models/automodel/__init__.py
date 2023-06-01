@@ -1,29 +1,30 @@
-from giskard.models.sklearn import SKLearnModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.tensorflow import TensorFlowModel
-from giskard.models.huggingface import HuggingFaceModel
+from importlib import import_module
 
 
 class AutoModel:
     def __new__(cls, *args, **kw):
-        is_huggingface = "transformers" in kw['clf'].__module__
-        is_sklearn = "sklearn" in kw['clf'].__module__
-        is_pytorch = "torch" in kw['clf'].__module__
-        is_tensorflow = "keras" in kw['clf'].__module__ or "tensorflow" in kw['clf'].__module__
 
-        if is_huggingface:
-            return HuggingFaceModel(**kw)
-        elif is_sklearn:
-            return SKLearnModel(**kw)
-        elif is_pytorch:
-            return PyTorchModel(**kw)
-        elif is_tensorflow:
-            return TensorFlowModel(**kw)
-        else:
-            raise ValueError(
-                'We could not infer your model library. We currently only support models from:'
-                '- sklearn'
-                '- pytorch'
-                '- tensorflow'
-                '- huggingface'
-            )
+        libraries = {"HuggingFaceModel": {"transformers": ["PreTrainedModel"]},
+                     "SKLearnModel": {"sklearn.base": ["BaseEstimator"]},
+                     "CatboostModel": {"catboost": ["CatBoost", "CatBoostClassifier", "CatBoostRanker", "CatBoostRegressor"]},
+                     "PyTorchModel": {"torch.nn": ["Module"]},
+                     "TensorFlowModel": {"tensorflow": ["Module"]}}
+
+        for _giskard_class, _base_libs in libraries.items():
+            giskard_cls = getattr(import_module('giskard'), _giskard_class)
+            for _base_lib, _base_classes in _base_libs.items():
+                for _base_class in _base_classes:
+                    try:
+                        base_cls = getattr(import_module(_base_lib), _base_class)
+                        if isinstance(kw['clf'], base_cls):
+                            return giskard_cls(**kw)
+                    except ImportError:
+                        pass
+
+        raise ValueError(
+            'We could not infer your model library. We currently only support models from:'
+            '\n- sklearn'
+            '\n- pytorch'
+            '\n- tensorflow'
+            '\n- huggingface'
+        )
