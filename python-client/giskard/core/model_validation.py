@@ -11,10 +11,7 @@ from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.ml_worker.core.dataset import Dataset
 
 
-def validate_model(
-        model: Model,
-        validate_ds: Dataset
-):
+def validate_model(model: Model, validate_ds: Dataset):
     model_type = model.meta.model_type
 
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
@@ -25,8 +22,9 @@ def validate_model(
     if model.is_classification:
         validate_classification_threshold_label(model.meta.classification_labels, model.meta.classification_threshold)
 
-    assert model.meta.feature_names is None or isinstance(model.meta.feature_names, list), \
-        "Invalid feature_names parameter. Please provide the feature names as a list."
+    assert model.meta.feature_names is None or isinstance(
+        model.meta.feature_names, list
+    ), "Invalid feature_names parameter. Please provide the feature names as a list."
 
     if validate_ds is not None:
         validate_is_pandasdataframe(validate_ds.df)
@@ -49,9 +47,11 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        raise ValueError("Invalid prediction_function input.\n"
-                         "Please make sure that model.predict(dataset) does not return an error "
-                         "message before uploading in Giskard") from e
+        raise ValueError(
+            "Invalid prediction_function input.\n"
+            "Please make sure that model.predict(dataset) does not return an error "
+            "message before uploading in Giskard"
+        ) from e
 
     validate_deterministic_model(model, validation_ds, prediction)
     validate_prediction_output(validation_ds, model.meta.model_type, prediction.raw)
@@ -66,8 +66,10 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
     new_prediction = model.predict(validate_ds)
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
-        warning("Model is stochastic and not deterministic. Prediction function returns different results"
-                "after being invoked for the same data multiple times.")
+        warning(
+            "Model is stochastic and not deterministic. Prediction function returns different results"
+            "after being invoked for the same data multiple times."
+        )
 
 
 def validate_data_preprocessing_function(prediction_function):
@@ -104,9 +106,9 @@ def validate_classification_labels(classification_labels: List[str], model_type:
 
 def validate_features(feature_names=None, validate_df=None):
     if (
-            feature_names is not None
-            and validate_df is not None
-            and not set(feature_names).issubset(set(validate_df.columns))
+        feature_names is not None
+        and validate_df is not None
+        and not set(feature_names).issubset(set(validate_df.columns))
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
@@ -114,14 +116,10 @@ def validate_features(feature_names=None, validate_df=None):
         )
 
 
-def validate_classification_threshold_label(
-        classification_labels, classification_threshold=None
-):
+def validate_classification_threshold_label(classification_labels, classification_threshold=None):
     if classification_labels is None:
-        raise ValueError(f"Missing classification_labels parameter for classification model.")
-    if classification_threshold is not None and not isinstance(
-            classification_threshold, (int, float)
-    ):
+        raise ValueError("Missing classification_labels parameter for classification model.")
+    if classification_threshold is not None and not isinstance(classification_threshold, (int, float)):
         raise ValueError(
             f"Invalid classification_threshold parameter: {classification_threshold}. Please specify valid number."
         )
@@ -143,11 +141,7 @@ def validate_label_with_target(classification_labels, target_values=None, target
                 'to make results more understandable in Giskard."'
             )
 
-        target_values = (
-            target_values
-            if is_string_dtype(target_values)
-            else [str(label) for label in target_values]
-        )
+        target_values = target_values if is_string_dtype(target_values) else [str(label) for label in target_values]
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(
@@ -174,12 +168,14 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
 
 def validate_classification_prediction(classification_labels, prediction):
     if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
-        warning("Output of the prediction_function returns values out of range [0,1]. "
-                "The output of Multiclass and Binary classifications should be within the range [0,1]")
-    if not np.all(np.isclose(np.sum(prediction, axis=1), 1, atol=0.0000001)):
-        warning("Sum of output values of prediction_function is not equal to 1."
-                " For Multiclass and Binary classifications, the sum of probabilities should be 1")
-    if prediction.shape[1] != len(classification_labels):
-        raise ValueError(
-            "Prediction output label shape and classification_labels shape do not match"
+        warning(
+            "Output of the prediction_function returns values out of range [0,1]. "
+            "The output of Multiclass and Binary classifications should be within the range [0,1]"
         )
+    if not np.all(np.isclose(np.sum(prediction, axis=1), 1, atol=0.0000001)):
+        warning(
+            "Sum of output values of prediction_function is not equal to 1."
+            " For Multiclass and Binary classifications, the sum of probabilities should be 1"
+        )
+    if prediction.shape[1] != len(classification_labels):
+        raise ValueError("Prediction output label shape and classification_labels shape do not match")
