@@ -12,7 +12,7 @@
           </v-list-item>
           <v-divider />
           <div v-show="showProjectTabs">
-            <v-list-item :to="{ name: 'project-catalog-tests' }" value="catalog-tests">
+            <v-list-item :to="{ name: 'project-catalog' }" value="catalog">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
                 <div class="caption">Catalog</div>

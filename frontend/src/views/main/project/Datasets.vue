@@ -156,7 +156,7 @@ async function reloadDatasets() {
 
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId);
-})
+});
 </script>
 
 <style lang="scss" scoped>
