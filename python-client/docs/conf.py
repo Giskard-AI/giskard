@@ -13,6 +13,7 @@ release = '2.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+import os
 
 extensions = ["myst_parser",
               'nbsphinx',
@@ -97,7 +98,21 @@ html_theme_options = {
 
 add_function_parentheses = False
 # Do not execute the notebooks when building the docs
+docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
+if docs_version == "latest":
+    branch = "main"
+else:
+    branch = docs_version.replace("-", "/")
+
 nbsphinx_execute = "never"
+nbsphinx_prolog = """
+.. raw:: html
+
+    <div class="open-in-colab__wrapper">
+    <a href="https://colab.research.google.com/github/giskard-ai/giskard/blob/""" + branch + """/python-client/docs/_source/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" style="display: inline; margin: 0" alt="Open In Colab"/></a>
+    <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/python-client/docs/_source/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
+    </div>
+"""
 
 import inspect
 import os
