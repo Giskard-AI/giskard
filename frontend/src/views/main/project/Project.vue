@@ -8,6 +8,9 @@
         <span class="text-subtitle-1">
           <span class="mr-1">/</span>{{ project.name }}
         </span>
+        <v-btn icon :to="{ name: 'project-overview' }">
+          <v-icon> info </v-icon>
+        </v-btn>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
@@ -112,41 +115,37 @@
 
     <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
       <v-tabs>
-        <v-tab :to="{ name: 'project-overview' }">
-          <v-icon left>notes</v-icon>
-          Overview
-        </v-tab>
-        <v-tab :to="{ name: 'project-datasets' }">
+        <v-tab :to=" { name: 'project-datasets' } ">
           <v-icon left>stacked_bar_chart</v-icon>
           Datasets
         </v-tab>
-        <v-tab :to="{ name: 'project-models' }">
+        <v-tab :to=" { name: 'project-models' } ">
           <v-icon left>settings_suggest</v-icon>
-            Models
+          Models
         </v-tab>
-          <v-tab :to="{ name: 'project-inspector', params: tempInspectorParams }" v-if="showInspector">
-              <v-icon left>model_training</v-icon>
-              Inspector
-          </v-tab>
-          <v-tab :to="{name: 'project-feedbacks'}">
-              <v-icon left small>mdi-comment-multiple-outline</v-icon>
-              Feedback
-          </v-tab>
-          <v-tab :to="{name: 'project-debugger'}">
-              <v-icon left small>mdi-debug-step-over</v-icon>
-              Debugger
-          </v-tab>
-          <v-tab :to="{name: 'project-test-suites'}">
-              <v-icon left small>mdi-list-status</v-icon>
-              Test suites️
-          </v-tab>
-          <v-tab :to="{name: 'project-catalog-tests'}">
-              <v-icon left small>mdi-list-status</v-icon>
-              Catalog
-          </v-tab>
+        <v-tab :to=" { name: 'project-inspector', params: tempInspectorParams } " v-if=" showInspector ">
+          <v-icon left>model_training</v-icon>
+          Inspector
+        </v-tab>
+        <v-tab :to=" { name: 'project-feedbacks' } ">
+          <v-icon left small>mdi-comment-multiple-outline</v-icon>
+          Feedback
+        </v-tab>
+        <v-tab :to=" { name: 'project-debugger' } ">
+          <v-icon left small>mdi-debug-step-over</v-icon>
+          Debugger
+        </v-tab>
+        <v-tab :to=" { name: 'project-test-suites' } ">
+          <v-icon left small>mdi-list-status</v-icon>
+          Test suites️
+        </v-tab>
+        <v-tab :to=" { name: 'project-catalog-tests' } ">
+          <v-icon left small>mdi-list-status</v-icon>
+          Catalog
+        </v-tab>
       </v-tabs>
       <keep-alive>
-        <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
+        <router-view :isProjectOwnerOrAdmin=" isProjectOwnerOrAdmin "></router-view>
       </keep-alive>
     </v-container>
 
@@ -154,17 +153,18 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {IUserProfileMinimal} from "@/interfaces";
-import {Role} from "@/enums";
+import { computed, onMounted, ref, watch } from "vue";
+import { IUserProfileMinimal } from "@/interfaces";
+import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
-import {InspectionSettings, ProjectPostDTO} from "@/generated-sources";
-import {useRoute, useRouter} from "vue-router/composables";
-import {useMainStore} from "@/stores/main";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {Route} from "vue-router";
-import {getUserFullDisplayName} from "@/utils";
+import { InspectionSettings, ProjectPostDTO } from "@/generated-sources";
+import { useRoute, useRouter } from "vue-router/composables";
+import { useMainStore } from "@/stores/main";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { Route } from "vue-router";
+import { getUserFullDisplayName } from "@/utils";
+import ProjectOverviewTooltip from "@/components/ProjectOverviewTooltip.vue";
 
 const route = useRoute();
 const router = useRouter();
