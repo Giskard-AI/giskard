@@ -21,12 +21,6 @@ dataset = tf.keras.utils.get_file("aclImdb_v1", data_url,
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_text_classification_2d_output():
 
-    dataset_dir = os.path.join(os.path.dirname(dataset), 'aclImdb')
-    train_dir = os.path.join(dataset_dir, 'train')
-
-    remove_dir = os.path.join(train_dir, 'unsup')
-    shutil.rmtree(remove_dir)
-
     batch_size = 32
 
     raw_test_ds = tf.keras.utils.text_dataset_from_directory(
