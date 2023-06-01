@@ -3,9 +3,9 @@ from pathlib import Path
 import mlflow
 import yaml
 import pandas as pd
+import numpy as np
 import torch
 import collections
-from collections.abc import Iterator
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
