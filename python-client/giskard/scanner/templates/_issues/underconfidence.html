@@ -1,11 +1,12 @@
 <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
     <td class="p-3">
-        <code class="mono text-blue-300">
-        {{issue.domain|replace("&", "<br>")|safe}}
-    </code>
+        <code class="mono text-blue-300">{{issue.domain}}</code>
     </td>
     <td class="p-3">
-        {{ issue.metric }}
+        {{ issue.metric }} = {{ issue.info.metric_value_slice|format_metric }}
+        <span class="text-gray-400">
+            (Global = {{ issue.info.metric_value_reference|format_metric }})
+        </span>
     </td>
     <td class="p-3">
         <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
@@ -27,13 +28,17 @@
 <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-500 bg-zinc-700">
     <td colspan="5" class="p-3">
         <h4 class="font-bold text-sm">Description</h4>
-        {{ issue.description | safe }}
-
-        {% if issue.examples(3)|length %}
-        <h4 class="font-bold text-sm mt-4">Examples</h4>
-        <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.examples(3).to_html(notebook=True) | replace("\\n", "<br>") | safe }}
+        <div class="text-sm">
+            <p class="my-2">
+                For records in your dataset where {{ issue.domain }},
+                we found a significantly higher number of underconfident predictions
+                ({{ issue.info.fail_idx|length }} samples, corresponding to
+                {{ (issue.info.metric_value_slice * 100)|round(1) }}% of the predictions in the data slice).
+            </p>
         </div>
-        {% endif %}
+        <h4 class="font-bold mt-4 text-sm">Examples</h4>
+        <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
+            {{ issue.examples(3).to_html(justify="left", notebook=True) | replace("\\n", "<br>") | safe }}
+        </div>
     </td>
 </tr>
