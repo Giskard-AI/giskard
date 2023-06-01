@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.Entity.TEST;
-import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
 @Transactional
@@ -159,8 +158,7 @@ public class TestSuiteService {
 
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
-            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -188,8 +186,7 @@ public class TestSuiteService {
     }
 
     public TestSuiteNewDTO updateTestInputs(long suiteId, String testId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
-            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId.equals(t.getTestId()))

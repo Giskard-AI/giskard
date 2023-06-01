@@ -25,7 +25,7 @@
               <v-list-item v-if="e.disabled" disabled>
                 <v-list-item-content>
                   <v-list-item-title>
-                    {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
+                    {{ e.date | date }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
                     <v-chip class="mr-2" x-small :color="e.color">
@@ -39,7 +39,7 @@
                 <v-list-item-content>
                   <v-list-item-title>
                     <div class="d-flex justify-space-between">
-                      <span>{{ e.execution.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
+                      <span>{{ e.execution.executionDate | date }}</span>
                       <TestResultHeatmap :results="executionResults(e.execution)"/>
                     </div>
                   </v-list-item-title>
