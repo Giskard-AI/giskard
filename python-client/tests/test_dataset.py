@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 from giskard.datasets.base import Dataset
 
@@ -86,3 +87,10 @@ def test_nonvalid_df_column_types():
         r"We currently support only hashable column types such as int, bool, str, tuple and not list or dict\.",
     ):
         Dataset(nonvalid_df)
+
+
+def test_dataset_raises_exception_if_mixed_column_types():
+    df = pd.DataFrame({"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]})
+
+    with pytest.raises(ValueError):
+        Dataset(df, target="target")
