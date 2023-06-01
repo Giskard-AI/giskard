@@ -139,14 +139,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         ])
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
-                     context: grpc.ServicerContext) -> TestSuiteResultMessage:
+                     context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
         tests: List[GiskardTest] = list(
             map(lambda test_uuid: GiskardTest.load(test_uuid, self.client, None), request.testUuid)
         )
 
         global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t.meta.display_name or f'{t.meta.module}.{t.meta.name}', tests))}")
+        logger.info(
+            f"Executing test suite: {list(map(lambda t: t.meta.display_name or f'{t.meta.module}.{t.meta.name}', tests))}")
 
         suite = Suite()
         for test in tests:
@@ -364,7 +365,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return
 
 
-def map_result_to_single_test_result(result) -> SingleTestResult:
+def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
     if isinstance(result, ml_worker_pb2.SingleTestResult):
         return result
     elif isinstance(result, TestResult):
