@@ -1,11 +1,14 @@
-import mlflow
 from typing import Union
 import logging
-
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
+
+try:
+    import mlflow
+except ImportError:
+    pass
 
 
 class TensorFlowModel(MLFlowBasedModel):
@@ -18,7 +21,6 @@ class TensorFlowModel(MLFlowBasedModel):
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None) -> None:
-
         super().__init__(clf=clf,
                          model_type=model_type,
                          name=name,
