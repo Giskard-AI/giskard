@@ -74,7 +74,7 @@ def test_newspaper_classification_pytorch_custom_model():
     class my_PyTorchModel(PyTorchModel):
         should_save_model_class = True
 
-        def clf_predict(self, df):
+        def model_predict(self, df):
             def predict_proba(text):
                 with torch.no_grad():
                     text = torch.tensor(text_pipeline(text))
@@ -90,7 +90,7 @@ def test_newspaper_classification_pytorch_custom_model():
 
     my_model = my_PyTorchModel(
         name="my_custom_BertForSequenceClassification",
-        clf=model,
+        model=model,
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(ag_news_label.values()),

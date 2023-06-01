@@ -33,7 +33,7 @@ def test_sequence_classification_distilbert_base_uncased_tensorflow():
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",
-        clf=model_distilbert_base_uncased,
+        model=model_distilbert_base_uncased,
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(label2id.keys()),
