@@ -152,6 +152,9 @@ const inputType = computed(() => chain(sortedArguments.value)
   margin: 0 1rem;
   padding: 1rem;
   min-width: 50vw;
+  max-height: 80vh;
+  overflow: auto;
+
 }
 
 .card-content {
