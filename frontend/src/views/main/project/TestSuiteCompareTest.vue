@@ -1,13 +1,22 @@
 <template>
-  <div>
+  <div v-if="registry">
     <p class="text-h4">{{ registry.tests[route.params.testId].name }}</p>
-    <v-chart
-        v-if="executions"
-        class="chart"
-        :option="graphOptions"
-        autoresize
-    />
+    <div style="height: 400px">
+      <v-chart
+          v-if="executions"
+          class="chart"
+          :option="graphOptions"
+          autoresize
+      />
+    </div>
+
   </div>
+  <v-progress-circular
+      v-else
+      size="100"
+      indeterminate
+      color="primary"
+  ></v-progress-circular>
 </template>
 
 <script lang="ts" setup>
@@ -22,8 +31,13 @@ import {Colors} from '@/utils/colors';
 import moment from 'moment';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import {Vue} from 'vue-property-decorator';
+import {CanvasRenderer} from 'echarts/renderers';
+import {GridComponent} from 'echarts/components';
+import ECharts from 'vue-echarts';
 
-use([LineChart]);
+use([CanvasRenderer, LineChart, GridComponent]);
+Vue.component("v-chart", ECharts);
 
 const {executions, registry} = storeToRefs(useTestSuiteStore());
 
@@ -48,7 +62,6 @@ const graphOptions = computed(() => {
       .filter(execution => execution.test !== undefined) as ComparedTestExecution[];
 
   return {
-    legend: {},
     xAxis: {
       data: results.map(result => moment(result.execution.executionDate).format('DD/MM/YYYY HH:mm'))
     },
