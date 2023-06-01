@@ -5,7 +5,7 @@
 import pandas as pd
 from catboost import CatBoostClassifier
 from sklearn import model_selection
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrapping dataset
@@ -42,7 +42,7 @@ df = pd.read_csv(
 )
 ```
 ```python
-wrapped_dataset = wrap_dataset(df, 
+wrapped_dataset = Dataset(df, 
                                name='Test german credit scoring dataset', 
                                target="default", 
                                column_types=column_types)
@@ -60,7 +60,7 @@ cb = CatBoostClassifier(iterations=2, learning_rate=1, depth=2)
 cb.fit(X_train, Y_train, columns_to_encode)
 ```
 ```python
-wrapped_model = wrap_model(model=cb,
+wrapped_model = Model(model=cb,
                            model_type="classification",
                            feature_names=list(column_types.keys()))
 ```

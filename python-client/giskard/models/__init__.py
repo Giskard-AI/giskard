@@ -1,14 +1,42 @@
+import inspect
 from importlib import import_module
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
+from giskard.models.function import PredictionFunctionModel
 from giskard.core.validation import configured_validate_arguments
+
+logger = logging.getLogger(__name__)
+
+ml_libraries = {
+    ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
+    ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
+    ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
+    ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
+    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
+}
 
 
 def get_class(_lib, _class):
     return getattr(import_module(_lib), _class)
+
+
+def infer_giskard_cls(model: Any):
+    if inspect.isfunction(model):
+        return PredictionFunctionModel
+    else:
+        for _giskard_class, _base_libs in ml_libraries.items():
+            try:
+                giskard_cls = get_class(*_giskard_class)
+                base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
+                if isinstance(model, tuple(base_libs)):
+                    return giskard_cls
+            except ImportError:
+                pass
+    return None
 
 
 @configured_validate_arguments
@@ -30,8 +58,8 @@ def wrap_model(model,
             Could be any model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or :code:`huggingface`.
             The standard model output required for Giskard is:
 
-            * if classification: an array of probabilities corresponding to d   ata entries (rows of pandas.DataFrame)
-                and classification_labels. In the case of binary classification, an array of probabilities is also accepted.
+            * if classification: an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is also accepted.
                 Make sure that the probability provided is for the first label provided in classification_labels.
             * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
         name (Optional[str]):
@@ -62,41 +90,29 @@ def wrap_model(model,
     Raises:
         ValueError: If the model library cannot be inferred.
     """
-    _libraries = {
-        ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
-        ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
-        ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
-        ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
-        ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
-    }
-    for _giskard_class, _base_libs in _libraries.items():
-        try:
-            giskard_class = get_class(*_giskard_class)
-            base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
-            if isinstance(model, tuple(base_libs)):
-                origin_library = _base_libs[0][0].split(".")[0]
-                giskard_wrapper = _giskard_class[1]
-                print("Your '" + origin_library + "' model is successfully wrapped by Giskard's '"
-                      + giskard_wrapper + "' wrapper class.")
-                return giskard_class(model=model,
-                                     model_type=model_type,
-                                     data_preprocessing_function=data_preprocessing_function,
-                                     model_postprocessing_function=model_postprocessing_function,
-                                     name=name,
-                                     feature_names=feature_names,
-                                     classification_threshold=classification_threshold,
-                                     classification_labels=classification_labels,
-                                     **kwargs)
-        except ImportError:
-            pass
-
-    raise ValueError(
-        'We could not infer your model library. We currently only support models from:'
-        '\n- sklearn'
-        '\n- pytorch'
-        '\n- tensorflow'
-        '\n- huggingface'
-    )
+    giskard_cls = infer_giskard_cls(model)
+    if giskard_cls:
+        logger.info("Your model is successfully wrapped by Giskard's '"
+                    + str(giskard_cls.__name__) + "' wrapper class.")
+        return giskard_cls(model=model,
+                           model_type=model_type,
+                           data_preprocessing_function=data_preprocessing_function,
+                           model_postprocessing_function=model_postprocessing_function,
+                           name=name,
+                           feature_names=feature_names,
+                           classification_threshold=classification_threshold,
+                           classification_labels=classification_labels,
+                           **kwargs)
+    else:
+        raise ValueError(
+            'We could not infer your model library. We currently only support functions or models from:'
+            '\n- sklearn'
+            '\n- catboost'
+            '\n- pytorch'
+            '\n- tensorflow'
+            '\n- huggingface'
+            '\nWe recommend that you create your own wrapper using our documentation page: https://giskard.readthedocs.io/en/latest/guides/custom-wrapper'
+        )
 
 
 @configured_validate_arguments

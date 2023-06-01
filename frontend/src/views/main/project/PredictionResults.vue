@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mb-4" id="resultCard">
+  <v-card class="mb-4" id="resultCard" outlined>
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <OverlayLoader :show="loading" absolute solid no-fade/>
