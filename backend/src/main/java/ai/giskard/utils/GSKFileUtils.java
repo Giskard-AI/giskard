@@ -13,7 +13,11 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+
 public class GSKFileUtils {
+    private GSKFileUtils() {
+    }
+
     private static final Logger log = LoggerFactory.getLogger(GSKFileUtils.class);
 
     public static ByteArrayOutputStream createZipArchive(String directoryPath) throws IOException {

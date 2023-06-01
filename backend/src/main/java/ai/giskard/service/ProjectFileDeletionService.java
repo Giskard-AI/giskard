@@ -50,13 +50,13 @@ public class ProjectFileDeletionService {
         log.info("Deleting dataset from the database: {}", dataset.getId());
         datasetRepository.delete(dataset);
 
+        Path datasetPath = locationService.resolvedDatasetPath(dataset);
         try {
             datasetRepository.flush();
-            //Path datasetPath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
-            //log.info("Removing dataset file: {}", datasetPath.getFileName());
-            //Files.deleteIfExists(datasetPath);
+            log.info("Removing dataset: {}", datasetPath);
+            Files.deleteIfExists(datasetPath);
         } catch (Exception e) {
-            //throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", datasetPath), e);
         }
 
     }
@@ -78,17 +78,15 @@ public class ProjectFileDeletionService {
         log.info("Deleting model from the database: {}", model.getId());
         modelRepository.delete(model);
 
-
-        //try {
+        Path modelPath = locationService.resolvedModelPath(model);
+        try {
             modelRepository.flush();
             Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
-            //log.info("Removing model file: {}", model.getFileName());
-            //Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
-            log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
-            //Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
-        //} catch (IOException e) {
-            //throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
-        //}
+            log.info("Removing model: {}", modelPath);
+            Files.deleteIfExists(modelsDirectory.resolve(modelPath));
+        } catch (IOException e) {
+            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", modelPath), e);
+        }
 
     }
 

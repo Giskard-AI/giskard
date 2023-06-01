@@ -1,6 +1,8 @@
 package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +26,16 @@ public class FileLocationService {
         return resolvedProjectHome(projectKey).resolve("datasets");
     }
 
+    public Path resolvedDatasetPath(Dataset dataset) {
+        return resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
+    }
+
     public Path resolvedDatasetPath(String projectKey, String datasetId) {
         return datasetsDirectory(projectKey).resolve(datasetId);
+    }
+
+    public Path resolvedModelPath(ProjectModel model) {
+        return resolvedModelPath(model.getProject().getKey(), model.getId());
     }
 
     public Path resolvedModelPath(String projectKey, String modelId) {

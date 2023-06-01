@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import *
+from typing import Optional, Dict, List
 
 
 class SupportedModelTypes(Enum):

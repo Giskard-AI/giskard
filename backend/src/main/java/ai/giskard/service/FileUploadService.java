@@ -38,7 +38,7 @@ public class FileUploadService {
 
 
     public void saveArtifact(InputStream uploadedStream, String projectKey, ArtifactType artifactType, String artifactId, String path) throws IOException {
-        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.toDirectoryName(), artifactId));
         Path artifactPath = artifactDirectory.resolve(path);
         Path tempFile = artifactPath.resolveSibling(artifactPath.getFileName() + ".tmp");
 
@@ -58,14 +58,14 @@ public class FileUploadService {
     }
 
     public Set<String> listArtifacts(String projectKey, ArtifactType artifactType, String artifactId) {
-        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.toDirectoryName(), artifactId));
         return FileUtils.listFiles(artifactDirectory.toFile(), null, true).stream()
             .map(file -> artifactDirectory.relativize(file.toPath()).toString())
             .collect(Collectors.toSet());
     }
 
     public InputStream getArtifactStream(String projectKey, ArtifactType artifactType, String artifactId, String path) throws FileNotFoundException {
-        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.name(), artifactId));
+        Path artifactDirectory = locationService.resolvedProjectHome(projectKey).resolve(Path.of(artifactType.toDirectoryName(), artifactId));
         Path artifactPath = artifactDirectory.resolve(path);
         return new FileInputStream(artifactPath.toFile());
     }

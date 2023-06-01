@@ -29,15 +29,16 @@ public class UploadController {
     @GetMapping("artifact-info/{projectKey}/{artifactType}/{artifactId}")
     @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
     public Set<String> getArtifactInfo(@PathVariable String projectKey,
-                                       @PathVariable ArtifactType artifactType,
+                                       @PathVariable String artifactType,
                                        @PathVariable String artifactId) {
-        return uploadService.listArtifacts(projectKey, artifactType, artifactId);
+
+        return uploadService.listArtifacts(projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId);
     }
 
     @GetMapping("artifacts/{projectKey}/{artifactType}/{artifactId}/**")
     @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
     public void downloadArtifact(@PathVariable String projectKey,
-                                 @PathVariable ArtifactType artifactType,
+                                 @PathVariable String artifactType,
                                  @PathVariable String artifactId,
                                  HttpServletRequest request,
                                  HttpServletResponse response) throws IOException {
@@ -45,7 +46,7 @@ public class UploadController {
         String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
 
-        try (InputStream artifactStream = uploadService.getArtifactStream(projectKey, artifactType, artifactId, resoursePath)) {
+        try (InputStream artifactStream = uploadService.getArtifactStream(projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath)) {
             IOUtils.copy(artifactStream, response.getOutputStream());
             response.flushBuffer();
         }
@@ -54,7 +55,7 @@ public class UploadController {
     @PostMapping("artifacts/{projectKey}/{artifactType}/{artifactId}/**")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public ResponseEntity<Void> uploadArtifact(@PathVariable String projectKey,
-                                               @PathVariable ArtifactType artifactType,
+                                               @PathVariable String artifactType,
                                                @PathVariable String artifactId,
                                                HttpServletRequest request) throws IOException {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
@@ -63,7 +64,7 @@ public class UploadController {
 
 
         try (InputStream uploadedStream = request.getInputStream()) {
-            uploadService.saveArtifact(uploadedStream, projectKey, artifactType, artifactId, resoursePath);
+            uploadService.saveArtifact(uploadedStream, projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);

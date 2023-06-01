@@ -48,7 +48,6 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.write.FilePostDTO' : 'FilePostDTO',
     'ai.giskard.web.dto.ml.write.ModelPostDTO' : 'ModelPostDTO',
     'ai.giskard.web.dto.ml.write.TestSuitePostDTO' : 'TestSuitePostDTO',
-    'ai.giskard.web.dto.ModelMetaDTO' : 'ModelMetaDTO',
     'ai.giskard.web.dto.ModelMetadataDTO' : 'ModelMetadataDTO',
     'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
@@ -117,7 +116,6 @@ export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
 export * from './ai/giskard/web/dto/ml/write/file-post-dto';
 export * from './ai/giskard/web/dto/ml/write/model-post-dto';
 export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';
-export * from './ai/giskard/web/dto/model-meta-dto';
 export * from './ai/giskard/web/dto/model-metadata-dto';
 export * from './ai/giskard/web/dto/model-upload-params-dto';
 export * from './ai/giskard/web/dto/password-reset-request';

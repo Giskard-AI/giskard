@@ -10,7 +10,6 @@ import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
@@ -31,19 +30,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ModelService {
     private final DatasetRepository datasetRepository;
-    private final TestSuiteRepository testSuiteRepository;
     final FeedbackRepository feedbackRepository;
     final ModelRepository modelRepository;
     private final PermissionEvaluator permissionEvaluator;
     private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
-    private final FileLocationService locationService;
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
 
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
+    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
@@ -119,7 +116,7 @@ public class ModelService {
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
+    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) {
         RunModelResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             RunModelRequest request = RunModelRequest.newBuilder()

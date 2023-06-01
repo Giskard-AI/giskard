@@ -1,11 +1,8 @@
 package ai.giskard.repository.ml;
 
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.repository.MappableJpaRepository;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import liquibase.pro.packaged.I;
-import liquibase.pro.packaged.T;
 import org.mapstruct.Named;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
