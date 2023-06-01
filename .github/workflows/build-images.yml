@@ -32,7 +32,7 @@ jobs:
 
       - name: Define tag
         shell: bash
-        run: echo "tag=${GITHUB_REF//"/"/-}" >> $GITHUB_OUTPUT
+        run: echo "tag=${${{ steps.extract_branch.outputs.branch }}//"/"/-}" >> $GITHUB_OUTPUT
         id: define_tag
 
       - name: Login to Docker registry
