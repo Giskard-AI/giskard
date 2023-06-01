@@ -2,7 +2,9 @@ import inspect
 import logging
 from dataclasses import dataclass
 from typing import *
+from typing import List, Any
 
+from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestParameterDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -40,6 +42,7 @@ def single_binary_result(test_results: List):
 
 
 class Suite:
+    id: int
     tests: List[TestPartial]
     suite_params: Mapping[str, SuiteInput]
     name: str
@@ -76,16 +79,20 @@ class Suite:
         return test_params
 
     def save(self, client: GiskardClient, project_key: str):
-        test_configs = {}
+        suite_tests: list[SuiteTestDTO] = list()
         for t in self.tests:
-            test_configs[create_test_function_id(t.test_func)] = {}
+            params = list()
             for pname, p in t.provided_inputs.items():
                 value = p
                 if issubclass(type(p), Dataset) or issubclass(type(p), Model):
                     value = p.save(client, project_key)
-                test_configs[create_test_function_id(t.test_func)][pname] = value
+                params.append(TestParameterDTO(name=pname, value=value))
 
-        suite_id = client.save_test_suite(project_key, self.name, test_configs)
+            suite_tests.append(SuiteTestDTO(
+                testId=create_test_function_id(t.test_func),
+                parameters=params
+            ))
+        self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
     def add_test(self, test_fn: Callable[[Any], Union[bool]], **params):

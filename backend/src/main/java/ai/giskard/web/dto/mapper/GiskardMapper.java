@@ -4,17 +4,12 @@ import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.Role;
 import ai.giskard.domain.User;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.utils.JSON;
-import ai.giskard.web.dto.ModelMetadataDTO;
-import ai.giskard.web.dto.PrepareDeleteDTO;
-import ai.giskard.web.dto.TestSuiteCreateDTO;
+import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
@@ -174,4 +169,32 @@ public interface GiskardMapper {
     List<PrepareDeleteDTO.LightFeedback> toLightFeedbacks(List<Feedback> obj);
 
     List<PrepareDeleteDTO.LightTestSuite> toLightTestSuites(List<TestSuite> obj);
+
+
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "project", source = "projectKey")
+    TestSuiteNew fromDTO(TestSuiteNewDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "suite", ignore = true)
+    SuiteTest fromDTO(SuiteTestDTO dto);
+
+    @AfterMapping
+    default void afterMapping(@MappingTarget TestSuiteNew suite) {
+        suite.getTests().forEach(e -> e.setSuite(suite));
+    }
+
+    @AfterMapping
+    default void afterMapping(@MappingTarget SuiteTest test) {
+        test.getParameters().forEach(e -> e.setTest(test));
+    }
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "test", ignore = true)
+    TestParameter fromDTO(TestParameterDTO dto);
+
 }

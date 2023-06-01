@@ -1,13 +1,15 @@
 package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.TestRepository;
+import ai.giskard.repository.ml.TestSuiteNewRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteService;
-import ai.giskard.web.dto.SaveTestSuiteRequestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
+import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -32,13 +34,14 @@ public class TestSuiteController {
     private final TestSuiteService testSuiteService;
     private final TestService testService;
     private final GiskardMapper giskardMapper;
+    private final TestSuiteNewRepository testSuiteNewRepository;
 
 
     @PutMapping("suites/update_params")
     @Transactional
     public TestSuiteDTO updateTestSuiteParams(@Valid @RequestBody UpdateTestSuiteParamsDTO dto) {
         TestSuite suite;
-        if (dto.getTestId()!=null){
+        if (dto.getTestId() != null) {
             Test test = testRepository.getById(dto.getTestId());
             suite = test.getTestSuite();
         } else if (dto.getTestSuiteId() != null) {
@@ -68,9 +71,9 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suite")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
-    public String saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody SaveTestSuiteRequestDTO dto) {
-
-        return null;
+    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteNewDTO dto) {
+        TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
+        return savedSuite.getId();
     }
 
     @PostMapping("project/{projectKey}/suites")
