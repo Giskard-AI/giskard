@@ -2,14 +2,17 @@
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
       <v-toolbar-title>
-        <router-link to="/main/projects">
-          Projects
+        <router-link :to="{ name: 'project-properties', params: { id } }">
+          <span class="text-subtitle-1">
+            {{ project.name }}
+          </span>
         </router-link>
-        <span class="text-subtitle-1">
-          <span class="mr-1">/</span>{{ project.name }}
-        </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-properties' }" @click="tab = null">
+        <v-icon dense left>mdi-file-cog-outline</v-icon>
+        Properties
+      </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
           <div v-on="on">
@@ -23,17 +26,11 @@
       </v-tooltip>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn text small v-bind="attrs" v-on="on">
+          <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
             <v-icon>mdi-dots-horizontal</v-icon>
           </v-btn>
         </template>
         <v-list dense tile>
-          <v-list-item link @click="clickEditButton()">
-            <v-list-item-title>
-              <v-icon dense left>edit</v-icon>
-              Edit
-            </v-list-item-title>
-          </v-list-item>
           <v-list-item link @click="exportProject(project.id)">
             <v-list-item-title>
               <v-icon dense left color="primary">mdi-application-export</v-icon>
@@ -68,31 +65,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!-- Edit dialog -->
-    <v-dialog v-model="openEditDialog" width="500" persistent>
-      <v-card>
-        <v-form @submit.prevent="submitEditProject()">
-          <v-card-title>Edit project details</v-card-title>
-          <v-card-text>
-            <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{ errors }">
-              <v-text-field label="Project Name*" type="text" v-model="newName" :error-messages="errors"></v-text-field>
-            </ValidationProvider>
-            <v-text-field label="Project Description" type="text" v-model="newDescription"></v-text-field>
-          </v-card-text>
-          <v-card-title>Modify project settings</v-card-title>
-          <v-card-text>
-            <ValidationProvider name="Lime Number Samples" rules="required" v-slot="{ errors }">
-              <v-text-field label="Lime Number Samples*" type="number" :error-messages="errors" v-model="newLimeSamples"></v-text-field>
-            </ValidationProvider>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="secondary" text @click="openEditDialog = false">Cancel</v-btn>
-            <v-btn color="primary" text type="submit">Save</v-btn>
-          </v-card-actions>
-        </v-form>
-      </v-card>
-    </v-dialog>
+
     <!-- Delete dialog -->
     <v-dialog persistent max-width="340" v-model="openDeleteDialog">
       <v-card>
@@ -110,43 +83,9 @@
       </v-card>
     </v-dialog>
 
-    <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
-      <v-tabs>
-        <v-tab :to="{ name: 'project-overview' }">
-          <v-icon left>notes</v-icon>
-          Overview
-        </v-tab>
-        <v-tab :to="{ name: 'project-datasets' }">
-          <v-icon left>stacked_bar_chart</v-icon>
-          Datasets
-        </v-tab>
-        <v-tab :to="{ name: 'project-models' }">
-          <v-icon left>settings_suggest</v-icon>
-            Models
-        </v-tab>
-          <v-tab :to="{ name: 'project-inspector', params: tempInspectorParams }" v-if="showInspector">
-              <v-icon left>model_training</v-icon>
-              Inspector
-          </v-tab>
-          <v-tab :to="{name: 'project-feedbacks'}">
-              <v-icon left small>mdi-comment-multiple-outline</v-icon>
-              Feedback
-          </v-tab>
-          <v-tab :to="{name: 'project-debugger'}">
-              <v-icon left small>mdi-debug-step-over</v-icon>
-              Debugger
-          </v-tab>
-          <v-tab :to="{name: 'project-test-suites'}">
-              <v-icon left small>mdi-list-status</v-icon>
-              Test suites️
-          </v-tab>
-          <v-tab :to="{name: 'project-catalog-tests'}">
-              <v-icon left small>mdi-list-status</v-icon>
-              Catalog
-          </v-tab>
-      </v-tabs>
+    <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
-        <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
+        <router-view :isProjectOwnerOrAdmin=" isProjectOwnerOrAdmin "></router-view>
       </keep-alive>
     </v-container>
 
@@ -154,19 +93,16 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {IUserProfileMinimal} from "@/interfaces";
-import {Role} from "@/enums";
+import { computed, onMounted, ref, watch } from "vue";
+import { IUserProfileMinimal } from "@/interfaces";
+import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
-import {InspectionSettings, ProjectPostDTO} from "@/generated-sources";
-import {useRoute, useRouter} from "vue-router/composables";
-import {useMainStore} from "@/stores/main";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {Route} from "vue-router";
-import {getUserFullDisplayName} from "@/utils";
+import { useRouter } from "vue-router/composables";
+import { useMainStore } from "@/stores/main";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { getUserFullDisplayName } from "@/utils";
 
-const route = useRoute();
 const router = useRouter();
 
 const mainStore = useMainStore();
@@ -181,23 +117,8 @@ const props = defineProps<Props>();
 
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
-const openEditDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
-const newLimeSamples = ref<number>(0);
-const newName = ref<string>("");
-const newDescription = ref<string>("");
-const showInspector = ref<boolean>(false);
-const tempInspectorParams = ref<any>({}); // Type this later?
-
-onMounted(async () => {
-  // make sure project is loaded first
-  await projectStore.getProject({ id: props.id });
-  await mainStore.getCoworkers();
-
-  setInspector(router.currentRoute);
-})
-
-watch(() => (route), setInspector, { deep: true });
+const tab = ref<string | null>(null);
 
 const userProfile = computed(() => {
   return userStore.userProfile;
@@ -222,12 +143,6 @@ const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
 
-function setInspector(to: Route) {
-  if (to.name === 'project-inspector') {
-    showInspector.value = true;
-    tempInspectorParams.value = to.params;
-  }
-}
 
 async function inviteUser() {
   if (project.value && userToInvite.value) {
@@ -246,35 +161,6 @@ function exportProject(id: number) {
   projectStore.exportProject(id);
 }
 
-function clickEditButton() {
-  if (!project.value) {
-    return;
-  }
-  newName.value = project.value!.name;
-  newLimeSamples.value = project.value!.inspectionSettings.limeNumberSamples;
-  newDescription.value = project.value!.description;
-  openEditDialog.value = true;
-}
-
-async function submitEditProject() {
-  if (project.value && newName.value) {
-    let inspectionSettings: InspectionSettings = {
-      limeNumberSamples: newLimeSamples.value
-    }
-    const proj: ProjectPostDTO = {
-      name: newName.value,
-      inspectionSettings: inspectionSettings,
-      description: newDescription.value,
-    }
-    try {
-      await projectStore.editProject({ id: project.value!.id, data: proj })
-      openEditDialog.value = false;
-    } catch (e) {
-      console.error(e.message);
-    }
-  }
-}
-
 async function deleteProject() {
   if (project.value) {
     try {
@@ -286,6 +172,12 @@ async function deleteProject() {
     }
   }
 }
+
+onMounted(async () => {
+  // make sure project is loaded first
+  await projectStore.getProject({ id: props.id });
+  await mainStore.getCoworkers();
+})
 </script>
 
 <style scoped>
