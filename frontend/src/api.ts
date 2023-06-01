@@ -10,9 +10,11 @@ import {
     CreateFeedbackReplyDTO,
     DatasetDTO,
     ExplainResponseDTO,
+    ExplainTextResponseDTO,
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FileDTO,
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
@@ -214,6 +216,9 @@ export const api = {
     async deleteUser(userId: number) {
         return apiV2.delete<unknown, void>(`/admin/users/${userId}`);
     },
+    async enableUser(userId: number) {
+        return apiV2.patch<unknown, void>(`/admin/users/${userId}/enable`);
+    },
     async passwordRecovery(email: string) {
         return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
     },
@@ -279,6 +284,9 @@ export const api = {
     downloadModelFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
+    async editModelName(modelId: number, name: string) {
+      return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
+    },
     downloadDataFile(id: string) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
@@ -290,6 +298,9 @@ export const api = {
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
+    },
+    async editDatasetName(datasetId: number, name: string) {
+        return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);
@@ -317,7 +328,7 @@ export const api = {
             {signal: controller.signal});
     },
     async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
-        return apiV2.post<unknown, { [key: string]: string }>(`/models/explain-text/${featureName}`,
+        return apiV2.post<unknown, ExplainTextResponseDTO>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
             }, {params: {modelId, datasetId}});
