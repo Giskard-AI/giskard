@@ -11,7 +11,7 @@ from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
-from giskard.core.core import DatasetMeta, SupportedFeatureTypes
+from giskard.core.core import DatasetMeta, SupportedColumnMeanings
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class Dataset:
     name: str
     target: str
-    feature_types: Dict[str, str]
+    column_meanings: Dict[str, str]
     df: pd.DataFrame
 
     def __init__(
@@ -34,7 +34,7 @@ class Dataset:
         self.df = df
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_features}
+        self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_features}
 
     @staticmethod
     def extract_column_types(df):
@@ -59,7 +59,7 @@ class Dataset:
     def meta(self):
         return DatasetMeta(name=self.name,
                            target=self.target,
-                           feature_types=self.feature_types,
+                           column_meanings=self.column_meanings,
                            column_types=self.column_types)
 
     @staticmethod
@@ -94,7 +94,7 @@ class Dataset:
                 meta = DatasetMeta(
                     name=saved_meta["name"],
                     target=saved_meta["target"],
-                    feature_types=saved_meta["feature_types"],
+                    column_meanings=saved_meta["column_meanings"],
                     column_types=saved_meta["column_types"],
                 )
         else:
@@ -112,7 +112,7 @@ class Dataset:
     @staticmethod
     def _cat_features(meta):
         return [fname for (fname, ftype) in meta.feature_types.items() if
-                ftype == SupportedFeatureTypes.CATEGORY]
+                ftype == SupportedColumnMeanings.CATEGORY]
 
     @property
     def cat_features(self):
@@ -130,7 +130,7 @@ class Dataset:
                     "id": dataset_id,
                     "name": self.meta.name,
                     "target": self.meta.target,
-                    "feature_types": self.meta.feature_types,
+                    "column_meanings": self.meta.column_meanings,
                     "column_types": self.meta.column_types,
                     "original_size_bytes": original_size_bytes,
                     "compressed_size_bytes": compressed_size_bytes,
