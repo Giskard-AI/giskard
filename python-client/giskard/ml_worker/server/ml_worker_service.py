@@ -147,9 +147,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         is_pass, results = suite.run(**global_arguments)
 
+        result_list = list(results.values())
+
         named_single_test_result = []
         for i in range(len(tests)):
-            named_single_test_result.append(ml_worker_pb2.NamedSingleTestResult(name=tests[i].id, result=results[i]))
+            named_single_test_result.append(ml_worker_pb2.NamedSingleTestResult(name=tests[i].id,
+                                                                                result=result_list[i]))
 
         return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
 
