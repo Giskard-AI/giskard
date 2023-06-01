@@ -1,13 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-const step = ref(1)
+import { onMounted, ref } from "vue";
+import { MLWorkerInfoDTO } from "@/generated-sources";
+import { api } from "@/api";
 
-const emit = defineEmits(['close'])
+const step = ref(1);
+
+const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
+const externalWorker = ref<MLWorkerInfoDTO | null>(null);
+
+const emit = defineEmits(['close']);
 
 const close = () => {
-  emit('close')
-  step.value = 1
+  emit("close");
+  step.value = 1;
 }
+
+onMounted(async () => {
+  try {
+    allMLWorkerSettings.value = await api.getMLWorkerSettings();
+    externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
+  } catch (error) { }
+
+  if (externalWorker.value) {
+    step.value = 2;
+  }
+})
+
+
 </script>
 
 <template>
@@ -24,7 +43,9 @@ const close = () => {
 
     <v-stepper-items>
       <v-stepper-content step="1">
-        <v-card class="mb-5" color="grey lighten-1" height="200px"></v-card>
+        <v-card class="mb-5" color="grey lighten-1" height="200px">
+          ML Worker not connected!
+        </v-card>
         <v-btn color="primary" @click="step = 2">Continue</v-btn>
         <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
       </v-stepper-content>
