@@ -112,10 +112,7 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.prediction_cache = prediction_cache if prediction_cache is not None else pd.DataFrame(data={
-            label: []
-            for label in (classification_labels if classification_labels is not None else ['raw_prediction'])
-        }, index=[])
+        self.prediction_cache = prediction_cache if prediction_cache is not None else pd.DataFrame(data={}, index=[])
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -266,14 +263,15 @@ class BaseModel(ABC):
 
         df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[~cached_predictions], row_level=False))
 
-        raw_prediction = np.array(self.predict_df(df))
+        raw_prediction = self.predict_df(df)
 
         labels = self.meta.classification_labels if self.meta.classification_labels is not None else ['raw_prediction']
 
         self.prediction_cache = pd.concat([
             self.prediction_cache,
-            pd.DataFrame(raw_prediction, columns=labels, index=dataset.df[GISKARD_HASH_COLUMN][~cached_predictions])
+            pd.DataFrame(raw_prediction, columns=labels, index=dataset.df[~cached_predictions][GISKARD_HASH_COLUMN])
         ])
+        self.prediction_cache = self.prediction_cache[~self.prediction_cache.index.duplicated()]
 
         raw_prediction = self.prediction_cache.loc[dataset.df[GISKARD_HASH_COLUMN]][labels].values
 
