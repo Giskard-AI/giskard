@@ -33,7 +33,7 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -146,10 +146,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runAdHocSlicing(
             self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.SlicingResultMessage:
-        sliceFunction = SliceFunction.load(request.slicingFunctionUuid, self.client, None)
+        slicingFunction = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.slice(sliceFunction)
+        result = dataset.slice(slicingFunction)
         desc = result.df.describe()
 
         return ml_worker_pb2.SlicingResultMessage(
@@ -221,8 +221,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 value = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
                 value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
-            elif arg.HasField("sliceFunction"):
-                value = SliceFunction.load(arg.sliceFunction.id, self.client, None)
+            elif arg.HasField("slicingFunction"):
+                value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -464,7 +464,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             for test in tests_registry.get_all().values()
             if test.type == 'TEST'
         }, slices={
-            test.uuid: ml_worker_pb2.SliceFunction(
+            test.uuid: ml_worker_pb2.SlicingFunction(
                 uuid=test.uuid,
                 name=test.name,
                 module=test.module,
