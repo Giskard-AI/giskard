@@ -4,6 +4,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
 
+# TODO: add model_postprocessing_function to SKLearnModel
 class SKLearnModel(MLFlowBasedModel):
     def __init__(
         self,
