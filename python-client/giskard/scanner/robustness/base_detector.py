@@ -20,7 +20,7 @@ class BaseTextPerturbationDetector(Detector):
         transformations: Optional[Sequence[TextTransformation]] = None,
         threshold: float = 0.05,
         output_sensitivity=0.05,
-        num_samples: int = 1_000,
+        num_samples: Optional[int] = None,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -57,6 +57,7 @@ class BaseTextPerturbationDetector(Detector):
         transformation: TextTransformation,
         features: Sequence[str],
     ) -> Sequence[Issue]:
+        num_samples = self.num_samples or _get_default_num_samples(model)
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
@@ -70,9 +71,9 @@ class BaseTextPerturbationDetector(Detector):
                 continue
 
             # Select a random subset of the changed records
-            if len(changed_idx) > self.num_samples:
+            if len(changed_idx) > num_samples:
                 rng = np.random.default_rng(747)
-                changed_idx = changed_idx[rng.choice(len(changed_idx), self.num_samples)]
+                changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples)]
 
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
@@ -98,8 +99,11 @@ class BaseTextPerturbationDetector(Detector):
                 passed = np.abs(rel_delta) < self.output_sensitivity
             elif model.is_generative:
                 import evaluate
+
                 scorer = evaluate.load("rouge")
-                score = scorer.compute(predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False)
+                score = scorer.compute(
+                    predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False
+                )
                 logger.debug(f"{self.__class__.__name__}: {transformation_fn.name} ROUGE: {score}")
                 passed = np.array(score["rougeL"]) > self.output_sensitivity
             else:
@@ -136,3 +140,10 @@ class BaseTextPerturbationDetector(Detector):
 
 def _relative_delta(actual, reference):
     return (actual - reference) / reference
+
+
+def _get_default_num_samples(model) -> int:
+    if model.is_generative:
+        return 20
+
+    return 1_000
