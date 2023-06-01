@@ -78,7 +78,7 @@ class DriftTests(AbstractTestCollection):
                 "Psi": modality_psi,
             }
 
-            output_data = output_data.append(pd.Series(row), ignore_index=True)
+            output_data = pd.concat([output_data, pd.Series(row)], ignore_index=True)
         return total_psi, output_data
 
     @staticmethod
@@ -117,7 +117,7 @@ class DriftTests(AbstractTestCollection):
         output_data = pd.DataFrame(columns=["Modality", "Reference_frequencies", "Actual_frequencies", "Chi_square"])
         for i in range(len(all_modalities)):
             chi_square_value = (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
-                expected_frequencies[i] * k_norm
+                    expected_frequencies[i] * k_norm
             )
             chi_square += chi_square_value
 
@@ -128,7 +128,7 @@ class DriftTests(AbstractTestCollection):
                 "Chi_square": chi_square_value,
             }
 
-            output_data = output_data.append(pd.Series(row), ignore_index=True)
+            output_data = pd.concat([output_data, pd.Series(row)], ignore_index=True)
         # if reference_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
         if len(all_modalities) > 1:
             chi_cdf = chi2.cdf(chi_square, len(all_modalities) - 1)
@@ -140,16 +140,16 @@ class DriftTests(AbstractTestCollection):
     @staticmethod
     def _validate_column_type(gsk_dataset, column_name, column_type):
         assert (
-            gsk_dataset.column_types[column_name] == column_type
+                gsk_dataset.column_types[column_name] == column_type
         ), f'Column "{column_name}" is not of type "{column_type}"'
 
     @staticmethod
     def _validate_column_name(actual_ds, reference_ds, column_name):
         assert (
-            column_name in actual_ds.columns
+                column_name in actual_ds.columns
         ), f'"{column_name}" is not a column of Actual Dataset Columns: {", ".join(actual_ds.columns)}'
         assert (
-            column_name in reference_ds.columns
+                column_name in reference_ds.columns
         ), f'"{column_name}" is not a column of Reference Dataset Columns: {", ".join(reference_ds.columns)}'
 
     @staticmethod
@@ -171,13 +171,13 @@ class DriftTests(AbstractTestCollection):
         return actual_series, reference_series
 
     def test_drift_psi(
-        self,
-        reference_ds: Dataset,
-        actual_ds: Dataset,
-        column_name: str,
-        threshold=0.2,
-        max_categories: int = 20,
-        psi_contribution_percent: float = 0.2,
+            self,
+            reference_ds: Dataset,
+            actual_ds: Dataset,
+            column_name: str,
+            threshold=0.2,
+            max_categories: int = 20,
+            psi_contribution_percent: float = 0.2,
     ) -> SingleTestResult:
         """
         Test if the PSI score between the actual and reference datasets is below the threshold for
@@ -233,13 +233,13 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_chi_square(
-        self,
-        reference_ds: Dataset,
-        actual_ds: Dataset,
-        column_name: str,
-        threshold=0.05,
-        max_categories: int = 20,
-        chi_square_contribution_percent: float = 0.2,
+            self,
+            reference_ds: Dataset,
+            actual_ds: Dataset,
+            column_name: str,
+            threshold=0.05,
+            max_categories: int = 20,
+            chi_square_contribution_percent: float = 0.2,
     ) -> SingleTestResult:
         """
         Test if the p-value of the chi square test between the actual and reference datasets is
@@ -297,11 +297,11 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_ks(
-        self,
-        reference_ds: Dataset,
-        actual_ds: Dataset,
-        column_name: str,
-        threshold=0.05,
+            self,
+            reference_ds: Dataset,
+            actual_ds: Dataset,
+            column_name: str,
+            threshold=0.05,
     ) -> SingleTestResult:
         """
         Test if the pvalue of the KS test between the actual and reference datasets is above
@@ -350,11 +350,11 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_earth_movers_distance(
-        self,
-        reference_ds: Dataset,
-        actual_ds: Dataset,
-        column_name: str,
-        threshold: float = 0.2,
+            self,
+            reference_ds: Dataset,
+            actual_ds: Dataset,
+            column_name: str,
+            threshold: float = 0.2,
     ) -> SingleTestResult:
         """
         Test if the earth movers distance between the actual and reference datasets is
@@ -410,13 +410,13 @@ class DriftTests(AbstractTestCollection):
         )
 
     def test_drift_prediction_psi(
-        self,
-        reference_slice: Dataset,
-        actual_slice: Dataset,
-        model: BaseModel,
-        max_categories: int = 10,
-        threshold: float = 0.2,
-        psi_contribution_percent: float = 0.2,
+            self,
+            reference_slice: Dataset,
+            actual_slice: Dataset,
+            model: BaseModel,
+            max_categories: int = 10,
+            threshold: float = 0.2,
+            psi_contribution_percent: float = 0.2,
     ):
         """
         Test if the PSI score between the reference and actual datasets is below the threshold
@@ -477,13 +477,13 @@ class DriftTests(AbstractTestCollection):
         )
 
     def _test_series_drift_psi(
-        self,
-        actual_series,
-        reference_series,
-        test_data,
-        max_categories,
-        psi_contribution_percent,
-        threshold,
+            self,
+            actual_series,
+            reference_series,
+            test_data,
+            max_categories,
+            psi_contribution_percent,
+            threshold,
     ):
         total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
         passed = True if threshold is None else bool(total_psi <= threshold)
@@ -506,13 +506,13 @@ class DriftTests(AbstractTestCollection):
         return messages
 
     def test_drift_prediction_chi_square(
-        self,
-        reference_slice: Dataset,
-        actual_slice: Dataset,
-        model: BaseModel,
-        max_categories: int = 10,
-        threshold: float = 0.05,
-        chi_square_contribution_percent: float = 0.2,
+            self,
+            reference_slice: Dataset,
+            actual_slice: Dataset,
+            model: BaseModel,
+            max_categories: int = 10,
+            threshold: float = 0.05,
+            chi_square_contribution_percent: float = 0.2,
     ):
         """
         Test if the Chi Square value between the reference and actual datasets is below the threshold
@@ -574,13 +574,13 @@ class DriftTests(AbstractTestCollection):
         )
 
     def _test_series_drift_chi(
-        self,
-        actual_series,
-        reference_series,
-        test_data,
-        chi_square_contribution_percent,
-        max_categories,
-        threshold,
+            self,
+            actual_series,
+            reference_series,
+            test_data,
+            chi_square_contribution_percent,
+            max_categories,
+            threshold,
     ):
         chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = bool(p_value > threshold)
@@ -589,12 +589,12 @@ class DriftTests(AbstractTestCollection):
         return messages, p_value, passed
 
     def test_drift_prediction_ks(
-        self,
-        reference_slice: Dataset,
-        actual_slice: Dataset,
-        model: BaseModel,
-        classification_label=None,
-        threshold=None,
+            self,
+            reference_slice: Dataset,
+            actual_slice: Dataset,
+            model: BaseModel,
+            classification_label=None,
+            threshold=None,
     ) -> SingleTestResult:
         """
         Test if the pvalue of the KS test for prediction between the reference and actual datasets for
@@ -632,8 +632,8 @@ class DriftTests(AbstractTestCollection):
         reference_slice.df.reset_index(drop=True, inplace=True)
 
         assert (
-            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
-            or classification_label in model.meta.classification_labels
+                model.meta.model_type != SupportedModelTypes.CLASSIFICATION
+                or classification_label in model.meta.classification_labels
         ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         prediction_reference = (
@@ -671,18 +671,18 @@ class DriftTests(AbstractTestCollection):
                 TestMessage(
                     type=TestMessageType.ERROR,
                     text=f"The {data_type} is drifting (p-value is equal to {np.round(result.pvalue, 9)} "
-                    f"and is below the test risk level {threshold}) ",
+                         f"and is below the test risk level {threshold}) ",
                 )
             ]
         return messages
 
     def test_drift_prediction_earth_movers_distance(
-        self,
-        reference_slice: Dataset,
-        actual_slice: Dataset,
-        model: BaseModel,
-        classification_label=None,
-        threshold=0.2,
+            self,
+            reference_slice: Dataset,
+            actual_slice: Dataset,
+            model: BaseModel,
+            classification_label=None,
+            threshold=0.2,
     ) -> SingleTestResult:
         """
         Test if the Earth Mover’s Distance value between the reference and actual datasets is
@@ -739,7 +739,7 @@ class DriftTests(AbstractTestCollection):
                 TestMessage(
                     type=TestMessageType.ERROR,
                     text=f"The prediction is drifting (metric is equal to {np.round(metric, 9)} "
-                    f"and is above the test risk level {threshold}) ",
+                         f"and is above the test risk level {threshold}) ",
                 )
             ]
         return self.save_results(
