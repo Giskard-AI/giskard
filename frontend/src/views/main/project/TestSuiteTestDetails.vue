@@ -29,8 +29,11 @@
                   <span v-if="props.inputs[a.name]?.isAlias">
                     {{ props.inputs[a.name].value }}
                   </span>
+                  <span v-else-if="a.name in props.inputs && a.type === 'Model'">
+                    {{ models[props.inputs[a.name].value].name }}
+                  </span>
                   <span v-else-if="a.name in props.inputs && a.type === 'Dataset'">
-                    {{ props.datasets[props.inputs[a.name].value] }}
+                    {{ datasets[props.inputs[a.name].value].name }}
                   </span>
                   <span v-else-if="a && a.name in props.inputs">{{ props.inputs[a.name].value }}</span>
                 </v-list-item-avatar>
@@ -44,7 +47,7 @@
       </v-list>
       <TestInputListSelector v-else-if="props.test.arguments"
                              :model-value="editedInputs"
-                             :project-id="props.projectId"
+                             :project-id="projectId"
                              :inputs="inputType"/>
     </div>
 
@@ -64,24 +67,25 @@
 
 <script lang="ts" setup>
 
-import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestDefinitionDTO, TestInputDTO} from "@/generated-sources";
+import {SuiteTestExecutionDTO, TestDefinitionDTO, TestInputDTO} from "@/generated-sources";
 import _, {chain} from "lodash";
 import TestResultTimeline from '@/components/TestResultTimeline.vue';
 import {computed, ref, watch} from 'vue';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {api} from '@/api';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
 
 const props = defineProps<{
-  projectId: number,
-  suiteId: number,
   test: TestDefinitionDTO
   inputs: { [key: string]: TestInputDTO },
-  models: { [key: string]: ModelDTO },
-  datasets: { [key: string]: DatasetDTO },
   executions?: SuiteTestExecutionDTO[]
 }>();
 
-const editedInputs = ref<{ [input: string]: string} | null>(null);
+const {suiteId, reload} = useTestSuiteStore();
+const {projectId, models, datasets} = storeToRefs(useTestSuiteStore());
+
+const editedInputs = ref<{ [input: string]: string } | null>(null);
 
 const emit = defineEmits(['updateTestSuite']);
 
@@ -108,10 +112,10 @@ async function saveEditedInputs() {
     return;
   }
 
-  const saved = await api.updateTestInputs(props.projectId, props.suiteId, props.test.id, editedInputs.value)
+  await api.updateTestInputs(projectId!, suiteId!, props.test.id, editedInputs.value)
   editedInputs.value = null;
 
-  emit('updateTestSuite', saved);
+  await reload();
 }
 
 watch(() => props.test, () => editedInputs.value = null);

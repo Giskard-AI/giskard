@@ -146,19 +146,9 @@ export default new Router({
                                     },
                                     children: [
                                         {
-                                            path: 'tests',
-                                            name: 'test-suite-new-tests',
-                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
-                                            props: (route) => {
-                                                return {
-                                                    suiteId: Number(route.params.suiteId),
-                                                    projectId: Number(route.params.id)
-                                                }
-                                            }
-                                        },
-                                        {
                                             path: 'inputs',
                                             name: 'test-suite-new-inputs',
+                                            component: () => import('./views/main/project/TestSuiteNewInputs.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -168,7 +158,8 @@ export default new Router({
                                         },
                                         {
                                             path: 'test',
-                                            name: 'test-suite-new-test',
+                                            name: 'test-suite-new-tests',
+                                            component: () => import('./views/main/project/TestSuiteNewTests.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
@@ -179,6 +170,7 @@ export default new Router({
                                         {
                                             path: 'configuration',
                                             name: 'test-suite-new-configuration',
+                                            component: () => import('./views/main/project/TestSuiteNewConfiguration.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),
