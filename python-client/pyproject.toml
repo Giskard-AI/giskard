@@ -35,7 +35,7 @@ dev = [
     "httpretty>=1.1.4",
     "isort[colors]>=5.12.0",
     "pip>=23.1.2",
-    "langchain>=0.0.27",
+    "langchain>=0.0.187",
     "pytest-xdist>=3.3.1",
 ]
 proto = [
@@ -78,7 +78,7 @@ include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
 [tool.setuptools.package-data]
-giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*titanic.csv"]
+giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
 
 [project.scripts]
 giskard = "giskard.cli:cli"
@@ -116,7 +116,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8.1,<3.11"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
