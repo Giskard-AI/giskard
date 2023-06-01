@@ -2,15 +2,15 @@
 import pandas as pd
 
 from giskard import test
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 
 
 @test(name="Right Label", tags=["heuristic"])
 def test_right_label(
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        actual_slice: Dataset,
+        model: Model,
         classification_label: str,
         threshold: float = 0.5,
 ) -> SingleTestResult:
@@ -25,9 +25,9 @@ def test_right_label(
 
 
     Args:
-       actual_slice(GiskardDataset):
+       actual_slice(Dataset):
           Slice of the  actual dataset
-      model(GiskardModel):
+      model(Model):
           Model used to compute the test
       classification_label(str):
           Classification label you want to test
@@ -60,8 +60,8 @@ def test_right_label(
 
 @test(name="Output in range", tags=["heuristic"])
 def test_output_in_range(
-        actual_slice: GiskardDataset,
-        model: GiskardModel,
+        actual_slice: Dataset,
+        model: Model,
         classification_label: str = None,
         min_range: float = 0.3,
         max_range: float = 0.7,
@@ -86,9 +86,9 @@ def test_output_in_range(
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
             Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
             Model used to compute the test
         classification_label(str):
             Optional. Classification label you want to test
