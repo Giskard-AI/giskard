@@ -121,10 +121,20 @@
                   <v-icon left>mdi-align-horizontal-left</v-icon>
                   Global
                 </v-tab>
-                <v-tab>
-                  <v-icon left>text_snippet</v-icon>
-                  Text
-                </v-tab>
+
+                <v-tooltip bottom :disabled="textFeatureNames.length">
+                  <template v-slot:activator="{ on, attrs }">
+                    <div class="d-flex" v-on="on" v-bind="attrs">
+                      <v-tab :disabled="!textFeatureNames.length"> 
+                        <v-icon left>text_snippet</v-icon>
+                        Text
+                      </v-tab>
+                    </div>  
+                  </template>
+                  <span>Text explanation is not available because your model does not contain any text features</span>
+                </v-tooltip>
+                
+                  
                 <v-tab-item v-if='modelFeatures.length>1'>
 
                   <PredictionExplanations :modelId="model.id"
