@@ -82,11 +82,18 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        with:
+          path: $HOME/.giskard
+          key: giskard-test-resources
+          restore-keys: giskard-test-resources
+          
       - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
           path: python-client/.venv
-          key: ${{ runner.os }}-client-${{ hashFiles('python-client/poetry.lock')}}
+          key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
           restore-keys: ${{ runner.os }}-client
 
       - name: "Python client: extract current package version"
@@ -95,7 +102,7 @@ jobs:
         id: read_toml
         with:
           file: 'python-client/pyproject.toml'
-          field: 'tool.poetry.version'
+          field: 'project.version'
 
       - name: Get current date
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
