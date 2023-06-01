@@ -7,12 +7,12 @@ from typing import Optional, Callable
 
 class Issue:
     def __init__(
-            self,
-            slice_fn: SliceFunction,
-            model: Optional[BaseModel] = None,
-            dataset: Optional[Dataset] = None,
-            test_results=None,
-            test_name=None
+        self,
+        slice_fn: SliceFunction,
+        model: Optional[BaseModel] = None,
+        dataset: Optional[Dataset] = None,
+        test_results=None,
+        test_name=None,
     ):
         self.slice_fn = slice_fn
         self.model = model
@@ -22,3 +22,7 @@ class Issue:
 
     def __repr__(self):
         return f"<Issue {(self.slice_fn.query.get_all_clauses()[0].to_pandas(), self.test_results.passed, self.test_results.metric,self.test_name)}>"
+
+    @property
+    def is_major(self):
+        return self.test_results.metric > 0.2
