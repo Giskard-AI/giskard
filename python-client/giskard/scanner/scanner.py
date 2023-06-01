@@ -36,10 +36,12 @@ class Scanner:
                 logger.warning(
                     "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
                 )
-                from llm.utils import load_default_dataset
+                from .llm.utils import load_default_dataset
 
                 dataset = load_default_dataset()
-                model = model.rewrite_prompt(template="{question}", feature_names=["question"])
+                model = model.rewrite_prompt(
+                    template="{question}", input_variables=["question"], feature_names=["question"]
+                )
         else:
             if dataset is None:
                 raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")

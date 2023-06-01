@@ -1,3 +1,4 @@
+from typing import Optional
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from .scanner import Scanner
@@ -25,7 +26,7 @@ def _register_default_detectors():
 _register_default_detectors()
 
 
-def scan(model: BaseModel, dataset: Dataset, params=None, only=None, verbose=True):
+def scan(model: BaseModel, dataset: Optional[Dataset] = None, params=None, only=None, verbose=True):
     """
     Scan a model with a dataset.
 
