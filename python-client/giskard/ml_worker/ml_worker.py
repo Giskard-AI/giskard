@@ -59,6 +59,7 @@ class MLWorker:
 
     async def start(self):
         load_plugins()
+
         await self.grpc_server.start()
         if self.tunnel:
             await self.tunnel.start()

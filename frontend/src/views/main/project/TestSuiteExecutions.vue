@@ -182,7 +182,7 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
 const router = useRouter();
 
 onMounted(() => {
-  if (executions.value && !route.params.executionId) {
+  if (executions.value.length > 0 && !route.params.executionId) {
     router.push({name: 'test-suite-new-execution', params: {executionId: executions.value[0].id.toString()}})
   }
 })

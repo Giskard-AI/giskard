@@ -2,7 +2,7 @@ import {
     DatasetDTO,
     JobDTO,
     ModelDTO,
-    TestCatalogDTO,
+    TestFunctionDTO,
     TestSuiteExecutionDTO,
     TestSuiteNewDTO
 } from '@/generated-sources';
@@ -16,7 +16,7 @@ interface State {
     projectId: number | null,
     inputs: { [name: string]: string },
     suite: TestSuiteNewDTO | null,
-    registry: TestCatalogDTO | null,
+    registry: TestFunctionDTO[],
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
@@ -30,7 +30,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
         projectId: null,
         inputs: {},
         suite: null,
-        registry: null,
+        registry: [],
         datasets: {},
         models: {},
         executions: [],
@@ -51,7 +51,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
                     })
                 ))
                 .flatten()
-                .groupBy(result => result.testResult.test.testId)
+                .groupBy(result => result.testResult.test.testUuid)
                 .value();
         }
     },

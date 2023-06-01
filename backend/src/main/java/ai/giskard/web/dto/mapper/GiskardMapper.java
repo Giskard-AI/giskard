@@ -1,13 +1,11 @@
 package ai.giskard.web.dto.mapper;
 
-import ai.giskard.domain.Feedback;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.Role;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.ml.*;
@@ -25,6 +23,7 @@ import java.util.stream.Collectors;
         DatasetRepository.class,
         ModelRepository.class,
         ProjectRepository.class,
+        TestFunctionRepository.class,
         JSON.class
     }
 )
@@ -201,6 +200,7 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
+    @Mapping(target = "testFunction", source = "testUuid")
     @Mapping(target = "executions", ignore = true)
     SuiteTest fromDTO(SuiteTestDTO dto);
 
@@ -226,6 +226,9 @@ public interface GiskardMapper {
     @Mapping(target = "projectKey", source = "project.key")
     TestSuiteNewDTO toDTO(TestSuiteNew suite);
 
+    @Mapping(target = "testUuid", source = "testFunction.uuid")
+    SuiteTestDTO toDTO(SuiteTest dto);
+
     default Map<String, TestInputDTO> map(List<TestInput> value) {
         return value.stream().collect(Collectors.toMap(TestInput::getName, this::toDTO));
     }
@@ -238,5 +241,15 @@ public interface GiskardMapper {
     TestSuiteExecutionDTO toDto(TestSuiteExecution save);
 
     List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
+
+    TestFunctionArgumentDTO toDTO(TestFunctionArgument testFunctionArgument);
+
+    @Mapping(target = "testFunction", ignore = true)
+    TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
+
+    TestFunctionDTO toDTO(TestFunction testFunction);
+
+    @Mapping(target = "suiteTests", ignore = true)
+    TestFunction fromDTO(TestFunctionDTO testFunction);
 
 }
