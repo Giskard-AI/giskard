@@ -1,10 +1,12 @@
-from typing import Union, Optional, Iterable, Any, Callable
-import pandas as pd
 import logging
-from scipy import special
 from pathlib import Path
+from typing import Union, Optional, Iterable, Any, Callable
+
+import pandas as pd
 import yaml
-from giskard.core.core import SupportedModelTypes
+from scipy import special
+
+from giskard.core.core import ModelType
 from giskard.core.validation import validate_args
 from giskard.models.base import WrapperModel
 
@@ -26,7 +28,7 @@ class HuggingFaceModel(WrapperModel):
     def __init__(
         self,
         clf,
-        model_type: Union[SupportedModelTypes, str],
+        model_type: ModelType,
         name: Optional[str] = None,
         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
         model_postprocessing_function: Callable[[Any], Any] = None,
