@@ -5,25 +5,10 @@
         <v-card height="100%" outlined>
           <v-card-title class="font-weight-light secondary--text py-1">
             Project Settings
-            <v-spacer></v-spacer>
-            <v-list dense tile class="d-flex">
-              <v-list-item link @click="exportProject">
-                <v-list-item-title>
-                  <v-icon dense left color="primary">mdi-application-export</v-icon>
-                  Export
-                </v-list-item-title>
-              </v-list-item>
-              <v-list-item link @click="openDeleteDialog = true">
-                <v-list-item-title class="accent--text">
-                  <v-icon dense left color="accent">delete</v-icon>
-                  Delete
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
           </v-card-title>
-          <v-card-text class="container py-0">
+          <v-card-text class="container">
             <v-row>
-              <v-col cols="6" class="py-0">
+              <v-col cols="6">
                 <v-simple-table class="properties-table project-properties-table-1" dense>
                   <tr>
                     <td>Project Name:</td>
@@ -45,7 +30,7 @@
                   </tr>
                 </v-simple-table>
               </v-col>
-              <v-col cols="6" class="py-0">
+              <v-col cols="6">
                 <v-simple-table class="properties-table project-properties-table-2" dense>
                   <tr>
                     <td>Project ID:</td>
@@ -144,7 +129,6 @@
         </v-card>
       </v-col>
     </v-row>
-
 
     <v-dialog persistent max-width="340" v-model="openDeleteDialog">
       <v-card>
