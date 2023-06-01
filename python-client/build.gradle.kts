@@ -36,6 +36,11 @@ tasks {
         command = "$script_path $fout giskard.ml_worker.generated"
     }
 
+    create<PythonTask>("sphinx-autobuild") {
+        module = "sphinx_autobuild"
+        command = "docs docs/_build/html"
+    }
+
     create<PythonTask>("generateProto") {
         dependsOn("install")
         environment("PATH", file(virtualEnvDirectory).resolve("bin"))
