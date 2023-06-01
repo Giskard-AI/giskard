@@ -126,18 +126,10 @@ class Suite:
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset):
-                    if str(p.id) not in uploaded_uuids:
-                        p.save(client, project_key)
-                        uploaded_uuids.append(str(p.id))
-
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
-                if issubclass(type(p), Model):
-                    if str(p.id) not in uploaded_uuids:
+                if issubclass(type(p), Dataset) or issubclass(type(p), Model):
+                    if str(p.uuid) not in uploaded_uuids:
                         p.upload(client, project_key)
-                        uploaded_uuids.append(str(p.id))
-
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
+                    inputs[pname] = TestInputDTO(name=pname, value=p.uuid)
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
                 else:

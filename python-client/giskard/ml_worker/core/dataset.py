@@ -37,20 +37,33 @@ class Dataset:
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        if cat_columns:
-            self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
-        else:
-            self.feature_types = feature_types
+        self.feature_types = feature_types if feature_types else self.extract_feature_types(
+            list(self.column_types.keys()), cat_columns)
         if id is None:
             self.id = uuid.uuid4()
         else:
             self.id = id
 
     @staticmethod
+    def extract_feature_types(all_columns, cat_columns):
+        feature_types = {}
+        if cat_columns:
+            for cat_col in cat_columns:
+                feature_types[cat_col] = SupportedFeatureTypes.CATEGORY.value
+            for col in all_columns:
+                if col not in cat_columns:
+                    feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
+        else:  # TODO: Implement smarter inference
+            for col in all_columns:
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
+
+        return feature_types
+
+    @staticmethod
     def extract_column_types(df):
         return df.dtypes.apply(lambda x: x.name).to_dict()
 
-    def save(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: str):
         from giskard.core.dataset_validation import validate_dataset
 
         validate_dataset(self)
@@ -58,9 +71,8 @@ class Dataset:
         dataset_id = str(self.id)
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
-            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
-            if client is not None:
-                client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
+            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -88,7 +100,7 @@ class Dataset:
         return df
 
     @classmethod
-    def _read_dataset_from_local_dir(cls, local_path: str):
+    def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
                 ZstdDecompressor().stream_reader(ds_stream),
@@ -97,7 +109,7 @@ class Dataset:
             )
 
     @classmethod
-    def load(cls, client: GiskardClient, project_key, dataset_id):
+    def download(cls, client: GiskardClient, project_key, dataset_id):
         local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
 
         if client is None:
@@ -115,11 +127,15 @@ class Dataset:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
-        df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")
+        df = cls.load(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
-        return cls(df=df, name=meta.name, target=meta.target, feature_types=meta.feature_types,
-                   id=uuid.UUID(dataset_id)
-                   )
+        return cls(
+            df=df,
+            name=meta.name,
+            target=meta.target,
+            feature_types=meta.feature_types,
+            id=uuid.UUID(dataset_id)
+        )
 
     @staticmethod
     def _cat_columns(meta):
@@ -130,7 +146,7 @@ class Dataset:
     def cat_columns(self):
         return self._cat_columns(self.meta)
 
-    def _save_to_local_dir(self, local_path: Path, dataset_id):
+    def save(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", "wb") as f:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
