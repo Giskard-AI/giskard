@@ -2,9 +2,10 @@ import asyncio
 import base64
 import logging
 import sys
-from asyncio import StreamReader, StreamWriter
+from asyncio import StreamReader, StreamWriter, IncompleteReadError
 from os import environ
 from random import random
+from typing import Optional
 from urllib.parse import urlparse
 
 from tenacity import retry, wait_exponential
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 # it leads to GeneratorExit errors in coroutines and failed GRPC calls
 # this set is meant to keep readers references so that GC doesn't collect them
 readers = set()
+writers = set()
 
 
 class MLWorkerBridge:
@@ -35,25 +37,30 @@ class MLWorkerBridge:
 
     def __init__(
             self,
-            local_socket: str,
+            local_address: str,
             client: GiskardClient,
-            execution_loop=asyncio.get_event_loop(),
     ) -> None:
-        self.loop = execution_loop
-
-        self.local_socket = local_socket
+        self.stopping = False
+        self.local_address = local_address
 
         self.client = client
 
-        self.service_channel_reader = None
-        self.service_channel_writer = None
+        self.service_channel_reader: Optional[StreamReader] = None
+        self.service_channel_writer: Optional[StreamWriter] = None
+
+    def stop(self):
+        logger.info(f"Stopping the bridge with {self.local_address}")
+        self.stopping = True
+        for w in writers:
+            w.close()
 
     @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
     async def start(self):
         try:
             await self.connect_to_remote_host()
             await self.send_start_inner_server_message()
-            self.loop.create_task(self.listen_remote_server_service_socket())
+            await self.listen_remote_server_service_socket()
+
         except Exception as e:
             await self.close_service_channel()
             logger.error(f"Failed to connect to a remote host: {self.remote_host}:{self.remote_port} : {str(e)}")
@@ -68,6 +75,7 @@ class MLWorkerBridge:
         if self.service_channel_writer:
             self.service_channel_writer.close()
             await self.service_channel_writer.wait_closed()
+            writers.remove(self.service_channel_writer)
         if self.service_channel_reader:
             readers.remove(self.service_channel_reader)
 
@@ -92,6 +100,7 @@ class MLWorkerBridge:
             self.remote_host, self.remote_port
         )
         readers.add(self.service_channel_reader)
+        writers.add(self.service_channel_writer)
         logger.info(f"Connected to Giskard server {self.remote_host}:{self.remote_port}")
 
     async def send_start_inner_server_message(self):
@@ -105,8 +114,8 @@ class MLWorkerBridge:
                 logger.debug("Created remote server listener task")
                 while True:
                     logger.debug("waiting for a service command")
-                    length = int.from_bytes(await self.service_channel_reader.read(4), "big")
-                    encrypted_data = await self.service_channel_reader.read(length)
+                    length = int.from_bytes(await self.service_channel_reader.readexactly(4), "big")
+                    encrypted_data = await self.service_channel_reader.readexactly(length)
                     if len(encrypted_data):
                         data = self.encryptor.decrypt(encrypted_data)
                         client = data[:CHANNEL_ID_LENGTH]
@@ -117,10 +126,14 @@ class MLWorkerBridge:
                         raise ConnectionLost()
             finally:
                 await self.close_service_channel()
-        except (ConnectionLost, ConnectionResetError):
+        except (IncompleteReadError, ConnectionLost, ConnectionResetError):
             logger.info("Lost connection to Giskard server, retrying...")
+            self.stop()
             await asyncio.sleep(1 + random() * 2)
             await self.start()
+        except IncompleteReadError as e:
+            if not self.stopping:
+                logger.exception(e)
         except BaseException as e:  # NOSONAR
             logger.exception(e)
 
@@ -130,6 +143,7 @@ class MLWorkerBridge:
                 self.remote_host, self.remote_port
             )
             readers.add(remote_reader)
+            writers.add(remote_writer)
             logger.debug(
                 f"Connected client {client} to remote host {(self.remote_host, self.remote_port)}"
             )
@@ -140,13 +154,13 @@ class MLWorkerBridge:
             remote_writer.write(self.encryptor.encrypt(message, additional_data=self.key_id.encode()))
             await remote_writer.drain()
 
-            grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_socket).path)
+            grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_address).path)
 
             readers.add(grpc_reader)
-            logger.debug(f"Connected client {client} to grpc host {self.local_socket}")
+            writers.add(grpc_writer)
+            logger.debug(f"Connected client {client} to grpc host {self.local_address}")
 
-            await self.create_sync_task(client, grpc_reader, remote_writer,
-                                        encrypted_writer=True,
+            await self.create_sync_task(client, grpc_reader, remote_writer, encrypted_writer=True,
                                         task_name=f"{client.decode()}: grpc->remote")
             await self.create_sync_task(client, remote_reader, grpc_writer,
                                         encrypted_reader=True,
@@ -156,9 +170,9 @@ class MLWorkerBridge:
                                task_name=""):
         task = self.sync_data(client, reader, writer, encrypted_writer, encrypted_reader, task_name)
         if sys.version_info >= (3, 8):
-            self.loop.create_task(task, name=task_name)
+            asyncio.create_task(task, name=task_name)
         else:
-            self.loop.create_task(task)
+            asyncio.create_task(task)
 
     async def sync_data(self, client, reader: StreamReader, writer: StreamWriter,
                         encrypted_writer=False,
@@ -186,7 +200,8 @@ class MLWorkerBridge:
             finally:
                 writer.close()
                 readers.remove(reader)
-        except (ConnectionLost, ConnectionResetError):
+                writers.remove(writer)
+        except (IncompleteReadError, ConnectionLost, ConnectionResetError):
             logger.debug(f"{log_prefix}Connection lost: {client}")
         except BaseException:  # NOSONAR
             logger.exception(f"{log_prefix}Sync data error")
