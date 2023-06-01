@@ -1,140 +1,27 @@
 <template>
-  <v-list-item-group>
-      <template v-for="({result, suiteTest}) in props.tests">
-          <v-divider/>
-          <v-list-item :value="result" @click="testInfo(suiteTest)">
-              <v-list-item-icon>
-                  <v-icon :color="getColor(result)" size="40">{{
-                      getIcon(result)
-                      }}
-                  </v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                  <v-list-item-title>
-                      <div class="d-flex justify-space-between">
-                          <span>{{ getTestName(suiteTest.test) }}</span>
-                          <div>
-                              <v-btn
-                                      v-if="result !== undefined && !result.passed"
-                                      text
-                                      icon
-                                      color="green"
-                                      disabled
-                              >
-                                  <v-icon>mdi-bug</v-icon>
-                              </v-btn>
-                              <v-btn
-                                      v-if="!compact"
-                                      text
-                                      icon
-                                      color="error"
-                                      @click.stop="removeTest(suiteTest)"
-                              >
-                                  <v-icon>delete</v-icon>
-                  </v-btn>
-              </div>
-            </div>
-          </v-list-item-title>
-          <v-list-item-subtitle v-if="compact">
-            {{ result ? `Metric : ${result.metric}` : "Not executed" }}
-          </v-list-item-subtitle>
-          <v-list-item-subtitle v-else>
-            {{ result ? `Metric : ${result.metric}` : "Not executed" }}<br/>
-              UUID: {{ suiteTest.test.uuid }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </template>
-  </v-list-item-group>
+    <div class="d-flex flex-column">
+        <SuiteTestExecutionCard v-for="({result, suiteTest}) in props.tests" :suite-test="suiteTest" :result="result"/>
+    </div>
 </template>
 
 <script setup lang="ts">
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO} from '@/generated-sources';
-import {Colors} from '@/utils/colors';
-import {$vfm} from 'vue-final-modal';
-import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import {api} from '@/api';
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
+import SuiteTestExecutionCard from "@/views/main/project/SuiteTestExecutionCard.vue";
 
 const props = withDefaults(defineProps<{
-  tests: {
-    suiteTest: SuiteTestDTO,
-    result?: SuiteTestExecutionDTO
-  }[],
-  compact: boolean
+    tests: {
+        suiteTest: SuiteTestDTO,
+        result?: SuiteTestExecutionDTO
+    }[],
+    compact: boolean
 }>(), {
-  compact: false
+    compact: false
 });
 
 const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
-
-
-function getTestName(test: TestFunctionDTO) {
-  const name = test.displayName ?? test.name;
-
-  if (props.compact) {
-    return name;
-  }
-
-  const tags = test.tags.filter(tag => tag !== 'giskard' && tag !== 'pickle');
-
-
-  if (tags.length === 0) {
-    return name;
-  } else {
-    return tags.reduce((list, tag) => `${list} #${tag}`, '') + ` (${name})`;
-  }
-}
-
-function getColor(result?: SuiteTestExecutionDTO): string {
-  if (result === undefined) {
-    return 'grey';
-  } else if (result.passed) {
-    return Colors.PASS;
-  } else {
-    return Colors.FAIL;
-  }
-}
-
-function getIcon(result?: SuiteTestExecutionDTO): string {
-  if (result === undefined) {
-    return 'block';
-  } else if (result.passed) {
-    return 'done';
-  } else {
-    return 'close';
-  }
-}
-
-async function testInfo(suiteTest: SuiteTestDTO) {
-    await $vfm.show({
-        component: SuiteTestInfoModal,
-        bind: {
-            suiteTest
-        }
-    });
-}
-
-async function removeTest(suiteTest: SuiteTestDTO) {
-  await $vfm.show({
-    component: ConfirmModal,
-    bind: {
-      title: 'Remove test',
-      text: `Are you sure that you want to remove this test from the test suite?`,
-      isWarning: true
-    },
-    on: {
-      async confirm(close) {
-        await api.removeTest(suite.value!.projectKey!, suite.value!.id!, suiteTest.id!);
-        await testSuiteStore.reload();
-        close();
-      }
-    }
-  });
-}
 </script>
 
