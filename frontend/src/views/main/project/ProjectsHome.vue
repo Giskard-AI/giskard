@@ -296,7 +296,7 @@ async function ImportIfNoConflictKey() {
     }
     api.importProject(postImportProject)
       .then((p) => {
-        router.push({ name: 'project-properties', params: { id: p.id } })
+        router.push({ name: 'project-overview', params: { id: p.id } })
       })
   }
 }
