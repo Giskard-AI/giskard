@@ -58,7 +58,7 @@ const props = defineProps<{
     projectId: number,
     title: string,
     function: CallableDTO,
-    defaultValue: Array<FunctionInputDTO>,
+    defaultValue: { [name: string]: Array<FunctionInputDTO> },
 }>();
 
 const functionInputs = ref<{ [name: string]: FunctionInputDTO }>({});
