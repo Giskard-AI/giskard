@@ -113,10 +113,7 @@ class TextGenderTransformation(TextTransformation):
         return " ".join(new_text)
 
     def _switch(self, word):
-        for pair in gender_switch_en:
-            if word.lower() == pair[0]:
-                return pair[1]
-            elif word.lower() == pair[1]:
-                return pair[0]
-            else:
-                return word
+        if word in gender_switch_en:
+            return gender_switch_en[word]
+        else:
+            return word
