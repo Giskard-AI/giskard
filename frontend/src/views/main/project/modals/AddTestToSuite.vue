@@ -11,7 +11,22 @@
             <v-row>
               <v-col cols=12>
                 <ValidationProvider name="Test suite" mode="eager" rules="required" v-slot="{ errors }">
-                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="[...testSuites, { id: 0, name: '+ New test suite' }]" :item-text="'name'" :item-value="'id'" dense hide-details @change="checkIfCreateNew">
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details>
+                    <template v-slot:append-item>
+                      <v-divider></v-divider>
+                      <v-list-item link @click="createTestSuite" class="pt-1">
+                        <v-list-item-avatar color="grey lighten-4" class="my-1 mr-2" style="height: 25px;min-width: 25px;width: 25px;">
+                          <v-icon small>
+                            mdi-plus
+                          </v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            Add new test suite
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
                   </v-select>
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Fixed inputs</p>
@@ -106,25 +121,11 @@ async function submit(close) {
   close();
 }
 
-async function checkIfCreateNew() {
-  if (selectedSuite.value === 0) {
-    await createTestSuite();
-  }
-}
-
 async function createTestSuite() {
-  const project = await api.getProject(projectId)
-  const date = new Date();
-  const formattedDate = date.getFullYear() + '-' +
-    ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
-    ('0' + date.getDate()).slice(-2) + ' ' +
-    ('0' + date.getHours()).slice(-2) + ':' +
-    ('0' + date.getMinutes()).slice(-2) + ':' +
-    ('0' + date.getSeconds()).slice(-2);
-
+  const project = await api.getProject(projectId);
   const suite = await api.createTestSuite(project.key, {
     id: null,
-    name: `Test suite ${formattedDate}`,
+    name: 'Unnamed test suite',
     projectKey: project.key,
     testInputs: [],
     tests: []
