@@ -84,10 +84,13 @@ class TextSlicer(BaseSlicer):
     def _get_top_tokens(self, feature_data, n=30):
         from sklearn.feature_extraction.text import TfidfVectorizer
 
-        final_stopwords_list = sw_en + sw_fr
+        raw_stopwords = sw_en + sw_fr
+
+        tokenizer = TfidfVectorizer().build_tokenizer()
+        tokenized_stopwords = sum([tokenizer(stop_word) for stop_word in raw_stopwords], [])
 
         text_data = feature_data.values.astype("U")
-        vectorizer = TfidfVectorizer(stop_words=final_stopwords_list)
+        vectorizer = TfidfVectorizer(stop_words=tokenized_stopwords)
         tfidf = vectorizer.fit_transform(text_data)
 
         vocab = vectorizer.vocabulary_
