@@ -4,6 +4,7 @@ import ai.giskard.domain.ml.ModelLanguage;
 import ai.giskard.domain.ml.ModelType;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -21,12 +22,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ModelDTO {
+    @JsonAlias("language_version")
     private String languageVersion;
     private ModelLanguage language;
+    @JsonAlias("model_type")
     private ModelType modelType;
     private Float threshold;
     @UINullable
+    @JsonAlias("feature_names")
     private List<String> featureNames;
+    @JsonAlias("classification_labels")
     private List<String> classificationLabels;
 
     @JsonProperty("id")
@@ -38,6 +43,7 @@ public class ModelDTO {
 
     private String name;
 
+    @JsonAlias("created_date")
     private Instant createdDate;
 
     private long size;

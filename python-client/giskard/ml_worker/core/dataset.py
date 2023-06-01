@@ -40,12 +40,11 @@ class Dataset:
 
     def save(self, client: GiskardClient, project_key: str):
         from giskard.core.dataset_validation import validate_dataset
-
-        validate_dataset(dataset=self)
+        validate_dataset(self)
 
         dataset_id = uuid.uuid4().hex
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
-            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path))
+            original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
             client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(project_key,
                                      dataset_id,
@@ -89,11 +88,16 @@ class Dataset:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{dataset_id}"
             with open(Path(local_dir) / 'giskard-dataset-meta.yaml') as f:
-                meta = DatasetMeta(**yaml.load(f, Loader=yaml.Loader))
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+                meta = DatasetMeta(
+                    name=saved_meta["name"],
+                    target=saved_meta["target"],
+                    feature_types=saved_meta["feature_types"],
+                    column_types=saved_meta["column_types"],
+                )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
-
 
         df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
@@ -102,15 +106,24 @@ class Dataset:
             **meta.__dict__
         )
 
-    def _save_to_local_dir(self, local_path: Path):
+    def _save_to_local_dir(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", 'wb') as f:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
+            original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
 
             with open(Path(local_path) / 'giskard-dataset-meta.yaml', 'w') as meta_f:
-                yaml.dump(self.meta.__dict__, meta_f, default_flow_style=False)
-            return len(uncompressed_bytes), len(compressed_bytes)
+                yaml.dump({
+                    "id": dataset_id,
+                    "name": self.meta.name,
+                    "target": self.meta.target,
+                    "feature_types": self.meta.feature_types,
+                    "column_types": self.meta.column_types,
+                    "original_size_bytes": original_size_bytes,
+                    "compressed_size_bytes": compressed_size_bytes,
+                }, meta_f, default_flow_style=False)
+            return original_size_bytes, compressed_size_bytes
 
     @property
     def columns(self):

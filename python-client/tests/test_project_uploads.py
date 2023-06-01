@@ -69,7 +69,7 @@ def test_validate_deterministic_model():
         validate_deterministic_model(constant_model, ds, ModelPredictionResults(raw=ones * 0.99999))
 
 
-def test_validate_columns_columntypes(german_credit_data, german_credit_test_data):
+def test_validate_feature_types(german_credit_data, german_credit_test_data):
     with pytest.warns(UserWarning,
                       match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?"):
         validate_column_categorization(
@@ -86,18 +86,18 @@ def test_validate_columns_columntypes(german_credit_data, german_credit_test_dat
         german_credit_test_data.feature_types
     )
     with pytest.raises(ValueError) as e:
-        validate_columns_columntypes(
+        validate_feature_types(
             german_credit_data.df,
             {c: german_credit_data.feature_types[c] for c in german_credit_data.feature_types if
              c not in {german_credit_data.target, "sex"}},
             german_credit_data.target
         )
-    assert e.match(r"Invalid column_types parameter: Please declare the type for {'sex'} columns")
+    assert e.match(r"Invalid feature_types parameter: Please declare the type for {'sex'} columns")
 
     with pytest.raises(ValueError) as e:
         new_ct = dict(german_credit_data.feature_types)
         new_ct["non-existing-column"] = "int64"
-        validate_columns_columntypes(
+        validate_feature_types(
             german_credit_data.df,
             new_ct,
             german_credit_data.target
@@ -105,8 +105,8 @@ def test_validate_columns_columntypes(german_credit_data, german_credit_test_dat
     assert e.match(r"Missing columns in dataframe according to column_types: {'non-existing-column'}")
 
     broken_types = dict(german_credit_test_data.feature_types)
-    broken_types['people_under_maintenance'] = SupportedColumnType.CATEGORY.value
-    broken_types['sex'] = SupportedColumnType.NUMERIC.value
+    broken_types['people_under_maintenance'] = SupportedFeatureTypes.CATEGORY.value
+    broken_types['sex'] = SupportedFeatureTypes.NUMERIC.value
     with pytest.warns(UserWarning,
                       match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?") as w:
         validate_column_categorization(
