@@ -1,0 +1,27 @@
+/* Imports */
+@import "_highlight_theme.css";
+@import "_highlightjs_copy.css";
+
+/* Main styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+table.dataframe {
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+}
+
+.dataframe tr {
+    border-bottom: 1px solid #555;
+}
+
+.dataframe td,
+.dataframe th {
+    padding: 0.5rem;
+}
+
+.dataframe th {
+    text-align: left !important;
+}
