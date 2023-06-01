@@ -29,7 +29,7 @@ The [Giskard catalog](docs/catalogs/slicing-function-catalog) provides you diffe
 from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
 ```
 
-## Create your own slicing function
+## Create your own transformation function
 
 To create a Giskard slicing function, you just need to decorate an existing Python functions with `@slicing_function()`. Depending on the argument of the decorator, you can decorate different Python functions: filtered by row level, dataframe level or at cell level:
 
