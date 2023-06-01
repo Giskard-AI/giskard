@@ -7,7 +7,7 @@ import yaml
 from scipy import special
 
 from giskard.core.core import ModelType
-from giskard.core.validation import configured_validate_arguments
+from giskard.core.validation import validate_args
 from giskard.models.base import WrapperModel
 
 try:
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class HuggingFaceModel(WrapperModel):
-    @configured_validate_arguments
+    @validate_args
     def __init__(
         self,
         clf,

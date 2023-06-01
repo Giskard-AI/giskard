@@ -3,14 +3,21 @@ from pydantic import validate_arguments
 import functools
 
 
-def configured_validate_arguments(func):
+def validate_args(func):
     """
     Decorator to enforce a function args to be compatible with their type hints.
     :return: A wrapper function decorated by pydantic validate_arguments configured to allow arbitrary types check.
     """
-    return functools.wraps(func)(
-        validate_arguments(config=dict(arbitrary_types_allowed=True))(func)
-    )
+
+    def configured_decorator(some_func):
+        @validate_arguments(config=dict(arbitrary_types_allowed=True))
+        @functools.wraps(some_func)  # copies the name, docstring, etc. to the wrapper function
+        def wrapper(*args, **kwargs):
+            return some_func(*args, **kwargs)
+
+        return wrapper
+
+    return configured_decorator(func)
 
 
 def validate_target(target, dataframe_keys):
