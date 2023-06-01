@@ -27,13 +27,13 @@ class TextPerturbationDetector(Detector):
         self.output_sensitivity = output_sensitivity
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logger.debug(
-            f"TextPerturbationDetector: Running with transformations={[t.name for t in self.transformations]} "
-            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
-        )
-
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [col for col, col_type in dataset.column_types.items() if col_type == "text"]
+
+        logger.debug(
+            f"TextPerturbationDetector: Running with transformations={[t.name for t in transformations]} "
+            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
+        )
 
         issues = []
         for transformation in transformations:
@@ -106,7 +106,7 @@ class TextPerturbationDetector(Detector):
             fail_ratio = 1 - pass_ratio
 
             logger.debug(
-                f"TextPerturbationDetector: Testing for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.2f}"
+                f"TextPerturbationDetector: Testing for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
             )
 
             if fail_ratio >= self.threshold:
