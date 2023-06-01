@@ -21,7 +21,7 @@
       <v-btn text @click="reset()"> Cancel</v-btn>
       <v-spacer></v-spacer>
       <v-btn color="primary" @click="launchInspector()" :disabled="creatingInspection">
-        Inspect
+        Debug
       </v-btn>
     </v-card-actions>
   </v-card>
