@@ -34,6 +34,11 @@ def transform_divide_by_five(x: pd.Series) -> pd.Series:
     return x
 
 
+@transformation_function(cell_level=True)
+def column_level_divide(nb: float, amount: int) -> float:
+    return nb / amount
+
+
 def test_slicing(german_credit_data: Dataset):
     assert len(german_credit_data.df) == 1000
     assert isinstance(filter_with_parenthesis, SlicingFunction), f"{type(filter_with_parenthesis)}"
@@ -58,6 +63,39 @@ def test_chain(german_credit_data: Dataset):
     german_credit_data.add_slicing_function(filter_with_parenthesis)
     assert len(german_credit_data.df) == 1000
     ds = german_credit_data.process()
+    assert len(ds.df) == 188
+
+
+def test_transform_cell_level(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+
+    ds = german_credit_data.slice(filter_without_parenthesis) \
+        .transform(column_level_divide(amount=5), column_name='credit_amount') \
+        .slice(filter_with_parenthesis)
+
+    assert len(german_credit_data.df) == 1000
+    assert len(ds.df) == 188
+
+
+def test_transform_cell_level_parameterized(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+
+    ds = german_credit_data.slice(filter_without_parenthesis) \
+        .transform(column_level_divide(column_name='credit_amount', amount=5)) \
+        .slice(filter_with_parenthesis)
+
+    assert len(german_credit_data.df) == 1000
+    assert len(ds.df) == 188
+
+
+def test_transform_cell_level_lambda(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+
+    ds = german_credit_data.slice(filter_without_parenthesis) \
+        .transform(lambda i: i / 5, cell_level=True, column_name='credit_amount') \
+        .slice(filter_with_parenthesis)
+
+    assert len(german_credit_data.df) == 1000
     assert len(ds.df) == 188
 
 
