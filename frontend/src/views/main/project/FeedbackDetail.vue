@@ -69,7 +69,9 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router/composables';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import { useMainStore } from "@/stores/main";
 
+const mainStore = useMainStore();
 
 const router = useRouter();
 
@@ -109,6 +111,7 @@ async function doSendReply(content: string, replyToId: number | null = null) {
   mixpanel.track('Reply to feedback', { replyTo: replyToId });
   await api.replyToFeedback(props.id, content, replyToId);
   await reloadFeedback();
+  mainStore.addSimpleNotification('Reply sent!');
 }
 
 function deleteFeedback(feedbackId: number) {
@@ -124,6 +127,7 @@ function deleteFeedback(feedbackId: number) {
         await api.deleteFeedback(feedbackId);
         await router.push({ name: 'project-feedbacks', params: { id: data.value!.project.id.toString() } });
         close();
+        mainStore.addSimpleNotification('Successfully deleted feedback!');
       }
     }
   });
@@ -142,6 +146,7 @@ function deleteReply(replyId: number) {
         await api.deleteFeedbackReply(data.value!.id, replyId);
         await reloadFeedback();
         close();
+        mainStore.addSimpleNotification('Successfully deleted reply!');
       }
     }
   });
