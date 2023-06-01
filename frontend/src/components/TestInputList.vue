@@ -23,11 +23,11 @@ const {inputs, inputTypes, models, datasets} = defineProps<{
 function formatInputValue(input: string, value: string): string {
   switch (inputTypes[input]) {
     case 'Dataset':
-      return datasets[value].name ?? 'Unnamed dataset';
-    case 'Model':
-      return models[value].name;
-    default:
-      return value;
+        return datasets[value].name ?? 'Unnamed dataset';
+      case 'BaseModel':
+          return models[value].name;
+      default:
+          return value;
   }
 }
 

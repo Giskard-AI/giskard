@@ -63,7 +63,7 @@
                           <DatasetSelector :project-id="projectId" :label="a.name" :return-object="false"
                                            v-if="a.type === 'Dataset'" :value.sync="testArguments[a.name]"/>
                           <ModelSelector :project-id="projectId" :label="a.name" :return-object="false"
-                                         v-if="a.type === 'Model'" :value.sync="testArguments[a.name]"/>
+                                         v-if="a.type === 'BaseModel'" :value.sync="testArguments[a.name]"/>
                           <v-text-field
                               :step='a.type === "float" ? 0.1 : 1'
                               v-model="testArguments[a.name]"

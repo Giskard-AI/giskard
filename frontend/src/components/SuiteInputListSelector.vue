@@ -18,7 +18,7 @@
             <span v-if="props.testInputs[input.name]?.isAlias">
                     {{ props.testInputs[input.name].value }}
                   </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'Model'">
+                        <span v-else-if="input.name in props.testInputs && input.type === 'BaseModel'">
                     {{
                             models[props.testInputs[input.name].value].name ?? models[props.testInputs[input.name].value].id
                             }}
@@ -38,7 +38,7 @@
                                              v-if="input.type === 'Dataset'"
                                              :value.sync="props.modelValue[input.name].value"/>
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                           v-else-if="input.type === 'Model'"
+                                           v-else-if="input.type === 'BaseModel'"
                                            :value.sync="props.modelValue[input.name].value"/>
                             <v-text-field
                                     :step='input.type === "float" ? 0.1 : 1'
