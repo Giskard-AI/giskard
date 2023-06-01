@@ -351,8 +351,11 @@ export const api = {
     async getTestSuites(projectId: number) {
         return apiV2.get<unknown, TestSuiteDTO[]>(`testing/project/${projectId}/suites`);
     },
-    async generateTestSuite(projectId: string, generateTestSuite: GenerateTestSuiteDTO) {
-        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites/generate`, generateTestSuite);
+    async createTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites`, testSuite);
+    },
+    async generateTestSuite(projectKey: string, generateTestSuite: GenerateTestSuiteDTO) {
+        return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites/generate`, generateTestSuite);
     },
     async updateTestSuite(projectKey: string, suite: TestSuiteDTO) {
         return apiV2.put<unknown, TestSuiteDTO>(`testing/project/${projectKey}/suite/${suite.id}`, suite);

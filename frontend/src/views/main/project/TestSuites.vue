@@ -35,9 +35,8 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import CreateTestSuiteModal from '@/views/main/project/modals/CreateTestSuiteModal.vue';
-import {$vfm} from 'vue-final-modal';
 import {TestSuiteDTO} from '@/generated-sources';
+import router from '@/router';
 
 const props = defineProps<{
   projectId: number
@@ -49,13 +48,16 @@ onMounted(async () => suites.value = await api.getTestSuites(props.projectId))
 
 async function createTestSuite() {
   const project = await api.getProject(props.projectId)
-  $vfm.show({
-    component: CreateTestSuiteModal,
-    bind: {
-      projectKey: project.key,
-      projectId: project.id
-    }
+  const suite = await api.createTestSuite(project.key, {
+    id: null,
+    name: '',
+    projectKey: project.key,
+    testInputs: [],
+    tests: []
   });
+
+  await router.push({name: 'test-suite-overview', params: {suiteId: suite.toString()}});
+  suites.value = await api.getTestSuites(props.projectId);
 }
 
 </script>

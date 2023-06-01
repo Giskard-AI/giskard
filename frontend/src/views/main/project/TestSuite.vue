@@ -5,9 +5,6 @@
         <v-row>
           <v-col :align="'right'">
             <div class="d-flex">
-              <v-btn text @click="loadData()" color="secondary">Refresh
-                <v-icon right>refresh</v-icon>
-              </v-btn>
               <v-btn v-if="route.name === 'test-suite-overview'"
                      text :to="{name:'test-suite-executions'}" color="secondary">
                 <v-icon>history</v-icon>
