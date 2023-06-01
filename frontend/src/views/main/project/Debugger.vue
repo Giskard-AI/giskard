@@ -32,7 +32,7 @@ function toggleActiveInspection(id: number) {
 
 function createNewInspection(newInspection: InspectionDTO) {
   inspections.value.push(newInspection);
-  // toggleActiveInspection(newInspection.id); // TODO: this is not working properly
+  toggleActiveInspection(newInspection.id);
 }
 
 async function deleteInspection(id: number) {
@@ -55,13 +55,16 @@ onActivated(() => loadInspections());
 <template>
   <div class="vertical-container">
     <v-container fluid class="vc" v-if="inspections.length > 0">
-      <v-row v-show="displayComponents">
+      <v-row>
         <v-col cols="4">
-          <v-text-field label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection"></v-text-field>
+          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection"></v-text-field>
         </v-col>
         <v-col cols="8">
-          <div class="d-flex flex-row-reverse pb-4">
-            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
+          <div class="d-flex justify-end">
+            <v-btn v-if="activeInspection !== null" @click="activeInspection = null" class="ma-2 pa-2">
+              <v-icon>mdi-arrow-u-left-top</v-icon> Show past inspections
+            </v-btn>
+            <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection" class="ma-2"></InspectionDialog>
           </div>
         </v-col>
       </v-row>
@@ -78,9 +81,9 @@ onActivated(() => loadInspections());
           <v-col cols="1">Actions</v-col>
         </v-row>
 
-        <v-expansion-panel v-for="inspection in inspections" :key="inspection.id" v-show="displayComponents || activeInspection == inspection.id" @click="toggleActiveInspection(inspection.id)">
-          <v-expansion-panel-header>
-            <v-row dense no-gutters class="align-center" v-if="displayComponents">
+        <v-expansion-panel v-for="inspection in inspections" :key="inspection.id" v-show="displayComponents" @click="toggleActiveInspection(inspection.id)">
+          <v-expansion-panel-header :disableIconRotate="true">
+            <v-row dense no-gutters class="align-center">
               <v-col cols="3">Generic name</v-col>
               <v-col cols="1">{{ inspection.id }}</v-col>
               <v-col cols="2">Generic date</v-col>
@@ -96,56 +99,10 @@ onActivated(() => loadInspections());
                 </v-card-actions>
               </v-col>
             </v-row>
-            <v-row dense no-gutters class="align-center" v-else>
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon v-on="on" class="pr-5" medium>info</v-icon>
-                </template>
-                <h3> Inspection </h3>
-                <div class="d-flex">
-                  <div> Id</div>
-                  <v-spacer />
-                  <div> {{ inspection.id }}</div>
-                </div>
-                <div class="d-flex">
-                  <div> Name</div>
-                  <v-spacer />
-                  <div class="pl-5"> Generic name </div>
-                </div>
-                <br />
-                <h3> Model </h3>
-                <div class="d-flex">
-                  <div> Id</div>
-                  <v-spacer />
-                  <div> {{ inspection.model.id }}</div>
-                </div>
-                <div class="d-flex">
-                  <div> Name</div>
-                  <v-spacer />
-                  <div class="pl-5"> {{ inspection.model.name }}</div>
-                </div>
-                <br />
-                <h3> Dataset </h3>
-                <div class="d-flex">
-                  <div> Id</div>
-                  <v-spacer />
-                  <div> {{ inspection.dataset.id }}</div>
-                </div>
-                <div class="d-flex">
-                  <div> Name</div>
-                  <v-spacer />
-                  <div class="pl-5"> {{ inspection.dataset.name }}</div>
-                </div>
-              </v-tooltip>
-              <h1 class="headline">Inspection: Generic name (ID: {{ inspection.id }})</h1>
-            </v-row>
           </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <v-divider></v-divider>
-            <InspectorWrapper :projectId="projectId" :inspectionId="inspection.id" v-if="inspection.id === activeInspection"></InspectorWrapper>
-          </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
+      <InspectorWrapper v-if="activeInspection !== null" :projectId="projectId" :inspectionId="activeInspection"></InspectorWrapper>
     </v-container>
 
     <v-container v-else class="vc mt-12">
