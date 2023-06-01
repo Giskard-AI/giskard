@@ -15,10 +15,12 @@ release = '2.0.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["myst_parser",
+              'sphinx_design',
               'sphinx.ext.todo',
               'sphinx.ext.napoleon',
               'sphinx.ext.autodoc',
-              'sphinx.ext.linkcode']
+              'sphinx.ext.linkcode',
+              'sphinx_tabs.tabs']
 
 # autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ['_templates']
@@ -47,7 +49,7 @@ myst_enable_extensions = [
 # HTML output
 # -----------------------------------------------------------------------------
 
-html_title = "Giskard Docs"
+html_title = "Giskard v2.0 Documentation"
 
 html_theme = 'furo'
 # html_static_path = ['_static']

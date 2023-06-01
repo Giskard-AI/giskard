@@ -64,7 +64,7 @@ class TestResult:
                           '✓' if self.passed else '𐄂',
                           'succeed' if self.passed else 'failed',
                           'No metric' if self.metric is None else str(round(self.metric, 2)),
-                          ''.join([m._repr_html_() for m in self.messages]))
+                          ''.join([] if self.messages is None else [m._repr_html_() for m in self.messages]))
 
     def __repr__(self):
         return """
@@ -73,4 +73,4 @@ class TestResult:
                {2}
                """.format('succeed' if self.passed else 'failed',
                           'No metric' if self.metric is None else str(round(self.metric, 2)),
-                          ''.join([m.__repr__() for m in self.messages]))
+                          '\n'.join([] if self.messages is None else [m.__repr__() for m in self.messages]))

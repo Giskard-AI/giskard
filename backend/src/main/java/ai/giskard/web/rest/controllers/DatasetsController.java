@@ -8,6 +8,7 @@ import ai.giskard.service.DatasetService;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
+import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.PrepareDeleteDTO;
@@ -18,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import tech.tablesaw.api.Table;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -68,9 +68,8 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size) {
-        Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
-        return filteredTable.write().toString("json");
+    public DatasetPageDTO getRows(@PathVariable @NotNull UUID datasetId, @NotNull int offset, @NotNull int size) {
+        return datasetService.getRows(datasetId, offset, offset + size);
     }
 
     /**

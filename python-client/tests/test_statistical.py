@@ -1,7 +1,7 @@
 import pytest
 
-import giskard.ml_worker.testing.tests.statistical as statistical
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+import giskard.ml_worker.testing.tests.statistic as statistical
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,7 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
     model = request.getfixturevalue(model)
 
     results = statistical.test_right_label(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
+        dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         model=model,
         classification_label=model.meta.classification_labels[label],
         threshold=threshold,
@@ -41,7 +41,7 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
     model = request.getfixturevalue(model)
 
     results = statistical.test_right_label(
-        actual_slice=data.slice(lambda df: df.head(10), row_level=False),
+        dataset=data.slice(SlicingFunction(lambda df: df.head(10), row_level=False)),
         model=model,
         classification_label=model.meta.classification_labels[label],
         threshold=threshold,
@@ -64,7 +64,7 @@ def test_output_in_range_model(data, model, threshold, label, expected_metric, a
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
     results = statistical.test_output_in_range(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
+        dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         model=model,
         classification_label=model.meta.classification_labels[label],
         min_range=0.3,
@@ -84,7 +84,7 @@ def test_output_in_range_model(data, model, threshold, label, expected_metric, a
 def test_output_in_range_reg(data, model, threshold, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
     results = statistical.test_output_in_range(
-        actual_slice=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
+        dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         model=request.getfixturevalue(model),
         min_range=100,
         max_range=150,
@@ -104,9 +104,9 @@ def test_disparate_impact(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
     results = statistical.test_disparate_impact(
-        gsk_dataset=data,
-        protected_slice=SliceFunction(lambda df: df[df.sex == "female"], row_level=False),
-        unprotected_slice=SliceFunction(lambda df: df[df.sex == "male"], row_level=False),
+        dataset=data,
+        protected_slicing_function=SlicingFunction(lambda df: df[df.sex == "female"], row_level=False),
+        unprotected_slicing_function=SlicingFunction(lambda df: df[df.sex == "male"], row_level=False),
         model=model,
         positive_outcome="Not default",
     )

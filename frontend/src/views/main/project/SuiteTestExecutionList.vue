@@ -1,36 +1,36 @@
 <template>
   <v-list-item-group>
-    <template v-for="({result, test, suiteTest}) in props.tests">
-      <v-divider/>
-      <v-list-item :value="result" @click="testInfo(suiteTest, test)">
-          <v-list-item-icon>
-              <v-icon :color="getColor(result)" size="40">{{
-                  getIcon(result)
-                  }}
-              </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-              <v-list-item-title>
-                  <div class="d-flex justify-space-between">
-                      <span>{{ getTestName(test) }}</span>
-              <div>
-                  <v-btn
-                          v-if="result !== undefined && !result.passed"
-                          text
-                          icon
-                          color="green"
-                          disabled
-                  >
-                      <v-icon>mdi-bug</v-icon>
-                  </v-btn>
-                  <v-btn
-                          v-if="!compact"
-                          text
-                          icon
-                          color="error"
-                          @click.stop="removeTest(suiteTest)"
-                  >
-                      <v-icon>delete</v-icon>
+      <template v-for="({result, suiteTest}) in props.tests">
+          <v-divider/>
+          <v-list-item :value="result" @click="testInfo(suiteTest)">
+              <v-list-item-icon>
+                  <v-icon :color="getColor(result)" size="40">{{
+                      getIcon(result)
+                      }}
+                  </v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                  <v-list-item-title>
+                      <div class="d-flex justify-space-between">
+                          <span>{{ getTestName(suiteTest.test) }}</span>
+                          <div>
+                              <v-btn
+                                      v-if="result !== undefined && !result.passed"
+                                      text
+                                      icon
+                                      color="green"
+                                      disabled
+                              >
+                                  <v-icon>mdi-bug</v-icon>
+                              </v-btn>
+                              <v-btn
+                                      v-if="!compact"
+                                      text
+                                      icon
+                                      color="error"
+                                      @click.stop="removeTest(suiteTest)"
+                              >
+                                  <v-icon>delete</v-icon>
                   </v-btn>
               </div>
             </div>
@@ -40,7 +40,7 @@
           </v-list-item-subtitle>
           <v-list-item-subtitle v-else>
             {{ result ? `Metric : ${result.metric}` : "Not executed" }}<br/>
-            UUID: {{ test.uuid }}
+              UUID: {{ suiteTest.test.uuid }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -62,7 +62,6 @@ import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 const props = withDefaults(defineProps<{
   tests: {
     suiteTest: SuiteTestDTO,
-    test: TestFunctionDTO,
     result?: SuiteTestExecutionDTO
   }[],
   compact: boolean
@@ -111,14 +110,13 @@ function getIcon(result?: SuiteTestExecutionDTO): string {
   }
 }
 
-async function testInfo(suiteTest: SuiteTestDTO, test: TestFunctionDTO) {
-  await $vfm.show({
-    component: SuiteTestInfoModal,
-    bind: {
-      suiteTest,
-      test
-    }
-  });
+async function testInfo(suiteTest: SuiteTestDTO) {
+    await $vfm.show({
+        component: SuiteTestInfoModal,
+        bind: {
+            suiteTest
+        }
+    });
 }
 
 async function removeTest(suiteTest: SuiteTestDTO) {
