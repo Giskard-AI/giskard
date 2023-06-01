@@ -54,8 +54,8 @@ Click on [wrap_model](../../reference/models/index.rst#giskard.wrap_model) to se
 ```python
 from giskard import wrap_model
 
-# data_preprocessing_function example for a pytorch model
-# -------------------------------------------------------
+# Example of data_preprocessing_function for a pytorch model
+# ----------------------------------------------------------
 # def my_preprocessing_function(df: pd.DataFrame):
 #     return torch.from_numpy(some_scaler.transform(df.to_numpy()))
 
