@@ -138,13 +138,15 @@ class TextSlicer(BaseSlicer):
 
         counts = X.T @ Y
         totals = Y.sum(axis=0)
+        remainders = counts - totals
         tokens = vectorizer.get_feature_names_out()
 
-        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0)
+        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0) & (remainders.min(axis=-1) > 0)
 
         _data = []
-        for token, token_counts in zip(tokens[mask], counts[mask]):
-            stat, pvalue, *_ = stats.chi2_contingency([token_counts, totals - token_counts])
+        for token, token_counts, token_remainders in zip(tokens[mask], counts[mask], remainders[mask]):
+            print(token_counts, token_remainders)
+            stat, pvalue, *_ = stats.chi2_contingency([token_counts, token_remainders])
             if pvalue < 1e-3:
                 _data.append({"statistic": stat, "token": token})
 
