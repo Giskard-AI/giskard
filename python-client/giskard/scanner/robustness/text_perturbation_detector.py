@@ -19,7 +19,7 @@ class TextPerturbationDetector(Detector):
         transformations: Optional[Sequence[TextTransformation]] = None,
         threshold: float = 0.05,
         output_sensitivity=0.05,
-        num_samples: int = 500,
+        num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -106,14 +106,14 @@ class TextPerturbationDetector(Detector):
 
             logging.debug(f"Text perturbation '{transformation.name}' fail ratio: {fail_ratio:.2f}")
 
-            if pass_ratio < 1 - self.threshold:
+            if fail_ratio >= self.threshold:
                 info = RobustnessIssueInfo(
                     feature=feature, fail_ratio=fail_ratio, perturbation_name=getattr(transformation, "name")
                 )
                 issue = RobustnessIssue(
                     model,
                     dataset,
-                    level="major" if pass_ratio < 1 - 2 * self.threshold else "medium",
+                    level="major" if fail_ratio >= 2 * self.threshold else "medium",
                     info=info,
                 )
                 issues.append(issue)
