@@ -47,7 +47,8 @@ class Artifact(Generic[SMT], ABC):
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid
 
-        os.makedirs(local_dir)
+        if not local_dir.exists():
+            os.makedirs(local_dir)
         self.save(local_dir)
         logger.debug(f"Saved {name}.{self.meta.uuid}")
 
