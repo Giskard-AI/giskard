@@ -34,10 +34,10 @@ export const useCatalogStore = defineStore('catalog', {
         testFunctionsByUuid(state: State) {
             return keyByUuid(state.catalog?.tests)
         },
-        sliceFunctions(state: State) {
+        slicingFunctions(state: State) {
             return latestVersions(state.catalog?.slices)
         },
-        sliceFunctionsByUuid(state: State) {
+        slicingFunctionsByUuid(state: State) {
             return keyByUuid(state.catalog?.slices)
         },
     },

@@ -221,9 +221,9 @@ public interface GiskardMapper {
     @Mapping(target = "suiteTests", ignore = true)
     TestFunction fromDTO(TestFunctionDTO testFunction);
 
-    SliceFunction fromDTO(SliceFunctionDTO testFunction);
+    SlicingFunction fromDTO(SlicingFunctionDTO testFunction);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
-    SliceFunctionDTO toDTO(SliceFunction testFunction);
+    SlicingFunctionDTO toDTO(SlicingFunction testFunction);
 
 }

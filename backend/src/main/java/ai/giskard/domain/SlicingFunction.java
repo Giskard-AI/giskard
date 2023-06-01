@@ -14,6 +14,6 @@ import java.io.Serializable;
     @UniqueConstraint(columnNames = {"name", "module", "version"})
 })
 @Setter
-public class SliceFunction extends Callable implements Serializable {
+public class SlicingFunction extends Callable implements Serializable {
 
 }

@@ -170,7 +170,7 @@ message TestArgument{
     int32 int = 5;
     string str = 6;
     bool bool = 7;
-    ArtifactRef sliceFunction = 8;
+    ArtifactRef slicingFunction = 8;
   }
 }
 
@@ -333,7 +333,7 @@ message FilterDatasetResponse {
 
 message CatalogResponse{
   map<string, TestFunction> tests = 1;
-  map<string, SliceFunction> slices = 2;
+  map<string, SlicingFunction> slices = 2;
 }
 
 message TestFunction {
@@ -350,7 +350,7 @@ message TestFunction {
   string type = 11;
 }
 
-message SliceFunction {
+message SlicingFunction {
   string uuid = 1;
   string name = 2;
   string displayName = 3;

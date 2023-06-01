@@ -1,10 +1,10 @@
-import type {SliceFunctionDTO} from './slice-function-dto';
+import type {SlicingFunctionDTO} from './slicing-function-d-t-o';
 import type {TestFunctionDTO} from './test-function-dto';
 
 /**
  * Generated from ai.giskard.web.dto.CatalogDTO
  */
 export interface CatalogDTO {
-    slices: SliceFunctionDTO[];
+    slices: SlicingFunctionDTO[];
     tests: TestFunctionDTO[];
 }

@@ -9,6 +9,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @UIModel
-public class SliceFunctionDTO extends CallableDTO {
+public class SlicingFunctionDTO extends CallableDTO {
 
 }

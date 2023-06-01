@@ -1,8 +1,8 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.SliceFunction;
-import ai.giskard.repository.ml.SliceFunctionRepository;
-import ai.giskard.web.dto.SliceFunctionDTO;
+import ai.giskard.domain.SlicingFunction;
+import ai.giskard.repository.ml.SlicingFunctionRepository;
+import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
 
@@ -10,28 +10,28 @@ import javax.transaction.Transactional;
 
 @Service
 
-public class SliceFunctionService extends CallableService<SliceFunction, SliceFunctionDTO> {
+public class SlicingFunctionService extends CallableService<SlicingFunction, SlicingFunctionDTO> {
 
     private final GiskardMapper giskardMapper;
-    private final SliceFunctionRepository sliceFunctionRepository;
+    private final SlicingFunctionRepository slicingFunctionRepository;
 
-    public SliceFunctionService(SliceFunctionRepository sliceFunctionRepository, GiskardMapper giskardMapper) {
-        super(sliceFunctionRepository);
+    public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository, GiskardMapper giskardMapper) {
+        super(slicingFunctionRepository);
         this.giskardMapper = giskardMapper;
-        this.sliceFunctionRepository = sliceFunctionRepository;
+        this.slicingFunctionRepository = slicingFunctionRepository;
     }
 
     @Transactional
-    public SliceFunctionDTO save(SliceFunctionDTO sliceFunction) {
-        return giskardMapper.toDTO(sliceFunctionRepository.save(sliceFunctionRepository.findById(sliceFunction.getUuid())
-            .map(existing -> update(existing, sliceFunction))
-            .orElseGet(() -> create(sliceFunction))));
+    public SlicingFunctionDTO save(SlicingFunctionDTO slicingFunction) {
+        return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunctionRepository.findById(slicingFunction.getUuid())
+            .map(existing -> update(existing, slicingFunction))
+            .orElseGet(() -> create(slicingFunction))));
     }
 
 
-    protected SliceFunction create(SliceFunctionDTO dto) {
-        SliceFunction function = giskardMapper.fromDTO(dto);
-        function.setVersion(sliceFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
+    protected SlicingFunction create(SlicingFunctionDTO dto) {
+        SlicingFunction function = giskardMapper.fromDTO(dto);
+        function.setVersion(slicingFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
         return function;
     }
 

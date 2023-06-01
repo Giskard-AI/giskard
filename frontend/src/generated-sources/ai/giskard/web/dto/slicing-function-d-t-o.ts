@@ -1,6 +1,6 @@
 import type {CallableDTO} from './callable-dto';
 
 /**
- * Generated from ai.giskard.web.dto.SliceFunctionDTO
+ * Generated from ai.giskard.web.dto.SlicingFunctionDTO
  */
-export interface SliceFunctionDTO extends CallableDTO {}
+export interface SlicingFunctionDTO extends CallableDTO {}
