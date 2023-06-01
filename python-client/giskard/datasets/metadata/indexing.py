@@ -79,4 +79,6 @@ class ColumnMetadataMixin:
 
     @property
     def column_meta(self) -> MetadataIndexer:
-        return MetadataIndexer(self)
+        if not hasattr(self, "_column_meta_indexer"):
+            self._column_meta_indexer = MetadataIndexer(self)
+        return self._column_meta_indexer
