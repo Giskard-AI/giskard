@@ -129,7 +129,7 @@ public class TestController {
 
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder().setTestId(request.getTestId());
 
-            for (Map.Entry<String, Object> entry : request.getInputs().entrySet()) {
+            for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
                 builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue()));
             }
 

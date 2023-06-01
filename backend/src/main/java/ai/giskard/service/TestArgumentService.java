@@ -35,30 +35,30 @@ public class TestArgumentService {
 
     public TestArgument buildTestArgument(Map<String, String> testInputTypes,
                                           String inputName,
-                                          Object inputValue) {
+                                          String inputValue) {
         TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
         argumentBuilder.setName(inputName);
         switch (testInputTypes.get(inputName)) {
             case "Dataset" -> {
-                String projectKey = datasetRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
+                String projectKey = datasetRepository.getById(UUID.fromString(inputValue)).getProject().getKey();
                 argumentBuilder.setDataset(
                     ArtifactRef.newBuilder()
                         .setProjectKey(projectKey)
-                        .setId((String) inputValue)
+                        .setId(inputValue)
                         .build()
                 );
             }
             case "Model" -> {
-                String projectKey = modelRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
+                String projectKey = modelRepository.getById(UUID.fromString(inputValue)).getProject().getKey();
                 argumentBuilder.setModel(
                     ArtifactRef.newBuilder()
                         .setProjectKey(projectKey)
-                        .setId((String) inputValue)
+                        .setId(inputValue)
                         .build()
                 );
             }
             case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
-            case "string" -> argumentBuilder.setString((String) inputValue);
+            case "string" -> argumentBuilder.setString(inputValue);
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", testInputTypes.get(inputName)));
         }

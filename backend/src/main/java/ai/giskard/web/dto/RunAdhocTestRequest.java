@@ -14,5 +14,5 @@ import java.util.Map;
 public class RunAdhocTestRequest {
     private Long projectId;
     private String testId;
-    private Map<String, Object> inputs;
+    private Map<String, String> inputs;
 }

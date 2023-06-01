@@ -1,10 +1,7 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
-import ai.giskard.utils.JSONStringAttributeConverter;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
-import ai.giskard.web.dto.ml.SingleTestResultDTO;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,18 +18,13 @@ import java.util.Map;
 @Setter
 public class TestSuiteExecution extends BaseEntity {
 
-    @Converter
-    public static class SingleTestResultConverter extends JSONStringAttributeConverter<Map<String, SingleTestResultDTO>> {
-        @Override
-        public TypeReference<Map<String, SingleTestResultDTO>> getValueTypeRef() {
-            return new TypeReference<>() {
-            };
-        }
-    }
 
     @ManyToOne
     TestSuiteNew suite;
+
     Date executionDate = new Date();
+
+    Date completionDate;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
@@ -45,8 +37,6 @@ public class TestSuiteExecution extends BaseEntity {
     private List<SuiteTestExecution> results = new ArrayList<>();
 
     // TODO: add status for job in progress
-
-    // TODO: add information (run duration, error message)
 
     public TestSuiteExecution(TestSuiteNew suite) {
         this.suite = suite;

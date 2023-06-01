@@ -14,6 +14,7 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.*;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -101,13 +102,15 @@ public class TestSuiteController {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
     }
 
-    @PostMapping("project/{projectId}/suite-new/{suiteId}/execute")
+    @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
-    public TestSuiteExecutionDTO executeTestSuite(@PathVariable("projectId") @NotNull Long projectId,
-                                                  @PathVariable("suiteId") @NotNull Long suiteId,
-                                                  @Valid @RequestBody Map<@NotBlank String, @NotNull Object> inputs) {
-        return testSuiteService.executeTestSuite(projectId, suiteId, inputs);
+    public ResponseEntity<Void> scheduleTestSuiteExecution(@PathVariable("projectId") @NotNull Long projectId,
+                                                           @PathVariable("suiteId") @NotNull Long suiteId,
+                                                           @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+        testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("project/{projectKey}/suites")
