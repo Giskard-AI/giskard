@@ -3,19 +3,15 @@ import os
 import posixpath
 
 from pathlib import Path
-from typing import Optional, TypeVar, Generic
+from typing import Optional, Generic
 
 import cloudpickle
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import SavableMeta
+from giskard.core.core import DT, SMT
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
-
-
-DT = TypeVar('DT')
-SMT = TypeVar('SMT', bound=SavableMeta)
 
 
 class Savable(Generic[DT, SMT]):
@@ -38,11 +34,11 @@ class Savable(Generic[DT, SMT]):
         return True
 
     @classmethod
-    def _get_meta_endpoint(cls, uuid: str, project_key: Optional[str]):
+    def _get_meta_endpoint(cls, uuid: str, project_key: Optional[str]) -> str:
         if project_key is None:
-            posixpath.join(cls._get_name(), uuid)
+            return posixpath.join(cls._get_name(), uuid)
         else:
-            posixpath.join("project", project_key, cls._get_name(), uuid)
+            return posixpath.join("project", project_key, cls._get_name(), uuid)
 
     def _save_to_local_dir(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
@@ -83,7 +79,7 @@ class Savable(Generic[DT, SMT]):
 
     @classmethod
     def load(cls, uuid: str, client: GiskardClient, project_key: Optional[str]):
-        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key))
+        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), SMT)
 
         name = cls._get_name()
 
