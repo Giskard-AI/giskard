@@ -111,7 +111,7 @@ public class MLWorkerService {
                 .setHeaders(headers)
                 .setFunction(function);
             if (dataset.getColumnDTypes() != null) {
-                metaBuilder.putAllColumnDTypes(dataset.getColumnDTypes());
+                metaBuilder.putAllColumnDtypes(dataset.getColumnDTypes());
             }
             FilterDatasetRequest metadata = FilterDatasetRequest.newBuilder()
                 .setMeta(metaBuilder.build()).setIdx(0).build();
