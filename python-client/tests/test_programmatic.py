@@ -1,5 +1,6 @@
 import pytest
 
+from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
@@ -12,37 +13,38 @@ def _test_dataset_size(ds: Dataset, threshold):
     return len(ds.df) > threshold
 
 
+@test()
 def _test_a_greater_b(a: int, b: int):
     return a > b
 
 
 def test_a_greater_b_fail():
-    passed, _ = Suite().add_test(_test_a_greater_b, a=1, b=2).run()
+    passed, _ = Suite().add_test(_test_a_greater_b(1, 2)).run()
     assert not passed
 
 
 def test_a_greater_b_pass():
-    passed, _ = Suite().add_test(_test_a_greater_b, a=2, b=1).run()
+    passed, _ = Suite().add_test(_test_a_greater_b(2, 1)).run()
     assert passed
 
 
 def test_missing_arg():
     with pytest.raises(Exception, match="Missing 1 required parameters: {'b': <class 'int'>}"):
-        Suite().add_test(_test_a_greater_b, a=2).run()
+        Suite().add_test(_test_a_greater_b(a=2)).run()
 
 
 def test_missing_args():
     with pytest.raises(Exception, match="Missing 2 required parameters: {'a': <class 'int'>, 'b': <class 'int'>}"):
-        Suite().add_test(_test_a_greater_b).run()
+        Suite().add_test(_test_a_greater_b()).run()
 
 
 def test_missing_arg_one_global():
     with pytest.raises(Exception, match="Missing 1 required parameters: {'b': <class 'int'>}"):
-        Suite().add_test(_test_a_greater_b).run(a=2)
+        Suite().add_test(_test_a_greater_b()).run(a=2)
 
 
 def test_all_global():
-    passed, _ = Suite().add_test(_test_a_greater_b).run(a=2, b=1)
+    passed, _ = Suite().add_test(_test_a_greater_b()).run(a=2, b=1)
     assert passed
 
 
@@ -58,15 +60,15 @@ def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
 def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
     assert (
         Suite()
-        .add_test(test_auc)
-        .add_test(test_f1)
-        .add_test(_test_a_greater_b)
+        .add_test(test_auc())
+        .add_test(test_f1())
+        .add_test(_test_a_greater_b())
         .run(actual_slice=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)[0]
     )
 
 
 def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseModel):
-    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
+    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2), row_level=False)
 
     shared_input = SuiteInput("dataset", Dataset)
 
@@ -83,19 +85,19 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseMode
 
 
 def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: BaseModel):
-    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
-    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
+    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2), row_level=False)
+    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2), row_level=False)
 
     shared_input = SuiteInput("dataset", Dataset)
 
     result = Suite() \
-        .add_test(test_auc, actual_slice=shared_input, threshold=0.2) \
-        .add_test(test_auc, actual_slice=shared_input, threshold=0.25) \
-        .add_test(test_auc, actual_slice=shared_input, threshold=0.3) \
+        .add_test(test_auc(actual_slice=shared_input, threshold=0.2)) \
+        .add_test(test_auc(actual_slice=shared_input, threshold=0.25)) \
+        .add_test(test_auc(actual_slice=shared_input, threshold=0.3)) \
         .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)
 
     assert result[0]
-    assert len(result[1].items()) == 3
+    assert len(result[1]) == 3
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
@@ -110,8 +112,8 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
     with MockedClient() as (client, mr):
-        Suite().add_test(test_auc, threshold=0.2, actual_slice=german_credit_data).add_test(
-            test_f1, threshold=0.2, actual_slice=german_credit_data
+        Suite().add_test(test_auc(threshold=0.2, actual_slice=german_credit_data)).add_test(
+            test_f1(threshold=0.2, actual_slice=german_credit_data)
         ).save(client, "test_project_key")
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):

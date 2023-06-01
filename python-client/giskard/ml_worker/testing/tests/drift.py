@@ -11,8 +11,7 @@ from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.generated.ml_worker_pb2 import TestMessage, TestMessageType
+from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.models.base import BaseModel
 
@@ -137,7 +136,7 @@ def _calculate_chi_square(actual_series, reference_series, max_categories):
 
 def _validate_feature_type(gsk_dataset, column_name, feature_type):
     assert (
-            gsk_dataset.feature_types[column_name] == feature_type
+            gsk_dataset.column_types[column_name] == feature_type
     ), f'Column "{column_name}" is not of type "{feature_type}"'
 
 
@@ -391,7 +390,7 @@ def test_drift_earth_movers_distance(
     if not passed:
         messages = [
             TestMessage(
-                type=TestMessageType.ERROR,
+                type=TestMessageLevel.ERROR,
                 text=f"The data is drifting (metric is equal to {np.round(metric, 9)} and is below the test risk level {threshold}) ",
             )
         ]
@@ -492,7 +491,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
     if filtered_modalities:
         messages = [
             TestMessage(
-                type=TestMessageType.ERROR,
+                type=TestMessageLevel.ERROR,
                 text=f"The {test_data} is drifting for the following modalities: {','.join(filtered_modalities)}",
             )
         ]
@@ -660,7 +659,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
     if not passed:
         messages = [
             TestMessage(
-                type=TestMessageType.ERROR,
+                type=TestMessageLevel.ERROR,
                 text=f"The {data_type} is drifting (p-value is equal to {np.round(result.pvalue, 9)} "
                      f"and is below the test risk level {threshold}) ",
             )
@@ -729,7 +728,7 @@ def test_drift_prediction_earth_movers_distance(
     if not passed:
         messages = [
             TestMessage(
-                type=TestMessageType.ERROR,
+                type=TestMessageLevel.ERROR,
                 text=f"The prediction is drifting (metric is equal to {np.round(metric, 9)} "
                      f"and is above the test risk level {threshold}) ",
             )

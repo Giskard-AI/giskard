@@ -22,5 +22,6 @@ public class TestFunctionArgument extends BaseEntity {
     private String type;
     private boolean optional;
     private String defaultValue;
+    private int argOrder;
 
 }
