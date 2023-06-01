@@ -4,17 +4,20 @@ import logging
 from scipy import special
 import torch
 from pathlib import Path
+import yaml
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import WrapperModel
 
-from transformers import PreTrainedModel, pipelines
+from transformers import pipelines, AutoModel
+import tensorflow as tf
 
 
 logger = logging.getLogger(__name__)
 
 
 class HuggingFaceModel(WrapperModel):
+
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
@@ -34,9 +37,23 @@ class HuggingFaceModel(WrapperModel):
                          classification_threshold=classification_threshold,
                          classification_labels=classification_labels)
 
+        self.from_tf = True if isinstance(clf, tf.keras.Model) else False
+
     @classmethod
     def load_clf(cls, local_path):
-        return PreTrainedModel.from_pretrained(local_path)
+        huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
+        if huggingface_meta_file.exists():
+            with open(huggingface_meta_file) as f:
+                pytorch_meta = yaml.load(f, Loader=yaml.Loader)
+
+        return AutoModel.from_pretrained(local_path, from_tf=pytorch_meta["from_tf"]) #AutoModel.from_pretrained(local_path, from_tf=False) #cls.from_tf) #PreTrainedModel.from_pretrained(local_path)
+
+    def save_huggingface_meta(self, local_path):
+        with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
+            yaml.dump(
+                {
+                    "from_tf": self.from_tf,
+                }, f, default_flow_style=False)
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
@@ -44,14 +61,28 @@ class HuggingFaceModel(WrapperModel):
         if not self.id:
             self.id = uuid.uuid4()
         self.save_with_huggingface(local_path)
+        self.save_huggingface_meta(local_path)
 
     def save_with_huggingface(self, local_path):
         self.clf.save_pretrained(local_path)
 
+    """@classmethod
+    def load(cls, local_dir, **kwargs):
+        huggingface_meta_file = Path(local_dir) / 'giskard-model-huggingface-meta.yaml'
+        if huggingface_meta_file.exists():
+            with open(huggingface_meta_file) as f:
+                pytorch_meta = yaml.load(f, Loader=yaml.Loader)
+                kwargs['from_tf'] = pytorch_meta['from_tf']
+                super().load(local_dir, **kwargs)
+        else:
+            raise ValueError(
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
+                f"{huggingface_meta_file} file not found")"""
+
     def clf_predict(self, data):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
-                predictions = self.clf(**data) if isinstance(data, dict) else self.clf(data)
+                predictions = self.clf(**data) #if isinstance(data, dict) else self.clf(data)
         elif isinstance(self.clf, pipelines.Pipeline):
             _predictions = self.clf(data, top_k=None)
             predictions = []
