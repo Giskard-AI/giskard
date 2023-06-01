@@ -44,5 +44,5 @@ wrapped_dataset = Dataset(
       If not provided, the types will be automatically inferred.
       
 {% hint style="success" %}
-To upload your dataset in Giskard, go to [Upload an object](docs/guide/upload/index.md) in the Giskard server.
+To upload your dataset to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
 {% endhint %}
