@@ -119,18 +119,13 @@ class PyTorchModel(MLFlowBasedModel):
         if to_unpack:
             with torch.no_grad():
                 for entry in data:
-                    predictions.append(self.clf(*entry).detach().numpy())
+                    predictions.append(self.clf(*entry).detach().squeeze(0).numpy())
         else:
             with torch.no_grad():
                 for entry in data:
-                    predictions.append(self.clf(entry).detach().numpy())
+                    predictions.append(self.clf(entry).detach().squeeze(0).numpy())
 
-        predictions = np.squeeze(np.array(predictions))
-
-        if self.model_postprocessing_function:
-            predictions = self.model_postprocessing_function(predictions)
-
-        return predictions.squeeze()
+        return np.array(predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
