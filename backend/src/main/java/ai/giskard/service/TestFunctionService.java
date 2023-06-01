@@ -6,15 +6,11 @@ import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,9 +63,9 @@ public class TestFunctionService {
         existing.setTags(dto.getTags());
 
         Map<String, TestFunctionArgument> existingArgs = existing.getArgs() != null ? existing.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity())) : Maps.newHashMap();
+            .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity())) : new HashMap<>();
         Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs() != null ? dto.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : Maps.newHashMap();
+            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
 
         // Delete removed args
         existingArgs.entrySet().stream()
