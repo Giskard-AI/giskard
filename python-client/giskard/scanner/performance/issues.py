@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from ..issues import Issue
-from ...models.base import BaseModel
-from ...datasets.base import Dataset
 from .metrics import PerformanceMetric
+from ..issues import Issue
+from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
 
 
 @dataclass
@@ -105,7 +105,7 @@ _metric_test_mapping = {
 
 
 def _metric_to_test_object(metric: PerformanceMetric):
-    from ...ml_worker.testing.tests import performance as performance_tests
+    from giskard.testing.tests import performance as performance_tests
 
     try:
         test_name = _metric_test_mapping[metric.__class__.__name__]
