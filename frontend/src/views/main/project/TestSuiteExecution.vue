@@ -30,6 +30,6 @@ const {registry, models, datasets, inputs, executions} = storeToRefs(useTestSuit
 
 const route = useRoute();
 
-const selectedExecution = computed(() => executions.value.find(e => e.id === route.params.executionId))
+const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId))
 
 </script>

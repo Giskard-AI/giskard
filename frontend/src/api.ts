@@ -35,7 +35,6 @@ import {
     TestDTO,
     TestExecutionResultDTO,
     TestFunctionDTO,
-    TestExecutionResultDTO,
     TestSuiteCompleteDTO,
     TestSuiteCreateDTO,
     TestSuiteDTO,
@@ -348,11 +347,8 @@ export const api = {
     async getTestSuiteNew(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
     },
-    async listTestSuiteExecutions(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, TestSuiteExecutionDTO[]>(`testing/project/${projectId}/suite-new/${suiteId}/execution`);
-    },
-    async getTestSuiteNewInputs(projectId: number, suiteId: number) {
-        return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
+    async getTestSuiteComplete(projectId: number, suiteId: number) {
+        return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite-new/${suiteId}/complete`);
     },
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);

@@ -1,5 +1,5 @@
 <template>
-  <v-row v-if="registry">
+  <v-row v-if="suite">
     <v-col cols="3">
       <v-list three-line v-if="suite.tests">
         <v-list-item-group v-model="selectedTest" color="primary" mandatory>
@@ -7,7 +7,7 @@
             <v-divider/>
             <v-list-item :value="test">
               <v-list-item-content>
-                <v-list-item-title v-text="registry.tests[test.testId].name"
+                <v-list-item-title v-text="registryByTestUuid[test.testUuid].name"
                                    class="test-title"></v-list-item-title>
               </v-list-item-content>
             </v-list-item>
@@ -19,9 +19,9 @@
       <v-row>
         <v-col>
           <TestSuiteTestDetails
-              :test="registry.tests[selectedTest.testId]"
+              :test="registryByTestUuid[selectedTest.testUuid]"
               :inputs="selectedTest.testInputs"
-              :executions="testSuiteResults[selectedTest.testId]"/>
+              :executions="testSuiteResults[selectedTest.testUuid]"/>
         </v-col>
       </v-row>
     </v-col>
@@ -31,10 +31,11 @@
 <script lang="ts" setup>
 
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {ref, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {SuiteTestDTO} from '@/generated-sources';
 import TestSuiteTestDetails from '@/views/main/project/TestSuiteTestDetails.vue';
 import {storeToRefs} from 'pinia';
+import {chain} from 'lodash';
 
 
 const {registry, suite, testSuiteResults} = storeToRefs(useTestSuiteStore());
@@ -43,8 +44,10 @@ const selectedTest = ref<SuiteTestDTO | null>(null);
 
 watch(() => suite.value, () => {
   if (selectedTest.value !== null && suite.value !== null) {
-    selectedTest.value = suite.value.tests.find(test => test.testId === selectedTest.value!.testId) ?? null;
+    selectedTest.value = suite.value.tests.find(test => test.testUuid === selectedTest.value!.testUuid) ?? null;
   }
 })
+
+const registryByTestUuid = computed(() => chain(registry.value).keyBy('uuid').value())
 
 </script>

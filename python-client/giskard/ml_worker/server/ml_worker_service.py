@@ -363,30 +363,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
-    def getTestRegistry(
-            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TestRegistryResponse:
-        return ml_worker_pb2.TestRegistryResponse(
-            tests={
-                test.id: ml_worker_pb2.TestFunction(
-                    id=test.id,
-                    name=test.name,
-                    module=test.module,
-                    doc=test.doc,
-                    code=test.code,
-                    module_doc=test.module_doc,
-                    tags=test.tags,
-                    arguments={
-                        a.name: ml_worker_pb2.TestFunctionArgument(
-                            name=a.name, type=a.type, optional=a.optional, default=str(a.default)
-                        )
-                        for a in test.args.values()
-                    },
-                )
-                for test in tests_registry.get_all().values()
-            }
-        )
-
     @staticmethod
     def pandas_df_to_proto_df(df):
         return ml_worker_pb2.DataFrame(
