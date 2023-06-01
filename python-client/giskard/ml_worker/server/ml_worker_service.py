@@ -3,6 +3,8 @@ import os
 import platform
 import re
 import sys
+import time
+from io import StringIO
 
 import grpc
 import numpy as np
@@ -23,15 +25,31 @@ from giskard.ml_worker.core.test_function import TestFunction
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import *
+from giskard.ml_worker.generated.ml_worker_pb2 import (
+    DataFrame,
+    DataRow,
+    EchoMsg,
+    ExplainRequest,
+    ExplainResponse,
+    ExplainTextRequest,
+    ExplainTextResponse,
+    MLWorkerInfo,
+    MLWorkerInfoRequest,
+    PlatformInfo,
+    RunModelForDataFrameRequest,
+    RunModelForDataFrameResponse,
+    RunModelRequest,
+    RunModelResponse,
+    RunTestRequest,
+    TestResultMessage,
+    UploadStatus,
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
 logger = logging.getLogger(__name__)
-
-echo_count = 1
 
 
 def file_already_exists(meta: FileUploadMetadata):
@@ -52,8 +70,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.client = client
 
     def echo_orig(self, request, context):
-        globals()["echo_count"] += 1
-        return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
+        logger.debug(f"echo: {request.msg}")
+        return EchoMsg(msg=request.msg)
 
     def upload(self, request_iterator, context: grpc.ServicerContext):
         meta = None
@@ -70,7 +88,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         unit_scale=True,
                         unit_divisor=1024,
                     )
-                    yield UploadStatus(code=UploadStatusCode.CacheMiss)
+                    yield UploadStatus(code=StatusCode.CacheMiss)
                 else:
                     logger.info(f"File already exists: {path}")
                     break
@@ -84,11 +102,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     if progress is not None:
                         progress.close()
                     logger.exception(f"Failed to upload file {meta.name}", e)
-                    yield UploadStatus(code=UploadStatusCode.Failed)
+                    yield UploadStatus(code=StatusCode.Failed)
 
         if progress is not None:
             progress.close()
-        yield UploadStatus(code=UploadStatusCode.Ok)
+        yield UploadStatus(code=StatusCode.Ok)
 
     def getInfo(self, request: MLWorkerInfoRequest, context):
         logger.info("Collecting ML Worker info")
@@ -183,7 +201,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         model = Model.load(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.column_meanings[text_column] != "text":
+        if request.feature_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
@@ -194,7 +212,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ExplainTextResponse(
             weights={
                 k: ExplainTextResponse.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
-                for k in map_features_weight },
+                for k in map_features_weight},
             words=list_words
         )
 
@@ -203,7 +221,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
-            column_meanings=request.column_meanings,
+            feature_types=request.feature_types,
         )
         predictions = model.predict(ds)
         if model.is_classification:
@@ -268,6 +286,70 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return RunModelResponse(
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
+
+    def filterDataset(self, request_iterator, context: grpc.ServicerContext):
+        filterfunc = {}
+        meta = None
+
+        times = []  # This is an array of chunk execution times for performance stats
+        column_types = []
+
+        for filter_msg in request_iterator:
+            if filter_msg.HasField("meta"):
+                meta = filter_msg.meta
+                try:
+                    exec(meta.function, None, filterfunc)
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                column_types = meta.column_types
+                logger.info(f"Filtering dataset with {meta}")
+                yield FilterDatasetResponse(code=StatusCode.Ready)
+            elif filter_msg.HasField("data"):
+                logger.info("Got chunk " + str(filter_msg.idx))
+                time_start = time.perf_counter()
+                data_as_string = filter_msg.data.content.decode('utf-8')
+                data_as_string = meta.headers + "\n" + data_as_string
+                # CSV => Dataframe
+                data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
+                df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
+                df = df.astype(column_types)
+                # Iterate over rows, applying filter_row func
+                try:
+                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x == True].index.array
+                except Exception as e:
+                    yield FilterDatasetResponse(code=StatusCode.Failed, error_message=str(e))
+                time_end = time.perf_counter()
+                times.append(time_end - time_start)
+                # Send NEXT code
+                yield FilterDatasetResponse(code=StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep)
+
+        logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
+        yield FilterDatasetResponse(code=StatusCode.Ok)
+
+    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
+                        context: grpc.ServicerContext) -> TestRegistryResponse:
+        globals()["echo_count"] += 1
+        return TestRegistryResponse(tests={
+            test.id: TestFunction(
+                id=test.id,
+                name=test.name,
+                module=test.module,
+                doc=test.doc,
+                code=test.code,
+                module_doc=test.module_doc,
+                tags=test.tags,
+                arguments={
+                    a.name: TestFunctionArgument(
+                        name=a.name,
+                        type=a.type,
+                        optional=a.optional,
+                        default=str(a.default)
+                    ) for a
+                    in test.args.values()}
+
+            )
+            for test in tests_registry.get_all().values()
+        })
 
     @staticmethod
     def pandas_df_to_proto_df(df):

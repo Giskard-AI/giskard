@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ColumnMeaning;
+import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
@@ -44,8 +44,8 @@ public class DatasetService {
      */
     public Table readTableByDatasetId(@NotNull UUID datasetId) {
         Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
-        Map<String, ColumnType> columnTypes = dataset.getColumnMeanings().entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnMeaning.featureToColumn.get(e.getValue())));
+        Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
         Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
             .resolve(dataset.getId().toString()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
@@ -85,7 +85,7 @@ public class DatasetService {
         metadata.setId(id);
         metadata.setColumnTypes(dataset.getColumnTypes());
         metadata.setTarget(dataset.getTarget());
-        metadata.setColumnMeanings(dataset.getColumnMeanings());
+        metadata.setFeatureTypes(dataset.getFeatureTypes());
         return metadata;
     }
 
@@ -100,7 +100,7 @@ public class DatasetService {
     public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        return table.inRange(rangeMin, rangeMax);
+        return table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax));
     }
 
     @Transactional
@@ -110,13 +110,13 @@ public class DatasetService {
 
         Table data = readTableByDatasetId(datasetId);
 
-        return dataset.getColumnMeanings().entrySet().stream().map(featureAndType -> {
+        return dataset.getFeatureTypes().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
-            ColumnMeaning type = featureAndType.getValue();
+            FeatureType type = featureAndType.getValue();
             FeatureMetadataDTO meta = new FeatureMetadataDTO();
             meta.setType(type);
             meta.setName(featureName);
-            if (type == ColumnMeaning.CATEGORY) {
+            if (type == FeatureType.CATEGORY) {
                 meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
             }
             return meta;

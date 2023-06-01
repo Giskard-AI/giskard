@@ -34,7 +34,7 @@
         </v-btn>
     </div>
     <div>
-      <v-text-field v-if="link" v-model="link" ref="link" readonly dense outlined hide-details class="my-0"></v-text-field>
+      <v-text-field v-if="link" v-model="link" readonly dense outlined hide-details class="my-0"></v-text-field>
       <span v-if="link" class="caption"><em>Note: link will be valid 72 hours</em></span>
     </div>
     </v-card-text>
@@ -43,54 +43,51 @@
 </div>
 </template>
 
-<script lang="ts">
-import {Component, Vue} from 'vue-property-decorator';
-import {api} from '@/api';
-import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
+<script setup lang="ts">
+import {ref} from "vue";
 import mixpanel from "mixpanel-browser";
+import {api} from "@/api";
 import {copyToClipboard} from "@/global-keys";
+import {useMainStore} from "@/stores/main";
 
-@Component
-export default class InviteUsers extends Vue {
+const mainStore = useMainStore();
 
-  public emailToInvite: string = "";
-  public link: string = "";
+const emailToInvite = ref<string>("");
+const link = ref<string>("");
 
-  public async sendEmail() {
-    mixpanel.track('Invite user - email');
-    if (this.emailToInvite) {
-      const loadingNotification = { content: 'Sending...', showProgress: true };
-      try {
-          commitAddNotification(this.$store, loadingNotification);
-          await api.inviteToSignup(this.emailToInvite);
-          commitRemoveNotification(this.$store, loadingNotification);
-          commitAddNotification(this.$store, { content: 'User is invited', color: 'success'});
-          this.emailToInvite = "";
-      } catch (error) {
-          commitRemoveNotification(this.$store, loadingNotification);
-          commitAddNotification(this.$store, { content: error.response.data.detail, color: 'error' });
-      }
-    }
-  }
-  
-  public async generateLink() {
-    mixpanel.track('Invite user - generate link');
-    const loadingNotification = { content: 'Generating...', showProgress: true };
+async function sendEmail() {
+  mixpanel.track('Invite user - email');
+  if (emailToInvite.value) {
+    const loadingNotification = { content: 'Sending...', showProgress: true };
     try {
-        commitAddNotification(this.$store, loadingNotification);
-        const response = await api.getSignupLink();
-        commitRemoveNotification(this.$store, loadingNotification);
-        this.link = response;
+      mainStore.addNotification(loadingNotification);
+      await api.inviteToSignup(emailToInvite.value);
+      mainStore.removeNotification(loadingNotification);
+      mainStore.addNotification({ content: 'User is invited', color: 'success'});
+      emailToInvite.value = "";
     } catch (error) {
-        commitRemoveNotification(this.$store, loadingNotification);
-        commitAddNotification(this.$store, { content: 'Could not reach server', color: 'error' });
+      mainStore.removeNotification(loadingNotification);
+      mainStore.addNotification({ content: error.response.data.detail, color: 'error' });
     }
   }
+}
 
-  public async copyLink() {
-    await copyToClipboard(this.link);
-    commitAddNotification(this.$store, {content: "Copied to clipboard", color: "success"});
+async function generateLink() {
+  mixpanel.track('Invite user - generate link');
+  const loadingNotification = { content: 'Generating...', showProgress: true };
+  try {
+    mainStore.addNotification(loadingNotification);
+    const response = await api.getSignupLink();
+    mainStore.removeNotification(loadingNotification);
+    link.value = response;
+  } catch (error) {
+    mainStore.removeNotification(loadingNotification);
+    mainStore.addNotification({ content: 'Could not reach server', color: 'error' });
   }
+}
 
+async function copyLink() {
+  await copyToClipboard(link.value);
+  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
 }
 </script>

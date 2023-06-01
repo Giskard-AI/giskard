@@ -10,6 +10,7 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.service.ee.FeatureFlagService;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -51,11 +52,11 @@ import static java.util.Arrays.stream;
 @RequiredArgsConstructor
 public class InitService {
 
-    private static final Map<String, ColumnMeaning> germanCreditColumnMeanings = new HashMap<>();
+    private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
     private static final Map<String, String> germanCreditColumnTypes = new HashMap<>();
-    private static final Map<String, ColumnMeaning> enronColumnMeanings = new HashMap<>();
+    private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
     private static final Map<String, String> enronColumnTypes = new HashMap<>();
-    private static final Map<String, ColumnMeaning> zillowColumnMeanings = new HashMap<>();
+    private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
     private static final Map<String, String> zillowColumnTypes = new HashMap<>();
     public static final String ZILLOW_PROJECT_KEY = "zillow";
     public static final String ENRON_PROJECT_KEY = "enron";
@@ -69,6 +70,7 @@ public class InitService {
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
     private final GeneralSettingsService generalSettingsService;
     private final FileLocationService fileLocationService;
+    private final FeatureFlagService featureFlagService;
     private Map<String, ProjectConfig> projects;
     String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
@@ -84,12 +86,12 @@ public class InitService {
                     .name("House Pricing Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(zillowColumnMeanings.keySet().stream().toList())
+                    .featureNames(zillowFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Data")
-                    .columnMeanings(zillowColumnMeanings)
+                    .featureTypes(zillowFeatureTypes)
                     .columnTypes(zillowColumnTypes)
                     .target("SalePrice")
                     .build(),
@@ -102,11 +104,11 @@ public class InitService {
                     .name("Email Classification Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(enronColumnMeanings.keySet().stream().toList())
+                    .featureNames(enronFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Email data")
-                    .columnMeanings(enronColumnMeanings)
+                    .featureTypes(enronFeatureTypes)
                     .columnTypes(enronColumnTypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
@@ -120,13 +122,13 @@ public class InitService {
                     .name("Credit Scoring Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(germanCreditColumnMeanings.keySet().stream().toList())
+                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Credit Scoring data")
                     .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .target("default")
-                    .columnMeanings(germanCreditColumnMeanings)
+                    .featureTypes(germanCreditFeatureTypes)
                     .columnTypes(germanCreditColumnTypes)
                     .build(),
                 new InspectionSettings()
@@ -164,6 +166,16 @@ public class InitService {
                 saveUser(key, "ROLE_" + key);
             }
         });
+
+        if (!featureFlagService.hasFlag(FeatureFlagService.FeatureFlag.AUTH)) {
+            // Given the loop above, we can safely assume that the user at least exists.
+            userRepository.findOneByLogin("admin").ifPresent(admin -> {
+                if (!admin.isEnabled()) {
+                    admin.setEnabled(true);
+                    userRepository.save(admin);
+                }
+            });
+        }
     }
 
     /**
