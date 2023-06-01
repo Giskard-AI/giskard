@@ -20,13 +20,13 @@ class ComputeOverconfidence:
         # self.incorrect_only.dropna(subset=["__gsk__loss"], inplace=True)
         column_types = self.dataset.column_types.copy()
         column_types["__gsk__loss"] = "numeric"
-        incorrect_dataset = Dataset(df=self.incorrect_only[self.incorrect_only["__gsk__loss"] != 0],
+        incorrect_dataset = Dataset(df=self.incorrect_only,
                                     column_types=column_types,
                                     target=self.dataset.target)
         return incorrect_dataset
 
     def get_metric(self):
-        return self.incorrect_only["__gsk__loss"].mean()
+        return self.incorrect_only[self.incorrect_only["__gsk__loss"] != 0]["__gsk__loss"].mean()
 
     def _diff(self, x):
         row_as_list = x.values.flatten().tolist()
