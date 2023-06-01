@@ -365,7 +365,7 @@ class WrapperModel(Model, ABC):
     @classmethod
     def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-preprocessing.pkl"
+        file_path = local_path / "giskard-data-preprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
@@ -375,7 +375,7 @@ class WrapperModel(Model, ABC):
     @classmethod
     def load_model_postprocessing_function(cls, local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-postprocessing.pkl"
+        file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
