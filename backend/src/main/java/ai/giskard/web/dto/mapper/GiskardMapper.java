@@ -1,9 +1,6 @@
 package ai.giskard.web.dto.mapper;
 
-import ai.giskard.domain.Feedback;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.Role;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -208,5 +205,9 @@ public interface GiskardMapper {
     default List<TestInput> map(Map<String, TestInputDTO> value){
         return value.values().stream().map(this::fromDTO).toList();
     }
+
+    TestFunctionDTO toDTO(TestFunction testFunction);
+    TestFunction fromDTO(TestFunctionDTO testFunction);
+
 
 }

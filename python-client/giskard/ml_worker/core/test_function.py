@@ -1,89 +1,101 @@
+import logging
+
 import cloudpickle
 import hashlib
 import os
 import pickle
 import posixpath
-import random
 import sys
-import uuid
 from pathlib import Path
 from typing import Any
 
+from giskard import test
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.core import TestFunctionMeta
+from giskard.ml_worker.testing.registry.registry import tests_registry, generate_func_id
+from giskard.ml_worker.testing.tests.heuristic import test_right_label
 from giskard.settings import settings
 
-
-def generate_func_id(name) -> str:
-    rd = random.Random()
-    rd.seed(hashlib.sha1(name.encode('utf-8')).hexdigest())
-    func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
-    return str(func_id)
+logger = logging.getLogger(__name__)
 
 
 class TestFunction:
     func: Any
-    func_name: str
+    meta: TestFunctionMeta
 
-    def __init__(self, func: Any, func_name: str):
+    def __init__(self, func: Any, meta: TestFunctionMeta):
         self.func = func
-        self.func_name = func_name
+        self.meta = meta
 
     @classmethod
     def of(cls, func: Any):
         func_name = f"{func.__module__}.{func.__name__}"
-        print(func_name)
 
         if func_name.startswith('__main__'):
             reference = cloudpickle.dumps(func)
             func_name += hashlib.sha1(reference).hexdigest()
 
-        return cls(func, func_name)
+        func_uuid = generate_func_id(func_name)
+
+        meta = tests_registry.get_test(func_uuid)
+        if meta is None:
+            # equivalent to adding @test decorator
+            test(func)
+            meta = tests_registry.get_test(func_uuid)
+
+        return cls(func, meta)
 
     def save(self, client: GiskardClient, project_key) -> str:
-        if not self.func_name.startswith('__main__'):
-            return self.func_name
+        if self.meta.version is not None:
+            return self.meta.uuid
 
-        func_id = generate_func_id(self.func_name)
+        if self.meta.module is None:
+            local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / self.meta.uuid
 
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / func_id
+            if not local_dir.exists():
+                os.makedirs(local_dir)
+                with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
+                    cloudpickle.dump(self.func, f)
+                    if client is not None:
+                        client.log_artifacts(local_dir, posixpath.join(project_key, "tests", self.meta.uuid))
 
-        if not local_dir.exists():
-            os.makedirs(local_dir)
-            with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
-                cloudpickle.dump(self.func, f)
-                if client is not None:
-                    client.log_artifacts(local_dir, posixpath.join(project_key, "tests", func_id))
-                    client.save_test_meta(project_key, #TODO
-                                           info.model_uuid,
-                                           self.meta,
-                                           info.flavors['python_function']['python_version'],
-                                           get_size(f))
+        client.save_test_function_meta(project_key,
+                                       self.meta.uuid,
+                                       self.meta)
 
-        return self.func_name
+        return self.meta.uuid
 
     @classmethod
-    def load(cls, client: GiskardClient, project_key: str, func_name: str):
-        if not func_name.startswith('__main__'):
-            [module_name, func_name] = func_name.split('.')
-            func = getattr(sys.modules[module_name], func_name)
-        else:
-            func_id = generate_func_id(func_name)
+    def load(cls, client: GiskardClient, project_key: str, func_uuid: str):
+        meta = tests_registry.get_test(func_uuid)
+        if meta is not None:
+            return cls(meta.fn, meta)
 
-            local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / func_id
+        meta = client.load_test_function_meta(project_key, func_uuid)
+
+        if meta.module is not None:
+            func = getattr(sys.modules[meta.module], meta.name)
+        else:
+            local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / func_uuid
 
             if client is None:
                 # internal worker case, no token based http client
-                assert local_dir.exists(), f"Cannot find existing function {project_key}.{func_id}"
+                assert local_dir.exists(), f"Cannot find existing function {project_key}.{func_uuid}"
             else:
-                client.load_artifact(local_dir, posixpath.join(project_key, "tests", func_id))
+                client.load_artifact(local_dir, posixpath.join(project_key, "tests", meta.uuid))
 
             with open(Path(local_dir) / 'giskard-function.pkl', 'rb') as f:
                 func = pickle.load(f)
 
-        return cls(func, func_name)
+        meta.fn = func
+
+        return cls(func, meta)
 
     @classmethod
     def _read_function_from_local_dir(cls, local_path: str):
         with open(local_path, 'rb') as ds_stream:
             return
 
+
+def test_reg():
+    TestFunction.of(test_right_label)

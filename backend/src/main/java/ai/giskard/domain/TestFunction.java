@@ -2,6 +2,7 @@ package ai.giskard.domain;
 
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
@@ -10,8 +11,9 @@ import java.util.UUID;
 @Getter
 @Entity(name = "test_functions")
 @Table(uniqueConstraints={
-    @UniqueConstraint(columnNames = {"name", "version"})
+    @UniqueConstraint(columnNames = {"name", "module", "version"})
 })
+@Setter
 public class TestFunction {
 
     @Id
@@ -27,5 +29,5 @@ public class TestFunction {
     private String code;
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    private List<String> json;
+    private List<String> tags;
 }
