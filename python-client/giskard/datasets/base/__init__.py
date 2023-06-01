@@ -202,7 +202,6 @@ class Dataset(ColumnMetadataMixin):
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
-
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
         Adds a slicing function to the data processor.
