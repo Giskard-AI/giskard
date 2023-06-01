@@ -28,7 +28,7 @@ class PerformanceIssueInfo:
 class PerformanceIssue(Issue):
     """Performance Issue"""
 
-    group = "Model bias"
+    group = "Performance bias"
     info: PerformanceIssueInfo
 
     def __init__(
