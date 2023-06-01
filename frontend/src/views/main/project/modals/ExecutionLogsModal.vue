@@ -15,6 +15,10 @@
           <pre class="logs caption pt-5">{{ props.logs }}</pre>
         </v-card-text>
         <v-card-actions>
+          <v-btn color="secondary" @click="copyLogs">
+            <v-icon>content_copy</v-icon>
+            Copy logs
+          </v-btn>
           <v-btn color="primary" @click="close">Close</v-btn>
         </v-card-actions>
       </v-card>
@@ -24,10 +28,20 @@
 
 <script setup lang="ts">
 
+import {useMainStore} from '@/stores/main';
+import {copyToClipboard} from '@/global-keys';
+
 const props = (defineProps<{
   logs: string,
 }>());
 
+
+const mainStore = useMainStore()
+
+async function copyLogs() {
+  await copyToClipboard(props.logs);
+  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
+}
 
 </script>
 
@@ -45,11 +59,13 @@ const props = (defineProps<{
   margin: 0 1rem;
   padding: 1rem;
   min-width: 50vw;
+  max-width: 80vw;
   max-height: 80vh;
   overflow: auto;
 }
 
 .logs {
+  white-space: pre-wrap;
   text-align: start;
 }
 </style>
