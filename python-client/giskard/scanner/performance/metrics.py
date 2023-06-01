@@ -145,18 +145,6 @@ class Borderline(PerformanceMetric):
     def _calculate_metric(self, bld) -> float:
         return bld.get_proba_rmse()
 
-# class DataLeakageMetric(PerformanceMetric):
-#     name = "dataleakage"
-#     greater_is_better = False
-#
-#     def __call__(self, model: BaseModel, dataset: Dataset) -> float:
-#         dld = DataLeakageDetector(model,dataset)
-#
-#         return self._calculate_metric(dld)
-#
-#     def _calculate_metric(self, dld) -> float:
-#         return dld.run()
-
 
 _metrics_register = {
     "f1": F1Score,
@@ -168,7 +156,6 @@ _metrics_register = {
     "mae": MeanAbsoluteError,
     "probamae": ProbaMAE,
     "borderline":Borderline,
-    # "dataleakage":DataLeakageMetric
 }
 
 
