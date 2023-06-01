@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
-from .metrics import PerformanceMetric
 from ..issues import Issue
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -11,12 +10,11 @@ from ...slicing.text_slicer import MetadataSliceFunction
 
 
 @dataclass
-class PerformanceIssueInfo:
-    metric: PerformanceMetric
-    metric_value_reference: float
-    metric_value_slice: float
+class CalibrationIssueInfo:
     slice_fn: SlicingFunction
     slice_size: int
+    metric_value_slice: float
+    metric_value_reference: float
     threshold: float
 
     @property
@@ -28,24 +26,19 @@ class PerformanceIssueInfo:
         return self.metric_value_slice - self.metric_value_reference
 
 
-class PerformanceIssue(Issue):
-    """Performance Issue"""
+class CalibrationIssue(Issue):
+    group = "Overconfidence"
 
-    group = "Performance"
-
-    info: PerformanceIssueInfo
+    info: CalibrationIssueInfo
 
     def __init__(
         self,
         model: BaseModel,
         dataset: Dataset,
         level: str,
-        info: PerformanceIssueInfo,
+        info: CalibrationIssueInfo,
     ):
         super().__init__(model, dataset, level, info)
-
-    def __repr__(self):
-        return f"<PerformanceIssue slice='{self.info.slice_fn}', metric='{self.info.metric.name}', metric_delta={self.info.metric_rel_delta * 100:.2f}%>"
 
     @property
     def domain(self):
@@ -53,7 +46,7 @@ class PerformanceIssue(Issue):
 
     @property
     def metric(self):
-        return f"{self.info.metric.name} = {self.info.metric_value_slice:.2f}"
+        return "Overconfidence"
 
     @property
     def deviation(self):
@@ -108,46 +101,17 @@ class PerformanceIssue(Issue):
 
         n = min(len(examples), n)
         if n > 0:
+            if model_pred.probabilities is not None:
+                idx = (-model_pred.probabilities[bad_pred_mask]).argpartition(n - 1)[:n]
+                return examples.iloc[idx]
+
             return examples.sample(n, random_state=142)
 
         return examples
 
     @property
     def importance(self):
-        if self.info.metric.greater_is_better:
-            return -self.info.metric_rel_delta
-
         return self.info.metric_rel_delta
 
     def generate_tests(self) -> list:
-        test_fn = _metric_to_test_object(self.info.metric)
-
-        if test_fn is None:
-            return []
-
-        # Convert the relative threshold to an absolute one.
-        delta = (self.info.metric.greater_is_better * 2 - 1) * self.info.threshold * self.info.metric_value_reference
-        abs_threshold = self.info.metric_value_reference - delta
-
-        return [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
-
-
-_metric_test_mapping = {
-    "F1Score": "test_f1",
-    "Precision": "test_precision",
-    "Accuracy": "test_accuracy",
-    "Recall": "test_recall",
-    "AUC": "test_auc",
-    "MeanSquaredError": "test_mse",
-    "MeanAbsoluteError": "test_mae",
-}
-
-
-def _metric_to_test_object(metric: PerformanceMetric):
-    from ...testing.tests import performance as performance_tests
-
-    try:
-        test_name = _metric_test_mapping[metric.__class__.__name__]
-        return getattr(performance_tests, test_name)
-    except (KeyError, AttributeError):
-        return None
+        return []

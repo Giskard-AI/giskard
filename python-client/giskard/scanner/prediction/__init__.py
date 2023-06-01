@@ -9,7 +9,6 @@ from abc import abstractmethod
 
 
 class PredictionBiasDetector(PerformanceBiasDetector):
-
     def run(self, model: BaseModel, dataset: Dataset):
         logger.debug(
             f"ModelBiasDetector: Running with metrics={self.metrics}, threshold={self.threshold}, method={self.method}"
@@ -27,7 +26,7 @@ class PredictionBiasDetector(PerformanceBiasDetector):
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
         meta = self._get_meta(model, dataset)
-
+        print(meta.df)
         if meta is None:
             return []
 

@@ -3,12 +3,11 @@ import pandas as pd
 from sklearn import metrics
 from typing import Optional, Sequence
 
+from ..common.loss_based_detector import LossBasedDetector
+
 from ...models.base import BaseModel
 from ...models._precooked import PrecookedModel
 from ...datasets.base import Dataset
-from ...slicing.utils import get_slicer
-from ...slicing.text_slicer import TextSlicer
-from ...slicing.category_slicer import CategorySlicer
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from .issues import PerformanceIssue, PerformanceIssueInfo
 from .metrics import PerformanceMetric, get_metric
@@ -17,44 +16,17 @@ from ..logger import logger
 
 
 @detector(name="performance_bias", tags=["performance_bias", "classification", "regression"])
-class PerformanceBiasDetector:
+class PerformanceBiasDetector(LossBasedDetector):
     def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.05, method: str = "tree"):
         self.metrics = metrics
         self.threshold = threshold
         self.method = method
 
-    def run(self, model: BaseModel, dataset: Dataset):
-        logger.debug(
-            f"PerformanceBiasDetector: Running with metrics={self.metrics}, threshold={self.threshold}, method={self.method}"
-        )
+    @property
+    def _numerical_slicer_method(self):
+        return self.method
 
-        # Check if we have enough data to run the scan
-        if len(dataset) < 100:
-            logger.warning("PerformanceBiasDetector: Skipping scan because the dataset is too small (< 100 samples).")
-            return []
-
-        # If the dataset is very large, limit to a subsample
-        max_data_size = 10_000_000 // len(model.meta.feature_names or dataset.columns)
-        if len(dataset) > max_data_size:
-            logger.debug(f"PerformanceBiasDetector: Limiting dataset size to {max_data_size} samples.")
-            dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
-
-        # Calculate loss
-        meta = self._calculate_meta(model, dataset)
-
-        # Find slices
-        dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
-        slices = self._find_slices(dataset_to_slice, meta)
-
-        # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger)
-        slices = [s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset.slice(s))]
-
-        # Create issues from the slices
-        issues = self._find_issues(slices, model, dataset)
-
-        return issues
-
-    def _calculate_meta(self, model, dataset):
+    def _calculate_loss(self, model, dataset):
         true_target = dataset.df.loc[:, dataset.target].values
         pred = model.predict(dataset)
 
@@ -65,46 +37,12 @@ class PerformanceBiasDetector:
 
         return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
 
-    def _find_slices(self, dataset: Dataset, meta: pd.DataFrame):
-        df_with_meta = dataset.df.join(meta)
-        target_col = "__gsk__loss"
-
-        # @TODO: Handle this properly once we have support for metadata in datasets
-        column_types = dataset.column_types.copy()
-        column_types["__gsk__loss"] = "numeric"
-        dataset_with_meta = Dataset(df_with_meta, target=dataset.target, column_types=column_types)
-
-        # Columns by type
-        cols_by_type = {
-            type_val: [col for col, col_type in dataset.column_types.items() if col_type == type_val]
-            for type_val in ["numeric", "category", "text"]
-        }
-
-        # Numerical features
-        slicer = get_slicer(self.method, dataset_with_meta, target_col)
-
-        slices = []
-        for col in cols_by_type["numeric"]:
-            slices.extend(slicer.find_slices([col]))
-
-        # Categorical features
-        slicer = CategorySlicer(dataset_with_meta, target=target_col)
-        for col in cols_by_type["category"]:
-            slices.extend(slicer.find_slices([col]))
-
-        # @TODO: FIX THIS
-        # Text features
-        slicer = TextSlicer(dataset_with_meta, target=target_col, slicer=self.method)
-        for col in cols_by_type["text"]:
-            slices.extend(slicer.find_slices([col]))
-
-        return slices
-
     def _find_issues(
         self,
         slices: Sequence[SlicingFunction],
         model: BaseModel,
         dataset: Dataset,
+        meta: pd.DataFrame,
     ) -> Sequence[PerformanceIssue]:
         # Use a precooked model to speed up the tests
         precooked = PrecookedModel.from_model(model, dataset)
