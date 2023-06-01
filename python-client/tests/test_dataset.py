@@ -1,4 +1,3 @@
-from giskard.datasets import Dataset
 from giskard.datasets.base import Dataset
 import pandas as pd
 import pytest
