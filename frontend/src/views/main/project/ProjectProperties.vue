@@ -93,48 +93,6 @@
       </v-col>
     </v-row>
 
-    <div class="pt-8 pb-4 d-flex">
-      <div class="d-flex justify-end align-center flex-grow-1">
-        <v-btn @click="reloadProjectArtifacts()" class="pa-2 text--secondary">
-          Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-        <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
-        </v-btn>
-      </div>
-    </div>
-
-    <v-row class="mb-8">
-      <v-col cols="12">
-        <v-card height="100%" outlined>
-          <v-card-title class="justify-space-between">
-            <h3 class="flex-1 font-weight-light secondary--text">Project Artifacts</h3>
-            <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
-              <v-btn value="datasets" class="py-5 px-4">
-                <span>Datasets</span>
-                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'datasets' ? 'primary' : ''">
-                  stacked_bar_chart
-                </v-icon>
-              </v-btn>
-              <v-btn value="models" class="py-5 px-4">
-                <span>Models</span>
-                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'models' ? 'primary' : ''">
-                  settings_suggest
-                </v-icon>
-              </v-btn>
-            </v-btn-toggle>
-            <div class="flex-1"></div>
-          </v-card-title>
-          <v-card-text>
-            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :projectKey="project.key" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
-            <Models v-show="toggleObject === 'models'" :projectId="projectId" :projectKey="project.key" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
     <v-dialog persistent max-width="340" v-model="openDeleteDialog">
       <v-card>
         <v-card-title>
@@ -158,11 +116,14 @@ import { getUserFullDisplayName } from '@/utils';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
+import { useRouter } from "vue-router/composables";
+
+const router = useRouter();
 
 
 interface Props {
@@ -176,6 +137,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 
 const projectStore = useProjectStore();
+
+const openDeleteDialog = ref(false);
 
 const project = computed(() => useProjectStore().project(props.projectId))
 
@@ -243,6 +206,14 @@ async function renameLimeNumberSamples(newLimeSamples: string) {
 
 async function editProject(data: ProjectPostDTO) {
   await projectStore.editProject({ id: project.value!.id, data })
+}
+
+async function deleteProject() {
+  if (project.value) {
+    mixpanel.track('Delete project', { id: project.value!.id });
+    await projectStore.deleteProject({ id: project.value!.id })
+    await router.push('/main/dashboard');
+  }
 }
 </script>
 
