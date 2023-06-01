@@ -38,7 +38,8 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
 
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
-        tests_registry.register(CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags)))
+        tests_registry.register(
+            CallableMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags), type='SLICE'))
         if inspect.isclass(func) and issubclass(func, SliceFunction):
             return func
         return SliceFunction(func, row_level)
