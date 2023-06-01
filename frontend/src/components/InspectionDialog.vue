@@ -112,10 +112,12 @@ onActivated(() => {
               <v-card-text>
                 <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
               </v-card-text>
-              <v-card-actions>
-                <v-btn text @click="currentStep = 1">Back</v-btn>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="currentStep = 3" :disabled="selectedDataset === null">Next</v-btn>
+              <v-card-actions class="d-flex justify-space-between">
+                <v-btn text @click="closeDialog">Cancel</v-btn>
+                <div class="d-flex justify-end">
+                  <v-btn text @click="currentStep = 1" class="mr-2">Back</v-btn>
+                  <v-btn color="primary" @click="currentStep = 3" :disabled="selectedDataset === null">Next</v-btn>
+                </div>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -125,10 +127,12 @@ onActivated(() => {
               <v-card-text>
                 <v-text-field label="Inspection name (optional)" v-model="inspectionName" outlined dense hide-details></v-text-field>
               </v-card-text>
-              <v-card-actions>
-                <v-btn text @click="currentStep = 2">Back</v-btn>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="currentStep = 4">Next</v-btn>
+              <v-card-actions class="d-flex justify-space-between">
+                <v-btn text @click="closeDialog">Cancel</v-btn>
+                <div class="d-flex justify-end">
+                  <v-btn text @click="currentStep = 2" class="mr-2">Back</v-btn>
+                  <v-btn color="primary" @click="currentStep = 4">Next</v-btn>
+                </div>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -157,10 +161,12 @@ onActivated(() => {
                   </v-list-item>
                 </v-list>
               </v-card-text>
-              <v-card-actions>
-                <v-btn text @click="currentStep = 3">Back</v-btn>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
+              <v-card-actions class="d-flex justify-space-between">
+                <v-btn text @click="closeDialog">Cancel</v-btn>
+                <div class="d-flex justify-end">
+                  <v-btn text @click="currentStep = 3" class="mr-2">Back</v-btn>
+                  <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
+                </div>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
