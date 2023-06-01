@@ -56,9 +56,9 @@ class ModelCache:
             self.prediction_cache[keys.iloc[i]] = values[i]
 
         if self.id:
-            with open(Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / str(
-                    self.id) / CACHE_CSV_FILENAME),
-                      "a") as pred_f:
+            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / self.id)
+            os.makedirs(local_dir, exist_ok=True)
+            with open(local_dir / CACHE_CSV_FILENAME, "a") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
                     writer.writerow([keys.iloc[i], values[i]])
