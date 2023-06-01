@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, TFAutoModel
 
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
 
 import pandas as pd
 import tensorflow as tf
@@ -9,6 +9,7 @@ import logging
 import pytest
 
 import tests.utils
+from giskard.models.tensorflow import TensorFlowModel
 
 logging.basicConfig(level=logging.INFO)
 
