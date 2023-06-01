@@ -66,6 +66,8 @@ html_theme_options = {
 
 html_logo = "imgs/giskard_logo.png"
 
+add_function_parentheses = False
+
 import inspect
 import os
 import sys
