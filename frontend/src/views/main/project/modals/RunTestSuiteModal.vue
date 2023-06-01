@@ -53,7 +53,8 @@ import {computed, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
-import {useMainStore} from '@/stores/main';
+import {useMainStore} from "@/stores/main";
+import {useTestSuiteStore} from '@/stores/test-suite';
 
 const props = defineProps<{
   projectId: number,
@@ -61,7 +62,8 @@ const props = defineProps<{
   inputs: { [name: string]: string }
 }>();
 
-const emit = defineEmits(['uuid']);
+const mainStore = useMainStore();
+const testSuiteStore = useTestSuiteStore();
 
 const dialog = ref<boolean>(false);
 const running = ref<boolean>(false);
@@ -74,8 +76,6 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,
   type: props.inputs[name]
 })));
-
-const mainStore = useMainStore();
 
 function isAllParamsSet() {
   return Object.keys(props.inputs)
@@ -100,7 +100,8 @@ async function executeTestSuite() {
   try {
     const jobUuid = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
     mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
-    emit('uuid', jobUuid);
+    // Track job asynchronously
+    testSuiteStore.trackJob(jobUuid);
   } finally {
     running.value = false;
     dialog.value = false;
