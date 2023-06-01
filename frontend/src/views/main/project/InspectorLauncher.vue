@@ -18,7 +18,7 @@
       <div v-else>No dataset uploaded yet on this project.</div>
       <v-spacer/>
       <div v-if="creatingInspection">
-        <span>Scoring the entire dataset of {{ datasetSelected?.size | fileSize }}. This operation can take a while...</span>
+        <span>Scoring the entire dataset of {{ datasetSelected?.originalSizeBytes | fileSize }}. This operation can take a while...</span>
         <v-progress-linear
             indeterminate
             color="primary"
