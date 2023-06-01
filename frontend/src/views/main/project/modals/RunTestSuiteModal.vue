@@ -123,7 +123,6 @@ async function executeTestSuite() {
   try {
     await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
     commitAddNotification(store, {content: 'Test suite execution has been scheduled', color: 'success'});
-    // TODO: Add UI to see job running in settings
   } finally {
     running.value = false;
     dialog.value = false;
