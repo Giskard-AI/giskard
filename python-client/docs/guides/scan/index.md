@@ -57,7 +57,7 @@ If your ML model contains preprocessing functions (categorical encoding, scaling
 ```python
 from giskard import wrap_model
 
-my_model = wrap_model(some_classifier,
+wrapped_model = wrap_model(some_classifier,
                       model_type="classification", # or "regression"
                       feature_names=["column1", "column2", ...],
                       classification_labels=["label1", "label2", ...]) # not needed in case of "regression"
@@ -107,7 +107,7 @@ INFER_CAT_COLUMNS = True
 
 from giskard import wrap_dataset
 
-my_dataset = wrap_dataset(some_df,
+wrapped_dataset = wrap_dataset(some_df,
                           target="numeric_column",
                           column_types=my_column_types,            # option 1
                           # cat_columns=my_cat_columns,            # option 2
@@ -127,7 +127,7 @@ To make sure your model is working in Giskard, you can simply execute the follow
 ```python
 from giskard.core.model_validation import validate_model
 
-validate_model(my_model, my_dataset)
+validate_model(wrapped_model, wrapped_dataset)
 ```
 
 ## 5. Scan your model for vulnerabilities
@@ -136,7 +136,7 @@ Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
-results = giskard.scan(my_model, my_dataset, tests=["f1", "accuracy"])
+results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
 
 display(results) # in your notebook
 ```
@@ -165,7 +165,7 @@ client = GiskardClient(url, token)
 your_project = client.create_project("project_key", "PROJECT_NAME", "DESCRIPTION")
 
 # Upload your model and dataset
-model_id = my_model.upload(client, "project_key")
+model_id = wrapped_model.upload(client, "project_key")
 dataset_id = my_test_dataset.upload(client, "project_key")
 ```
 
