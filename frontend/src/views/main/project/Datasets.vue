@@ -13,7 +13,8 @@
         </v-btn>
       </div>
     </div>
-    <v-container v-if="projectArtifactsStore.datasets.length > 0" fluid class="vc">
+    <LoadingFullscreen v-if="isLoading" name="datasets" />
+    <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
@@ -58,7 +59,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token">
+    <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#3.-create-a-giskard-dataset" target="_blank">full documentation</a> for more information.</p>
@@ -83,6 +84,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import { JWTToken } from "@/generated-sources";
 import { TYPE } from "vue-toastification";
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -96,6 +98,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const isLoading = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
@@ -194,7 +197,9 @@ async function renameDataset(id: string, name: string) {
 }
 
 async function reloadDatasets() {
-  await projectArtifactsStore.loadDatasetsWithNotification();
+  isLoading.value = true;
+  await projectArtifactsStore.loadDatasets();
+  isLoading.value = false;
 }
 
 const generateApiAccessToken = async () => {

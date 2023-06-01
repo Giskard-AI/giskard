@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -63,8 +62,8 @@ public class InspectionController {
     }
 
     @PostMapping("/inspection")
-    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) throws IOException {
-        return giskardMapper.toDTO(modelService.createInspection(createDTO.getName(), createDTO.getModelId(), createDTO.getDatasetId()));
+    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) {
+        return giskardMapper.toDTO(modelService.createInspection(createDTO.getName(), createDTO.getModelId(), createDTO.getDatasetId(), createDTO.isSample()));
     }
 
     /**
@@ -77,14 +76,13 @@ public class InspectionController {
     }
 
     /**
-     *
      * @param id
      * @param createDTO
      * @return updated inspection
      * @throws EntityNotFoundException
      */
     @PutMapping("/inspections/{id}")
-    public InspectionDTO updateInspectionName(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
-        return giskardMapper.toDTO(inspectionService.updateInspectionName(id, createDTO.getName()));
+    public InspectionDTO updateInspection(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
+        return giskardMapper.toDTO(inspectionService.updateInspection(id, createDTO));
     }
 }
