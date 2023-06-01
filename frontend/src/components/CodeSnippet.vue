@@ -58,13 +58,12 @@ async function copyCode() {
   position: absolute;
   right: 2rem;
   top: 0.1rem;
-  background-color: #282828;
+  background-color: #176F38;
   color: #fff;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.7rem;
   font-weight: bold;
   font-family: Arial, Helvetica, sans-serif;
-  opacity: 0.8;
 }
 </style>
