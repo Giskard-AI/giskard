@@ -136,6 +136,7 @@ class IssueFinder:
         if model.is_classification:
             metrics = ["f1", "precision", "recall"]
             metrics.append("balanced_accuracy" if _is_unbalanced_target(dataset.df[dataset.target]) else "accuracy")
+            return metrics
 
         return ["mse", "mae"]
 
