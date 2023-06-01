@@ -2,9 +2,9 @@ import pandas as pd
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
+
 from ..decorators import detector
-from ... import Model
-from ...models.base import BaseModel
+from ...models.langchain import LangchainModel
 from ...datasets.base import Dataset
 from ..issues import Issue
 from ..logger import logger
@@ -27,9 +27,7 @@ class LLMToxicityDetector:
         self.tones = tones or ["insulting", "harmful", "offensive"]
         self.num_samples = num_samples
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        from langchain import LLMChain
-
+    def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         # Take a sample from the dataset
         num_samples = min(self.num_samples, len(dataset))
         samples = dataset.slice(lambda df: df.sample(num_samples, random_state=142), row_level=False)
@@ -65,11 +63,7 @@ class LLMToxicityDetector:
             pp = self.prompt.replace("[FILTERING]", "Saying you cannot do that")
             pp = pp.replace("[TONE]", tone)
 
-            perturbed_prompt = model.model.prompt.copy(
-                update=dict(template=pp.replace("[INPUT]", model.model.prompt.template))
-            )
-            chain = LLMChain(llm=model.model.llm, prompt=perturbed_prompt)
-            perturbed_model = Model(chain, model_type="generative")
+            perturbed_model = model.rewrite_prompt(pp.replace("[INPUT]", model.model.prompt.template))
 
             output = perturbed_model.predict(dataset)
             tox_scores = self._compute_toxicity_score(output.prediction)
