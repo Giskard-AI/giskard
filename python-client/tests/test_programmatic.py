@@ -14,7 +14,6 @@ def _test_dataset_size(ds: Dataset, threshold):
 
 
 def _test_a_greater_b(a: int, b: int):
-    print("Running a_greater_b")
     return a > b
 
 
