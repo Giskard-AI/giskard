@@ -1,11 +1,11 @@
-import type {FeatureType} from './../../domain/feature-type';
+import type {ColumnMeaning} from './../../domain/column-meaning';
 
 /**
  * Generated from ai.giskard.web.dto.DatasetMetadataDTO
  */
 export interface DatasetMetadataDTO {
+    columnMeanings: {[key: string]: ColumnMeaning};
     columnTypes?: {[key: string]: string} | null;
-    featureTypes: {[key: string]: FeatureType};
     id: string;
     name: string;
     target?: string | null;
