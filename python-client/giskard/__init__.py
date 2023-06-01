@@ -27,3 +27,4 @@ def get_version() -> str:
 
 
 __version__: str = get_version()
+from giskard.ml_worker.testing.registry.decorators import test

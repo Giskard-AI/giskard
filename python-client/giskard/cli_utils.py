@@ -12,7 +12,6 @@ from daemon.runner import is_pidfile_stale
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
-from giskard.ml_worker.ml_worker import start_ml_worker
 from giskard.path_utils import run_dir
 from giskard.settings import settings
 
@@ -26,11 +25,16 @@ def remove_stale_pid_file(pid_file):
 
 
 def create_pid_file_path(is_server, url):
+    hash_value = ml_worker_id(is_server, url)
+    return run_dir / f"ml-worker-{hash_value}.pid"
+
+
+def ml_worker_id(is_server, url):
     key = f"{sys.executable}"
     if not is_server:
         key += url
     hash_value = hashlib.sha1(key.encode()).hexdigest()
-    return run_dir / f"ml-worker-{hash_value}.pid"
+    return hash_value
 
 
 def validate_url(_ctx, _param, value) -> AnyHttpUrl:
@@ -38,6 +42,8 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
 
 
 def run_daemon(is_server, url, api_key):
+    from giskard.ml_worker.ml_worker import MLWorker
+
     log_path = get_log_path()
     logger.info(f"Writing logs to {log_path}")
     pid_file = PIDLockFile(create_pid_file_path(is_server, url))
@@ -48,7 +54,7 @@ def run_daemon(is_server, url, api_key):
         change_working_directory(workdir)
 
         logger.info(f"Daemon PID: {os.getpid()}")
-        asyncio.get_event_loop().run_until_complete(start_ml_worker(is_server, url, api_key))
+        asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key).start())
 
 
 def get_log_path():
