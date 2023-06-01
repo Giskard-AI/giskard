@@ -4,6 +4,7 @@ import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSession from '@/components/AddDebuggingSession.vue';
 import InspectorWrapper from './InspectorWrapper.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
+import DeleteDebuggingSession from '@/components/DeleteDebuggingSession.vue';
 import { computed, ref, onActivated } from "vue";
 
 interface Props {
@@ -59,12 +60,6 @@ function createDebuggingSession(debuggingSession: InspectionDTO) {
   setTimeout(() => {
     toggleActiveSession(debuggingSession.id);
   });
-}
-
-async function deleteDebuggingSession(id: number) {
-  await api.deleteInspection(id);
-  await loadDebuggingSessions();
-
 }
 
 async function renameSession(id: number, name: string) {
@@ -145,9 +140,7 @@ onActivated(() => loadDebuggingSessions());
               <v-col cols="1" class="id-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <v-btn icon color="accent" class="delete-button" @click.stop="deleteDebuggingSession(session.id)">
-                    <v-icon>mdi-delete</v-icon>
-                  </v-btn>
+                  <DeleteDebuggingSession :sessionName="session.name" :sessionId="session.id" @deleteDebuggingSession="loadDebuggingSessions"></DeleteDebuggingSession>
                 </v-card-actions>
               </v-col>
             </v-row>
