@@ -273,7 +273,7 @@ class BaseModel(ABC):
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
-            self.model_cache.set_cache(dataset_hash.df[missing], raw_prediction)
+            self.model_cache.set_cache(dataset_hash[missing], raw_prediction)
             cached_predictions[missing] = raw_prediction
 
         if self.is_regression:
