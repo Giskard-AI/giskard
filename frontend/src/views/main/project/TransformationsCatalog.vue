@@ -172,7 +172,7 @@
         </div>
     </div>
     <v-container v-else class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">You haven't started any ML worker yet!</h1>
+        <h1 class="pt-16">ML Worker is not connected</h1>
         <StartWorkerInstructions/>
     </v-container>
 </template>

@@ -162,3 +162,8 @@ $vt-text-color-error: #bb0000 !default;
   @extend .grey--text !optional;
   @extend .text--darken-4 !optional;
 }
+
+// Hide Monaco autocompletion widget that becomes a black row in the case when there are no suggestions
+.suggest-widget{
+  display: none !important;
+}
