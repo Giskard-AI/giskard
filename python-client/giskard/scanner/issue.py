@@ -1,6 +1,7 @@
 from ..datasets import Dataset
 from ..models.base import BaseModel
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from .performance import GSK_LOSS_COLUMN
 
 from typing import Optional
 
@@ -34,8 +35,8 @@ class Issue:
         dataset_slice = self.dataset.slice(self.slice_fn)
         df_with_meta = dataset_slice.df.join(self.dataset_meta, how="left")
 
-        examples = df_with_meta.sort_values("__gsk__loss", ascending=False).head(n)
-        examples.drop(columns=["__gsk__loss"], inplace=True)
+        examples = df_with_meta.sort_values(GSK_LOSS_COLUMN, ascending=False).head(n)
+        examples.drop(columns=[GSK_LOSS_COLUMN], inplace=True)
         ex_dataset = Dataset(examples, target=self.dataset.target, column_types=self.dataset.column_types)
         predictions = self.model.predict(ex_dataset).prediction
         examples["predicted_label"] = predictions
