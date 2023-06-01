@@ -80,6 +80,27 @@ def single_binary_result(test_results: List):
     return passed
 
 
+def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
+    if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
+        if str(p.id) not in uploaded_uuids:
+            p.upload(client, project_key)
+        uploaded_uuids.append(str(p.id))
+        return TestInputDTO(name=pname, value=str(p.id), type=ptype)
+    elif issubclass(type(p), Savable):
+        if str(p.meta.uuid) not in uploaded_uuids:
+            p.upload(client)
+        uploaded_uuids.append(str(p.meta.uuid))
+        return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
+                            params=[
+                                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key,
+                                                     uploaded_uuids) for pname, value in
+                                p.params.items()])
+    elif isinstance(p, SuiteInput):
+        return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
+    else:
+        return TestInputDTO(name=pname, value=str(p), type=ptype)
+
+
 class Suite:
     """
     A class representing a test suite that groups a collection of test cases together. The Suite class provides
@@ -184,26 +205,11 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
-            inputs = {}
-            for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
-                    if str(p.id) not in uploaded_uuids:
-                        p.upload(client, project_key)
-                    uploaded_uuids.append(str(p.id))
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
-                elif issubclass(type(p), Savable):
-                    if str(p.meta.uuid) not in uploaded_uuids:
-                        p.upload(client)
-                    uploaded_uuids.append(str(p.meta.uuid))
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p.meta.uuid))
-                elif isinstance(p, SuiteInput):
-                    inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
-                else:
-                    inputs[pname] = TestInputDTO(name=pname, value=str(p))
-
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
-                testInputs=inputs
+                functionInputs={
+                    pname: build_test_input_dto(client, p, pname, t.giskard_test.meta.args[pname].type, project_key,
+                                                uploaded_uuids) for pname, p in t.provided_inputs.items()}
             ))
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)

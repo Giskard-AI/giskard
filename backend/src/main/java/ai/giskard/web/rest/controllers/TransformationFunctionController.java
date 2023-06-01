@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,7 +68,8 @@ public class TransformationFunctionController {
                     .build());
 
             for (Map.Entry<String, String> entry : inputs.entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
+                builder.addArguments(testArgumentService
+                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
             }
 
             TransformationResultMessage transformationResultMessage = client.getBlockingStub().runAdHocTransformation(builder.build());

@@ -113,7 +113,7 @@ result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_y
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
-See [🔪 Create slices and transformations function / Transformation](../create-slices-and-transformation-functions/index.md#transformation)
+See [🔪 Create slices and transformations function / Transformation](../slicing-and-transformation-functions/index.md#transformation)
 to see how to create custom transformations
 
 :::

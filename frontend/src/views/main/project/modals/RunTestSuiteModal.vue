@@ -83,7 +83,7 @@ import mixpanel from 'mixpanel-browser';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {RequiredInputDTO, TestInputDTO} from '@/generated-sources';
+import {FunctionInputDTO, RequiredInputDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {chain} from 'lodash';
 
@@ -102,10 +102,10 @@ const running = ref<boolean>(false);
 
 const testSuiteInputs = ref<{
   globalInput: {
-    [name: string]: TestInputDTO
+      [name: string]: FunctionInputDTO
   },
   sharedInputs: {
-    [name: string]: TestInputDTO
+      [name: string]: FunctionInputDTO
   }
 }[]>([]);
 
@@ -135,7 +135,7 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
           isAlias: false,
           name,
           type,
-          value: testSuiteStore.suite!.testInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
+            value: testSuiteStore.suite!.functionInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
         }
         return result;
       }, {});
@@ -158,7 +158,7 @@ function isAllParamsSet() {
   return testSuiteInputs.value
       .filter(({sharedInputs, globalInput}) => Object.entries(props.inputs)
           .map(([name, {sharedInput}]) => sharedInput ? sharedInputs[name] : globalInput[name])
-          .findIndex(param => param && (param.value === null || param.value.trim() === '')) !== -1)
+          .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
       .length === 0;
 }
 

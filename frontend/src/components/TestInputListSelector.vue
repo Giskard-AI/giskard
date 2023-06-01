@@ -40,13 +40,14 @@
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                            v-else-if="input.type === 'BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
-                            <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                            <SlicingFunctionSelector :project-id="projectId" :label="input.name"
                                                      v-else-if="input.type === 'SlicingFunction'"
-                                                     :value.sync="editedInputs[input.name].value"/>
+                                                     :value.sync="editedInputs[input.name].value"
+                                                     :args.sync="editedInputs[input.name].params"/>
                             <TransformationFunctionSelector :project-id="projectId" :label="input.name"
-                                                            :return-object="false"
                                                             v-else-if="input.type === 'TransformationFunction'"
-                                                            :value.sync="editedInputs[input.name].value"/>
+                                                            :value.sync="editedInputs[input.name].value"
+                                                            :args.sync="editedInputs[input.name].params"/>
                             <ValidationProvider
                                 name="value"
                                 v-else-if="['float', 'int'].includes(input.type)"
@@ -123,7 +124,7 @@
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {computed, onMounted, ref, watch} from 'vue';
-import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
+import {FunctionInputDTO, TestFunctionDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {chain} from "lodash";
@@ -133,18 +134,18 @@ import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 
 const props = defineProps<{
-    testInputs?: { [key: string]: TestInputDTO },
+    testInputs?: { [key: string]: FunctionInputDTO },
     test?: TestFunctionDTO,
     projectId: number,
     inputs: { [name: string]: string },
-    modelValue?: { [name: string]: TestInputDTO }
+    modelValue?: { [name: string]: FunctionInputDTO }
 }>();
 
 const emit = defineEmits(['invalid', 'result']);
 
 const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
 
-const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 
 const inputTypeSelector = [{
     name: 'Suite input (not shared)',
@@ -226,7 +227,7 @@ const buttonToggleValues = ref<{ [name: string]: any }>({});
 const aliases = computed(() => {
     return chain([
         ...chain(suite.value!.tests)
-            .flatMap(test => Object.values(test.testInputs))
+            .flatMap(test => Object.values(test.functionInputs))
             .filter(input => input.isAlias)
             .value(),
         ...chain(Object.values(editedInputs.value))
@@ -259,7 +260,7 @@ async function createAlias(name: string, type: string) {
             type
         },
         on: {
-            async save(input: TestInputDTO) {
+            async save(input: FunctionInputDTO) {
                 editedInputs.value[name] = input;
                 editedInputs.value = {...editedInputs.value};
             }
