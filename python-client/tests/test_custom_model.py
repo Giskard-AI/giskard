@@ -15,9 +15,6 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
             def load_model(cls, local_dir):
                 pass
 
-            def save_model(self, local_path: Union[str, Path]) -> None:
-                pass
-
             def model_predict(self, df):
                 pass
 
