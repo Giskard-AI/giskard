@@ -31,6 +31,7 @@
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.FeatureMetadataDTO": "FeatureMetadataDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
+    "ai.giskard.web.dto.ExplainTextResponseDTO": "ExplainTextResponseDTO",
     "ai.giskard.web.dto.JWTToken": "JWTToken",
     "ai.giskard.web.dto.ModelUploadParamsDTO": "ModelUploadParamsDTO",
     "ai.giskard.web.dto.CreateFeedbackDTO": "CreateFeedbackDTO",
