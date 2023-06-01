@@ -64,7 +64,7 @@ class RobustnessIssue(Issue):
                 self.model,
                 self.dataset,
                 self.info.transformation_fn,
-                threshold=self.info.threshold,
+                threshold=1 - self.info.threshold,
                 output_sensitivity=self.info.output_sensitivity,
             )
         ]
