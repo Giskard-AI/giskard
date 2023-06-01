@@ -1,6 +1,6 @@
 from numpy.testing import assert_array_equal
 
-from giskard.client.analytics_collector import anonymize
+from giskard.utils.analytics_collector import anonymize
 
 
 def test_anonymize_simple():

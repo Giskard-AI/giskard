@@ -5,17 +5,18 @@ import sys
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
-from giskard.datasets.base import Dataset
 from giskard.core.suite import Suite, SuiteInput
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
+from giskard.utils.analytics_collector import GiskardAnalyticsCollector
 from .scanner import scan
 
 configure_logging()
@@ -23,7 +24,6 @@ if sys.version_info >= (3, 8):
     from importlib import metadata as importlib_metadata
 else:
     import importlib_metadata
-
 
 def get_version() -> str:
     try:

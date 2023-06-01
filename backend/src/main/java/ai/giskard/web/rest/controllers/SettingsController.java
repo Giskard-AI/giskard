@@ -107,11 +107,16 @@ public class SettingsController {
 
     @GetMapping("/ml-worker-connect")
     public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() throws NoSuchAlgorithmException {
-        MLWorkerSecretKey key = mlWorkerSecurityService.registerVacantKey(SecurityUtils.getCurrentAuthenticatedUserLogin());
+        String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
+        MLWorkerSecretKey key = mlWorkerSecurityService.registerVacantKey(currentUser);
 
         return MLWorkerConnectionInfoDTO.builder()
             .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
             .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+            .instanceId(settingsService.getSettings().getInstanceId())
+            .serverVersion(buildVersion)
+            .user(currentUser)
+            .instanceLicenseId(licenseService.getCurrentLicense().getId())
             .encryptionKey(key.toBase64())
             .keyId(key.getKeyId())
             .build();
