@@ -74,9 +74,9 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseMode
 
     assert (
         Suite()
-        .add_test(test_auc(actual_slice=shared_input, threshold=0.2))
-        .add_test(test_f1(actual_ds=shared_input, threshold=0.2))
-        .add_test(test_diff_f1(threshold=0.2, actual_slice=shared_input))
+        .add_test(test_auc(dataset=shared_input, threshold=0.2))
+        .add_test(test_f1(dataset=shared_input, threshold=0.2))
+        .add_test(test_diff_f1(threshold=0.2, actual_dataset=shared_input))
         .run(
             model=german_credit_model,
             dataset=german_credit_data,
@@ -91,9 +91,9 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
     shared_input = SuiteInput("dataset", Dataset)
 
     result = Suite() \
-        .add_test(test_auc(actual_slice=shared_input, threshold=0.2)) \
-        .add_test(test_auc(actual_slice=shared_input, threshold=0.25)) \
-        .add_test(test_auc(actual_slice=shared_input, threshold=0.3)) \
+        .add_test(test_auc(dataset=shared_input, threshold=0.2)) \
+        .add_test(test_auc(dataset=shared_input, threshold=0.25)) \
+        .add_test(test_auc(dataset=shared_input, threshold=0.3)) \
         .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)
 
     assert result[0]
@@ -112,14 +112,14 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
     with MockedClient() as (client, mr):
-        Suite().add_test(test_auc(threshold=0.2, actual_slice=german_credit_data)).add_test(
-            test_f1(threshold=0.2, actual_ds=german_credit_data)
+        Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
+            test_f1(threshold=0.2, dataset=german_credit_data)
         ).save(client, "test_project_key")
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #    client = GiskardClient("http://localhost:9000", "")
 #
 #    Suite(name="Test Suite 1") \
-#        .add_test(test_auc, threshold=0.2, actual_ds=german_credit_data) \
-#        .add_test(test_f1, threshold=0.2, actual_ds=german_credit_data) \
+#        .add_test(test_auc, threshold=0.2, dataset=german_credit_data) \
+#        .add_test(test_f1, threshold=0.2, dataset=german_credit_data) \
 #        .save(client, 'credit')

@@ -116,7 +116,7 @@ class Dataset:
         self.data_processor.add_step(slicing_function)
         return self
 
-    def slice(self, slicing_function: SlicingFunction):
+    def slice(self, slicing_function: Union[SlicingFunction, None]):
         if slicing_function:
             return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
         else:
