@@ -1,8 +1,8 @@
 import type {DatasetDTO} from './ml/dataset-dto';
 import type {ModelDTO} from './ml/model-dto';
 import type {TestFunctionDTO} from './test-function-dto';
+import type {TestSuiteDTO} from './test-suite-dto';
 import type {TestSuiteExecutionDTO} from './ml/test-suite-execution-dto';
-import type {TestSuiteNewDTO} from './test-suite-new-dto';
 
 /**
  * Generated from ai.giskard.web.dto.TestSuiteCompleteDTO

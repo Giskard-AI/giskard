@@ -1,14 +1,10 @@
 package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.ml.TestSuite;
-import ai.giskard.domain.ml.TestSuiteNew;
-import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.ml.*;
-import ai.giskard.service.TestFunctionService;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.service.TestService;
+import ai.giskard.service.TestFunctionService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.GenerateTestSuiteDTO;
@@ -34,7 +30,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TestSuiteController {
     private final TestSuiteService testSuiteService;
-    private final TestService testService;
     private final GiskardMapper giskardMapper;
     private final TestSuiteRepository testSuiteRepository;
     private final DatasetRepository datasetRepository;

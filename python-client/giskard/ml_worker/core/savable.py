@@ -75,7 +75,7 @@ class Savable(Generic[DT, SMT]):
         if local_dir is not None:
             client.log_artifacts(local_dir, posixpath.join(project_key or "global", name, self.meta.uuid))
 
-        self.meta = client.save_meta(self._get_meta_endpoint(self.meta.uuid, project_key), self.meta)
+            self.meta = client.save_meta(self._get_meta_endpoint(self.meta.uuid, project_key), self.meta)
 
         return self.meta.uuid
 
