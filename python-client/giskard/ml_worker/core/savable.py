@@ -1,9 +1,11 @@
-import cloudpickle
 import logging
 import os
+import pickle
 import posixpath
 from pathlib import Path
 from typing import Optional, Generic
+
+import cloudpickle
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import DT, SMT, SavableMeta
@@ -43,7 +45,7 @@ class Savable(Generic[DT, SMT]):
 
     def _save_to_local_dir(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
-            cloudpickle.dump(self.data, f)
+            cloudpickle.dump(self.data, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def _save(self, project_key: Optional[str] = None) -> Optional[Path]:
         if not self._should_save_locally():
@@ -57,14 +59,12 @@ class Savable(Generic[DT, SMT]):
             os.makedirs(local_dir)
             self._save_to_local_dir(local_dir)
             logger.debug(f"Saved {name}.{self.meta.uuid}")
-            return local_dir
         else:
             logger.debug(f"Skipping saving of {name}.{self.meta.uuid} because it is already saved")
-            return None
+        return local_dir
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
         name = self._get_name()
-
         # Do not save already saved class
         if not self._should_upload():
             return self.meta.uuid
@@ -98,8 +98,9 @@ class Savable(Generic[DT, SMT]):
         if data is None:
             assert client is not None, f"Cannot find existing {name} {uuid}"
             client.load_artifact(local_dir, posixpath.join(project_key or "global", name, uuid))
-
-        return cls._read_from_local_dir(local_dir, meta)
+            return cls._read_from_local_dir(local_dir, meta)
+        else:
+            return data
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: SMT):
