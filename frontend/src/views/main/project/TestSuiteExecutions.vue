@@ -8,7 +8,7 @@
   <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
   <v-tabs v-else vertical icons-and-text v-model="tab"
   >
-    <v-tab v-for="execution in executions">
+    <v-tab v-for="execution in executions" :disabled="!execution.completionDate">
       <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
         {{ executionStatusMessage(execution) }}
       </v-chip>
@@ -21,7 +21,7 @@
             <span class="text-h6">Inputs</span>
           </div>
           <p v-for="[input, value] in Object.entries(execution.inputs)">
-            {{ input }} -> {{ value }}
+            {{ input }} -> {{ formatInputValue(input, value) }}
           </p>
           <div class="pt-5">
             <span class="text-h6">Results</span>
@@ -36,14 +36,17 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from 'vue';
-import {TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  registry: TestCatalogDTO
+  registry: TestCatalogDTO,
+  models: { [key: string]: ModelDTO },
+  datasets: { [key: string]: DatasetDTO },
+  inputs: { [name: string]: string }
 }>();
 
 const tab = ref<any>(null);
@@ -78,6 +81,17 @@ function executionStatusColor(execution: TestSuiteExecutionDTO): string {
       return "#f44336";
     default:
       return "#607d8b";
+  }
+}
+
+function formatInputValue(input: string, value: string): string {
+  switch (props.inputs[input]) {
+    case 'Dataset':
+      return props.datasets[value].name;
+    case 'Model':
+      return props.models[value].name;
+    default:
+      return value;
   }
 }
 
