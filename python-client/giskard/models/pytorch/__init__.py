@@ -20,7 +20,7 @@ class TorchMinimalDataset(torch_dataset):
         return len(self.entries)
 
     def __getitem__(self, idx):
-        return self.entries.iloc[idx]
+        return list(self.entries.iloc[idx])
 
 
 class PyTorchModel(Model):
