@@ -1,8 +1,10 @@
 import asyncio
+import collections
 import hashlib
 import logging
 import os
 import sys
+from time import sleep
 
 from daemon import DaemonContext
 from daemon.runner import is_pidfile_stale
@@ -40,10 +42,38 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
 def run_daemon(is_server, url, api_key):
     from giskard.ml_worker.ml_worker import MLWorker
 
-    log_path = run_dir / "ml-worker.log"
+    log_path = get_log_path()
     logger.info(f"Writing logs to {log_path}")
     pid_file = PIDLockFile(create_pid_file_path(is_server, url))
 
     with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
         logger.info(f"Daemon PID: {os.getpid()}")
         asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key).start())
+
+
+def get_log_path():
+    return run_dir / "ml-worker.log"
+
+
+def tail(filename, n=100):
+    """Return the last n lines of a file"""
+    return collections.deque(open(filename), n)
+
+
+def follow_file(filename):
+    if not os.path.exists(filename):
+        print(f"{filename} does not exists")
+        return
+
+    wait = 1
+    with open(filename) as fp:
+        exit_pooling = False
+        skip_existing = True
+        while not exit_pooling:
+            line = fp.readline()
+
+            if not line:
+                skip_existing = False
+                sleep(wait)
+            elif not skip_existing:
+                print(line, end="")

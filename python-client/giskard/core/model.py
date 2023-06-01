@@ -36,18 +36,18 @@ class ModelPredictionResults(BaseModel):
 class Model:
     meta: ModelMeta
     clf: PyFuncModel
-    data_preparation_function: any
+    data_preprocessing_function: any
 
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
                  name: str = None,
-                 data_preparation_function=None,
+                 data_preprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None) -> None:
         self.clf = clf
-        self.data_preparation_function = data_preparation_function
+        self.data_preprocessing_function = data_preprocessing_function
 
         if type(model_type) == str:
             try:
@@ -79,7 +79,7 @@ class Model:
         validate_model(model=self, validate_ds=validate_ds)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             info = self.save_to_local_dir(f)
-            self.save_data_preparation_funciton(f)
+            self.save_data_preprocessing_function(f)
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
                 client.save_model_meta(project_key,
@@ -89,13 +89,13 @@ class Model:
                                        get_size(f))
         return info.model_uuid
 
-    def save_data_preparation_funciton(self, path):
-        if self.data_preparation_function:
+    def save_data_preprocessing_function(self, path):
+        if self.data_preprocessing_function:
             with open(Path(path) / "giskard-data-prep.pkl", 'wb') as f:
-                cloudpickle.dump(self.data_preparation_function, f, protocol=pickle.DEFAULT_PROTOCOL)
+                cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    @classmethod
-    def read_data_preparation_function_from_artifact(cls, local_path: str):
+    @staticmethod
+    def read_data_preprocessing_function_from_artifact(local_path: str):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-prep.pkl"
         if file_path.exists():
@@ -131,12 +131,12 @@ class Model:
 
         return info
 
-    @classmethod
-    def _new_mlflow_model_meta(cls):
+    @staticmethod
+    def _new_mlflow_model_meta():
         return mlflow.models.Model(model_uuid=str(uuid.uuid4()))
 
-    @classmethod
-    def read_model_from_local_dir(cls, local_path: str):
+    @staticmethod
+    def read_model_from_local_dir(local_path: str):
         return mlflow.pyfunc.load_model(local_path)
 
     @classmethod
@@ -159,13 +159,13 @@ class Model:
             meta = client.load_model_meta(project_key, model_id)
         return cls(
             clf=cls.read_model_from_local_dir(local_dir),
-            data_preparation_function=cls.read_data_preparation_function_from_artifact(local_dir),
+            data_preprocessing_function=cls.read_data_preprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
 
     def prepare_data_and_predict(self, data):
-        if self.data_preparation_function:
-            data = self.data_preparation_function(data)
+        if self.data_preprocessing_function:
+            data = self.data_preprocessing_function(data)
         return self._raw_predict(data)
 
     def _raw_predict(self, data):
