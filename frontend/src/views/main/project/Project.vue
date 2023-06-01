@@ -15,21 +15,6 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primary" class="mr-2" :to="{ name: 'project-properties' }">
-        <v-icon dense left>mdi-tune</v-icon>
-        Properties
-      </v-btn>
-      <v-tooltip :disabled="mainStore.authAvailable" bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <div v-on="on">
-            <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin" @click="openShareDialog = true" :disabled="!mainStore.authAvailable">
-              <v-icon dense left>people</v-icon>
-              Invite
-            </v-btn>
-          </div>
-        </template>
-        <span>Inviting users is only available in Giskard Starter or above.</span>
-      </v-tooltip>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
@@ -49,6 +34,26 @@
               Delete
             </v-list-item-title>
           </v-list-item>
+          <v-list-item link :to="{ name: 'project-properties' }">
+            <v-list-item-title>
+              <v-icon dense left>mdi-tune</v-icon>
+              Properties
+            </v-list-item-title>
+          </v-list-item>
+
+          <v-tooltip :disabled="mainStore.authAvailable" bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-on="on">
+                <v-list-item v-if="isProjectOwnerOrAdmin" @click="openShareDialog = true" :disabled="!mainStore.authAvailable" link>
+                  <v-list-item-title>
+                    <v-icon dense left>people</v-icon>
+                    Invite
+                  </v-list-item-title>
+                </v-list-item>
+              </div>
+            </template>
+            <span>Inviting users is only available in Giskard Starter or above.</span>
+          </v-tooltip>
         </v-list>
       </v-menu>
     </v-toolbar>
