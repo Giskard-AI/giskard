@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import WrapperModel
+from giskard.models.base import WrapperModel
 
 from transformers import pipeline, pipelines
 

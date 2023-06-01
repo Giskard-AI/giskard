@@ -4,8 +4,8 @@ import httpretty
 import pytest
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
 
@@ -56,7 +56,7 @@ def test_all_global():
     assert passed
 
 
-def test_multiple(german_credit_data: Dataset, german_credit_model: Model):
+def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
     assert (
         Suite()
         .add_test(test_auc, threshold=0.2)
@@ -75,7 +75,7 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
     )
 
 
-def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
+def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseModel):
     first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
     last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
 
@@ -92,7 +92,7 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
     )
 
 
-def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Model):
+def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
     shared_input = SuiteInput("dataset", Dataset)
 
     assert (
@@ -103,7 +103,7 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Mo
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
+def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
     api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
 
     httpretty.register_uri(httpretty.POST, api_pattern)
@@ -115,7 +115,7 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
     ).save(client, "test_project_key")
 
 
-# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
+# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #    client = GiskardClient("http://localhost:9000", "")
 #
 #    Suite(name="Test Suite 1") \

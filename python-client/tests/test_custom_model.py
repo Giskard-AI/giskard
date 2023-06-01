@@ -4,10 +4,10 @@ from typing import Union
 
 import httpretty
 
-from giskard import Model, SKLearnModel
+from giskard import BaseModel, SKLearnModel
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MODEL_CLASS_PKL, WrapperModel
+from giskard.models.base import MODEL_CLASS_PKL, WrapperModel
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
@@ -18,7 +18,7 @@ b_content_type = b"application/json"
 
 
 @httpretty.activate(verbose=True, allow_net_connect=False)
-def test_custom_model(linear_regression_diabetes: Model):
+def test_custom_model(linear_regression_diabetes: BaseModel):
     artifact_url_prefix = "http://giskard-host:12345/api/v2/artifacts/pk/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/"
     artifact_url_pattern = re.compile(artifact_url_prefix + ".*")
     httpretty.register_uri(httpretty.POST, artifact_url_pattern)
