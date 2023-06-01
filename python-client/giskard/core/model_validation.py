@@ -1,20 +1,21 @@
 import tempfile
-from typing import List, Iterable
+from typing import List, Iterable, Union, Callable, Any
 
-import yaml
 import numpy as np
 import pandas as pd
+import yaml
 from pandas.core.dtypes.common import is_string_dtype
 
-from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
+from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
-from giskard.models.base import BaseModel, WrapperModel
-from giskard.core.validation import validate_is_pandasdataframe, validate_target
+from giskard.core.validation import validate_is_pandasdataframe, validate_target, configured_validate_arguments
 from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel, WrapperModel
 
 
-def validate_model(model: BaseModel, validate_ds: Dataset):
+@configured_validate_arguments
+def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
@@ -43,12 +44,14 @@ def validate_model(model: BaseModel, validate_ds: Dataset):
         elif model.is_classification and validate_ds.target is not None:
             validate_target(validate_ds.target, validate_ds.df.keys())
             target_values = validate_ds.df[validate_ds.target].unique()
-            validate_label_with_target(model.meta.classification_labels, target_values, validate_ds.target)
+            validate_label_with_target(model.meta.name, model.meta.classification_labels, target_values,
+                                       validate_ds.target)
             validate_model_execution(model, validate_ds)
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
 
+@configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
     validation_size = min(len(dataset), 10)
     validation_ds = dataset.slice(lambda x: x.head(validation_size))
@@ -67,6 +70,7 @@ def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
         validate_classification_prediction(model.meta.classification_labels, prediction.raw)
 
 
+@configured_validate_arguments
 def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_prediction):
     """
     Asserts if the model is deterministic by asserting previous and current prediction on same data
@@ -80,6 +84,7 @@ def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_pr
         )
 
 
+@configured_validate_arguments
 def validate_model_loading_and_saving(model: BaseModel):
     """
     Validates if the model can be serialised and deserialised
@@ -115,21 +120,24 @@ def validate_model_loading_and_saving(model: BaseModel):
         raise ValueError("Failed to validate model saving and loading from local disk") from e
 
 
-def validate_data_preprocessing_function(f):
+@configured_validate_arguments
+def validate_data_preprocessing_function(f: Callable[[pd.DataFrame], Any]):
     if not callable(f):
         raise ValueError(
             f"Invalid data_preprocessing_function parameter: {f}. Please specify Python function."
         )
 
 
-def validate_model_postprocessing_function(f):
+@configured_validate_arguments
+def validate_model_postprocessing_function(f: Callable[[Any], Any]):
     if not callable(f):
         raise ValueError(
             f"Invalid model_postprocessing_function parameter: {f}. Please specify Python function."
         )
 
 
-def validate_model_type(model_type):
+@configured_validate_arguments
+def validate_model_type(model_type: ModelType):
     if model_type not in {task.value for task in SupportedModelTypes}:
         raise ValueError(
             f"Invalid model_type parameter: {model_type}. "
@@ -137,7 +145,9 @@ def validate_model_type(model_type):
         )
 
 
-def validate_classification_labels(classification_labels: List[str], model_type: SupportedModelTypes):
+@configured_validate_arguments
+def validate_classification_labels(classification_labels: Union[np.ndarray, List, None],
+                                   model_type: ModelType):
     if model_type == SupportedModelTypes.CLASSIFICATION:
         if classification_labels is not None and isinstance(classification_labels, Iterable):
             if len(classification_labels) <= 1:
@@ -154,11 +164,12 @@ def validate_classification_labels(classification_labels: List[str], model_type:
         warning("'classification_labels' parameter is ignored for regression model")
 
 
-def validate_features(feature_names=None, validate_df=None):
+@configured_validate_arguments
+def validate_features(feature_names: Union[List[str], None] = None, validate_df: Union[pd.DataFrame, None] = None):
     if (
-        feature_names is not None
-        and validate_df is not None
-        and not set(feature_names).issubset(set(validate_df.columns))
+            feature_names is not None
+            and validate_df is not None
+            and not set(feature_names).issubset(set(validate_df.columns))
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
@@ -166,7 +177,9 @@ def validate_features(feature_names=None, validate_df=None):
         )
 
 
-def validate_classification_threshold_label(classification_labels, classification_threshold=None):
+@configured_validate_arguments
+def validate_classification_threshold_label(classification_labels: Union[np.ndarray, List, None],
+                                            classification_threshold: float = None):
     if classification_labels is None:
         raise ValueError("Missing classification_labels parameter for classification model.")
     if classification_threshold is not None and not isinstance(classification_threshold, (int, float)):
@@ -182,7 +195,9 @@ def validate_classification_threshold_label(classification_labels, classificatio
             )
 
 
-def validate_label_with_target(classification_labels, target_values=None, target_name=None):
+@configured_validate_arguments
+def validate_label_with_target(model_name: str, classification_labels: Union[np.ndarray, List, None],
+                               target_values: Union[np.ndarray, List, None] = None, target_name: str = None):
     if target_values is not None:
         if not is_string_dtype(target_values):
             print(
@@ -191,18 +206,20 @@ def validate_label_with_target(classification_labels, target_values=None, target
                 'to make results more understandable in Giskard."'
             )
 
+        to_append = " of the model: " + model_name if model_name else ""
         target_values = target_values if is_string_dtype(target_values) else [str(label) for label in target_values]
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(
-                f"Values in {target_name} column are not declared in "
-                f"classification_labels parameter: {invalid_target_values}"
+                f"Values {invalid_target_values} in \"{target_name}\" column are not declared in "
+                f"classification_labels parameter {classification_labels}" + to_append
             )
 
 
-def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
-    assert len(df) == len(prediction), (
-        f"Number of rows ({len(df)}) of dataset provided does not match with the "
+@configured_validate_arguments
+def validate_prediction_output(ds: Dataset, model_type: ModelType, prediction):
+    assert len(ds.df) == len(prediction), (
+        f"Number of rows ({len(ds.df)}) of dataset provided does not match with the "
         f"number of rows ({len(prediction)}) of model.predict output"
     )
     if isinstance(prediction, np.ndarray) or isinstance(prediction, list):
@@ -216,7 +233,8 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
         raise ValueError("Model should return numpy array or a list")
 
 
-def validate_classification_prediction(classification_labels, prediction):
+@configured_validate_arguments
+def validate_classification_prediction(classification_labels: Union[np.ndarray, List, None], prediction):
     if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
         warning("Output of model.predict returns values out of range [0,1]. "
                 "The output of Multiclass and Binary classifications should be within the range [0,1]")
