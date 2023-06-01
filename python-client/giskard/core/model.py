@@ -293,56 +293,21 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
-    def _postprocess(self, raw_prediction):
-        raw_prediction = np.array(raw_prediction)
-
-        if raw_prediction.ndim > 2 and self.is_classification:
-            logger.warning(
-                f"\nThe output of your clf has {raw_prediction.ndim} dimensions but only 2 are expected. \n"
-                "We will attempt to squeeze the inner dimensions just in case of dummy dimensions.",
-                exc_info=True
-            )
-            for i in np.arange(raw_prediction.ndim-2, 0, -1):
-                if raw_prediction.shape[i] == 1:
-                    raw_prediction = raw_prediction.squeeze(i)
-
-            if raw_prediction.ndim > 2:
-                raise ValueError(
-                    f"The squeeze did not resolve the problem, the output of your clf still has {raw_prediction.ndim} dimensions and not 2."
-                )
+    def _postprocess(self, raw_predictions):
+        raw_predictions = np.asarray(raw_predictions)
 
         # Ensure this is 2-dimensional
-        if raw_prediction.ndim <= 1 and self.is_binary_classification:
-            # case of scalar model output
-            if raw_prediction.ndim == 0:
-                raw_prediction = raw_prediction.reshape(-1, 1)
-            # case of one data entry but provided probabilities for all classification_labels
-            elif raw_prediction.shape[0] == len(self.meta.classification_labels):
-                raw_prediction = raw_prediction.reshape(1, -1)
-            # case of many (or one) data entries but provided probabilities for only one classification_label
-            else:
-                raw_prediction = raw_prediction.reshape(-1, 1)
+        if raw_predictions.ndim <= 1 and self.is_binary_classification:
+            raw_predictions = raw_predictions.reshape(-1, 1)
 
-        if self.is_binary_classification and raw_prediction.shape[1] == 1:
-            logger.warning(
-                f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n"
-                f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n"
-                "We automatically inferred the second class prediction but please make sure that \n"
-                "the probability output of your model corresponds to the first label of the \n"
-                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
-                exc_info=True
-            )
-
-            # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
-            # If a binary classifier returns a single prediction `p`, we try to infer the second class
-            # prediction as `1 - p`.
-            raw_prediction = np.append(raw_prediction, 1-raw_prediction, axis=1)
+        # For classification models, we try to automatically fix issues in the output shape
+        raw_predictions = self._possibly_fix_postprocess_shape(raw_predictions)
 
         # User specified a custom postprocessing function
         if self.model_postprocessing_function:
-            raw_prediction = self.model_postprocessing_function(raw_prediction)
+            raw_predictions = self.model_postprocessing_function(raw_predictions)
 
-        return raw_prediction
+        return raw_predictions
 
     def predict_df(self, df):
         if self.data_preprocessing_function:
@@ -352,6 +317,38 @@ class WrapperModel(Model, ABC):
         raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
+
+    def _possibly_fix_postprocess_shape(self, raw_predictions):
+        if not self.is_classification:
+            return raw_predictions
+
+        if raw_predictions.ndim > 2:
+            logger.warning(
+                f"\nThe output of your clf has {raw_predictions.ndim} dimensions but only 2 are expected. \n"
+                "We will attempt to squeeze the inner dimensions just in case of dummy dimensions.",
+                exc_info=True
+            )
+            raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
+
+            if raw_predictions.ndim > 2:
+                raise ValueError(
+                    f"The squeeze did not resolve the problem, the output of your clf has shape {raw_predictions.shape} but we expect (n_entries, n_classes)."
+                )
+
+        if self.is_binary_classification and raw_predictions.shape[1] == 1:
+            logger.warning(
+                f"\nYour binary classification model prediction is of the shape {raw_predictions.shape}. \n"
+                f"In Giskard we expect the shape {(raw_predictions.shape[0], 2)} for binary classification models. \n"
+                "We automatically inferred the second class prediction but please make sure that \n"
+                "the probability output of your model corresponds to the first label of the \n"
+                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
+                exc_info=True
+            )
+
+            # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
+            # If a binary classifier returns a single prediction `p`, we try to infer the second class
+            # prediction as `1 - p`.
+            raw_predictions = np.append(raw_predictions, 1-raw_predictions, axis=1)
 
     @abstractmethod
     def clf_predict(self, df):
