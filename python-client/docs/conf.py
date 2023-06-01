@@ -16,7 +16,6 @@ release = '2.0.0'
 
 extensions = ["myst_parser",
               'sphinx.ext.todo',
-              'sphinx_rtd_theme',  # 'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
               'sphinx.ext.autodoc',
               'sphinx.ext.linkcode']
