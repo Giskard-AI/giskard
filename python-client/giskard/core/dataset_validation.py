@@ -12,10 +12,10 @@ def validate_target(ds: Dataset):
             "You did not provide the optional argument 'target'. "
             "'target' is the column name in df corresponding to the actual target variable (ground truth).")
     else:
-        if ds.target not in list(ds.df.columns):
+        if ds.target not in ds.columns:
             raise ValueError(
                 f"Invalid target parameter:"
-                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
+                f" '{ds.target}' column is not present in the dataset with columns: {ds.columns}"
             )
 
 
@@ -35,7 +35,7 @@ def validate_column_types(ds: Dataset):
     else:
         raise ValueError(f"Invalid column_types parameter: {ds.column_types}. Please specify non-empty dictionary.")
 
-    df_columns_set = set([col for col in ds.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)])
+    df_columns_set = set(ds.columns)
     df_columns_set.discard(ds.target)
     column_types_set = set([col for col in ds.column_types.keys() if not col.startswith(GISKARD_COLUMN_PREFIX)])
     column_types_set.discard(ds.target)
@@ -73,7 +73,7 @@ def validate_column_categorization(ds: Dataset):
 
     nuniques = ds.df.nunique()
 
-    for column in [col for col in ds.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]:
+    for column in ds.columns:
         if column == ds.target:
             continue
         # if a user provided possibly wrong information in column_types or cat_columns about cat columns

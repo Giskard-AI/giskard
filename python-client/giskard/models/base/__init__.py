@@ -23,7 +23,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.datasets.base import Dataset, GISKARD_HASH_COLUMN, GISKARD_COLUMN_PREFIX
+from giskard.datasets.base import Dataset, GISKARD_HASH_COLUMN
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.base.cache import ModelCache
 from giskard.path_utils import get_size
@@ -200,7 +200,7 @@ class BaseModel(ABC):
             ValueError: If a specified feature name is not found in the dataset.
         """
         df = dataset.df.copy()
-        df = df[[col for col in dataset.df.columns if not col.startswith(GISKARD_COLUMN_PREFIX)]]
+        df = df[dataset.columns]
         column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
 
         if column_dtypes:
