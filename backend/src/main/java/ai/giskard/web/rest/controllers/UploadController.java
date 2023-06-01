@@ -1,13 +1,7 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.ArtifactType;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.repository.ProjectRepository;
-import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileUploadService;
-import ai.giskard.web.dto.ModelUploadParamsDTO;
-import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.ModelDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -15,10 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,29 +23,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class UploadController {
-    private final GiskardMapper giskardMapper;
     private final FileUploadService uploadService;
-    private final ProjectRepository projectRepository;
-    private final PermissionEvaluator permissionEvaluator;
     private final Logger log = LoggerFactory.getLogger(UploadController.class);
-
-    @PostMapping("project/models/upload")
-    @Transactional
-    public ModelDTO uploadModel(
-        @RequestPart("metadata") ModelUploadParamsDTO params,
-        @RequestPart("modelFile") MultipartFile modelFile,
-        @RequestPart("requirementsFile") MultipartFile requirementsFile) throws IOException {
-        log.info("Loading model: {}.{} into project {}", params.getProjectKey(), params.getName(), params.getProjectKey());
-
-        ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream());
-        return giskardMapper.modelToModelDTO(savedModel);
-    }
 
     @GetMapping("artifact-info/{projectKey}/{artifactType}/{artifactId}")
     @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
     public Set<String> getArtifactInfo(@PathVariable String projectKey,
                                        @PathVariable ArtifactType artifactType,
-                                       @PathVariable String artifactId) throws IOException {
+                                       @PathVariable String artifactId) {
         return uploadService.listArtifacts(projectKey, artifactType, artifactId);
     }
 

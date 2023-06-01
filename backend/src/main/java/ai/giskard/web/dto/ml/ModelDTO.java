@@ -48,10 +48,6 @@ public class ModelDTO {
 
     private long size;
 
-    public String getName() {
-        return name != null ? name : id;
-    }
-
     public Long getProjectId() {
         return project == null ? null : project.getId();
     }
