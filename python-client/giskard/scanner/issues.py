@@ -1,11 +1,14 @@
+from abc import ABC
+from typing import Optional
+from dataclasses import dataclass
+
 from ..datasets import Dataset
 from ..models.base import BaseModel
 
-from typing import Optional
 
-
-class IssueInfo:
-    pass
+@dataclass
+class IssueInfo(ABC):
+    """Abstract class for issue information."""
 
 
 class Issue:
