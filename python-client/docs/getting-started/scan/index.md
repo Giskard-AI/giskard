@@ -122,7 +122,7 @@ def prediction_function(df: pd.DataFrame) -> np.ndarray:
 
 
 wrapped_model = Model(
-  prediction_function,
+  model=prediction_function,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'], # Their order MUST be identical to the prediction_function's output order
   feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
