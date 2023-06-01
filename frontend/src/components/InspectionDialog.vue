@@ -3,7 +3,7 @@ import { api } from '@/api';
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import { computed, onActivated, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 
 interface Props {
   projectId: number;
@@ -13,6 +13,7 @@ const props = defineProps<Props>();
 
 const datasets = ref<DatasetDTO[]>([]);
 const models = ref<ModelDTO[]>([]);
+const currentStep = ref(1);
 
 const dialog = ref(false);
 const inspectionName = ref("");
@@ -34,7 +35,19 @@ async function createNewInspection() {
     modelId: selectedModel.value!.id
   });
   emit('createInspection', inspection);
+  closeDialog();
+}
+
+function closeDialog() {
+  resetInputs();
   dialog.value = false;
+}
+
+function resetInputs() {
+  selectedDataset.value = null;
+  selectedModel.value = null;
+  inspectionName.value = "";
+  currentStep.value = 1;
 }
 
 async function loadDatasets() {
@@ -53,33 +66,113 @@ onActivated(() => {
 
 <template>
   <div class="text-center">
-    <v-dialog v-model="dialog" width="80vw">
+    <v-dialog v-model="dialog" width="60vw">
       <template v-slot:activator="{ on, attrs }">
         <v-btn color="primary" v-bind="attrs" v-on="on">
           <v-icon>add</v-icon>
           New Inspection Session
         </v-btn>
       </template>
-      <v-card>
-        <v-card-title class="headline">Create Inspection</v-card-title>
-        <v-card-text>
-          <v-text-field label="Inspection name (optional)" v-model="inspectionName" outlined dense hide-details></v-text-field>
-          <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
-          <v-spacer></v-spacer>
-          <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="dialog = false">Cancel</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
-        </v-card-actions>
-      </v-card>
+      <v-stepper non-linear v-model="currentStep">
+        <v-stepper-header>
+          <v-stepper-step step="1" :complete="currentStep > 1" editable>
+            Select a model
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step step="2" :complete="currentStep > 2" editable>
+            Select a dataset
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step step="3" :complete="currentStep > 3" editable>
+            Define a inspection name
+            <small>Optional</small>
+          </v-stepper-step>
+          <v-divider></v-divider>
+          <v-stepper-step step="4" :complete="currentStep > 4" editable>
+            Review
+          </v-stepper-step>
+        </v-stepper-header>
+
+        <v-stepper-items>
+          <v-stepper-content step="1">
+            <v-card>
+              <v-card-text>
+                <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn text @click="closeDialog">Cancel</v-btn>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="currentStep = 2" :disabled="selectedModel === null">Next</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-stepper-content>
+
+          <v-stepper-content step="2">
+            <v-card>
+              <v-card-text>
+                <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn text @click="currentStep = 1">Back</v-btn>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="currentStep = 3" :disabled="selectedDataset === null">Next</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-stepper-content>
+
+          <v-stepper-content step="3">
+            <v-card>
+              <v-card-text>
+                <v-text-field label="Inspection name (optional)" v-model="inspectionName" outlined dense hide-details></v-text-field>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn text @click="currentStep = 2">Back</v-btn>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="currentStep = 4">Next</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-stepper-content>
+
+          <v-stepper-content step="4">
+            <v-card>
+              <v-card-text>
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-list-item-title>Model</v-list-item-title>
+                      <v-list-item-subtitle>{{ selectedModel?.name }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-list-item-title>Dataset</v-list-item-title>
+                      <v-list-item-subtitle>{{ selectedDataset?.name }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-list-item-title>Inspection name</v-list-item-title>
+                      <v-list-item-subtitle>{{ inspectionName }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn text @click="currentStep = 3">Back</v-btn>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="createNewInspection" :disabled="missingValues">Create</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-stepper-content>
+        </v-stepper-items>
+      </v-stepper>
     </v-dialog>
   </div>
 </template>
 
 <style scoped>
 .selector {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
 }
 </style>
