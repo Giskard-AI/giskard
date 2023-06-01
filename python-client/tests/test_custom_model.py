@@ -1,11 +1,13 @@
 import re
+from pathlib import Path
+from typing import Union
 
 import httpretty
 
 from giskard import Model, SKLearnModel
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import CustomModel, MODEL_CLASS_PKL
+from giskard.core.model import MODEL_CLASS_PKL, WrapperModel
 
 url = "http://giskard-host:12345"
 token = "SECRET_TOKEN"
@@ -24,15 +26,21 @@ def test_custom_model(linear_regression_diabetes: Model):
 
     client = GiskardClient(url, token)
 
-    class MyModel(CustomModel):
-        pass
+    class MyModel(WrapperModel):
+        def clf_predict(self, df):
+            pass
+
+        def save(self, local_path: Union[str, Path]) -> None:
+            super().save(local_path)
+
+        should_save_model_class = True
 
     def has_model_class_been_sent():
         return len([i for i in httpretty.latest_requests() if
                     re.match(artifact_url_prefix + MODEL_CLASS_PKL, i.url)]) > 0
 
-    SKLearnModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).save(client, "pk")
+    SKLearnModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
     assert not has_model_class_been_sent()
 
-    MyModel(linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).save(client, "pk")
+    MyModel(clf=linear_regression_diabetes.clf, model_type=SupportedModelTypes.REGRESSION).upload(client, "pk")
     assert has_model_class_been_sent()
