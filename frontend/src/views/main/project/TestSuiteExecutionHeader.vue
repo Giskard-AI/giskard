@@ -10,8 +10,7 @@
                     <h4 v-else-if="props.execution.result === TestResult.ERROR">
                         An error arose during the execution. Check the <span @click="openLogs" class="clickable">execution logs.</span>
                     </h4>
-                    <h4 v-else-if="tests.length === 0">No test match the current filter</h4>
-                    <h4 v-else-if="executedTests.length > 0">Test suite
+                    <h4 v-else>Test suite
                         {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
                         <span v-if="successRatio.failed > 0">{{ plurialize('test', successRatio.failed) }} failed</span>
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
