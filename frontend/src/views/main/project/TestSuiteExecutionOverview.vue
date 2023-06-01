@@ -2,7 +2,6 @@
     <LoadingFullscreen v-if="suite === null" name="suite"/>
     <v-container class="main-container vc" v-else-if="hasTest">
         <div class="d-flex">
-
         </div>
         <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
         <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
@@ -30,7 +29,12 @@ import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
-const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
+const props = withDefaults(defineProps<{
+    execution?: TestSuiteExecutionDTO
+    tryMode?: boolean
+}>(), {
+    tryMode: false
+});
 
 const testSuiteStore = useTestSuiteStore();
 const {models, datasets, inputs, suite, projectId, hasTest, statusFilter, searchFilter} = storeToRefs(testSuiteStore);
