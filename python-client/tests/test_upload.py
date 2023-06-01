@@ -18,7 +18,7 @@ b_content_type = b"application/json"
 @httpretty.activate(verbose=True, allow_net_connect=False)
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[a-z0-9]{32}/data.csv.zst")
+        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[a-z0-9]{32}/[data.csv.zst|giskard\-dataset\-meta.yaml]")
     datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
     httpretty.register_uri(
