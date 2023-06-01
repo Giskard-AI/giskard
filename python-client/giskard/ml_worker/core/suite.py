@@ -2,19 +2,18 @@ import inspect
 import logging
 from dataclasses import dataclass
 from typing import *
-from typing import List, Any, TypeVar
+from typing import List, Any
 
 from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar('T', Model, Dataset)
 
 
 class SuiteInput:
@@ -57,7 +56,7 @@ class Suite:
         self.name = name
 
     def run(self, **suite_run_args):
-        res = []
+        res: Dict[str, Union[bool, TestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -65,9 +64,16 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(run_test(test_partial.test_func, test_params))
+            res[f'{test_partial.test_func.__module__}.{test_partial.test_func.__name__}'] = \
+                run_test(test_partial.test_func, test_params)
 
-        return single_binary_result(res), res
+        result = single_binary_result(list(res.values()))
+
+        logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
+        logger.info(f"result: {'success' if result else 'failed'}")
+        for (test_name, r) in res.items():
+            logger.info(f"{test_name}: {format_test_result(r)}")
+        return result, res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -200,3 +206,10 @@ def is_same_type(require_type: str, obj: Any) -> bool:
         return isinstance(obj, Dataset)
     else:
         return require_type == type(obj).__name__
+
+
+def format_test_result(result: Union[bool, TestResult]) -> str:
+    if isinstance(result, TestResult):
+        return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
+    else:
+        return 'passed' if result else 'failed'

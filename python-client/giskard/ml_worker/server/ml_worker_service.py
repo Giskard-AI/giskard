@@ -6,13 +6,14 @@ import sys
 import time
 from io import StringIO
 
-import google.protobuf
+import google
 import grpc
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
+from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 from google.protobuf.empty_pb2 import Empty
 
 import giskard
@@ -24,6 +25,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain_text,
 )
 from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
@@ -131,8 +133,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Executing {test.name}")
         test_result = run_test(test.fn, arguments)
+
         return ml_worker_pb2.TestResultMessage(
-            results=[ml_worker_pb2.NamedSingleTestResult(name=test.id, result=test_result)])
+            results=[ml_worker_pb2.NamedSingleTestResult(
+                name=test.id, result=map_result_to_single_test_result(test_result)
+            )]
+        )
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
@@ -150,9 +156,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         is_pass, results = suite.run(**global_arguments)
 
+        result_list = list(results.values())
+
         named_single_test_result = []
         for i in range(len(tests)):
-            named_single_test_result.append(ml_worker_pb2.NamedSingleTestResult(name=tests[i].id, result=results[i]))
+            named_single_test_result.append(
+                ml_worker_pb2.NamedSingleTestResult(name=tests[i].id,
+                                                    result=map_result_to_single_test_result(result_list[i]))
+            )
 
         return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
 
@@ -162,11 +173,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField('dataset'):
                 value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = WrapperModel.download(self.client, arg.model.project_key, arg.model.id)
+                value = Model.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
-            elif arg.HasField('string'):
-                value = str(arg.string)
+            elif arg.HasField('int'):
+                value = int(arg.int)
+            elif arg.HasField('str'):
+                value = str(arg.str)
+            elif arg.HasField('bool'):
+                value = bool(arg.bool)
             else:
                 raise IllegalArgumentError("Unknown argument type")
             arguments[arg.name] = value
@@ -403,3 +418,45 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     @staticmethod
     def pandas_series_to_proto_series(self, series):
         return
+
+
+def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
+    if isinstance(result, ml_worker_pb2.SingleTestResult):
+        return result
+    elif isinstance(result, TestResult):
+        return ml_worker_pb2.SingleTestResult(
+            passed=result.passed,
+            messages=[
+                ml_worker_pb2.TestMessage(
+                    type=ml_worker_pb2.TestMessageType.ERROR if message.type == TestMessageLevel.ERROR else ml_worker_pb2.TestMessageType.INFO,
+                    text=message.text
+                )
+                for message
+                in result.messages
+            ],
+            props=result.props,
+            metric=result.metric,
+            missing_count=Int32Value(value=result.missing_count),
+            missing_percent=DoubleValue(value=result.missing_percent),
+            unexpected_count=Int32Value(value=result.unexpected_count),
+            unexpected_percent=DoubleValue(value=result.unexpected_percent),
+            unexpected_percent_total=DoubleValue(value=result.unexpected_percent_total),
+            unexpected_percent_nonmissing=DoubleValue(value=result.unexpected_percent_nonmissing),
+            partial_unexpected_index_list=[
+                ml_worker_pb2.Partial_unexpected_counts(
+                    value=puc.value,
+                    count=puc.count
+                )
+                for puc
+                in result.partial_unexpected_index_list
+            ],
+            unexpected_index_list=result.unexpected_index_list,
+            output_df=result.output_df,
+            number_of_perturbed_rows=result.number_of_perturbed_rows,
+            actual_slices_size=result.actual_slices_size,
+            reference_slices_size=result.reference_slices_size,
+        )
+    elif isinstance(result, bool):
+        return ml_worker_pb2.SingleTestResult(passed=result)
+    else:
+        raise ValueError("Result of test can only be 'GiskardTestResult' or 'bool'")
