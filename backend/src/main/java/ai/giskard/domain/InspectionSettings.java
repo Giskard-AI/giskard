@@ -10,7 +10,6 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class InspectionSettings implements Serializable{
    private Integer limeNumberSamples = SpringContext.getBean(ApplicationProperties.class).getLimeNumberSamples();
 }

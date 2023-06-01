@@ -1,12 +1,14 @@
 package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @UIModel
-@AllArgsConstructor
+@NoArgsConstructor
 public class CreateFeedbackReplyDTO {
     private String content;
     private Integer replyToReply;

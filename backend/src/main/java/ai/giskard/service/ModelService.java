@@ -6,9 +6,11 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
@@ -28,10 +30,12 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class ModelService {
-    final DatasetRepository datasetRepository;
+    private final DatasetRepository datasetRepository;
+    private final TestSuiteRepository testSuiteRepository;
+    final FeedbackRepository feedbackRepository;
     final ModelRepository modelRepository;
-    final PermissionEvaluator permissionEvaluator;
-    final InspectionRepository inspectionRepository;
+    private final PermissionEvaluator permissionEvaluator;
+    private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
     private final FileLocationService locationService;
@@ -137,26 +141,5 @@ public class ModelService {
         }
 
         return response;
-    }
-
-
-    public void deleteModel(Long modelId) {
-        ProjectModel model = modelRepository.getById(modelId);
-        permissionEvaluator.validateCanWriteProject(model.getProject().getId());
-
-        log.info("Deleting model from the database: {}", model.getId());
-        modelRepository.delete(model);
-
-        Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
-
-        try {
-            log.info("Removing model file: {}", model.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
-            log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
-        } catch (IOException e) {
-            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
-        }
-
     }
 }

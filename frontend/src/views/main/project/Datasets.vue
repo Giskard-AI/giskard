@@ -42,10 +42,11 @@
               </v-tooltip>
               <v-tooltip bottom dense>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin" @click.stop="deleteDataFile(f.id, f.name)"
-                         v-bind="attrs" v-on="on">
-                    <v-icon>delete</v-icon>
-                  </v-btn>
+                    <v-btn icon color="accent" v-if="isProjectOwnerOrAdmin"
+                           @click.stop="deleteDataFile(f.id, f.name)"
+                           v-bind="attrs" v-on="on">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
                   </template>
                 <span>Delete</span>
               </v-tooltip>
@@ -77,6 +78,7 @@ import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
 import {FileDTO, ProjectDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
+import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -114,13 +116,16 @@ export default class Datasets extends Vue {
 
   public async deleteDataFile(id: number, fileName: string) {
     mixpanel.track('Delete dataset', {id});
-    if (await this.$dialog.confirm({
-      text: `Are you sure you want to delete dataset <strong>${fileName}</strong>?`,
-      title: 'Delete dataset'
+    if (await this.$dialog.showAndWait(DeleteModal, {
+      width: 600,
+      id: id,
+      fileName: fileName,
+      type: "dataset",
+      scrollable: true
     })) {
-      await performApiActionWithNotif(this.$store,
-          () => api.deleteDatasetFile(id),
-          this.loadDatasets)
+      let messageDTO = await api.deleteDatasetFile(id);
+      commitAddNotification(this.$store, {content: messageDTO.message});
+      await this.loadDatasets();
     }
   }
 

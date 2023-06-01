@@ -158,7 +158,9 @@ export default class ProjectsHome extends Vue {
         name: this.newProjectName.trim(),
         key: this.newProjectKey.trim(),
         description: this.newProjectDesc.trim(),
-        inspectionSettings: {limeNumberSamples: 500},
+        inspectionSettings: {
+          limeNumberSamples: 500
+        }
       }
       try {
         await dispatchCreateProject(this.$store, proj)

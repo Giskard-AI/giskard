@@ -5,15 +5,17 @@ import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.dto.ml.ProjectDTO;
 import ai.giskard.web.dto.user.UserMinimalDTO;
 import com.dataiku.j2ts.annotations.UIModel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.Set;
 
 @UIModel
 @Getter
-@AllArgsConstructor
+@Setter
+@NoArgsConstructor
 public class FeedbackDTO {
     private Long id;
     private ProjectDTO project;

@@ -165,12 +165,11 @@ public class InitService {
         zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
     }
 
-    final UserRepository userRepository;
-    final RoleRepository roleRepository;
-    final UserService userService;
-    final ProjectRepository projectRepository;
-    final ProjectService projectService;
-    final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
+    private final PasswordEncoder passwordEncoder;
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
     private final GeneralSettingsService generalSettingsService;
     private final ResourceLoader resourceLoader;
@@ -214,9 +213,7 @@ public class InitService {
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build(),
-                InspectionSettings.builder()
-                    .limeNumberSamples(5)
-                    .build()
+                new InspectionSettings(5)
             ),
             GERMAN_CREDIT_PROJECT_KEY, new ProjectConfig("Credit Scoring Classification", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")

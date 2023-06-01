@@ -9,8 +9,8 @@ import java.util.Map;
 @UIModel
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class DataUploadParamsDTO {
     private String name;

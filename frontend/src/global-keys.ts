@@ -30,8 +30,8 @@ export function copyToClipboard(textToCopy) {
 Mousetrap.bind('@ j j', () => {
     let localToken = getLocalToken();
     if (localToken) {
-        copyToClipboard(localToken).then(_ => {
+        copyToClipboard(localToken).then(() => {
             commitAddNotification(store, {content: 'Copied JWT token to clipboard', color: '#262a2d'});
-        })
+        });
     }
 });

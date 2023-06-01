@@ -6,11 +6,9 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.UserRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
-import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
@@ -33,12 +31,8 @@ import static ai.giskard.service.FileLocationService.createZSTname;
 @Service
 @RequiredArgsConstructor
 public class FileUploadService {
-    final ModelRepository modelRepository;
-    final UserRepository userRepository;
-    final GiskardMapper giskardMapper;
-
-    final ProjectService projectService;
-    final ProjectRepository projectRepository;
+    private final ModelRepository modelRepository;
+    private final ProjectRepository projectRepository;
     private final FileLocationService locationService;
     private final DatasetRepository datasetRepository;
 
@@ -96,17 +90,15 @@ public class FileUploadService {
     private ModelType getModelType(ModelUploadParamsDTO modelParams) {
         ModelType modelType;
         switch (modelParams.getModelType().toLowerCase().trim()) {
-            case "classification":
+            case "classification" -> {
                 if (modelParams.getClassificationLabels().size() > 2) {
                     modelType = ModelType.MULTICLASS_CLASSIFICATION;
                 } else {
                     modelType = ModelType.BINARY_CLASSIFICATION;
                 }
-                break;
-            case "regression":
-                modelType = ModelType.REGRESSION;
-                break;
-            default:
+            }
+            case "regression" -> modelType = ModelType.REGRESSION;
+            default ->
                 throw new IllegalArgumentException("Invalid model type: %s, supported values are \"classification\" or \"regression\"");
         }
         return modelType;

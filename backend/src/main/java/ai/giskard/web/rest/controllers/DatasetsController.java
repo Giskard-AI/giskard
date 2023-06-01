@@ -2,9 +2,12 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
+import ai.giskard.service.ProjectFileDeletionService;
+import ai.giskard.service.UsageService;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
+import ai.giskard.web.dto.PrepareDeleteDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
@@ -24,6 +27,8 @@ public class DatasetsController {
     private final DatasetRepository datasetRepository;
     private final GiskardMapper giskardMapper;
     private final DatasetService datasetService;
+    private final ProjectFileDeletionService deletionService;
+    private final UsageService usageService;
 
     /**
      * Retrieve the list of datasets from the specified project
@@ -72,8 +77,13 @@ public class DatasetsController {
 
     @DeleteMapping("/dataset/{datasetId}")
     public MessageDTO deleteDataset(@PathVariable @NotNull Long datasetId) {
-        datasetService.deleteDataset(datasetId);
+        deletionService.deleteDataset(datasetId);
         return new MessageDTO("Dataset {} has been deleted", datasetId);
+    }
+
+    @GetMapping("/dataset/prepare-delete/{datasetId}")
+    public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull Long datasetId) {
+        return usageService.prepareDeleteDataset(datasetId);
     }
 
     @GetMapping("/dataset/{datasetId}/features")

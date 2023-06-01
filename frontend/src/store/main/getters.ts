@@ -1,7 +1,7 @@
-import { MainState } from './state';
-import { getStoreAccessors } from 'typesafe-vuex';
-import { State } from '../state';
-import { Role } from '@/enums';
+import {MainState} from './state';
+import {getStoreAccessors} from 'typesafe-vuex';
+import {State} from '../state';
+import {Role} from '@/enums';
 
 export const getters = {
     hasAdminAccess: (state: MainState) => {
@@ -15,7 +15,6 @@ export const getters = {
     appSettings: (state: MainState) => state.appSettings,
     token: (state: MainState) => state.token,
     isLoggedIn: (state: MainState) => state.isLoggedIn,
-    firstNotification: (state: MainState) => state.notifications.length > 0 && state.notifications[0],
     coworkers: (state: MainState) => state.coworkers,
     allProjects: (state: MainState) => state.projects,
     project: (state: MainState) => (id: number) => {
@@ -34,6 +33,5 @@ export const readToken = read(getters.token);
 export const readUserProfile = read(getters.userProfile);
 export const readAppSettings = read(getters.appSettings);
 export const readCoworkers = read(getters.coworkers);
-export const readFirstNotification = read(getters.firstNotification);
 export const readAllProjects = read(getters.allProjects);
 export const readProject = read(getters.project);
