@@ -73,7 +73,7 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="selected-test-description pt-2 mb-4">{{ selectedTestDescription }}</p>
+                                            <p class="selected-test-description pt-2 mb-4">{{ doc.body }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
@@ -85,7 +85,7 @@
                                     <span class="group-title">Inputs</span>
                                     <v-spacer></v-spacer>
                                 </div>
-                                <SuiteInputListSelector :editing="true" :modelValue="testArguments" :inputs="inputType" :project-id="props.projectId" :test="selected" />
+                                <SuiteInputListSelector :editing="true" :modelValue="testArguments" :inputs="inputType" :project-id="props.projectId" :test="selected" :doc="doc" />
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTest">
@@ -135,8 +135,8 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
-import CodeSnippet from "@/components/CodeSnippet.vue";
-import { alphabeticallySorted } from "@/utils/comparators";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
+import {alphabeticallySorted} from "@/utils/comparators";
 
 let props = defineProps<{
     projectId: number,
@@ -152,14 +152,6 @@ let testArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
-
-const selectedTestDescription = computed(() => {
-    if (selected.value === null) {
-        return '';
-    }
-
-    return selected.value.doc.split("Args:")[0];
-})
 
 const selectedTestUsage = computed(() => {
 
@@ -224,6 +216,14 @@ watch(selected, (value) => {
         }))
         .value()
 });
+
+const doc = computed(() => extractArgumentDocumentation(selected.value));
+
+function sorted(arr: any[]) {
+    const res = _.cloneDeep(arr);
+    res.sort()
+    return res;
+}
 
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined

@@ -32,10 +32,18 @@
                     <v-icon small>close</v-icon>
                     Failed
                 </v-chip>
-                <v-btn color="primary" outlined small>
-                    <v-icon small>info</v-icon>
-                    Debug
-                </v-btn>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div v-bind="attrs" v-on="on">
+                            <v-btn color="primary" outlined small disabled>
+                                <v-icon small>info</v-icon>
+                                Debug
+                            </v-btn>
+                        </div>
+                    </template>
+                    <span>Coming soon</span>
+                </v-tooltip>
+
             </div>
         </div>
         <div class="d-flex flex-row align-end test-card-footer">
@@ -75,7 +83,7 @@ const props = defineProps<{
     isPastExecution: boolean
 }>();
 
-const params = computed(() => props.isPastExecution
+const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
     : Object.values(props.suiteTest.functionInputs)
         .filter(input => !input.isAlias)
