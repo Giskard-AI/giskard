@@ -62,14 +62,16 @@ import { useCatalogStore } from "@/stores/catalog";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
 
-const props = defineProps<{
-    functionInputs?: { [key: string]: FunctionInputDTO },
-    test?: TestFunctionDTO,
-    projectId: number,
-    inputs: { [name: string]: string },
-    modelValue?: { [name: string]: FunctionInputDTO },
-    editing: boolean
-}>();
+interface Props {
+    functionInputs?: { [key: string]: FunctionInputDTO };
+    test?: TestFunctionDTO;
+    projectId: number;
+    inputs: { [name: string]: string };
+    modelValue?: { [name: string]: FunctionInputDTO };
+    editing: boolean;
+}
+
+const props = defineProps<Props>();
 
 const { models, datasets } = storeToRefs(useTestSuiteStore());
 const { slicingFunctionsByUuid } = storeToRefs(useCatalogStore());
@@ -78,8 +80,6 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
     type: props.inputs[name]
 })));
-
-
 </script>
 
 <style lang="scss" scoped>
