@@ -6,6 +6,10 @@
           <v-col :align="'right'">
             <div class="d-flex flex-row-reverse">
               <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+              <v-btn text color="secondary" :to="{name: 'test-suite-compare-executions'}">
+                Compare executions
+                <v-icon>compare</v-icon>
+              </v-btn>
               <v-btn text @click="loadData()" color="secondary">Reload
                 <v-icon right>refresh</v-icon>
               </v-btn>
