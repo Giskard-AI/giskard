@@ -280,8 +280,8 @@ class GiskardClient:
             f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}"
         )
 
-    def save_test_function_meta(self, project_key, dataset_id, meta: TestFunctionMeta):
-        self._session.post(f"project/{project_key}/test-functions", json={
+    def save_test_function_meta(self, dataset_id, meta: TestFunctionMeta):
+        self._session.post("/test-functions", json={
             "uuid": meta.uuid,
             "name": meta.name,
             "display_name": meta.display_name,
@@ -304,7 +304,6 @@ class GiskardClient:
         self.analytics.track(
             "Upload test function",
             {
-                "project": anonymize(project_key),
                 "uuid": anonymize(dataset_id),
                 "name": anonymize(meta.name),
                 "module": anonymize(meta.module),
@@ -313,11 +312,11 @@ class GiskardClient:
         )
 
         print(
-            f"Function successfully uploaded to project key '{project_key}' with UUID = {meta.uuid}"
+            f"Function successfully uploaded with UUID = {meta.uuid}"
         )
 
-    def load_test_function_meta(self, project_key: str, uuid: str) -> TestFunctionMeta:
-        res = self._session.get(f"project/{project_key}/test-functions/{uuid}").json()
+    def load_test_function_meta(self, uuid: str) -> TestFunctionMeta:
+        res = self._session.get(f"/test-functions/{uuid}").json()
         return TestFunctionMeta(
             uuid=res["uuid"],
             name=res["name"],

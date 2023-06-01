@@ -24,19 +24,15 @@ public class TestFunctionController {
     private final TestFunctionRepository testFunctionRepository;
     private final TestFunctionService testFunctionService;
 
-    @GetMapping("project/{projectKey}/test-functions/{testId}")
-    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @GetMapping("/test-functions/{testId}")
     @Transactional(readOnly = true)
-    public TestFunctionDTO getTestFunction(@PathVariable("projectKey") @NotNull String projectKey,
-                                           @PathVariable("testId") @NotNull UUID modelId) {
+    public TestFunctionDTO getTestFunction(@PathVariable("testId") @NotNull UUID modelId) {
         return giskardMapper.toDTO(testFunctionRepository.getById(modelId));
     }
 
-    @PostMapping("project/{projectKey}/test-functions")
-    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @PostMapping("/test-functions")
     @Transactional
-    public TestFunctionDTO getTestFunction(@PathVariable("projectKey") @NotNull String projectKey,
-                                           @Valid @RequestBody TestFunctionDTO testFunction) {
+    public TestFunctionDTO getTestFunction(@Valid @RequestBody TestFunctionDTO testFunction) {
         return testFunctionService.save(testFunction);
     }
 
