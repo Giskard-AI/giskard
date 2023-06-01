@@ -174,123 +174,95 @@ class PerformanceScanResult(ScanResult):
         return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
     def _repr_html_(self):
-        from collections import defaultdict
+        tab_header = """
+<!-- TAB HEADER -->
+<div class="flex items-center items-stretch">
+    <div class="flex items-center px-4 dark:fill-white border-b border-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 410 213" height="15">
+            <path
+                d="M318.78 21.94a59.439 59.439 0 0 1 36.45-12.56v.03c7.09-.1 14.13 1.2 20.71 3.84 6.58 2.64 12.57 6.56 17.62 11.54s9.06 10.91 11.8 17.45a53.44 53.44 0 0 1 0 41.3 53.588 53.588 0 0 1-11.8 17.45c-5.05 4.98-11.04 8.9-17.62 11.54s-13.62 3.95-20.71 3.84l-67.92.16-35.87 49.11-135.24 46.84 40.81-47.24a139.229 139.229 0 0 1-66.06-23.8H45.11L0 101.46h55.73C60.38 44.84 115.97 0 183.59 0c31.71 0 63.58 9.86 87.47 27.04a105.149 105.149 0 0 1 26.65 27.18 59.4 59.4 0 0 1 21.07-32.28zM99.85 46.03l55.4 55.45h21.31l-64.81-64.87c-4.18 2.86-8.15 6.01-11.9 9.42zm57.78-28.45 83.9 83.9h21.29l-86.21-86.22c-6.37.32-12.71 1.1-18.98 2.32zm-92.84 98.94H39.72l11.1 9.82h22.44c-3-3.12-5.83-6.4-8.47-9.82zm134.27 0H84.8l-.03.01c20.8 20.91 51.79 33.67 84.66 34.3l29.63-34.31zm-34.81 63.35 77.79-26.94 26.6-36.39h-49.68l-54.71 63.33zm146.77-78.65h46.2l.05.01c9.98-.55 19.36-4.97 26.14-12.32a38.409 38.409 0 0 0 10.16-27.05 38.44 38.44 0 0 0-11.56-26.48 38.405 38.405 0 0 0-26.74-10.94A44.287 44.287 0 0 0 324 37.41a44.268 44.268 0 0 0-12.97 31.28v32.53zm51.82-52.83c5.27.52 9.12 5.22 8.6 10.49-.52 5.27-5.22 9.12-10.49 8.6s-9.12-5.22-8.6-10.49c.53-5.27 5.22-9.12 10.49-8.6z"
+                style="fill-rule:evenodd;clip-rule:evenodd" />
+        </svg>
+        <div class="ml-4 py-2">
+            <span class="uppercase text-sm">9 issues detected</span>
+        </div>
+    </div>
 
-        html_output = "<h2>Performance issues</h2>"
+    <div class="bg-zinc-800 px-3 py-2 border-r border-t border-l border-gray-500">
+        Performance
+        <span class="ml-1 rounded-full text-xs w-4 h-4 inline-block text-center bg-red-400">4</span>
+    </div>
 
-        if not self.has_issues():
-            html_output += "<p>No issues detected.</p>"
-            return html_output
+    <div class="flex-grow border-b border-gray-500"></div>
+</div>
+<!-- TAB HEADER END -->
+"""
+        issues_table = self._make_issues_table_html()
 
-        # Group issues by feature
-        grouped_issues = defaultdict(list)
-        for s in self.issues:
-            grouped_issues[tuple(s.columns())].append(s)
+        main_content = f"""
+<div class="dark:text-white dark:bg-zinc-800 p-4 mt-8 mb-4">
+    <h2 class="uppercase">9 performance issues detected</h2>
+    <p class="my-1">We detected 4 data slices where the model exhibits low performance.</p>
+    <p class="my-1">Tested metrics: F1 score, accuracy.</p>
 
-        num_issues = len(grouped_issues)
-        html_output += f"<p style='color:#b91c1c;font-size:1.2rem;'>{num_issues} issue{'s' if num_issues > 1 else ''} detected.</p>"
+    <div class="flex items-center space-x-1">
+        <h2 class="uppercase my-4 mr-2 font-medium">Issues</h2>
+        <span class="text-xs border rounded px-1 uppercase text-red-400 border-red-400">3 major</span>
+        <span class="text-xs border rounded px-1 uppercase text-amber-200 border-amber-200">3 medium</span>
+    </div>
 
-        # Now we render the results for each feature
-        for (feature,), issues in grouped_issues.items():
-            html_output += "<div style='display:flex'>"
-            html_output += "<div style='width:50%'>"
-            html_output += f"<h4>Higher than average loss for some values of <code>{feature}</code></h4>"
-            html_output += "<ul>"
-            for s in issues:
-                html_output += "<li><code>" + s.query.to_pandas() + "</code></li>"
-            html_output += "</ul>"
+    {issues_table}    
+    
+    <h2 class="uppercase mb-4 mt-8 mr-2 font-mediums">Why does this happen?</h2>
+    <p class="my-1">
+        Performance bias can happen for a different reasons:
+    </p>
+    <ul class="list-disc ml-6">
+        <li>Not enough training samples in the low-performing data slices</li>
+        <li>Wrong labels in the training set in the low-performing data slices</li>
+        <li>Drift between your training set and the test set</li>
+    </ul>
+</div>
+"""
 
-            chart_html = self._make_chart_html(feature, issues)
-            html_output += "<div style='width:48%;margin-left:2%;'>" + chart_html + "</div>"
-            html_output += "</div></div>"
+        html = f"""
+<div class="dark:text-white dark:bg-zinc-900">
+{tab_header}
+{main_content}
+</div>
+<script src="https://cdn.tailwindcss.com"></script>
+"""
 
-        return html_output
+        return html
 
-    def _make_chart_html(self, feature, issues):
-        import altair as alt
-        from altair import Chart
+    def _make_issues_table_html(self):
+        rows = ""
+        for issue in self.issues:
+            rows += f"""
+<tr class="first:border-t border-b border-zinc-400 text-left">
+    <td class="p-3">
+        <code class="mono text-blue-300">credit_amount > 5000</code>
+    </td>
+    <td class="p-3">
+        [METRIC]
+    </td>
+    <td class="p-3">
+        <span class="text-red-400">[PERCENT_CHANGE]% than global</span>
+    </td>
+    <td class="p-3">
+        <span class="text-gray-400">
+            [SAMPLES IN SLICE] samples ([PERCENT SAMPLES IN SLICE]%)
+        </span>
+    </td>
+</tr>
+"""
 
-        data = issues[0].data_unsliced.copy()
-
-        pdata = pd.DataFrame(
-            {
-                "feature": data.loc[:, feature],
-                "loss": data.loc[:, "__gsk__loss"],
-                "slice": "Background",
-                "slice_color": "#1d4ed8",
-            }
-        )
-
-        if is_numeric_dtype(data[feature].dtype):
-            for s in issues:
-                s.bind(data)
-                f_min, f_max = s.get_column_interval(feature)
-                if f_min is None:
-                    f_min = pdata.feature.min()
-                if f_max is None:
-                    f_max = pdata.feature.max()
-                pdata.loc[s.mask, "slice"] = f"({f_min:.2f}, {f_max:.2f})"
-                pdata.loc[s.mask, "slice_color"] = "#b91c1c"
-
-            base = (
-                Chart(pdata)
-                .mark_point()
-                .encode(
-                    x=alt.X("feature:Q", bin=alt.Bin(maxbins=200), title=feature),
-                    y=alt.Y(
-                        "mean(loss):Q",
-                        impute=alt.ImputeParams(value=None),
-                        title="Cross-Entropy Loss",
-                    ),
-                    color=alt.Color("slice_color", scale=None),
-                )
-            )
-            ci = (
-                Chart(pdata)
-                .mark_errorbar()
-                .encode(
-                    x=alt.X("feature:Q", bin=alt.Bin(maxbins=200), title=feature),
-                    y=alt.Y(
-                        "mean(loss):Q",
-                        impute=alt.ImputeParams(value=None),
-                        title="Cross-Entropy Loss",
-                    ),
-                    color=alt.Color("slice_color", scale=None),
-                )
-            )
-
-            h = (
-                alt.Chart()
-                .mark_rule(strokeDash=[5, 5], strokeWidth=1, color="#1d4ed8")
-                .encode(y=alt.datum(pdata[pdata.slice == "Background"].loss.mean()))
-            )
-
-            box = (
-                alt.Chart(pdata)
-                .mark_boxplot(extent="min-max")
-                .encode(
-                    x=alt.X("slice", title=feature),
-                    y=alt.Y("loss", title="Cross-Entropy Loss"),
-                )
-            )
-            chart = (base + ci + h) | box
-
-        if is_categorical_dtype(data[feature].dtype):
-            for s in issues:
-                s.bind(data)
-                pdata.loc[s.mask, "slice"] = s.query.clauses[feature][0].value
-                pdata.loc[s.mask, "slice_color"] = "#b91c1c"
-
-            chart = (
-                alt.Chart(pdata)
-                .mark_boxplot(extent="min-max")
-                .encode(
-                    x=alt.X("feature", title=feature),
-                    y=alt.Y("loss", title="Cross-Entropy Loss"),
-                    color=alt.Color("slice_color", scale=None),
-                )
-            )
-
-        chart_html = chart._repr_mimebundle_()["text/html"]
-
-        return chart_html
+        return f"""
+<!-- ISSUES TABLE -->
+<div class="mb-4">
+    <table class="table-auto w-full text-white">
+    {rows}
+    </table>
+</div>
+<!-- ISSUES TABLE END -->
+"""
