@@ -13,8 +13,6 @@ from sklearn.metrics import (
 )
 
 from giskard import test
-from giskard.client.giskard_client import to_json, from_json
-from giskard.core.core import TestFunctionMeta
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult

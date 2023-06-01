@@ -5,9 +5,6 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
-      <env name="GIT_REPOSITORY" value="http://localhost:19000/git/udf.git" />
-      <env name="GIT_USER" value="giskard" />
-      <env name="GIT_PASSWORD" value="giskard123!" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python" />
     <option name="SDK_NAME" value="Python 3.7 (giskard)" />
