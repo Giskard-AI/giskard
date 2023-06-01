@@ -25,13 +25,13 @@ class OptSlicer(BaseSlicer):
 
         optb = ContinuousOptimalBinning(
             name=feature,
-            min_prebin_size=0.02,  # 2% of dataset
-            max_pvalue=1e-3,
-            max_pvalue_policy="all",
+            min_prebin_size=0.01,  # 1% of dataset
+            # Merge bins based on p-value
+            max_pvalue=1e-2,
+            max_pvalue_policy="consecutive",
+            # Disable monotonic trend constraint
             monotonic_trend=None,
-            # class_weight="balanced",
-            time_limit=3
-            # min_mean_diff=0.01,
+            time_limit=10,
         )
 
         data = self.dataset.df

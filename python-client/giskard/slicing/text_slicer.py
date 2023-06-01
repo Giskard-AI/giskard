@@ -43,14 +43,14 @@ class TextSlicer(BaseSlicer):
 
         # @TODO: this is bad, wait for support of metadata in Datasets
         meta = _calculate_text_metadata(data[feature]).add_prefix("__gsk__meta__")
-        data = data.join(meta)
+        data_with_meta = data.join(meta)
 
         # @TODO: hard coded for now, waiting for more organic Database API with meta support
         column_types = self.dataset.column_types.copy()
         column_types["__gsk__meta__charset"] = "category"
         column_types["__gsk__meta__avg_word_length"] = "numeric"
         column_types["__gsk__meta__text_length"] = "numeric"
-        dataset_with_meta = Dataset(data, target=self.dataset.target, column_types=column_types)
+        dataset_with_meta = Dataset(data_with_meta, target=self.dataset.target, column_types=column_types)
 
         # Run a slicer for numeric
         # slicer = OptSlicer(dataset_with_meta, target=target)
