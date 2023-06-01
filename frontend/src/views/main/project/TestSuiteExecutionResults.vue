@@ -9,7 +9,7 @@
     </v-tab>
     <v-tabs-items v-model="tab">
       <v-tab-item v-for="result in props.execution.results" :transition="false">
-        TODO
+        <p>metric: {{ result.metric }} </p>
       </v-tab-item>
     </v-tabs-items>
   </v-tabs>
