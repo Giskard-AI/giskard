@@ -12,8 +12,8 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
             level="major",
             info=PerformanceIssueInfo(
                 metric=Accuracy(),
+                metric_value_reference=0.8,
                 metric_value_slice=0.5,
-                metric_value_global=0.8,
                 slice_fn=lambda x: x,
                 slice_size=100,
                 threshold=0.1,
