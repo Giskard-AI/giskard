@@ -31,6 +31,9 @@ public class TestSuiteExecution extends BaseEntity {
 
     private String message;
 
+    @Column(columnDefinition = "VARCHAR")
+    private String logs;
+
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL)
     private List<SuiteTestExecution> results = new ArrayList<>();
 
