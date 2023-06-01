@@ -79,7 +79,7 @@ class PyTorchModel(MLFlowBasedModel):
             for entry in data:
                 try:  # for the case of 1 input
                     predictions.append(self.clf(entry).detach().numpy())
-                except self.clf(entry):  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+                except:  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
                     predictions.append(self.clf(*entry).detach().numpy())
 
         predictions = np.squeeze(np.array(predictions))
