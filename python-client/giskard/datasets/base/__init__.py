@@ -26,6 +26,7 @@ from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
 GISKARD_COLUMN_PREFIX = '__GISKARD_'
+GISKARD_HASH_COLUMN = f'{GISKARD_COLUMN_PREFIX}HASH__'
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,8 @@ class DataProcessor:
 
             if apply_only_last:
                 break
+
+        df.loc[df[dataset.df.loc[df.index].ne(df)].dropna(how='all').index, GISKARD_HASH_COLUMN] = float('NaN')
 
         ret = Dataset(
             df=df,
@@ -181,13 +184,14 @@ class Dataset(ColumnMetadataMixin):
             for column, column_type in self.column_types.items()
             if column_type == 'category'
         }
-        
+
         validate_column_categorization(self)
 
         from giskard.core.dataset_validation import validate_numeric_columns
-
         validate_numeric_columns(self)
 
+        from ...core.dataset_caching import generate_row_hashes
+        generate_row_hashes(self)
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
