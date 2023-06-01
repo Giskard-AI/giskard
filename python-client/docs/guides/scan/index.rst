@@ -1,20 +1,24 @@
-```{toctree}
-:maxdepth: 2
+User Guide
+===============
 
-performance_bias/index
-robustness/index
-overconfidence/index
-underconfidence/index
-ethics/index
-data_leakage/index
-stochasticity/index
-```
+.. toctree::
+   :maxdepth: 1
 
-# Scan your ML model
+   performance_bias/index
+   robustness/index
+   overconfidence/index
+   underconfidence/index
+   ethics/index
+   data_leakage/index
+   stochasticity/index
+
+Scan your ML model
+------------------
 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
-## Prerequisites
+Prerequisites
+^^^^^^^^^
 
 To scan your ML model for vulnerabilities, you need:
 
@@ -23,7 +27,8 @@ To scan your ML model for vulnerabilities, you need:
   any set of *Python* functions. To wrap your model, see [here](docs/guide/wrap_model/index.md).
 
 
-## Scan your model to detect vulnerabilities
+Scan your model to detect vulnerabilities
+^^^^^^^^^
 
 After having wrapped your [model](docs/guide/wrap_model/index.md) & [dataset](docs/guide/wrap_dataset/index.md), ou can scan your model for vulnerabilities using:
 
@@ -46,7 +51,8 @@ results_df = scan_results.to_dataframe()
 results_df.to_csv("scan_results_my_model.csv")
 ```
 
-## Automatically generate a test suite based on the scan results
+Automatically generate a test suite based on the scan results
+^^^^^^^^^
 
 If the automatic scan with `giskard.scan` found some issues with your model, you can automatically generate a set of
 tests (a test suite) that will reproduce those issues.
