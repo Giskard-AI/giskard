@@ -53,7 +53,7 @@ class MLWorker:
             self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
             address = f"unix://{self.socket_file_location}"
 
-        add_MLWorkerServicer_to_server(MLWorkerServiceImpl(client, address, not is_server), server)
+        add_MLWorkerServicer_to_server(MLWorkerServiceImpl(self, client, address, not is_server), server)
         server.add_insecure_port(address)
         logger.info(f"Started ML Worker server on {address}")
         logger.debug(f"ML Worker settings: {settings}")
