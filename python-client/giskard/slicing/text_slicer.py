@@ -261,5 +261,6 @@ class TextMetadataSliceFunction(SlicingFunction):
 
     def __str__(self):
         # @TODO: hard coded for now!
-        col = list(self.query.clauses.keys())[0].removeprefix("__gsk__meta__")
+        col = list(self.query.clauses.keys())[0]
+        col = col.split("__gsk__meta__")[-1]
         return self.query.to_pandas().replace(f"__gsk__meta__{col}", f"{col}({self.feature})")
