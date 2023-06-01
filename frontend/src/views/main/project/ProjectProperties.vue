@@ -126,15 +126,15 @@
 </template>
 
 <script setup lang="ts">
-// import { Component, Prop, Vue } from 'vue-property-decorator';
 import { getUserFullDisplayName } from '@/utils';
 import Models from '@/views/main/project/Models.vue';
 import Datasets from '@/views/main/project/Datasets.vue';
-// import FeedbackList from '@/views/main/project/FeedbackList.vue';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
 import { computed, ref } from 'vue';
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 
 interface Props {
   projectId: number;
@@ -157,66 +157,28 @@ function reloadDataObjects() {
 }
 
 async function cancelUserInvitation(user: IUserProfileMinimal) {
-  // const confirm = await this.$dialog.confirm({
-  //   text: `Are you sure you want to cancel invitation of user <strong>${user.user_id}</strong>?`,
-  //   title: 'Cancel user invitation'
-  // });
-  // if (project && confirm) {
-
-  if (project) {
-    try {
-      mixpanel.track('Cancel user invitation to project', { projectId: project.id, userId: user.id });
-      await useProjectStore().uninviteUserFromProject({ projectId: project.id, userId: user.id })
-    } catch (e) {
-      console.error(e)
-    }
-  }
-}
-
-</script>
-
-<!-- <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { getUserFullDisplayName } from '@/utils';
-import Models from '@/views/main/project/Models.vue';
-import Datasets from '@/views/main/project/Datasets.vue';
-import FeedbackList from '@/views/main/project/FeedbackList.vue';
-import { IUserProfileMinimal } from '@/interfaces';
-import mixpanel from "mixpanel-browser";
-import { useProjectStore } from "@/stores/project";
-
-@Component({
-  components: {
-    Models, Datasets, FeedbackList
-  }
-})
-export default class ProjectSettings extends Vue {
-
-  @Prop({ required: true }) projectId!: number;
-  @Prop({ type: Boolean, required: true, default: false }) isProjectOwnerOrAdmin!: boolean;
-
-  get project() {
-    return useProjectStore().project(this.projectId);
-  }
-
-  private getUserFullDisplayName = getUserFullDisplayName
-
-  public async cancelUserInvitation(user: IUserProfileMinimal) {
-    const confirm = await this.$dialog.confirm({
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Cancel user invitation',
       text: `Are you sure you want to cancel invitation of user <strong>${user.user_id}</strong>?`,
-      title: 'Cancel user invitation'
-    });
-    if (this.project && confirm) {
-      try {
-        mixpanel.track('Cancel user invitation to project', { projectId: this.project.id, userId: user.id });
-        await useProjectStore().uninviteUserFromProject({ projectId: this.project.id, userId: user.id })
-      } catch (e) {
-        console.error(e)
+    },
+    on: {
+      async confirm(close) {
+        if (project) {
+          try {
+            mixpanel.track('Cancel user invitation to project', { projectId: project.id, userId: user.id });
+            await useProjectStore().uninviteUserFromProject({ projectId: project.id, userId: user.id })
+            close();
+          } catch (e) {
+            console.error(e)
+          }
+        }
       }
     }
-  }
+  });
 }
-</script> -->
+</script>
 
 <style scoped lang="scss">
 .properties-table {
