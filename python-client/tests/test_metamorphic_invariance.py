@@ -182,7 +182,7 @@ def test_metamorphic_invariance_t_test_nopert(german_credit_test_data, german_cr
 
 
 def test_metamorphic_invariance_wilcoxon(german_credit_test_data, german_credit_model):
-    @transformation_function()
+    @transformation_function
     def perturbation(x: pd.Series) -> pd.Series:
         x.sex = "female" if x.sex == "male" else "male"
         return x
