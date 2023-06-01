@@ -3,9 +3,8 @@ import os
 import platform
 import re
 import sys
-from typing import Optional, Tuple
+from typing import Optional
 
-import giskard
 import google.protobuf
 import grpc
 import numpy as np
@@ -13,6 +12,9 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
+from google.protobuf.empty_pb2 import Empty
+
+import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -20,7 +22,7 @@ from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, InputRef
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
@@ -29,7 +31,6 @@ from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
-from google.protobuf.empty_pb2 import Empty
 
 logger = logging.getLogger(__name__)
 
@@ -351,15 +352,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             ]
         )
 
-    def load_model_if_defined(self, model: ArtifactRef) -> Optional[Tuple[ArtifactRef, Model]]:
+    def load_model_if_defined(self, model: ArtifactRef) -> Optional[InputRef[Model]]:
         if model.id != '':
-            return model, Model.load(self.client, model.project_key, model.id)
+            return InputRef(Model.load(self.client, model.project_key, model.id), model)
         else:
             return None
 
-    def load_dataset_if_defined(self, dataset: ArtifactRef) -> Optional[Tuple[ArtifactRef, Dataset]]:
+    def load_dataset_if_defined(self, dataset: ArtifactRef) -> Optional[InputRef[Dataset]]:
         if dataset.id != '':
-            return dataset, Dataset.load(self.client, dataset.project_key, dataset.id)
+            return InputRef(Dataset.load(self.client, dataset.project_key, dataset.id), dataset)
         else:
             return None
 
