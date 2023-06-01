@@ -191,6 +191,26 @@ export default new Router({
                   },
                   children: [
                     {
+                      path: 'datasets',
+                      name: 'project-catalog-datasets',
+                      component: () => import('./views/main/project/DatasetsCatalog.vue'),
+                      props: route => {
+                        return {
+                          projectId: Number(route.params.id),
+                        };
+                      },
+                    },
+                    {
+                      path: 'models',
+                      name: 'project-catalog-models',
+                      component: () => import('./views/main/project/ModelsCatalog.vue'),
+                      props: route => {
+                        return {
+                          projectId: Number(route.params.id),
+                        };
+                      },
+                    },
+                    {
                       path: 'tests',
                       name: 'project-catalog-tests',
                       component: () => import('./views/main/project/TestsCatalog.vue'),
