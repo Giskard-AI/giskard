@@ -37,14 +37,16 @@ You can see all our tests in the [📖 Test Catalog](../../catalogs/test-catalog
 :::{tab-item} Drift tests
 
 ```python
-from giskard import Model, Dataset, test_drift_prediction_ks
+from giskard import demo, Model, Dataset, testing
 
-wrapped_model = Model(...)
-train_df = Dataset(...)
-test_df = Dataset(...)
+model, df = demo.titanic()
 
-result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
-                                  classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
+wrapped_model = Model(model=model, model_type="classification")
+train_df = Dataset(df=df.head(400), target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+test_df = Dataset(df=df.tail(400), target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+result = testing.test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
+                                          classification_label='yes', threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
