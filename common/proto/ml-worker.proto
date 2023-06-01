@@ -143,33 +143,33 @@ message RunModelResponse{
 
 message RunAdHocTestRequest {
   string testUuid = 1;
-  repeated TestArgument arguments = 2;
+  repeated FuncArgument arguments = 2;
 }
 
 message RunAdHocSlicingRequest {
   string slicingFunctionUuid = 1;
   ArtifactRef dataset = 2;
-  repeated TestArgument arguments = 3;
+  repeated FuncArgument arguments = 3;
 }
 
 message RunAdHocTransformationRequest {
   string transformationFunctionUuid = 1;
   ArtifactRef dataset = 2;
-  repeated TestArgument arguments = 3;
+  repeated FuncArgument arguments = 3;
 }
 
 message SuiteTestArgument {
   int64 id = 1;
   string testUuid = 2;
-  repeated TestArgument arguments = 3;
+  repeated FuncArgument arguments = 3;
 }
 
 message RunTestSuiteRequest {
   repeated SuiteTestArgument tests = 1;
-  repeated TestArgument globalArguments = 2;
+  repeated FuncArgument globalArguments = 2;
 }
 
-message TestArgument{
+message FuncArgument{
   string name = 1;
   oneof argument{
     ArtifactRef model = 2;
@@ -180,7 +180,9 @@ message TestArgument{
     bool bool = 7;
     ArtifactRef slicingFunction = 8;
     ArtifactRef transformationFunction = 9;
+    string kwargs = 10;
   }
+  repeated FuncArgument args = 11;
 }
 
 message RunTestResponse {
