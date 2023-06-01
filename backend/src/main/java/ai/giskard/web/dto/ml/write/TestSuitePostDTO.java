@@ -3,7 +3,6 @@ package ai.giskard.web.dto.ml.write;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.dto.ml.ProjectDTO;
-import ai.giskard.web.dto.ml.TestSuiteDTO;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

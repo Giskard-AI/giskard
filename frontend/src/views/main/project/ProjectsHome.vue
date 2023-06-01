@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat dense>
+    <v-toolbar flat>
       <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">Projects</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
@@ -11,10 +11,34 @@
         <v-btn>Mine</v-btn>
         <v-btn>Others</v-btn>
       </v-btn-toggle>
-      <v-btn tile small class="primary" v-if="isAdmin || isCreator" @click="openCreateDialog = true">
-        <v-icon left>add_circle</v-icon>
-        New
-      </v-btn>
+      <v-menu>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+              small
+              color="primary"
+              dark
+              v-bind="attrs"
+              v-on="on"
+          >
+            <v-icon left>add</v-icon>
+            Add Project
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item-group>
+            <v-list-item @click="openCreateDialog=true">
+              <v-list-item-content>
+                New
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item @click="openImportDialog=true">
+              <v-list-item-content>
+                Import
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-menu>
     </v-toolbar>
 
     <!-- Project list -->
@@ -61,6 +85,78 @@
       <div v-else>You have not been invited to any projects yet</div>
     </v-container>
 
+
+    <!-- Modal dialog to import new projects -->
+    <v-dialog v-model="openImportDialog" width="500" persistent>
+      <v-card>
+        <ValidationObserver ref="dialogForm">
+          <v-form @submit.prevent="prepareImport()">
+            <v-card-title>Import project</v-card-title>
+            <v-card-text>
+              <ValidationProvider name="File" rules="required" v-slot="{errors}">
+                <v-file-input accept=".zip"
+                              label="Select a project to import"
+                              @change="file = $event"
+                              :error-messages="errors"
+                ></v-file-input>
+              </ValidationProvider>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
+              <v-btn color="primary" text type="submit" :disabled="!file">Next</v-btn>
+            </v-card-actions>
+          </v-form>
+        </ValidationObserver>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modal dialog to set the project key in case of conflict key while importing -->
+    <v-dialog v-model="openPrepareDialog" width="500" persistent>
+      <v-card>
+        <ValidationObserver ref="dialogForm">
+          <v-form @submit.prevent="ImportIfNoConflictKey()">
+            <v-card-text>
+              <div class="title">Set new key for the imported project</div>
+              <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{errors}">
+                <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
+                              :error-messages="errors"></v-text-field>
+              </ValidationProvider>
+              <div v-if="loginsImportedProject.length !== 0">
+                <div class="title">Map users</div>
+                <v-list
+                    style="max-height: 1200px"
+                    class="overflow-y-auto overflow-x-hidden">
+                  <template v-for="item in loginsImportedProject">
+                    <v-row align="center" justify="center" dense>
+                      <v-col cols="4">
+                        <div>
+                          {{ item }}
+                        </div>
+                      </v-col>
+                      <v-col cols="2" align="center">
+                        <v-icon> mdi-arrow-right</v-icon>
+                      </v-col>
+                      <v-col cols="6">
+                        <v-select hide-details dense :items="loginsCurrentInstance"
+                                  v-model="mapLogins[item]"></v-select>
+                      </v-col>
+                    </v-row>
+                  </template>
+                </v-list>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="secondary" text @click="clearAndCloseDialog()">Cancel</v-btn>
+              <v-btn color="primary" text type="submit">Import</v-btn>
+            </v-card-actions>
+          </v-form>
+        </ValidationObserver>
+      </v-card>
+    </v-dialog>
+
+
     <!-- Modal dialog to create new projects -->
     <v-dialog v-model="openCreateDialog" width="500" persistent>
       <v-card>
@@ -95,28 +191,39 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
 import {ValidationObserver} from "vee-validate";
-import {dispatchCreateProject, dispatchGetProjects} from "@/store/main/actions";
-import {readAllProjects, readHasAdminAccess, readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
-import {ProjectPostDTO} from "@/generated-sources";
+import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
 import {toSlug} from "@/utils";
-import store from "@/store";
 import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {api} from "@/api";
+import mixpanel from "mixpanel-browser";
 
 const route = useRoute();
 const router = useRouter();
 
+const userStore = useUserStore();
+const projectStore = useProjectStore();
+
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
+const openPrepareDialog = ref<boolean>(false);
+const openImportDialog = ref<boolean>(false);
 const newProjectName = ref<string>("");
 const newProjectKey = ref<string>("");
 const newProjectDesc = ref<string>("");
 const creatorFilter = ref<number>(0);
 const projectCreateError = ref<string>("");
-
+const validatorNewKey = ref();
+const metadataDirectoryPath = ref<string>("");
+const loginsCurrentInstance = ref<string[]>([]);
+const loginsImportedProject = ref<string[]>([]);
+const mapLogins = ref<{ [key: string]: string }>({});
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
+const file = ref<File | null>(null);
 
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
@@ -126,7 +233,7 @@ onMounted(async () => {
 
 // computed
 const userProfile = computed(() => {
-  const userProfile = readUserProfile(store);
+  const userProfile = userStore.userProfile;
   if (userProfile == null) {
     throw Error("User is not defined.")
   }
@@ -134,7 +241,7 @@ const userProfile = computed(() => {
 });
 
 const isAdmin = computed(() => {
-  return readHasAdminAccess(store);
+  return userStore.hasAdminAccess;
 });
 
 const isCreator = computed(() => {
@@ -142,18 +249,78 @@ const isCreator = computed(() => {
 });
 
 const projects = computed(() => {
-  return readAllProjects(store)
+  return projectStore.projects
       .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
 })
 
 // functions
 async function loadProjects() {
-  await dispatchGetProjects(store);
+  await projectStore.getProjects();
+}
+
+async function prepareImport() {
+  if (!file.value) {
+    return;
+  }
+  let formData = new FormData();
+  formData.append('file', file.value);
+  return await api.prepareImport(formData)
+      .then(response => {
+        loginsCurrentInstance.value = response.loginsCurrentInstance;
+        loginsImportedProject.value = response.loginsImportedProject;
+        metadataDirectoryPath.value = response.temporaryMetadataDirectory;
+        openImportDialog.value = false;
+        openPrepareDialog.value = true;
+        loginsImportedProject.value.forEach((item, index) => {
+          if (index >= loginsCurrentInstance.value.length) {
+            mapLogins.value[item] = loginsCurrentInstance.value[0];
+          } else {
+            mapLogins.value[item] = loginsCurrentInstance.value[index];
+          }
+        });
+        newProjectKey.value = response.projectKey;
+      })
+}
+
+async function ImportIfNoConflictKey() {
+  if (!file.value) {
+    return;
+  }
+  let projects = projectStore.projects;
+  let keyAlreadyExist: boolean = false;
+  projects.forEach(project => {
+    if (project.key == newProjectKey.value) keyAlreadyExist = true;
+  })
+
+  if (keyAlreadyExist) {
+    validatorNewKey.value.applyResult({
+      errors: ["A project with this key already exist, please change key"],
+      valid: false,
+      failedRules: {}
+    })
+  } else {
+    let formData = new FormData();
+    if (file) {
+      formData.append('file', file.value);
+    }
+    mixpanel.track('Import project', {projectkey: newProjectKey.value});
+    const postImportProject: PostImportProjectDTO = {
+      mappedUsers: mapLogins.value,
+      projectKey: newProjectKey.value,
+      pathToMetadataDirectory: metadataDirectoryPath.value
+    }
+    api.importProject(postImportProject)
+        .then((p) => {
+          router.push({name: 'project-overview', params: {id: p.id}})
+        })
+  }
 }
 
 function clearAndCloseDialog() {
   dialogForm.value?.reset();
   openCreateDialog.value = false;
+  openImportDialog.value = false;
+  openPrepareDialog.value = false;
   newProjectName.value = '';
   newProjectKey.value = '';
   newProjectDesc.value = '';
@@ -167,7 +334,7 @@ async function submitNewProject() {
 
   const proj: ProjectPostDTO = {
     name: newProjectName.value.trim(),
-    key: newProjectKey.value.trim(),
+    key: newProjectKey.value!.trim(),
     description: newProjectDesc.value.trim(),
     inspectionSettings: {
       limeNumberSamples: 500
@@ -175,7 +342,7 @@ async function submitNewProject() {
   };
 
   try {
-    await dispatchCreateProject(store, proj);
+    await projectStore.createProject(proj);
     clearAndCloseDialog();
   } catch (e) {
     console.error(e.message);
@@ -189,3 +356,13 @@ watch(() => newProjectName.value, (value) => {
 })
 
 </script>
+
+<style>
+#create .v-speed-dial {
+  position: absolute;
+}
+
+#create .v-btn--floating {
+  position: relative;
+}
+</style>
