@@ -1,20 +1,24 @@
-import mlflow
-from typing import Union
+from typing import Callable, Iterable, Any, Optional
 
-from giskard.core.core import SupportedModelTypes
+import pandas as pd
+
+import mlflow
+from giskard.core.core import ModelType
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
 
 class SKLearnModel(MLFlowBasedModel):
+    @configured_validate_arguments
     def __init__(self,
                  clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+                 model_type: ModelType,
+                 name: Optional[str] = None,
+                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                 model_postprocessing_function: Callable[[Any], Any] = None,
+                 feature_names: Optional[Iterable] = None,
+                 classification_threshold: float = 0.5,
+                 classification_labels: Optional[Iterable] = None) -> None:
 
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))
