@@ -13,7 +13,7 @@
                         </v-list-item-action-text>
                     </v-list-item-content>
                 </v-col>
-                <v-col cols="3" v-if="editing">
+                <v-col cols="3">
                     <v-btn-toggle
                             v-model="buttonToggleValues[input.name]"
                             @change="item => handleTypeSelected(input.name, item)">
@@ -37,29 +37,8 @@
                         </v-tooltip>
                     </v-btn-toggle>
                 </v-col>
-                <v-col :cols="editing ? 6 : 9">
-                    <template v-if="!editing">
-                        <span v-if="!props.testInputs.hasOwnProperty(input.name)" class="font-italic">
-                          Suite input
-                        </span>
-                        <span v-if="props.testInputs[input.name]?.isAlias">
-                    {{ props.testInputs[input.name].value }}
-                  </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'Model'">
-                    {{
-                            models[props.testInputs[input.name].value].name ?? models[props.testInputs[input.name].value].id
-                            }}
-                  </span>
-                        <span v-else-if="input.name in props.testInputs && input.type === 'Dataset'">
-                    {{
-                            datasets[props.testInputs[input.name].value].name ?? datasets[props.testInputs[input.name].value].id
-                            }}
-                  </span>
-                        <span v-else-if="input && input.name in props.testInputs">{{
-                            props.testInputs[input.name].value
-                            }}</span>
-                    </template>
-                    <div v-else-if="props.modelValue" class="d-flex">
+                <v-col :cols="6">
+                    <div v-if="props.modelValue" class="d-flex">
                       <span v-if="!props.modelValue.hasOwnProperty(input.name)" class="font-italic">
                         Suite input
                       </span>
@@ -100,7 +79,27 @@
                                 item-value="name"
                                 dense
                                 hide-details
-                        ></v-select>
+                        >
+                            <template v-slot:prepend-item>
+                                <v-list-item
+                                        ripple
+                                        @mousedown.prevent
+                                        @click="() => createAlias(input.name, input.type)"
+                                >
+                                    <v-list-item-action>
+                                        <v-icon>
+                                            add
+                                        </v-icon>
+                                    </v-list-item-action>
+                                    <v-list-item-content>
+                                        <v-list-item-title>
+                                            Create new alias
+                                        </v-list-item-title>
+                                    </v-list-item-content>
+                                </v-list-item>
+                                <v-divider class="mt-2"></v-divider>
+                            </template>
+                        </v-select>
                     </div>
 
                 </v-col>
@@ -117,6 +116,8 @@ import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {chain} from "lodash";
+import {$vfm} from "vue-final-modal";
+import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },
@@ -124,8 +125,7 @@ const props = defineProps<{
     projectId: number,
     inputs: { [name: string]: string },
     modelValue?: { [name: string]: TestInputDTO },
-    sharedInputs?: Array<TestInputDTO>,
-    editing: boolean
+    sharedInputs?: Array<TestInputDTO>
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -180,6 +180,16 @@ function handleTypeSelected(input: string, item: number) {
             };
             break;
     }
+}
+
+async function createAlias(name: string, type: string) {
+    await $vfm.show({
+        component: CreateAliasModal,
+        bind: {
+            name,
+            type
+        }
+    });
 }
 
 </script>

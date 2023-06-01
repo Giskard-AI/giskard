@@ -15,17 +15,6 @@
           <pre class="test-doc caption pt-5">{{ test.doc }}</pre>
           <div class="d-flex align-center">
             <p class="text-h6 pt-4">Inputs</p>
-            <v-btn v-if="editedInputs === null" icon @click="editInputs()" color="primary">
-              <v-icon right>edit</v-icon>
-            </v-btn>
-            <div v-else>
-              <v-btn icon @click="saveEditedInputs()" color="primary">
-                <v-icon right>save</v-icon>
-              </v-btn>
-              <v-btn icon @click="editedInputs = null" color="error">
-                <v-icon right>cancel</v-icon>
-              </v-btn>
-            </div>
           </div>
           <TestInputListSelector v-if="test.args"
                                  :test-inputs="suiteTest.testInputs"
@@ -33,8 +22,7 @@
                                  :model-value="editedInputs"
                                  :project-id="projectId"
                                  :inputs="inputType"
-                                 :shared-inputs="suite.testInputs"
-                                 :editing="editedInputs !== null"/>
+                                 :shared-inputs="suite.testInputs"/>
           <v-row>
             <v-col>
               <v-expansion-panels flat @change="resizeEditor">
@@ -42,12 +30,12 @@
                   <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
                   <v-expansion-panel-content class="pa-0">
                     <MonacoEditor
-                        ref="editor"
-                        v-model='test.code'
-                        class='editor'
-                        language='python'
-                        style="height: 300px; min-height: 300px"
-                        :options="monacoOptions"
+                            ref="editor"
+                            v-model='test.code'
+                            class='editor'
+                            language='python'
+                            style="height: 300px; min-height: 300px"
+                            :options="monacoOptions"
                     />
                   </v-expansion-panel-content>
                 </v-expansion-panel>
@@ -55,9 +43,10 @@
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
-
-        </v-card-actions>
+          <v-card-actions>
+              <v-btn>Debug</v-btn>
+              <v-btn @click="saveEditedInputs()">Save</v-btn>
+          </v-card-actions>
       </v-card>
     </div>
   </vue-final-modal>
@@ -66,7 +55,7 @@
 <script setup lang="ts">
 
 import {SuiteTestDTO, TestFunctionDTO, TestInputDTO} from '@/generated-sources';
-import {computed, inject, ref} from 'vue';
+import {computed, inject, onMounted, ref} from 'vue';
 import _, {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
@@ -88,7 +77,7 @@ const {suiteTest, test} = defineProps<{
 const {models, datasets, projectId, suite, inputs, registry} = storeToRefs(useTestSuiteStore());
 const {reload} = useTestSuiteStore();
 
-const editedInputs = ref<{ [input: string]: TestInputDTO } | null>(null);
+const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
 const editor = ref(null)
 
 const sortedArguments = computed(() => {
@@ -109,7 +98,7 @@ function resizeEditor() {
   })
 }
 
-function editInputs() {
+onMounted(() => {
     editedInputs.value = Object.values(suiteTest.testInputs)
         .reduce((e, arg) => {
             e[arg.name] = {
@@ -117,7 +106,7 @@ function editInputs() {
             };
             return e;
         }, {});
-}
+});
 
 async function saveEditedInputs() {
   if (editedInputs.value === null) {
