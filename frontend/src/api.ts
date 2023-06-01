@@ -31,7 +31,6 @@ import {
     ProjectPostDTO,
     RoleDTO,
     SliceDTO,
-    TestCatalogDTO,
     TestDTO,
     TestExecutionResultDTO, TestFunctionDTO,
     TestSuiteCreateDTO,
@@ -433,7 +432,7 @@ export const api = {
         return apiV2.post<unknown, Array<TestExecutionResultDTO>>(`/testing/suites/execute`, {suiteId});
     },
     async getTestFunctions() {
-        return apiV2.get<unknown, TestFunctionDTO[]>(`/test-functions`);
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
     },
     async createSlice(projectId: number, name: string, code: string) {
         return apiV2.post<unknown, SliceDTO>(`/slices`, {
@@ -458,9 +457,6 @@ export const api = {
             datasetId: datasetId,
             code: code
         });
-    },
-    async getTestsCatalog(projectId: number) {
-        return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
     },
     async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testUuid, inputs});
