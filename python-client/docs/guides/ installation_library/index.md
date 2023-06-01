@@ -1,0 +1,6 @@
+- pip
+- Requirements :
+    - Python version
+    - list of dependencies
+- Procedures to uninstall a library and install giskard
+- Common problems / Q&A
