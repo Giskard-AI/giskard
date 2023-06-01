@@ -3,7 +3,6 @@ package ai.giskard.service;
 import ai.giskard.domain.ml.*;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.TestSuiteExecutionRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
@@ -28,14 +27,14 @@ public class TestSuiteExecutionService {
     private final MLWorkerService mlWorkerService;
     private final TestArgumentService testArgumentService;
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
-    private final TestSuiteRepository testSuiteRepository;
     private final GiskardMapper giskardMapper;
 
     public List<TestSuiteExecutionDTO> listAllExecution(long suiteId) {
         return giskardMapper.testSuiteExecutionToDTOs(testSuiteExecutionRepository.findAllBySuiteIdOrderByExecutionDateDesc(suiteId));
     }
 
-    public void executeScheduledTestSuite(TestSuiteExecution execution, Map<String, String> suiteInputs) {
+    public void executeScheduledTestSuite(TestSuiteExecution execution,
+                                          Map<String, String> suiteInputs) {
         TestSuite suite = execution.getSuite();
 
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
