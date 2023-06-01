@@ -31,7 +31,7 @@ pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-me
 ## 2. Execute a Giskard test
 
 :::{hint}
-You can see all our tests in the [📖 Test Catalog](../test-catalog/index.rst)
+You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
 :::
 
 ::::{tab-set}
