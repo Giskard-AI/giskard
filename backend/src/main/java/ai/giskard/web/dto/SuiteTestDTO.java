@@ -18,5 +18,5 @@ public class SuiteTestDTO {
     @NotNull
     private UUID testUuid;
     private TestFunctionDTO test;
-    private Map<@NotBlank String, @Valid TestInputDTO> testInputs;
+    private Map<@NotBlank String, @Valid FunctionInputDTO> functionInputs;
 }

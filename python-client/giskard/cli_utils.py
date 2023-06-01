@@ -54,7 +54,7 @@ def remove_stale_pid_file(pid_file):
 def is_pid_stale(pid):
     try:
         os.kill(pid, 0)  # NOSONAR
-    except OSError:
+    except (OSError, TypeError):
         return True
     else:
         return False
