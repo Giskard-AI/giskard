@@ -38,14 +38,11 @@
       <v-col v-if="selectedExecution">
         <div class="pl-4">
           <p class="text-h6">Inputs</p>
-          <v-list-item v-for="[input, value] in Object.entries(selectedExecution.inputs)" :track-by="input">
-            <v-list-item-content>
-              <v-list-item-title>{{ input }}</v-list-item-title>
-              <v-list-item-subtitle> {{ formatInputValue(input, value) }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
+          <TestInputList :models="props.models" :inputs="selectedExecution.inputs"
+                         :input-types="props.inputTypes" :datasets="props.datasets"/>
           <p class="pt-4 text-h6">Results</p>
-          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"/>
+          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"
+                                     :models="props.models" :datasets="props.datasets"/>
         </div>
       </v-col>
     </v-row>
@@ -58,6 +55,7 @@ import {computed, onMounted, ref} from 'vue';
 import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
+import TestInputList from '@/components/TestInputList.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -65,7 +63,7 @@ const props = defineProps<{
   registry: TestCatalogDTO,
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
-  inputs: { [name: string]: string }
+  inputTypes: { [name: string]: string }
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
@@ -100,17 +98,6 @@ function executionStatusColor(execution: TestSuiteExecutionDTO): string {
       return "#f44336";
     default:
       return "#607d8b";
-  }
-}
-
-function formatInputValue(input: string, value: string): string {
-  switch (props.inputs[input]) {
-    case 'Dataset':
-      return props.datasets[value].name;
-    case 'Model':
-      return props.models[value].name;
-    default:
-      return value;
   }
 }
 

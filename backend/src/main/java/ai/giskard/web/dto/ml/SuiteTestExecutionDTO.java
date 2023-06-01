@@ -7,14 +7,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @UIModel
-public class TestExecutionDto {
+public class SuiteTestExecutionDTO {
 
     private SuiteTestDTO test;
+    private Map<String, String> inputs;
     private List<TestResultMessageDTO> messages;
     private List<Integer> actualSlicesSize;
     private List<Integer> referenceSlicesSize;
