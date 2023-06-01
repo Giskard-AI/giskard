@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..issues import Issue, IssueInfo
+from ..issues import Issue
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from .metrics import PerformanceMetric
@@ -8,7 +8,7 @@ from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @dataclass
-class PerformanceIssueInfo(IssueInfo):
+class PerformanceIssueInfo:
     metric: PerformanceMetric
     metric_value_reference: float
     metric_value_slice: float
@@ -48,7 +48,7 @@ class PerformanceIssue(Issue):
 
     @property
     def metric(self):
-        return self.info.metric.name
+        return f"{self.info.metric.name} = {self.info.metric_value_slice:.2f}"
 
     @property
     def deviation(self):
