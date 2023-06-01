@@ -13,11 +13,13 @@ const close = () => {
 <template>
   <v-stepper v-model="step" flat>
     <v-stepper-header id="stepper-header">
-      <v-stepper-step :complete="step > 1" step="1">Name of step 1</v-stepper-step>
+      <v-stepper-step :complete="step > 1" step="1">Start ML Worker</v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step :complete="step > 2" step="2">Name of step 2</v-stepper-step>
+      <v-stepper-step :complete="step > 2" step="2">Create Giskard client</v-stepper-step>
       <v-divider></v-divider>
-      <v-stepper-step step="3">Name of step 3</v-stepper-step>
+      <v-stepper-step :complete="step > 3" step="3">Create Giskard artifacts</v-stepper-step>
+      <v-divider></v-divider>
+      <v-stepper-step step="4">Upload test suite</v-stepper-step>
     </v-stepper-header>
 
     <v-stepper-items>
@@ -34,6 +36,12 @@ const close = () => {
       </v-stepper-content>
 
       <v-stepper-content step="3">
+        <v-card class="mb-5" color="grey lighten-1" height="200px"></v-card>
+        <v-btn color="primary" @click="step = 4">Continue</v-btn>
+        <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
+      </v-stepper-content>
+
+      <v-stepper-content step="4">
         <v-card class="mb-5" color="grey lighten-1" height="200px"></v-card>
         <v-btn color="primary" @click="close">Close</v-btn>
         <v-btn class="ml-2" @click="step = 1" flat>Restart</v-btn>
