@@ -218,6 +218,10 @@ class GiskardClient:
                 self.log_artifact(os.path.join(root, f), artifact_dir)
 
     def load_artifact(self, local_file: Path, artifact_path: str = None):
+        if local_file.exists():
+            logger.info(f"Artifact {artifact_path} already exists, skipping download")
+            return
+
         files = self._session.get("artifact-info/" + artifact_path)
         augmented_raise_for_status(files)
 
