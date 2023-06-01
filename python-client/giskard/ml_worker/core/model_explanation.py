@@ -18,9 +18,11 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
-        prepared_df = model.prepare_dataframe(
-            Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
-        )
+        if dataset.target in df.columns:
+            prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
+        else:
+            prepared_ds = Dataset(df=df, column_types=dataset.column_types)
+        prepared_df = model.prepare_dataframe(prepared_ds)
         columns_in_original_order = (
             model.meta.feature_names
             if model.meta.feature_names
