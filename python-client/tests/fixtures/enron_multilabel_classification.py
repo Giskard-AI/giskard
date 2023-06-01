@@ -12,7 +12,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.core.model import Model
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 from tests import path
@@ -33,9 +32,7 @@ input_types = {
 def enron_data() -> Dataset:
     logger.info("Fetching Enron Data")
     return Dataset(
-        df=pd.read_csv(
-            path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]
-        ),
+        df=pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"]),
         target="Target",
         feature_types=input_types,
     )
@@ -56,9 +53,7 @@ def enron_model(enron_data) -> SKLearnModel:
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
 
-    numeric_transformer = Pipeline(
-        [("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
-    )
+    numeric_transformer = Pipeline([("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())])
 
     columns_to_encode = [key for key in input_types.keys() if input_types[key] == "category"]
 
@@ -78,9 +73,7 @@ def enron_model(enron_data) -> SKLearnModel:
             ("text_Mail", text_transformer, "Content"),
         ]
     )
-    clf = Pipeline(
-        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))]
-    )
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
 
     Y = enron_data.df["Target"]
     X = enron_data.df.drop(columns="Target")
@@ -96,5 +89,5 @@ def enron_model(enron_data) -> SKLearnModel:
         clf=clf,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
-        classification_threshold=0.5
+        classification_threshold=0.5,
     )
