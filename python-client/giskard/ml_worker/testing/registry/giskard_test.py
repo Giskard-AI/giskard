@@ -8,7 +8,7 @@ from typing import Union, Callable, Optional, Type
 
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
-from giskard.ml_worker.core.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 from giskard.ml_worker.testing.registry.utils import is_local_function
 
