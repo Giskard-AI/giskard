@@ -1,6 +1,6 @@
 import tempfile
 from typing import List, Iterable
-
+import importlib
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
@@ -19,7 +19,8 @@ def validate_model(
     model_type = model.meta.model_type
 
     loaded_model, loaded_data_prep_fn = validate_model_save_load(model)
-    model = Model(
+    loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
+    model = loader_class(
         clf=loaded_model,
         data_preparation_function=loaded_data_prep_fn,
         model_type=model.meta.model_type,
@@ -59,8 +60,8 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        raise ValueError("Invalid prediction_function input.\n"
-                         "Please make sure that model.predict(dataset) does not return an error "
+        raise ValueError("Invalid prediction_function input.\n" #TODO: Change prediction_function
+                         "Please make sure that your_model.predict(dataset) does not return an error "
                          "message before uploading in Giskard") from e
 
     validate_deterministic_model(model, validation_ds, prediction)
@@ -85,11 +86,12 @@ def validate_model_save_load(model: Model):
     Validates if the model can be pickled and un-pickled using cloud pickle
     """
     try:
+        loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save_to_local_dir(f)
-            model.save_data_preparation_funciton(f)
-            loaded_model = Model.read_model_from_local_dir(f)
-            loaded_data_prep_fn = Model.read_data_preparation_function_from_artifact(f)
+            model.save_data_preparation_function(f)
+            loaded_model = loader_class.read_model_from_local_dir(f)
+            loaded_data_prep_fn = loader_class.read_data_preparation_function_from_artifact(f)
             return loaded_model, loaded_data_prep_fn
     except Exception as e:
         raise ValueError("Failed to validate model saving and loading from local disk") from e
