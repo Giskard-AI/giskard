@@ -3,20 +3,22 @@ package ai.giskard.service.ml;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
+import ai.giskard.service.SlicingFunctionService;
 import ai.giskard.service.TestFunctionService;
+import ai.giskard.web.dto.CatalogDTO;
+import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.worker.CatalogResponse;
 import ai.giskard.worker.MLWorkerGrpc;
-import ai.giskard.worker.TestRegistryResponse;
 import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
@@ -29,52 +31,70 @@ public class MLWorkerCacheService {
     private final MLWorkerTunnelService mlWorkerTunnelService;
     private final TestFunctionService testFunctionService;
     private final TestFunctionRepository testFunctionRepository;
+    private final SlicingFunctionService slicingFunctionService;
+    private final SlicingFunctionRepository slicingFunctionRepository;
     private final ProjectRepository projectRepository;
     private final GiskardMapper giskardMapper;
-    private List<TestFunctionDTO> testFunctions = Collections.emptyList();
+    private CatalogDTO catalogWithoutPickles = new CatalogDTO();
 
     @Transactional
-    public List<TestFunctionDTO> getCatalog(long projectId) {
-        return Stream.concat(testFunctionRepository.findAll().stream()
-                    .filter(t -> t.getTags().contains("pickle"))
-                    .map(giskardMapper::toDTO),
-                findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker()).stream())
-            .toList();
+    public CatalogDTO getCatalog(long projectId) {
+        CatalogDTO catalog = findGiskardTest(projectRepository.getById(projectId).isUsingInternalWorker());
+
+        return CatalogDTO.builder()
+            .tests(Stream.concat(
+                    testFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    catalog.getTests().stream()
+                )
+                .toList())
+            .slices(Stream.concat(
+                    slicingFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    catalog.getSlices().stream()
+                )
+                .toList())
+            .build();
     }
 
-    public List<TestFunctionDTO> findGiskardTest(boolean isInternal) {
+    public CatalogDTO findGiskardTest(boolean isInternal) {
         if (isInternal) {
             // Only cache external ML worker
             return getTestFunctions(true);
         }
 
         if (mlWorkerTunnelService.isClearCacheRequested()) {
-            testFunctions = getTestFunctions(false);
-            testFunctionService.saveAll(testFunctions);
+            catalogWithoutPickles = getTestFunctions(false);
+            testFunctionService.saveAll(catalogWithoutPickles.getTests());
+            slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
             mlWorkerTunnelService.setClearCacheRequested(false);
         }
 
-        return testFunctions;
+        return catalogWithoutPickles;
     }
 
-    private List<TestFunctionDTO> getTestFunctions(boolean isInternal) {
+    private CatalogDTO getTestFunctions(boolean isInternal) {
         try (MLWorkerClient client = mlWorkerService.createClientNoError(isInternal)) {
             if (!isInternal && client == null) {
                 // Fallback to internal ML worker to not display empty catalog
-                return getTestFunctions(true).stream()
-                    .map(dto -> dto.toBuilder().potentiallyUnavailable(true).build())
-                    .toList();
+                CatalogDTO catalog = getTestFunctions(true);
+                catalog.getTests().forEach(fn -> fn.setPotentiallyUnavailable(true));
+                catalog.getSlices().forEach(fn -> fn.setPotentiallyUnavailable(true));
+                return catalog;
             } else if (client == null) {
-                return Collections.emptyList();
+                return new CatalogDTO();
             }
 
             MLWorkerGrpc.MLWorkerBlockingStub blockingStub = client.getBlockingStub();
-            TestRegistryResponse response = blockingStub.getTestRegistry(Empty.newBuilder().build());
-            return response.getTestsMap().values().stream()
-                .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
-                .toList();
+            CatalogResponse response = blockingStub.getCatalog(Empty.newBuilder().build());
+            return CatalogDTO.builder()
+                .tests(response.getTestsMap().values().stream()
+                    .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
+                    .toList())
+                .slices(response.getSlicesMap().values().stream()
+                    .map(test -> convertGRPCObject(test, SlicingFunctionDTO.class))
+                    .toList())
+                .build();
         } catch (StatusRuntimeException e) {
-            return Collections.emptyList();
+            return new CatalogDTO();
         }
     }
 

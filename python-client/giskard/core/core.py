@@ -110,12 +110,14 @@ class CallableMeta(SavableMeta):
     tags: List[str]
     version: Optional[int]
     full_name: str
+    type: str
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
                  name: str = None,
                  tags: List[str] = None,
-                 version: Optional[int] = None
+                 version: Optional[int] = None,
+                 type: str = None
                  ):
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
@@ -135,6 +137,7 @@ class CallableMeta(SavableMeta):
             self.module_doc = self.extract_module_doc(func_doc)
             self.tags = self.populate_tags(tags)
             self.version = version
+            self.type = type
 
     @staticmethod
     def extract_module_doc(func_doc):
@@ -177,6 +180,7 @@ class CallableMeta(SavableMeta):
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,
+            "type": self.type,
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -189,6 +193,7 @@ class CallableMeta(SavableMeta):
         self.code = json["code"]
         self.tags = json["tags"]
         self.version = json["version"]
+        self.type = json["type"]
 
 
 def __repr__(self) -> str:
@@ -204,7 +209,7 @@ class TestFunctionMeta(CallableMeta):
                  tags: List[str] = None,
                  version: Optional[int] = None):
         if callable_obj:
-            super().__init__(callable_obj, name, tags, version)
+            super().__init__(callable_obj, name, tags, version, 'TEST')
             parameters = self.extract_parameters(callable_obj)
 
             self.args = {

@@ -15,7 +15,6 @@ import java.util.Map;
 @UIModel
 public class TestSuiteCompleteDTO {
     private TestSuiteDTO suite;
-    private List<TestFunctionDTO> registry;
     private List<DatasetDTO> datasets;
     private List<ModelDTO> models;
     private List<TestSuiteExecutionDTO> executions;
