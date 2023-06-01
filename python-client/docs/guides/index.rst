@@ -11,10 +11,4 @@ User Guide
    slice/index
    transformation/index
    test-suite/index
-   upload_objects/index
-   installation_app/index
-   open_app/index
-   debug/index
-   feedback/index
    cicd/index
-   compare/index
