@@ -176,7 +176,7 @@ def prediction_function(df: pd.DataFrame) -> np.ndarray:
 
 
 wrapped_model = Model(
-  prediction_function,
+  model=prediction_function,
   model_type="regression",
   feature_names=['x', 'y'],  # Default: all columns of your dataset
   # name="my_regression_model", # Optional
