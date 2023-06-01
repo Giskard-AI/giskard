@@ -1,4 +1,4 @@
-# :flèches_sens_inverse_des_aiguilles: Define data transformations
+# ↔️ Define data transformations
 
 Transformation, such as adding typos, switching words or paraphrasing, help create more diverse and realistic training datases. This can enhance the model's resilience to noise and improve its performance on unseen examples.
 
