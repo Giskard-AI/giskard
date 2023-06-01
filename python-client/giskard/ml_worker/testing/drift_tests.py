@@ -431,7 +431,7 @@ class DriftTests(AbstractTestCollection):
             reference_slice(Dataset):
                 Slice of the reference dataset
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             threshold(float):
                 Threshold value for PSI
             max_categories:
@@ -527,7 +527,7 @@ class DriftTests(AbstractTestCollection):
             reference_slice(Dataset):
                 Slice of the reference dataset
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             threshold(float):
                 Threshold value of p-value of Chi-Square
             max_categories:
@@ -610,7 +610,7 @@ class DriftTests(AbstractTestCollection):
             reference_slice(Dataset):
                 Slice of the reference dataset
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             threshold(float):
                 Threshold for p-value of Kolmogorov-Smirnov test
             classification_label(str):

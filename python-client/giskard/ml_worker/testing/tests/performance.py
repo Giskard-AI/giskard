@@ -105,7 +105,7 @@ class AucTest(GiskardTest):
         """
         Init an AucTest instance, can be passed in Suite.add_test method
         :param actual_slice: Slice of the actual dataset
-        :param model: BaseModel used to compute the test
+        :param model: Model used to compute the test
         :param threshold: Threshold value of AUC metrics
         """
         self.actual_slice = actual_slice
@@ -138,7 +138,7 @@ def test_auc(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         actual_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value of AUC metrics
 
@@ -177,7 +177,7 @@ def test_f1(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         actual_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for F1 Score
 
@@ -204,7 +204,7 @@ def test_accuracy(actual_slice: Dataset, model: BaseModel, threshold: float = 1.
         actual_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Accuracy
 
@@ -231,7 +231,7 @@ def test_precision(actual_slice: Dataset, model: BaseModel, threshold: float = 1
         actual_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Precision
     Returns:
@@ -257,7 +257,7 @@ def test_recall(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0)
         actual_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Recall
     Returns:
@@ -283,7 +283,7 @@ def test_rmse(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         actual_slice(Dataset):
           Slice of actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for RMSE
     Returns:
@@ -309,7 +309,7 @@ def test_mae(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         actual_slice(Dataset):
           Slice of actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for MAE
 
@@ -338,7 +338,7 @@ def test_r2(actual_slice: Dataset, model: BaseModel, threshold: float = 1.0):
         actual_slice(Dataset):
           Slice of actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for R-Squared
 
@@ -371,7 +371,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
         reference_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Accuracy Score difference
     Returns:
@@ -411,7 +411,7 @@ def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: BaseMod
         reference_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
 
@@ -445,7 +445,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
         reference_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Precision difference
     Returns:
@@ -485,7 +485,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Bas
         reference_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Recall difference
     Returns:
@@ -521,7 +521,7 @@ def test_diff_reference_actual_f1(
         reference_slice(Dataset):
           Slice of reference dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
     Returns:
@@ -557,7 +557,7 @@ def test_diff_reference_actual_accuracy(
         reference_slice(Dataset):
           Slice of reference dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for Accuracy difference
     Returns:
@@ -597,7 +597,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: BaseM
         reference_slice(Dataset):
           Slice of the actual dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for RMSE difference
 
@@ -634,7 +634,7 @@ def test_diff_reference_actual_rmse(
         reference_slice(Dataset):
           Slice of reference dataset
         model(BaseModel):
-          BaseModel used to compute the test
+          Model used to compute the test
         threshold(float):
           Threshold value for RMSE difference
     Returns:
