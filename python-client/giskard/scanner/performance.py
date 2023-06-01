@@ -56,6 +56,11 @@ class PerformanceScan:
         df_with_meta = dataset.df.join(meta)
         target_col = "__gsk__loss"
 
+        # @TODO: Handle this properly once we have support for metadata in datasets
+        column_types = dataset.column_types.copy()
+        column_types["__gsk__loss"] = "numeric"
+        dataset_with_meta = Dataset(df_with_meta, target=dataset.target, column_types=column_types)
+
         # Columns by type
         cols_by_type = {
             type_val: [col for col, col_type in dataset.column_types.items() if col_type == type_val]
@@ -63,7 +68,7 @@ class PerformanceScan:
         }
 
         # Numerical features
-        slicer = self._get_slicer(slicer_name, df_with_meta, target_col)
+        slicer = self._get_slicer(slicer_name, dataset_with_meta, target_col)
 
         slices = []
         for col in cols_by_type["numeric"]:
@@ -86,13 +91,13 @@ class PerformanceScan:
 
         return PerformanceScanResult(slices)
 
-    def _get_slicer(self, slicer_name, data, target):
+    def _get_slicer(self, slicer_name, dataset, target):
         if slicer_name == "opt":
-            return OptSlicer(data, target=target)
+            return OptSlicer(dataset, target=target)
         if slicer_name == "tree":
-            return DecisionTreeSlicer(data, target=target)
+            return DecisionTreeSlicer(dataset, target=target)
         if slicer_name == "ms":
-            return MultiscaleSlicer(data, target=target)
+            return MultiscaleSlicer(dataset, target=target)
         raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
 
