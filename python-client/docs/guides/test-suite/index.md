@@ -262,6 +262,6 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 :::
 ::::
 
-{% hint style="success" %}
+:::{hint}
 To upload your test suite to the Giskard server, go to [Upload objects](../../guides/upload/index.md) to the Giskard server.
-{% endhint %}
+:::

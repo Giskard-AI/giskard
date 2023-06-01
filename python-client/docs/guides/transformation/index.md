@@ -9,7 +9,7 @@ see [Wrap your dataset](../wrap_dataset/index.md)
 
 :::{hint}
 You can see all our slicing function in
-the [🔪 Slicing Function Catalog](docs/catalogs/slicing-function-catalog/index.rst)
+the [🔪 Slicing Function Catalog](../../catalogs/slicing-function-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -40,7 +40,7 @@ wrapped_dataset = Dataset(...)
 # Define the transformation function
 @transformation_function
 def uppercase_transformation(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-  return df.head(column_name)
+    return df.head(column_name)
 
 
 # Apply the uppercase transformation to the 'content' column at the DataFrame level
@@ -83,6 +83,7 @@ positive_sentiment_with_typo = wrapped_dataset.slice(positive_sentiment_analysis
 
 positive_sentiment_with_typo.df.head()
 ```
-{% hint style="success" %}
-To upload your transformation function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
-{% endhint %}
+
+:::{hint}
+To upload your transformation function to the Giskard server, go to [Upload objects](../upload/index.md) to the Giskard server.
+:::
