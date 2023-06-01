@@ -52,16 +52,17 @@ class Dataset:
         elif infer_cat_columns:
             self.feature_types = self.infer_feature_types(self.df, self.column_types)
         else:
+            self.feature_types = self.infer_feature_types(self.df, self.column_types, no_cat=True)
             warning("You did not provide any of [feature_types, cat_columns, infer_cat_columns = True] for your Dataset."
                     "In this case, we assume that there's no categorical columns in your Dataset.")
 
     @staticmethod
-    def infer_feature_types(df, column_types):
+    def infer_feature_types(df, column_types, no_cat = False):
         # TODO: improve this method
         nuniques = df.nunique()
         feature_types = {}
         for col, col_type in column_types.items():
-            if nuniques[col] <= Nuniques.CATEGORY.value:
+            if nuniques[col] <= Nuniques.CATEGORY.value and not no_cat:
                 feature_types[col] = SupportedFeatureTypes.CATEGORY.value
             elif is_numeric_dtype(df[col]):
                 feature_types[col] = SupportedFeatureTypes.NUMERIC.value
