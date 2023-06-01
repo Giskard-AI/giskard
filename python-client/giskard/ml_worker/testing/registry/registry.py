@@ -120,7 +120,6 @@ class GiskardTestRegistry:
         full_name = create_test_function_id(func)
 
         if full_name not in self._tests:
-            # arg_spec = inspect.getfullargspec(func)
             parameters = inspect.signature(func).parameters
             args_without_type = [p for p in parameters if parameters[p].annotation == inspect.Parameter.empty]
 
