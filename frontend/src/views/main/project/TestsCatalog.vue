@@ -128,14 +128,9 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
-import {
-  TestExecutionResultDTO,
-  TestFunctionArgumentDTO,
-  TestFunctionDTO
-} from "@/generated-sources";
-import {TestCatalogDTO, TestDefinitionDTO, TestExecutionResultDTO, TestFunctionArgumentDTO} from "@/generated-sources";
-import {$vfm} from 'vue-final-modal';
+import {TestExecutionResultDTO, TestFunctionArgumentDTO, TestFunctionDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
+import {$vfm} from 'vue-final-modal';
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
