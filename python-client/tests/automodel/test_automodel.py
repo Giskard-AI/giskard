@@ -22,11 +22,11 @@ def test_autoserializablemodel_arbitrary():
 
 
 def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_data):
-    class my_custom_model(Model):
+    class MySklearnModel(Model):
         def model_predict(self, some_df: pd.DataFrame):
             return self.model.predict_proba(some_df)
 
-    my_model = my_custom_model(
+    my_model = MySklearnModel(
         model=german_credit_raw_model,
         model_type="classification",
         classification_labels=german_credit_raw_model.classes_,
