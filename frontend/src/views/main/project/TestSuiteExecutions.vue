@@ -19,10 +19,11 @@
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
-          <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
+          <v-list-item-group color="primary">
             <template v-for="execution in props.executions">
               <v-divider/>
-              <v-list-item :value="execution" :disabled="!execution.completionDate">
+              <v-list-item :to="{name: 'test-suite-new-execution', params: {executionId: execution.id}}"
+                           :disabled="!execution.completionDate">
                 <v-list-item-content>
                   <v-list-item-title>
                     <div class="d-flex justify-space-between">
