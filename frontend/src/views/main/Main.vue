@@ -11,7 +11,44 @@
             </v-list-item-content>
           </v-list-item>
           <v-divider />
-          <div v-show="showProjectTabs">
+
+          <v-tooltip v-if="!showProjectTabs" :disabled="showProjectTabs" right>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-on="on">
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                    <div class="caption">Catalog</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-list-status</v-icon>
+                    <div class="caption">Test</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-shield-search</v-icon>
+                    <div class="caption">Debugger</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-comment-multiple-outline</v-icon>
+                    <div class="caption">Feedback</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+              </div>
+            </template>
+            <span>You have to select a project to interact with this menu.</span>
+          </v-tooltip>
+
+          <div v-else>
             <v-list-item :to="{ name: 'project-catalog' }" value="catalog">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
@@ -41,6 +78,8 @@
             </v-list-item>
             <v-divider />
           </div>
+
+
         </v-list>
         <v-spacer></v-spacer>
         <v-list>
@@ -79,16 +118,16 @@
     </v-navigation-drawer>
 
     <div class="pa-0 vertical-container overflow-hidden fill-height">
-        <router-view class="overflow-hidden fill-height"></router-view>
+      <router-view class="overflow-hidden fill-height"></router-view>
     </div>
   </v-main>
 </template>
 
 <script lang="ts" setup>
-import {useUserStore} from "@/stores/user";
-import {useMainStore} from "@/stores/main";
-import {computed, ref} from "vue";
-import {useRoute} from 'vue-router/composables';
+import { useUserStore } from "@/stores/user";
+import { useMainStore } from "@/stores/main";
+import { computed, ref } from "vue";
+import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
