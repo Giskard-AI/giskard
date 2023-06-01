@@ -23,9 +23,6 @@ __all__ = [
     'test_diff_precision',
     'test_diff_rmse',
     'test_diff_f1',
-    'test_diff_reference_actual_rmse',
-    'test_diff_reference_actual_accuracy',
-    'test_diff_reference_actual_f1',
     'test_metamorphic_invariance',
     'test_metamorphic_increasing',
     'test_metamorphic_decreasing',
@@ -71,10 +68,7 @@ from giskard.testing.tests.performance import (
     test_diff_f1,
     test_diff_precision,
     test_diff_recall,
-    test_diff_reference_actual_f1,
-    test_diff_reference_actual_accuracy,
     test_diff_rmse,
-    test_diff_reference_actual_rmse,
 )
 from giskard.testing.tests.statistic import (
     test_right_label,

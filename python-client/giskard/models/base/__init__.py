@@ -26,6 +26,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
+
+from ..utils import np_types_to_native, warn_once
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 
@@ -114,6 +116,12 @@ class BaseModel(ABC):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
         self._cache = ModelCache(model_type)
+
+        # sklearn and catboost will fill classification_labels before this check
+        if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
+            raise ValueError(
+                "The parameter 'classification_labels' is required if 'model_type' is 'classification'."
+            )
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -259,7 +267,7 @@ class BaseModel(ABC):
         timer = Timer()
 
         if get_cache_enabled():
-                raw_prediction = self._predict_from_cache(dataset)
+            raw_prediction = self._predict_from_cache(dataset)
         else:
             raw_prediction = self.predict_df(
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
@@ -520,11 +528,10 @@ class WrapperModel(BaseModel, ABC):
 
         # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
         if raw_predictions.ndim > 2:
-            logger.warning(
-                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
-                "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
-                exc_info=True,
-            )
+            warn_once(logger,
+                      f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
+                      "We will attempt to automatically reshape the output to match this format, please check that the results are consistent."
+                      )
 
             raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
 
@@ -537,10 +544,10 @@ class WrapperModel(BaseModel, ABC):
         # If a binary classifier returns a single prediction `p`, we try to infer the second class
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
-            logger.warning(
-                "Please make sure that your model's output corresponds to the second label in classification_labels.",
-                exc_info=True,
-            )
+            warn_once(logger,
+                      "Please make sure that your model's output corresponds "
+                      "to the second label in classification_labels."
+                      )
 
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
