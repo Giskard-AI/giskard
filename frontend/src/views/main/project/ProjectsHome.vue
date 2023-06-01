@@ -202,7 +202,7 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultRoute = ref<string>('project-settings')
+const defaultRoute = ref<string>('project-properties')
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
@@ -296,7 +296,7 @@ async function ImportIfNoConflictKey() {
     }
     api.importProject(postImportProject)
       .then((p) => {
-        router.push({ name: 'project-settings', params: { id: p.id } })
+        router.push({ name: 'project-properties', params: { id: p.id } })
       })
   }
 }
