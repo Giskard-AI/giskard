@@ -1,12 +1,16 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.Callable;
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.repository.ml.CallableRepository;
 import ai.giskard.web.dto.CallableDTO;
+import ai.giskard.web.dto.TestFunctionArgumentDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
 
 import javax.transaction.Transactional;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -16,6 +20,7 @@ import java.util.stream.Collectors;
 public abstract class CallableService<E extends Callable, D extends CallableDTO> {
 
     private final CallableRepository<E> callableRepository;
+    private final GiskardMapper giskardMapper;
 
     @Transactional
     public void saveAll(Collection<D> functions) {
@@ -43,6 +48,30 @@ public abstract class CallableService<E extends Callable, D extends CallableDTO>
         existing.setModuleDoc(dto.getModuleDoc());
         existing.setCode(dto.getCode());
         existing.setTags(dto.getTags());
+
+        Map<String, FunctionArgument> existingArgs = existing.getArgs() != null ? existing.getArgs().stream()
+            .collect(Collectors.toMap(FunctionArgument::getName, Function.identity())) : new HashMap<>();
+        Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs() != null ? dto.getArgs().stream()
+            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
+
+        // Delete removed args
+        existingArgs.entrySet().stream()
+            .filter(entry -> !currentArgs.containsKey(entry.getKey()))
+            .forEach(entry -> existing.getArgs().remove(entry.getValue()));
+
+        // Update or create current args
+        currentArgs.forEach((name, currentArg) -> {
+            if (existingArgs.containsKey(name)) {
+                FunctionArgument existingArg = existingArgs.get(name);
+                existingArg.setType(currentArg.getType());
+                existingArg.setOptional(currentArg.isOptional());
+                existingArg.setDefaultValue(currentArg.getDefaultValue());
+            } else {
+                FunctionArgument createdArg = giskardMapper.fromDTO(currentArg);
+                createdArg.setFunction(existing);
+                existing.getArgs().add(createdArg);
+            }
+        });
 
         return existing;
     }

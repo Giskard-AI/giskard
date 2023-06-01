@@ -21,12 +21,12 @@ def validate_classification_label(func):
         if target and classification_label and model:
             assert (classification_label != target
                     ), f'By "classification_label", we refer to one of the values: ' \
-                       f'[{",".join(model.meta.classification_labels)}] and not the target: "{target}". ' \
+                       f'{model.meta.classification_labels} and not the target: "{target}". ' \
                        f'Please re-assign this argument.'
 
         assert (model.meta.model_type != SupportedModelTypes.CLASSIFICATION
                 or classification_label in model.meta.classification_labels
-                ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+                ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
         return func(*args, **kwargs)
 
     return wrapper

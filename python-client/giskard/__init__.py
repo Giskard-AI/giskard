@@ -108,7 +108,7 @@ __all__ = [
     'SuiteInput',
     'SlicingFunction',
     'TestResult',
-    'GiskardTest'
+    'GiskardTest',
 ]
 try:
     from giskard.models.catboost import CatboostModel

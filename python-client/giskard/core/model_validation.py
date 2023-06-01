@@ -51,6 +51,8 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
+    print("Your model and dataset are now validated!")
+
 
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:

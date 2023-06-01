@@ -2,8 +2,32 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-1">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-1">
         <createSequence incrementBy="1" sequenceName="hibernate_sequence" startValue="1"/>
+        <createTable tableName="callable_functions">
+            <column name="callable_type" type="VARCHAR(31)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="callable_functionsPK"/>
+            </column>
+            <column name="code" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)"/>
+            <column name="doc" type="VARCHAR"/>
+            <column name="module" type="VARCHAR(255)"/>
+            <column name="module_doc" type="VARCHAR"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tags" type="VARCHAR"/>
+            <column name="version" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-2">
         <createTable tableName="datasets">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="datasetsPK"/>
@@ -15,15 +39,15 @@
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="TIMESTAMP"/>
             <column name="column_dtypes" type="VARCHAR"/>
-            <column name="compressed_size_bytes" type="BIGINT"/>
             <column name="column_types" type="VARCHAR"/>
+            <column name="compressed_size_bytes" type="BIGINT"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="original_size_bytes" type="BIGINT"/>
             <column name="target" type="VARCHAR(255)"/>
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-2">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-3">
         <createTable tableName="feedback_replies">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feedback_repliesPK"/>
@@ -35,7 +59,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-3">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-4">
         <createTable tableName="feedbacks">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="feedbacksPK"/>
@@ -61,7 +85,7 @@
             <column name="user_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-4">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-5">
         <createTable tableName="general_settings">
             <column name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="general_settingsPK"/>
@@ -75,7 +99,7 @@
             <column name="settings" type="VARCHAR"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-5">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-6">
         <createTable tableName="giskard_user_role">
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -85,7 +109,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-6">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-7">
         <createTable tableName="giskard_users">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="giskard_usersPK"/>
@@ -115,7 +139,7 @@
             <column name="reset_key" type="VARCHAR(20)"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-7">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-8">
         <createTable tableName="inspections">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="inspectionsPK"/>
@@ -124,7 +148,7 @@
             <column name="model_id" type="UUID"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-8">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-9">
         <createTable tableName="project_models">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="project_modelsPK"/>
@@ -148,7 +172,7 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-9">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-10">
         <createTable tableName="projects">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="projectsPK"/>
@@ -173,7 +197,7 @@
             <column name="owner_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-10">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-11">
         <createTable tableName="projects_guests">
             <column name="project_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true"/>
@@ -183,7 +207,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-11">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-12">
         <createTable tableName="role">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="rolePK"/>
@@ -193,7 +217,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-12">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-13">
         <createTable tableName="slices">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="slicesPK"/>
@@ -215,7 +239,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-13">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-14">
         <createTable tableName="suite_test">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="suite_testPK"/>
@@ -228,7 +252,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-14">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-15">
         <createTable tableName="suite_test_execution">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="suite_test_executionPK"/>
@@ -257,10 +281,13 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-15">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-16">
         <createTable tableName="test_function_arguments">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_function_argumentsPK"/>
+            </column>
+            <column name="arg_order" type="INT">
+                <constraints nullable="false"/>
             </column>
             <column name="default_value" type="VARCHAR(255)"/>
             <column name="name" type="VARCHAR(255)">
@@ -272,32 +299,10 @@
             <column name="type" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="test_function_uuid" type="UUID"/>
-            <column name="arg_order" type="INT" />
+            <column name="function_uuid" type="UUID"/>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-16">
-        <createTable tableName="test_functions">
-            <column name="uuid" type="UUID">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="test_functionsPK"/>
-            </column>
-            <column name="code" type="VARCHAR">
-                <constraints nullable="false"/>
-            </column>
-            <column name="display_name" type="VARCHAR(255)"/>
-            <column name="doc" type="VARCHAR"/>
-            <column name="module" type="VARCHAR(255)"/>
-            <column name="module_doc" type="VARCHAR"/>
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="tags" type="VARCHAR"/>
-            <column name="version" type="INT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-17">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-17">
         <createTable tableName="test_input">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_inputPK"/>
@@ -308,13 +313,13 @@
             <column name="name" type="VARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="TEXT"/>
-            <column name="test_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="value" type="CLOB"/>
+            <column name="suite_id" type="BIGINT"/>
+            <column name="test_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="andreyavtomonov (generated)" id="1677712287947-18">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-18">
         <createTable tableName="test_suite">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_suitePK"/>
@@ -331,7 +336,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-19">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-19">
         <createTable tableName="test_suite_execution">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_suite_executionPK"/>
@@ -345,160 +350,166 @@
             <column name="suite_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-20">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-20">
         <addUniqueConstraint columnNames="email" constraintName="UC_GISKARD_USERSEMAIL_COL" tableName="giskard_users"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-21">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-21">
         <addUniqueConstraint columnNames="user_id" constraintName="UC_GISKARD_USERSUSER_ID_COL"
                              tableName="giskard_users"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-22">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-22">
         <addUniqueConstraint columnNames="key" constraintName="UC_PROJECTSKEY_COL" tableName="projects"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-23">
-        <addUniqueConstraint columnNames="test_function_uuid, name" constraintName="UK3dq1q3xxhetk289a1rsyvmel6"
-                             tableName="test_function_arguments"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-24">
-        <addUniqueConstraint columnNames="name, module, version" constraintName="UK3vm4b9ix9990e0p05jjc7tu43"
-                             tableName="test_functions"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-25">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-23">
         <addUniqueConstraint columnNames="name" constraintName="UK_8sewwnpamngi6b1dwaa88askk" tableName="role"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-26">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-24">
+        <addUniqueConstraint columnNames="function_uuid, name" constraintName="UKee9nxi851tk6ol9w4xlcv6ijy"
+                             tableName="test_function_arguments"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-25">
+        <addUniqueConstraint columnNames="name, module, version" constraintName="UKq8fr55ckpmid2kur3xp21nxuq"
+                             tableName="callable_functions"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-26">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="datasets"
                                  constraintName="FK25dg6rrolv9vwid5yvnsspgo6" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-27">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-27">
         <addForeignKeyConstraint baseColumnNames="execution_id" baseTableName="suite_test_execution"
                                  constraintName="FK34ht7fcs9oy949eh14uegdhao" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="test_suite_execution" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-28">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-28">
         <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="test_input"
                                  constraintName="FK5irxppo64awh117g7y2kn9iyd" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="suite_test"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-29">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-29">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="project_models"
                                  constraintName="FK5s5u25id8g08naq0u7lv18x8f" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-30">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-30">
         <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="feedbacks"
                                  constraintName="FK6h9unhwkbwjyrb7yhhx3v4t6h" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-31">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-31">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="projects_guests"
                                  constraintName="FK7p55gh12l0rojcuucv1plebu2" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-32">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-32">
         <addForeignKeyConstraint baseColumnNames="suite_id" baseTableName="test_suite_execution"
                                  constraintName="FK7xgbcx2dwf7drbhbti2mka3xb" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-33">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-33">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedbacks"
                                  constraintName="FKarlcap69fexfavfx24knuyk4q" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-34">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-34">
         <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="feedbacks"
                                  constraintName="FKehxmei0g8a4k9niqk9jrts3ku" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="project_models" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-35">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-35">
         <addForeignKeyConstraint baseColumnNames="owner_id" baseTableName="projects"
                                  constraintName="FKfstb1k24yc0xk923orfsa7t2q" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-36">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-36">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="test_suite"
                                  constraintName="FKh4vcclx0xbhy3dcy7ynvnyso9" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-37">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-37">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="giskard_user_role"
                                  constraintName="FKhsrhs22278tkle6ky3rthjlhk" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-38">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-38">
         <addForeignKeyConstraint baseColumnNames="dataset_id" baseTableName="inspections"
                                  constraintName="FKhuemucufporpds7hxvcsir8u4" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="datasets"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-39">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-39">
         <addForeignKeyConstraint baseColumnNames="test_id" baseTableName="suite_test_execution"
                                  constraintName="FKi8i4sndqx1i3qveq1pirvfss9" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="suite_test"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-40">
-        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="suite_test"
-                                 constraintName="FKm2ciegbp0qa646t3tr3velwna" deferrable="false"
-                                 initiallyDeferred="false" referencedColumnNames="uuid"
-                                 referencedTableName="test_functions" validate="true"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-41">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-40">
         <addForeignKeyConstraint baseColumnNames="test_suite" baseTableName="suite_test"
                                  constraintName="FKmbqkdmuw56y7rlf2os5330ous" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-42">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-41">
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="feedback_replies"
                                  constraintName="FKmcljimu0jmk9yrf0tuoggr0hd" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="giskard_users" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-43">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-42">
+        <addForeignKeyConstraint baseColumnNames="function_uuid" baseTableName="test_function_arguments"
+                                 constraintName="FKo68jaf2ml7ue1cf9r79h8epaq" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="uuid"
+                                 referencedTableName="callable_functions" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-43">
+        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="suite_test"
+                                 constraintName="FKocau89st9nn9ic4tb9kjymjns" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="uuid"
+                                 referencedTableName="callable_functions" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-44">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="slices"
                                  constraintName="FKokt2ov2hcs1k02321mcxjfvhh" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-44">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-45">
+        <addForeignKeyConstraint baseColumnNames="suite_id" baseTableName="test_input"
+                                 constraintName="FKrojgk9lidwmx606si3i562ec5" deferrable="false"
+                                 initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite"
+                                 validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-46">
         <addForeignKeyConstraint baseColumnNames="model_id" baseTableName="inspections"
                                  constraintName="FKs6m8jthpe1rrn4m8i0wkb6rn7" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id"
                                  referencedTableName="project_models" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-45">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-47">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="projects_guests"
                                  constraintName="FKs8vs2owfsrem3tyfxau177hni" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-46">
-        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="test_function_arguments"
-                                 constraintName="FKsdla96ceod1qatvl2sik5to35" deferrable="false"
-                                 initiallyDeferred="false" referencedColumnNames="uuid"
-                                 referencedTableName="test_functions" validate="true"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-47">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-48">
         <addForeignKeyConstraint baseColumnNames="feedback_id" baseTableName="feedback_replies"
                                  constraintName="FKsdu6irhjj761gqal0am2ttr3s" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="feedbacks"
                                  validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1677712287947-48">
+    <changeSet author="kevinmessiaen (generated)" id="1681995414718-49">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="feedbacks"
                                  constraintName="FKtgbjqii3k78ywifjqyp2t4fqs" deferrable="false"
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"

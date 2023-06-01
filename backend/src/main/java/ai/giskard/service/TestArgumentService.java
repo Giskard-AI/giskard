@@ -1,7 +1,7 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.TestFunction;
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.worker.ArtifactRef;
@@ -26,7 +26,7 @@ public class TestArgumentService {
             .setId(test.getId());
 
         Map<String, String> argumentTypes = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
+            .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
 
 
         for (TestInput input : test.getTestInputs()) {

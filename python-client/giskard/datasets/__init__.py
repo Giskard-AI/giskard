@@ -1,7 +1,9 @@
 from typing import Dict, Optional, List
+
 import pandas as pd
-from giskard.datasets.base import Dataset
+
 from giskard.core.validation import configured_validate_arguments
+from giskard.datasets.base import Dataset
 
 
 @configured_validate_arguments

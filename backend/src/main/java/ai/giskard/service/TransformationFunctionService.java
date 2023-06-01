@@ -16,7 +16,7 @@ public class TransformationFunctionService extends CallableService<Transformatio
     private final TransformationFunctionRepository transformationFunctionRepository;
 
     public TransformationFunctionService(TransformationFunctionRepository transformationFunctionRepository, GiskardMapper giskardMapper) {
-        super(transformationFunctionRepository);
+        super(transformationFunctionRepository, giskardMapper);
         this.giskardMapper = giskardMapper;
         this.transformationFunctionRepository = transformationFunctionRepository;
     }
@@ -31,6 +31,9 @@ public class TransformationFunctionService extends CallableService<Transformatio
 
     protected TransformationFunction create(TransformationFunctionDTO dto) {
         TransformationFunction function = giskardMapper.fromDTO(dto);
+        if (function.getArgs() != null) {
+            function.getArgs().forEach(arg -> arg.setFunction(function));
+        }
         function.setVersion(transformationFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
         return function;
     }
