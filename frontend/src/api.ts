@@ -312,6 +312,14 @@ export const api = {
     async getTestSuitesNew(projectId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
     },
+    async createTestSuitesNew(projectId: string, testSuiteNew: TestSuiteNewDTO, shouldGenerateTests: boolean) {
+        return apiV2.post<unknown, number>(`testing/project/${projectId}/suites-new`,
+            testSuiteNew, {
+            params: {
+                shouldGenerateTests
+            }
+        });
+    },
     async getTestSuiteNew(projectId: number, suiteId: number) {
         return apiV2.get<unknown, TestSuiteNewDTO>(`testing/project/${projectId}/suite-new/${suiteId}`);
     },

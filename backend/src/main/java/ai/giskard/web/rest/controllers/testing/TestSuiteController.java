@@ -72,8 +72,15 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suites-new")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
-    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteNewDTO dto) {
+    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
+                              @Valid @RequestBody TestSuiteNewDTO dto,
+                              @RequestParam(defaultValue = "false") boolean shouldGenerateTests) {
         TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
+
+        if (shouldGenerateTests) {
+            // TODO: generate test automatically
+        }
+
         return savedSuite.getId();
     }
 
