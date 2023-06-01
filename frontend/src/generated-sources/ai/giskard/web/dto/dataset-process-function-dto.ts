@@ -5,5 +5,6 @@ import type {CallableDTO} from './callable-dto';
  */
 export interface DatasetProcessFunctionDTO extends CallableDTO {
     cellLevel: boolean;
-    columnType: string;
+    columnType?: string | null;
+    noCode: boolean;
 }

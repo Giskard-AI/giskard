@@ -40,6 +40,7 @@ import {
     RoleDTO,
     RowFilterDTO,
     SetupDTO,
+    SlicingFunctionDTO,
     SuiteTestDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
@@ -459,6 +460,12 @@ export const api = {
                 projectId
             }
         });
+    },
+    async saveSlicingFunction(slicingFunction: SlicingFunctionDTO) {
+        return apiV2.put<unknown, SlicingFunctionDTO>(`/slices/${encodeURIComponent(slicingFunction.uuid)}`, {
+            ...slicingFunction,
+            type: 'SLICE'
+        })
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
