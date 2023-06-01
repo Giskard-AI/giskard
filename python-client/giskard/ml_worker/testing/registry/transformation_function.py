@@ -42,10 +42,8 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         self.is_initialized = True
         self.params = kwargs
 
-        from inspect import signature
-        sig = list(signature(self.func).parameters.values())
         for idx, arg in enumerate(args):
-            self.params[sig[idx].name] = arg
+            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
 
         return self
 
@@ -103,7 +101,7 @@ def transformation_function(_fn: Union[TransformationFunctionType, Type[Transfor
                                        type='TRANSFORMATION'))
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
-        return _wrap_transformation_function(func, row_level)
+        return _wrap_transformation_function(func, row_level)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
