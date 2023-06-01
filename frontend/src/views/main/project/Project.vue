@@ -117,7 +117,7 @@
       </v-card>
     </v-dialog>
 
-    <v-container fluid id="container-project-tab" class="vertical-container">
+		<v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
       <v-tabs>
         <v-tab :to="{name: 'project-overview'}">
           <v-icon left>notes</v-icon>
@@ -143,6 +143,8 @@
           <v-icon left small>mdi-list-status</v-icon>
           Test suites
         </v-tab>
+				<v-tab :to="{name: 'project-test-suites-new'}"><v-icon left small>mdi-list-status</v-icon>Test suites NEW ⭐️</v-tab>
+				<v-tab :to="{name: 'project-tests-catalog'}"><v-icon left small>mdi-list-status</v-icon>Test catalog</v-tab>
       </v-tabs>
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>

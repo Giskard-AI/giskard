@@ -1,10 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cli" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+  <configuration default="false" name="Internal ML Worker" type="PythonConfigurationType" factoryName="Python">
     <module name="giskard.python-client" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="GSK_CACHE_DIR" value="projects" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python" />
     <option name="SDK_NAME" value="Python (giskard)" />

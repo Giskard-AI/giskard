@@ -4,7 +4,7 @@
       <v-layout align-center justify-center>
         <v-flex xs12 sm8 md4>
           <v-card class="elevation-12">
-            <v-toolbar dark prominent :src="require('@/assets/wallpaper-skyline-reduced.jpg')">
+            <v-toolbar dark prominent :src="require('@/assets/wallpaper.jpg')">
               <v-toolbar-title>{{appName}} - Password Recovery</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
