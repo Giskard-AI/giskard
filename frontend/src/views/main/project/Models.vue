@@ -120,7 +120,7 @@ client = GiskardClient(
     token=token
 )
 
-# Wrap your model with Giskard model
+# Wrap your model with Giskard model 🎁
 giskard_model = Model(original_model, model_type="classification", name="Titanic model")
 
 # Upload to the current project

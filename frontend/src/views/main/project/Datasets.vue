@@ -110,7 +110,7 @@ client = GiskardClient(
     token=token
 )
 
-# Create a Giskard Dataset based on a Pandas Dataframe
+# Wrap your Pandas Dataframe with Giskard dataset 🎁
 giskard_dataset = Dataset(df,
                           target="Survived",
                           name="Titanic dataset")
