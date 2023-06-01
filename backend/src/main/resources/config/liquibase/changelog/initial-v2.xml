@@ -515,4 +515,36 @@
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-2">
+        <addColumn tableName="inspections">
+            <column name="created_by" type="varchar(50)"/>
+        </addColumn>
+        <addDefaultValue columnName="created_by"
+                         defaultValue="user"
+                         tableName="inspections" columnDataType="varchar(50)"
+        />
+    </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-3">
+        <addColumn tableName="inspections">
+            <column name="created_date" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-4">
+        <addColumn tableName="inspections">
+            <column name="last_modified_by" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-5">
+        <addColumn tableName="inspections">
+            <column name="last_modified_date" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-6">
+        <addColumn tableName="inspections">
+            <column name="name" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="chaves (generated)" id="1681920723224-1">
+        <addNotNullConstraint columnDataType="int" columnName="arg_order" tableName="test_function_arguments" validate="true"/>
+    </changeSet>
 </databaseChangeLog>
