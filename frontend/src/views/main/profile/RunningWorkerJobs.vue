@@ -26,10 +26,10 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from 'vue';
-import {WorkerJobDTO} from '@/generated-sources';
 import {api} from '@/api';
+import {JobDTO} from '@/generated-sources';
 
-const runningJobs = ref<WorkerJobDTO[]>([]);
+const runningJobs = ref<JobDTO[]>([]);
 
 async function loadRunningJobs() {
   runningJobs.value = await api.getRunningWorkerJobs();
@@ -41,7 +41,19 @@ const tableHeaders = [
   {
     text: "Execution date",
     sortable: true,
-    value: "executionDate",
+    value: "scheduledDate",
+    align: "left",
+  },
+  {
+    text: "State",
+    sortable: true,
+    value: "state",
+    align: "left",
+  },
+  {
+    text: "Type",
+    sortable: true,
+    value: "jobType",
     align: "left",
   },
   {
