@@ -123,7 +123,7 @@ class Query:
         return " & ".join([str(c) for c in self.get_all_clauses()])
 
     def init_code(self):
-        return f"Query([{', '.join([clause.init_code() for clause in self.get_all_clauses()])}])"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}([{', '.join([clause.init_code() for clause in self.get_all_clauses()])}])"
 
 
 def _optimize_column_clauses(clauses: Sequence[Clause]):
@@ -173,4 +173,4 @@ class QueryBasedSliceFunction(SlicingFunction):
         return True
 
     def init_code(self):
-        return f"QueryBasedSliceFunction({self.query.init_code()})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({self.query.init_code()})"
