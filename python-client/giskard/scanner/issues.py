@@ -22,7 +22,7 @@ class Issue(ABC):
         self.info = info
 
     def __repr__(self):
-        return f"<Issue level='{self.level}'>"
+        return f"<{self.__class__.__name__} level='{self.level}'>"
 
     @property
     def is_major(self) -> bool:

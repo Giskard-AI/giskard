@@ -24,6 +24,8 @@
                     Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do not affect your use case.
                     Volatile results may be caused by overfitting. When your model learned noise (out of distribution), its results may vary against small changes.
                 </p>
+            {% else %}
+                <p>{{ issues[0].group }}</p>
             {% endif %}
         </div>
     </div>
