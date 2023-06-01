@@ -1,0 +1,13 @@
+<div class="p-4">
+    <h2 class="my-4 mr-2 font-medium">Generate a Test Suite to debug the detected issues</h2>
+
+    <div class="text-sm">
+        <pre><code class="language-python rounded">{% raw %}from giskard import GiskardClient
+test_suite = scan_results.generate_test_suite("My first test suite")
+
+# Upload it to a Giskard server
+client = GiskardClient("http://localhost:19000", "GISKARD_API_KEY")
+test_suite.upload(client, "my_project"){% endraw %}
+</code></pre>
+    </div>
+</div>
