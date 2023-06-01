@@ -123,7 +123,7 @@ client = GiskardClient(
 # Wrap your model with Giskard model 🎁
 giskard_model = Model(original_model, model_type="classification", name="Titanic model")
 
-# Upload to the current project
+# Upload to the current project ✉️
 giskard_model.upload(client, "${project.value!.key}")`
 )
 
