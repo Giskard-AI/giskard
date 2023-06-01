@@ -296,16 +296,19 @@ class WrapperModel(Model, ABC):
         is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
 
         if is_binary_classification:
-            warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
-                              f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
-                              "We automatically inferred the second class prediction but please make sure that \n" + \
-                              "the probability output of your model corresponds to the first label of the \n" + \
-                              f"classification_labels ({self.meta.classification_labels}) you provided us with."
 
-            is_not_one_data_entry = raw_prediction.shape[0] != len(self.meta.classification_labels)
+            is_one_data_entry = raw_prediction.shape[0] <= 1
+            is_0d_array = len(raw_prediction.shape) == 0
 
-            if is_not_one_data_entry:
-                if len(raw_prediction.shape) == 0:
+            if is_one_data_entry:  # to be compliant with calling of raw_prediction[:, 1]
+                raw_prediction = np.expand_dims(raw_prediction, axis=0)
+            else:
+                warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
+                                  f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
+                                  "We automatically inferred the second class prediction but please make sure that \n" + \
+                                  "the probability output of your model corresponds to the first label of the \n" + \
+                                  f"classification_labels ({self.meta.classification_labels}) you provided us with."
+                if is_0d_array:
                     logger.warning(warning_message, exc_info=True)
                     raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
 
@@ -313,8 +316,6 @@ class WrapperModel(Model, ABC):
                     logger.warning(warning_message, exc_info=True)
                     squeezed_raw_prediction = np.squeeze(raw_prediction)
                     raw_prediction = np.stack([squeezed_raw_prediction, 1 - squeezed_raw_prediction], axis=1)
-            else:  # to be compliant with calling of raw_prediction[:, 1]
-                raw_prediction = np.expand_dims(raw_prediction, axis=0)
 
         if self.model_postprocessing_function:
             raw_prediction = self.model_postprocessing_function(raw_prediction)
