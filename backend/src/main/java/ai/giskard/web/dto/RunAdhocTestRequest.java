@@ -13,6 +13,6 @@ import java.util.Map;
 @UIModel
 public class RunAdhocTestRequest {
     private Long projectId;
-    private String testId;
+    private String testUuid;
     private Map<String, String> inputs;
 }

@@ -74,9 +74,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
     'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
-    'ai.giskard.web.dto.TestCatalogDTO' : 'TestCatalogDTO',
-    'ai.giskard.web.dto.TestDefinitionDTO' : 'TestDefinitionDTO',
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
+    'ai.giskard.web.dto.TestFunctionDTO' : 'TestFunctionDTO',
     'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
     'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
@@ -164,9 +163,8 @@ export * from './ai/giskard/web/dto/slice-create-dto';
 export * from './ai/giskard/web/dto/slice-put-dto';
 export * from './ai/giskard/web/dto/slice-validate-dto';
 export * from './ai/giskard/web/dto/suite-test-dto';
-export * from './ai/giskard/web/dto/test-catalog-dto';
-export * from './ai/giskard/web/dto/test-definition-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';
+export * from './ai/giskard/web/dto/test-function-dto';
 export * from './ai/giskard/web/dto/test-input-dto';
 export * from './ai/giskard/web/dto/test-suite-complete-dto';
 export * from './ai/giskard/web/dto/test-suite-create-dto';

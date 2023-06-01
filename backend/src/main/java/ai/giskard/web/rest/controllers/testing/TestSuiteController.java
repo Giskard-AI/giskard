@@ -4,6 +4,7 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteNew;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.*;
+import ai.giskard.service.TestFunctionService;
 import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
@@ -43,6 +44,7 @@ public class TestSuiteController {
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
     private final TestSuiteExecutionService testSuiteExecutionService;
+    private final TestFunctionService testFunctionService;
 
 
     @PutMapping("suites/update_params")
@@ -116,7 +118,7 @@ public class TestSuiteController {
                                                  @PathVariable("suiteId") @NotNull Long suiteId) {
         return new TestSuiteCompleteDTO(
             giskardMapper.toDTO(testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId)),
-            testService.listTestsFromRegistry(projectId),
+            testFunctionService.findAll(),
             giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId)),
             giskardMapper.modelsToModelDTOs(modelRepository.findAllByProjectId(projectId)),
             testSuiteExecutionService.listAllExecution(suiteId),
@@ -142,14 +144,14 @@ public class TestSuiteController {
         return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
     }
 
-    @PutMapping("project/{projectId}/suite-new/{suiteId}/test/{testId}/inputs")
+    @PutMapping("project/{projectId}/suite-new/{suiteId}/test/{testUuid}/inputs")
     @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
     @Transactional
     public TestSuiteNewDTO updateTestInputs(@PathVariable("projectId") long projectId,
                                             @PathVariable("suiteId") long suiteId,
-                                            @PathVariable("testId") @NotBlank String testId,
+                                            @PathVariable("testUuid") @NotBlank String testUuid,
                                             @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
-       return testSuiteService.updateTestInputs(suiteId, testId, inputs);
+        return testSuiteService.updateTestInputs(suiteId, testUuid, inputs);
     }
 
     @PostMapping("project/{projectKey}/suites")

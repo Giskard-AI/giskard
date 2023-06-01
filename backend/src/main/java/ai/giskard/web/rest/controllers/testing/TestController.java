@@ -1,20 +1,20 @@
 package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.Project;
+import ai.giskard.domain.TestFunction;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.TestExecutionRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.*;
 import ai.giskard.service.CodeTestTemplateService;
+import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
-import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestTemplatesResponse;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
@@ -23,20 +23,21 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.*;
-import com.google.common.collect.Maps;
-import com.google.protobuf.Empty;
+import ai.giskard.worker.RunAdHocTestRequest;
+import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static ai.giskard.web.rest.errors.Entity.TEST_FUNCTION;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 
@@ -51,6 +52,10 @@ public class TestController {
     private final CodeTestTemplateService codeTestTemplateService;
     private final MLWorkerService mlWorkerService;
     private final ProjectRepository projectRepository;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final TestFunctionRepository testFunctionRepository;
+    private final GRPCMapper grpcMapper;
     private final TestArgumentService testArgumentService;
     private final GiskardMapper giskardMapper;
 
@@ -111,32 +116,27 @@ public class TestController {
         return codeTestTemplateService.getTemplates(suiteId);
     }
 
-    @GetMapping("/test-catalog")
-    @Transactional
-    public TestCatalogDTO getTestTemplates(@RequestParam Long projectId) {
-        return testService.listTestsFromRegistry(projectId);
-    }
-
     @PostMapping("/run-test")
     @Transactional
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
+        TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
+            .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid()));
+
+        Project project = projectRepository.getById(request.getProjectId());
+
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
-            Project project = projectRepository.getById(request.getProjectId());
-            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-            Map<String, TestFunction> registry = new HashMap<>();
-            response.getTestsMap().values().forEach((TestFunction fn) -> registry.put(fn.getId(), fn));
+            Map<String, String> argumentTypes = testFunction.getArgs().stream()
+                .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
 
-            TestFunction test = registry.get(request.getTestId());
-            Map<String, String> argumentTypes = Maps.transformValues(test.getArgumentsMap(), TestFunctionArgument::getType);
-
-            RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder().setTestId(request.getTestId());
+            RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
+                .setTestUuid(request.getTestUuid());
 
             for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
                 builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
-            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(test.getId());
+            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
             res.setResult(testResultMessage);
             if (testResultMessage.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
                 res.setStatus(TestResult.FAILED);

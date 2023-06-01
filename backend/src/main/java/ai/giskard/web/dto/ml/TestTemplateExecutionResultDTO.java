@@ -8,19 +8,20 @@ import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
 @UIModel
 public class TestTemplateExecutionResultDTO {
-    private String testId;
+    private UUID testUuid;
     private TestResult status;
     private List<NamedSingleTestResultDTO> result;
     private String message;
     private Instant executionDate;
 
-    public TestTemplateExecutionResultDTO(String testId) {
-        this.testId = testId;
+    public TestTemplateExecutionResultDTO(UUID testUuid) {
+        this.testUuid = testUuid;
     }
 
     public void setResult(TestResultMessage message) {
