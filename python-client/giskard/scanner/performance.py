@@ -16,6 +16,7 @@ from ..slicing.tree_slicer import DecisionTreeSlicer
 from ..slicing.category_slicer import CategorySlicer
 from ..slicing.multiscale_slicer import MultiscaleSlicer
 from ..slicing.bruteforce_slicer import BruteForceSlicer
+from ..ml_worker.testing.utils import Direction
 from ..ml_worker.testing.tests.performance import (
     test_diff_f1,
     test_diff_rmse,
@@ -113,7 +114,7 @@ class PerformanceScan:
             reference_dataset=dataset,  # Could exclude slice_dataset for independence
             model=model,
             threshold=threshold,
-            absolute=False,
+            direction=Direction.Increasing,
         )
 
         res = test.execute()
