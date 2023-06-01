@@ -7,7 +7,6 @@ import logging
 
 from giskard.core.core import ModelType
 from giskard.models.function import PredictionFunctionModel
-from giskard.models.base import CloudpickleBasedModel
 from giskard.core.validation import configured_validate_arguments
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,7 @@ def infer_giskard_cls(model: Any):
                     return giskard_cls
             except ImportError:
                 pass
-    return CloudpickleBasedModel
+    return None
 
 
 @configured_validate_arguments
@@ -92,7 +91,7 @@ def wrap_model(model,
         ValueError: If the model library cannot be inferred.
     """
     giskard_cls = infer_giskard_cls(model)
-    if giskard_cls and giskard_cls != CloudpickleBasedModel:
+    if giskard_cls:
         logger.info("Your model is successfully wrapped by Giskard's '"
                     + str(giskard_cls.__name__) + "' wrapper class.")
         return giskard_cls(model=model,
@@ -104,7 +103,7 @@ def wrap_model(model,
                            classification_threshold=classification_threshold,
                            classification_labels=classification_labels,
                            **kwargs)
-    elif giskard_cls == CloudpickleBasedModel:
+    else:
         raise ValueError(
             'We could not infer your model library. We currently only support functions or models from:'
             '\n- sklearn'
