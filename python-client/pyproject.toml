@@ -154,7 +154,8 @@ dependencies = [
 llm = [
     "transformers",
     "torch",
-    "langchain"
+    "langchain",
+    "datasets",
 ]
 
 [tool.black]
