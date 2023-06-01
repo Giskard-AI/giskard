@@ -198,7 +198,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         model = Model.load(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
-        if request.column_meanings[text_column] != "text":
+        if request.feature_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
@@ -218,7 +218,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
-            column_meanings=request.column_meanings,
+            feature_types=request.feature_types,
         )
         predictions = model.predict(ds)
         if model.is_classification:
