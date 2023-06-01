@@ -17,12 +17,12 @@ huggingface/index
 You can find our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
 :::
 
-## <project:sklearn/index.md>
+## [Sklearn](<project:sklearn/index.md>)
 
-## <project:catboost/index.md>
+## [Catboost](<project:catboost/index.md>)
 
-## <project:pytorch/index.md>
+## [Pytorch](<project:pytorch/index.md>)
 
-## <project:tensorflow/index.md>
+## [Tensorflow](<project:tensorflow/index.md>)
 
-## <project:huggingface/index.md>
+## [HuggingFace](<project:huggingface/index.md>)

@@ -17,7 +17,7 @@
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
-                                                    {{ test.name }}
+                                                    {{ test.displayName ?? test.name }}
                                                     <v-spacer class="flex-grow-1" />
                                                     <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
@@ -104,19 +104,19 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
-import _, { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
+import {api} from "@/api";
+import _, {chain} from "lodash";
+import {computed, inject, onActivated, ref, watch} from "vue";
+import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import { editor } from "monaco-editor";
-import { TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
+import {editor} from "monaco-editor";
+import {TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
-import { $vfm } from 'vue-final-modal';
+import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
@@ -195,6 +195,7 @@ const filteredTestFunctions = computed(() => {
                 || func.displayName?.toLowerCase()?.includes(keyword)
             ).length === keywords.length;
         })
+        .sortBy(t => t.displayName ?? t.name)
         .value();
 })
 
