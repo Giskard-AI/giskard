@@ -26,7 +26,7 @@ class LossBasedDetector:
         if len(dataset) < self.MIN_DATASET_LENGTH:
             logger.warning(
                 f"{self.__class__.__name__}: Skipping scan because the dataset is too small"
-                " (< {self.MIN_DATASET_LENGTH} samples)."
+                f" (< {self.MIN_DATASET_LENGTH} samples)."
             )
             return []
 
