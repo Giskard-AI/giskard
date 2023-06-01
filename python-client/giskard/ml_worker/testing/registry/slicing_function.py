@@ -16,14 +16,36 @@ default_tags = ['filter']
 
 
 class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
+    """
+    A slicing function used to subset data.
+
+    :param func: The function used to slice the data.
+    :type func: SlicingFunctionType
+    :param row_level: Whether the slicing function should operate on rows or columns. Defaults to True.
+    :type row_level: bool
+    """
     func: SlicingFunctionType = None
     row_level: bool = True
 
     @classmethod
     def _get_name(cls) -> str:
+        """
+        Returns the name of the class.
+
+        :return: The name of the class.
+        :rtype: str
+        """
         return 'slices'
 
     def __init__(self, func: SlicingFunctionType, row_level=True):
+        """
+        Initializes a new instance of the SlicingFunction class.
+
+        :param func: The function used to slice the data.
+        :type func: SlicingFunctionType
+        :param row_level: Whether the slicing function should operate on rows or the whole dataframe. Defaults to True.
+        :type row_level: bool
+        """
         self.func = func
         self.row_level = row_level
         test_uuid = get_object_uuid(func)
@@ -33,6 +55,14 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
         super().__init__(func, meta)
 
     def __call__(self, data: Union[pd.Series, pd.DataFrame]):
+        """
+        Slices the data using the slicing function.
+
+        :param data: The data to slice.
+        :type data: Union[pd.Series, pd.DataFrame]
+        :return: The sliced data.
+        :rtype: Union[pd.Series, pd.DataFrame]
+        """
         if self.row_level:
             return data.loc[data.apply(self.func, axis=1)]
         else:
@@ -73,6 +103,15 @@ class SlicingFunction(Savable[SlicingFunctionType, CallableMeta]):
 
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None):
+    """
+    Decorator that registers a slicing function with the testing registry and returns a SlicingFunction instance.
+
+    :param _fn: Optional function to decorate.
+    :param row_level: Whether to apply the slicing function row-wise (default) or on the full dataframe.
+    :param name: Optional name to use for the function when registering it with the testing registry.
+    :param tags: Optional list of tags to use when registering the function.
+    :return: The wrapped function or a new instance of SlicingFunction.
+    """
     def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
 
         from giskard.ml_worker.testing.registry.registry import tests_registry
