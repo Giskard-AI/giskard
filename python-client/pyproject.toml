@@ -73,7 +73,7 @@ include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
 [tool.setuptools.package-data]
-mypkg = ["*.html"]
+giskard = ["**/*.html"]
 
 [project.scripts]
 giskard = "giskard.cli:cli"
