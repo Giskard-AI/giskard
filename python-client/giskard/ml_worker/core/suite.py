@@ -8,8 +8,8 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest, Test
-from ml_worker_pb2 import SingleTestResult
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Suite:
         self.name = name
 
     def run(self, **suite_run_args):
-        res: Dict[str, Union[bool, SingleTestResult]] = dict()
+        res: Dict[str, Union[bool, TestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -70,8 +70,7 @@ class Suite:
         logger.info(f"result: {'success' if result else 'failed'}")
         for (test_name, r) in res.items():
             logger.info(f"{test_name}: {format_test_result(r)}")
-
-        return result, list(res.values())
+        return result, res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -156,8 +155,8 @@ class Suite:
         return res
 
 
-def format_test_result(result: Union[bool, SingleTestResult]) -> str:
-    if isinstance(result, SingleTestResult):
+def format_test_result(result: Union[bool, TestResult]) -> str:
+    if isinstance(result, TestResult):
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
         return 'passed' if result else 'failed'

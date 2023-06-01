@@ -128,14 +128,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         arguments = self.parse_test_arguments(request.arguments)
 
-        logger.info(f"Executing {test.name}")
-        test_result = test.fn(**arguments)
-        return ml_worker_pb2.TestResultMessage(results=[ml_worker_pb2.NamedSingleTestResult(name=test.id, result=test_result)])
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.set_params(**arguments).execute()
 
-        return TestResultMessage(results=[
-            NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+        return ml_worker_pb2.TestResultMessage(results=[
+            ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
         ])
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
@@ -158,10 +155,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         is_pass, results = suite.run(**global_arguments)
 
+        result_list = list(results.values())
+
         named_single_test_result = []
         for i in range(len(tests)):
             named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(testUuid=tests[i].meta.uuid, result=map_result_to_single_test_result(results[i]))
+                ml_worker_pb2.NamedSingleTestResult(name=tests[i].uuid,
+                                                    result=map_result_to_single_test_result(result_list[i]))
             )
 
         return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
