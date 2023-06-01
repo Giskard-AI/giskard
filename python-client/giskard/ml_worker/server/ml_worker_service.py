@@ -6,6 +6,7 @@ import sys
 import time
 from io import StringIO
 
+import google
 import grpc
 import numpy as np
 import pandas as pd
@@ -356,7 +357,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
-    def getTestRegistry(self, request: ml_worker_pb2.google.protobuf.empty_pb2.Empty,
+    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
         return ml_worker_pb2.TestRegistryResponse(tests={
             test.id: ml_worker_pb2.TestFunction(
