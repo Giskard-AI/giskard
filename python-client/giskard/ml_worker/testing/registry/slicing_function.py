@@ -133,8 +133,9 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
 
     @classmethod
     def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
-        from ....slicing.slice import QueryBasedSliceFunction
-        return QueryBasedSliceFunction(eval(meta.code))
+        # Import giskard to make sure `eval` have access to required imports
+        import giskard
+        return giskard.slicing.slice.QueryBasedSliceFunction(eval(meta.code))
 
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
