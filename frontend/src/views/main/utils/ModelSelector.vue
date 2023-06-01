@@ -1,5 +1,6 @@
 <template>
   <v-select
+      clearable
       outlined
       class="model-selector"
       label="Model"
