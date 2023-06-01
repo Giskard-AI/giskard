@@ -1,8 +1,12 @@
+import math
+
 import numpy as np
 import pandas as pd
+import xxhash
 
 from giskard import Dataset
 from giskard import Model
+from giskard.models.base import ModelCache
 
 
 def test_predict_once():
@@ -89,3 +93,75 @@ def test_predict_only_recompute_transformed_values():
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
+
+
+def test_predict_with_complex_dataset():
+    called_indexes = []
+
+    def prediction_function(df: pd.DataFrame) -> np.ndarray:
+        called_indexes.extend(df.index)
+        return np.array(df['foo'].values)
+
+    wrapped_model = Model(
+        prediction_function,
+        model_type="regression"
+    )
+
+    wrapped_dataset = Dataset(
+        df=pd.DataFrame([
+            {'foo': 42, 'bar': 'Hello world!', 'baz': True},
+            {'foo': 3.14, 'bar': 'This is a test', 'baz': False}
+        ])
+    )
+
+    prediction = wrapped_model.predict(wrapped_dataset)
+
+    def replace_row_one(df: pd.DataFrame) -> pd.DataFrame:
+        df.loc[1, 'foo'] = 42
+        return df
+
+    transformed_dataset = wrapped_dataset.transform(replace_row_one, row_level=False)
+    second_prediction = wrapped_model.predict(transformed_dataset)
+
+    assert called_indexes == list(wrapped_dataset.df.index) + [
+        1], 'The  prediction should have been called once for row 0 and twice of row 1'
+    assert list(prediction.raw) != list(second_prediction.raw)
+    assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
+    assert list(prediction.prediction) != list(second_prediction.prediction)
+
+
+def test_model_cache_multiple_index_type():
+    model_cache = ModelCache()
+    hashes = list(map(lambda x: xxhash.xxh3_128_hexdigest(str(x)), [-18313, 42, 184391849]))
+
+    int_idx = pd.Series(hashes, index=[-18313, 42, 184391849])
+    int_cache = model_cache.read_from_cache(int_idx)
+    assert list(int_idx.index) == list(int_cache.index)
+    assert int_cache.isna().all()
+
+    str_idx = pd.Series(hashes, index=['Test', '42', 'Hello world!'])
+    str_cache = model_cache.read_from_cache(str_idx)
+    assert list(str_idx.index) == list(str_cache.index)
+    assert str_cache.isna().all()
+
+    cache_df = model_cache.to_df()
+    assert len(cache_df) == 0
+
+    result = np.array([[1, 2], [3, 4]])
+    model_cache.set_cache(pd.Series(hashes[1:]), result)
+
+    cache_df = model_cache.to_df()
+    assert len(cache_df) == 2
+    assert hashes[1:] == list(cache_df.index)
+    assert [1, 3] == list(cache_df[0].values)
+    assert [2, 4] == list(cache_df[1].values)
+
+    int_cache = model_cache.read_from_cache(int_idx)
+    assert list(int_idx.index) == list(int_cache.index)
+    assert (result == int_cache[1:].values.tolist()).all()
+    assert math.isnan(int_cache.iloc[0])
+
+    str_cache = model_cache.read_from_cache(str_idx)
+    assert list(str_idx.index) == list(str_cache.index)
+    assert (result == str_cache[1:].values.tolist()).all()
+    assert math.isnan(str_cache.iloc[0])

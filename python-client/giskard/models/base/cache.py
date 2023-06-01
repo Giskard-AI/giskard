@@ -40,9 +40,10 @@ class ModelCache:
             self.prediction_cache[keys.iloc[i]] = values[i]
 
     def to_df(self):
-        data = np.array([list(flatten([key, values])) for key, values in self.prediction_cache.items()])
+        index = [key for key, values in self.prediction_cache.items()]
+        data = np.array([list(flatten([values])) for key, values in self.prediction_cache.items()])
 
         if len(data) > 0:
-            return pd.DataFrame(data[:, 1:], index=data[:, 0])
+            return pd.DataFrame(data, index=index)
         else:
             return pd.DataFrame({})
