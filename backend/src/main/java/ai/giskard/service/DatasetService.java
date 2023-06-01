@@ -4,6 +4,7 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.utils.FileUtils;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.rest.errors.Entity;
@@ -29,9 +30,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DatasetService {
     public static final String GISKARD_DATASET_INDEX_COLUMN_NAME = "_GISKARD_INDEX_";
-
-    public static final String DATA_FILE = "data.csv.zst";
-    public static final String DATA_SAMPLE_FILE = "data.sample.csv.zst";
 
     private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
@@ -73,9 +71,9 @@ public class DatasetService {
     private Path getDataFile(@NotNull Dataset dataset, boolean sample) {
         return locationService.datasetsDirectory(dataset.getProject().getKey())
             .resolve(dataset.getId().toString())
-            .resolve(sample ? DATA_SAMPLE_FILE : DATA_FILE);
+            .resolve(FileUtils.getFileName("data", "csv.zst", sample));
     }
-    
+
     /**
      * Get filtered rows
      *
