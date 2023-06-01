@@ -28,7 +28,6 @@ from giskard.ml_worker.testing.tests.performance import AucTest, test_mae, test_
 from giskard.ml_worker.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
-
 from .scanner import scan
 
 configure_logging()
@@ -53,7 +52,18 @@ __all__ = [
     'Dataset',
     'GiskardClient',
     'test',
+    'wrap_model',
     'Model',
+    'model_from_catboost',
+    'model_from_sklearn',
+    'model_from_pytorch',
+    'model_from_tensorflow',
+    'model_from_huggingface',
+    'BaseModel',
+    'WrapperModel',
+    'MLFlowBasedModel',
+    'CloudpickleBasedModel',
+    'CustomModel',
     'Suite',
     'test_drift_psi',
     'test_drift_chi_square',

@@ -25,6 +25,8 @@ from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
+GISKARD_COLUMN_PREFIX = '__GISKARD_'
+
 logger = logging.getLogger(__name__)
 
 
@@ -152,6 +154,8 @@ class Dataset(ColumnMetadataMixin):
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
+
+
         from giskard.core.dataset_validation import validate_target
 
         validate_target(self)
@@ -170,12 +174,21 @@ class Dataset(ColumnMetadataMixin):
             validate_column_types(self)
         else:
             self.column_types = self._infer_column_types(cat_columns)
+
+        self.number_of_rows = len(self.df.index)
+        self.category_features = {
+            column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
+            for column, column_type in self.column_types.items()
+            if column_type == 'category'
+        }
+        
         validate_column_categorization(self)
 
         from giskard.core.dataset_validation import validate_numeric_columns
 
         validate_numeric_columns(self)
         print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -352,7 +365,8 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
-        return df.dtypes.apply(lambda x: x.name).to_dict()
+        return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items() if
+                not key.startswith(GISKARD_COLUMN_PREFIX)}
 
     def upload(self, client: GiskardClient, project_key: str):
         """
@@ -376,19 +390,16 @@ class Dataset(ColumnMetadataMixin):
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
-                number_of_rows=len(self.df.index),
-                category_features={
-                    column: list(self.df[column].dropna().unique())
-                    for column, column_type in self.meta.column_types.items()
-                    if column_type == 'category'
-                }
+
             )
         return dataset_id
 
     @property
     def meta(self):
         return DatasetMeta(
-            name=self.name, target=self.target, column_types=self.column_types, column_dtypes=self.column_dtypes
+            name=self.name, target=self.target, column_types=self.column_types,
+            column_dtypes=self.column_dtypes, number_of_rows=self.number_of_rows,
+            category_features=self.category_features
         )
 
     @staticmethod
@@ -440,6 +451,8 @@ class Dataset(ColumnMetadataMixin):
                     target=saved_meta["target"],
                     column_types=saved_meta["column_types"],
                     column_dtypes=saved_meta["column_dtypes"],
+                    number_of_rows=saved_meta["number_of_rows"],
+                    category_features=saved_meta["category_features"]
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
@@ -483,6 +496,8 @@ class Dataset(ColumnMetadataMixin):
                         "column_dtypes": self.meta.column_dtypes,
                         "original_size_bytes": original_size_bytes,
                         "compressed_size_bytes": compressed_size_bytes,
+                        "number_of_rows": self.meta.number_of_rows,
+                        "category_features": self.meta.category_features
                     },
                     meta_f,
                     default_flow_style=False,
