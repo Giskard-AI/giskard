@@ -337,3 +337,22 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
         parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
 
     return parameters
+
+
+class ComparisonType(Enum):
+    IS = 'IS'
+    IS_NOT = 'IS_NOT'
+    CONTAINS = 'CONTAINS'
+    DOES_NOT_CONTAINS = 'DOES_NOT_CONTAINS'
+    STARTS_WITH = 'STARTS_WITH'
+    ENDS_WITH = 'ENDS_WITH'
+    IS_EMPTY = 'IS_EMPTY'
+    IS_NOT_EMPTY = 'IS_NOT_EMPTY'
+
+
+@dataclass
+class ComparisonClauseDTO:
+    columnName: str
+    comparisonType: ComparisonType
+    columnDtype: str
+    value: Optional[str]

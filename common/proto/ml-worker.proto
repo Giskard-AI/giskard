@@ -23,6 +23,7 @@ service MLWorker {
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
+  rpc generateQueryBasedSlicingFunction(GenerateQueryBasedSliceRequest) returns (GenerateQueryBasedSliceResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -365,4 +366,30 @@ message TestFunctionArgument{
   bool optional = 3;
   string default = 4;
   uint32 argOrder = 5;
+}
+
+enum ComparisonType {
+  IS = 0;
+  IS_NOT = 1;
+  CONTAINS = 2;
+  DOES_NOT_CONTAINS = 3;
+  STARTS_WITH = 4;
+  ENDS_WITH = 5;
+  IS_EMPTY = 6;
+  IS_NOT_EMPTY = 7;
+}
+
+message ComparisonClause{
+  string column_name = 1;
+  ComparisonType comparison_type = 2;
+  string column_dtype = 3;
+  optional string value = 4;
+}
+
+message GenerateQueryBasedSliceRequest{
+  repeated ComparisonClause comparison_clauses = 1;
+}
+
+message GenerateQueryBasedSliceResponse{
+  string id = 1;
 }
