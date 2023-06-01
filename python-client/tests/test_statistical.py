@@ -108,5 +108,5 @@ def test_disparate_impact(data, model, request):
         unprotected_slice=lambda df: df[df.sex == "male"],
         model=model,
         positive_outcome="Not default",
-    ).execute()
+    )
     assert results.passed, f"DI = {results.metric}"
