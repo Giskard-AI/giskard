@@ -33,6 +33,7 @@
                                  :model-value="editedInputs"
                                  :project-id="projectId"
                                  :inputs="inputType"
+                                 :shared-inputs="suite.testInputs"
                                  :editing="editedInputs !== null"/>
           <v-row>
             <v-col>
@@ -64,7 +65,7 @@
 
 <script setup lang="ts">
 
-import {SuiteTestDTO, TestFunctionDTO} from '@/generated-sources';
+import {SuiteTestDTO, TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {computed, inject, ref} from 'vue';
 import _, {chain} from 'lodash';
 import {storeToRefs} from 'pinia';
@@ -87,7 +88,7 @@ const {suiteTest, test} = defineProps<{
 const {models, datasets, projectId, suite, inputs, registry} = storeToRefs(useTestSuiteStore());
 const {reload} = useTestSuiteStore();
 
-const editedInputs = ref<{ [input: string]: string } | null>(null);
+const editedInputs = ref<{ [input: string]: TestInputDTO } | null>(null);
 const editor = ref(null)
 
 const sortedArguments = computed(() => {
@@ -111,7 +112,10 @@ function resizeEditor() {
 function editInputs() {
   editedInputs.value = test.args
       .reduce((editedInputs, arg) => {
-        editedInputs[arg.name] = suiteTest.testInputs[arg.name]?.value;
+        editedInputs[arg.name] = {
+          ...suiteTest.testInputs[arg.name],
+          name: arg.name
+        };
         return editedInputs;
       }, {});
 }
@@ -121,7 +125,7 @@ async function saveEditedInputs() {
     return;
   }
 
-  await api.updateTestInputs(projectId.value!, suite.value!.id!, test.uuid, editedInputs.value)
+  await api.updateTestInputs(projectId.value!, suite.value!.id!, test.uuid, Object.values(editedInputs.value))
   editedInputs.value = null;
 
   await reload();
