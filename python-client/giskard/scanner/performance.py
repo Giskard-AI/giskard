@@ -77,8 +77,8 @@ class PerformanceScan:
         meta = self._calculate_meta(model, dataset)
         slices = self._find_slices(dataset.select_columns(model.meta.feature_names), model, meta, slicer)
 
-        # Keep only slices of size at least 5% of the dataset and less than 50%
-        slices = [s for s in slices if 0.05 * len(dataset) <= len(dataset.slice(s)) < 0.5 * len(dataset)]
+        # Keep only slices of size at least 5% of the dataset
+        slices = [s for s in slices if 0.05 * len(dataset) <= len(dataset.slice(s))]
 
         issues = self._find_issues(slices, model, dataset, meta, tests, threshold)
 
