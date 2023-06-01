@@ -3,6 +3,7 @@ from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from giskard.scanner.unit_perturbation import TransformationGenerator
 from giskard.ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
+from .result import ScanResult
 
 
 class RobustnessScan:
@@ -10,11 +11,10 @@ class RobustnessScan:
         self.model = model
         self.dataset = dataset
 
-    def run(
-            self,
+    def run(self,
             model: Optional[BaseModel] = None,
-            dataset: Optional[Dataset] = None,
-    ):
+            dataset: Optional[Dataset] = None):
+
         model = model or self.model
         dataset = dataset or self.dataset
 
@@ -49,10 +49,25 @@ class RobustnessScan:
                     transformation_function=transformation_function,
                     threshold=0.8
                 ).execute()
+
                 if not test_result.passed:
                     test_results.append(("passed", feature, test_result.metric))
                 else:
                     test_results.append(("failed", feature, test_result.metric))
 
-
+        # @TODO: Return issues
         return test_results
+
+
+class RobustnessScanResult(ScanResult):
+    def __init__(self, issues):
+        self.issues = issues
+
+    def has_issues(self):
+        return len(self.issues) > 0
+
+    def __repr__(self):
+        if not self.has_issues():
+            return "<RobustnessScanResult (no issues)>"
+
+        return f"<RobustnessScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
