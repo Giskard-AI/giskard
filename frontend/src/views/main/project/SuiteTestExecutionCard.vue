@@ -8,7 +8,7 @@
                                }}</span>
                 <span v-if="slicingFunction"> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
-            <!-- TODO: Add tag to the test suite level
+            <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
                 <div class="d-flex flex-row gap-4">
                     <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
                             label>
