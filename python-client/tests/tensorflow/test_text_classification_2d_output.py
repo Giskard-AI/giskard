@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
@@ -8,9 +10,9 @@ import tests.utils
 
 data_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 
-dataset = tf.keras.utils.get_file("aclImdb_v1", data_url,
-                                  untar=True, cache_dir='.',
-                                  cache_subdir='')
+dataset = tf.keras.utils.get_file("aclImdb",
+                                  "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+                                  untar=True)
 
 
 def test_text_classification_2d_output():
@@ -18,7 +20,7 @@ def test_text_classification_2d_output():
     batch_size = 32
 
     raw_test_ds = tf.keras.utils.text_dataset_from_directory(
-        'aclImdb/test',
+        Path(dataset) / 'test',
         batch_size=batch_size)
 
     test_dataset = {'Review' : [], 'Label' : []}
@@ -40,7 +42,7 @@ def test_text_classification_2d_output():
     seed = 42
 
     raw_train_ds = tf.keras.utils.text_dataset_from_directory(
-        'aclImdb/train',
+        Path(dataset) / 'train',
         batch_size=batch_size,
         validation_split=0.2,
         subset='training',
