@@ -222,20 +222,34 @@ def test_text_sentiment_ngrams_tutorial():
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    print(my_model._raw_predict(PandasToTorch(df.head())))
+    """print(my_model._raw_predict(PandasToTorch(df.head())))
     my_output = my_model.predict(my_test_dataset)
     print(my_output.raw)
 
-    #validate_model(my_model, validate_ds=my_test_dataset)
+    #validate_model(my_model, validate_ds=my_test_dataset)"""
 
-    #TODO: ensure that httpretty works
-    """httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models/upload")
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+
+    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
     httpretty.register_uri(httpretty.POST, models_url_pattern)
 
     client = GiskardClient(url, token)
-    enron = client.create_project('test-project', "Email Classification", "Email Classification")
-    model_id = my_model.save(client, 'test-project', my_test_dataset)"""
+    #enron = client.create_project('test-project', "Email Classification", "Email Classification")
+    model_id = my_model.save(client, 'test-project', my_test_dataset)
 
-if __name__=="__main__":
-    test_text_sentiment_ngrams_tutorial()
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", model_id)
+
+    artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
+
+    artifact_requests = [i for i in httpretty.latest_requests() if models_url_pattern.match(i.url)]
+    assert len(artifact_requests) > 0
+    for req in artifact_requests:
+        assert req.headers.get("Authorization") == auth
+        assert int(req.headers.get("Content-Length")) > 0
+        assert req.headers.get("Content-Type") == "application/json"
