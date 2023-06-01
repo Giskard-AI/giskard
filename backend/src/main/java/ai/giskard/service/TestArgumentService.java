@@ -9,6 +9,8 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.FixedTestArgument;
 import ai.giskard.worker.TestArgument;
+import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +23,17 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class TestArgumentService {
-    private final DatasetRepository datasetRepository;
-    private final ModelRepository modelRepository;
 
-    public FixedTestArgument buildFixedTestArgument(SuiteTest test) {
+    public SuiteTestArgument buildFixedTestArgument(SuiteTest test, String projectKey) {
         TestFunction testFunction = test.getTestFunction();
-        FixedTestArgument.Builder builder = FixedTestArgument.newBuilder()
-            .setTestUuid(testFunction.getUuid().toString());
+        SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
+            .setTestUuid(testFunction.getUuid().toString())
+            .setId(test.getId());
 
-        Map<String, String> argumentTypes = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
+        Map<String, String> argumentTypes = Maps.transformValues(testFunction.getArgumentsMap(), TestFunctionArgument::getType);
 
         for (TestInput input : test.getTestInputs()) {
-            builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue()));
+            builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue(), projectKey));
         }
 
         return builder.build();
@@ -41,38 +41,34 @@ public class TestArgumentService {
 
     public TestArgument buildTestArgument(Map<String, String> testInputTypes,
                                           String inputName,
-                                          String inputValue) {
+                                          String inputValue,
+                                          String projectKey) {
+        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName));
+    }
+
+    public TestArgument buildTestArgument(String inputName, String inputValue, String projectKey, String inputType) {
         TestArgument.Builder argumentBuilder = TestArgument.newBuilder()
             .setName(inputName);
 
-        switch (testInputTypes.get(inputName)) {
-            case "Dataset" -> {
-                String projectKey = datasetRepository.getById(UUID.fromString(inputValue)).getProject().getKey();
-                argumentBuilder.setDataset(
-                    ArtifactRef.newBuilder()
-                        .setProjectKey(projectKey)
-                        .setId(inputValue)
-                        .build()
-                );
-            }
-            case "Model" -> {
-                String projectKey = modelRepository.getById(UUID.fromString(inputValue)).getProject().getKey();
-                argumentBuilder.setModel(
-                    ArtifactRef.newBuilder()
-                        .setProjectKey(projectKey)
-                        .setId(inputValue)
-                        .build()
-                );
-            }
+        switch (inputType) {
+            case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue));
+            case "Model" -> argumentBuilder.setModel(buildArtifactRef(projectKey, inputValue));
             case "float" -> argumentBuilder.setFloat(Float.parseFloat(inputValue));
             case "int" -> argumentBuilder.setInt(Integer.parseInt(inputValue));
             case "str" -> argumentBuilder.setStr(inputValue);
             case "bool" -> argumentBuilder.setBool(Boolean.parseBoolean(inputValue));
             default ->
-                throw new IllegalArgumentException(String.format("Unknown test execution input type %s", testInputTypes.get(inputName)));
+                throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
         }
 
         return argumentBuilder.build();
+    }
+
+    private static ArtifactRef buildArtifactRef(String projectKey, String id) {
+        return ArtifactRef.newBuilder()
+            .setProjectKey(projectKey)
+            .setId(id)
+            .build();
     }
 
 }

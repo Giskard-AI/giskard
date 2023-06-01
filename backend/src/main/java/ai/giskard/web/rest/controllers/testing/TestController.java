@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers.testing;
 
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.TestFunctionArgument;
+import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
@@ -129,7 +130,7 @@ public class TestController {
                 .setTestUuid(request.getTestUuid().toString());
 
             for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue()));
+                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
