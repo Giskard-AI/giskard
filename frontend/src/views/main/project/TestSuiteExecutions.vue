@@ -20,12 +20,12 @@
       <v-col cols="3">
         <v-list three-line>
           <v-list-item-group color="primary" mandatory>
-            <template v-for="e in executionsAndJobs">
+            <div v-for="e in executionsAndJobs" :key="e.date">
               <v-divider/>
               <v-list-item v-if="e.disabled" disabled>
                 <v-list-item-content>
                   <v-list-item-title>
-                      {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
+                    {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
                   </v-list-item-title>
                   <v-list-item-subtitle>
                     <v-chip class="mr-2" x-small :color="e.color">
@@ -50,7 +50,7 @@
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
-            </template>
+            </div>
           </v-list-item-group>
         </v-list>
       </v-col>
