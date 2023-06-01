@@ -83,14 +83,17 @@
                             >
                                 <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
                             </select>
-                            <FeedbackPopover
-                                    v-if="!isMiniMode"
-                                    :inputLabel="c.name"
-                                    :inputValue="inputData[c.name]"
-                                    :originalValue="originalData[c.name]"
-                                    :inputType="c.type"
-                                    @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
-                            />
+                            <div class="d-flex flex-column">
+                                <FeedbackPopover
+                                        v-if="!isMiniMode"
+                                        :inputLabel="c.name"
+                                        :inputValue="inputData[c.name]"
+                                        :originalValue="originalData[c.name]"
+                                        :inputType="c.type"
+                                        @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
+                                />
+                                <TransformationPopover v-if="c.type === 'text'" :column="c.name"/>
+                            </div>
                         </div>
                         <div class="py-1 d-flex" v-else>
                             <label class="info--text">{{ c.name }}</label>
@@ -190,9 +193,13 @@ import {isClassification} from "@/ml-utils";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import _ from 'lodash';
+import TransformationPopover from "@/components/TransformationPopover.vue";
 
 @Component({
-  components: {OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation}
+    components: {
+        TransformationPopover,
+        OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+    }
 })
 export default class Inspector extends Vue {
     @Prop({required: true}) model!: ModelDTO
