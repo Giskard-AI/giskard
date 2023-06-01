@@ -1,3 +1,4 @@
+from typing import Hashable
 import pandas as pd
 
 from giskard.client.python_utils import warning
@@ -18,6 +19,47 @@ def validate_target(ds: Dataset):
                 "Invalid target parameter:"
                 f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
             )
+
+
+def validate_dtypes(ds: Dataset):
+    _check_hashability(ds.df)
+    _check_mixed_dtypes(ds.df)
+
+
+def _check_hashability(df):
+    """
+    This is a static method that checks if a given pandas DataFrame is hashable or not.
+    It checks if all the columns containing object types in the input DataFrame are hashable or not.
+    If any column is not hashable, it raises a TypeError indicating which columns are not hashable.
+
+    Args:
+    df (pandas.DataFrame): The DataFrame to be checked for hashability.
+
+    Raises:
+    TypeError: If any column containing object types in the input DataFrame is not hashable.
+    """
+    df_objects = df.select_dtypes(include='object')
+    non_hashable_cols = []
+    for col in df_objects.columns:
+        if not isinstance(df[col].iat[0], Hashable):
+            non_hashable_cols.append(col)
+
+    if non_hashable_cols:
+        raise TypeError(
+            f"The following columns in your df: {non_hashable_cols} are not hashable. "
+            f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict."
+        )
+
+
+def _check_mixed_dtypes(df):
+    mixed_dtypes = ["mixed", "mixed-integer"]
+    mixed_cols = [col for col in df.columns if pd.api.types.infer_dtype(df[col], skipna=True) in mixed_dtypes]
+
+    if mixed_cols:
+        raise TypeError(
+            f"The following columns have mixed data types: {', '.join(mixed_cols)}. "
+            "Please make sure that values in each column are of same data type (except NaN)."
+        )
 
 
 def validate_column_types(ds: Dataset):
