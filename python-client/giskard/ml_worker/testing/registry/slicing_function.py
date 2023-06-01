@@ -127,6 +127,12 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
     def _get_meta_class(cls):
         return DatasetProcessFunctionMeta
 
+    @classmethod
+    def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
+        from ....slicing.slice import Query, QueryBasedSliceFunction
+
+        return QueryBasedSliceFunction(Query.from_clauses(meta.clauses))
+
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
     """
