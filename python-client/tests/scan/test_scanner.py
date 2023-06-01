@@ -14,10 +14,13 @@ from giskard.scanner.result import ScanResult
         ("breast_cancer_data", "breast_cancer_model"),
         ("fraud_detection_data", "fraud_detection_model"),
         ("drug_classification_data", "drug_classification_model"),
-        ("amazon_review_data", "amazon_review_model")
+        ("amazon_review_data", "amazon_review_model"),
+        ("diabetes_dataset_with_target", "linear_regression_diabetes")
     ],
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
+    _EXCEPTION_MODELS = ["linear_regression_diabetes"]
+
     scanner = Scanner()
 
     dataset = request.getfixturevalue(dataset_name)
@@ -26,10 +29,13 @@ def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request
     result = scanner.analyze(model, dataset)
 
     assert isinstance(result, ScanResult)
-    assert result.has_issues()
 
-    test_suite = result.generate_test_suite()
-    assert isinstance(test_suite, Suite)
+    # Do not do below tests for the diabetes regression model.
+    if model_name not in _EXCEPTION_MODELS:
+        assert result.has_issues()
+
+        test_suite = result.generate_test_suite()
+        assert isinstance(test_suite, Suite)
 
 
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
