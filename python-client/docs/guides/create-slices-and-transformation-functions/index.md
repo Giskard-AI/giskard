@@ -20,9 +20,9 @@ def afternoon_slicing_fn(row: pd.Series) -> bool:
 ```python
 from giskard import wrap_dataset
 
-my_dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
-afternoon_slice = my_dataset.slice(afternoon_slicing_fn)
+afternoon_slice = wrapped_dataset.slice(afternoon_slicing_fn)
 
 ```
 
@@ -47,9 +47,9 @@ def inverse_am_pm(row: pd.Series) -> pd.Series:
 ```python
 from giskard import wrap_dataset
 
-my_dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
-afternoon_slice = my_dataset.transform(inverse_am_pm)
+afternoon_slice = wrapped_dataset.transform(inverse_am_pm)
 
 ```
 
@@ -76,9 +76,9 @@ def inverse_am_pm(row: pd.Series) -> pd.Series:
     return row
 
 
-my_dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
-afternoon_q1_slice_inversed = my_dataset.add_slicing_function(afternoon_slicing_fn)
+afternoon_q1_slice_inversed = wrapped_dataset.add_slicing_function(afternoon_slicing_fn)
     .add_slicing_function(q1_slicing_fn)
     .add_transformation_function(inverse_am_pm)
     .process()
