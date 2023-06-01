@@ -26,7 +26,7 @@ After having wrapped your [model](docs/guide/wrap_model/index.md) & [dataset](do
     model, df = demo.titanic()
 
     wrapped_model = Model(model=model, model_type="classification")
-    train_df = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+    wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
     scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
