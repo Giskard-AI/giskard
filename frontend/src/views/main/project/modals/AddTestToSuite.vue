@@ -65,9 +65,10 @@ import {SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {chain, isNull} from 'lodash';
 
-const {projectId, test} = defineProps<{
+const {projectId, test, suiteId} = defineProps<{
   projectId: number,
-  test: TestFunctionDTO
+  test: TestFunctionDTO,
+  suiteId?: number
 }>();
 
 const dialog = ref<boolean>(false);
@@ -79,6 +80,7 @@ onMounted(() => loadData());
 
 async function loadData() {
   testSuites.value = await api.getTestSuites(projectId);
+  selectedSuite.value = testSuites.value.find(({id}) => id === suiteId) ?? null
 }
 
 

@@ -136,7 +136,8 @@ import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
 let props = defineProps<{
-  projectId: number
+  projectId: number,
+  suiteId?: number
 }>();
 
 const editor = ref(null)
@@ -148,7 +149,6 @@ let tryMode = ref(true)
 let testArguments = ref({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
-let openFeedbackDetail = false
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -234,7 +234,8 @@ function addToTestSuite() {
     component: AddTestToSuite,
     bind: {
       projectId: props.projectId,
-      test: selected.value
+      test: selected.value,
+      suiteId: props.suiteId
     }
   });
 }

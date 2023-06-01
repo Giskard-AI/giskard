@@ -159,7 +159,10 @@ export default new Router({
                                     name: 'project-tests-catalog',
                                     component: () => import('./views/main/project/TestsCatalog.vue'),
                                     props: (route) => {
-                                        return {projectId: Number(route.params.id)}
+                                        return {
+                                            projectId: Number(route.params.id),
+                                            suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                        }
                                     },
                                 },
                                 {

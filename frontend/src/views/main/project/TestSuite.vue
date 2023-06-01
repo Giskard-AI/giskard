@@ -21,6 +21,13 @@
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
                      v-if="currentExecution !== null"
+                     :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
+                     color="secondary">
+                <v-icon>add</v-icon>
+                Add test
+              </v-btn>
+              <v-btn tile class='mx-1'
+                     v-if="currentExecution !== null"
                      @click='compare'
                      color="secondary">
                 <v-icon>compare</v-icon>
