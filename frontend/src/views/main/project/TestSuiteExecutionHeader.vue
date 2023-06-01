@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex w100 align-start">
-        <v-alert prominent :icon="testResultStyle.icon" outlined text :color="testResultStyle.color"
+        <v-alert prominent :icon="testResultStyle.icon" text :color="testResultStyle.color"
                  class="flex-grow-1">
             <v-row align="center">
                 <v-col class="grow">

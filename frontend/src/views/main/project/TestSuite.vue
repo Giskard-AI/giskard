@@ -1,13 +1,12 @@
 <template>
-    <div class="vc mt-2 pb-0 parent-container">
+    <div class="vc pb-0 parent-container">
         <div class="vc">
-            <v-container class="main-container vc">
+            <v-container class="main-container vc pt-0">
                 <div class="d-flex pl-3 pr-3">
                     <h1 class="test-suite-name">{{ suite.name }}</h1>
                     <div class="flex-grow-1"/>
-                    <v-btn tile class='mx-1' v-if="hasTest"
+                    <v-btn outlined class='mx-1' v-if="hasTest"
                            :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
-                        <v-icon>add</v-icon>
                         Add test
                     </v-btn>
                 </div>
@@ -30,21 +29,22 @@
                         <div class="d-flex align-center justify-center">
                             <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
                                       item-text="label"
-                                      variant="underlined" hide-details="auto" dense class="mr-4 max-w-200" outlined>
+                                      variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
                             </v-select>
                             <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
                                           outlined hide-details="auto"
-                                          class="max-w-200"
+                                          class="max-w-250"
+                                          placeholder="Performance"
                                           dense></v-text-field>
                             <div class="flex-grow-1"/>
-                            <v-btn tile class='mx-1' v-if="hasTest && hasInput" @click='openRunTestSuite(true)'
-                                   color="secondary">
-                                <v-icon>compare</v-icon>
+                            <v-btn color="primary" large text disabled>Export</v-btn>
+                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput"
+                                   @click='openRunTestSuite(true)'
+                                   color="primary">
                                 Compare
                             </v-btn>
-                            <v-btn tile class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)'
+                            <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)'
                                    color="primary">
-                                <v-icon>arrow_right</v-icon>
                                 Run test suite
                             </v-btn>
                         </div>
@@ -137,10 +137,19 @@ async function openRunTestSuite(compareMode: boolean) {
 }
 
 .test-suite-name {
-    color: rgb(32, 57, 48);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+
+    color: #163A30;
 }
 
-.max-w-200 {
-    max-width: 200px;
+.max-w-150 {
+    max-width: 150px;
+}
+
+.max-w-250 {
+    max-width: 250px;
 }
 </style>

@@ -8,12 +8,14 @@
                                }}</span>
                 <span v-if="slicingFunction"> on {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
-            <div class="d-flex flex-row gap-4">
-                <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
-                        label>
-                    {{ tag }}
-                </v-chip>
-            </div>
+            <!-- TODO: Add tag to the test suite level
+                <div class="d-flex flex-row gap-4">
+                    <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
+                            label>
+                        {{ tag }}
+                    </v-chip>
+                </div>
+            -->
             <div class="flex-grow-1"/>
             <div v-if="result"
                  :class="`d-flex flex-row align-center gap-8 ${result.passed ? 'test-passed' : 'test-failed'}`">
@@ -21,25 +23,27 @@
                 >Measured <b>Metric = {{
                         result.metric
                     }}</b></span>
-                <v-chip v-if="result.passed" small :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
+                <v-chip v-if="result.passed" x-small :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE"
                         label>
-                    <v-icon>done</v-icon>
+                    <v-icon x-small>done</v-icon>
                     Passed
                 </v-chip>
-                <v-chip v-else small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
-                    <v-icon>block</v-icon>
+                <v-chip v-else x-small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
+                    <v-icon x-small>close</v-icon>
                     Failed
                 </v-chip>
-                <v-btn color="primary" outlined small>
-                    <v-icon>info</v-icon>
+                <v-btn color="primary" outlined x-small>
+                    <v-icon x-small>info</v-icon>
                     Debug
                 </v-btn>
             </div>
         </div>
         <div class="d-flex flex-row align-end test-card-footer">
-            <div v-for="({name, value}) in orderedParams" class="d-flex flex-column">
-                <span>{{ name }}</span>
-                <span class="text-black">{{ value }}</span>
+            <div v-for="({name, value, type}) in orderedParams" class="d-flex flex-column">
+                <span class="text-input-name">{{ name }}</span>
+                <span :class="['BaseModel', 'Dataset'].includes(type) ? 'text-input-value' : 'text-input-value-code'">{{
+                        value
+                    }}</span>
             </div>
             <div class="flex-grow-1"/>
             <v-btn text x-small @click="editTests">
@@ -56,7 +60,6 @@ import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
 import {computed} from "vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
-import {pasterColor} from "@/utils";
 import _ from "lodash";
 import {Colors} from "@/utils/colors";
 import {$vfm} from "vue-final-modal";
@@ -95,7 +98,8 @@ const orderedParams = computed(() => params.value ? props.suiteTest.test.args
         .filter(({name}) => params.value!.hasOwnProperty(name))
         .map(({name, type}) => ({
             name: name.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-            value: mapValue(params.value[name], type)
+            value: mapValue(params.value[name], type),
+            type
         }))
     : [])
 
@@ -103,7 +107,7 @@ const slicingFunction = computed(() => {
     const uuid = params.value ? params.value['slicing_function'] : undefined;
 
     if (uuid) {
-        return slicingFunctionsByUuid[uuid];
+        return slicingFunctionsByUuid.value[uuid];
     } else {
         return undefined;
     }
@@ -113,7 +117,7 @@ const transformationFunction = computed(() => {
     const uuid = params.value ? params.value['transformation_function'] : undefined;
 
     if (uuid) {
-        return transformationFunctionsByUuid[uuid];
+        return transformationFunctionsByUuid.value[uuid];
     } else {
         return undefined;
     }
@@ -146,19 +150,24 @@ async function editTests() {
 }
 
 .test-card-header {
-    padding: 8px;
-    gap: 16px;
+    padding: 10px;
+    gap: 20px;
 }
 
 .test-card-footer {
     border-top: 1px solid #dee2e6;
-    padding: 8px;
-    gap: 16px;
+    padding: 10px;
+    gap: 20px;
 }
 
 
 .test-name {
-    max-width: 250px;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.0025em;
+    color: #000000;
 }
 
 .gap-4 {
@@ -169,14 +178,45 @@ async function editTests() {
     gap: 8px;
 }
 
+.metric {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
+    letter-spacing: 0.0025em;
+}
+
 .test-failed {
     .metric {
-        color: #dc3545;
+        color: #B71C1C;
     }
 }
 
-.text-black {
-    color: black;
+.text-input-name {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 16px;
+    letter-spacing: 0.0025em;
+}
+
+.text-input-value {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    font-feature-settings: 'liga' off;
+    color: #000000;
+}
+
+.text-input-value-code {
+    font-family: 'Fira Code';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 24px;
+    font-feature-settings: 'liga' off;
+    color: #000000;
 }
 </style>
 

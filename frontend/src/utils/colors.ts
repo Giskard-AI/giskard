@@ -1,8 +1,8 @@
 export class Colors {
     static FAIL = '#F44336';
-    static FAIL_SURFACE = "rgb(243, 225, 223)";
-    static ON_FAIL_SURFACE = 'rgb(225, 82, 65)';
+    static FAIL_SURFACE = "rgba(255, 82, 82, 0.2)";
+    static ON_FAIL_SURFACE = '#B71C1C';
     static PASS = '#4CAF50';
-    static PASS_SURFACE = "rgb(227, 236, 226)";
-    static ON_PASS_SURFACE = "rgb(102, 173, 81)";
+    static PASS_SURFACE = "rgba(8, 112, 56, 0.25)";
+    static ON_PASS_SURFACE = "#33691E";
 }
