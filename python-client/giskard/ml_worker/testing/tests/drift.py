@@ -136,7 +136,7 @@ def _calculate_chi_square(actual_series, reference_series, max_categories):
 
 def _validate_feature_type(gsk_dataset, column_name, feature_type):
     assert (
-            gsk_dataset.feature_types[column_name] == feature_type
+            gsk_dataset.column_types[column_name] == feature_type
     ), f'Column "{column_name}" is not of type "{feature_type}"'
 
 

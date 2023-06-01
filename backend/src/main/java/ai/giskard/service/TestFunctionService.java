@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,8 +27,8 @@ public class TestFunctionService {
     @Transactional
     public void saveAll(Collection<TestFunctionDTO> testFunctions) {
         Map<UUID, TestFunction> existing = testFunctionRepository.findAllById(testFunctions.stream()
-            .map(TestFunctionDTO::getUuid)
-            .toList())
+                .map(TestFunctionDTO::getUuid)
+                .toList())
             .stream()
             .collect(Collectors.toMap(TestFunction::getUuid, Function.identity()));
 
@@ -49,7 +52,9 @@ public class TestFunctionService {
 
     private TestFunction create(TestFunctionDTO dto) {
         TestFunction function = giskardMapper.fromDTO(dto);
-        function.getArgs().forEach(arg -> arg.setTestFunction(function));
+        if (function.getArgs() != null) {
+            function.getArgs().forEach(arg -> arg.setTestFunction(function));
+        }
         function.setVersion(testFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
         return function;
     }
@@ -60,10 +65,10 @@ public class TestFunctionService {
         existing.setCode(dto.getCode());
         existing.setTags(dto.getTags());
 
-        Map<String, TestFunctionArgument> existingArgs = existing.getArgs().stream()
-                .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity()));
-        Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity()));
+        Map<String, TestFunctionArgument> existingArgs = existing.getArgs() != null ? existing.getArgs().stream()
+            .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity())) : new HashMap<>();
+        Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs() != null ? dto.getArgs().stream()
+            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
 
         // Delete removed args
         existingArgs.entrySet().stream()
@@ -83,13 +88,6 @@ public class TestFunctionService {
         });
 
         return existing;
-    }
-
-    @Transactional
-    public List<TestFunctionDTO> findAll() {
-        return testFunctionRepository.findAll().stream()
-            .map(giskardMapper::toDTO)
-            .toList();
     }
 
 }
