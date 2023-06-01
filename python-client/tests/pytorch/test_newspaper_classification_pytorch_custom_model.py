@@ -72,6 +72,8 @@ def test_newspaper_classification_pytorch_custom_model():
     feature_names = ["text"]
 
     class my_PyTorchModel(PyTorchModel):
+        should_save_model_class = True
+
         def clf_predict(self, df):
             def predict_proba(text):
                 with torch.no_grad():
