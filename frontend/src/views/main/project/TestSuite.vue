@@ -8,20 +8,35 @@
               <v-btn text @click="loadData()" color="secondary">Refresh
                 <v-icon right>refresh</v-icon>
               </v-btn>
+              <v-btn v-if="route.name === 'test-suite-overview'"
+                     text :to="{name:'test-suite-executions'}" color="secondary">
+                <v-icon>history</v-icon>
+                Past executions
+              </v-btn>
+              <v-btn v-else
+                     text :to="{name:'test-suite-overview'}" color="secondary">
+                <v-icon>arrow_left</v-icon>
+                Overview
+              </v-btn>
               <div class="flex-grow-1"/>
-              <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+              <v-btn tile class='mx-1'
+                     v-if="Object.entries(inputs).length > 0"
+                     @click='() => openRunTestSuite(true)'
+                     color="secondary">
+                <v-icon>compare</v-icon>
+                Compare
+              </v-btn>
+              <v-btn tile class='mx-1'
+                     @click='() => openRunTestSuite(false)'
+                     color="primary">
+                <v-icon>arrow_right</v-icon>
+                Run test suite
+              </v-btn>
             </div>
           </v-col>
         </v-row>
         <v-row class="vc">
-          <v-col cols="2">
-            <v-tabs vertical>
-              <v-tab :to="{name:'test-suite-overview'}">Overview</v-tab>
-              <v-tab :to="{name:'test-suite-executions'}">Past executions</v-tab>
-              <v-tab :to="{name:'test-suite-compare-executions'}">Compare executions</v-tab>
-            </v-tabs>
-          </v-col>
-          <v-col class="vc" cols="10">
+          <v-col class="vc" cols="12">
             <router-view/>
           </v-col>
         </v-row>
@@ -33,10 +48,12 @@
 <script lang="ts" setup>
 
 import {onMounted, watch} from "vue";
-import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
+import {useRoute} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
+import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -51,8 +68,22 @@ watch(() => props.suiteId, () => loadData());
 
 const {loadTestSuite} = useTestSuiteStore();
 
+const route = useRoute();
+
 async function loadData() {
   await loadTestSuite(props.projectId, props.suiteId);
+}
+
+async function openRunTestSuite(compareMode: boolean) {
+  await $vfm.show({
+    component: RunTestSuiteModal,
+    bind: {
+      projectId: props.projectId,
+      suiteId: props.suiteId,
+      inputs: inputs.value,
+      compareMode
+    }
+  });
 }
 </script>
 
