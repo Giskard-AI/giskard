@@ -48,35 +48,25 @@ class TextSlicer(BaseSlicer):
 
     def find_metadata_slices(self, feature, target):
         slices = []
-        data = self.dataset.df
+        data = self.dataset.column_meta[feature, "text"].copy()
+        data[target] = self.dataset.df[target]
 
-        # @TODO: this is bad, wait for support of metadata in Datasets
-        meta = _calculate_text_metadata(data[feature]).add_prefix("__gsk__meta__")
-        data_with_meta = data.join(meta)
-
-        # @TODO: hard coded for now, waiting for more organic Database API with meta support
-        column_types = self.dataset.column_types.copy()
-        column_types["__gsk__meta__charset"] = "category"
-        column_types["__gsk__meta__avg_word_length"] = "numeric"
-        column_types["__gsk__meta__text_length"] = "numeric"
-        column_types["__gsk__meta__avg_whitespace"] = "numeric"
-        column_types["__gsk__meta__avg_digits"] = "numeric"
-        dataset_with_meta = Dataset(data_with_meta, target=self.dataset.target, column_types=column_types)
+        meta_dataset = Dataset(data, target=target)
+        column_types = meta_dataset.column_types.copy()
+        column_types.pop(target, None)
 
         # Run a slicer for numeric
-        slicer = get_slicer(self.slicer, dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "numeric" and x.startswith("__gsk__meta__"), meta.columns):
+        slicer = get_slicer(self.slicer, meta_dataset, target=target)
+        for col in filter(lambda x: column_types[x] == "numeric", column_types.keys()):
             slices.extend(slicer.find_slices([col]))
 
         # Run a slicer for categorical
-        slicer = CategorySlicer(dataset_with_meta, target=target)
-        for col in filter(lambda x: column_types[x] == "category" and x.startswith("__gsk__meta__"), meta.columns):
+        slicer = CategorySlicer(meta_dataset, target=target)
+        for col in filter(lambda x: column_types[x] == "category", column_types.keys()):
             slices.extend(slicer.find_slices([col]))
 
-        # @TODO: previous code will create non-working slices, since those are query-based but
-        # the queries will act on a different dataset, so we need to encapsulate this into a
-        # special slice function that will recalculate everytime the text properties.
-        slices = [TextMetadataSliceFunction(s.query, feature) for s in slices]
+        # Convert slices from metadata to original dataset
+        slices = [MetadataSliceFunction(s.query, feature, "text") for s in slices]
 
         return slices
 
@@ -177,70 +167,20 @@ def _make_vectorizer(data: pd.Series, tfidf=False, **kwargs):
     return vectorizer
 
 
-def _calculate_text_metadata(feature_data: pd.Series):
-    import chardet
-
-    # Ensure this is text encoded as a string
-    feature_data = feature_data.astype(str)
-
-    return pd.DataFrame(
-        {
-            "text_length": feature_data.map(len),
-            "avg_word_length": feature_data.map(_avg_word_length),
-            "charset": pd.Categorical(feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])),
-            "avg_whitespace": feature_data.map(_avg_whitespace),
-            "avg_digits": feature_data.map(_avg_digits),
-        },
-        index=feature_data.index,
-    )
-
-
-def _avg_whitespace(text: str):
-    chars = list(text)
-    if len(chars) == 0:
-        return 0.0
-    return np.mean([c.isspace() for c in chars])
-
-
-def _avg_digits(text: str):
-    chars = list(text)
-    if len(chars) == 0:
-        return 0.0
-    return np.mean([c.isdigit() for c in chars])
-
-
-def _avg_word_length(text: str):
-    words = text.split()
-    if len(words) == 0:
-        return 0.0
-    return np.mean([len(w) for w in words])
-
-
-_metadata_cache = {}
-
-
-# @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
-class TextMetadataSliceFunction(SlicingFunction):
+class MetadataSliceFunction(SlicingFunction):
     row_level = False
+    needs_dataset = True
 
-    def __init__(self, query: Query, feature: str):
+    def __init__(self, query: Query, feature: str, provider: str):
         self.query = query
         self.feature = feature
+        self.provider = provider
 
-    def execute(self, data: pd.DataFrame):
-        # @TODO: this is the slowest part, should disappear once we support metadata
-        import hashlib
+    def execute(self, dataset: Dataset) -> pd.DataFrame:
+        metadata = dataset.column_meta[self.feature, self.provider]
+        filtered = self.query.run(metadata)
 
-        data_id = hashlib.sha256(pd.util.hash_pandas_object(data).values).hexdigest()
-
-        if data_id not in _metadata_cache:
-            _metadata_cache[data_id] = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
-
-        meta = _metadata_cache[data_id]
-        data_with_meta = data.join(meta)
-        data_filtered = self.query.run(data_with_meta)
-
-        return data_filtered.loc[:, data.columns]
+        return dataset.df.loc[filtered.index]
 
     def __str__(self):
         # @TODO: hard coded for now!
