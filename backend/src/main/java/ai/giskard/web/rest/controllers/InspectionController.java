@@ -113,7 +113,7 @@ public class InspectionController {
 
     @PostMapping("/inspection")
     public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) throws IOException {
-        return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
+        return giskardMapper.toDTO(modelService.createInspection(createDTO.getName(), createDTO.getModelId(), createDTO.getDatasetId()));
     }
 
     /**

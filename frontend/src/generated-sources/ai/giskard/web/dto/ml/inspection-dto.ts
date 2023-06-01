@@ -8,5 +8,4 @@ export interface InspectionDTO {
     dataset: DatasetDTO;
     id: number;
     model: ModelDTO;
-    name?: string;
 }
