@@ -1,6 +1,6 @@
 column_types: null
 compressed_size_bytes: 5812
-column_meanings:
+feature_types:
   account_check_status: category
   age: numeric
   credit_amount: numeric
