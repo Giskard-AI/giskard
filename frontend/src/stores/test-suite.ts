@@ -1,11 +1,4 @@
-import {
-    DatasetDTO,
-    JobDTO,
-    ModelDTO,
-    TestCatalogDTO,
-    TestSuiteExecutionDTO,
-    TestSuiteNewDTO
-} from '@/generated-sources';
+import {DatasetDTO, JobDTO, ModelDTO, TestCatalogDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
@@ -15,7 +8,7 @@ import {useMainStore} from '@/stores/main';
 interface State {
     projectId: number | null,
     inputs: { [name: string]: string },
-    suite: TestSuiteNewDTO | null,
+    suite: TestSuiteDTO | null,
     registry: TestCatalogDTO | null,
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },

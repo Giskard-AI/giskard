@@ -34,14 +34,14 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import {TestExecutionResultDTO, TestResult} from "@/generated-sources";
+import {TestResult, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import {testStatusToColor} from "@/views/main/tests/test-utils";
 import {Prop} from "vue-property-decorator";
 import Component from "vue-class-component";
 
 @Component({})
 export default class TestExecutionResultBadge extends Vue {
-  @Prop({required: true}) result!: TestExecutionResultDTO;
+  @Prop({required: true}) result!: TestTemplateExecutionResultDTO;
 
   getBadgeColor(testStatus: TestResult) {
     return testStatusToColor(testStatus);

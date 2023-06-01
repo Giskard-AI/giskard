@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @UIModel
-public class TestSuiteNewDTO {
+public class TestSuiteDTO {
     @UINullable
     private Long id;
     private String name;

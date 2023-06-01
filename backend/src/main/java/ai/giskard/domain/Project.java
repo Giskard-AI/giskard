@@ -82,15 +82,14 @@ public class Project extends AbstractAuditingEntity {
     private Set<Dataset> datasets = new HashSet<>();
 
     @Getter
-    @Setter
     @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<TestSuite> testSuites = new HashSet<>();
+    private final Set<Feedback> feedbacks = new HashSet<>();
 
     @Getter
     @JsonIgnore
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private final Set<Feedback> feedbacks = new HashSet<>();
+    private final Set<TestSuite> testSuites = new HashSet<>();
 
     @Getter
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

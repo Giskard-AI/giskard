@@ -31,18 +31,18 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import {TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
+import {TestCatalogDTO, TestSuiteDTO} from "@/generated-sources";
 
 const props = defineProps<{
   projectId: number,
   suiteId: number,
 }>();
 
-let suite = ref<TestSuiteNewDTO | null>(null);
+let suite = ref<TestSuiteDTO | null>(null);
 let registry = ref<TestCatalogDTO | null>(null);
 let tab = ref<any>(null);
 onMounted(async () => {
-  suite.value = await api.getTestSuiteNew(props.projectId, props.suiteId);
+  suite.value = await api.getTestSuite(props.projectId, props.suiteId);
   registry.value = await api.getTestsCatalog(props.projectId);
 })
 

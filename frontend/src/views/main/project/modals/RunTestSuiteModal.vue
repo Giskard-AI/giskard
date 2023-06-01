@@ -98,7 +98,7 @@ async function executeTestSuite() {
   running.value = true;
 
   try {
-    const jobUuid = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
+    const jobUuid = await api.executeTestSuite(props.projectId, props.suiteId, testSuiteInputs.value);
     mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
     // Track job asynchronously
     testSuiteStore.trackJob(jobUuid);

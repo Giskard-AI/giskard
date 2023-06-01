@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ai.giskard.worker.GeneratedTestInput;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class TestInput {
     @ManyToOne
     @JoinColumn(name = "test_id")
     @NotNull
+    @JsonIgnore
     private SuiteTest test;
 
     public TestInput(String name, String value, SuiteTest test) {

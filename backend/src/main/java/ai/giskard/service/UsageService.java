@@ -12,22 +12,19 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UsageService {
-
-    private final TestSuiteRepository testSuiteRepository;
     private final FeedbackRepository feedbackRepository;
+    private final TestSuiteRepository testSuiteRepository;
     private final GiskardMapper giskardMapper;
 
     public PrepareDeleteDTO prepareDeleteDataset(UUID datasetId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByDatasetId(datasetId)));
-        res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByDatasetId(datasetId)));
         return res;
     }
 
     public PrepareDeleteDTO prepareDeleteModel(UUID modelId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByModelId(modelId)));
-        res.setSuites(giskardMapper.toLightTestSuites(testSuiteRepository.findByModelId(modelId)));
         return res;
     }
 }
