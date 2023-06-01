@@ -88,9 +88,9 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 from giskard import wrap_model, wrap_dataset, test_f1
 
 wrapped_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
-result = test_f1(dataset=dataset, model=wrapped_model).execute()
+result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
 
 print(f"result: {result.passed} with metric {result.metric}")
 ```
@@ -103,7 +103,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
 
 wrapped_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
 
 @transformation_function
@@ -112,7 +112,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(dataset, wrapped_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_dataset, wrapped_model, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -127,9 +127,9 @@ to see how to create custom transformations
 from giskard import wrap_model, wrap_dataset, test_right_label
 
 wrapped_model = wrap_model(...)
-dataset = wrap_dataset(...)
+wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(dataset, wrapped_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_dataset, wrapped_model, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
