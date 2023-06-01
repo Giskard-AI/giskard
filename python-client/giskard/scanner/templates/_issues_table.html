@@ -24,7 +24,7 @@
                 </td>
                 <td class="p-3">
                     <span class="text-gray-400">
-                        {{issue.test_results.actual_slices_size[0]}} samples ({{ '{:.2f}'.format(issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0])}}%)
+                        {{issue.test_results.actual_slices_size[0]}} samples ({{ '{:.2f}'.format(100 * issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0])}}%)
                     </span>
                 </td>
                 <td class="p-3 text-xs text-right space-x-1">
