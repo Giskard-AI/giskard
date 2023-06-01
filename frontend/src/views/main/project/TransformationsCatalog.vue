@@ -110,7 +110,8 @@
                                                 <DatasetColumnSelector v-if="tryMode"
                                                                        :project-id="projectId"
                                                                        :dataset="selectedDataset"
-                                                                       :column-type="selected.columnType"/>
+                                                                       :column-type="selected.columnType"
+                                                                       :value.sync="selectedColumn"/>
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
@@ -182,7 +183,7 @@ import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {TestInputDTO, TransformationFunctionDTO, TransformationResultDTO} from "@/generated-sources";
+import {FunctionInputDTO, TransformationFunctionDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
@@ -204,10 +205,11 @@ const editor = ref(null)
 const searchFilter = ref<string>("");
 let {transformationFunctions} = storeToRefs(useCatalogStore());
 const selected = ref<TransformationFunctionDTO | null>(null);
-const transformationResult = ref<TransformationResultDTO | null>(null);
+const transformationResult = ref<FunctionInputDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
-let transformationArguments = ref<{ [name: string]: TestInputDTO }>({})
+const selectedColumn = ref<string | null>(null);
+let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -252,9 +254,20 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
+    const params = Object.values(transformationArguments.value);
+    if (selected.value!.cellLevel) {
+        params.push({
+            isAlias: false,
+            name: 'column_name',
+            params: [],
+            type: 'str',
+            value: selectedColumn.value
+        })
+    }
+
     transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
-        params: Object.values(transformationArguments.value),
+        params,
         type: 'TRANSFORMATION'
     }]);
 }
