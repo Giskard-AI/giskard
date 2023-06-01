@@ -152,8 +152,8 @@ class Suite:
         :return: The current instance of the test Suite to allow chained call
         """
         if isinstance(test_fn, GiskardTest):
-            test_fn = type(test_fn)
             params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
+            test_fn = type(test_fn)
 
         if test_identifier is None:
             test_identifier = f"{test_fn.__module__}.{test_fn.__name__}"
