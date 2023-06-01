@@ -124,14 +124,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = [],
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None,
-            validation=True
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = [],
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
+        validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -158,6 +158,7 @@ class Dataset(ColumnMetadataMixin):
 
         if validation:
             from giskard.core.dataset_validation import validate_target
+
             validate_target(self)
 
         if not self.df.empty:
@@ -171,12 +172,14 @@ class Dataset(ColumnMetadataMixin):
             self.column_types = column_types
             if validation:
                 from giskard.core.dataset_validation import validate_column_types
+
                 validate_column_types(self)
         else:
             self.column_types = self._infer_column_types(cat_columns)
 
         if validation:
             from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
+
             validate_column_categorization(self)
             validate_numeric_columns(self)
 
