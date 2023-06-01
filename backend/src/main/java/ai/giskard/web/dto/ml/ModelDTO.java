@@ -15,6 +15,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -36,7 +37,7 @@ public class ModelDTO {
 
     @JsonProperty("id")
     @NotNull
-    private String id;
+    private UUID id;
 
     @JsonIgnore
     private ProjectDTO project;

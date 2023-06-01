@@ -2,6 +2,7 @@ import logging
 import pickle
 import posixpath
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Optional, Any, Union
 
@@ -109,9 +110,11 @@ class Model:
         else:
             raise ValueError('Unsupported model type')
 
-        mlflow.sklearn.save_model(self.clf, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn)
-        info = mlflow.models.Model.load(local_path)
-
+        info = self._new_mlflow_model_meta()
+        mlflow.sklearn.save_model(self.clf,
+                                  path=local_path,
+                                  pyfunc_predict_fn=pyfunc_predict_fn,
+                                  mlflow_model=info)
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
@@ -127,6 +130,10 @@ class Model:
                 }, f, default_flow_style=False)
 
         return info
+
+    @classmethod
+    def _new_mlflow_model_meta(cls):
+        return mlflow.models.Model(model_uuid=str(uuid.uuid4()))
 
     @classmethod
     def read_model_from_local_dir(cls, local_path: str):

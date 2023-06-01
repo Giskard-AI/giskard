@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,11 +42,12 @@ public class DatasetService {
      * @param datasetId id of the dataset
      * @return the table
      */
-    public Table readTableByDatasetId(@NotNull String datasetId) {
-        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+    public Table readTableByDatasetId(@NotNull UUID datasetId) {
+        Dataset dataset = datasetRepository.findById(datasetId).orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
         Map<String, ColumnType> columnTypes = dataset.getFeatureTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> FeatureType.featureToColumn.get(e.getValue())));
-        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getId()).resolve("data.csv.zst");
+        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
+            .resolve(dataset.getId().toString()).resolve("data.csv.zst");
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
@@ -69,7 +71,7 @@ public class DatasetService {
      * @param id dataset's id
      * @return details dto of the dataset
      */
-    public DatasetDetailsDTO getDetails(@NotNull String id) {
+    public DatasetDetailsDTO getDetails(@NotNull UUID id) {
         Table table = readTableByDatasetId(id);
         DatasetDetailsDTO details = new DatasetDetailsDTO();
         details.setNumberOfRows(table.rowCount());
@@ -77,7 +79,7 @@ public class DatasetService {
         return details;
     }
 
-    public DatasetMetadataDTO getMetadata(@NotNull String id) {
+    public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
         Dataset dataset = this.datasetRepository.getById(id);
         DatasetMetadataDTO metadata = new DatasetMetadataDTO();
         metadata.setId(id);
@@ -95,14 +97,14 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public Table getRows(@NotNull String id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
         return table.inRange(rangeMin, rangeMax);
     }
 
     @Transactional
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(String datasetId) {
+    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 

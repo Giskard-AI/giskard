@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity(name = "project_models")
@@ -21,8 +22,7 @@ import java.util.List;
 public class ProjectModel extends AbstractAuditingEntity {
 
     @Id
-    @Column(length = 32)
-    private String id;
+    private UUID id;
     private String name;
 
 

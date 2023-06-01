@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class ProjectFileDeletionService {
     final PermissionEvaluator permissionEvaluator;
 
     @Transactional
-    public void deleteDataset(String datasetId) {
+    public void deleteDataset(UUID datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 
@@ -63,7 +63,7 @@ public class ProjectFileDeletionService {
     }
 
     @Transactional
-    public void deleteModel(String modelId) {
+    public void deleteModel(UUID modelId) {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 

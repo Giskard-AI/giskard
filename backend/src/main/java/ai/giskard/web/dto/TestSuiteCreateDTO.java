@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,7 +18,7 @@ public class TestSuiteCreateDTO {
     private String referenceDatasetId;
     @UINullable
     private String actualDatasetId;
-    private String modelId;
+    private UUID modelId;
     private String name;
     private boolean shouldGenerateTests;
 }
