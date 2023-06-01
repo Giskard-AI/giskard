@@ -54,7 +54,6 @@ class Issue:
     def description(self) -> str:
         ...
 
-    @property
     @abstractmethod
     def examples(self, n=3) -> pd.DataFrame:
         ...
