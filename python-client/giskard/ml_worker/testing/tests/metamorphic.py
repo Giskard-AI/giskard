@@ -145,8 +145,6 @@ def _test_metamorphic(
         output_sensitivity=None,
         output_proba=True,
 ) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
     results_df, modified_rows_count = _perturb_and_predict(
         dataset,
         model,
@@ -343,8 +341,6 @@ def _test_metamorphic_t_test(direction: Direction, dataset: Dataset, model,
                              transformation_function: TransformationFunction,
                              window_size: float,
                              critical_quantile: float, classification_label=None, output_proba=True) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
     result_df, modified_rows_count = _perturb_and_predict(
         dataset, model, transformation_function, output_proba=output_proba, classification_label=classification_label
     )
@@ -512,8 +508,6 @@ def _test_metamorphic_wilcoxon(
         classification_label=None,
         output_proba=True,
 ) -> TestResult:
-    dataset.df.reset_index(drop=True, inplace=True)
-
     result_df, modified_rows_count = _perturb_and_predict(
         dataset, model, transformation_function, output_proba=output_proba, classification_label=classification_label
     )
