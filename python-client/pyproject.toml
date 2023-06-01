@@ -142,16 +142,9 @@ dependencies = [
     "pycryptodome>=3.6.1",
     "pandas>=1.3.4,<2",
     "docker>=6.0.0",
+    "chardet",  # text metadata
+    "jinja2>=3",  # scan template (temporary)
 ]
-
-[project.optional-dependencies]
-scan = [
-    "optbinning>=0.17.0",
-    "chardet",
-    "jinja2>=3",
-    "spacy",
-]
-
 
 [tool.black]
 # https://github.com/psf/black
