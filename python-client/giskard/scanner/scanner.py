@@ -3,6 +3,8 @@ import warnings
 from time import perf_counter
 from typing import Optional, Sequence
 
+from ..client.python_utils import warning
+
 from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
@@ -26,7 +28,11 @@ class Scanner:
     def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
         self._collect_analytics(model, dataset)
-        validate_model(model=model, validate_ds=dataset)
+
+        if model.is_generative:
+            warning("Generative and LLM support is in alpha version.")
+        else:
+            validate_model(model=model, validate_ds=dataset)
 
         maybe_print("Running scan…", verbose=verbose)
         time_start = perf_counter()
