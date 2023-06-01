@@ -97,6 +97,26 @@ train_df.slice(my_func3(threshold=20), column_name='Age')
 ::::
 :::::
 
+## AI-based slicing function
+Slicing function can be very powerful to detect complex behaviour when they are used as fixtures inside your test suite. With the Giskard framework you can easily, create complex slicing function. For instance:
+
+```
+def _sentiment_analysis(x, column_name, threshold, model, emotion):
+    from transformers import pipeline
+    sentiment_pipeline = pipeline("sentiment-analysis", model=model)
+    # Limit text to 512 characters
+    sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
+    return x.iloc[list(
+        map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+        
+@slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment", "text"])
+def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, threshold: float = 0.9) -> pd.DataFrame:
+    """
+    Filter the rows where the specified 'column_name' has an emotion matching 'emotion', as determined by a pre-trained sentiment analysis model.
+    Possible emotion are: 'optimism', 'anger', 'sadness', 'joy'
+    """
+    return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-emotion", emotion)
+```
 
 ## Save your slicing function
 Saving your slincing function in the Giskard server will enable you to:
