@@ -82,7 +82,7 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseMode
     )
 
 
-def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: Model):
+def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: BaseModel):
     first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
     last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
 
