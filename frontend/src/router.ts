@@ -316,18 +316,7 @@ export default new Router({
                           },
                         },
                       ],
-                    },
-                    {
-                      path: 'configuration',
-                      name: 'test-suite-configuration',
-                      component: () => import('./views/main/project/TestSuiteConfiguration.vue'),
-                      props: route => {
-                        return {
-                          suiteId: Number(route.params.suiteId),
-                          projectId: Number(route.params.id)
-                        };
-                      },
-                    },
+                    }
                   ],
                 },
               ],

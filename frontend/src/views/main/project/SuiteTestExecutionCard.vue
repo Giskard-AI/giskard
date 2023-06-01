@@ -6,7 +6,7 @@
                            <span v-if="transformationFunction"> to {{
                                    transformationFunction.displayName ?? transformationFunction.name
                                }}</span>
-                <span v-if="slicingFunction"> on {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
+                <span v-if="slicingFunction"> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
             <!-- TODO: Add tag to the test suite level
                 <div class="d-flex flex-row gap-4">

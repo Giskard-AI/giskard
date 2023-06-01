@@ -12,16 +12,16 @@
                 </div>
                 <v-tabs class="pl-3 pr-3">
                     <v-tab :to="{ name: 'test-suite-overview' }">
-                        <v-icon>mdi-chart-bar</v-icon>
-                        Report
+                        <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                        <span class="tab-item-text">Report</span>
                     </v-tab>
                     <v-tab :to="{ name: 'test-suite-executions' }">
-                        <v-icon>history</v-icon>
-                        Past executions
+                        <v-icon class="mr-2">history</v-icon>
+                        <span class="tab-item-text">Past executions</span>
                     </v-tab>
-                    <v-tab :to="{ name: 'test-suite-configuration' }">
-                        <v-icon>settings</v-icon>
-                        Configuration
+                    <v-tab disabled>
+                        <v-icon class="mr-2">settings</v-icon>
+                        <span class="tab-item-text">Configuration</span>
                     </v-tab>
                 </v-tabs>
                 <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
@@ -151,5 +151,16 @@ async function openRunTestSuite(compareMode: boolean) {
 
 .max-w-250 {
     max-width: 250px;
+}
+
+.tab-item-text {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 17px;
+    display: flex;
+    align-items: flex-end;
+    text-transform: uppercase;
+    font-feature-settings: 'case' on, 'cpsp' on;
 }
 </style>
