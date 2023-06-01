@@ -89,7 +89,7 @@ public class InspectionController {
      * @return list of inspections
      */
     @GetMapping("project/{projectId}/inspections")
-    public List<InspectionDTO> listProjectInspections(@PathVariable @NotNull Long projectId) {
+    public List<InspectionDTO> listProjectInspections(@PathVariable @NotNull long projectId) {
         return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspectionsByProjectId(projectId));
     }
 

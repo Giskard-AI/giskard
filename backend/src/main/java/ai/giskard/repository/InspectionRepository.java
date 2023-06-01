@@ -14,5 +14,5 @@ public interface InspectionRepository extends JpaRepository<Inspection, Long> {
 
     List<Inspection> findAllByDatasetId(UUID datasetId);
 
-    List<Inspection> findAllByModelProjectId(Long projectId);
+    List<Inspection> findAllByModelProjectId(long projectId);
 }

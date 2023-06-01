@@ -240,7 +240,7 @@ public class InspectionService {
         return inspectionRepository.findAll();
     }
 
-    public List<Inspection> getInspectionsByProjectId(Long projectId) {
+    public List<Inspection> getInspectionsByProjectId(long projectId) {
         return inspectionRepository.findAllByModelProjectId(projectId);
     }
 
