@@ -103,6 +103,7 @@
                 text
                 @click="submit(close)"
                 :disabled="invalid"
+                :loading="isLoading"
             >
               Create
             </v-btn>
@@ -133,6 +134,7 @@ let registry = ref<TestCatalogDTO | null>(null);
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
 const suiteInputs = ref<GenerateTestSuiteInputDTO[]>([]);
+const isLoading = ref<boolean>(false);
 
 const router = useRouter();
 
@@ -142,14 +144,18 @@ onMounted(async () => {
 });
 
 async function submit(close) {
+  isLoading.value = true;
+
   mixpanel.track('Create test suite v2', {
     projectKey
   });
 
+
   const createdTestSuiteId = await api.generateTestSuite(projectKey, {
     name: name.value,
     inputs: suiteInputs.value
-  } as GenerateTestSuiteDTO);
+  } as GenerateTestSuiteDTO)
+      .finally(() => isLoading.value = false);
 
   dialog.value = false;
   await router.push({name: 'test-suite-new', params: {suiteId: createdTestSuiteId.toString()}});
