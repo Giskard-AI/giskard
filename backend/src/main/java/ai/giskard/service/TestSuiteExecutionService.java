@@ -9,14 +9,16 @@ import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.RunTestSuiteRequest;
 import ai.giskard.worker.TestSuiteResultMessage;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -34,19 +36,19 @@ public class TestSuiteExecutionService {
     }
 
     public void executeScheduledTestSuite(TestSuiteExecution execution,
-                                          Map<String, String> suiteInputs) {
+                                          Map<String, String> suiteInputTypes) {
         TestSuite suite = execution.getSuite();
 
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
-        for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
-            builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(),
-                entry.getValue(), suite.getProject().getKey(), Collections.emptyList()));
+        for (FunctionInput input : execution.getInputs()) {
+            builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputTypes, input.getName(),
+                input.getValue(), suite.getProject().getKey(), input.getParams()));
         }
 
-        Map<String, String> suiteInputsAndShared = new HashMap<>(execution.getInputs());
-        suite.getFunctionInputs().stream()
-            .filter(i -> Strings.isNotBlank(i.getValue()))
-            .forEach(i -> suiteInputsAndShared.put(i.getName(), i.getValue()));
+        Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(
+            execution.getInputs().stream(),
+            suite.getFunctionInputs().stream()
+        ).collect(Collectors.toMap(FunctionInput::getName, Function.identity()));
 
         for (SuiteTest suiteTest : suite.getTests()) {
             builder.addTests(testArgumentService.buildFixedTestArgument(suiteInputsAndShared, suiteTest, suite.getProject().getKey()));
