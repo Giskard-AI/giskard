@@ -96,6 +96,24 @@
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
+                                    <v-list-item class="pl-0 pr-0">
+                                        <v-row v-if="selected.cellLevel">
+                                            <v-col>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>Column</v-list-item-title>
+                                                    <v-list-item-subtitle class="text-caption">
+                                                        str
+                                                    </v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-col>
+                                            <v-col>
+                                                <DatasetColumnSelector v-if="tryMode"
+                                                                       :project-id="projectId"
+                                                                       :dataset="selectedDataset"
+                                                                       :column-type="selected.columnType"/>
+                                            </v-col>
+                                        </v-row>
+                                    </v-list-item>
                                 </v-list>
                                 <SuiteInputListSelector
                                     :editing="tryMode"
@@ -172,6 +190,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;

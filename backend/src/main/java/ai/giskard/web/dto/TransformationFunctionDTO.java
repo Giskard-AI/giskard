@@ -9,7 +9,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @UIModel
-public class TransformationFunctionDTO extends CallableDTO {
-    private boolean cellLevel;
-    private String columnType;
+public class TransformationFunctionDTO extends DatasetProcessFunctionDTO {
+
 }
