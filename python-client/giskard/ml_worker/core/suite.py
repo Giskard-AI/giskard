@@ -9,6 +9,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_runner import run_test
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
@@ -99,8 +100,11 @@ class Suite:
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Callable[[Any], Union[bool]], **params):
-        self.tests.append(TestPartial(test_fn, params))
+    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
+        if isinstance(test_fn, GiskardTest):
+            self.tests.append(TestPartial(type(test_fn), {k: v for k, v in test_fn.__dict__.items() if v is not None}))
+        else:
+            self.tests.append(TestPartial(test_fn, params))
         return self
 
     def find_required_params(self):
@@ -118,3 +122,4 @@ class Suite:
                                 f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
+
