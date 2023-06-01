@@ -105,6 +105,9 @@ class Dataset:
         if column_types:
             self.column_types = column_types
         elif cat_columns:
+            if not set(cat_columns).issubset(list(df.columns)):
+                raise ValueError("The provided 'cat_columns' are not all part of your dataset 'columns'. "
+                                 "Please make sure that `cat_columns` refers to existing columns in your dataset.")
             self.column_types = self.extract_column_types(self.column_dtypes, cat_columns)
         elif infer_column_types:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes)
