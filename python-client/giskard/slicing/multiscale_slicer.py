@@ -9,8 +9,11 @@ from .slice import GreaterThan, LowerThan, Query, DataSlice, QueryBasedSliceFunc
 class MultiscaleSlicer(DecisionTreeSlicer):
     def find_slices(self, features, target=None):
         target = target or self.target
-        data = self.dataset.df.dropna()
+        data = self.dataset.df.loc[:, list(features) + [target]].dropna()
         min_leaf_size = 30
+
+        if len(data) < 2 * min_leaf_size:
+            return []
 
         # Adaptive binning via decision tree
         criterion = self._choose_tree_criterion(data.loc[:, target].values)
