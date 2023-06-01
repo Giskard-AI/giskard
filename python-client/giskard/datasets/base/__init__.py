@@ -63,7 +63,7 @@ class DataProcessor:
         return self
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
-        ds = dataset
+        ds = dataset.copy()
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
@@ -533,6 +533,9 @@ class Dataset(ColumnMetadataMixin):
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
             validation=False,
         )
+
+    def copy(self):
+        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
 
 
 def _cast_to_list_like(object):
