@@ -8,7 +8,7 @@
                     <v-btn small icon
                            :color="hasTransformation ? 'primary' : 'grey'"
                            v-on="{ ...onMenu, ...onTooltip }">
-                        <v-icon size=18>mdi-magic-staff</v-icon>
+                        <v-icon size=18>mdi-swap-horizontal</v-icon>
                     </v-btn>
                 </template>
                 <span>Apply a transformation</span>
