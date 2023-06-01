@@ -61,6 +61,8 @@ class Model(ABC):
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=list(classification_labels) if classification_labels is not None else None,
+            loader_class=self.__class__.__name__,
+            loader_module=self.__module__,
             classification_threshold=classification_threshold
         )
 
@@ -94,6 +96,8 @@ class Model(ABC):
                     "threshold": self.meta.classification_threshold,
                     "feature_names": self.meta.feature_names,
                     "classification_labels": self.meta.classification_labels,
+                    "loader_module": self.meta.loader_module,
+                    "loader_class": self.meta.loader_class,
                     "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
@@ -217,6 +221,8 @@ class Model(ABC):
                     feature_names=saved_meta['feature_names'],
                     classification_labels=saved_meta['classification_labels'],
                     classification_threshold=saved_meta['threshold'],
+                    loader_module=saved_meta['loader_module'],
+                    loader_class=saved_meta['loader_class']
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
