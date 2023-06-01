@@ -11,7 +11,8 @@ jobs:
     name: Build
     runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
-      - run: echo $(ls -la ~)
+      - run: echo "$(ls -la ~ )"
+      - run: echo "$(du -sh ~ )"
 
       - name: Check if organization member
         id: is_organization_member
@@ -153,4 +154,5 @@ jobs:
           name: giskard-dev.whl
           path: python-client/dist/*whl
 
-      - run: echo $(ls -la ~)
+      - run: echo "$(ls -la ~ )"
+      - run: echo "$(du -sh ~ )"
