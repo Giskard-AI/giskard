@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -46,7 +45,8 @@ public class FileUploadService {
             throw new GiskardRuntimeException(String.format("Artifact path %s isn't relative to artifact directory", path));
         }
         if (artifactPath.toFile().exists()) {
-            throw new FileAlreadyExistsException(locationService.giskardHome().relativize(artifactPath).toString());
+            log.info("File already exists {}", locationService.giskardHome().relativize(artifactPath));
+            return;
         }
         FileUtils.forceMkdirParent(artifactPath.toFile());
         FileUtils.deleteQuietly(tempFile.toFile());

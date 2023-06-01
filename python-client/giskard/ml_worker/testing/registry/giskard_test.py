@@ -9,6 +9,7 @@ from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
+from giskard.ml_worker.testing.registry.utils import is_local_function
 
 Result = Union[TestResult, bool]
 
@@ -52,14 +53,14 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
-        return self.data.__module__.startswith('__main__')
+        return is_local_function(self.data.__module__)
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
-        if not meta.module.startswith('__main__'):
+        if not is_local_function(meta.module):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             if not local_dir.exists():
