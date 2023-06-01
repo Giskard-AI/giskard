@@ -27,8 +27,7 @@
         <div class="mb-6">
           <p class="mb-2">First, you must have access to an API Access Token.</p>
           <div v-if="apiAccessToken && apiAccessToken.id_token">
-            <CodeSnippet :codeContent='`
-token = "${apiAccessToken.id_token}" # Your API Access Token`'></CodeSnippet>
+            <CodeSnippet :codeContent='`token = "${apiAccessToken.id_token}" # Your API Access Token`'></CodeSnippet>
           </div>
           <div v-else>
             <p>If you don't have one, you can click on the button below.</p>
