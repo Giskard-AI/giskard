@@ -42,9 +42,9 @@ def test_uppercase_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import text_uppercase
+    from giskard.scanner.robustness.text_transformations import TextUppercase
 
-    t = text_uppercase(column="text")
+    t = TextUppercase(column="text")
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values
@@ -67,9 +67,9 @@ def test_lowercase_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import text_lowercase
+    from giskard.scanner.robustness.text_transformations import TextLowercase
 
-    t = text_lowercase(column="text")
+    t = TextLowercase(column="text")
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values
