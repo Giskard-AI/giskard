@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
+import pytest
 
-from giskard import slicing_function, Dataset
+from giskard import slicing_function, Dataset, SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 
 
@@ -35,9 +36,18 @@ def transform_divide_by_five(x: pd.Series) -> pd.Series:
 
 def test_slicing(german_credit_data: Dataset):
     assert len(german_credit_data.df) == 1000
+    assert isinstance(filter_with_parenthesis, SlicingFunction), f"{type(filter_with_parenthesis)}"
     ds = german_credit_data.slice(filter_with_parenthesis)
     assert len(ds.df) == 884
     ds = ds.slice(filter_without_parenthesis)
+    assert len(ds.df) == 568
+
+
+def test_slicing_using_lambda(german_credit_data: Dataset):
+    assert len(german_credit_data.df) == 1000
+    ds = german_credit_data.slice(lambda x: x.credit_amount > 1000)
+    assert len(ds.df) == 884
+    ds = ds.slice(lambda x: x.credit_amount > 2000)
     assert len(ds.df) == 568
 
 
@@ -58,3 +68,51 @@ def test_transformation(german_credit_data: Dataset):
     assert np.all(ds.df.credit_amount == -1)
     assert len(german_credit_data.df) == 1000
     assert len(german_credit_data.df.credit_amount.unique()) > 1
+
+
+def test_transformation_without_annotation(german_credit_data: Dataset):
+    def transform_without_annotation(x: pd.Series) -> pd.Series:
+        x.credit_amount = -2
+        return x
+
+    ds = german_credit_data.transform(transform_without_annotation)
+    assert np.all(ds.df.credit_amount == -2)
+    assert len(german_credit_data.df) == 1000
+    assert len(german_credit_data.df.credit_amount.unique()) > 1
+
+
+def test_missing_arg_slicing_function():
+    with pytest.raises(TypeError,
+                       match="Required arg 0 of slice_fn to be <class 'pandas.core.series.Series'>, but none was defined"):
+        @slicing_function
+        def slice_fn():
+            return True
+
+
+def test_wrong_type_slicing_function():
+    with pytest.raises(TypeError,
+                       match="Required arg 0 of slice_fn to be <class 'pandas.core.series.Series'>, but <class 'int'> was defined"):
+        @slicing_function
+        def slice_fn(row: int):
+            return row > 0
+
+        slice_fn('str')
+
+
+def test_chain_with_parameters(german_credit_data: Dataset):
+    @slicing_function(name='row greater than')
+    def filter_greater_than(x: pd.Series, row: str, threshold: int) -> bool:
+        return x[row] > threshold
+
+    @transformation_function
+    def transform_divide_by(x: pd.Series, row: str, divider: int) -> pd.Series:
+        x[row] /= divider
+        return x
+
+    assert len(german_credit_data.df) == 1000
+    german_credit_data.add_slicing_function(filter_greater_than('credit_amount', 2000))
+    german_credit_data.add_transformation_function(transform_divide_by('credit_amount', 5))
+    german_credit_data.add_slicing_function(filter_greater_than('credit_amount', 1000))
+    assert len(german_credit_data.df) == 1000
+    ds = german_credit_data.process()
+    assert len(ds.df) == 188

@@ -64,11 +64,8 @@ wrapped_model = wrap_model(...)
 train_df = wrap_dataset(...)
 test_df = wrap_dataset(...)
 
-result = test_drift_prediction_ks(reference_dataset=train_df,
-                                  actual_dataset=test_df,
-                                  model=wrapped_model,
-                                  classification_label='CALIFORNIA CRISIS',
-                                  threshold=0.5).execute()
+result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
+                                  classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -90,7 +87,8 @@ from giskard import wrap_model, wrap_dataset, test_f1
 wrapped_model = wrap_model(...)
 wrapped_dataset = wrap_dataset(...)
 
-result = test_f1(actual_dataset=wrapped_dataset, model=wrapped_model).execute()
+result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
+
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -111,7 +109,7 @@ def add_three_years(row):
     return row
 
 
-result = test_metamorphic_invariance(wrapped_dataset, wrapped_model, add_three_years).execute()
+result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_years).execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -128,7 +126,7 @@ from giskard import wrap_model, wrap_dataset, test_right_label
 wrapped_model = wrap_model(...)
 wrapped_dataset = wrap_dataset(...)
 
-result = test_right_label(wrapped_dataset, wrapped_model, 'SUCCESS').execute()
+result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -249,7 +247,7 @@ wrapped_dataset = wrap_dataset(...)
 # Note that all the parameters are specified excect dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
-    .add_test(test_f1, "f1", actual_dataset=wrapped_dataset)
+    .add_test(test_f1, "f1", dataset=wrapped_dataset)
     .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'), "quality")
 
 # Create our first model
@@ -257,18 +255,12 @@ my_first_model = wrap_model(...)
 
 # Run the suite by specifying our model and display the results
 passed, results = suite.run(model=my_first_model)
-print(f"Result: {passed}")
-print(f"F1: {results['f1'].passed} {results['f1'].metric}")
-print(f"DataQuality: {results['quality'].passed} {results['quality'].metric}")
 
 # Create an improved version of our model
 my_improved_model = wrap_model(...)
 
 # Run the suite with our new version and check if the results improved
-passed, results = suite.run(model=my_improved_model)
-print(f"Result of the improved model: {passed}")
-print(f"F1: {results['f1'].passed} {results['f1'].metric}")
-print(f"DataQuality: {results['quality'].passed} {results['quality'].metric}")
+suite.run(model=my_improved_model)
 ```
 
 #### Description
@@ -308,7 +300,7 @@ client = GiskardClient(url, token)
 client.create_project(project_name, "Email Classification", "Email Classification")
 
 suite = Suite()
-.add_test(test_f1, actual_dataset=wrapped_dataset)
+.add_test(test_f1, dataset=wrapped_dataset)
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
 .save(client, project_name)
 ```

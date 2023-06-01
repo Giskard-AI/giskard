@@ -28,7 +28,7 @@ class SKLearnModel(MLFlowBasedModel):
                  data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                  model_postprocessing_function: Callable[[Any], Any] = None,
                  feature_names: Optional[Iterable] = None,
-                 classification_threshold: float = 0.5,
+                 classification_threshold: Optional[float] = 0.5,
                  classification_labels: Optional[Iterable] = None) -> None:
         """
         Constructs an instance of the SKLearnModel class with the provided arguments.

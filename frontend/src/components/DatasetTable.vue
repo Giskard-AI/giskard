@@ -1,0 +1,98 @@
+<template>
+    <v-data-table
+        :headers="headers"
+        :items="rows?.content"
+        :server-items-length="rows?.totalItems"
+        :options.sync="options"
+        :item-class="rowClasses"
+        :loading="!rows"
+        :footer-props="{
+            'items-per-page-options': [5, 10, 15, 20]
+          }"
+        class="elevation-1"
+    >
+        <template v-for="header in headers"
+                  v-slot:[`item.${header.value}`]="{ header, value, item }">
+
+            <v-tooltip bottom v-if="modificationsMap.hasOwnProperty(item['_GISKARD_INDEX_'])
+                  && modificationsMap[item['_GISKARD_INDEX_']].hasOwnProperty(header.text)">
+                <template v-slot:activator="{ on, attrs }">
+                    <div class="modified-cell" v-bind="attrs"
+                         v-on="on">{{ modificationsMap[item['_GISKARD_INDEX_']][header.text] }}
+                    </div>
+                </template>
+                <div>Original value: {{ value }}</div>
+            </v-tooltip>
+            <span v-else>{{ value }}</span>
+        </template>
+    </v-data-table>
+</template>
+
+<script setup lang="ts">
+
+import {computed, onMounted, ref, watch} from "vue";
+import {api} from "@/api";
+import {chain} from "lodash";
+import {DatasetPageDTO, TransformationResultMessageDTO} from "@/generated-sources";
+
+const props = defineProps<{
+    datasetId: string,
+    deletedRows?: Array<number>,
+    modifications?: Array<TransformationResultMessageDTO>
+}>()
+
+const rows = ref<DatasetPageDTO | null>(null);
+const options = ref<{ page: number, itemsPerPage: number }>({page: 1, itemsPerPage: 10})
+
+onMounted(async () => await getDatasetPage())
+
+watch(() => options.value, async () => await getDatasetPage(), {deep: true})
+
+async function getDatasetPage() {
+    return rows.value = await api.getDatasetRows(props.datasetId, (options.value.page - 1) * options.value.itemsPerPage, options.value.itemsPerPage);
+}
+
+const headers = computed(
+    () => chain(rows.value === null ? [] : Object.keys(rows.value.content[0]))
+        .filter(v => v !== '_GISKARD_INDEX_')
+        .map(column => ({
+            text: column,
+            value: column,
+            cellClass: 'overflow-ellipsis'
+        }))
+        .sortBy('text')
+        .value()
+)
+
+function rowClasses(item) {
+    return props.deletedRows?.includes(item['_GISKARD_INDEX_']) ? 'deleted-row' : '';
+}
+
+const modificationsMap = computed(() => chain(props.modifications ?? [])
+    .keyBy('rowId')
+    .mapValues('modifications')
+    .value())
+</script>
+
+<style>
+.deleted-row {
+    background-color: #f8d7da;
+    color: #721c24;
+    text-decoration: line-through;
+}
+
+.deleted-row:hover {
+    background-color: #f1afb5 !important;
+    color: #2D0B0E;
+}
+
+td:has(div.modified-cell) {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+tr:hover td:has(div.modified-cell) {
+    background-color: #b4dfbe !important;
+    color: #0B2D13;
+}
+</style>
