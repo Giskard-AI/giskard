@@ -93,6 +93,12 @@
                                         </v-row>
                                     </v-list-item>
                                 </v-list>
+                                <SuiteInputListSelector
+                                    :editing="tryMode"
+                                    :model-value="transformationArguments"
+                                    :inputs="inputType"
+                                    :project-id="props.projectId"
+                                />
                                 <v-row v-show="tryMode">
                                     <v-col :align="'right'">
                                         <v-btn width="100" small tile outlined class="primary" color="white"
@@ -154,13 +160,14 @@ import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {TransformationFunctionDTO, TransformationResultDTO} from "@/generated-sources";
+import {TestInputDTO, TransformationFunctionDTO, TransformationResultDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
+import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -177,6 +184,7 @@ const selected = ref<TransformationFunctionDTO | null>(null);
 const transformationResult = ref<TransformationResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
+let transformationArguments = ref<{ [name: string]: TestInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -220,10 +228,35 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    transformationResult.value = await api.runAdHocTransformationFunction(selected.value!.uuid, selectedDataset.value!);
+    transformationResult.value = await api.runAdHocTransformationFunction(selected.value.uuid, selectedDataset.value, chain(transformationArguments.value)
+        .mapValues('value')
+        .value());
 }
 
-watch(() => selected.value, () => transformationResult.value = null)
+watch(() => selected.value, () => {
+    transformationResult.value = null;
+    tryMode.value = false;
+
+    if (!selected.value) {
+        return;
+    }
+
+    transformationArguments.value = chain(selected.value.args)
+        .keyBy('name')
+        .mapValues(arg => ({
+            name: arg.name,
+            isAlias: false,
+            type: arg.type,
+            value: null
+        }))
+        .value()
+})
+
+const inputType = computed(() => chain(selected.value?.args ?? [])
+    .keyBy('name')
+    .mapValues('type')
+    .value()
+);
 
 </script>
 
