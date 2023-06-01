@@ -1,18 +1,50 @@
 ```{toctree}
-:caption: Table of Contents
+:caption: Getting Started
 :name: mastertoc
-:maxdepth: 2
+:maxdepth: 1
 :hidden:
 
 getting-started/index
-guides/index
-reference/index
-tutorials/index
-catalogs/index
-contribute/index
 ```
 
-# Giskard Documentation
+```{toctree}
+:caption: Guides
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+guides/installation_library/index
+guides/wrap_model/index
+guides/wrap_dataset/index
+guides/scan/index
+guides/slice/index
+guides/transformation/index
+guides/test-suite/index
+guides/cicd/index
+```
+
+```{toctree}
+:caption: Tutorials
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+tutorials/sklearn/index
+tutorials/catboost/index
+tutorials/pytorch/index
+tutorials/tensorflow/index
+tutorials/huggingface/index
+```
+
+```{toctree}
+:caption: Reference
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+reference/index
+catalogs/index
+```
 
 ::::::{grid} 1 1 3 3
 :gutter: 1
