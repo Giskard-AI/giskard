@@ -38,11 +38,8 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            from inspect import signature
-            column_type = list(signature(func).parameters.values())[0].annotation if self.cell_level else None
             meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
-                                                                      cell_level=self.cell_level,
-                                                                      column_type=column_type))
+                                                                      cell_level=self.cell_level))
         super().__init__(func, meta)
 
     def __call__(self, *args, **kwargs) -> 'TransformationFunction':

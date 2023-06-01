@@ -196,7 +196,8 @@ class Dataset(ColumnMetadataMixin):
         return self
 
     @configured_validate_arguments
-    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True):
+    def slice(self, slicing_function: Union[SlicingFunction, SlicingFunctionType], row_level: bool = True,
+              cell_level=False, column_name: Optional[str] = None):
         """
         Slice the dataset using the specified `slicing_function`.
 
@@ -217,7 +218,11 @@ class Dataset(ColumnMetadataMixin):
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
-            slicing_function = SlicingFunction(slicing_function, row_level=row_level)
+            slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
+
+        if slicing_function.cell_level and column_name is not None:
+            slicing_function = slicing_function(column_name=column_name, **slicing_function.params)
+
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
     @configured_validate_arguments
