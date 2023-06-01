@@ -51,7 +51,7 @@ def german_credit_data() -> Dataset:
     return Dataset(
         df=df,
         target="default",
-        feature_types=input_types,
+        column_meanings=input_types,
     )
 
 
@@ -61,9 +61,9 @@ def german_credit_catboost(german_credit_data) -> Model:
     from sklearn import model_selection
 
     timer = Timer()
-    feature_types = {i: input_types[i] for i in input_types if i != "default"}
+    column_meanings = {i: input_types[i] for i in input_types if i != "default"}
 
-    columns_to_encode = [key for key in feature_types.keys() if feature_types[key] == "category"]
+    columns_to_encode = [key for key in column_meanings.keys() if column_meanings[key] == "category"]
 
     credit = german_credit_data.df
 
@@ -91,7 +91,7 @@ def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
     return Dataset(
         df=df,
-        feature_types=input_types,
+        column_meanings=input_types,
         target=None,
     )
 

@@ -51,7 +51,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
     assert e.match("target column is not present in the dataset")
 
     with pytest.raises(Exception) as e:
-        diabetes_dataset.feature_types = {"test": "test"}
+        diabetes_dataset.column_meanings = {"test": "test"}
         diabetes_dataset.save(client, "test-project")
     assert e.match("target column is not present in the dataset")
 

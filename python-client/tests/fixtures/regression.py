@@ -54,7 +54,7 @@ def diabetes_dataset():
     diabetes = datasets.load_diabetes()
     return Dataset(
         df=datasets.load_diabetes(as_frame=True)["data"],
-        feature_types={feature: "numeric" for feature in diabetes["feature_names"]},
+        column_meanings={feature: "numeric" for feature in diabetes["feature_names"]},
         target="target",
     )
 
@@ -66,6 +66,6 @@ def diabetes_dataset_with_target():
     data["target"] = loaded["target"]
     return Dataset(
         df=data,
-        feature_types={feature: "numeric" for feature in list(data.columns)},
+        column_meanings={feature: "numeric" for feature in list(data.columns)},
         target="target",
     )
