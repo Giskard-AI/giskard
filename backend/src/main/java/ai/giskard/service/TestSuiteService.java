@@ -61,7 +61,7 @@ public class TestSuiteService {
                     } else if (providedInputs.get(a.getName()).isAlias()) {
                         String sharedInputName = providedInputs.get(a.getName()).getValue();
 
-                        if (test.getTestInputs().stream()
+                        if (suite.getTestInputs().stream()
                             .noneMatch(shared -> shared.getName().equals(sharedInputName)
                                 && Strings.isNotBlank(shared.getValue()))) {
                             // Shared input value is not set globally

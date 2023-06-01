@@ -12,12 +12,14 @@ import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.RunTestSuiteRequest;
 import ai.giskard.worker.TestSuiteResultMessage;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -51,9 +53,14 @@ public class TestSuiteExecutionService {
                     entry.getValue(), execution.getSuite().getProject().getKey()));
             }
 
+            Map<String, String> suiteInputsAndShared = new HashMap<>(execution.getInputs());
+            execution.getSuite().getTestInputs().stream()
+                .filter(i -> Strings.isNotBlank(i.getValue()))
+                .forEach(i -> suiteInputsAndShared.put(i.getName(), i.getValue()));
+
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
                 builder.addTests(testArgumentService
-                    .buildFixedTestArgument(execution.getInputs(), suiteTest, execution.getSuite().getProject().getKey()));
+                    .buildFixedTestArgument(suiteInputsAndShared, suiteTest, execution.getSuite().getProject().getKey()));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
