@@ -1,13 +1,12 @@
 package ai.giskard.domain.ml;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ai.giskard.worker.GeneratedTest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -25,7 +24,6 @@ public class SuiteTest {
 
     @ManyToOne
     @JoinColumn(name = "test_suite")
-    @NotNull
     private TestSuiteNew suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)

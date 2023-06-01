@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -194,10 +193,6 @@ public class TestSuiteService {
     public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
         TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, suiteId));
-
-        if (suite.getTests().stream().anyMatch(test -> test.getTestId().equals(suiteTestDTO.getTestId()))) {
-            throw new EntityExistsException("Test suite " + suiteId + " already contains test " + suiteTestDTO.getTestId());
-        }
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
