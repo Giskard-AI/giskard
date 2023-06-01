@@ -1,57 +1,65 @@
 <template>
   <div>
-    <v-dialog
-        v-model="dialog"
-        width="650"
+    <vue-final-modal
+        v-slot="{ close }"
+        v-bind="$attrs"
+        classes="modal-container"
+        content-class="modal-content"
+        v-on="$listeners"
     >
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn tile class='mx-1' @click='openPopup'
-               :loading='running'
-               :disabled='running'
-               v-bind="attrs"
-               color="primary"
-               v-on="on">
-          <v-icon>arrow_right</v-icon>
-          Run test suite
-        </v-btn>
-      </template>
+      <div class="text-center">
 
-      <v-card>
-        <v-card-title>
-          Configure run parameters
-        </v-card-title>
+        <v-card>
+          <v-card-title>
+            Configure run parameters
+          </v-card-title>
 
-        <v-card-text>
-          <TestInputListSelector
-              editing
-              :model-value="testSuiteInputs"
-              :inputs="props.inputs"
-              :project-id="props.projectId"
-          />
-        </v-card-text>
+          <v-card-text>
+            <div v-for="(input, idx) of testSuiteInputs">
+              <h2 v-if="testSuiteInputs.length > 1">Execution {{ idx + 1 }}
+                <v-btn icon v-if="idx > 1"
+                       @click="() => {testSuiteInputs.splice(idx, 1)}"
+                       color="error">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </h2>
+              <TestInputListSelector
+                  editing
+                  :model-value="input"
+                  :inputs="props.inputs"
+                  :project-id="props.projectId"
+              />
+            </div>
+            <v-btn v-if="testSuiteInputs.length > 1"
+                   @click="() => testSuiteInputs = [...testSuiteInputs, createInputs()]">
+              <v-icon>add</v-icon>
+              Add an execution
+            </v-btn>
+          </v-card-text>
 
-        <v-divider></v-divider>
+          <v-divider></v-divider>
 
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-              color="primary"
-              text
-              @click="executeTestSuite()"
-              :disabled="!isAllParamsSet() || running"
-          >
-            <v-icon>arrow_right</v-icon>
-            Run test suite
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                color="primary"
+                text
+                @click="executeTestSuite(close)"
+                :disabled="!isAllParamsSet() || running"
+            >
+              <v-icon>arrow_right</v-icon>
+              Run test suite
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </div>
+    </vue-final-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
@@ -62,18 +70,19 @@ import {TestInputDTO} from '@/generated-sources';
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  inputs: { [name: string]: string }
+  inputs: { [name: string]: string },
+  compareMode: boolean
 }>();
 
 const mainStore = useMainStore();
 const testSuiteStore = useTestSuiteStore();
 
-const dialog = ref<boolean>(false);
 const running = ref<boolean>(false);
+
 
 const testSuiteInputs = ref<{
   [name: string]: TestInputDTO
-}>({});
+}[]>([]);
 
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
@@ -81,47 +90,77 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   type: props.inputs[name]
 })));
 
+
+function createInputs() {
+  return Object.entries(props.inputs).reduce((result, [name, type]) => {
+    result[name] = {
+      isAlias: false,
+      name,
+      type,
+      value: ''
+    }
+    return result;
+  }, {});
+}
+
+onMounted(() => {
+  testSuiteInputs.value = props.compareMode ? [createInputs(), createInputs()] : [createInputs()];
+})
+
 function isAllParamsSet() {
-  return Object.keys(props.inputs)
-      .map(name => testSuiteInputs.value[name])
-      .findIndex(param => param && (param.value === null || param.value.trim() === '')) === -1;
+  return testSuiteInputs.value.filter(inputs => Object.keys(props.inputs)
+      .map(name => inputs[name])
+      .findIndex(param => param && (param.value === null || param.value.trim() === '')) !== -1)
+      .length === 0;
 }
 
-
-function openPopup() {
-  if (Object.keys(props.inputs).length === 0) {
-    executeTestSuite();
-  } else {
-    testSuiteInputs.value = Object.entries(props.inputs).reduce((result, [name, type]) => {
-      result[name] = {
-        isAlias: false,
-        name,
-        type,
-        value: ''
-      }
-      return result;
-    }, {});
-    dialog.value = true;
-  }
-}
-
-async function executeTestSuite() {
+async function executeTestSuite(close) {
   mixpanel.track('Run test suite', {suiteId: props.suiteId});
   running.value = true;
 
   try {
-    const jobUuid = await api.executeTestSuite(props.projectId, props.suiteId, Object.values(testSuiteInputs.value)
-        .reduce((result, input) => {
-          result[input.name] = input.value;
-          return result;
-        }, {}));
-    mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
+    const jobUuids = await Promise.all(testSuiteInputs.value.map(input => {
+      new Promise<Promise<void>>((resolve, reject) => {
+        api.executeTestSuite(props.projectId, props.suiteId, Object.values(input)
+            .reduce((result, input) => {
+              result[input.name] = input.value;
+              return result;
+            }, {}))
+            .then(jobUuid => {
+              resolve(testSuiteStore.trackJob(jobUuid));
+            })
+            .catch(err => reject(err));
+      })
+    }));
+
+    if (props.compareMode) {
+      await Promise.all(jobUuids);
+    } else {
+      mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
+    }
     // Track job asynchronously
-    testSuiteStore.trackJob(jobUuid);
   } finally {
     running.value = false;
-    dialog.value = false;
+    close();
   }
 
 }
 </script>
+
+<style scoped>
+::v-deep(.modal-container) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+::v-deep(.modal-content) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 1rem;
+  padding: 1rem;
+  min-width: 50vw;
+}
+
+</style>
