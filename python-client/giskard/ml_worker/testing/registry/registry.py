@@ -27,7 +27,7 @@ plugins_root = find_plugin_location()
 
 
 def get_object_uuid(obj) -> str:
-    if hasattr(obj, 'meta'):
+    if hasattr(obj, 'meta') and hasattr(obj.meta, 'uuid'):
         return obj.meta.uuid
     obj_hash = hashlib.sha512(cloudpickle.dumps(obj)).hexdigest()
     return str(uuid.uuid5(uuid.NAMESPACE_OID, obj_hash))
