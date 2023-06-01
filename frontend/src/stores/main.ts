@@ -87,9 +87,13 @@ export const useMainStore = defineStore('main', {
             this.setAppSettings(response.app);
         },
         async fetchLicense() {
-            this.backendReady = false;
-            this.license = await api.getLicense();
-            this.backendReady = true;
+            try {
+                this.license = await api.getLicense();
+                this.backendReady = true;
+            } catch (e) {
+                this.backendReady = false
+                throw e;
+            }
         },
         async getUserProfile() {
             const userStore = useUserStore();
