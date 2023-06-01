@@ -55,7 +55,7 @@ def test_validate_deterministic_model():
     data = pd.DataFrame(np.random.rand(5, 1))
     ones = np.ones(len(data))
     constant_model = SKLearnModel(
-        clf=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
+        model=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
         model_type=SupportedModelTypes.CLASSIFICATION,
     )
     ds = Dataset(df=data)

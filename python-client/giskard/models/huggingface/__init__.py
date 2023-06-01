@@ -27,7 +27,7 @@ class HuggingFaceModel(WrapperModel):
     @configured_validate_arguments
     def __init__(
         self,
-        clf,
+        model,
         model_type: ModelType,
         name: Optional[str] = None,
         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
@@ -38,7 +38,7 @@ class HuggingFaceModel(WrapperModel):
     ) -> None:
 
         super().__init__(
-            clf=clf,
+            model=model,
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
@@ -48,11 +48,11 @@ class HuggingFaceModel(WrapperModel):
             classification_labels=classification_labels,
         )
 
-        self.huggingface_module = clf.__class__
-        self.pipeline_task = clf.task if isinstance(clf, pipelines.Pipeline) else None
+        self.huggingface_module = model.__class__
+        self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
 
     @classmethod
-    def load_clf(cls, local_path):
+    def load_model(cls, local_path):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
@@ -80,13 +80,13 @@ class HuggingFaceModel(WrapperModel):
         self.save_huggingface_meta(local_path)
 
     def save_with_huggingface(self, local_path):
-        self.clf.save_pretrained(local_path)
+        self.model.save_pretrained(local_path)
 
-    def clf_predict(self, data):
+    def model_predict(self, data):
         predictions = self._get_predictions(data)
 
         if self.is_classification and hasattr(predictions, "logits"):
-            if isinstance(self.clf, torch.nn.Module):
+            if isinstance(self.model, torch.nn.Module):
                 with torch.no_grad():
                     logits = predictions.logits.detach().numpy()
             else:
@@ -104,12 +104,12 @@ class HuggingFaceModel(WrapperModel):
         return predictions
 
     def _get_predictions(self, data):
-        if isinstance(self.clf, torch.nn.Module):
+        if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():
-                return self.clf(**data)
+                return self.model(**data)
 
-        if isinstance(self.clf, pipelines.Pipeline):
-            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)]
+        if isinstance(self.model, pipelines.Pipeline):
+            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(list(data), top_k=None)]
             return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
 
-        return self.clf(**data)
+        return self.model(**data)

@@ -29,7 +29,7 @@ def test_error():
 
     my_model = PyTorchModel(
         name="my_linear_model",
-        clf=model,
+        model=model,
         feature_names=["x"],
         model_type="regression",
         data_preprocessing_function=preproc_func,

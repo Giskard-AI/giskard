@@ -86,7 +86,7 @@ def enron_model(enron_data) -> SKLearnModel:
     timer.stop(f"Trained model with score: {model_score}")
 
     return SKLearnModel(
-        clf=clf,
+        model=clf,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
