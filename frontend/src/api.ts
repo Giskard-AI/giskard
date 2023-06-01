@@ -14,7 +14,6 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
-    FileDTO,
     GeneralSettings,
     InspectionCreateDTO,
     InspectionDTO,
@@ -284,8 +283,8 @@ export const api = {
     downloadModelFile(id: number) {
         downloadURL(`${API_V2_ROOT}/download/model/${id}`);
     },
-    async editModelName(modelId: number, name: string) {
-      return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
+    async editModelName(modelId: string, name: string) {
+        return apiV2.patch<unknown, ModelDTO>(`/models/${modelId}/name/${encodeURIComponent(name)}`, null)
     },
     downloadDataFile(id: string) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
@@ -299,8 +298,8 @@ export const api = {
     async getDataFilteredByRange(inspectionId, props, filter) {
         return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
     },
-    async editDatasetName(datasetId: number, name: string) {
-        return apiV2.patch<unknown, FileDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
+    async editDatasetName(datasetId: string, name: string) {
+        return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
     },
     async getLabelsForTarget(inspectionId: number) {
         return apiV2.get<unknown, string[]>(`/inspection/${inspectionId}/labels`);

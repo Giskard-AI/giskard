@@ -112,7 +112,7 @@ async function loadModelPickles() {
   models.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
 }
 
-async function deleteModelPickle(id: number) {
+async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', {id});
 
   let messageDTO = await api.deleteModelFiles(id);
@@ -129,7 +129,7 @@ function cancelLaunchInspector() {
   showInspectDialog.value = false;
 }
 
-async function renameModel(id: number, name: string) {
+async function renameModel(id: string, name: string) {
   mixpanel.track('Update model name', {id});
   const savedDataset = await api.editModelName(id, name);
   const idx = models.value.findIndex(f => f.id === id);
@@ -143,6 +143,7 @@ async function renameModel(id: number, name: string) {
 div.v-dialog {
   overflow-y: hidden;
 }
+
 .id-container {
   white-space: nowrap;
   overflow: hidden;

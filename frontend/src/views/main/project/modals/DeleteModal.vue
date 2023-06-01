@@ -70,7 +70,7 @@ const emit = defineEmits(['submit'])
 const props = defineProps<{
   type: "dataset" | "model"
   fileName: string
-  id: number
+  id: string
 }>();
 
 const dialogOpened = ref<boolean>(false);

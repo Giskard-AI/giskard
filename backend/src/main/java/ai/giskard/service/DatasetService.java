@@ -125,9 +125,9 @@ public class DatasetService {
     }
 
     @Transactional
-    public Dataset renameDataset(long datasetId, String name) {
+    public Dataset renameDataset(UUID datasetId, String name) {
         Dataset dataset = datasetRepository.findById(datasetId)
-            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId));
+            .orElseThrow(() -> new EntityNotFoundException(Entity.DATASET, datasetId.toString()));
 
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 

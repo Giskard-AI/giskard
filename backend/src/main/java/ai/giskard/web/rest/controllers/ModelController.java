@@ -125,7 +125,7 @@ public class ModelController {
 
     @PostMapping("models/{modelId}/predict")
     @Transactional
-    public PredictionDTO predict(@PathVariable @NotNull UUID modelId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public PredictionDTO predict(@PathVariable @NotNull UUID modelId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
@@ -146,9 +146,9 @@ public class ModelController {
 
     @PatchMapping("models/{modelId}/name/{name}")
     @Transactional
-    public ModelDTO renameModel(@PathVariable long modelId, @PathVariable @Valid @NotBlank String name) {
+    public ModelDTO renameModel(@PathVariable UUID modelId, @PathVariable @Valid @NotBlank String name) {
         ProjectModel model = modelRepository.findById(modelId)
-            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId));
+            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId.toString()));
 
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 
