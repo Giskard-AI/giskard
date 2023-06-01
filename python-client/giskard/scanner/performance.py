@@ -1,21 +1,15 @@
-import numpy as np
 import pandas as pd
 from sklearn import metrics
 from typing import Optional
-from collections import defaultdict
-from pandas.api.types import is_numeric_dtype, is_categorical_dtype
 
 from giskard.scanner.issue import Issue
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 
 from .result import ScanResult
-from ..slicing.opt_slicer import OptSlicer
+from ..slicing.utils import get_slicer
 from ..slicing.text_slicer import TextSlicer
-from ..slicing.tree_slicer import DecisionTreeSlicer
 from ..slicing.category_slicer import CategorySlicer
-from ..slicing.multiscale_slicer import MultiscaleSlicer
-from ..slicing.bruteforce_slicer import BruteForceSlicer
 from ..ml_worker.testing.utils import Direction
 from ..ml_worker.testing.tests.performance import (
     test_diff_f1,
@@ -148,7 +142,7 @@ class PerformanceScan:
         }
 
         # Numerical features
-        slicer = self._get_slicer(slicer_name, dataset_with_meta, target_col)
+        slicer = get_slicer(slicer_name, dataset_with_meta, target_col)
 
         slices = []
         for col in cols_by_type["numeric"]:
@@ -161,7 +155,7 @@ class PerformanceScan:
 
         # @TODO: FIX THIS
         # Text features
-        slicer = TextSlicer(dataset_with_meta, target=target_col)
+        slicer = TextSlicer(dataset_with_meta, target=target_col, slicer=slicer_name)
         for col in cols_by_type["text"]:
             slices.extend(slicer.find_slices([col]))
 
@@ -170,18 +164,6 @@ class PerformanceScan:
         # like Issue or similar.
 
         return slices
-
-    def _get_slicer(self, slicer_name, dataset, target):
-        if slicer_name == "optimized":
-            return OptSlicer(dataset, target=target)
-        if slicer_name == "tree":
-            return DecisionTreeSlicer(dataset, target=target)
-        if slicer_name == "multiscale":
-            return MultiscaleSlicer(dataset, target=target)
-        if slicer_name == "bruteforce":
-            return BruteForceSlicer(dataset, target=target)
-
-        raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
 
 class PerformanceScanResult(ScanResult):
