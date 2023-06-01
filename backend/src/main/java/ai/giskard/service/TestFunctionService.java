@@ -44,18 +44,19 @@ public class TestFunctionService extends CallableService<TestFunction, TestFunct
         return function;
     }
 
+    @Override
     protected TestFunction update(TestFunction existing, TestFunctionDTO dto) {
         super.update(existing, dto);
 
         Map<String, TestFunctionArgument> existingArgs = existing.getArgs() != null ? existing.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity())) : new HashMap<>();
+                .collect(Collectors.toMap(TestFunctionArgument::getName, Function.identity())) : new HashMap<>();
         Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs() != null ? dto.getArgs().stream()
-            .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
+                .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
 
         // Delete removed args
         existingArgs.entrySet().stream()
-            .filter(entry -> !currentArgs.containsKey(entry.getKey()))
-            .forEach(entry -> existing.getArgs().remove(entry.getValue()));
+                .filter(entry -> !currentArgs.containsKey(entry.getKey()))
+                .forEach(entry -> existing.getArgs().remove(entry.getValue()));
 
         // Update or create current args
         currentArgs.forEach((name, currentArg) -> {
