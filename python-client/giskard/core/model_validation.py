@@ -13,11 +13,12 @@ from giskard.core.model import Model, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.ml_worker.core.dataset import Dataset
 
+
 def validate_model(model: Model, validate_ds: Dataset):
     model_type = model.meta.model_type
 
-    model_path = validate_model_saving(model)
-    loaded_model = validate_model_loading(model_path)
+    # TODO: replace model with loaded_model, and continue validation with it
+    loaded_model = validate_model_loading_and_saving(model) # noqa
 
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
@@ -79,45 +80,38 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
             "after being invoked for the same data multiple times."
         )
 
-def validate_model_saving(model: Model):
-    """
-    Validates if the model can be serialised
-    """
-    model_path = tempfile.TemporaryDirectory(prefix="giskard-model-").name
-    try:
-        model.save(model_path)
-        return model_path
-    except Exception as e:
-        raise ValueError("Failed to validate model saving from local disk") from e
 
-def validate_model_loading(model_path):
+def validate_model_loading_and_saving(model: Model):
     """
-    Validates if the model can be deserialised
+    Validates if the model can be serialised and deserialised
     """
     try:
-        with open(model_path + "/giskard-model-meta.yaml") as f:
-            saved_meta = yaml.load(f, Loader=yaml.Loader)
+        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
+            model.save(f)
 
-        meta = ModelMeta(
-            name=saved_meta['name'],
-            model_type=SupportedModelTypes[saved_meta['model_type']],
-            feature_names=saved_meta['feature_names'],
-            classification_labels=saved_meta['classification_labels'],
-            classification_threshold=saved_meta['threshold'],
-            loader_module=saved_meta['loader_module'],
-            loader_class=saved_meta['loader_class'],
-        )
+            with open(f + "/giskard-model-meta.yaml") as yaml_f:
+                saved_meta = yaml.load(yaml_f, Loader=yaml.Loader)
 
-        clazz = Model.determine_model_class(meta, model_path)
+            meta = ModelMeta(
+                name=saved_meta['name'],
+                model_type=SupportedModelTypes[saved_meta['model_type']],
+                feature_names=saved_meta['feature_names'],
+                classification_labels=saved_meta['classification_labels'],
+                classification_threshold=saved_meta['threshold'],
+                loader_module=saved_meta['loader_module'],
+                loader_class=saved_meta['loader_class'],
+            )
 
-        constructor_params = meta.__dict__
-        del constructor_params['loader_module']
-        del constructor_params['loader_class']
+            clazz = Model.determine_model_class(meta, f)
 
-        return clazz.load(model_path, **constructor_params)
+            constructor_params = meta.__dict__
+            del constructor_params['loader_module']
+            del constructor_params['loader_class']
+
+            return clazz.load(f, **constructor_params)
+
     except Exception as e:
-        raise ValueError("Failed to validate model loading from local disk") from e
-
+        raise ValueError("Failed to validate model saving and loading from local disk") from e
 
 
 def validate_data_preprocessing_function(f):
