@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="vertical-container">
     <v-row v-if="appSettings">
       <v-col cols="6">
         <v-card height="100%">
