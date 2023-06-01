@@ -2,8 +2,8 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import RouterComponent from './components/RouterComponent.vue';
-import { useUserStore } from "@/stores/user";
-import { useMainStore } from "@/stores/main";
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
 
 
 async function routeGuard(to, from, next) {
@@ -321,6 +321,7 @@ export default new Router({
                             redirect: 'admin/general',
                             children: [
                                 {
+                                    name: 'admin-general',
                                     path: 'general',
                                     component: () => import(
                                         /* webpackChunkName: "main-admin" */ './views/main/admin/settings/SettingsGeneral.vue'),
