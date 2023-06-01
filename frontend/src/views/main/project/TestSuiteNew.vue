@@ -18,9 +18,10 @@
           <v-tab>Tests</v-tab>
           <v-tab>Configuration</v-tab>
           <v-tab>Execution</v-tab>
+          <v-tab class="d-none">Compare</v-tab>
         </v-tabs>
       </v-col>
-      <v-col>
+      <v-col cols="10">
         <v-tabs-items v-model="tab">
           <v-tab-item :transition="false">
             <div>Inputs</div>
@@ -74,6 +75,13 @@
                                  :inputTypes="inputs"
                                  :executions="executions"/>
           </v-tab-item>
+          <v-tab-item :transition="false">
+            <TestSuiteCompareExecutions
+                :executions="executions"
+                :models="allModels"
+                :datasets="allDatasets"
+                :inputTypes="inputs"/>
+          </v-tab-item>
         </v-tabs-items>
       </v-col>
     </v-row>
@@ -98,6 +106,7 @@ import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
 import {groupBy} from '@/utils/array-utils';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
+import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -170,6 +179,7 @@ useRouterTabsSynchronization([
   'test-suite-new-inputs',
   'test-suite-new-test',
   'test-suite-new-configuration',
-  'test-suite-new-execution'
+  'test-suite-new-execution',
+  'test-suite-new-compare-executions'
 ], tab);
 </script>

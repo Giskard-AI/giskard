@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex">
-    <div class="timeline" v-for="execution in executions.reverse()">
+    <div class="timeline" v-for="execution in [...executions].reverse()">
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn

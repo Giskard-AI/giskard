@@ -1,8 +1,14 @@
 <template>
   <div>
+    <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
+      <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-executions'}">
+        Compare executions
+        <v-icon>compare</v-icon>
+      </v-btn>
+    </div>
     <v-progress-linear
         indeterminate
         v-if="props.executions === undefined"
@@ -51,7 +57,7 @@
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed, ref, toRef} from 'vue';
 import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
@@ -115,6 +121,6 @@ function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
 }
 
-useRouterParamSynchronization('test-suite-new-execution', 'executionId', props.executions, selectedExecution, 'id');
+useRouterParamSynchronization('test-suite-new-execution', 'executionId', toRef(props, 'executions'), selectedExecution, 'id');
 
 </script>
