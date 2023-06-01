@@ -1,4 +1,4 @@
-export function getColumnType(pythonType: string): string | null {
+export function getColumnType(pythonType: string | null | undefined): string | null {
     switch (pythonType) {
         case 'str':
             return 'text';

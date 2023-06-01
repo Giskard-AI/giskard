@@ -263,9 +263,16 @@ class TestFunctionMeta(CallableMeta):
         return {p.name: p for p in parameters}
 
 
+class DatasetProcessFunctionType(Enum):
+    CLAUSES = "CLAUSES"
+    CODE = "CODE"
+
+
 class DatasetProcessFunctionMeta(CallableMeta):
     cell_level: bool
     column_type: Optional[str]
+    process_type: DatasetProcessFunctionType
+    clauses: Optional[List[Dict[str, Any]]]
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
@@ -273,9 +280,13 @@ class DatasetProcessFunctionMeta(CallableMeta):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None,
-                 cell_level: bool = False):
+                 process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
+                 cell_level: bool = False,
+                 clauses: Optional[List[Dict[str, Any]]] = None):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
+        self.process_type = process_type
+        self.clauses = clauses
 
         if cell_level:
             if inspect.isclass(callable_obj):
@@ -296,13 +307,17 @@ class DatasetProcessFunctionMeta(CallableMeta):
         return {
             **json,
             'cellLevel': self.cell_level,
-            'columnType': self.column_type
+            'columnType': self.column_type,
+            'processType': self.process_type.value,
+            'clauses': self.clauses
         }
 
     def init_from_json(self, json: Dict[str, Any]):
         super().init_from_json(json)
         self.cell_level = json["cellLevel"]
         self.column_type = json["columnType"]
+        self.process_type = DatasetProcessFunctionType[json["processType"]]
+        self.clauses = json["clauses"]
 
 
 DT = TypeVar('DT')
@@ -327,3 +342,22 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
         parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
 
     return parameters
+
+
+class ComparisonType(Enum):
+    IS = 'IS'
+    IS_NOT = 'IS_NOT'
+    CONTAINS = 'CONTAINS'
+    DOES_NOT_CONTAINS = 'DOES_NOT_CONTAINS'
+    STARTS_WITH = 'STARTS_WITH'
+    ENDS_WITH = 'ENDS_WITH'
+    IS_EMPTY = 'IS_EMPTY'
+    IS_NOT_EMPTY = 'IS_NOT_EMPTY'
+
+
+@dataclass
+class ComparisonClauseDTO:
+    columnName: str
+    comparisonType: ComparisonType
+    columnDtype: str
+    value: Optional[str]
