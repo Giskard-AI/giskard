@@ -70,7 +70,7 @@ class TestFunction:
         if meta is not None:
             return cls(meta.fn, meta)
 
-        meta = client.load_test_function_meta("global", func_uuid)
+        meta = client.load_test_function_meta(func_uuid)
 
         if meta.module is '__main__':
             func = getattr(sys.modules[meta.module], meta.name)

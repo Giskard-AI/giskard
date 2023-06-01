@@ -281,7 +281,7 @@ class GiskardClient:
         )
 
     def save_test_function_meta(self, dataset_id, meta: TestFunctionMeta):
-        self._session.post("/test-functions", json={
+        self._session.post("test-functions", json={
             "uuid": meta.uuid,
             "name": meta.name,
             "display_name": meta.display_name,
@@ -316,7 +316,7 @@ class GiskardClient:
         )
 
     def load_test_function_meta(self, uuid: str) -> TestFunctionMeta:
-        res = self._session.get(f"/test-functions/{uuid}").json()
+        res = self._session.get(f"test-functions/{uuid}").json()
         return TestFunctionMeta(
             uuid=res["uuid"],
             name=res["name"],

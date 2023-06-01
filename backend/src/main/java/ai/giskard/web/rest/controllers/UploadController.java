@@ -26,6 +26,13 @@ public class UploadController {
     private final FileUploadService uploadService;
     private final Logger log = LoggerFactory.getLogger(UploadController.class);
 
+    @GetMapping("artifact-info/global/{artifactType}/{artifactId}")
+    public Set<String> getGlobalArtifactInfo(@PathVariable String artifactType,
+                                       @PathVariable String artifactId) {
+
+        return uploadService.listArtifacts("global", ArtifactType.fromDirectoryName(artifactType), artifactId);
+    }
+
     @GetMapping("artifact-info/{projectKey}/{artifactType}/{artifactId}")
     @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
     public Set<String> getArtifactInfo(@PathVariable String projectKey,
