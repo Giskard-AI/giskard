@@ -121,7 +121,7 @@ class PyTorchModel(MLFlowBasedModel):
                 "Running your model prediction returned an error.\n"
                 "Since you specified `iter_dataset=False`, please check that your `data_preprocessing_function` "
                 "returns an object that can be passed as input for your model. "
-            )
+            ) from err
 
     def clf_predict(self, data):
         self.clf.to(self.device)
