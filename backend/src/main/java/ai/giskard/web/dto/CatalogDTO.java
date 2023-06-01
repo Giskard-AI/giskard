@@ -16,5 +16,5 @@ import java.util.List;
 @UIModel
 public class CatalogDTO {
     private List<TestFunctionDTO> tests = new ArrayList<>();
-    private List<SliceFunctionDTO> slices = new ArrayList<>();
+    private List<SlicingFunctionDTO> slices = new ArrayList<>();
 }

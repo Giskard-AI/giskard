@@ -3,12 +3,12 @@ package ai.giskard.service.ml;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.SliceFunctionRepository;
+import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
-import ai.giskard.service.SliceFunctionService;
+import ai.giskard.service.SlicingFunctionService;
 import ai.giskard.service.TestFunctionService;
 import ai.giskard.web.dto.CatalogDTO;
-import ai.giskard.web.dto.SliceFunctionDTO;
+import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.worker.CatalogResponse;
@@ -31,8 +31,8 @@ public class MLWorkerCacheService {
     private final MLWorkerTunnelService mlWorkerTunnelService;
     private final TestFunctionService testFunctionService;
     private final TestFunctionRepository testFunctionRepository;
-    private final SliceFunctionService sliceFunctionService;
-    private final SliceFunctionRepository sliceFunctionRepository;
+    private final SlicingFunctionService slicingFunctionService;
+    private final SlicingFunctionRepository slicingFunctionRepository;
     private final ProjectRepository projectRepository;
     private final GiskardMapper giskardMapper;
     private CatalogDTO catalogWithoutPickles = new CatalogDTO();
@@ -48,7 +48,7 @@ public class MLWorkerCacheService {
                 )
                 .toList())
             .slices(Stream.concat(
-                    sliceFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
+                    slicingFunctionRepository.findAllPickles().stream().map(giskardMapper::toDTO),
                     catalog.getSlices().stream()
                 )
                 .toList())
@@ -64,7 +64,7 @@ public class MLWorkerCacheService {
         if (mlWorkerTunnelService.isClearCacheRequested()) {
             catalogWithoutPickles = getTestFunctions(false);
             testFunctionService.saveAll(catalogWithoutPickles.getTests());
-            sliceFunctionService.saveAll(catalogWithoutPickles.getSlices());
+            slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
             mlWorkerTunnelService.setClearCacheRequested(false);
         }
 
@@ -90,7 +90,7 @@ public class MLWorkerCacheService {
                     .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
                     .toList())
                 .slices(response.getSlicesMap().values().stream()
-                    .map(test -> convertGRPCObject(test, SliceFunctionDTO.class))
+                    .map(test -> convertGRPCObject(test, SlicingFunctionDTO.class))
                     .toList())
                 .build();
         } catch (StatusRuntimeException e) {

@@ -1,5 +1,5 @@
 <template>
-    <div class="vc mt-2 pb-0" v-if="sliceFunctions.length > 0">
+    <div class="vc mt-2 pb-0" v-if="slicingFunctions.length > 0">
         <div class="vc">
             <v-container class="main-container vc">
                 <v-alert
@@ -154,7 +154,7 @@ import {computed, inject, onActivated, ref} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {SliceFunctionDTO, SlicingResultDTO} from "@/generated-sources";
+import {SlicingFunctionDTO, SlicingResultDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
@@ -171,8 +171,8 @@ let props = defineProps<{
 const editor = ref(null)
 
 const searchFilter = ref<string>("");
-let {sliceFunctions} = storeToRefs(useCatalogStore());
-const selected = ref<SliceFunctionDTO | null>(null);
+let {slicingFunctions} = storeToRefs(useCatalogStore());
+const selected = ref<SlicingFunctionDTO | null>(null);
 const sliceResult = ref<SlicingResultDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
@@ -193,11 +193,11 @@ function sorted(arr: any[]) {
 }
 
 const hasGiskardFilters = computed(() => {
-    return sliceFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
+    return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
 })
 
 const filteredTestFunctions = computed(() => {
-    return chain(sliceFunctions.value)
+    return chain(slicingFunctions.value)
         .filter((func) => {
             const keywords = searchFilter.value.split(' ')
                 .map(keyword => keyword.trim().toLowerCase())
@@ -213,8 +213,8 @@ const filteredTestFunctions = computed(() => {
 })
 
 onActivated(async () => {
-    if (sliceFunctions.value.length > 0) {
-        selected.value = sliceFunctions.value[0];
+    if (slicingFunctions.value.length > 0) {
+        selected.value = slicingFunctions.value[0];
     }
 });
 
