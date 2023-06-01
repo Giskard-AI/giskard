@@ -9,10 +9,10 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.data.dataset import random_split
 
+import tests.utils
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
 
-import tests.utils
 
 class ManualLinearRegression(nn.Module):
     def __init__(self):

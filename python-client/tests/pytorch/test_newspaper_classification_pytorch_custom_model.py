@@ -2,9 +2,9 @@ import os
 import re
 
 import httpretty
+import numpy as np
 import pandas as pd
 import torch
-
 from torch import nn
 from torch.utils.data import Dataset as torch_dataset
 from torchtext.data.functional import to_map_style_dataset
@@ -12,10 +12,9 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
-from giskard import PyTorchModel, Dataset
-import numpy as np
-from giskard.client.giskard_client import GiskardClient
 import tests.utils
+from giskard import PyTorchModel, Dataset
+from giskard.client.giskard_client import GiskardClient
 
 train_iter = AG_NEWS(split='train')
 test_iter = AG_NEWS(split='test')
@@ -52,8 +51,10 @@ class PandasToTorch(torch_dataset):
     def __getitem__(self, idx):
         return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
 
+
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
+
 
 class TextClassificationModel(nn.Module):
 
@@ -105,12 +106,11 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-
-    my_model = my_PyTorchModel(name = "my_custom_BertForSequenceClassification",
-                               clf = model,
-                               feature_names = feature_names,
-                               model_type = "classification",
-                               classification_labels = list(ag_news_label.values()))
+    my_model = my_PyTorchModel(name="my_custom_BertForSequenceClassification",
+                               clf=model,
+                               feature_names=feature_names,
+                               model_type="classification",
+                               classification_labels=list(ag_news_label.values()))
 
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
