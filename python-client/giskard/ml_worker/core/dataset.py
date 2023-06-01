@@ -123,7 +123,8 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
-        return [fname for (fname, ftype) in meta.feature_types.items() if ftype == SupportedFeatureTypes.CATEGORY]
+        return [fname for (fname, ftype) in meta.feature_types.items() if
+                ftype == SupportedFeatureTypes.CATEGORY] if meta.feature_types else None
 
     @property
     def cat_columns(self):

@@ -238,8 +238,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise ValueError(f"Column {text_column} is not of type text")
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
-        if model.feature_names:
-            input_df = input_df[model.feature_names]
+        if model.meta.feature_names:
+            input_df = input_df[model.meta.feature_names]
         (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
         map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
         return ml_worker_pb2.ExplainTextResponse(
