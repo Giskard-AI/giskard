@@ -339,6 +339,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     )
                 column_types = meta.column_types
                 logger.info(f"Filtering dataset with {meta}")
+
+                def filter_wrapper(row):
+                    try:
+                        return bool(filterfunc["filter_row"](row))
+                    except Exception as e:  # noqa # NOSONAR
+                        raise ValueError("Failed to execute user defined filtering function") from e
+
                 yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ready)
             elif filter_msg.HasField("data"):
                 logger.info("Got chunk " + str(filter_msg.idx))
@@ -351,7 +358,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 df = df.astype(column_types)
                 # Iterate over rows, applying filter_row func
                 try:
-                    rows_to_keep = df.apply(filterfunc["filter_row"], axis=1)[lambda x: x is True].index.array
+                    rows_to_keep = df[df.apply(filter_wrapper, axis=1)].index.array
                 except Exception as e:
                     yield ml_worker_pb2.FilterDatasetResponse(
                         code=ml_worker_pb2.StatusCode.Failed, error_message=str(e)
