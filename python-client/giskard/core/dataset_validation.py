@@ -1,5 +1,5 @@
 from pandas.core.dtypes.common import is_string_dtype, is_numeric_dtype
-
+import pandas as pd
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
@@ -14,7 +14,7 @@ def validate_dataset(dataset: Dataset):
 
     validate_column_types(dataset)
     validate_column_categorization(dataset)
-    validate_column_types_vs_dtypes(dataset)
+    validate_numeric_columns(dataset)
 
 
 def validate_column_types(ds: Dataset):
@@ -52,6 +52,17 @@ def validate_column_types(ds: Dataset):
             raise ValueError(
                 f"Invalid column_types parameter: Please declare the type for " f"{missing_columns} columns"
             )
+
+
+def validate_numeric_columns(ds: Dataset):
+    for col, col_type in ds.column_types.items():
+        if col_type == SupportedColumnTypes.NUMERIC.value:
+            try:
+                pd.to_numeric(ds.df[col])
+            except ValueError:
+                warning(
+                    f"You declared your column '{col}' as 'numeric' but we were unable to cast it. "
+                    f"Please check that you declared the type of '{col}' correctly in 'column_types'.")
 
 
 def validate_column_categorization(ds: Dataset):
@@ -95,26 +106,3 @@ def validate_column_categorization(ds: Dataset):
                 f"(> Nuniques.NUMERIC.value={Nuniques.NUMERIC.value}) distinct values. Are "
                 f"you sure it is not a 'numeric' feature?"
             )
-
-
-def validate_column_types_vs_dtypes(ds: Dataset):
-    """
-    Verifies that declared column_types are consistent with the extracted column_dtypes
-    :param ds: Dataset to be validated
-    """
-    for col, col_type in ds.column_types.items():
-        if col == ds.target:
-            break
-        if ds.column_dtypes[col] == SupportedColumnTypes.NUMERIC:
-            try:
-                ds[col] = ds[col].astype(float)
-            except TypeError as e:
-                raise TypeError(
-                    f"You declared your column '{col}' as 'numeric' but we were unable to cast it into 'float'. "
-                    f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
-        elif ds.column_dtypes[col] == SupportedColumnTypes.TEXT:
-            try:
-                ds[col] = ds[col].astype(str)
-            except TypeError as e:
-                raise TypeError(f"You declared your column '{col}' as 'text' but we were unable to cast it into 'str'. "
-                                f"Please check that you declared the type of '{col}' correctly in 'column_types'.") from e
