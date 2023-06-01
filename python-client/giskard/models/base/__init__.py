@@ -29,6 +29,9 @@ from giskard.models.base.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
 
+META_FILENAME = "giskard-model-meta.yaml"
+
+CACHE_CSV_FILENAME = "giskard-model-cache.csv.zst"
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
 logger = logging.getLogger(__name__)
@@ -150,8 +153,8 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f, open(
-                Path(local_path) / "giskard-model-cache.csv.zst", "wb") as pred_f:
+        with open(Path(local_path) / META_FILENAME, "w") as f, open(
+                Path(local_path) / CACHE_CSV_FILENAME, "wb") as pred_f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -354,8 +357,8 @@ class BaseModel(ABC):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f, open(
-                    Path(local_dir) / "giskard-model-cache.csv.zst", "rb") as pred_f:
+            with open(Path(local_dir) / META_FILENAME) as f, open(
+                    Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=saved_meta["name"],
@@ -380,8 +383,8 @@ class BaseModel(ABC):
             meta_response = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / "giskard-model-meta.yaml") as f, open(
-                    Path(local_dir) / "giskard-model-cache.csv.zst", "rb") as pred_f:
+            with open(Path(local_dir) / META_FILENAME) as f, open(
+                    Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=meta_response["name"],
