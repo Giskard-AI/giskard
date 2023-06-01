@@ -62,6 +62,7 @@ if (project.hasProperty("zipkin")) {
 idea {
     module {
         excludeDirs += files("node_modules")
+        excludeDirs += files("bin")
     }
 }
 
@@ -141,6 +142,14 @@ liquibase {
             url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app")
             username System.getenv().getOrDefault("POSTGRES_USER", "postgres")
             password System.getenv().getOrDefault("POSTGRES_PASSWORD", "y1QYbF2BtFUC")
+            changeLogFile "src/main/resources/config/liquibase/master.xml"
+            defaultSchemaName ""
+            logLevel "info"
+            classpath "src/main/resources/"
+        }
+        h2 {
+            driver "org.h2.Driver"
+            url System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:h2:file:" + System.getenv().getOrDefault("GISKARD_HOME", "~/giskard-home") + "/database/giskard;AUTO_SERVER=TRUE")
             changeLogFile "src/main/resources/config/liquibase/master.xml"
             defaultSchemaName ""
             logLevel "info"
@@ -301,6 +310,7 @@ dependencies {
 
     implementation 'commons-codec:commons-codec:1.15'
     implementation 'com.google.protobuf:protobuf-java-util:3.21.6'
+    implementation 'com.github.blagerweij:liquibase-sessionlock:1.6.0'
 
 }
 
