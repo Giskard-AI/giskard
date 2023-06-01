@@ -218,7 +218,7 @@ class Dataset(ColumnMetadataMixin):
     @cached_property
     def _row_hashes(self):
         return pandas.Series(
-            map(lambda row: xxh3_128_hexdigest(f"({', '.join(map(lambda x: str(x), row))}".encode('utf-8')),
+            map(lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
                 self.df.values), index=self.df.index)
 
     @configured_validate_arguments
