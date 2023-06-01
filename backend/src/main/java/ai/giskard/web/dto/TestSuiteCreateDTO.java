@@ -12,6 +12,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @UIModel
+@Deprecated
 public class TestSuiteCreateDTO {
     private Long projectId;
     @UINullable
