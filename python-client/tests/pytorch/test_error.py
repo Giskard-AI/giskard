@@ -4,8 +4,9 @@ import pytest
 import torch
 import torch.nn as nn
 
-from giskard import PyTorchModel, Dataset
+from giskard import Dataset
 from giskard.core.model_validation import validate_model
+from giskard.models.pytorch import PyTorchModel
 
 
 class ManualLinearRegression(nn.Module):

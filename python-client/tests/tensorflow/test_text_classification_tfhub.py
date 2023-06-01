@@ -4,9 +4,10 @@ import tensorflow as tf
 
 from sklearn import model_selection
 
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
 
 import tests.utils
+from giskard.models.tensorflow import TensorFlowModel
 
 
 def test_text_classification_tfhub():
