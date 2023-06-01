@@ -1,7 +1,8 @@
 # 📦 Wrap your dataset
 
-The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
-column (ground truth variable), etc. This object gets passed to the Giskard model wrapper (
+To scan your model, you need to provide a dataset that can be executed by your model. This dataset can be your train, test, golden or production dataset. 
+
+The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties such as the target column (ground truth variable). This object gets passed to the Giskard model wrapper (
 See [Wrap your model](../wrap_model/index.md)) for evaluation.
 
 The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
