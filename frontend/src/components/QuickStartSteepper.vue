@@ -62,9 +62,14 @@
               <span>Manual Testing</span>
             </v-btn>
           </v-btn-toggle>
-          <p class="mt-4 mb-2">Then, run the following Python code:</p>
-          <CodeSnippet v-show="toggleTestType === 'scan'" :codeContent="scanCodeContent"></CodeSnippet>
-          <CodeSnippet v-show="toggleTestType === 'manual'" :codeContent="manualTestCodeContent"></CodeSnippet>
+          <div v-show="toggleTestType === 'scan'">
+            <p class="mt-4 mb-2">To scan your model, run the following Python code:</p>
+            <CodeSnippet :codeContent="scanCodeContent"></CodeSnippet>
+          </div>
+          <div v-show="toggleTestType === 'manual'">
+            <p class="mt-4 mb-2">To manually test your model, run the following Python code:</p>
+            <CodeSnippet :codeContent="manualTestCodeContent"></CodeSnippet>
+          </div>
         </div>
         <v-btn color="primary" @click="close">Close</v-btn>
         <v-btn class="ml-2" @click="step = 1" flat>Restart</v-btn>
