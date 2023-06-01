@@ -440,30 +440,6 @@ export const api = {
     async deleteFeedbackReply(feedbackId: number, replyId: number) {
         return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
     },
-    async createSlice(projectId: number, name: string, code: string) {
-        return apiV2.post<unknown, SliceDTO>(`/slices`, {
-            name: name,
-            projectId: projectId,
-            code: code
-        })
-    },
-    async editSlice(projectId: number, name: string, code: string, id: number) {
-        return apiV2.put<unknown, SliceDTO>(`/slices`, {
-            name: name,
-            projectId: projectId,
-            code: code,
-            id: id
-        })
-    },
-    async deleteSlice(projectId: number, sliceId: number) {
-        return apiV2.delete(`/project/${projectId}/slices/${sliceId}`);
-    },
-    async validateSlice(datasetId: number, code: string) {
-        return apiV2.post("/slices/validate", {
-            datasetId: datasetId,
-            code: code
-        });
-    },
     async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
