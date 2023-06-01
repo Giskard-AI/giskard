@@ -101,32 +101,17 @@ class Model(CloudpickleBasedModel, ABC):
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
             # if the Model class is instantiated (thus == Model) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
-            is_overriden = cls.__name__ != 'Model' and giskard_cls  # TODO: Improve this
+            is_overriden = cls.__name__ != 'Model'  # TODO: Improve this
             if is_overriden:
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.save_model = giskard_cls.save_model
                 possibly_overriden_cls.load_model = giskard_cls.load_model
-            elif giskard_cls:
+            else:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
                 logger.info("Your " + input_type + " is successfully wrapped by Giskard's '"
                             + str(giskard_cls.__name__) + "' wrapper class.")
                 possibly_overriden_cls = giskard_cls
-            else:  # possibly_overriden_cls = CloudpickleBasedModel
-                raise NotImplementedError(
-                    'We could not infer your model library. You need to define a subclass of Model where you override'
-                    'the abstract "model_predict" method. Upon upload to the Giskard server, we will try to serialise'
-                    'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
-                    '"load_model" with your own serialization methods.'
-                    '\nWe currently only support callable functions OR model objects from:'
-                    '\n- sklearn'
-                    '\n- catboost'
-                    '\n- pytorch'
-                    '\n- tensorflow'
-                    '\n- huggingface'
-                    '\nWe recommend that you follow our documentation page: '
-                    'https://giskard.readthedocs.io/en/latest/getting-started/scan'
-                )
 
             methods = dict(possibly_overriden_cls.__dict__)
             output_cls = type(possibly_overriden_cls.__name__, (giskard_cls,), methods)
