@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  pull_request:
+  pull_request_target:
     branches:
       - main
   workflow_dispatch:
@@ -20,6 +20,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3.1.0
+#        with:
+#          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -87,7 +89,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew build :python-client:package jacocoTestReport sonarqube --info --parallel
+        run: ./gradlew build :python-client:package jacocoTestReport sonar --info --parallel
 
       - name: Build and analyze without sonar
         if: ${{ github.actor == 'dependabot[bot]' }}
