@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +24,10 @@ public class TestFunctionController {
 
     @GetMapping("/tests")
     @Transactional(readOnly = true)
-    public List<TestFunctionDTO> findAll() {
-        return testFunctionService.findAll();
+    public List<TestFunctionDTO> findAll(@RequestParam long projectId) {
+        return testFunctionService.findAll(projectId);
     }
+
     @GetMapping("/tests/{testUuid}")
     @Transactional(readOnly = true)
     public TestFunctionDTO getTestFunction(@PathVariable("testUuid") @NotNull UUID testUuid) {
@@ -37,12 +39,6 @@ public class TestFunctionController {
     public TestFunctionDTO updateTestFunction(@PathVariable("testUuid") @NotNull UUID testUuid,
                                               @Valid @RequestBody TestFunctionDTO testFunction) {
         return testFunctionService.save(testFunction);
-    }
-
-    @PostMapping("/tests/registry")
-    @Transactional
-    public void getTestFunction(@Valid @RequestBody Collection<TestFunctionDTO> testFunctions) {
-        testFunctionService.saveAll(testFunctions);
     }
 
 }

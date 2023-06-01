@@ -77,6 +77,7 @@ public class MLWorkerTunnelService {
             @Subscribe
             public void onInnerServerStarted(Optional<InnerServerStartResponse> event) {
                 innerServerDetails = event;
+                // TODO: Collect if backend is not empty
             }
         });
         ChannelFuture f = b.bind().addListener(future -> {
