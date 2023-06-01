@@ -1,3 +1,4 @@
+import itertools
 from typing import Union
 from pathlib import Path
 import mlflow
@@ -6,6 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import collections
+from collections.abc import Iterator
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
@@ -94,9 +96,9 @@ class PyTorchModel(MLFlowBasedModel):
                                   path=local_path,
                                   mlflow_model=mlflow_meta)
 
-    def _get_predictions(self, data):
+    def _get_predictions(self, data: Iterator):
         with torch.no_grad():
-            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in _map_to_tuple(data)]
+            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in _map_to_tuples(data)]
 
     def clf_predict(self, data):
         self.clf.to(self.device)
@@ -166,5 +168,11 @@ def _get_dataset_from_dataloader(dl: DataLoader):
     )
 
 
-def _map_to_tuple(data):
-    return map(lambda x: x if isinstance(x, tuple) else (x,), data)
+def _map_to_tuples(data: Iterator):
+    item = next(data)
+    data = itertools.chain([item], data)
+
+    if isinstance(item, tuple):  # nothing to do
+        return data
+
+    return map(lambda x: (x,), data)
