@@ -43,6 +43,5 @@ const availableColumns = computed(() => {
 <style scoped>
 .slice-function-selector {
     min-width: 200px;
-    /* flex-grow: 1; */
 }
 </style>
