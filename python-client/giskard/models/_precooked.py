@@ -44,15 +44,13 @@ class PrecookedModel(BaseModel):
         prediction = np.asarray(self._predictions.prediction)[idx]
         raw_prediction = np.asarray(self._predictions.raw_prediction)[idx]
 
-        if hasattr(self._predictions, "probabilities"):
-            probabilities = np.asarray(self._predictions.probabilities)[idx]
-        else:
-            probabilities = None
+        probabilities = getattr(self._predictions, "probabilities", None)
+        if probabilities is not None:
+            probabilities = np.asarray(probabilities)[idx]
 
-        if hasattr(self._predictions, "all_predictions"):
-            all_predictions = np.asarray(self._predictions.all_predictions)[idx]
-        else:
-            all_predictions = None
+        all_predictions = getattr(self._predictions, "all_predictions", None)
+        if all_predictions is not None:
+            all_predictions = np.asarray(all_predictions)[idx]
 
         return ModelPredictionResults(
             raw=raw,
