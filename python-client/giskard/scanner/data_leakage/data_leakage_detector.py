@@ -21,8 +21,15 @@ class DataLeakageDetector:
         # Predict on single samples
         sample_idx = dataset.df.sample(min(len(dataset), 100), random_state=23).index.values
         fail_samples = pd.DataFrame(columns=["Whole-dataset prediction", "Single-sample prediction"])
+
+        def slice_single_sample(idx):
+            def slice_fn(df):
+                return df.loc[[idx]]
+
+            return slice_fn
+
         for idx, expected_pred in zip(sample_idx, ds_predictions.loc[sample_idx].values):
-            row_dataset = dataset.slice(lambda df: df.loc[[idx]], row_level=False)
+            row_dataset = dataset.slice(slice_single_sample(idx), row_level=False)
             row_pred = model.predict(row_dataset).raw[0]
 
             if not np.isclose(row_pred, expected_pred).all():
