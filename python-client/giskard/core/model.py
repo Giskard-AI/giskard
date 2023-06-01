@@ -5,6 +5,7 @@ import tempfile
 import uuid
 from pathlib import Path
 from typing import Optional, Any, Union
+import importlib
 
 import cloudpickle
 import mlflow.sklearn
@@ -45,7 +46,9 @@ class Model:
                  data_preparation_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
-                 classification_labels=None) -> None:
+                 classification_labels=None,
+                 loader_module: str = 'giskard.core.model',
+                 loader_class: str = 'Model') -> None:
         self.clf = clf
         self.data_preparation_function = data_preparation_function
 
@@ -62,7 +65,9 @@ class Model:
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=list(classification_labels) if classification_labels else None,
-            classification_threshold=classification_threshold
+            classification_threshold=classification_threshold,
+            loader_module=loader_module, # self.__name__
+            loader_class=loader_class
         )
 
     @property
@@ -79,7 +84,7 @@ class Model:
         validate_model(model=self, validate_ds=validate_ds)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             info = self.save_to_local_dir(f)
-            self.save_data_preparation_funciton(f)
+            self.save_data_preparation_function(f)
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
                 client.save_model_meta(project_key,
@@ -89,7 +94,7 @@ class Model:
                                        get_size(f))
         return info.model_uuid
 
-    def save_data_preparation_funciton(self, path):
+    def save_data_preparation_function(self, path):
         if self.data_preparation_function:
             with open(Path(path) / "giskard-data-prep.pkl", 'wb') as f:
                 cloudpickle.dump(self.data_preparation_function, f, protocol=pickle.DEFAULT_PROTOCOL)
@@ -119,6 +124,8 @@ class Model:
             yaml.dump(
                 {
                     "language_version": info.flavors['python_function']['python_version'],
+                    "loader_module": self.meta.loader_module,
+                    "loader_class": self.meta.loader_class,
                     "language": "PYTHON",
                     "model_type": self.meta.model_type.name.upper(),
                     "threshold": self.meta.classification_threshold,
@@ -153,13 +160,30 @@ class Model:
                     feature_names=saved_meta['feature_names'],
                     classification_labels=saved_meta['classification_labels'],
                     classification_threshold=saved_meta['threshold'],
+                    loader_module=saved_meta['loader_module'],
+                    loader_class=saved_meta['loader_class']
                 )
+
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta = client.load_model_meta(project_key, model_id)
-        return cls(
-            clf=cls.read_model_from_local_dir(local_dir),
-            data_preparation_function=cls.read_data_preparation_function_from_artifact(local_dir),
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
+            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+            res = client.load_model_meta(project_key, model_id)
+            meta = ModelMeta(
+                name=res['name'],
+                feature_names=res['featureNames'],
+                model_type=SupportedModelTypes[res['modelType']],
+                classification_labels=res['classificationLabels'],
+                classification_threshold=res['threshold'],
+                loader_module=saved_meta['loader_module'],
+                loader_class=saved_meta['loader_class']
+            )
+
+        loader_class = getattr(importlib.import_module(meta.loader_module), meta.loader_class)
+        return loader_class(
+            clf=loader_class.read_model_from_local_dir(local_dir),
+            data_preparation_function=loader_class.read_data_preparation_function_from_artifact(local_dir),
             **meta.__dict__
         )
 

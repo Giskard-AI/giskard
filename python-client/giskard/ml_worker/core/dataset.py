@@ -61,6 +61,7 @@ class Dataset:
     @staticmethod
     def cast_column_to_types(df, column_types):
         current_types = df.dtypes.apply(lambda x: x.name).to_dict()
+        # TODO: Make sure that this message doesn't appear in the notebook upon dataset.save()
         logger.info(f"Casting dataframe columns from {current_types} to {column_types}")
         if column_types:
             try:
