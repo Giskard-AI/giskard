@@ -1,51 +1,180 @@
 <template>
-    <v-container fluid class="vc" v-if="testSuites.length > 0">
-        <div v-if="testSuitesStore.currentTestSuiteId === null">
-            <div class="d-flex flex-row-reverse pb-4">
-                <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
-                    <v-icon left>add</v-icon>
-                    New test suite
-                </v-btn>
-            </div>
-            <v-row>
-                <v-card elevation="2" @click.stop="openTestSuite(suite.id)" class="ma-2" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
-                    <v-card-title>{{ suite.name }}</v-card-title>
-                    <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
-                    <v-card-text>{{ suite.projectKey }}</v-card-text>
-                </v-card>
-            </v-row>
-        </div>
-        <div v-else>
-            <router-view />
-        </div>
+    <div class="vertical-container">
+        <v-container fluid class="vc" v-if="testSuites.length > 0">
+            <div v-if="testSuitesStore.currentTestSuiteId === null">
+                <v-row>
+                    <v-col cols="4">
+                        <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field>
+                    </v-col>
+                    <v-col cols="8">
+                        <div class="d-flex justify-end">
+                            <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
+                                <v-icon left>add</v-icon>
+                                New test suite
+                            </v-btn>
+                        </div>
+                    </v-col>
+                </v-row>
 
-    </v-container>
-    <v-container v-else class="vc mt-6 fill-height">
-        <v-alert class="text-center">
-            <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
-        </v-alert>
-        <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
-            <v-icon>add</v-icon>
-            Create a new test suite
-        </v-btn>
-        <div class="d-flex justify-center mb-6">
-            <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
-        </div>
-    </v-container>
+                <v-expansion-panels>
+                    <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2">
+                        <v-col cols="3">Suite name</v-col>
+                        <v-col cols="2">Last execution</v-col>
+                        <v-col cols="2">Tests info</v-col>
+                        <v-col cols="2">Status</v-col>
+                        <v-col cols="2">Total executions</v-col>
+                        <v-col cols="1"></v-col>
+                    </v-row>
+
+                    <v-expansion-panel v-for="(suite, index) in testSuites" :key="suite.id" @click.stop="openTestSuite(suite.id)" class="expansion-panel">
+                        <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
+                            <v-row class="px-2 py-1 align-center">
+                                <v-col cols="3" class="font-weight-bold">
+                                    <InlineEditText :text="suite.name" @save="(name) => renameSuite(suite.id, name)">
+                                    </InlineEditText>
+                                </v-col>
+                                <v-col cols="2">
+                                    <span v-if="latestExecutions[index]?.executionDate">{{ latestExecutions[index]?.executionDate | date }}</span>
+                                    <span v-else>Never</span>
+                                </v-col>
+                                <v-col cols="2">
+                                    <div class="d-flex flex-column">
+                                        <span class="font-weight-bold">{{ suite.tests.length }} tests in total</span>
+                                        <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
+                                            <span class="passed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === true).length }} tests passed</span>
+                                            <span class="failed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === false).length }} tests failed</span>
+                                        </div>
+                                    </div>
+                                </v-col>
+                                <v-col cols="2">
+                                    <div v-if="latestExecutions[index]?.result === 'PASSED'" class="passed-tests font-weight-bold d-flex">
+                                        <v-icon small class="mr-1 success-icon">done</v-icon>
+                                        <span>PASSING</span>
+                                    </div>
+                                    <div v-else-if="latestExecutions[index]?.result === 'FAILED'" class="failed-tests font-weight-bold d-flex">
+                                        <v-icon small class="mr-1 failed-icon">close</v-icon>
+                                        <span>FAILING</span>
+                                    </div>
+                                    <span v-else class="font-weight-bold">NOT EXECUTED</span>
+                                </v-col>
+                                <v-col cols="2">
+                                    <!-- total number of executions -->
+                                    <span v-if="testSuitesStore.testSuitesComplete[index].executions.length">{{ testSuitesStore.testSuitesComplete[index].executions.length }} execution{{ testSuitesStore.testSuitesComplete[index].executions.length > 1 ? 's' : '' }}</span>
+                                    <span v-else>None</span>
+                                </v-col>
+                                <v-col cols="1">
+                                    <v-card-actions>
+                                        <v-btn icon @click.stop="deleteTestSuite(suite)" @click.stop.prevent>
+                                            <v-icon color="accent">delete</v-icon>
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-col>
+                            </v-row>
+                        </v-expansion-panel-header>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+
+                <!-- <v-row>
+                    <v-card elevation="2" @click.stop="openTestSuite(suite.id)" class="ma-2 grey lighten-5" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
+                        <v-card-title>
+                            <span>{{ suite.name }}</span>
+                            <v-spacer></v-spacer>
+                            <v-menu right bottom offset-y rounded=0>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+                                        <v-icon>mdi-dots-horizontal</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-list dense tile>
+                                    <v-list-item link>
+                                        <v-list-item-title>
+                                            <v-icon dense left>mdi-tune</v-icon>
+                                            Properties
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-card-title>
+                        <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
+                        <v-card-text>{{ suite.projectKey }}</v-card-text>
+                    </v-card>
+                </v-row> -->
+            </div>
+
+
+
+
+            <!-- <div v-if="testSuitesStore.currentTestSuiteId === null">
+                <v-row>
+                    <v-card elevation="2" @click.stop="openTestSuite(suite.id)" class="ma-2 grey lighten-5" style="width: 300px" v-for="suite in testSuites" :key="suite.id">
+                        <v-card-title>
+                            <span>{{ suite.name }}</span>
+                            <v-spacer></v-spacer>
+                            <v-menu right bottom offset-y rounded=0>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+                                        <v-icon>mdi-dots-horizontal</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-list dense tile>
+                                    <v-list-item link>
+                                        <v-list-item-title>
+                                            <v-icon dense left>mdi-tune</v-icon>
+                                            Properties
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-card-title>
+                        <v-card-subtitle>Tests: {{ suite.tests.length }}</v-card-subtitle>
+                        <v-card-text>{{ suite.projectKey }}</v-card-text>
+                    </v-card>
+                </v-row>
+            </div> -->
+            <div v-else>
+                <router-view />
+            </div>
+
+        </v-container>
+        <v-container v-else class="vc mt-6 fill-height">
+            <v-alert class="text-center">
+                <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
+            </v-alert>
+            <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
+                <v-icon>add</v-icon>
+                Create a new test suite
+            </v-btn>
+            <div class="d-flex justify-center mb-6">
+                <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+            </div>
+        </v-container>
+    </div>
 </template>
 
 <script lang="ts" setup>
 import { api } from "@/api";
-import { onActivated } from "vue";
+import { computed, onActivated, ref } from "vue";
 import router from '@/router';
 import { useTestSuitesStore } from "@/stores/test-suites";
 import { storeToRefs } from "pinia";
 import { useMainStore } from "@/stores/main";
 import { TYPE } from "vue-toastification";
+import InlineEditText from '@/components/InlineEditText.vue';
+import { $vfm } from "vue-final-modal";
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+
+
 
 const props = defineProps<{
     projectId: number
 }>();
+
+const searchSession = ref("");
+
+const latestExecutions = computed(() => {
+    const executions = testSuitesStore.testSuitesComplete.map(suite => suite.executions);
+    return executions.map(executionsSuite => executionsSuite.length === 0 ? null : executionsSuite[0]);
+});
 
 
 const testSuitesStore = useTestSuitesStore();
@@ -92,8 +221,32 @@ onActivated(async () => {
         await redirectToTestSuite(props.projectId.toString(), testSuitesStore.currentTestSuiteId.toString());
     } else {
         await testSuitesStore.loadTestSuites(props.projectId);
+        await testSuitesStore.loadTestSuiteComplete(props.projectId);
     }
 })
+
+function renameSuite(suiteId: number, name: string) {
+    // testSuitesStore.renameTestSuite(suiteId, name);
+    return;
+}
+
+function deleteTestSuite(suite: any) {
+    $vfm.show({
+        component: ConfirmModal,
+        bind: {
+            title: 'Delete test suite',
+            text: `Are you sure that you want to delete the test suite '${suite.name}'?`,
+            isWarning: true
+        },
+        on: {
+            async confirm(close) {
+                await api.deleteSuite(suite.projectKey!, suite.id!);
+                await testSuitesStore.reload();
+                close();
+            }
+        }
+    });
+}
 
 </script>
 
@@ -101,5 +254,27 @@ onActivated(async () => {
 .test-suite-logo {
     width: min(17.5vw, 150px);
     margin-top: 2rem;
+}
+
+.expansion-panel {
+    margin-top: 10px !important;
+}
+
+.success-icon {
+    color: #00C853;
+}
+
+.failed-icon {
+    color: #D50000;
+}
+
+.passed-tests {
+    margin-top: 0.25rem;
+    color: #00C853;
+}
+
+.failed-tests {
+    margin-top: 0.25rem;
+    color: #D50000;
 }
 </style>
