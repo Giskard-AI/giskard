@@ -307,7 +307,7 @@ class BaseModel(ABC):
         ...
 
     def _predict_from_cache(self, dataset: Dataset):
-        cached_predictions = self._cache.read_from_cache(dataset._row_hashes)
+        cached_predictions = self._cache.read_from_cache(dataset.row_hashes)
         missing = cached_predictions.isna()
 
         missing_slice = dataset.slice(lambda x: dataset.df[missing], row_level=False)
@@ -317,7 +317,7 @@ class BaseModel(ABC):
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
-            self._cache.set_cache(dataset._row_hashes[missing], raw_prediction)
+            self._cache.set_cache(dataset.row_hashes[missing], raw_prediction)
             cached_predictions.loc[missing] = raw_prediction.tolist()
 
         # TODO: check if there is a better solution
