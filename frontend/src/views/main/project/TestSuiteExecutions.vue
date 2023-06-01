@@ -57,16 +57,16 @@
       <v-col v-if="selectedExecution">
         <div class="pl-4">
           <p class="text-h6">Global inputs</p>
-          <TestInputList :models="props.models" :inputs="selectedExecution.inputs"
-                         :input-types="props.inputTypes" :datasets="props.datasets"/>
+          <TestInputList :models="models" :inputs="selectedExecution.inputs"
+                         :input-types="inputs" :datasets="datasets"/>
           <div v-if="selectedExecution.result === TestResult.ERROR">
             <p class="pt-4 text-h6">Error</p>
             <p>{{ selectedExecution.message }}</p>
           </div>
           <div v-else>
             <p class="pt-4 text-h6">Results</p>
-            <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"
-                                       :models="props.models" :datasets="props.datasets"/>
+            <TestSuiteExecutionResults :execution="selectedExecution" :registry="registry"
+                                       :models="models" :datasets="datasets"/>
           </div>
 
         </div>
@@ -77,16 +77,8 @@
 
 <script setup lang="ts">
 
-import {computed, ref, toRef} from 'vue';
-import {
-  DatasetDTO,
-  JobDTO,
-  JobState,
-  ModelDTO,
-  TestCatalogDTO,
-  TestResult,
-  TestSuiteExecutionDTO
-} from '@/generated-sources';
+import {computed, ref} from 'vue';
+import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
@@ -94,19 +86,11 @@ import moment from 'moment';
 import {Colors} from '@/utils/colors';
 import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 import {Comparators} from '@/utils/comparators';
-
-const props = defineProps<{
-  projectId: number,
-  suiteId: number,
-  registry: TestCatalogDTO,
-  models: { [key: string]: ModelDTO },
-  datasets: { [key: string]: DatasetDTO },
-  inputTypes: { [name: string]: string },
-  executions?: TestSuiteExecutionDTO[],
-  trackedExecutions: { [uuid: string]: JobDTO}
-}>();
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
+const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -174,7 +158,7 @@ function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
 }
 
-useRouterParamSynchronization('test-suite-new-execution', 'executionId', toRef(props, 'executions'), selectedExecution, 'id');
+useRouterParamSynchronization('test-suite-new-execution', 'executionId', executions, selectedExecution, 'id');
 
 type ExecutionTabItem = {
   date: any,
@@ -185,12 +169,12 @@ type ExecutionTabItem = {
 }
 
 const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
-  if (props.executions === undefined) {
+  if (executions.value === undefined) {
     return undefined;
   }
 
-  return  ([] as ExecutionTabItem[])
-      .concat(props.executions
+  return ([] as ExecutionTabItem[])
+      .concat(executions.value
           .map(e => ({
             date: e.executionDate,
             disabled: false,
@@ -198,7 +182,7 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
             color: executionStatusColor(e),
             execution: e
           })))
-      .concat(Object.values(props.trackedExecutions)
+      .concat(Object.values(trackedJobs.value)
           .map(j => ({
             date: j.scheduledDate,
             disabled: true,

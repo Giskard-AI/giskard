@@ -30,10 +30,10 @@
                     {{ props.inputs[a.name].value }}
                   </span>
                   <span v-else-if="a.name in props.inputs && a.type === 'Model'">
-                    {{ models[props.inputs[a.name].value].name }}
+                    {{ models[props.inputs[a.name].value].name ?? models[props.inputs[a.name].value].id }}
                   </span>
                   <span v-else-if="a.name in props.inputs && a.type === 'Dataset'">
-                    {{ datasets[props.inputs[a.name].value].name }}
+                    {{ datasets[props.inputs[a.name].value].name ?? datasets[props.inputs[a.name].value].id }}
                   </span>
                   <span v-else-if="a && a.name in props.inputs">{{ props.inputs[a.name].value }}</span>
                 </v-list-item-avatar>
@@ -82,12 +82,10 @@ const props = defineProps<{
   executions?: SuiteTestExecutionDTO[]
 }>();
 
-const {suiteId, reload} = useTestSuiteStore();
-const {projectId, models, datasets} = storeToRefs(useTestSuiteStore());
+const {reload} = useTestSuiteStore();
+const {projectId, models, datasets, suiteId} = storeToRefs(useTestSuiteStore());
 
 const editedInputs = ref<{ [input: string]: string } | null>(null);
-
-const emit = defineEmits(['updateTestSuite']);
 
 const sortedArguments = computed(() => {
   if (!props.test) {
@@ -112,7 +110,7 @@ async function saveEditedInputs() {
     return;
   }
 
-  await api.updateTestInputs(projectId!, suiteId!, props.test.id, editedInputs.value)
+  await api.updateTestInputs(projectId.value!, suiteId.value!, props.test.id, editedInputs.value)
   editedInputs.value = null;
 
   await reload();

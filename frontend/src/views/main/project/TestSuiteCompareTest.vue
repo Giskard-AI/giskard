@@ -2,7 +2,7 @@
   <div>
     <p class="text-h4">{{ registry.tests[route.params.testId].name }}</p>
     <v-chart
-        v-if="props.executions"
+        v-if="executions"
         class="chart"
         :option="graphOptions"
         autoresize
@@ -12,7 +12,7 @@
 
 <script lang="ts" setup>
 
-import {SuiteTestExecutionDTO, TestCatalogDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed} from 'vue';
 import {useRoute} from 'vue-router/composables';
 import {use} from 'echarts/core';
@@ -20,13 +20,12 @@ import {LineChart} from 'echarts/charts';
 import {EChartsOption} from 'echarts';
 import {Colors} from '@/utils/colors';
 import moment from 'moment';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
 
 use([LineChart]);
 
-const props = defineProps<{
-  executions?: TestSuiteExecutionDTO[],
-  registry: TestCatalogDTO,
-}>();
+const {executions, registry} = storeToRefs(useTestSuiteStore());
 
 const route = useRoute();
 
@@ -36,11 +35,11 @@ type ComparedTestExecution = {
 };
 
 const graphOptions = computed(() => {
-  if (!props.executions) {
+  if (!executions.value) {
     return null;
   }
 
-  const results: ComparedTestExecution[] = [...props.executions]
+  const results: ComparedTestExecution[] = [...executions.value]
       .reverse()
       .map(execution => ({
         execution,

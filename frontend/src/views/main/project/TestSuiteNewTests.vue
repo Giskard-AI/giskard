@@ -31,15 +31,20 @@
 <script lang="ts" setup>
 
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
 import {SuiteTestDTO} from '@/generated-sources';
 import TestSuiteTestDetails from '@/views/main/project/TestSuiteTestDetails.vue';
 import {storeToRefs} from 'pinia';
 
 
-const {testSuiteResults} = useTestSuiteStore();
-const {registry, suite} = storeToRefs(useTestSuiteStore());
+const {registry, suite, testSuiteResults} = storeToRefs(useTestSuiteStore());
 
 const selectedTest = ref<SuiteTestDTO | null>(null);
+
+watch(() => suite.value, () => {
+  if (selectedTest.value !== null && suite.value !== null) {
+    selectedTest.value = suite.value.tests.find(test => test.testId === selectedTest.value!.testId) ?? null;
+  }
+})
 
 </script>
