@@ -14,5 +14,5 @@ public class GenerateTestSuiteDTO {
     private List<@NotNull GenerateTestSuiteInputDTO> inputs;
 
     @NotNull
-    private List<@NotNull TestInputDTO> sharedInputs;
+    private List<@NotNull FunctionInputDTO> sharedInputs;
 }

@@ -53,7 +53,7 @@ public class TestSuiteExecutionService {
             }
 
             Map<String, String> suiteInputsAndShared = new HashMap<>(execution.getInputs());
-            testSuite.getTestInputs().stream()
+            testSuite.getFunctionInputs().stream()
                 .filter(i -> Strings.isNotBlank(i.getValue()))
                 .forEach(i -> suiteInputsAndShared.put(i.getName(), i.getValue()));
 

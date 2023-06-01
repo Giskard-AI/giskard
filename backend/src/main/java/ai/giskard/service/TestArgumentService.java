@@ -2,15 +2,17 @@ package ai.giskard.service;
 
 import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.TestFunction;
+import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
-import ai.giskard.domain.ml.TestInput;
 import ai.giskard.worker.ArtifactRef;
+import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
-import ai.giskard.worker.TestArgument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,7 @@ public class TestArgumentService {
             .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
 
 
-        for (TestInput input : test.getTestInputs()) {
+        for (FunctionInput input : test.getFunctionInputs()) {
             builder.addArguments(buildTestArgument(argumentTypes, input.getName(),
                 input.isAlias() ? globalArguments.get(input.getValue()) : input.getValue(), projectKey));
         }
@@ -37,15 +39,17 @@ public class TestArgumentService {
         return builder.build();
     }
 
-    public TestArgument buildTestArgument(Map<String, String> testInputTypes,
+    public FuncArgument buildTestArgument(Map<String, String> testInputTypes,
                                           String inputName,
                                           String inputValue,
                                           String projectKey) {
-        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName));
+        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName), Collections.emptyList());
     }
 
-    public TestArgument buildTestArgument(String inputName, String inputValue, String projectKey, String inputType) {
-        TestArgument.Builder argumentBuilder = TestArgument.newBuilder()
+
+    public FuncArgument buildTestArgument(String inputName, String inputValue, String projectKey,
+                                          String inputType, List<FunctionInput> params) {
+        FuncArgument.Builder argumentBuilder = FuncArgument.newBuilder()
             .setName(inputName);
 
         switch (inputType) {
@@ -61,6 +65,9 @@ public class TestArgumentService {
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
         }
+
+        params.forEach(child -> argumentBuilder.addArgs(
+            buildTestArgument(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams())));
 
         return argumentBuilder.build();
     }

@@ -120,7 +120,7 @@ public class TestSuiteController {
     public TestSuiteDTO updateTestInputs(@PathVariable("projectId") long projectId,
                                          @PathVariable("suiteId") long suiteId,
                                          @PathVariable("testId") long testId,
-                                         @Valid @RequestBody List<@Valid TestInputDTO> inputs) {
+                                         @Valid @RequestBody List<@Valid FunctionInputDTO> inputs) {
         return testSuiteService.updateTestInputs(suiteId, testId, inputs);
     }
 
