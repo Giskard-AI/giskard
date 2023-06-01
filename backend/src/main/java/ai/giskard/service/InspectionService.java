@@ -5,6 +5,8 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
+import ai.giskard.utils.FileUtils;
+import ai.giskard.web.dto.InspectionCreateDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -19,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class InspectionService {
     private final InspectionRepository inspectionRepository;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
+    private final ModelService modelService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
@@ -125,12 +129,14 @@ public class InspectionService {
 
     public Path getPredictionsPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("predictions.csv");
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+            .resolve(FileUtils.getFileName("predictions", "csv", inspection.isSample()));
     }
 
     public Path getCalculatedPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("calculated.csv");
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+            .resolve(FileUtils.getFileName("calculated", "csv", inspection.isSample()));
     }
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
@@ -230,9 +236,15 @@ public class InspectionService {
         inspectionRepository.deleteById(inspectionId);
     }
 
-    public Inspection updateInspectionName(long inspectionId, String name) {
+    public Inspection updateInspection(long inspectionId, InspectionCreateDTO update) {
         Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
-        inspection.setName(name);
+        inspection.setName(update.getName());
+        inspection.setSample(update.isSample());
+
+        if (!Files.exists(getPredictionsPath(inspection))) {
+            modelService.predictSerializedDataset(inspection.getModel(), inspection.getDataset(), inspectionId, inspection.isSample());
+        }
+
         return inspectionRepository.save(inspection);
     }
 }

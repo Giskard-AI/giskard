@@ -31,7 +31,7 @@ class PerformanceIssueInfo:
 class PerformanceIssue(Issue):
     """Performance Issue"""
 
-    group = "Performance bias"
+    group = "Performance"
 
     info: PerformanceIssueInfo
 
@@ -73,7 +73,8 @@ class PerformanceIssue(Issue):
     @lru_cache
     def examples(self, n=3):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
-        predictions = self.model.predict(ex_dataset).prediction
+        model_pred = self.model.predict(ex_dataset)
+        predictions = model_pred.prediction
         bad_pred_mask = ex_dataset.df[self.dataset.target] != predictions
         examples = ex_dataset.df[bad_pred_mask].copy()
 
@@ -97,7 +98,13 @@ class PerformanceIssue(Issue):
                     )
 
         # Add the model prediction
-        examples[f"Predicted `{self.dataset.target}`"] = predictions[bad_pred_mask]
+        if model_pred.probabilities is not None:
+            pred_with_p = zip(predictions[bad_pred_mask], model_pred.probabilities[bad_pred_mask])
+            pred_examples = [f"{label} (p = {p:.2f})" for label, p in pred_with_p]
+        else:
+            pred_examples = predictions[bad_pred_mask]
+
+        examples[f"Predicted `{self.dataset.target}`"] = pred_examples
 
         n = min(len(examples), n)
         if n > 0:
@@ -112,7 +119,7 @@ class PerformanceIssue(Issue):
 
         return self.info.metric_rel_delta
 
-    def generate_tests(self) -> list:
+    def generate_tests(self, with_names=False) -> list:
         test_fn = _metric_to_test_object(self.info.metric)
 
         if test_fn is None:
@@ -122,7 +129,13 @@ class PerformanceIssue(Issue):
         delta = (self.info.metric.greater_is_better * 2 - 1) * self.info.threshold * self.info.metric_value_reference
         abs_threshold = self.info.metric_value_reference - delta
 
-        return [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+        tests = [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+
+        if with_names:
+            names = [f"{self.info.metric.name} on data slice “{self.info.slice_fn}”"]
+            return list(zip(tests, names))
+
+        return tests
 
 
 _metric_test_mapping = {
