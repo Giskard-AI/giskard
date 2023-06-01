@@ -34,7 +34,6 @@ def infer_giskard_cls(model: Any):
                     return giskard_cls
             except ImportError:
                 pass
-
     return None
 
 
