@@ -1,4 +1,5 @@
 import mlflow
+from typing import Union
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
@@ -6,16 +7,15 @@ from giskard.core.model import MLFlowBasedModel
 
 # TODO: add model_postprocessing_function to SKLearnModel
 class SKLearnModel(MLFlowBasedModel):
-    def __init__(
-        self,
-        clf,
-        model_type: SupportedModelTypes,
-        name: str = None,
-        data_preprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-    ) -> None:
+    def __init__(self,
+                 clf,
+                 model_type: Union[SupportedModelTypes, str],
+                 name: str = None,
+                 data_preprocessing_function=None,
+                 model_postprocessing_function=None,
+                 feature_names=None,
+                 classification_threshold=0.5,
+                 classification_labels=None) -> None:
 
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))
@@ -27,6 +27,7 @@ class SKLearnModel(MLFlowBasedModel):
             model_type=model_type,
             name=name,
             data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
