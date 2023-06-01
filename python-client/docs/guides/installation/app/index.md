@@ -1,21 +1,67 @@
-# 🔧 Install Giskard's docker images
+# Run the Giskard Server
 
-In order to install the Giskard server, Execute the following command in your terminal:
+{% hint style="success" %}
+**Cloud installation:** To install Giskard in the **Cloud**, please go to the [**AWS**](installation-in-aws.md), [**GCP**](installation-in-gcp.md), and [**Azure**](installation-in-azure.md) installation pages&#x20;
+{% endhint %}
+
+## Requirements
+
+To install Giskard, you need a **Linux** or **macOS** machine or **WSL2 in Windows** with:
+
+* Giskard uses 2 TCP ports: `19000` and `40051`. If you don't use Giskard locally (installation in the cloud for instance), **make sure that these two ports are open** on the machine where Giskard is installed
+*   `docker (`[`download`](https://docs.docker.com/engine/install/debian/)`).`For an easy installation of Docker you can execute:&#x20;
+
+    ```bash
+     sudo curl -fsSL https://get.docker.com -o get-docker.sh
+     sudo sh get-docker.sh
+    ```
+
+## Run the Giskard server
+In order to start the Giskard server, execute the following command in your terminal:
 ```sh
 giskard server start --version 2.0.0
 ```
-To see the available commands, you can execute:
+
+You'll then be able to open Giskard at [http://localhost:19000/](http://localhost:19000/)
+
+{% hint style="warning" %}
+* Make sure to run Docker before starting the Giskard server
+* To see the available commands, you can execute:
 ```sh
 giskard server --help  
 ```
-For the full documentation, go to <project:/cli/index.rst>.
+{% endhint %}
 
-## 3. Connect the Giskard ML worker
-In order to connect the ML worker, Execute the following command in your terminal:
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload-your-artefacts](../upload-your-model/ "mention") tutorial.
+
+## Connect the Giskard ML worker
+Giskard executes your model directly in your Python environment through an ML worker. To connect the ML worker, execute the following command in your terminal within the Python environment that contains all the dependencies of your model:
 ```sh
 giskard worker start -u http://localhost:19000/
 ```
 
 
-- Install in AWS
-- Install in GCP
+## Troubleshooting[​]()
+
+<details>
+
+<summary>How can I connect to my local Giskard instance from Google Colab/other remote notebook or code environment?</summary>
+
+We provide a [ngrok](https://ngrok.com/) configuration file [here](https://github.com/Giskard-AI/giskard/blob/main/scripts/ngrok.yml) which will automatically expose the required ports. You can run it using `ngrok start --config ngrok.yml --all --authtoken YOUR_AUTH_TOKEN`
+
+1. Download the configuration file on the device hosting the Giskard instance
+2. In that folder, run the command `ngrok start --config ngrok.yml --all --authtoken YOUR_AUTH_TOKEN`
+3.  You should see an output similar to this: \
+
+
+    <figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p>Sample "ngrok start" output</p></figcaption></figure>
+4. Start your ML Worker with:\
+   `giskard worker start -h X.tcp.xx.ngrok.io -p XXXXX` replacing with the URL and port from your console.
+5. Create your GiskardClient with your address like this:\
+   `GiskardClient('https://xxxx-xx-xx-xx-xx.xx.ngrok.io')`
+
+</details>
+
+#### My issue isn't listed here
+
+If you encounter any other issues, join our [**Discord**](https://discord.gg/fkv7CAr3FE) on our #support channel. Our community will help!&#x20;
