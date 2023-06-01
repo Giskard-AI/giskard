@@ -487,7 +487,6 @@ export const api = {
         return apiV2.post<unknown, TestExecutionResultDTO>(`/testing/tests/run-test`, {projectId, testId, inputs});
     },
 
-    },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
             headers: {
