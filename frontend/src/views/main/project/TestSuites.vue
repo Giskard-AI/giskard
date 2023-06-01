@@ -10,7 +10,7 @@
     </div>
     <v-row>
       <v-card elevation="2"
-              :to="{name: 'test-suite', params: {suiteId: suite.id}}"
+              :to="{name: 'test-suite-overview', params: {suiteId: suite.id}}"
               class="ma-2"
               style="width: 300px"
               v-for="suite in suites">
