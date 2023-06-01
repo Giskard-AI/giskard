@@ -13,8 +13,8 @@ from sklearn.metrics import (
 )
 
 from giskard import test
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 
 
@@ -28,15 +28,15 @@ def _get_rmse(y_actual, y_predicted):
 
 
 def _test_classification_score(
-        score_fn, gsk_dataset: GiskardDataset, model: GiskardModel, threshold: float = 1.0
+        score_fn, gsk_dataset: Dataset, model: Model, threshold: float = 1.0
 ):
     _verify_target_availability(gsk_dataset)
-    is_binary_classification = len(model.classification_labels) == 2
+    is_binary_classification = len(model.meta.classification_labels) == 2
     gsk_dataset.df.reset_index(drop=True, inplace=True)
     actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
-    prediction = model.run_predict(gsk_dataset).prediction
+    prediction = model.predict(gsk_dataset).prediction
     if is_binary_classification:
-        metric = score_fn(actual_target, prediction, pos_label=model.classification_labels[1])
+        metric = score_fn(actual_target, prediction, pos_label=model.meta.classification_labels[1])
     else:
         metric = score_fn(actual_target, prediction, average="macro")
 
@@ -45,10 +45,10 @@ def _test_classification_score(
     )
 
 
-def _test_accuracy_score(gsk_dataset: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 1.0):
     _verify_target_availability(gsk_dataset)
     gsk_dataset.df.reset_index(drop=True, inplace=True)
-    prediction = model.run_predict(gsk_dataset).prediction
+    prediction = model.predict(gsk_dataset).prediction
     actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
 
     metric = accuracy_score(actual_target, prediction)
@@ -59,14 +59,14 @@ def _test_accuracy_score(gsk_dataset: GiskardDataset, model: GiskardModel, thres
 
 
 def _test_regression_score(
-        score_fn, giskard_ds, model: GiskardModel, threshold: float = 1.0, r2=False
+        score_fn, giskard_ds, model: Model, threshold: float = 1.0, r2=False
 ):
     results_df = pd.DataFrame()
     giskard_ds.df.reset_index(drop=True, inplace=True)
     _verify_target_availability(giskard_ds)
 
     results_df["actual_target"] = giskard_ds.df[giskard_ds.target]
-    results_df["prediction"] = model.run_predict(giskard_ds).raw_prediction
+    results_df["prediction"] = model.predict(giskard_ds).raw_prediction
 
     metric = score_fn(results_df["actual_target"], results_df["prediction"])
 
@@ -99,7 +99,7 @@ def _test_diff_prediction(
 
 
 @test(name='AUC', tags=['performance'])
-def test_auc(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -107,9 +107,9 @@ def test_auc(actual_slice: GiskardDataset, model: GiskardModel, threshold: float
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value of AUC metrics
@@ -123,12 +123,12 @@ def test_auc(actual_slice: GiskardDataset, model: GiskardModel, threshold: float
           TRUE if AUC metrics >= threshold
     """
     _verify_target_availability(actual_slice)
-    if len(model.classification_labels) == 2:
+    if len(model.meta.classification_labels) == 2:
         metric = roc_auc_score(
-            actual_slice.df[actual_slice.target], model.run_predict(actual_slice).raw_prediction
+            actual_slice.df[actual_slice.target], model.predict(actual_slice).raw_prediction
         )
     else:
-        predictions = model.run_predict(actual_slice).all_predictions
+        predictions = model.predict(actual_slice).all_predictions
         non_declared_categories = set(predictions.columns) - set(
             actual_slice.df[actual_slice.target].unique()
         )
@@ -146,7 +146,7 @@ def test_auc(actual_slice: GiskardDataset, model: GiskardModel, threshold: float
 
 
 @test(name='F1', tags=['performance'])
-def test_f1(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -154,9 +154,9 @@ def test_f1(actual_slice: GiskardDataset, model: GiskardModel, threshold: float 
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for F1 Score
@@ -173,7 +173,7 @@ def test_f1(actual_slice: GiskardDataset, model: GiskardModel, threshold: float 
 
 
 @test(name='Accuracy', tags=['performance'])
-def test_accuracy(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -181,9 +181,9 @@ def test_accuracy(actual_slice: GiskardDataset, model: GiskardModel, threshold: 
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Accuracy
@@ -200,7 +200,7 @@ def test_accuracy(actual_slice: GiskardDataset, model: GiskardModel, threshold: 
 
 
 @test(name='Precision', tags=['performance'])
-def test_precision(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Precision is higher than a threshold for a given slice
 
@@ -208,9 +208,9 @@ def test_precision(actual_slice: GiskardDataset, model: GiskardModel, threshold:
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Precision
@@ -226,7 +226,7 @@ def test_precision(actual_slice: GiskardDataset, model: GiskardModel, threshold:
 
 
 @test(name='Recall', tags=['performance'])
-def test_recall(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Recall is higher than a threshold for a given slice
 
@@ -234,9 +234,9 @@ def test_recall(actual_slice: GiskardDataset, model: GiskardModel, threshold: fl
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Recall
@@ -252,7 +252,7 @@ def test_recall(actual_slice: GiskardDataset, model: GiskardModel, threshold: fl
 
 
 @test(name='RMSE', tags=['performance'])
-def test_rmse(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -260,9 +260,9 @@ def test_rmse(actual_slice: GiskardDataset, model: GiskardModel, threshold: floa
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for RMSE
@@ -278,7 +278,7 @@ def test_rmse(actual_slice: GiskardDataset, model: GiskardModel, threshold: floa
 
 
 @test(name='MAE', tags=['performance'])
-def test_mae(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -286,9 +286,9 @@ def test_mae(actual_slice: GiskardDataset, model: GiskardModel, threshold: float
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for MAE
@@ -307,7 +307,7 @@ def test_mae(actual_slice: GiskardDataset, model: GiskardModel, threshold: float
 
 
 @test(name='R2', tags=['performance'])
-def test_r2(actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 1.0):
+def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model R-Squared is higher than a threshold
 
@@ -315,9 +315,9 @@ def test_r2(actual_slice: GiskardDataset, model: GiskardModel, threshold: float 
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for R-Squared
@@ -334,7 +334,7 @@ def test_r2(actual_slice: GiskardDataset, model: GiskardModel, threshold: float 
 
 
 @test(name='Accuracy difference', tags=['performance'])
-def test_diff_accuracy(actual_slice: GiskardDataset, reference_slice: GiskardDataset, model: GiskardModel,
+def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                        threshold: float = 0.1):
     """
 
@@ -347,11 +347,11 @@ def test_diff_accuracy(actual_slice: GiskardDataset, reference_slice: GiskardDat
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Accuracy Score difference
@@ -376,7 +376,7 @@ def test_diff_accuracy(actual_slice: GiskardDataset, reference_slice: GiskardDat
 
 
 @test(name='F1 difference', tags=['performance'])
-def test_diff_f1(actual_slice: GiskardDataset, reference_slice: GiskardDataset, model: GiskardModel,
+def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                  threshold: float = 0.1):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -388,11 +388,11 @@ def test_diff_f1(actual_slice: GiskardDataset, reference_slice: GiskardDataset, 
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
@@ -413,7 +413,7 @@ def test_diff_f1(actual_slice: GiskardDataset, reference_slice: GiskardDataset, 
 
 
 @test(name='Precision difference', tags=['performance'])
-def test_diff_precision(actual_slice: GiskardDataset, reference_slice: GiskardDataset, model: GiskardModel,
+def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                         threshold: float = 0.1):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
@@ -425,11 +425,11 @@ def test_diff_precision(actual_slice: GiskardDataset, reference_slice: GiskardDa
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Precision difference
@@ -454,7 +454,7 @@ def test_diff_precision(actual_slice: GiskardDataset, reference_slice: GiskardDa
 
 
 @test(name='Recall difference', tags=['performance'])
-def test_diff_recall(actual_slice: GiskardDataset, reference_slice: GiskardDataset, model: GiskardModel,
+def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                      threshold: float = 0.1):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
@@ -466,11 +466,11 @@ def test_diff_recall(actual_slice: GiskardDataset, reference_slice: GiskardDatas
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Recall difference
@@ -490,7 +490,7 @@ def test_diff_recall(actual_slice: GiskardDataset, reference_slice: GiskardDatas
 
 
 @test(name='F1 Reference Actual difference', tags=['performance'])
-def test_diff_reference_actual_f1(reference_slice: GiskardDataset, actual_slice: GiskardDataset, model: GiskardModel,
+def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Dataset, model: Model,
                                   threshold: float = 0.1):
     """
     Test if the absolute percentage change in model F1 Score between reference and actual data
@@ -503,11 +503,11 @@ def test_diff_reference_actual_f1(reference_slice: GiskardDataset, actual_slice:
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of reference dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for F1 Score difference
@@ -528,7 +528,7 @@ def test_diff_reference_actual_f1(reference_slice: GiskardDataset, actual_slice:
 
 @test(name='Accuracy Reference Actual difference', tags=['performance'])
 def test_diff_reference_actual_accuracy(
-        reference_slice: GiskardDataset, actual_slice: GiskardDataset, model: GiskardModel, threshold: float = 0.1
+        reference_slice: Dataset, actual_slice: Dataset, model: Model, threshold: float = 0.1
 ):
     """
     Test if the absolute percentage change in model Accuracy between reference and actual data
@@ -541,11 +541,11 @@ def test_diff_reference_actual_accuracy(
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of reference dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for Accuracy difference
@@ -570,7 +570,7 @@ def test_diff_reference_actual_accuracy(
 
 
 @test(name='Accuracy Reference Actual difference', tags=['performance'])
-def test_diff_rmse(actual_slice: GiskardDataset, reference_slice: GiskardDataset, model: GiskardModel,
+def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                    threshold: float = 0.1):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
@@ -582,11 +582,11 @@ def test_diff_rmse(actual_slice: GiskardDataset, reference_slice: GiskardDataset
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of the actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of the actual dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for RMSE difference
@@ -607,7 +607,7 @@ def test_diff_rmse(actual_slice: GiskardDataset, reference_slice: GiskardDataset
 
 
 @test(name='RMSE Reference Actual difference', tags=['performance'])
-def test_diff_reference_actual_rmse(reference_slice: GiskardDataset, actual_slice: GiskardDataset, model: GiskardModel,
+def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Dataset, model: Model,
                                     threshold: float = 0.1):
     """
     Test if the absolute percentage change in model RMSE between reference and actual data
@@ -620,11 +620,11 @@ def test_diff_reference_actual_rmse(reference_slice: GiskardDataset, actual_slic
 
 
     Args:
-        actual_slice(GiskardDataset):
+        actual_slice(Dataset):
           Slice of actual dataset
-        reference_slice(GiskardDataset):
+        reference_slice(Dataset):
           Slice of reference dataset
-        model(GiskardModel):
+        model(Model):
           Model used to compute the test
         threshold(float):
           Threshold value for RMSE difference

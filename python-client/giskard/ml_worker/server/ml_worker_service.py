@@ -26,7 +26,6 @@ from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated.ml_worker_pb2 import *
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
@@ -124,9 +123,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = {}
         for arg in request.arguments:
             if arg.HasField('dataset'):
-                value = deserialize_dataset(arg.dataset)
+                value = Dataset.load(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField('model'):
-                value = deserialize_model(arg.model)
+                value = Model.load(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField('float'):
                 value = float(arg.float)
             elif arg.HasField('string'):

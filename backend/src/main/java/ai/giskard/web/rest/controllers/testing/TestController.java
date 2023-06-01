@@ -142,19 +142,27 @@ public class TestController {
                 TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
                 argumentBuilder.setName(inputName);
                 switch (argumentTypes.get(inputName)) {
-                    case "GiskardDataset":
-                        argumentBuilder.setDataset(ArtifactRef.newBuilder().setId((String) inputValue).build());
-                        break;
-                    case "GiskardModel":
-                        argumentBuilder.setModel(ArtifactRef.newBuilder().setId((String) inputValue).build());
-                        break;
-                    case "float":
-                        argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
-                        break;
-                    case "string":
-                        argumentBuilder.setString((String) inputValue);
-                        break;
-                    default:
+                    case "Dataset" -> {
+                        String projectKey = datasetRepository.getById((String) inputValue).getProject().getKey();
+                        argumentBuilder.setDataset(
+                            ArtifactRef.newBuilder()
+                                .setProjectKey(projectKey)
+                                .setId((String) inputValue)
+                                .build()
+                        );
+                    }
+                    case "Model" -> {
+                        String projectKey = modelRepository.getById((String) inputValue).getProject().getKey();
+                        argumentBuilder.setModel(
+                            ArtifactRef.newBuilder()
+                                .setProjectKey(projectKey)
+                                .setId((String) inputValue)
+                                .build()
+                        );
+                    }
+                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
+                    case "string" -> argumentBuilder.setString((String) inputValue);
+                    default ->
                         throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
                 }
                 builder.addArguments(argumentBuilder.build());
