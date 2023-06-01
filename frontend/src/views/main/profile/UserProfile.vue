@@ -307,6 +307,11 @@
           <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col>
+          <RunningWorkerJobs v-if="isAdmin"/>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -323,11 +328,13 @@ import {AppConfigDTO, GeneralSettings, JWTToken, MLWorkerInfoDTO, UpdateMeDTO} f
 import mixpanel from "mixpanel-browser";
 import {Role} from "@/enums";
 import moment from "moment";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 import store from "@/store";
+import RunningWorkerJobs from '@/views/main/profile/RunningWorkerJobs.vue';
+import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 @Component({
   components: {
+    RunningWorkerJobs,
     ButtonModalConfirmation,
   },
 })

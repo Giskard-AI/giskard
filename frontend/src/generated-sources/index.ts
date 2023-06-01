@@ -48,6 +48,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.TestSuiteExecutionDTO' : 'TestSuiteExecutionDTO',
     'ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO' : 'TestTemplateExecutionResultDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
+    'ai.giskard.web.dto.ml.WorkerJobDTO' : 'WorkerJobDTO',
     'ai.giskard.web.dto.ml.write.FilePostDTO' : 'FilePostDTO',
     'ai.giskard.web.dto.ml.write.ModelPostDTO' : 'ModelPostDTO',
     'ai.giskard.web.dto.ml.write.TestSuitePostDTO' : 'TestSuitePostDTO',
@@ -126,6 +127,7 @@ export * from './ai/giskard/web/dto/ml/test-suite-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-execution-dto';
 export * from './ai/giskard/web/dto/ml/test-template-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
+export * from './ai/giskard/web/dto/ml/worker-job-dto';
 export * from './ai/giskard/web/dto/ml/write/file-post-dto';
 export * from './ai/giskard/web/dto/ml/write/model-post-dto';
 export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';

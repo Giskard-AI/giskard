@@ -77,6 +77,8 @@ import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
+import {commitAddNotification} from '@/store/main/mutations';
+import store from '@/store';
 
 const props = defineProps<{
   projectId: number,
@@ -120,6 +122,7 @@ async function executeTestSuite() {
 
   try {
     await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
+    commitAddNotification(store, {content: 'Test suite execution has been scheduled', color: 'success'});
     // TODO: Add UI to see job running in settings
   } finally {
     running.value = false;

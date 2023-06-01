@@ -61,6 +61,7 @@
     "ai.giskard.web.dto.TestSuiteNewDTO": "TestSuiteNewDTO",
     "ai.giskard.domain.ml.ModelType": "ModelType",
     "ai.giskard.web.dto.ml.ProjectPostDTO": "ProjectPostDTO",
+    "ai.giskard.web.dto.ml.WorkerJobDTO": "WorkerJobDTO",
     "ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO": "MLWorkerInfoDTO.PlatformInfoDTO",
     "ai.giskard.domain.ml.CodeLanguage": "CodeLanguage",
     "ai.giskard.web.dto.ExplainResponseDTO": "ExplainResponseDTO",
