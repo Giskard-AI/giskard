@@ -242,11 +242,18 @@ class PerformanceScanResult(ScanResult):
 """
 
         html = f"""
+<div class="dark">
 <div class="dark:text-white dark:bg-zinc-900">
 {tab_header}
 {main_content}
 </div>
+</div>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {{
+    darkMode: 'class'
+}}
+</script>
 """
 
         return html
