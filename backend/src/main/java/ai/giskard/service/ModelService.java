@@ -14,7 +14,9 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
+import liquibase.util.StringUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,7 +55,11 @@ public class ModelService {
             .setModel(grpcMapper.createRef(model))
             .setDataframe(
                 DataFrame.newBuilder()
-                    .addRows(DataRow.newBuilder().putAllColumns(Maps.filterValues(features, Objects::nonNull)))
+                    .addRows(DataRow.newBuilder().putAllColumns(
+                        features.entrySet().stream()
+                            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    ))
                     .build()
             );
         if (dataset.getTarget() != null) {
@@ -66,6 +73,11 @@ public class ModelService {
         }
         response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
+    }
+
+    public boolean shouldDrop(String columnDtype, String value) {
+        return Objects.isNull(value) ||
+            (columnDtype.startsWith("int") || columnDtype.startsWith("float") && Strings.isBlank(value));
     }
 
     public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
