@@ -7,7 +7,7 @@
             <v-text-field label="Search test" v-model="searchFilter"></v-text-field>
             <v-list three-line v-if="testFunctions">
               <v-list-item-group v-model="selected" color="primary" mandatory>
-                <template v-for="(test, index) in filteredTestFunctions">
+                <template v-for="test in filteredTestFunctions">
                   <v-divider/>
                   <v-list-item :value="test">
                     <v-list-item-content>

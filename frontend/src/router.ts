@@ -137,6 +137,17 @@ export default new Router({
                                     },
                                     children: [
                                         {
+                                            path: '',
+                                            name: 'test-suite',
+                                            component: () => import('./views/main/project/TestSuiteOverview.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: Number(route.params.suiteId),
+                                                }
+                                            }
+                                        },
+                                        {
                                             path: 'inputs',
                                             name: 'test-suite-inputs',
                                             component: () => import('./views/main/project/TestSuiteInputs.vue'),
