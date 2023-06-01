@@ -19,11 +19,7 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -102,7 +98,7 @@ public class DatasetService {
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
-                .collect(Collectors.toMap(Function.identity(), row::getObject)))
+                .<Map<String, Object>>collect(HashMap::new, (m, column) -> m.put(column, row.getObject(column)), Map::putAll))
             .toList());
     }
 
