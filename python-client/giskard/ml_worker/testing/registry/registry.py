@@ -100,20 +100,24 @@ class TestFunction:
     tags: List[str]
 
 
+def create_test_function_id(func):
+    try:
+        # is_relative_to is only available from python 3.9
+        is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
+    except ValueError:
+        is_relative = False
+    if is_relative:
+        full_name = _get_plugin_method_full_name(func)
+    else:
+        full_name = f"{func.__module__}.{func.__name__}"
+    return full_name
+
+
 class GiskardTestRegistry:
     _tests: Dict[str, TestFunction] = {}
 
     def register(self, func: types.FunctionType, name=None, tags=None):
-        try:
-            # is_relative_to is only available from python 3.9
-            is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
-        except ValueError:
-            is_relative = False
-
-        if is_relative:
-            full_name = _get_plugin_method_full_name(func)
-        else:
-            full_name = f"{func.__module__}.{func.__name__}"
+        full_name = create_test_function_id(func)
 
         if full_name not in self._tests:
             # arg_spec = inspect.getfullargspec(func)

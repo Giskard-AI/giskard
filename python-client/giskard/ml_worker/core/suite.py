@@ -1,9 +1,13 @@
 import inspect
+import logging
 from dataclasses import dataclass
 from typing import *
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
+from ml_worker_pb2 import SingleTestResult
+
+logger = logging.getLogger(__name__)
 
 
 class SuiteInput:
@@ -21,8 +25,21 @@ class TestPartial:
     provided_inputs: Mapping[str, Any]
 
 
+def single_binary_result(test_results: List):
+    passed = True
+    for r in test_results:
+        if type(r) == bool:
+            passed = passed and r
+        elif type(r) == SingleTestResult:
+            passed = passed and r.passed
+        else:
+            logger.error(f"Invalid test result: {r.__class__.__name__}")
+            passed = False
+    return passed
+
+
 class Suite:
-    tests: list[TestPartial]
+    tests: List[TestPartial]
     suite_params: Mapping[str, SuiteInput]
 
     def __init__(self) -> None:
@@ -39,8 +56,8 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
             res.append(test_partial.test_func(**test_params))
-        print(res)
-        return res
+
+        return single_binary_result(res), res
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
