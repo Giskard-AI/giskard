@@ -30,12 +30,12 @@ def get_version() -> str:
 __version__: str = get_version()
 
 __all__ = [
-    SingleTestResult,
-    Project,
-    Model,
-    SKLearnModel,
-    Dataset,
-    GiskardClient,
-    AbstractTestCollection,
-    test,
+    'SingleTestResult',
+    'Project',
+    'Model',
+    'SKLearnModel',
+    'Dataset',
+    'GiskardClient',
+    'AbstractTestCollection',
+    'test',
 ]
