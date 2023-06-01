@@ -15,6 +15,7 @@
                     {{ props.text }}
                 </v-card-text>
                 <v-card-actions>
+                    <div class="flex-grow-1"/>
                     <v-btn color="primary" @click="close">{{ props.cancelMessage }}</v-btn>
                     <v-btn :color=buttonColor @click="emit('confirm', close)">{{ props.confirmMessage }}</v-btn>
                 </v-card-actions>
