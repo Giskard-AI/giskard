@@ -1,1 +1,1 @@
-# Export your test suite in your CI/CD pipeline
+# Execute your test suite in your CI/CD pipeline
