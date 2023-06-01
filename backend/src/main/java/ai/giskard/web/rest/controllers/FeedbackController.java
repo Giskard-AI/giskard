@@ -149,7 +149,7 @@ public class FeedbackController {
     @GetMapping("/{feedbackId}/replies")
     @Transactional
     public List<FeedbackReplyDTO> getRepliesOfFeedback(@PathVariable("feedbackId") long feedbackId) {
-
+        List<FeedbackReply> replies = new ArrayList<>();
         Feedback feedback = feedbackRepository.findOneById(feedbackId);
 
         String currUserLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
@@ -157,11 +157,9 @@ public class FeedbackController {
             feedback.getProject().getOwner().getLogin().equals(currUserLogin) ||
             feedback.getUser().getLogin().equals(currUserLogin)
         ) {
-            List<FeedbackReply> replies = feedbackReplyRepository.findAllByFeedback(feedback);
-            return feedbackMapper.feedbackRepliesToFeedbackReplyDTOs(replies);
-        } else {
-            return new ArrayList<>();
+            replies = feedbackReplyRepository.findAllByFeedback(feedback);
         }
+        return feedbackMapper.feedbackRepliesToFeedbackReplyDTOs(replies);
     }
 
 
@@ -178,7 +176,7 @@ public class FeedbackController {
             feedbackReplyRepository.delete(feedbackReply);
             return ResponseEntity.noContent().build();
         } else {
-            throw new UnauthorizedException("Delete", Entity.FEEDBACK);
+            throw new UnauthorizedException("Delete", Entity.FEEDBACK_REPLY);
         }
     }
 
