@@ -39,7 +39,6 @@
             })
 
             tabHeader.classList.add("active")
-            console.log(tabId)
             document.getElementById(tabId).classList.remove("hidden")
 
         })

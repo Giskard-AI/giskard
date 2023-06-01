@@ -29,6 +29,8 @@ class PerformanceIssue(Issue):
     """Performance Issue"""
 
     group = "Performance bias"
+    group_message = "We found some data slices in your dataset on which your model performance is lower than average."
+
     info: PerformanceIssueInfo
 
     def __init__(

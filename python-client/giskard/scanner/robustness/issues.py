@@ -22,6 +22,8 @@ class RobustnessIssueInfo:
 
 class RobustnessIssue(Issue):
     group = "Robustness"
+    group_message = "Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do not affect your use case."
+
     info: RobustnessIssueInfo
 
     def __init__(self, model: BaseModel, dataset: Dataset, level: str, info: RobustnessIssueInfo):
