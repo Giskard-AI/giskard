@@ -76,25 +76,27 @@ class PyTorchModel(Model):
     def _raw_predict(self, data):
         self.clf.to(self.device)
         self.clf.eval()
-        predictions=[]
 
         # Use isinstance to check if o is an instance of X or any subclass of X
         # Use is to check if the type of o is exactly X, excluding subclasses of X
         if isinstance(data, pd.DataFrame):
             data = TorchMinimalDataset(data, self.torch_dtype)
         elif not isinstance(data, torch_dataset) and not isinstance(data, DataLoader):
-            with torch.no_grad():
-                predictions = self.clf(*data)
-                predictions = np.array(predictions.detach().numpy())
+            raise Exception(f"The output of data_preprocessing_function is of type={type(data)}.\n \
+                            Make sure that your data_preprocessing_function outputs one of the following: \n \
+                            - pandas.DataFrame \n \
+                            - torch.Dataset \n \
+                            - torch.DataLoader")
 
-        if not predictions:
-            with torch.no_grad():
-                for entry in data:
-                    try: # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
-                        predictions.append(self.clf(*entry).detach().numpy().squeeze())
-                    except: # for the case of 1 input
-                        predictions.append(self.clf(entry).detach().numpy().squeeze())
-            predictions = np.array(predictions)
+        predictions=[]
+        with torch.no_grad():
+            for entry in data:
+                try: # for the case of 1 input
+                    predictions.append(self.clf(entry).detach().numpy())
+                except: # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+                    predictions.append(self.clf(*entry).detach().numpy())
+
+        predictions = np.squeeze(np.array(predictions))
 
         if self.model_postprocessing_function:
             predictions = self.model_postprocessing_function(predictions)
