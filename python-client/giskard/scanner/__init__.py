@@ -5,6 +5,7 @@ from .scanner import Scanner
 
 _default_detectors = [
     ".performance.model_bias_detector",
+    ".robustness.robustness_detector",
 ]
 
 
