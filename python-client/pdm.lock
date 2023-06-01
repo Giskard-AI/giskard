@@ -1935,6 +1935,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sphinx-design"
+version = "0.4.1"
+requires_python = ">=3.7"
+summary = "A sphinx extension for designing beautiful, view size responsive web components."
+dependencies = [
+    "sphinx<7,>=4",
+]
+
+[[package]]
 name = "sphinx-rtd-theme"
 version = "1.2.0"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
@@ -1943,6 +1952,17 @@ dependencies = [
     "docutils<0.19",
     "sphinx<7,>=1.6",
     "sphinxcontrib-jquery!=3.0.0,>=2.0.0; python_version > \"3\"",
+]
+
+[[package]]
+name = "sphinx-tabs"
+version = "3.4.1"
+requires_python = "~=3.7"
+summary = "Tabbed views for Sphinx"
+dependencies = [
+    "docutils~=0.18.0",
+    "pygments",
+    "sphinx",
 ]
 
 [[package]]
@@ -2426,7 +2446,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:df96b4aa105d54081879463d6f73036c2e44942e9eca1ed20f2819a133591d5b"
+content_hash = "sha256:c59a4e2ec7849f72472a3f0c8b8984ca7c475c3ef435fc57505da250ed154f4d"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -4522,9 +4542,17 @@ content_hash = "sha256:df96b4aa105d54081879463d6f73036c2e44942e9eca1ed20f2819a13
     {url = "https://files.pythonhosted.org/packages/76/aa/eb38c4ad0a46e9fe45604bde48fee569c1954929edb7c3f1d8a3a86fca71/sphinx_basic_ng-1.0.0b1-py3-none-any.whl", hash = "sha256:ade597a3029c7865b24ad0eda88318766bcc2f9f4cef60df7e28126fde94db2a"},
     {url = "https://files.pythonhosted.org/packages/80/77/df8674b4c0eb26d5a3817858ec83f103389c7c1ce31f7d31b13394a6ff0e/sphinx_basic_ng-1.0.0b1.tar.gz", hash = "sha256:89374bd3ccd9452a301786781e28c8718e99960f2d4f411845ea75fc7bb5a9b0"},
 ]
+"sphinx-design 0.4.1" = [
+    {url = "https://files.pythonhosted.org/packages/86/7b/f61142380242b5cd192157fe4a626d92b0a74874f41ba9dc52d406ba2060/sphinx_design-0.4.1.tar.gz", hash = "sha256:5b6418ba4a2dc3d83592ea0ff61a52a891fe72195a4c3a18b2fa1c7668ce4708"},
+    {url = "https://files.pythonhosted.org/packages/c2/8a/7538087272110d010cd27024c392dca176315ad7dfc3f3df3f99798cc21b/sphinx_design-0.4.1-py3-none-any.whl", hash = "sha256:23bf5705eb31296d4451f68b0222a698a8a84396ffe8378dfd9319ba7ab8efd9"},
+]
 "sphinx-rtd-theme 1.2.0" = [
     {url = "https://files.pythonhosted.org/packages/35/b4/40faec6790d4b08a6ef878feddc6ad11c3872b75f52273f1418c39f67cd6/sphinx_rtd_theme-1.2.0.tar.gz", hash = "sha256:a0d8bd1a2ed52e0b338cbe19c4b2eef3c5e7a048769753dac6a9f059c7b641b8"},
     {url = "https://files.pythonhosted.org/packages/b3/46/c167351699e5dc126798385cf37c26ba9df7a26c6f8855661d9f966d6ced/sphinx_rtd_theme-1.2.0-py2.py3-none-any.whl", hash = "sha256:f823f7e71890abe0ac6aaa6013361ea2696fc8d3e1fa798f463e82bdb77eeff2"},
+]
+"sphinx-tabs 3.4.1" = [
+    {url = "https://files.pythonhosted.org/packages/4f/2d/80293fbb2aa82d457f9df0de85800b11e3bfd5008b118bddb303a797e5c5/sphinx_tabs-3.4.1-py3-none-any.whl", hash = "sha256:7cea8942aeccc5d01a995789c01804b787334b55927f29b36ba16ed1e7cb27c6"},
+    {url = "https://files.pythonhosted.org/packages/aa/9b/a54949728ff067e4d0997c934e97569dbf3bb4e9c0d63ff3377be4cc3831/sphinx-tabs-3.4.1.tar.gz", hash = "sha256:d2a09f9e8316e400d57503f6df1c78005fdde220e5af589cc79d493159e1b832"},
 ]
 "sphinxcontrib-applehelp 1.0.4" = [
     {url = "https://files.pythonhosted.org/packages/06/c1/5e2cafbd03105ce50d8500f9b4e8a6e8d02e22d0475b574c3b3e9451a15f/sphinxcontrib_applehelp-1.0.4-py3-none-any.whl", hash = "sha256:29d341f67fb0f6f586b23ad80e072c8e6ad0b48417db2bde114a4c9746feb228"},
