@@ -1,6 +1,7 @@
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
-import {defineStore} from "pinia";
-import {api} from "@/api";
+import { defineStore } from "pinia";
+import { useMainStore } from "@/stores/main";
+import { api } from "@/api";
 
 interface State {
   projectId: number | null,
@@ -37,8 +38,18 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         },
         async loadProjectArtifacts() {
             if (this.projectId === null) return;
-            await this.loadDatasets();
-            await this.loadModels();
+            const mainStore = useMainStore();
+            const loadingNotification = {content: 'Loading project artifacts', showProgress: true};
+            try {
+              mainStore.addNotification(loadingNotification);
+              await this.loadDatasets();
+              await this.loadModels();
+              mainStore.removeNotification(loadingNotification);
+          } catch (error) {
+              mainStore.removeNotification(loadingNotification);
+              mainStore.addNotification({content: `Error: ${error.message}`, color: 'error'});
+              await mainStore.checkApiError(error);
+          }
         },
         updateDataset(newDataset: DatasetDTO) {
           const idx = this.datasets.findIndex(dataset => dataset.id === newDataset.id);
