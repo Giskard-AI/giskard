@@ -28,7 +28,8 @@ class Dataset:
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None
+            cat_columns: Optional[List[str]] = None,
+            column_meanings: Optional[Dict[str, str]] = None
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
@@ -37,7 +38,7 @@ class Dataset:
         if cat_columns:
             self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_columns}
         else:
-            self.column_meanings = None
+            self.column_meanings = column_meanings
 
     @staticmethod
     def extract_column_types(df):
@@ -110,7 +111,7 @@ class Dataset:
             df=df,
             name=meta.name,
             target=meta.target,
-            cat_columns=cls._cat_columns(meta))
+            column_meanings=meta.column_meanings)
 
     @staticmethod
     def _cat_columns(meta):

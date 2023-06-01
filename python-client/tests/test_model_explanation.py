@@ -45,6 +45,14 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
             assert np.issubdtype(type(e), np.floating), f"'{l}' explanation value isn't float"
 
 
+def test_explain_shuffle_columns(german_credit_test_data, german_credit_model):
+    german_credit_model.feature_names = None
+    ds = german_credit_test_data
+    # change column order
+    res = explain(german_credit_model, ds, ds.df.iloc[0][ds.df.columns[::-1]].to_dict())
+    assert res
+
+
 def test_explain_text(enron_test_data, enron_model):
     df = enron_test_data.df.dropna()
     sample = df.head(1)
