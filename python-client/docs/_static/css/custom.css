@@ -40,6 +40,10 @@ body {
     display: none;
 }
 
+.nbinput > .input_area {
+    border: none !important;
+}
+
 /* toc */
 .toc-title {
     color: var(--color-toc-title);
