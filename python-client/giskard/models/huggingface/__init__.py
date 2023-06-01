@@ -67,17 +67,7 @@ class HuggingFaceModel(WrapperModel):
         self.clf.save_pretrained(local_path)
 
     def clf_predict(self, data):
-        if isinstance(self.clf, torch.nn.Module):
-            with torch.no_grad():
-                predictions = self.clf(**data)
-        elif isinstance(self.clf, pipelines.Pipeline):
-            _predictions = self.clf(data, top_k=None)
-            predictions = []
-            for label in self.meta.classification_labels:
-                label_score = next(item for item in _predictions if item["label"] == label)
-                predictions.append(label_score['score'])
-        else:
-            predictions = self.clf(**data) if isinstance(data, dict) else self.clf(data)
+        predictions = self._get_predictions(data)
 
         if self.is_classification and hasattr(predictions, 'logits'):
             if isinstance(self.clf, torch.nn.Module):
@@ -94,3 +84,20 @@ class HuggingFaceModel(WrapperModel):
                 predictions = special.softmax(logits, axis=1) if len(logits.shape) == 2 else special.softmax(logits)
 
         return predictions
+
+    def _get_predictions(self, data):
+        if isinstance(self.clf, torch.nn.Module):
+            with torch.no_grad():
+                return self.clf(**data)
+        
+        if isinstance(self.clf, pipelines.Pipeline):
+            _predictions = [
+                {p["label"]: p["score"] for p in pl} for pl in self.clf(list(data), top_k=None)
+            ]
+            return [[p[l] for l in self.meta.classification_labels] for p in _predictions]
+
+        if isinstance(data, dict):
+            return  self.clf(**data)
+        
+        return self.clf(data)
+

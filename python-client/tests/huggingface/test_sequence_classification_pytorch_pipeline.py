@@ -26,7 +26,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     feature_names = ["text"]
 
     def my_preproccessing_function(df):
-        return str(df['text'])
+        return df['text'].values
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",
@@ -37,6 +37,18 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
         data_preprocessing_function=my_preproccessing_function
     )
 
+    my_test_dataset = Dataset(test_df, name="test dataset", target="label")
+
+    tests.utils.verify_model_upload(my_model, my_test_dataset)
+
+
+    # Try with multiple samples
+    text2 = "Give me a label 0!"
+    raw_data = {
+        "text": [text, text2, text],
+        "label": ["LABEL_1", "LABEL_0", "LABEL_1"],
+    }
+    test_df = pd.DataFrame(raw_data, columns=["text", "label"])
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
