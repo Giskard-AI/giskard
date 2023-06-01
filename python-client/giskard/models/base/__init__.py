@@ -112,7 +112,7 @@ class BaseModel(ABC):
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
-        self._cache = ModelCache()
+        self._cache = ModelCache(model_type)
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -399,7 +399,7 @@ class BaseModel(ABC):
 
         model = clazz.load(local_dir, **constructor_params)
         model.id = model_id
-        model._cache = ModelCache(model.id)
+        model._cache = ModelCache(meta.model_type, model.id)
         return model
 
     @classmethod
