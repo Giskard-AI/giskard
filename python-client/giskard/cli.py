@@ -48,12 +48,20 @@ def worker() -> None:
 
 def start_stop_options(fn):
     fn = click.option(
-        "--url", "-u", type=STRING, default='http://localhost:19000', help="Remote Giskard server url",
-        callback=validate_url
+        "--url",
+        "-u",
+        type=STRING,
+        default="http://localhost:19000",
+        help="Remote Giskard server url",
+        callback=validate_url,
     )(fn)
     fn = click.option(
-        "--server", "-s", "is_server", is_flag=True, default=False,
-        help="Server mode. Used by Giskard embedded ML Worker"
+        "--server",
+        "-s",
+        "is_server",
+        is_flag=True,
+        default=False,
+        help="Server mode. Used by Giskard embedded ML Worker",
     )(fn)
     fn = click.option(
         "--verbose",
@@ -74,7 +82,7 @@ def start_stop_options(fn):
     "--key",
     "-k",
     "api_key",
-    envvar='GSK_API_KEY',
+    envvar="GSK_API_KEY",
     help="Giskard server API key",
 )
 @click.option(
@@ -105,20 +113,18 @@ def initialize_api_key(api_key, is_server):
         return None
     if not api_key:
         api_key = click.prompt("Enter Giskard server API key", type=str)
-    if 'GSK_API_KEY' in os.environ:
+    if "GSK_API_KEY" in os.environ:
         # delete API key environment variable so that it doesn't get leaked when the test code is executed
-        del os.environ['GSK_API_KEY']
+        del os.environ["GSK_API_KEY"]
     return api_key
 
 
 def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
     from giskard.ml_worker.ml_worker import MLWorker
 
-    analytics.track("Start ML Worker", {
-        "is_server": is_server,
-        "url": anonymize(url),
-        "is_daemon": is_daemon
-    }, force=True)
+    analytics.track(
+        "Start ML Worker", {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon}, force=True
+    )
 
     start_msg = "Starting ML Worker"
     start_msg += " server" if is_server else " client"
@@ -163,9 +169,7 @@ def _ml_worker_description(is_server, url):
 
 @worker.command("stop", help="Stop running ML Workers")
 @start_stop_options
-@click.option(
-    "--all", "-a", "stop_all", is_flag=True, default=False, help="Stop all running ML Workers"
-)
+@click.option("--all", "-a", "stop_all", is_flag=True, default=False, help="Stop all running ML Workers")
 def stop_command(is_server, url, stop_all):
     import re
 
@@ -180,12 +184,7 @@ def stop_command(is_server, url, stop_all):
 
 @worker.command("restart", help="Restart ML Worker")
 @start_stop_options
-@click.option(
-    "--api-key",
-    "-k",
-    "api_key",
-    help="Giskard server API key"
-)
+@click.option("--api-key", "-k", "api_key", help="Giskard server API key")
 def restart_command(is_server, url, api_key):
     api_key = initialize_api_key(api_key, is_server)
 
@@ -219,10 +218,21 @@ def _find_and_stop(is_server, url):
 
 
 @worker.command("logs")
-@click.option("--lines", "-n", type=INT, default=10,
-              help="Output the last N lines of the log file, 10 lines are displayed by default")
-@click.option("--follow", "-f", "is_follow", is_flag=True, default=False,
-              help="Output appended data as new logs are being generated")
+@click.option(
+    "--lines",
+    "-n",
+    type=INT,
+    default=10,
+    help="Output the last N lines of the log file, 10 lines are displayed by default",
+)
+@click.option(
+    "--follow",
+    "-f",
+    "is_follow",
+    is_flag=True,
+    default=False,
+    help="Output appended data as new logs are being generated",
+)
 def read_logs(lines, is_follow):
     log_path = get_log_path()
 

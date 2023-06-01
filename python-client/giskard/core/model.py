@@ -41,12 +41,14 @@ class Model(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
 
-    def __init__(self,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+    def __init__(
+        self,
+        model_type: Union[SupportedModelTypes, str],
+        name: str = None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+    ) -> None:
 
         if type(model_type) == str:
             try:
@@ -54,7 +56,8 @@ class Model(ABC):
             except ValueError as e:
                 available_values = {i.value for i in SupportedModelTypes}
                 raise ValueError(
-                    f'Invalid model type value "{model_type}". Available values are: {available_values}') from e
+                    f'Invalid model type value "{model_type}". Available values are: {available_values}'
+                ) from e
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -78,7 +81,7 @@ class Model(ABC):
     def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
-            with open(class_file, 'rb') as f:
+            with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
                 if issubclass(clazz, Model):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
@@ -87,7 +90,7 @@ class Model(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
+        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -101,7 +104,10 @@ class Model(ABC):
                     "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
-                }, f, default_flow_style=False)
+                },
+                f,
+                default_flow_style=False,
+            )
 
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
@@ -112,7 +118,7 @@ class Model(ABC):
 
     def save_model_class(self, local_path):
         class_file = Path(local_path) / MODEL_CLASS_PKL
-        with open(class_file, 'wb') as f:
+        with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def prepare_dataframe(self, dataset: Dataset):
@@ -201,11 +207,7 @@ class Model(ABC):
 
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
-                client.save_model_meta(project_key,
-                                       self.id,
-                                       self.meta,
-                                       platform.python_version(),
-                                       get_size(f))
+                client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
 
     @classmethod
     def download(cls, client: GiskardClient, project_key, model_id):
@@ -213,7 +215,7 @@ class Model(ABC):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=saved_meta['name'],
@@ -236,13 +238,14 @@ class Model(ABC):
     def load(cls, local_dir, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
-            with open(class_file, 'rb') as f:
+            with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
                 return clazz(**kwargs)
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
-                f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden")
+                f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
+            )
 
 class WrapperModel(Model, ABC):
     """
@@ -251,6 +254,7 @@ class WrapperModel(Model, ABC):
     to preprocess incoming data before it's passed
     to the underlying model
     """
+
     clf: PyFuncModel
     data_preprocessing_function: any
     model_postprocessing_function: any
@@ -311,7 +315,7 @@ class WrapperModel(Model, ABC):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-preprocessing.pkl"
         if file_path.exists():
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
 
     @staticmethod
@@ -342,4 +346,5 @@ class CustomModel(Model, ABC):
     """
     Helper class to extend in case a user needs to extend a Model
     """
+
     should_save_model_class = True

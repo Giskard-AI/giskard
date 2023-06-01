@@ -53,7 +53,7 @@ class ErrorHandlingAdapter(HTTPAdapter):
                 err_resp = response.json()
 
                 giskard_error = explain_error(err_resp)
-            except:  # NOSONAR
+            except:  # noqa
                 response.raise_for_status()
             raise giskard_error
         return response
@@ -66,7 +66,7 @@ class BearerAuth(AuthBase):
         self.token = token
 
     def __call__(self, r):
-        r.headers['Authorization'] = f"Bearer {self.token}"
+        r.headers["Authorization"] = f"Bearer {self.token}"
         return r
 
 
@@ -81,8 +81,8 @@ class GiskardClient:
         try:
             server_settings = self._session.get("settings/ml-worker-connect").json()
             self.analytics.init(server_settings)
-        except Exception:
-            logger.warning(f"Failed to fetch server settings", exc_info=True)
+        except Exception:  # noqa
+            logger.warning("Failed to fetch server settings", exc_info=True)
         self.analytics.track("Init GiskardClient", {"client version": giskard.__version__})
 
     @property
@@ -105,7 +105,7 @@ class GiskardClient:
                 The giskard project that belongs to the project key
         """
         self.analytics.track("Get Project", {"project_key": anonymize(project_key)})
-        response = self._session.get(f"project", params={"key": project_key}).json()
+        response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"], analytics=self.analytics)
 
     def create_project(self, project_key: str, name: str, description: str = None):
@@ -149,37 +149,40 @@ class GiskardClient:
 
     def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
-        return res
+
+        return ModelMeta(
+            name=res["name"],
+            feature_names=res["featureNames"],
+            model_type=SupportedModelTypes[res["modelType"]],
+            classification_labels=res["classificationLabels"],
+            classification_threshold=res["threshold"],
+        )
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
         return DatasetMeta(
-            name=res['name'],
-            target=res['target'],
-            feature_types=res['featureTypes'],
-            column_types=res['columnTypes'],
+            name=res["name"],
+            target=res["target"],
+            feature_types=res["featureTypes"],
+            column_types=res["columnTypes"],
         )
 
-    def save_model_meta(
-            self,
-            project_key: str,
-            model_id: UUID,
-            meta: ModelMeta,
-            python_version: str,
-            size: int
-    ):
-        self._session.post(f"project/{project_key}/models", json={
-            "languageVersion": python_version,
-            "language": "PYTHON",
-            "modelType": meta.model_type.name.upper(),
-            "threshold": meta.classification_threshold,
-            "featureNames": meta.feature_names,
-            "classificationLabels": meta.classification_labels,
-            "id": str(model_id),
-            "project": project_key,
-            "name": meta.name,
-            "size": size
-        })
+    def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
+        self._session.post(
+            f"project/{project_key}/models",
+            json={
+                "languageVersion": python_version,
+                "language": "PYTHON",
+                "modelType": meta.model_type.name.upper(),
+                "threshold": meta.classification_threshold,
+                "featureNames": meta.feature_names,
+                "classificationLabels": meta.classification_labels,
+                "id": str(model_id),
+                "project": project_key,
+                "name": meta.name,
+                "size": size,
+            },
+        )
         self.analytics.track(
             "Upload Model",
             {
@@ -197,9 +200,7 @@ class GiskardClient:
             },
         )
 
-        print(
-            f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}"
-        )
+        print(f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}")
 
     def log_artifacts(self, local_dir, artifact_path=None):
         local_dir = os.path.abspath(local_dir)
@@ -209,9 +210,7 @@ class GiskardClient:
             else:
                 rel_path = os.path.relpath(root, local_dir)
                 rel_path = relative_path_to_artifact_path(rel_path)
-                artifact_dir = (
-                    posixpath.join(artifact_path, rel_path) if artifact_path else rel_path
-                )
+                artifact_dir = posixpath.join(artifact_path, rel_path) if artifact_path else rel_path
             for f in filenames:
                 self.log_artifact(os.path.join(root, f), artifact_dir)
 
@@ -224,7 +223,7 @@ class GiskardClient:
         augmented_raise_for_status(files)
 
         for f in files.json():
-            destination_file = (local_file / f)
+            destination_file = local_file / f
             destination_file.parent.mkdir(exist_ok=True, parents=True)
             if destination_file.exists():
                 continue
@@ -249,16 +248,19 @@ class GiskardClient:
             augmented_raise_for_status(resp)
 
     def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta, original_size_bytes, compressed_size_bytes):
-        self._session.post(f"project/{project_key}/datasets", json={
-            "project": project_key,
-            "id": dataset_id,
-            "name": meta.name,
-            "target": meta.target,
-            "featureTypes": meta.feature_types,
-            "columnTypes": meta.column_types,
-            "originalSizeBytes": original_size_bytes,
-            "compressedSizeBytes": compressed_size_bytes
-        })
+        self._session.post(
+            f"project/{project_key}/datasets",
+            json={
+                "project": project_key,
+                "id": dataset_id,
+                "name": meta.name,
+                "target": meta.target,
+                "featureTypes": meta.feature_types,
+                "columnTypes": meta.column_types,
+                "originalSizeBytes": original_size_bytes,
+                "compressedSizeBytes": compressed_size_bytes,
+            },
+        )
         self.analytics.track(
             "Upload Dataset",
             {
@@ -269,13 +271,11 @@ class GiskardClient:
                 "featureTypes": anonymize(meta.feature_types),
                 "columnTypes": anonymize(meta.column_types),
                 "original_size_bytes": original_size_bytes,
-                "compressed_size_bytes": compressed_size_bytes
+                "compressed_size_bytes": compressed_size_bytes,
             },
         )
 
-        print(
-            f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}"
-        )
+        print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
 
     def get_server_info(self):
         return self._session.get("settings/ml-worker-connect").json()
