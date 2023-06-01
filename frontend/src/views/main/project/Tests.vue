@@ -1,92 +1,88 @@
 <template>
-  <div>
-    <v-container fluid class='pa-0'>
-      <v-row align="center">
-        <v-col cols="6" :align="'right'" align-self="end" class="pl-0 pb-0">
-          <v-container>
-            <v-row>
-              <v-col class="pr-0">
-                <v-select
-                    dense
-                    :items="Object.entries(statusFilter)"
-                    label="Status"
-                    v-model="status"
-                    hide-details
-                    item-value="[1]"
-                    item-text="[0]"
-                ></v-select>
-              </v-col>
-              <v-col cols="8">
-                <v-text-field
-                    dense
-                    hide-details
-                    v-model="search"
-                    append-icon="mdi-magnify"
-                    label="Search"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-col>
-        <v-col :align="'right'">
-          <v-btn small tile color='primary' class='mx-1' @click='createTest()'>
-            <v-icon left>add</v-icon>
-            create test
-          </v-btn>
-          <v-btn small tile class='mx-1' @click='executeTestSuite()'
-                 :loading='isTestSuiteRunning'
-                 :disabled='isTestSuiteRunning'>
-            <v-icon>arrow_right</v-icon>
-            run all
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col class="pt-0">
-          <div class="body-1 text-subtitle-1">
-            Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsExecuted }}.&nbsp; &nbsp;
-            Passed: {{ nbTestsPassed }}.&nbsp; &nbsp; Failed: {{ nbTestsFailed }}.
-          </div>
-        </v-col>
-      </v-row>
+  <v-container class="vertical-container overflow-x-hidden pl-0 pr-0" fluid>
+    <v-row align="center">
+      <v-col cols="6" :align="'right'" align-self="end" class="pl-0 pb-0">
+        <v-container>
+          <v-row>
+            <v-col class="pr-0">
+              <v-select
+                  dense
+                  :items="Object.entries(statusFilter)"
+                  label="Status"
+                  v-model="status"
+                  hide-details
+                  item-value="[1]"
+                  item-text="[0]"
+              ></v-select>
+            </v-col>
+            <v-col cols="8">
+              <v-text-field
+                  dense
+                  hide-details
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-col>
+      <v-col :align="'right'">
+        <v-btn small tile color='primary' class='mx-1' @click='createTest()'>
+          <v-icon left>add</v-icon>
+          create test
+        </v-btn>
+        <v-btn small tile class='mx-1' @click='executeTestSuite()'
+               :loading='isTestSuiteRunning'
+               :disabled='isTestSuiteRunning'>
+          <v-icon>arrow_right</v-icon>
+          run all
+        </v-btn>
+      </v-col>
+    </v-row>
+    <v-row class="mt-0 counters text-body-2">
+      <v-col>
+        Total: {{ nbTotalTests }} tests.&nbsp; &nbsp; Executed: {{ nbTestsExecuted }}.&nbsp; &nbsp;
+        Passed: {{ nbTestsPassed }}.&nbsp; &nbsp; Failed: {{ nbTestsFailed }}.
+      </v-col>
+    </v-row>
 
-      <v-row>
-        <v-col>
-          <v-list two-line class='tests-list'>
-            <template v-for='(test) in filteredTests'>
-              <v-divider :inset='false'></v-divider>
+    <div class="vertical-container mt-5">
+      <div>
+        <v-list two-line class='tests-list'>
+          <template v-for='(test) in filteredTests'>
+            <v-divider :inset='false'></v-divider>
 
-              <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
-                <v-list-item-avatar>
-                  <v-icon :color='testStatusToColor(test.status)'>{{ testStatusToIcon(test.status) }}</v-icon>
-                </v-list-item-avatar>
-                <v-list-item-content>
-                  <v-list-item-title v-text='test.name'></v-list-item-title>
+            <v-list-item :key='test.id' v-ripple class='test-list-item' @click='openTest(test.id)'>
+              <v-list-item-avatar>
+                <v-icon :color='testStatusToColor(test.status)'>{{ testStatusToIcon(test.status) }}</v-icon>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text='test.name'></v-list-item-title>
                   <v-list-item-subtitle>id: {{test.id}}</v-list-item-subtitle>
                   <v-list-item-action-text v-if='test.lastExecutionDate'>
-                    <span class='font-weight-regular'>Last executed</span>:
-                    <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{
-                        test.lastExecutionDate | moment('from')
-                      }}</span>
+                  <span class='font-weight-regular'>Last executed</span>:
+                  <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{
+                      test.lastExecutionDate | moment('from')
+                    }}</span>
                   </v-list-item-action-text>
-                </v-list-item-content>
-                <v-spacer/>
-                <v-btn tile small @click='runTest($event, test)'
-                       :disabled='isTestSuiteRunning || isTestRunning(test.id)'
-                       :loading='isTestRunning(test.id)'
-                >
-                  <v-icon>arrow_right</v-icon>
-                  <span>Run</span>
-                </v-btn>
-              </v-list-item>
+              </v-list-item-content>
+              <v-spacer/>
+              <v-btn tile small @click='runTest($event, test)'
+                     :disabled='isTestSuiteRunning || isTestRunning(test.id)'
+                     :loading='isTestRunning(test.id)'
+              >
+                <v-icon>arrow_right</v-icon>
+                <span>Run</span>
+              </v-btn>
+            </v-list-item>
 
-            </template>
-            <v-divider :inset='false'></v-divider>
-          </v-list>
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+          </template>
+          <v-divider :inset='false'></v-divider>
+        </v-list>
+      </div>
+    </div>
+  </v-container>
 </template>
 
 <script lang='ts'>
@@ -242,6 +238,10 @@ export default class Tests extends Vue {
 </script>
 <style scoped lang='scss'>
 @import "src/styles/colors.scss";
+
+.counters {
+  color: $grey;
+}
 
 .test-list-item {
   cursor: pointer;

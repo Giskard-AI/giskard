@@ -37,17 +37,18 @@ class ModelPredictionResults(BaseModel):
     probabilities: Optional[Any]
     all_predictions: Optional[Any]
 
-
 class Model(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
 
-    def __init__(self,
-                 model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+    def __init__(
+        self,
+        model_type: Union[SupportedModelTypes, str],
+        name: str = None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+    ) -> None:
 
         if type(model_type) == str:
             try:
@@ -55,16 +56,17 @@ class Model(ABC):
             except ValueError as e:
                 available_values = {i.value for i in SupportedModelTypes}
                 raise ValueError(
-                    f'Invalid model type value "{model_type}". Available values are: {available_values}') from e
+                    f'Invalid model type value "{model_type}". Available values are: {available_values}'
+                ) from e
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=list(classification_labels) if classification_labels is not None else None,
-            classification_threshold=classification_threshold,
             loader_class=self.__class__.__name__,
-            loader_module=self.__module__
+            loader_module=self.__module__,
+            classification_threshold=classification_threshold
         )
 
     @property
@@ -79,7 +81,7 @@ class Model(ABC):
     def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
-            with open(class_file, 'rb') as f:
+            with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
                 if issubclass(clazz, Model):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
@@ -88,7 +90,7 @@ class Model(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
+        with open(Path(local_path) / "giskard-model-meta.yaml", "w") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -102,7 +104,10 @@ class Model(ABC):
                     "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
-                }, f, default_flow_style=False)
+                },
+                f,
+                default_flow_style=False,
+            )
 
     def save(self, local_path: Union[str, Path]) -> None:
         if self.id is None:
@@ -113,7 +118,7 @@ class Model(ABC):
 
     def save_model_class(self, local_path):
         class_file = Path(local_path) / MODEL_CLASS_PKL
-        with open(class_file, 'wb') as f:
+        with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def prepare_dataframe(self, dataset: Dataset):
@@ -193,6 +198,55 @@ class Model(ABC):
         """
         ...
 
+    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
+        from giskard.core.model_validation import validate_model
+
+        validate_model(model=self, validate_ds=validate_ds)
+        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
+            self.save(f)
+
+            if client is not None:
+                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
+                client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
+
+    @classmethod
+    def download(cls, client: GiskardClient, project_key, model_id):
+        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
+        if client is None:
+            # internal worker case, no token based http client
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+                meta = ModelMeta(
+                    name=saved_meta['name'],
+                    model_type=SupportedModelTypes[saved_meta['model_type']],
+                    feature_names=saved_meta['feature_names'],
+                    classification_labels=saved_meta['classification_labels'],
+                    classification_threshold=saved_meta['threshold'],
+                    loader_module=saved_meta['loader_module'],
+                    loader_class=saved_meta['loader_class']
+                )
+        else:
+            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+            meta = client.load_model_meta(project_key, model_id)
+
+        clazz = cls.determine_model_class(local_dir)
+
+        return clazz.load(local_dir, **meta.__dict__)
+
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        class_file = Path(local_dir) / MODEL_CLASS_PKL
+        if class_file.exists():
+            with open(class_file, "rb") as f:
+                clazz = cloudpickle.load(f)
+                return clazz(**kwargs)
+        else:
+            raise ValueError(
+                f"Cannot load model ({cls.__module__}.{cls.__name__}), "
+                f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
+            )
+
 class WrapperModel(Model, ABC):
     """
     A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
@@ -200,6 +254,7 @@ class WrapperModel(Model, ABC):
     to preprocess incoming data before it's passed
     to the underlying model
     """
+
     clf: PyFuncModel
     data_preprocessing_function: any
     model_postprocessing_function: any
@@ -211,10 +266,7 @@ class WrapperModel(Model, ABC):
                  model_postprocessing_function=None,
                  name: str = None, feature_names=None,
                  classification_threshold=0.5, classification_labels=None) -> None:
-
-        super().__init__(model_type=model_type, name=name, feature_names=feature_names,
-                         classification_threshold=classification_threshold,
-                         classification_labels=classification_labels)
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
@@ -233,62 +285,6 @@ class WrapperModel(Model, ABC):
     def clf_predict(self, df):
         ...
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
-        from giskard.core.model_validation import validate_model
-
-        validate_model(model=self, validate_ds=validate_ds)
-        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
-            self.save(f)
-
-            if client is not None:
-                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
-                client.save_model_meta(project_key,
-                                       self.id,
-                                       self.meta,
-                                       platform.python_version(),
-                                       get_size(f))
-
-    @classmethod
-    def download(cls, client: GiskardClient, project_key, model_id):
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
-        if client is None:
-            # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
-                saved_meta = yaml.load(f, Loader=yaml.Loader)
-                meta = ModelMeta(
-                    name=saved_meta['name'],
-                    model_type=SupportedModelTypes[saved_meta['model_type']],
-                    feature_names=saved_meta['feature_names'],
-                    classification_labels=saved_meta['classification_labels'],
-                    classification_threshold=saved_meta['threshold'],
-                    loader_module=saved_meta['loader_module'],
-                    loader_class=saved_meta['loader_class']
-                )
-        else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
-            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
-                saved_meta = yaml.load(f, Loader=yaml.Loader)
-            res = client.load_model_meta(project_key, model_id)
-            meta = ModelMeta(
-                name=res['name'],
-                feature_names=res['featureNames'],
-                model_type=SupportedModelTypes[res['modelType']],
-                classification_labels=res['classificationLabels'],
-                classification_threshold=res['threshold'],
-                loader_module=saved_meta['loader_module'],
-                loader_class=saved_meta['loader_class']
-            )
-        clazz = cls.determine_model_class(meta, local_dir)
-        return clazz(
-            clf=clazz.read_model_from_local_dir(local_dir),
-            data_preprocessing_function=clazz.load_data_preprocessing_function(local_dir),
-            model_postprocessing_function=clazz.read_model_postprocessing_function_from_artifact(local_dir),
-            **meta.__dict__
-        )
-
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
 
@@ -305,22 +301,30 @@ class WrapperModel(Model, ABC):
         with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", 'wb') as f:
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        return cls(clf=cls.load_clf(local_dir), **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def load_clf(cls, local_dir):
+        ...
+
     @staticmethod
     def load_data_preprocessing_function(local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-preprocessing-function.pkl"
+        file_path = local_path / "giskard-data-preprocessing.pkl"
         if file_path.exists():
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
 
     @staticmethod
-    def read_model_postprocessing_function_from_artifact(local_path: str):
+    def load_model_postprocessing_function(local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-model-postprocessing-function.pkl"
+        file_path = local_path / "giskard-data-postprocessing.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
-
 
 class MLFlowBasedModel(WrapperModel, ABC):
     def save(self, local_path: Union[str, Path]) -> None:
@@ -330,11 +334,11 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-        self.save_with_mflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        self.save_with_mlflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
     @abstractmethod
-    def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         ...
 
 
@@ -342,4 +346,5 @@ class CustomModel(Model, ABC):
     """
     Helper class to extend in case a user needs to extend a Model
     """
+
     should_save_model_class = True

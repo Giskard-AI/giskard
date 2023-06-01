@@ -21,7 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Test extends AbstractAuditingEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
     private String name;
 

@@ -1,186 +1,166 @@
 <template>
-  <ValidationObserver v-slot='{ invalid }' v-if='testDetails' class="vertical-container">
-
-    <v-row v-if='testDetails'>
-      <v-col :cols='3'>
+  <v-container fluid class="vertical-container pl-0 pr-0 pb-0 overflow-x-hidden" v-if='testDetails'>
+    <ValidationObserver v-slot='{ invalid }' class="vertical-container overflow-hidden">
+      <v-row v-if='testDetails'>
+        <v-col :cols='3'>
         <span class='text-h6'>
-    <ValidationProvider name='Test name' mode='eager' rules='required' v-slot='{errors}'>
-              <v-text-field
-                  label='Test name'
-                  class='shrink'
-                  type='text'
-                  v-model='testDetails.name'
-                  :error-messages='errors'
-              ></v-text-field>
-    </ValidationProvider>
+          <ValidationProvider name='Test name' mode='eager' rules='required' v-slot='{errors}'>
+                    <v-text-field
+                        label='Test name'
+                        class='shrink'
+                        type='text'
+                        v-model='testDetails.name'
+                        :error-messages='errors'
+                    ></v-text-field>
+          </ValidationProvider>
         </span>
-      </v-col>
-      <v-col :align="'right'">
-        <v-btn
-            class='mx-2 mr-0'
-            dark
-            small
-            outlined
-            color='primary'
-            @click='remove()'
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-    <v-row class="flex-grow-1">
-      <v-col :cols='3' v-show="!fullScreen">
-        <v-alert
-            text
-            color='blue'
-            outlined
-            type='info'
-        >
-          <p class='font-weight-bold text-center'>Available variables</p>
-          <table style='width: 100%'>
-            <tr>
-              <td><code>model</code></td>
-              <td>Model Inspector</td>
-            </tr>
-            <tr>
-              <td><code>actual_ds</code></td>
-              <td>Actual dataset</td>
-            </tr>
-            <tr>
-              <td><code>reference_ds</code></td>
-              <td>Reference dataset</td>
-            </tr>
-          </table>
-          <div class='mt-4 mb-0'>
-            <p class='ma-0'>These variables will be provided at the test execution time</p>
-            <p class='ma-0'>you can reference them in the custom test script</p>
-          </div>
-        </v-alert>
-
-      </v-col>
-      <v-col :cols='fullScreen ? 12 : 6' class="vertical-container test-code-container">
-        <OverlayLoader absolute solid :show="!isEditorReady" no-fade/>
-        <div class="editor-wrapper" :class="{'tall' : fullScreen}">
-          <MonacoEditor
-              ref="editor"
-              v-if="testDetails.type === 'CODE'"
-              v-model='testDetails.code'
-              class='editor'
-              :class="{'tall' : fullScreen}"
-              language='python'
-              :options='$root.monacoOptions'
-          />
-          <v-tooltip left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                  class="code-editor-resize"
-                  v-bind="attrs"
-                  v-on="on"
-                  icon
-                  @click="fullScreen = !fullScreen;"
-                  v-track-click="'Resize test code editor: '+(fullScreen?'min':'max')"
-              >
-                <v-icon>{{ fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
-              </v-btn>
-            </template>
-            <span>{{ fullScreen ? 'Minimize' : 'Maximize' }}</span>
-          </v-tooltip>
-        </div>
-      </v-col>
-      <v-col :cols='3' v-if="!fullScreen" class="vertical-container">
-        <v-list class="templates-list">
-          <v-subheader>Code presets</v-subheader>
-          <div style="max-height: 0;">
-            <v-list-group
-                v-for='snippet in codeSnippets'
-                :key='snippet.title'
-                v-model='snippet.active'
-                no-action
-            >
-              <template v-slot:activator>
-                <v-list-item-content>
-                  <v-list-item-title v-text='snippet.title'></v-list-item-title>
-                </v-list-item-content>
-              </template>
-              <template v-for='child in snippet.items'>
-                <v-hover v-slot='{ hover }' class='snippet pl-3'>
-                  <v-list-item :key='child.title' @click='copyCodeFromSnippet(child.code)'
-                               :disabled="!testAvailability[child['id']]">
-                    <v-list-item-icon>
-                      <v-icon class='mirror code-snippet-icon' v-show='hover' dense>exit_to_app</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                      <v-list-item-title v-text='child.title'></v-list-item-title>
-                    </v-list-item-content>
-                    <v-list-item-action>
-                      <v-tooltip bottom>
-                        <template v-slot:activator='{ on, attrs }'>
-                          <v-icon color='grey lighten-1'
-                                  dense
-                                  v-bind='attrs'
-                                  v-on='on'>mdi-information
-                          </v-icon>
-                        </template>
-                        <span>{{ child.hint }}</span>
-                      </v-tooltip>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-hover>
-              </template>
-            </v-list-group>
-          </div>
-        </v-list>
-      </v-col>
-    </v-row>
-    <v-row style="height: 120px">
-      <v-col align-self="end" cols="3">
-        <v-btn tile color='primary'
-               class='mr-3'
-               :disabled='!isDirty() || invalid'
-               @click='save()'>
-          <v-icon dense left>save</v-icon>
-          Save
-        </v-btn>
-        <v-btn
-            color="primary"
-            tile
-            @click='runTest()'
-            :loading='executingTest'
-            :disabled='executingTest'
-        >
-          <v-icon>arrow_right</v-icon>
-          <span>Run</span>
-        </v-btn>
-
-      </v-col>
-      <v-col v-if='runResult' align-self="end" class="flex-grow-1" style="height: 100%" cols="6">
-        <template v-for='testResult in runResult.result'>
-          <v-alert
-              tile
-              class="test-results"
-              :color="getBadgeColor(runResult.status)"
-              v-model='showRunResult'
-              :type="testResult.result.passed ? 'success' : 'error'"
-              dismissible
-              close-icon="mdi-close"
+        </v-col>
+        <v-col :align="'right'">
+          <v-btn
+              class='mx-2 mr-0'
+              dark
+              small
+              outlined
+              color='primary'
+              @click='remove()'
           >
-            <div class="d-flex justify-space-between align-center">
-              <div class='text-h6'>Test {{ testResult.result.passed ? 'passed' : 'failed' }}</div>
-              <div class="text-body-2">{{ runResult.executionDate | date }}</div>
-            </div>
-            <div class="d-flex justify-space-between align-center">
-              <div class='text-body-2'>Metric: {{ testResult.result.metric }}</div>
-              <div class='text-body-2 text-right'
-                   v-if="testResult.result.messages && testResult.result.messages.length">
-                {{ testResult.result.messages[0].text }}
-              </div>
-              <!--              <a class="text-body-2 results-link text-decoration-underline">Full results</a>-->
+            <v-icon>delete</v-icon>
+          </v-btn>
+        </v-col>
+      </v-row>
+      <v-row class="flex-grow-1 d-flex">
+        <v-col :cols='3' v-show="!fullScreen">
+          <v-alert
+              text
+              color='blue'
+              outlined
+              type='info'
+          >
+            <p class='font-weight-bold text-center'>Available variables</p>
+            <table style='width: 100%'>
+              <tr>
+                <td><code>model</code></td>
+                <td>Model Inspector</td>
+              </tr>
+              <tr>
+                <td><code>actual_ds</code></td>
+                <td>Actual dataset</td>
+              </tr>
+              <tr>
+                <td><code>reference_ds</code></td>
+                <td>Reference dataset</td>
+              </tr>
+            </table>
+            <div class='mt-4 mb-0'>
+              <p class='ma-0'>These variables will be provided at the test execution time</p>
+              <p class='ma-0'>you can reference them in the custom test script</p>
             </div>
           </v-alert>
-        </template>
-      </v-col>
-    </v-row>
-  </ValidationObserver>
+
+        </v-col>
+        <v-col :cols='fullScreen ? 12 : 6' class="test-code-container">
+          <OverlayLoader absolute solid :show="!isEditorReady" no-fade/>
+          <div class="editor-wrapper" :class="{'tall' : fullScreen}">
+            <MonacoEditor
+                ref="editor"
+                v-if="testDetails.type === 'CODE'"
+                v-model='testDetails.code'
+                class='editor'
+                :class="{'tall' : fullScreen}"
+                language='python'
+                :options='$root.monacoOptions'
+            />
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                    class="code-editor-resize"
+                    v-bind="attrs"
+                    v-on="on"
+                    icon
+                    @click="fullScreen = !fullScreen;"
+                    v-track-click="'Resize test code editor: '+(fullScreen?'min':'max')"
+                >
+                  <v-icon>{{ fullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ fullScreen ? 'Minimize' : 'Maximize' }}</span>
+            </v-tooltip>
+          </div>
+        </v-col>
+        <v-col :cols='3' v-if="!fullScreen" class="vertical-container">
+          <v-list class="templates-list">
+            <v-subheader>Code presets</v-subheader>
+            <div style="max-height: 0;">
+              <v-list-group
+                  v-for='snippet in codeSnippets'
+                  :key='snippet.title'
+                  v-model='snippet.active'
+                  no-action
+              >
+                <template v-slot:activator>
+                  <v-list-item-content>
+                    <v-list-item-title v-text='snippet.title'></v-list-item-title>
+                  </v-list-item-content>
+                </template>
+                <template v-for='child in snippet.items'>
+                  <v-hover v-slot='{ hover }' class='snippet pl-3'>
+                    <v-list-item :key='child.title' @click='copyCodeFromSnippet(child.code)'
+                                 :disabled="!testAvailability[child['id']]">
+                      <v-list-item-icon>
+                        <v-icon class='mirror code-snippet-icon' v-show='hover' dense>exit_to_app</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
+                        <v-list-item-title v-text='child.title'></v-list-item-title>
+                      </v-list-item-content>
+                      <v-list-item-action>
+                        <v-tooltip bottom>
+                          <template v-slot:activator='{ on, attrs }'>
+                            <v-icon color='grey lighten-1'
+                                    dense
+                                    v-bind='attrs'
+                                    v-on='on'>mdi-information
+                            </v-icon>
+                          </template>
+                          <span>{{ child.hint }}</span>
+                        </v-tooltip>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-hover>
+                </template>
+              </v-list-group>
+            </div>
+          </v-list>
+        </v-col>
+      </v-row>
+
+      <v-row style="height: 120px">
+        <v-col align-self="end" cols="3">
+          <v-btn tile color='primary'
+                 class='mr-3'
+                 :disabled='!isDirty() || invalid'
+                 @click='save()'>
+            <v-icon dense left>save</v-icon>
+            Save
+          </v-btn>
+          <v-btn
+              color="primary"
+              tile
+              @click='runTest()'
+              :loading='executingTest'
+              :disabled='executingTest'
+          >
+            <v-icon>arrow_right</v-icon>
+            <span>Run</span>
+          </v-btn>
+
+        </v-col>
+        <v-col v-if='runResult' align-self="end" cols="6">
+          <TestExecutionResultBadge :result="runResult"/>
+        </v-col>
+      </v-row>
+    </ValidationObserver>
+  </v-container>
+
 </template>
 
 <script lang='ts'>
@@ -197,9 +177,9 @@ import _ from 'lodash';
 import numeral from 'numeral';
 import {CodeTestCollection, TestDTO, TestExecutionResultDTO, TestResult, TestType} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {testStatusToColor} from "@/views/main/tests/test-utils";
 import Mousetrap from "mousetrap";
 import OverlayLoader from '@/components/OverlayLoader.vue';
+import TestExecutionResultBadge from './TestExecutionResultBadge.vue';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 
@@ -207,7 +187,7 @@ Vue.filter('formatNumber', function (value, fmt) {
   return numeral(value).format(fmt || '0.0'); // displaying other groupings/separators is possible, look at the docs
 });
 
-@Component({components: {MonacoEditor, OverlayLoader}})
+@Component({components: {MonacoEditor, OverlayLoader, TestExecutionResultBadge}})
 export default class TestEditor extends Vue {
   @Prop({required: true}) testId!: number;
   @Prop({required: true}) suiteId!: number;
@@ -364,10 +344,6 @@ export default class TestEditor extends Vue {
     });
   }
 
-  getBadgeColor(testStatus: TestResult) {
-    return testStatusToColor(testStatus);
-  }
-
   private setUpKeyBindings() {
     this.mouseTrap.bind(['command+s', 'ctrl+s'], () => {
       this.save();
@@ -422,9 +398,21 @@ export default class TestEditor extends Vue {
 @import "src/styles/colors.scss";
 
 .editor-wrapper {
+  height: 100%;
   position: relative;
   min-height: 300px;
   flex-grow: 1;
+  flex-direction: column;
+  display: flex;
+
+  .editor {
+    border: 1px solid grey;
+    flex-grow: 1;
+
+    ::v-deep .suggest-widget {
+      display: none;
+    }
+  }
 }
 
 .mirror {
@@ -445,15 +433,6 @@ export default class TestEditor extends Vue {
   z-index: 100;
 }
 
-.editor {
-  height: 100%;
-  border: 1px solid grey;
-
-  ::v-deep .suggest-widget {
-    display: none;
-  }
-
-}
 
 .tall {
   flex-grow: 1;

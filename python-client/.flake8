@@ -1,0 +1,15 @@
+[flake8]
+extend-ignore =
+    DAR003
+    DAR102
+    DAR201
+    E501
+    DAR201
+    DAR101
+    DAR401
+    E203
+exclude =
+    .git
+    __pycache__
+    giskard/ml_worker/generated
+
