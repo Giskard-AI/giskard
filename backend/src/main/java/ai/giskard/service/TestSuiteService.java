@@ -10,14 +10,9 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.*;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
-import ai.giskard.web.dto.TestCatalogDTO;
-import ai.giskard.web.dto.TestDefinitionDTO;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
-import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
-import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
@@ -32,7 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ai.giskard.web.rest.errors.Entity.TEST;
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
+
 
 @Service
 @Transactional
@@ -65,7 +61,7 @@ public class TestSuiteService {
             throw new IllegalArgumentException("Model is not part of the test project");
         }
 
-        TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, dto.getId()));
+        TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, dto.getId()));
         giskardMapper.updateTestSuiteFromDTO(dto, testSuite);
         return testSuite;
     }
@@ -166,8 +162,7 @@ public class TestSuiteService {
 
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
-            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -199,7 +194,7 @@ public class TestSuiteService {
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId.equals(t.getTestId()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testId));
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 
@@ -232,7 +227,7 @@ public class TestSuiteService {
 
     public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
         TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
-            .orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, suiteId));
+            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
