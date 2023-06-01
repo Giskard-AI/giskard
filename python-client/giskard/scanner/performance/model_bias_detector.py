@@ -18,7 +18,7 @@ from ..logger import logger
 
 @detector(name="model_bias", tags=["model_bias", "classification", "regression"])
 class ModelBiasDetector:
-    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.1, method: str = "tree"):
+    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.05, method: str = "tree"):
         self.metrics = metrics
         self.threshold = threshold
         self.method = method
