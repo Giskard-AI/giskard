@@ -1,5 +1,5 @@
-from models.base import BaseModel
-from datasets.base import Dataset
+from giskard import Dataset
+from giskard.models.base import BaseModel
 from giskard.scanner.logger import logger
 import pandas as pd
 
