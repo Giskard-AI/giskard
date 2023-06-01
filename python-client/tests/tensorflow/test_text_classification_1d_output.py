@@ -1,5 +1,3 @@
-import os
-import shutil
 import tensorflow as tf
 import pandas as pd
 from tensorflow.keras import layers
