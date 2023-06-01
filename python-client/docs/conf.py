@@ -15,6 +15,7 @@ release = '2.0.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["myst_parser",
+              'nbsphinx',
               'sphinx_design',
               'sphinx.ext.todo',
               'sphinx.ext.napoleon',
@@ -67,6 +68,7 @@ html_theme_options = {
         "color-brand-content": "#173A2F",
         "color-api-highlight": "#56D793",
         "color-api-background": "#F5F5F5",
+        "color-toc-item-text--active": "#56D793",
         "color-sidebar-current-text": "#56D793",
         "color-sidebar-link-text--top-level": "#0c0c0c",
         "color-content-foreground": "#484848",
@@ -76,7 +78,9 @@ html_theme_options = {
     "dark_css_variables": {
         "color-brand-primary": "#56D793",
         "color-brand-content": "#91F6C0",
+        "color-api-background": "#242424",
         "color-sidebar-current-text": "#56D793",
+        "color-toc-item-text--active": "#56D793",
         "color-sidebar-link-text--top-level": "#FcFcFc",
         "color-content-foreground": "#FFFFFF",
         "social-button-background": "#000000",
@@ -92,6 +96,8 @@ html_theme_options = {
 }
 
 add_function_parentheses = False
+# Do not execute the notebooks when building the docs
+nbsphinx_execute = "never"
 
 import inspect
 import os
