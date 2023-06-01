@@ -1,4 +1,3 @@
-from re import match
 import pandas as pd
 from typing import Callable, Optional, Iterable, Any
 
@@ -7,7 +6,7 @@ from giskard.models.base import CloudpickleBasedModel
 from giskard.core.core import ModelType
 
 
-class Model:
+class Model(CloudpickleBasedModel):
     """
     A class that automatically infer the ML library of the :code:`model` object from the user and provides suitable:
 
@@ -89,28 +88,20 @@ class Model:
             raise ValueError("The 'Model' class requires a 'model' object. In case you want to create a custom "
                              "class without a 'model' object, please create a subclass of 'CustomModel' instead.")
         else:
-            cls_properties = {
-                name: getattr(cls, name) for name in dir(cls) if not match("__.*__", name)
-            }
             giskard_cls = infer_giskard_cls(model)
-            if giskard_cls:
-                return type(giskard_cls.__name__, (giskard_cls,), cls_properties)(
-                    model=model,
-                    model_type=model_type,
-                    data_preprocessing_function=data_preprocessing_function,
-                    model_postprocessing_function=model_postprocessing_function,
-                    name=name,
-                    feature_names=feature_names,
-                    classification_threshold=classification_threshold,
-                    classification_labels=classification_labels,
-                    **kwargs)
-            else:
-                return type(cls.__name__, (CloudpickleBasedModel,), cls_properties)(
-                    model=model,
-                    model_type=model_type,
-                    data_preprocessing_function=data_preprocessing_function,
-                    model_postprocessing_function=model_postprocessing_function,
-                    name=name,
-                    feature_names=feature_names,
-                    classification_threshold=classification_threshold,
-                    classification_labels=classification_labels)
+            # if the Auto class is overriden (thus != Auto) -> get the methods from the subclass
+            # if the Auto class is called (thus == Auto) -> get the methods from the inferred class
+            # if giskard_cls == None -> get the methods from CloudpickleBasedModel
+            methods_holding_class = cls if cls.__name__ != 'Model' else giskard_cls if giskard_cls else CloudpickleBasedModel
+            output_cls = type(cls.__name__, (giskard_cls,), dict(methods_holding_class.__dict__))
+
+            return output_cls(
+                model=model,
+                model_type=model_type,
+                data_preprocessing_function=data_preprocessing_function,
+                model_postprocessing_function=model_postprocessing_function,
+                name=name,
+                feature_names=feature_names,
+                classification_threshold=classification_threshold,
+                classification_labels=classification_labels,
+                **kwargs)
