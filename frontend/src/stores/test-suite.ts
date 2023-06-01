@@ -89,7 +89,9 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-            return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            return {
+                trackJob: this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            }
         },
         async tryTestSuite(input: Array<FunctionInputDTO>) {
             this.tryResult = await api.tryTestSuite(this.projectId!, this.suiteId!, input);

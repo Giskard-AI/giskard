@@ -201,7 +201,7 @@ async function executeTestSuite(close) {
       ));
 
       if (props.compareMode) {
-          await Promise.all(jobUuids);
+          await Promise.all(jobUuids.map(({trackJob}) => trackJob));
           await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
       } else {
           mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
