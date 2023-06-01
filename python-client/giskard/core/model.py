@@ -37,6 +37,7 @@ class ModelPredictionResults(BaseModel):
     probabilities: Optional[Any]
     all_predictions: Optional[Any]
 
+
 class Model(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
@@ -247,6 +248,7 @@ class Model(ABC):
                 f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
             )
 
+
 class WrapperModel(Model, ABC):
     """
     A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
@@ -326,6 +328,7 @@ class WrapperModel(Model, ABC):
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
 
+
 class MLFlowBasedModel(WrapperModel, ABC):
     def save(self, local_path: Union[str, Path]) -> None:
         """
@@ -338,7 +341,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         super().save(local_path)
 
     @abstractmethod
-    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow    (self, local_path, mlflow_meta: mlflow.models.Model):
         ...
 
 

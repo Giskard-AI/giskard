@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Dict, List
 
+
 class SupportedModelTypes(Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
