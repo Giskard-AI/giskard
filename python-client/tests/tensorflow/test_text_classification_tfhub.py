@@ -33,8 +33,7 @@ def test_text_classification_tfhub():
         "Year": "numeric",
     }
 
-    data_filtered = pd.read_csv('example_data.csv').dropna(axis=0)
-
+    data_filtered = pd.read_csv('tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
 
     Y = data_filtered["Target"]
     X = data_filtered.drop(columns=["Target"])
@@ -97,3 +96,6 @@ def test_text_classification_tfhub():
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
         tests.utils.match_url_patterns(m.request_history, models_url_pattern)
+
+if __name__=="__main__":
+    test_text_classification_tfhub()
