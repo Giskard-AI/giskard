@@ -1,5 +1,10 @@
 <template>
   <v-container fluid class="vc">
+    <div class="d-flex flex-row-reverse pb-4">
+      <CreateTestSuiteModal
+          :project-id="props.projectId"
+      />
+    </div>
     <v-row>
       <v-card elevation="2"
               :to="{name: 'test-suite-new', params: {suiteId: suite.id}}"
@@ -19,6 +24,7 @@
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
 import {TestSuiteNewDTO} from "@/generated-sources";
+import CreateTestSuiteModal from '@/components/CreateTestSuiteModal.vue';
 
 const props = defineProps<{
   projectId: number
