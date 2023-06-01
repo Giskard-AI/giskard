@@ -37,7 +37,7 @@ async function deleteDebuggingSession() {
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" @click="deleteDebuggingSession">Delete</v-btn>
+          <v-btn color="primary" class="grey--text text--darken-4" @click="deleteDebuggingSession">Delete</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
