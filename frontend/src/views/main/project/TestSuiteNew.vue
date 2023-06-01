@@ -87,7 +87,7 @@ import {
   DatasetDTO,
   ModelDTO,
   SuiteTestDTO,
-  TestFunctionDTO,
+  TestCatalogDTO,
   TestSuiteExecutionDTO,
   TestSuiteNewDTO
 } from "@/generated-sources";
