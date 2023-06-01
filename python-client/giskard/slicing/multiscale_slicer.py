@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 
 from .tree_slicer import DecisionTreeSlicer
-from .slice import GreaterThan, LowerThan, Query, DataSlice, QueryBasedSliceFunction
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 
 class MultiscaleSlicer(DecisionTreeSlicer):

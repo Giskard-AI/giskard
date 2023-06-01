@@ -189,7 +189,6 @@ class PerformanceScanResult(ScanResult):
         display_html(html, raw=True)
 
     def _repr_html_(self):
-        from pathlib import Path
         from jinja2 import Environment, PackageLoader, select_autoescape
 
         env = Environment(

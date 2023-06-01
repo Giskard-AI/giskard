@@ -1,10 +1,9 @@
 import pandas as pd
 from typing import List
 
-from .filters import SignificanceFilter
-from .slice import DataSlice, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
-
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from .base import BaseSlicer
+
 
 class OptSlicer(BaseSlicer):
     def find_slices(self, features, target=None):

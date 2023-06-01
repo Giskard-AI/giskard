@@ -2,7 +2,7 @@ from ..datasets import Dataset
 from ..models.base import BaseModel
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
-from typing import Optional, Callable
+from typing import Optional
 
 
 class Issue:

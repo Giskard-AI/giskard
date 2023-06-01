@@ -1,9 +1,5 @@
-from sklearn.tree._tree import Tree as SklearnTree
-from sklearn.model_selection import train_test_split
-
 from .base import BaseSlicer
-from .slice import DataSlice, Query, EqualTo, QueryBasedSliceFunction
-from .filters import SignificanceFilter
+from .slice import Query, EqualTo, QueryBasedSliceFunction
 
 
 class CategorySlicer(BaseSlicer):

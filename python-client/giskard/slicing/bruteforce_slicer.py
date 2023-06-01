@@ -22,9 +22,9 @@ class BruteForceSlicer(BaseSlicer):
         # Quantile-based binning
         _, cut_bin = pd.qcut(data[feature], q=4, retbins=True, duplicates="drop", labels=False)
 
-        result_df=[]
-        for i in range(len(cut_bin)-1):
-            result_df.append([cut_bin[i],cut_bin[i+1]])
+        result_df = []
+        for i in range(len(cut_bin) - 1):
+            result_df.append([cut_bin[i], cut_bin[i + 1]])
 
         clauses = []
         for interval in result_df:

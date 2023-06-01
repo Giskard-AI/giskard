@@ -9,7 +9,6 @@ from sklearn.model_selection import GridSearchCV
 
 from .base import BaseSlicer
 from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
-from .filters import SignificanceFilter
 
 
 def make_slices_from_tree(data: pd.DataFrame, tree: SklearnTree, feature_names: Optional[Sequence] = None):

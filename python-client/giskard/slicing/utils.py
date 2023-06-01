@@ -3,7 +3,6 @@ import numpy as np
 from .slice import GreaterThan, LowerThan
 from .tree_slicer import DecisionTreeSlicer
 from .opt_slicer import OptSlicer
-from .category_slicer import CategorySlicer
 from .multiscale_slicer import MultiscaleSlicer
 from .bruteforce_slicer import BruteForceSlicer
 
