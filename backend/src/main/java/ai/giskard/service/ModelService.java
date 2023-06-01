@@ -98,15 +98,22 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(UUID modelId, UUID datasetId) throws IOException {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Inspection inspection = new Inspection();
+
+        if (name == null || name.isEmpty())
+            inspection.setName("Unnamed session");
+        else
+            inspection.setName(name);
+
         inspection.setDataset(dataset);
         inspection.setModel(model);
+
         inspection = inspectionRepository.save(inspection);
 
         predictSerializedDataset(model, dataset, inspection.getId());

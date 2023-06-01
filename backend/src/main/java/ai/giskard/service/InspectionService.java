@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
 import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
@@ -234,5 +235,23 @@ public class InspectionService {
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
+    }
+
+    public List<Inspection> getInspections() {
+        return inspectionRepository.findAll();
+    }
+
+    public List<Inspection> getInspectionsByProjectId(long projectId) {
+        return inspectionRepository.findAllByModelProjectId(projectId);
+    }
+
+    public void deleteInspection(Long inspectionId) {
+        inspectionRepository.deleteById(inspectionId);
+    }
+
+    public Inspection updateInspectionName(long inspectionId, String name) {
+        Inspection inspection = inspectionRepository.getById(inspectionId);
+        inspection.setName(name);
+        return inspectionRepository.save(inspection);
     }
 }

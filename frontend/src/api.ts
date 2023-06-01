@@ -1,6 +1,6 @@
-import axios, {AxiosError} from 'axios';
-import {apiURL} from '@/env';
-import {getLocalToken, removeLocalToken} from '@/utils';
+import axios, { AxiosError } from 'axios';
+import { apiURL } from '@/env';
+import { getLocalToken, removeLocalToken } from '@/utils';
 import Vue from "vue";
 
 import {
@@ -48,13 +48,13 @@ import {
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
-import {TYPE} from "vue-toastification";
+import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import { TYPE } from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
-import {useUserStore} from "@/stores/user";
-import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import { useUserStore } from "@/stores/user";
+import { SetupDTO } from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -193,7 +193,7 @@ function downloadURL(urlString) {
 
 export const api = {
     async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
+        return apiV2.post<unknown, JWTToken>(`/authenticate`, { username, password });
     },
     async getLicense() {
         return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
@@ -245,7 +245,7 @@ export const api = {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
     },
     async passwordRecovery(email: string) {
-        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{email});
+        return apiV2.post<unknown, void>(`/account/password-recovery`, <PasswordResetRequest>{ email });
     },
     async resetPassword(password: string) {
         return apiV2.post<unknown, void>(`/account/reset-password`, <TokenAndPasswordVM>{
@@ -273,7 +273,7 @@ export const api = {
         return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
+        return axiosProject.get<unknown, ProjectDTO>(`/`, { params: { id } });
     },
     async createProject(data: ProjectPostDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/`, data);
@@ -295,7 +295,7 @@ export const api = {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
     async prepareImport(formData: FormData) {
-        const headers = {'Content-Type': 'multipart/form-data'};
+        const headers = { 'Content-Type': 'multipart/form-data' };
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
@@ -337,10 +337,10 @@ export const api = {
         return apiV2.get<unknown, FeatureMetadataDTO[]>(`/dataset/${datasetId}/features`);
     },
     async filterDataset(datasetId: number, sliceName: string, code: string) {
-        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, {sliceName: sliceName, code: code});
+        return apiV2.post<unknown, unknown>(`/dataset/${datasetId}/filter`, { sliceName: sliceName, code: code });
     },
     async getDataFilteredByRange(inspectionId, props, filter) {
-        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, {params: props});
+        return apiV2.post<unknown, any>(`/inspection/${inspectionId}/rowsFiltered`, filter, { params: props });
     },
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)
@@ -391,15 +391,27 @@ export const api = {
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
         return apiV2.delete<unknown, void>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/suite-test/${suiteTestId}`);
     },
+    async getInspections() {
+        return apiV2.get<unknown, InspectionDTO[]>(`/inspections`);
+    },
+    async getProjectInspections(projectId: number) {
+        return axiosProject.get<unknown, InspectionDTO[]>(`/${projectId}/inspections`);
+    },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
+    },
+    async deleteInspection(inspectionId: number) {
+        return apiV2.delete<unknown, void>(`/inspections/${inspectionId}`);
+    },
+    async updateInspectionName(inspectionId: number, inspection: InspectionCreateDTO) {
+        return apiV2.put<unknown, InspectionDTO>(`/inspections/${inspectionId}`, inspection);
     },
     async predict(modelId: string, datasetId: string, inputData: { [key: string]: string }, controller: AbortController) {
         const data: PredictionInputDTO = {
             datasetId: datasetId,
             features: inputData
         }
-        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, {signal: controller.signal});
+        return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, { signal: controller.signal });
     },
 
     async prepareInspection(payload: InspectionCreateDTO) {
@@ -407,14 +419,14 @@ export const api = {
     },
     async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
         return apiV2.post<unknown, ExplainResponseDTO>(`/models/${modelId}/explain/${datasetId}`,
-            {features: inputData},
-            {signal: controller.signal});
+            { features: inputData },
+            { signal: controller.signal });
     },
     async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
         return apiV2.post<unknown, ExplainTextResponseDTO>(`/models/explain-text/${featureName}`,
             {
                 features: inputData
-            }, {params: {modelId, datasetId}});
+            }, { params: { modelId, datasetId } });
     },
     // feedbacks
     async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
