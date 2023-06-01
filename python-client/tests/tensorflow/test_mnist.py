@@ -8,6 +8,7 @@ import requests_mock
 import re
 import tests.utils
 
+
 # Define a simple sequential model
 def create_model():
     model = tf.keras.Sequential([
@@ -22,18 +23,14 @@ def create_model():
 
     return model
 
+
 def test_mnist():
 
-    (train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.mnist.load_data()
-
-    # Create a basic model instance
-    model = create_model()
+    (train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
 
     train_labels = train_labels[:100]
-    #test_labels = test_labels[:100]
 
     train_images = train_images[:100].reshape(-1, 28 * 28) / 255.0
-    #test_images = test_images[:100].reshape(-1, 28 * 28) / 255.0
 
     # Create and train a new model instance.
     model = create_model()
@@ -60,7 +57,6 @@ def test_mnist():
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
         client = GiskardClient(url, token)
-        # enron = client.create_project('test-project', "Email Classification", "Email Classification")
         my_model.upload(client, 'test-project', my_test_dataset)
 
         tests.utils.match_model_id(my_model.id)
