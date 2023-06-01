@@ -6,6 +6,7 @@ import pandas as pd
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
+from giskard.models.function import PredictionFunctionModel
 
 
 class Model(CloudpickleBasedModel, ABC):
@@ -104,6 +105,9 @@ class Model(CloudpickleBasedModel, ABC):
                 possibly_overriden_cls.save_model = giskard_cls.save_model
                 possibly_overriden_cls.load_model = giskard_cls.load_model
             elif giskard_cls:
+                input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
+                print("Your "+input_type+" is successfully wrapped by Giskard's '"
+                      + str(giskard_cls.__name__) + "' wrapper class.")
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
                 raise NotImplementedError(

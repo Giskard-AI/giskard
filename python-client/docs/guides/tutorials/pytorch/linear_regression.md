@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.data.dataset import random_split
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrap dataset
@@ -22,7 +22,7 @@ y = true_a + true_b * x + 0.1 * np.random.randn(100, 1)
 df = pd.DataFrame({"x": np.squeeze(x), "y": np.squeeze(y)})
 ```
 ```python
-wrapped_dataset = wrap_dataset(df.head(), 
+wrapped_dataset = Dataset(df.head(), 
                                name="test dataset", 
                                target="y")
 ```
@@ -117,7 +117,7 @@ for epoch in range(n_epochs):
 feature_names = ["x"]
 ```
 ```python
-wrapped_model = wrap_model(name="my_linear_model", 
+wrapped_model = Model(name="my_linear_model", 
                            model=model, 
                            feature_names=feature_names, 
                            model_type="regression")
