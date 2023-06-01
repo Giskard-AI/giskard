@@ -36,4 +36,5 @@ public class YAMLConverter {
     public static String writeValueAsString(Object data) throws JsonProcessingException {
         return MAPPER.writeValueAsString(data);
     }
+
 }

@@ -38,12 +38,18 @@ public class GiskardStringUtils {
         }
     }
 
-    public static String escapeSpecialCharacters(String data) {
-        String escapedData = data.replaceAll("\\R", " ");
-        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
-            data = data.replace("\"", "\"\"");
-            escapedData = "\"" + data + "\"";
+    public static Object parsePythonVariable(String value, String columnDtype) {
+        if (value == null) {
+            return null;
         }
-        return escapedData;
+
+        if (columnDtype.startsWith("int")) {
+            return Long.parseLong(value);
+        } else if (columnDtype.startsWith("float")) {
+            return Double.parseDouble(value);
+        } else {
+            return value;
+        }
     }
+
 }
