@@ -172,11 +172,7 @@ async function executeTestSuite(close) {
           testSuiteStore.runTestSuite([
               ...Object.values(input.globalInput),
               ...Object.values(input.sharedInputs)
-          ]
-              .reduce((result, input) => {
-                  result[input.name] = input.value;
-                  return result;
-              }, {}))
+          ])
       ));
 
       if (props.compareMode) {

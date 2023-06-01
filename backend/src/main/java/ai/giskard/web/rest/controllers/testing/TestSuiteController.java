@@ -18,7 +18,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -107,7 +106,7 @@ public class TestSuiteController {
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     public UUID scheduleTestSuiteExecution(@PathVariable("projectId") @NotNull Long projectId,
                                            @PathVariable("suiteId") @NotNull Long suiteId,
-                                           @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+                                           @Valid @RequestBody List<FunctionInputDTO> inputs) {
         return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
     }
 
