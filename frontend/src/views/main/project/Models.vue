@@ -36,14 +36,14 @@
                 Debug
               </v-btn>
               <v-tooltip bottom>
-                <template v-slot:activator=" { on, attrs } ">
-                  <v-btn icon color="info" @click=" downloadModelPickle(m.id) " v-bind=" attrs " v-on=" on ">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn icon color="info" @click=" downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if=" isProjectOwnerOrAdmin " :id=" m.id " :file-name=" m.fileName " type="model" @submit=" deleteModelPickle(m.id) " />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -51,13 +51,14 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model=" showInspectDialog " class="inspector-launcher-container">
-        <InspectorLauncher :projectId=" projectId " :model=" modelToInspect " @cancel=" cancelLaunchInspector() " />
+      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel=" cancelLaunchInspector()" />
       </v-dialog>
 
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No models uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
     </v-container>
   </div>
 </template>
@@ -67,16 +68,18 @@ import { api } from '@/api';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = withDefaults(defineProps<{
   projectId: number,
+  projectKey: string,
   isProjectOwnerOrAdmin: boolean
 }>(), {
   isProjectOwnerOrAdmin: false
@@ -85,6 +88,27 @@ const props = withDefaults(defineProps<{
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "http://localhost:19000" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token
+client = GiskardClient(url, token)
+
+# Load your model (example: SKLearn model)
+from joblib import load
+my_sklearn_regressor = load("sklearn_regressor.joblib")
+
+# Create a Giskard Model
+from giskard import SKLearnModel
+my_giskard_model = SKLearnModel(my_sklearn_regressor, 
+                                model_type="regression",
+                                name="My SKLearn Regressor")
+
+# Upload your model on Giskard
+project_key = "${props.projectKey}" # Current project key
+my_giskard_model.upload(client, project_key)`
+)
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
