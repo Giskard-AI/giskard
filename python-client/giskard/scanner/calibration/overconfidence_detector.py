@@ -61,13 +61,13 @@ class OverconfidenceDetector(LossBasedDetector):
         p_threshold = self.p_threshold or _default_overconfidence_threshold(model)
         logger.debug(f"{self.__class__.__name__}: Using overconfidence threshold = {p_threshold}")
 
-        reference_rate = np.nanmean(dataset_with_meta.df[self.LOSS_COLUMN_NAME] > p_threshold)
+        reference_rate = (dataset_with_meta.df[self.LOSS_COLUMN_NAME].dropna() > p_threshold).mean()
 
         issues = []
         for slice_fn in slices:
             sliced_dataset = dataset_with_meta.slice(slice_fn)
 
-            slice_rate = np.nanmean(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)
+            slice_rate = (sliced_dataset.df[self.LOSS_COLUMN_NAME].dropna() > p_threshold).mean()
             fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)].index
             relative_delta = (slice_rate - reference_rate) / reference_rate
 

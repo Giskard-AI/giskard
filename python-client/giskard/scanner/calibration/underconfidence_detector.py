@@ -13,8 +13,9 @@ from ..logger import logger
 
 @detector(name="underconfidence", tags=["underconfidence", "classification"])
 class UnderconfidenceDetector(LossBasedDetector):
-    def __init__(self, threshold=0.1, method="tree"):
+    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree"):
         self.threshold = threshold
+        self.p_threshold = p_threshold
         self.method = method
 
     @property
@@ -57,20 +58,27 @@ class UnderconfidenceDetector(LossBasedDetector):
         # For performance
         dataset_with_meta._load_metadata_from_instance(dataset.column_meta)
 
-        mean_loss = dataset_with_meta.df[self.LOSS_COLUMN_NAME].mean()
+        reference_rate = (dataset_with_meta.df[self.LOSS_COLUMN_NAME].dropna() > self.p_threshold).mean()
 
         issues = []
         for slice_fn in slices:
             sliced_dataset = dataset_with_meta.slice(slice_fn)
 
-            slice_loss = sliced_dataset.df[self.LOSS_COLUMN_NAME].mean()
+            slice_rate = (sliced_dataset.df[self.LOSS_COLUMN_NAME].dropna() > self.p_threshold).mean()
+            fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > self.p_threshold)].index
+
+            # Skip non representative slices
+            if len(fail_idx) < 20:
+                continue
+
+            relative_delta = (slice_rate - reference_rate) / reference_rate
 
             logger.debug(
-                f"{self.__class__.__name__}: Testing slice {slice_fn}\tLoss (slice) = {slice_loss:.3f} (global {mean_loss:.3f}) Δm = {np.nan:.3f}"
+                f"{self.__class__.__name__}: Testing slice {slice_fn}\tUnderconfidence rate (slice) = {slice_rate:.3f} (global {reference_rate:.3f}) Δm = {relative_delta:.3f}"
             )
 
-            if slice_loss > (1 - self.threshold):
-                level = "major" if slice_loss > (1 - 2 * self.threshold) else "medium"
+            if relative_delta > self.threshold:
+                level = "major" if relative_delta > 2 * self.threshold else "medium"
                 issues.append(
                     UnderconfidenceIssue(
                         model,
@@ -79,9 +87,10 @@ class UnderconfidenceDetector(LossBasedDetector):
                         CalibrationIssueInfo(
                             slice_fn=slice_fn,
                             slice_size=len(sliced_dataset),
-                            metric_value_slice=slice_loss,
-                            metric_value_reference=mean_loss,
+                            metric_value_slice=slice_rate,
+                            metric_value_reference=reference_rate,
                             loss_values=meta[self.LOSS_COLUMN_NAME],
+                            fail_idx=fail_idx,
                             threshold=self.threshold,
                         ),
                     )
