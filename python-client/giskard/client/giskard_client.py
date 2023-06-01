@@ -278,7 +278,8 @@ class GiskardClient:
         print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
-        return meta.from_json(self._session.put(endpoint, json=meta.to_json()).json())
+        json = self._session.put(endpoint, json=meta.to_json()).json()
+        return meta if json is None or 'uuid' not in json else meta.from_json(json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())
