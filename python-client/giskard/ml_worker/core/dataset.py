@@ -28,13 +28,13 @@ class Dataset:
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            cat_features: Optional[List[str]] = None
+            cat_columns: Optional[List[str]] = None
     ) -> None:
         self.name = name
         self.df = df
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_features}
+        self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_columns}
 
     @staticmethod
     def extract_column_types(df):
@@ -107,16 +107,16 @@ class Dataset:
             df=df,
             name=meta.name,
             target=meta.target,
-            cat_features=cls._cat_features(meta))
+            cat_columns=cls._cat_columns(meta))
 
     @staticmethod
-    def _cat_features(meta):
+    def _cat_columns(meta):
         return [fname for (fname, ftype) in meta.feature_types.items() if
                 ftype == SupportedColumnMeanings.CATEGORY]
 
     @property
-    def cat_features(self):
-        return self._cat_features(self.meta)
+    def cat_columns(self):
+        return self._cat_columns(self.meta)
 
     def _save_to_local_dir(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", 'wb') as f:
@@ -148,7 +148,7 @@ class Dataset:
             df=slice_fn(self.df),
             name=self.name,
             target=self.target,
-            cat_features=self.cat_features)
+            cat_columns=self.cat_columns)
 
     def __len__(self):
         return len(self.df)
