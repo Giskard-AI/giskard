@@ -52,9 +52,9 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     return path.exists(), path
 
 
-def map_callable_function(callable_type):
+def map_function_meta(callable_type):
     return {
-        test.uuid: ml_worker_pb2.CallableFunction(
+        test.uuid: ml_worker_pb2.FunctionMeta(
             uuid=test.uuid,
             name=test.name,
             module=test.module,
@@ -62,7 +62,17 @@ def map_callable_function(callable_type):
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
-            type=test.type
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
@@ -168,7 +178,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.slice(slicing_function)
+        arguments = self.parse_test_arguments(request.arguments)
+
+        result = dataset.slice(slicing_function(**arguments))
 
         return ml_worker_pb2.SlicingResultMessage(
             datasetId=request.dataset.id,
@@ -182,7 +194,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.transform(transformation_function)
+        arguments = self.parse_test_arguments(request.arguments)
+
+        result = dataset.transform(transformation_function(**arguments))
 
         modified_rows = result.df[dataset.df.ne(result.df)].dropna(how='all')
 
@@ -475,32 +489,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
-        return ml_worker_pb2.CatalogResponse(tests={
-            test.uuid: ml_worker_pb2.TestFunction(
-                uuid=test.uuid,
-                name=test.name,
-                module=test.module,
-                doc=test.doc,
-                code=test.code,
-                moduleDoc=test.module_doc,
-                tags=test.tags,
-                args=[
-                    ml_worker_pb2.TestFunctionArgument(
-                        name=a.name,
-                        type=a.type,
-                        optional=a.optional,
-                        default=str(a.default),
-                        argOrder=a.argOrder
-                    ) for a
-                    in test.args.values()
-                ],
-                type=test.type
-            )
-            for test in tests_registry.get_all().values()
-            if test.type == 'TEST'
-        },
-            slices=map_callable_function('SLICE'),
-            transformations=map_callable_function('TRANSFORMATION')
+        return ml_worker_pb2.CatalogResponse(
+            tests=map_function_meta('TEST'),
+            slices=map_function_meta('SLICE'),
+            transformations=map_function_meta('TRANSFORMATION')
         )
 
     @staticmethod
