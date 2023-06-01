@@ -7,7 +7,7 @@ import torch
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
-from transformers import PreTrainedModel
+from transformers import PreTrainedModel, pipelines
 
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,12 @@ class HuggingFaceModel(MLFlowBasedModel):
         if isinstance(self.clf, torch.nn.Module):
             with torch.no_grad():
                 predictions = self.clf(**data)
+        elif isinstance(self.clf, pipelines.Pipeline):
+            _predictions = self.clf(data, top_k=None)
+            predictions = []
+            for label in self.meta.classification_labels:
+                label_score = next(item for item in _predictions if item["label"] == label)
+                predictions.append(label_score['score'])
         else:
             predictions = self.clf(**data)
 
