@@ -1,6 +1,4 @@
-"""Heuristic tests"""
-from typing import Callable
-
+"""Statistical tests"""
 import numpy as np
 import pandas as pd
 
