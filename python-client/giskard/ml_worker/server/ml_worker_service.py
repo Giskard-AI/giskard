@@ -13,6 +13,7 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
+from google.protobuf.wrappers_pb2 import Int32Value, DoubleValue
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -407,12 +408,12 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
             ],
             props=result.props,
             metric=result.metric,
-            missing_count=result.missing_count,
-            missing_percent=result.missing_percent,
-            unexpected_count=result.unexpected_count,
-            unexpected_percent=result.unexpected_percent,
-            unexpected_percent_total=result.unexpected_percent_total,
-            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
+            missing_count=Int32Value(value=result.missing_count),
+            missing_percent=DoubleValue(value=result.missing_percent),
+            unexpected_count=Int32Value(value=result.unexpected_count),
+            unexpected_percent=DoubleValue(value=result.unexpected_percent),
+            unexpected_percent_total=DoubleValue(value=result.unexpected_percent_total),
+            unexpected_percent_nonmissing=DoubleValue(value=result.unexpected_percent_nonmissing),
             partial_unexpected_index_list=[
                 ml_worker_pb2.Partial_unexpected_counts(
                     value=puc.value,
