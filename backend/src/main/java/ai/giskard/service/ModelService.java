@@ -108,7 +108,7 @@ public class ModelService {
         Inspection inspection = new Inspection();
 
         if (name == null || name.isEmpty())
-            inspection.setName("Unnamed inspection");
+            inspection.setName("Unnamed session");
         else
             inspection.setName(name);
 

@@ -161,7 +161,7 @@ export default new Router({
                                     props: (route) => {
                                         return {
                                             projectId: Number(route.params.id),
-                                            activeInspectionId: route.params.inspectionId
+                                            activeSessionId: route.params.inspectionId
                                         }
                                     }
                                 },
