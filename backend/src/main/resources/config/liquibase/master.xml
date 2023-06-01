@@ -14,16 +14,17 @@
     <property name="datetimeType" value="datetime(6)" dbms="mysql, mariadb"/>
     <property name="datetimeType" value="datetime" dbms="oracle, mssql, postgresql, h2"/>
 
-    <include file="config/liquibase/changelog/initial_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20220608152717_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20220630123302_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20220722141713_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20221004184456_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20221031224117_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20221215151953_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20221227002544_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20221230233702_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20230116110738_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20230120144704_changelog.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20230213090159_changelog.xml" relativeToChangelogFile="false"/>
+<!--    <include file="config/liquibase/changelog/initial_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20220608152717_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20220630123302_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20220722141713_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20221004184456_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20221031224117_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20221215151953_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20221227002544_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20221230233702_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20230116110738_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20230120144704_changelog.xml" relativeToChangelogFile="false"/>-->
+<!--    <include file="config/liquibase/changelog/20230213090159_changelog.xml" relativeToChangelogFile="false"/>-->
+    <include file="config/liquibase/changelog/initial-v2.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>
