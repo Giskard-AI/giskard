@@ -23,11 +23,6 @@ from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models import model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
     model_from_pytorch, model_from_sklearn
 from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel
-from giskard.models.catboost import CatboostModel
-from giskard.models.huggingface import HuggingFaceModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.sklearn import SKLearnModel
-from giskard.models.tensorflow import TensorFlowModel
 
 configure_logging()
 if sys.version_info >= (3, 8):
@@ -63,11 +58,6 @@ __all__ = [
     'WrapperModel',
     'MLFlowBasedModel',
     'CustomModel',
-    'SKLearnModel',
-    'CatboostModel',
-    'PyTorchModel',
-    'TensorFlowModel',
-    'HuggingFaceModel',
     'Suite',
     'test_drift_psi',
     'test_drift_chi_square',
@@ -96,5 +86,38 @@ __all__ = [
     'test_diff_reference_actual_rmse',
     'test_diff_reference_actual_accuracy',
     'test_diff_reference_actual_f1'
-
 ]
+try:
+    from giskard.models.catboost import CatboostModel
+
+    __all__.append('CatboostModel')
+except ImportError:
+    pass
+
+try:
+    from giskard.models.huggingface import HuggingFaceModel
+
+    __all__.append('HuggingFaceModel')
+except ImportError:
+    pass
+
+try:
+    from giskard.models.pytorch import PyTorchModel
+
+    __all__.append('PyTorchModel')
+except ImportError:
+    pass
+
+try:
+    from giskard.models.sklearn import SKLearnModel
+
+    __all__.append('SKLearnModel')
+except ImportError:
+    pass
+
+try:
+    from giskard.models.tensorflow import TensorFlowModel
+
+    __all__.append('TensorFlowModel')
+except ImportError:
+    pass
