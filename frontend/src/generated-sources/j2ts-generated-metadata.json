@@ -31,7 +31,6 @@
     "ai.giskard.web.dto.DatasetMetadataDTO": "DatasetMetadataDTO",
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
     "ai.giskard.web.dto.SuiteTestDTO": "SuiteTestDTO",
-    "ai.giskard.domain.FeatureType": "FeatureType",
     "ai.giskard.web.dto.ml.TestDTO": "TestDTO",
     "ai.giskard.web.dto.FeatureMetadataDTO": "FeatureMetadataDTO",
     "ai.giskard.web.dto.ml.TestExecutionStatusDTO": "TestExecutionStatusDTO",
