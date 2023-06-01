@@ -320,9 +320,10 @@ class Dataset(ColumnMetadataMixin):
                     column_types[col] = SupportedColumnTypes.CATEGORY.value
                     continue
             # inference of text and numeric columns
-            if is_numeric_dtype(self.df[col]):
+            try:
+                pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
-            else:
+            except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
         return column_types
 
