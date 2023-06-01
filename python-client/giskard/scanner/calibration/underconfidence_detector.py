@@ -33,9 +33,6 @@ class UnderconfidenceDetector(LossBasedDetector):
         # the two most probable classes.
         ps = model.predict(dataset).raw
 
-        # Absolute difference
-        # loss_values = -np.abs(np.diff(np.partition(-ps, 1, axis=-1)[:, :2], axis=-1).squeeze(-1))
-
         # Relative difference
         ps_2 = -np.partition(-ps, 1, axis=-1)[:, :2]
         loss_values = ps_2.min(axis=-1) / ps_2.max(axis=-1)
@@ -56,7 +53,7 @@ class UnderconfidenceDetector(LossBasedDetector):
             column_types=dataset.column_types,
         )
         # For performance
-        dataset_with_meta._load_metadata_from_instance(dataset.column_meta)
+        dataset_with_meta.load_metadata_from_instance(dataset.column_meta)
 
         reference_rate = (dataset_with_meta.df[self.LOSS_COLUMN_NAME].dropna() > self.p_threshold).mean()
 

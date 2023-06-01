@@ -115,6 +115,10 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ## 3. Create & Execute a test suite
 
+:::{hint}
+You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
+:::
+
 A test suite is a collection of tests that can be parameterized to accommodate various scenarios. Each test within the
 suite may have some parameters left unspecified. When executing the test suite, you can provide the missing parameters
 through the run method. This allows for flexible and customizable test execution based on your specific needs.
