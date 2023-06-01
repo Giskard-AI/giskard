@@ -61,10 +61,10 @@
                 <v-list-item-title v-text='test.name'></v-list-item-title>
                   <v-list-item-subtitle>id: {{test.id}}</v-list-item-subtitle>
                   <v-list-item-action-text v-if='test.lastExecutionDate'>
-                  <span class='font-weight-regular'>Last executed</span>:
-                  <span :title="test.lastExecutionDate | moment('dddd, MMMM Do YYYY, h:mm:ss a')">{{
-                      test.lastExecutionDate | moment('from')
-                    }}</span>
+                    <span class='font-weight-regular'>Last executed</span>:
+                    <span :title="test.lastExecutionDate | date">{{
+                        test.lastExecutionDate | date
+                      }}</span>
                   </v-list-item-action-text>
               </v-list-item-content>
               <v-spacer/>

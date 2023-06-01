@@ -11,7 +11,7 @@ from typing import Optional, Any, Union
 
 import cloudpickle
 import mlflow
-import numpy
+import numpy as np
 import pandas as pd
 import yaml
 from mlflow.pyfunc import PyFuncModel
@@ -43,12 +43,12 @@ class Model(ABC):
     id: uuid.UUID = None
 
     def __init__(
-        self,
-        model_type: Union[SupportedModelTypes, str],
-        name: str = None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+            self,
+            model_type: Union[SupportedModelTypes, str],
+            name: str = None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
     ) -> None:
 
         if type(model_type) == str:
@@ -166,7 +166,7 @@ class Model(ABC):
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
-            labels = numpy.array(self.meta.classification_labels)
+            labels = np.array(self.meta.classification_labels)
             threshold = self.meta.classification_threshold
 
             if threshold is not None and len(labels) == 2:
@@ -229,11 +229,27 @@ class Model(ABC):
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta = client.load_model_meta(project_key, model_id)
+            meta_response = client.load_model_meta(project_key, model_id)
+            # internal worker case, no token based http client
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+                file_meta = yaml.load(f, Loader=yaml.Loader)
+                meta = ModelMeta(
+                    name=meta_response['name'],
+                    model_type=SupportedModelTypes[meta_response['modelType']],
+                    feature_names=meta_response['featureNames'],
+                    classification_labels=meta_response['classificationLabels'],
+                    classification_threshold=meta_response['threshold'],
+                    loader_module=file_meta['loader_module'],
+                    loader_class=file_meta['loader_class']
+                )
 
-        clazz = cls.determine_model_class(local_dir)
+        clazz = cls.determine_model_class(meta, local_dir)
 
-        return clazz.load(local_dir, **meta.__dict__)
+        constructor_params = meta.__dict__
+        del constructor_params['loader_module']
+        del constructor_params['loader_class']
+        return clazz.load(local_dir, **constructor_params)
 
     @classmethod
     def load(cls, local_dir, **kwargs):
@@ -273,15 +289,47 @@ class WrapperModel(Model, ABC):
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
+    def _postprocess(self, raw_prediction):
+
+        raw_prediction = np.array(raw_prediction)
+
+        is_binary_classification = self.is_classification and len(self.meta.classification_labels) == 2
+
+        if is_binary_classification:
+
+            is_one_data_entry = raw_prediction.shape[0] <= 1
+            is_0d_array = len(raw_prediction.shape) == 0
+
+            if is_one_data_entry:  # to be compliant with calling of raw_prediction[:, 1]
+                raw_prediction = np.expand_dims(raw_prediction, axis=0)
+            else:
+                warning_message = f"\nYour binary classification model prediction is of the shape {raw_prediction.shape}. \n" + \
+                                  f"In Giskard we expect the shape {(raw_prediction.shape[0], 2)} for binary classification models. \n" + \
+                                  "We automatically inferred the second class prediction but please make sure that \n" + \
+                                  "the probability output of your model corresponds to the first label of the \n" + \
+                                  f"classification_labels ({self.meta.classification_labels}) you provided us with."
+                if is_0d_array:
+                    logger.warning(warning_message, exc_info=True)
+                    raw_prediction = np.stack([raw_prediction, 1 - raw_prediction], axis=1)
+
+                elif raw_prediction.shape[1] == 1:
+                    logger.warning(warning_message, exc_info=True)
+                    squeezed_raw_prediction = np.squeeze(raw_prediction)
+                    raw_prediction = np.stack([squeezed_raw_prediction, 1 - squeezed_raw_prediction], axis=1)
+
+        if self.model_postprocessing_function:
+            raw_prediction = self.model_postprocessing_function(raw_prediction)
+
+        return raw_prediction
+
     def predict_df(self, df):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
-        raw_prediction = self.clf_predict(df)
 
-        if not self.model_postprocessing_function:
-            return raw_prediction
-        else:
-            return self.model_postprocessing_function(raw_prediction)
+        raw_prediction = self.clf_predict(df)
+        raw_prediction = self._postprocess(raw_prediction)
+
+        return raw_prediction
 
     @abstractmethod
     def clf_predict(self, df):

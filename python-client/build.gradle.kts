@@ -58,7 +58,7 @@ tasks {
 
     create<PythonTask>("lint") {
         module = "flake8"
-        command = "giskard"
+        command = "giskard tests"
     }
 
     create<PythonTask>("test") {

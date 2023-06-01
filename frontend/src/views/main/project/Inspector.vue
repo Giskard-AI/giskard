@@ -122,14 +122,14 @@
                   Global
                 </v-tab>
 
-                <v-tooltip bottom :disabled="textFeatureNames.length">
+                <v-tooltip bottom :disabled="textFeatureNames.length !== 0">
                   <template v-slot:activator="{ on, attrs }">
                     <div class="d-flex" v-on="on" v-bind="attrs">
-                      <v-tab :disabled="!textFeatureNames.length"> 
+                      <v-tab :disabled="!textFeatureNames.length">
                         <v-icon left>text_snippet</v-icon>
                         Text
                       </v-tab>
-                    </div>  
+                    </div>
                   </template>
                   <span>Text explanation is not available because your model does not contain any text features</span>
                 </v-tooltip>
