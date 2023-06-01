@@ -51,6 +51,7 @@ import {computed, ref} from "vue";
 import {useUserStore} from "@/stores/user";
 import {UpdateMeDTO} from "@/generated-sources";
 import {useRouter} from "vue-router/composables";
+import ButtonModalConfirmation from "@/components/ButtonModalConfirmation.vue";
 
 const userStore = useUserStore();
 const router = useRouter();
