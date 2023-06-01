@@ -182,28 +182,28 @@ class MLWorkerBridge:
                         task_name: str = None):
         log_prefix = "" if not task_name else task_name + ": "
         try:
-            try:
-                while not reader.at_eof():
-                    if encrypted_reader:
-                        length = await reader.readexactly(4)
-                        data = await reader.readexactly(int.from_bytes(length, 'big'))
-                        if len(data):
-                            data = self.encryptor.decrypt(data)
-                    else:
-                        data = await reader.read(2048)
+            while not reader.at_eof():
+                if encrypted_reader:
+                    length = await reader.readexactly(4)
+                    data = await reader.readexactly(int.from_bytes(length, 'big'))
                     if len(data):
-                        logger.debug(f"{log_prefix}Writing {len(data)} bytes: {readable_hex(data)}")
-                        if encrypted_writer:
-                            data = self.encryptor.encrypt(data)
-                        writer.write(data)
-                        await writer.drain()
-                    else:
-                        raise ConnectionLost()
-            finally:
-                writer.close()
-                readers.remove(reader)
-                writers.remove(writer)
-        except (IncompleteReadError, ConnectionLost, ConnectionResetError):
+                        data = self.encryptor.decrypt(data)
+                else:
+                    data = await reader.read(2048)
+                if len(data):
+                    logger.debug(f"{log_prefix}Writing {len(data)} bytes: {readable_hex(data)}")
+                    if encrypted_writer:
+                        data = self.encryptor.encrypt(data)
+                    writer.write(data)
+                    await writer.drain()
+                else:
+                    logger.debug(f"{log_prefix}Connection lost: {client}")
+                    break
+        except (IncompleteReadError, ConnectionLost, ConnectionResetError) as e:
             logger.debug(f"{log_prefix}Connection lost: {client}")
         except BaseException:  # NOSONAR
             logger.exception(f"{log_prefix}Sync data error")
+        finally:
+            writer.close()
+            readers.remove(reader)
+            writers.remove(writer)
