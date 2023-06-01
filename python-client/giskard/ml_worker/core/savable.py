@@ -63,7 +63,7 @@ class Savable(Generic[DT, SMT]):
             return local_dir
         else:
             logger.debug(f"Skipping saving of {name}.{self.meta.uuid} because it is already saved")
-            return local_dir
+            return None
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
         name = self._get_name()
