@@ -88,5 +88,5 @@ class ColumnMetadataMixin:
             self._column_meta_indexer = MetadataIndexer(self)
         return self._column_meta_indexer
 
-    def _load_metadata_from_instance(self, indexer: MetadataIndexer):
+    def load_metadata_from_instance(self, indexer: MetadataIndexer):
         self.column_meta.load_meta(indexer)
