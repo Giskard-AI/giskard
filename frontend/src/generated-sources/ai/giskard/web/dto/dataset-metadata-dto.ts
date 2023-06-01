@@ -7,5 +7,6 @@ export interface DatasetMetadataDTO {
     columnTypes?: {[key: string]: string} | null;
     featureTypes: {[key: string]: FeatureType};
     id: string;
+    name: string;
     target?: string | null;
 }
