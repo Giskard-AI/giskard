@@ -40,13 +40,6 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-properties' }" value="properties">
-              <v-list-item-content>
-                <v-icon>mdi-file-cog-outline</v-icon>
-                <div class="caption">Properties</div>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider />
           </div>
         </v-list>
         <v-spacer></v-spacer>
