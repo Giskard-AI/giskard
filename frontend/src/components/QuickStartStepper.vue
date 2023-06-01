@@ -231,6 +231,8 @@ onMounted(async () => {
     externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
   } catch (error) { }
 
+  await generateApiAccessToken();
+
   if (externalWorker.value) {
     step.value = 2;
   }
