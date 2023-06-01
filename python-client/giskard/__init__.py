@@ -22,7 +22,7 @@ from giskard.ml_worker.testing.tests.performance import AucTest, test_mae, test_
     test_accuracy, test_precision, test_f1, test_r2, test_diff_recall, test_diff_accuracy, test_diff_precision, \
     test_diff_rmse, test_diff_f1, test_diff_reference_actual_rmse, test_diff_reference_actual_accuracy, \
     test_diff_reference_actual_f1
-from giskard.ml_worker.testing.tests.statistical import test_right_label, test_output_in_range, test_disparate_impact
+from giskard.ml_worker.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models import wrap_model, model_from_catboost, model_from_huggingface, model_from_tensorflow, \
     model_from_pytorch, model_from_sklearn
