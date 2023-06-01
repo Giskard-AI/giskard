@@ -1,11 +1,11 @@
-import pandas as pd
 from abc import ABC
-import inspect
 from typing import Callable, Optional, Iterable, Any
 
+import pandas as pd
+
+from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
-from giskard.core.core import ModelType
 
 
 class Model(CloudpickleBasedModel, ABC):
