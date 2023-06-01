@@ -134,7 +134,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         arguments = self.parse_test_arguments(request.arguments)
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-        test_result = test.set_params(**arguments).execute()
+        test_result = test.get_builder()(**arguments).execute()
 
         return ml_worker_pb2.TestResultMessage(results=[
             ml_worker_pb2.NamedSingleTestResult(testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result))
@@ -159,7 +159,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             suite = Suite()
             for t in tests:
-                suite.add_test(t['test'].set_params(**t['arguments']), t['id'])
+                suite.add_test(t['test'].get_builder()(**t['arguments']), t['id'])
 
             is_pass, results = suite.run(**global_arguments)
 
