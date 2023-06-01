@@ -87,7 +87,7 @@ const SLICING_TYPE_WITH_VALUE: Array<ComparisonType> = [
     ComparisonType.ENDS_WITH
 ];
 
-const SLICING_TYPE_DISPLAY_NAME: { [slicingType in ComparisonType]: String } = {
+const SLICING_TYPE_DISPLAY_NAME: { [slicingType in ComparisonType]: string } = {
     [ComparisonType.IS]: 'Equals',
     [ComparisonType.IS_NOT]: 'Is not equal',
     [ComparisonType.CONTAINS]: 'Contains',
@@ -123,7 +123,6 @@ function handleSlicingTypeInput(input) {
 
     if (!input || !SLICING_TYPE_WITH_VALUE.includes(input)) {
         emit('update:value', undefined);
-        return;
     }
 }
 

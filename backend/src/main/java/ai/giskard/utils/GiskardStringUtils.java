@@ -34,7 +34,7 @@ public class GiskardStringUtils {
         } else if (columnDtype.startsWith("float")) {
             return Double.toString(Double.parseDouble(value));
         } else {
-            return String.format("'%s'", value.replaceAll("'", "\\'"));
+            return String.format("'%s'", value.replace("'", "\\'"));
         }
     }
 

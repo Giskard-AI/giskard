@@ -27,8 +27,9 @@ class Clause:
     def __repr__(self) -> str:
         return f"<Clause {str(self)}>"
 
+    @abstractmethod
     def init_code(self):
-        pass
+        ...
 
 
 class ComparisonClause(Clause):
