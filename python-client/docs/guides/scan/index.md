@@ -9,6 +9,8 @@ robustness/index
 overconfidence/index
 underconfidence/index
 ethics/index
+data_leakage/index
+stochasticity/index
 ```
 
 # Scan your ML model
