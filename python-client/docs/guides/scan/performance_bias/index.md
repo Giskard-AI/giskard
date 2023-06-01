@@ -1,33 +1,35 @@
-# Performance bias
-## What happens?
+# Performance Bias
 
-<aside>
-⛔ Your model contains biased data. For instance:
+The performance bias issue in machine learning refers to a situation where a model exhibits low performance on specific data slices or subsets, despite overall satisfactory performance on the entire dataset. Performance bias can manifest as significant discrepancies in accuracy, precision, recall, or other evaluation metrics across different groups or segments of the data.
 
-- **credit_amount > 5000** has an F1 score that is **4 times** smaller than the global F1
-- **Gender == female** has an F1 score that is **5 times** smaller than the global F1
+## Causes of Performance Bias
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c320b18f-0be3-4d36-9e8f-3907a85e49ed/Untitled.png)
+Several factors can contribute to the occurrence of performance bias in machine learning models:
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/faaa96fc-9760-4d1f-971b-8d1cc9673f62/Untitled.png)
+1. **Data Imbalance**: When the dataset contains imbalanced classes or unequal representation of different groups, the model may prioritize the majority class or dominant groups in its learning process. As a result, the performance on underrepresented or minority groups may be considerably lower, leading to performance bias.
 
-</aside>
+2. **Biased Training Data**: If the training data used to train the model contains inherent biases or reflects societal prejudices, the model may learn and reinforce these biases, resulting in performance bias. Biased labels, mislabeled instances, or biased human decisions during data collection can contribute to this issue.
 
-## Why does this happen?
+3. **Sampling Bias**: If the training data is not representative of the target population or the real-world distribution, the model's performance can be biased. Sampling bias can occur when certain groups or segments are over- or underrepresented in the training data, leading to poor performance on the underrepresented groups.
 
-<aside>
-👨‍🦰 Performance bias may happen for different **reasons**: 
-    -  Not enough examples in the low-performing data slice in the training set
-    -  Wrong labels in the training set in the low-performing data slice
-    -  Drift between your training set and test set
+4. **Inadequate Feature Representation**: Insufficient or inadequate representation of features relevant to certain groups can contribute to performance bias. If the model lacks sufficient information or discriminative features related to specific segments, it may struggle to generalize well and provide accurate predictions for those groups.
 
-</aside>
+5. **Model Complexity and Capacity**: Models with high complexity or excessive capacity can overfit to the majority class or dominant groups in the training data. This can result in low performance on minority or underrepresented groups, indicating performance bias.
 
-## How to correct this?
+## Addressing the Performance Bias Issue
 
-<aside>
-👉 We strongly recommend you **inspect** the incorrect examples inside these data slices with debugging tools. This will enable you to find the right feature engineering strategies or data augmentation to avoid these biases.
+To mitigate the performance bias issue in machine learning models, several approaches can be adopted:
 
-- To debug the biased slices, click **here**
-- For a full scan with more slice, click **here**
-</aside>
+1. **Diverse and Representative Training Data**: Ensuring the training data is diverse and representative of different groups and segments is crucial. Collecting sufficient data from underrepresented groups and ensuring balanced class distributions can help the model learn to make accurate predictions for all groups.
+
+2. **Data Augmentation and Sampling Techniques**: Applying data augmentation techniques or sampling strategies can help address imbalanced class distributions and mitigate performance bias. Techniques such as oversampling, undersampling, or synthetic data generation can rebalance the data and improve performance on underrepresented groups.
+
+3. **Bias Mitigation Techniques**: Employing bias mitigation techniques can help reduce performance bias in machine learning models. These techniques include algorithmic fairness methods, such as demographic parity, equalized odds, or disparate impact analysis, which aim to minimize bias and promote fairness in predictions.
+
+4. **Feature Engineering and Selection**: Carefully engineering and selecting features that are relevant and discriminative for all groups can help mitigate performance bias. Identifying and incorporating features that are representative of all segments and ensuring equal importance and consideration of these features during model training can improve performance across the board.
+
+5. **Regularization and Hyperparameter Tuning**: Regularization techniques and hyperparameter tuning can play a crucial role in reducing performance bias. Regularization can prevent overfitting to the majority class or dominant groups, while hyperparameter tuning can optimize the model's performance on all segments of the data.
+
+6. **Continuous Monitoring and Evaluation**: Continuously monitoring the model's performance and evaluating its impact on different groups is essential to detect and address performance bias. Regularly assess the model's performance on various data slices, and if performance discrepancies arise, investigate and take corrective measures.
+
+By addressing the causes of performance bias, incorporating fairness considerations, and employing appropriate techniques, machine learning models can be more equitable, accurate, and provide reliable predictions across all groups and segments of the data.

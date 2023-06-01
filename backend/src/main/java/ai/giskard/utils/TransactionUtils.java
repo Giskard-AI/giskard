@@ -15,6 +15,8 @@ public class TransactionUtils {
 
     private static void initializeSuiteTest(SuiteTest suiteTest) {
         suiteTest.getFunctionInputs().forEach(TransactionUtils::initializeFunctionInput);
+        Hibernate.initialize(suiteTest.getTestFunction());
+        initializeCallable(suiteTest.getTestFunction());
     }
 
     private static void initializeFunctionInput(FunctionInput functionInput) {
