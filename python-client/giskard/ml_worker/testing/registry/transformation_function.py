@@ -17,7 +17,6 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
     set_return_type,
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
-from giskard.ml_worker.testing.registry.utils import is_local_function
 
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
@@ -70,9 +69,6 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
             return data.apply(lambda row: self.func(row, **self.params), axis=1)
         else:
             return self.func(data, **self.params)
-
-    def _should_save_locally(self) -> bool:
-        return True
 
     def _should_upload(self) -> bool:
         return self.meta.version is None

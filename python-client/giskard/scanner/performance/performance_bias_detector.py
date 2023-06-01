@@ -127,7 +127,7 @@ class IssueFinder:
         logger.debug(f"PerformanceBiasDetector: Testing {len(slices)} slices for performance issues.")
 
         # Prepare metrics
-        metrics = self._get_default_metrics(model) if self.metrics is None else self.metrics
+        metrics = self._get_default_metrics(model, dataset) if self.metrics is None else self.metrics
         metrics = [get_metric(m) for m in metrics]
 
         issues = []
@@ -144,11 +144,13 @@ class IssueFinder:
             [max(group, key=lambda i: i.importance) for group in issues_by_slice.values()], key=lambda i: i.importance
         )
 
-    def _get_default_metrics(self, model: BaseModel):
+    def _get_default_metrics(self, model: BaseModel, dataset: Dataset):
         if model.is_classification:
-            return ["accuracy", "f1", "precision", "recall"]
+            metrics = ["f1", "precision", "recall"]
+            metrics.append("balanced_accuracy" if _is_unbalanced_target(dataset.df[dataset.target]) else "accuracy")
+            return metrics
 
-        return ["mse"]
+        return ["mse", "mae"]
 
     def _detect_for_metric(
         self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction], metric: PerformanceMetric
@@ -194,3 +196,7 @@ class IssueFinder:
                 )
 
         return issues
+
+
+def _is_unbalanced_target(classes: pd.Series):
+    return (classes.value_counts() / classes.count()).std() > 0.2
