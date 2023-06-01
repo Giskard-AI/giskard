@@ -1,14 +1,17 @@
 import datetime
 import warnings
+from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
+from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
 from .result import ScanResult
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
-from ..models.base import BaseModel
+from ..models.base import BaseModel, WrapperModel
+from ..utils import fullname
 from ..utils.analytics_collector import analytics
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -24,10 +27,6 @@ class Scanner:
 
     def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        analytics.track("scan", {"model_class": model.__class__.__name__,
-                                 "model_id": str(model.id),
-                                 "model_type": model.meta.model_type.value,
-                                 "dataset_id": str(dataset.id)})
         validate_model(model=model, validate_ds=dataset)
 
         maybe_print("Running scan…", verbose=verbose)
@@ -64,7 +63,38 @@ class Scanner:
             verbose=verbose,
         )
 
+        issues = self._postprocess(issues)
+        self._collect_analytics(model, dataset, issues, elapsed)
+
         return ScanResult(issues)
+
+    def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
+        # If we detected a StochasticityIssue, we will have a possibly false
+        # positive DataLeakageIssue. We remove it here.
+        from .stochasticity.stochasticity_detector import StochasticityIssue
+        from .data_leakage.data_leakage_detector import DataLeakageIssue
+
+        if any(isinstance(issue, StochasticityIssue) for issue in issues):
+            issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
+
+        return issues
+
+    def _collect_analytics(self, model, dataset, issues, elapsed):
+        inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
+        issues_cnt = Counter([fullname(i) for i in issues]) if issues else {}
+
+        analytics.track(
+            "scan",
+            {
+                "model_class": fullname(model),
+                "inner_model_class": inner_model_class,
+                "model_id": str(model.id),
+                "model_type": model.meta.model_type.value,
+                "dataset_id": str(dataset.id),
+                "elapsed": elapsed,
+                **issues_cnt
+            },
+        )
 
     def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
         """Returns the detector instances."""
