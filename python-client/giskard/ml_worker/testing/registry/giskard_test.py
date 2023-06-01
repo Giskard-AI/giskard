@@ -1,11 +1,9 @@
 import hashlib
-from pathlib import Path
-from typing import Union, Callable, Any, Optional
+from typing import Union, Callable, Any
 
 import cloudpickle
 
 from giskard import test
-from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
@@ -24,7 +22,7 @@ def get_test_uuid(func) -> str:
     return generate_func_id(func_name)
 
 
-class GiskardTest(Savable):
+class GiskardTest(Savable[Any, TestFunctionMeta]):
     """
     The base class of all Giskard's tests
 
@@ -32,6 +30,18 @@ class GiskardTest(Savable):
     All arguments shall be passed in the __init__ method
     It is advised to set default value for all arguments (None or actual value) in order to allow autocomplete
     """
+
+    def __init__(self):
+        test_uuid = get_test_uuid(type(self))
+        meta = tests_registry.get_test(test_uuid)
+        if meta is None:
+            # equivalent to adding @test decorator
+            test(type(self))
+            meta = tests_registry.get_test(test_uuid)
+        super(GiskardTest, self).__init__(type(self), meta)
+
+    def set_params(self):
+        pass
 
     def execute(self) -> Result:
         """
@@ -52,22 +62,7 @@ class GiskardTest(Savable):
         return func_name.startswith('__main__')
 
     def _should_upload(self) -> bool:
-        test_uuid = self._get_uuid()
-        meta = tests_registry.get_test(test_uuid)
-        return meta is None
-
-    def _save_meta(self, client: GiskardClient, project_key: Optional[str] = None):
-        test_uuid = self._get_uuid()
-        meta = tests_registry.get_test(test_uuid)
-        if meta is None:
-            # equivalent to adding @test decorator
-            test(type(self))
-            meta = tests_registry.get_test(test_uuid)
-        client.save_test_function_meta(meta)
-
-    def _save_to_local_dir(self, local_dir: Path):
-        with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
-            cloudpickle.dump(type(self), f)
+        return self.meta.version is None
 
 
 Function = Callable[..., Result]
@@ -76,83 +71,28 @@ Test = Union[GiskardTest, Function]
 
 
 class GiskardTestMethod(GiskardTest):
-    test: Function
     params: ...
 
-    def __init__(self, test: Function, **kwargs):
-        self.test = test
-        self.params = kwargs
-
-    def execute(self) -> Result:
-        return self.test(self.params)
-
-    def _get_uuid(self) -> str:
-        return get_test_uuid(self.test)
-
-    def _should_save_locally(self) -> bool:
-        func_name = f"{self.test.__module__}.{self.test.__name__}"
-        return func_name.startswith('__main__')
-
-    def _save_meta(self, client: GiskardClient, project_key: Optional[str] = None):
-        test_uuid = self._get_uuid()
+    def __init__(self, test_function: Function):
+        test_uuid = get_test_uuid(test_function)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            test(self.test)
+            test(test_function)
             meta = tests_registry.get_test(test_uuid)
-        client.save_test_function_meta(meta)
+        super(GiskardTest, self).__init__(test_function, meta)
 
-    def _save_to_local_dir(self, local_dir: Path):
-        with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
-            cloudpickle.dump(self.test, f)
+    def set_params(self, **kwargs):
+        self.params = kwargs
 
+    def execute(self) -> Result:
+        return self.data(**self.params)
 
-class GiskardTestReference(Savable[Test, TestFunctionMeta]):
+def my_test() -> bool:
+    print(1)
+    return True
 
-    def _should_save_locally(self) -> bool:
-        func_name = f"{self.obj.__module__}.{self.obj.__name__}"
-        return func_name.startswith('__main__')
-
-    def _save_meta(self, client: GiskardClient, project_key: Optional[str] = None):
-        client.save_test_function_meta(self.meta)
-
-    @classmethod
-    def of(cls, func: Function):
-        func_name = f"{func.__module__}.{func.__name__}"
-
-        if func_name.startswith('__main__'):
-            reference = cloudpickle.dumps(func)
-            func_name += hashlib.sha1(reference).hexdigest()
-
-        func_uuid = generate_func_id(func_name)
-
-        meta = tests_registry.get_test(func_uuid)
-        if meta is None:
-            # equivalent to adding @test decorator
-            test(func)
-            meta = tests_registry.get_test(func_uuid)
-
-        return cls(func, meta)
-
-    @classmethod
-    def save_all(cls, client: GiskardClient, test_function_metas: List[TestFunctionMeta]):
-        client.save_test_function_registry(test_function_metas)
-
-    @classmethod
-    def _load_meta(cls, func_uuid: str, client: GiskardClient, project_key: Optional[str]) -> TestFunctionMeta:
-        meta = tests_registry.get_test(func_uuid)
-        if meta is not None:
-            return meta
-
-        return client.load_test_function_meta(func_uuid)
-
-    @classmethod
-    def _read_from_local_dir(self, local_dir: Path, meta: TestFunctionMeta) -> Any:
-        if meta.module is '__main__':
-            return getattr(sys.modules[meta.module], meta.name)
-        elif not local_dir.exists():
-            return None
-        else:
-            with open(Path(local_dir) / 'giskard-function.pkl', 'rb') as f:
-                print(f)
-                return pickle.load(f)
+def test_tets():
+    test  = GiskardTestMethod(my_test)
+    test.set_params()
+    test.execute()
