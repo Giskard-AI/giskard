@@ -24,6 +24,22 @@ extensions = ["myst_parser",
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+myst_enable_extensions = [
+    "amsmath",
+    "attrs_inline",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "replacements",
+    "smartquotes",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+]
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -37,11 +53,7 @@ html_theme = 'furo'
 # html_static_path = ['_static']
 
 html_theme_options = {
-    "light_css_variables": {
-        "color-brand-primary": "red",
-        "color-brand-content": "#CC3333",
-        "color-admonition-background": "orange",
-    },
+    "light_css_variables": {},
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
     "announcement": '<p style="color:#FF0000"> 🚧 Please note that this documentation is still a work-in-progress! 🚧</p>',
@@ -54,9 +66,9 @@ html_theme_options = {
 
 html_logo = "imgs/giskard_logo.png"
 
+import inspect
 import os
 import sys
-import inspect
 
 sys.path.insert(0, os.path.abspath('../'))
 
