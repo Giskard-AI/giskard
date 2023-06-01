@@ -21,7 +21,9 @@ extensions = ["myst_parser",
               'sphinx.ext.autodoc',
               'sphinx.ext.linkcode',
               'sphinx_tabs.tabs',
-              'sphinx_copybutton']
+              'sphinx_copybutton'
+              'sphinx_tabs.tabs',
+              'sphinx_click']
 
 # autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ['_templates']
