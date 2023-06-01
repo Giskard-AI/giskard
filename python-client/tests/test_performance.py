@@ -4,6 +4,7 @@ import pytest
 
 import giskard.ml_worker.testing.tests.performance as performance
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.utils import Direction
 
 
 @pytest.mark.parametrize(
@@ -199,25 +200,37 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
     assert round(result.metric, 2) == expected_metric
     assert result.passed
 
-    # Test one-sided with positive threshold (should fail)
+    # Test increasing with positive threshold (should fail)
     result = performance.test_diff_f1(
         actual_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "female"], row_level=False)),
         reference_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "male"], row_level=False)),
         model=request.getfixturevalue(model),
         threshold=threshold,
-        absolute=False,
+        direction=Direction.Increasing,
     ).execute()
 
     assert round(result.metric, 2) == -expected_metric
     assert not result.passed
 
-    # Test one-sided with negative threshold (should pass)
+    # Test increasing with negative threshold (should pass)
     result = performance.test_diff_f1(
         actual_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "female"], row_level=False)),
         reference_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "male"], row_level=False)),
         model=request.getfixturevalue(model),
         threshold=-threshold,
-        absolute=False,
+        direction=Direction.Increasing,
+    ).execute()
+
+    assert round(result.metric, 2) == -expected_metric
+    assert result.passed
+
+    # Test decreasing with negative threshold (should pass)
+    result = performance.test_diff_f1(
+        actual_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "female"], row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "male"], row_level=False)),
+        model=request.getfixturevalue(model),
+        threshold=threshold,
+        direction=Direction.Decreasing,
     ).execute()
 
     assert round(result.metric, 2) == -expected_metric
@@ -375,12 +388,12 @@ def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, req
     assert round(result.metric, 2) == expected_metric
     assert result.passed
 
-    # If we swap the slices we should get the negative metric
+    # Test with direction
     result = performance.test_diff_reference_actual_rmse(
-        actual_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        reference_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
         model=request.getfixturevalue(model),
-        threshold=threshold).execute()
-    assert round(result.metric, 2) == -expected_metric
-    assert result.passed
-
+        threshold=0,
+        direction=Direction.Increasing
+    ).execute()
+    assert not result.passed
