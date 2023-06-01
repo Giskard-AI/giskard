@@ -8,3 +8,11 @@ def threaded(fn):
         return thread
 
     return wrapper
+
+
+def fullname(o):
+    klass = o.__class__
+    module = klass.__module__
+    if module == '__builtin__':
+        return klass.__name__
+    return module + '.' + klass.__name__
