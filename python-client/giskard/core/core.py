@@ -42,9 +42,10 @@ def create_test_function_id(func):
 class SupportedModelTypes(Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
+    GENERATIVE = "generative"
 
 
-ModelType = Union[SupportedModelTypes, Literal["classification", "regression"]]
+ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "generative"]]
 
 
 class SupportedColumnTypes(Enum):
@@ -94,6 +95,8 @@ class DatasetMeta:
     target: str
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
+    number_of_rows: int
+    category_features: Dict[str, List[str]]
 
 
 @dataclass

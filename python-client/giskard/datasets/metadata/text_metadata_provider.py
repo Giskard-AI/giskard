@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 
 from .registry import MetadataProvider
+import langdetect
+from langdetect import DetectorFactory
+
+DetectorFactory.seed = 0
 
 
 class TextMetadataProvider(MetadataProvider):
@@ -19,6 +23,7 @@ class TextMetadataProvider(MetadataProvider):
                 "charset": pd.Categorical(values.map(_detect_charset)),
                 "avg_whitespace": values.map(_avg_whitespace),
                 "avg_digits": values.map(_avg_digits),
+                "language": values.map(_detect_lang),
             },
             index=values.index,
         )
@@ -54,3 +59,14 @@ def _avg_digits(text: str):
     if len(chars) == 0:
         return 0.0
     return np.mean([c.isdigit() for c in chars])
+
+
+def _detect_lang(text: str):
+    if len(text.split()) <= 5:
+        return pd.NA
+    try:
+        detected = langdetect.detect_langs(text)
+        language = detected[0].lang
+    except langdetect.lang_detect_exception.LangDetectException:
+        language = "unknown"
+    return language
