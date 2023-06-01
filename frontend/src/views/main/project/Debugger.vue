@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { api } from '@/api';
 import { InspectionDTO } from "@/generated-sources";
-import AddDebugginSession from '@/components/AddDebugginSession.vue';
+import AddDebuggingSession from '@/components/AddDebuggingSession.vue';
 import InspectorWrapper from './InspectorWrapper.vue';
 import { computed, ref, onActivated } from "vue";
 
@@ -100,7 +100,7 @@ onActivated(() => loadDebuggingSessions());
             <v-btn v-if="!displayComponents" @click="toggleActiveSession(null)" class="mr-4 pa-2 text--secondary">
               <v-icon>history</v-icon> Past sessions
             </v-btn>
-            <AddDebugginSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebugginSession>
+            <AddDebuggingSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSession>
           </div>
         </v-col>
       </v-row>
@@ -145,7 +145,7 @@ onActivated(() => loadDebuggingSessions());
       <v-alert class="text-center">
         <p class="create-session-message headline blue-grey--text">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
-      <AddDebugginSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebugginSession>
+      <AddDebuggingSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSession>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
