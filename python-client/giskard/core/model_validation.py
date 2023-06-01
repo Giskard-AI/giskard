@@ -74,6 +74,7 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
             "after being invoked for the same data multiple times."
         )
 
+
 def validate_data_preprocessing_function(f):
     if not callable(f):
         raise ValueError(
