@@ -9,7 +9,6 @@ import {useMainStore} from "@/stores/main";
 async function routeGuard(to, from, next) {
     const userStore = useUserStore();
     const mainStore = useMainStore();
-
     if (!mainStore.license) {
         await mainStore.fetchLicense();
     }
