@@ -1,10 +1,11 @@
 from typing import Hashable
+
 import pandas as pd
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
-from giskard.datasets.base import Dataset
 from giskard.datasets import low_stat_threshold
+from giskard.datasets.base import Dataset
 
 
 def validate_target(ds: Dataset):
@@ -55,7 +56,7 @@ def _check_mixed_dtypes(df):
     mixed_dtypes = ["mixed", "mixed-integer"]
     mixed_cols = [col for col in df.columns if pd.api.types.infer_dtype(df[col], skipna=True) in mixed_dtypes]
 
-    if mixed_cols:
+    if len(mixed_cols):
         raise TypeError(
             f"The following columns have mixed data types: {', '.join(mixed_cols)}. "
             "Please make sure that values in each column are of same data type (except NaN)."
