@@ -8,6 +8,8 @@ import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.InitService;
+import ai.giskard.web.dto.PostImportProjectDTO;
+import ai.giskard.web.dto.PrepareImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.controllers.ProjectController;
@@ -228,16 +230,17 @@ class AdminProjectControllerIT {
             .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
             .andExpect(status().isOk());
         byte[] res = resultActions.andReturn().getResponse().getContentAsByteArray();
-        String timestamp = "1234";
-        String conflictKey = "enron";
-        String unzipUrl = String.format("/api/v2/project/import/%s/%s/prepare", timestamp, conflictKey);
-        restUserMockMvc.perform(multipart(unzipUrl).file(new MockMultipartFile("file", res)))
+        String unzipUrl = String.format("/api/v2/project/import/prepare");
+        resultActions = restUserMockMvc.perform(multipart(unzipUrl).file(new MockMultipartFile("file", res)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.projectKeyAlreadyExists").value(true));
+        ObjectMapper objectMapper = new ObjectMapper();
+        PrepareImportProjectDTO prepareImportProjectDTO = objectMapper.readValue(resultActions.andReturn().getResponse().getContentAsString(), PrepareImportProjectDTO.class);
         String nonConflictKey = "imported_credit";
-        String urlImport = String.format("/api/v2/project/import/%s/%s", timestamp,nonConflictKey);
-        restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(new HashMap<String, String>())).contentType(MediaType.APPLICATION_JSON))
+        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<String, String>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
+        String urlImport = "/api/v2/project/import";
+        restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(projectDTO)).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.key").value(nonConflictKey))
