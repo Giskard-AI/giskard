@@ -22,7 +22,10 @@ export const useDebuggingSessionsStore = defineStore('debuggingSessions', {
       }
     },
     async loadDebuggingSessions(projectId: number) {
-      this.projectId = projectId;
+      if (this.projectId !== projectId) {
+        this.projectId = projectId;
+        this.currentDebuggingSessionId = null;
+      }
       this.debuggingSessions = await api.getProjectInspections(this.projectId);
     },
     async createDebuggingSession(inspection: InspectionCreateDTO) {
