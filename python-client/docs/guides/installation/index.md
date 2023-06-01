@@ -1,7 +1,7 @@
 # 🔧 Installation
 
 
-### 1. Install the Giskard library
+## 1. Install the Giskard library
 
 In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
 
@@ -9,7 +9,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client" --user
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -17,7 +17,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client"
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::
@@ -28,16 +28,13 @@ Check our installation guide for more details on the installation procedures.
 :::
 
 
-### 2. Install Giskard's docker images
-
+## 2. Install Giskard's docker images
+In order to install the Giskard server, Execute the following command in your terminal:
 ```sh
-# Clone giskard
-git clone https://github.com/Giskard-AI/giskard.git
-# Go to giskard directory
-cd giskard
-# Pull the docker and start it
-export TAG=feature-ai-test-v2-merged
-docker compose pull
-docker compose up -d --force-recreate --no-build
-
+giskard server start --version 2.0.0
 ```
+To see the available commands, you can execute:
+```sh
+giskard server --help  
+```
+For the full documentation, go to <project:/cli/index.rst>.

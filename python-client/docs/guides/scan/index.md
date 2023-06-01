@@ -6,10 +6,10 @@ How to scan your Machine Learning model for vulnerabilities with Giskard?
 
 To scan your ML model for vulnerabilities, you need:
 
-- A **model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or even
-  any set of *Python* functions.
 - A **pandas dataframe** composed of the examples you want to inspect. For example, it could be your test dataset or a
   dataset composed of some wrong predictions of your model.
+- A **model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or even
+  any set of *Python* functions.
 
 ## 1. Install the Giskard library
 
@@ -19,7 +19,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client" --user
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -27,7 +27,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/scan#subdirectory=python-client"
+pip install "git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::
@@ -39,12 +39,11 @@ The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional p
 column (ground truth variable), etc. This object gets passed to the Giskard model wrapper (
 See [Wrap your model](#wrap-your-model)) for evaluation.
 
-**Try the example below (See [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset) full documentation):**
-:::{warning}
 The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
 etc.). The preprocessing steps should be wrapped in a function that gets assigned to `data_preprocessing_function` of
 the [wrap_model](../../reference/models/index.rst#giskard.wrap_model) method.
-:::
+
+### Usage of [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset)
 ```python
 import pandas as pd
 
@@ -54,202 +53,164 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
 
 from giskard import wrap_dataset
 
-wrapped_dataset = wrap_dataset(iris_df, target="iris_type")
-# outputs: Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.
+wrapped_dataset = wrap_dataset(
+  dataset=iris_df, 
+  target="iris_type", # Optional but a MUST if available
+  # name="my_iris_dataset", # Optional
+  # cat_columns=None # Optional: if not provided, it is inferred automatically
+  # column_types=None # # Optional: if not provided, it is inferred automatically
+  )
 ```
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `dataset`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
+     ground truth variable (target).
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `target`: The column name in `dataset` corresponding to the actual target variable (ground truth).
+  * `name`: Name of the wrapped dataset.
+  * One of:
+    * `cat_columns`: A list of strings representing the names of categorical columns. 
+       If not provided, the columns types will be automatically inferred.
+    * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns of `dataset`. 
+       If not provided, the categorical columns will be automatically inferred.
 
 ## 3. Wrap your model
 
-We currently support all **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow`
+We currently support **tabular** and **NLP** models from `sklearn`, `catboost`, `pytorch`, `tensorflow`
 and `huggingface`.
 
 To use your model with Giskard, you can simply wrap your model
 with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
 the entire prediction process, starting from the **raw** `pandas.DataFrame` and leading up to the final predictions. 
 
-**Try the examples below (See [wrap_model](../../reference/models/index.rst#giskard.wrap_model) full documentation):**
-:::{warning}
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
-:::
 
+### General usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
-:::::{tab-set}
-::::{tab-item} sklearn
-:::{hint}
-Most classes in sklearn and catboost
-have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-as attributes. In these two cases, if you don't
-provide us with `classification_labels and feature_names, we will try to infer them
-from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-respectively.
-:::
-<details>
-  <summary> <b> <span style="color: #3190f1;">  sklearn example (you can skip) </span> </b> </summary> 
+```python
+from giskard import wrap_model
 
-  ```python
-  # ----------- sklearn example --------------
-  from sklearn.pipeline import Pipeline 
-  from sklearn.preprocessing import StandardScaler
-  from sklearn.compose import ColumnTransformer
-  from sklearn.linear_model import LogisticRegression
-  
-  
-  numeric_transformer = Pipeline([('scaler', StandardScaler())])
-  
-  preprocessor = ColumnTransformer(
-    transformers=[('num', numeric_transformer, list(iris_df.columns))]
+wrapped_model = wrap_model(
+  model=some_classifier,
+  model_type="classification",
+  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  # name="my_iris_classification_model", # Optional
+  # feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
+  # classification_threshold=0.5, # Default: 0.5
+  # data_preprocessing_function=None, # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
   )
-  
-  my_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                   ('classifier', LogisticRegression(max_iter=1000))])
-  # --> fit my_pipeline here
-  ```
-</details>
-
-```python
-# ----------- Giskard wrap_model step --------------
-from giskard import wrap_model
-wrapped_model = wrap_model(model=my_pipeline,
-                           model_type="classification",
-                           classification_labels=['Setosa', 'Versicolor', 'Virginica'])
 ```
-::::
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `classification_threshold`: Model threshold for binary classification problems.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and 
+     returns any object that could be directly fed to `model`.
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns 
+     an object of the same type and shape as the `model` output.
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
-::::{tab-item} catboost
-:::{hint}
-Most classes in sklearn and catboost
-have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-as attributes. In these two cases, if you don't
-provide us with `classification_labels and feature_names, we will try to infer them
-from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-respectively.
-:::
-<details>
-  <summary> <b> <span style="color: #3190f1;"> catboost example (you can skip) </span> </b></summary>
-
-```python
-# ----------- catboost example --------------
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
-from catboost import CatBoostClassifier
-
-
-numeric_transformer = Pipeline([('scaler', StandardScaler())])
-
-preprocessor = ColumnTransformer(
-  transformers=[('num', numeric_transformer, list(iris_df.columns))]
-)
-
-my_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                         ('classifier', CatBoostClassifier(iterations=1000))])
-# --> fit my_pipeline here
-```
-</details>
-
-```python
-# ----------- Giskard wrap_model step --------------
-from giskard import wrap_model
-wrapped_model = wrap_model(model=my_pipeline,
-                           model_type="classification",
-                           classification_labels=['Setosa', 'Versicolor', 'Virginica'])
-```
-::::
-
-::::{tab-item} pytorch
-<details>
-  <summary> <b> <span style="color: #3190f1;"> pytorch example (you can skip) </span></b></summary>
-
-```python
-# ----------- pytorch example --------------
-import torch
-import torch.nn as nn
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-
-class NNClassificationModel(nn.Module):
-  def __init__(self,input_dim,output_dim):
-    super(NNClassificationModel,self).__init__()
-    self.input_layer    = nn.Linear(input_dim,128)
-    self.hidden_layer1  = nn.Linear(128,64)
-    self.output_layer   = nn.Linear(64,output_dim)
-    self.relu = nn.ReLU()
-
-  def forward(self,x):
-    out =  self.relu(self.input_layer(x))
-    out =  self.relu(self.hidden_layer1(out))
-    out =  self.output_layer(out)
-    return out
-
-my_scaler = StandardScaler()
-# --> fit my_scaler here
-my_clf = NNClassificationModel(4, 3)
-# --> fit my_clf here
-
-# With pytorch, the output of the preprocessing function must be an iterable by default.
-# You can pass iterate_dataset=False to wrap_model() otherwise (See documentation).
-def my_func(df: pd.DataFrame):
-    return torch.from_numpy(my_scaler.transform(df.to_numpy()))
-```
-</details>
-
-```python
-# ----------- Giskard wrap_model step --------------
-from giskard import wrap_model
-wrapped_model = wrap_model(model=my_clf,
-                           data_preprocessing_function=my_func, # see example above
-                           model_type="classification",
-                           feature_names=['sepal length', 'sepal width', 'petal length'],
-                           classification_labels=['Setosa', 'Versicolor', 'Virginica'])
-```
-::::
-
-::::{tab-item} tensorflow
-Coming soon!
-::::
-
-::::{tab-item} huggingface
-Coming soon!
-::::
-  
-::::::
-
+  ::::::
 ::::::{tab-item} Regression
 ```python
 from giskard import wrap_model
 
-wrapped_model = wrap_model(model=some_regressor,
-                           model_type="regression",
-                           feature_names=['x', 'y', 'z'])
-# outputs: Your '<library>' model is successfully wrapped by Giskard's '<wrapper name>' wrapper class.
+wrapped_model = wrap_model(
+  model=some_regressor,
+  model_type="regression",
+  # name="my_regression_model", # Optional
+  # feature_names=['x', 'y'], # Default: all columns of your dataset
+  # data_preprocessing_function=None, # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+  )
 ```
-:::{warning}
-If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
-`model` or inside the `data_preprocessing_function` of the Giskard model you create.
-:::
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
+    returns any object that could be directly fed to `model`.
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
+    an object of the same type and shape as the `model` output.
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
 ::::::
 :::::::
 
-## 4. Validate your model
+### Model-specific [tutorials](../tutorials/index.md)
+:::::{tab-set}
+::::{tab-item} sklearn
 
-To make sure your model is working in Giskard, you can simply execute the following line:
+:::{hint}
+Most classes in sklearn and catboost
+have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
+and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
+as attributes. In these two cases, if you don't
+provide us with `classification_labels and feature_names, we will try to infer them
+from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
+and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
+respectively.
+:::
 
-```python
-from giskard.core.model_validation import validate_model
+- **<project:../tutorials/sklearn/credit_scoring.md>**
+::::
 
-validate_model(wrapped_model, wrapped_dataset)
-# outputs: Your model is successfully validated.
-```
+::::{tab-item} catboost
 
-## 5. Scan your model for vulnerabilities
+:::{hint}
+Most classes in sklearn and catboost
+have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
+and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
+as attributes. In these two cases, if you don't
+provide us with `classification_labels and feature_names, we will try to infer them
+from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
+and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
+respectively.
+:::
+
+- **<project:../tutorials/catboost/credit_scoring.md>**
+::::
+
+::::{tab-item} pytorch
+- **<project:../tutorials/pytorch/linear_regression.md>**
+- **<project:../tutorials/pytorch/sst2_iterable.md>**
+- **<project:../tutorials/pytorch/torch_dataset.md>**
+- **<project:../tutorials/pytorch/custom_model.md>**
+::::
+
+::::{tab-item} tensorflow
+- **<project:../tutorials/tensorflow/classification_1d.md>**
+- **<project:../tutorials/tensorflow/classification_tfhub.md>**
+::::
+
+::::{tab-item} huggingface
+- **<project:../tutorials/huggingface/BertForSequenceClassification.md>**
+- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
+- **<project:../tutorials/huggingface/pytorch.md>**
+- **<project:../tutorials/huggingface/pytorch_pipeline.md>**
+- **<project:../tutorials/huggingface/tensorflow.md>**
+::::
+
+::::{tab-item} custom wrapper
+- **<project:../tutorials/pytorch/custom_model.md>**
+- **<project:../tutorials/huggingface/BertForSequenceClassification_custom.md>**
+::::
+:::::
+
+## 4. Scan your model for vulnerabilities
 
 Finally 🎉, you can scan your model for vulnerabilities using:
 
@@ -272,7 +233,7 @@ results_df = results.to_dataframe()
 results_df.to_csv("scan_results_my_model.csv")
 ```  
 
-## 6. Upload your model and dataset to giskard UI
+## 5. Upload your model and dataset to giskard UI
 
 Now that you create your model (in Create a Giskard model) and your data (in Create a Giskard dataset). You can create a
 project and upload them to giskard as follows:

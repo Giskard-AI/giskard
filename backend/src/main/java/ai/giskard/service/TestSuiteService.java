@@ -2,8 +2,8 @@ package ai.giskard.service;
 
 import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
+import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
-import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
@@ -47,7 +47,7 @@ public class TestSuiteService {
         Map<String, RequiredInputDTO> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
+            ImmutableMap<String, FunctionInput> providedInputs = Maps.uniqueIndex(test.getFunctionInputs(), FunctionInput::getName);
 
             test.getTestFunction().getArgs().stream()
                 .filter(a -> !a.isOptional())
@@ -106,33 +106,32 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<TestInputDTO> inputs) {
+    public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<FunctionInputDTO> inputs) {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
-                .filter(t -> testId == t.getId())
-                .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
+            .filter(t -> testId == t.getId())
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 
-        test.getTestInputs().clear();
-        test.getTestInputs().addAll(inputs.stream()
+        test.getFunctionInputs().clear();
+        test.getFunctionInputs().addAll(inputs.stream()
             .filter(i -> i.getValue() != null)
             .map(giskardMapper::fromDTO)
             .toList());
-        test.getTestInputs().forEach(input -> input.setTest(test));
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    private void verifyAllInputExists(List<TestInputDTO> providedInputs,
+    private void verifyAllInputExists(List<FunctionInputDTO> providedInputs,
                                       SuiteTest test) {
         Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
             .map(FunctionArgument::getName)
             .collect(Collectors.toSet());
 
         List<String> nonExistingInputs = providedInputs.stream()
-            .map(TestInputDTO::getName)
+            .map(FunctionInputDTO::getName)
             .filter(providedInput -> !requiredInputs.contains(providedInput))
             .toList();
 
@@ -176,10 +175,9 @@ public class TestSuiteService {
             TestSuite suite = new TestSuite();
             suite.setProject(project);
             suite.setName(dto.getName());
-            suite.setTestInputs(dto.getSharedInputs().stream()
+            suite.setFunctionInputs(dto.getSharedInputs().stream()
                 .map(giskardMapper::fromDTO)
                 .toList());
-            suite.getTestInputs().forEach(input -> input.setSuite(suite));
             suite.getTests().addAll(response.getTestsList().stream()
                 .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
                 .toList());
@@ -219,11 +217,10 @@ public class TestSuiteService {
         TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         testSuite.setName(testSuiteDTO.getName());
-        testSuite.getTestInputs().clear();
-        testSuite.getTestInputs().addAll(testSuiteDTO.getTestInputs().stream()
+        testSuite.getFunctionInputs().clear();
+        testSuite.getFunctionInputs().addAll(testSuiteDTO.getFunctionInputs().stream()
             .map(giskardMapper::fromDTO)
             .toList());
-        testSuite.getTestInputs().forEach(input -> input.setSuite(testSuite));
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }

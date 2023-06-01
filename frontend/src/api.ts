@@ -16,6 +16,7 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FunctionInputDTO,
     GeneralSettings,
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
@@ -38,7 +39,6 @@ import {
     SliceDTO,
     SlicingResultDTO,
     SuiteTestDTO,
-    TestInputDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -385,7 +385,7 @@ export const api = {
     async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
-    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: TestInputDTO[]) {
+    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: FunctionInputDTO[]) {
         return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {

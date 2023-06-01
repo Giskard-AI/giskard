@@ -101,7 +101,7 @@ const inputTypes = computed(() => Object.entries(inputs)
 onMounted(() => {
     if (suite) {
         name.value = suite.name;
-        editedInputs.value = chain(suite.testInputs)
+        editedInputs.value = chain(suite.functionInputs)
             .keyBy('name')
             .mapValues(v => ({...v}))
             .value()
@@ -114,7 +114,7 @@ async function submit(close) {
     await updateTestSuite(projectKey, {
         ...suite,
         name: name.value,
-        testInputs: Object.values(result.value)
+        functionInputs: Object.values(result.value)
     }).finally(() => isLoading.value = false);
 
     dialog.value = false;
