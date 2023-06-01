@@ -143,3 +143,7 @@ class UnderconfidenceIssue(CalibrationIssue):
     @property
     def metric(self) -> str:
         return "Underconfidence"
+
+    @property
+    def deviation(self):
+        return f"{(1 - self.info.metric_value_slice) * 100:.2f}% probability difference"
