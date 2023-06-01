@@ -3,8 +3,11 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.config.Constants;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.MailService;
 import ai.giskard.service.UserService;
+import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.LicenseUtils;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.rest.errors.BadRequestAlertException;
@@ -84,6 +87,7 @@ public class UserAdminController {
     private final UserRepository userRepository;
 
     private final MailService mailService;
+    private final LicenseService licenseService;
     private final GiskardMapper giskardMapper;
 
 
@@ -109,6 +113,8 @@ public class UserAdminController {
             throw new LoginAlreadyUsedException();
         } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
             throw new EmailAlreadyUsedException();
+        } else if (LicenseUtils.isLimitReached(licenseService.getCurrentLicense().getUserLimit(), (int) userRepository.count())) {
+            throw new GiskardRuntimeException("User limit is reached. You can upgrade your plan to create more.");
         } else {
             User newUser = userService.createUser(userDTO);
             mailService.sendCreationEmail(newUser);

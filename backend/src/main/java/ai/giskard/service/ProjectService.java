@@ -11,6 +11,8 @@ import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
+import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.LicenseUtils;
 import ai.giskard.utils.YAMLConverter;
 import ai.giskard.utils.ZipUtils;
 import ai.giskard.web.dto.PrepareImportProjectDTO;
@@ -49,6 +51,7 @@ import java.util.regex.Pattern;
 @Transactional
 @RequiredArgsConstructor
 public class ProjectService {
+    private final LicenseService licenseService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final FileLocationService locationService;
@@ -92,6 +95,11 @@ public class ProjectService {
     public Project create(Project project, String ownerLogin) {
         String projectKey = project.getKey();
         validateProjectKey(projectKey);
+
+        if (LicenseUtils.isLimitReached(licenseService.getCurrentLicense().getProjectLimit(), (int) projectRepository.count())) {
+            throw new GiskardRuntimeException("Project limit is reached. You can upgrade your plan to create more.");
+        }
+
         projectRepository.findOneByKey(projectKey).ifPresent(p -> {
             throw new EntityAlreadyExistsException(String.format("Project with key %s already exists", projectKey));
         });

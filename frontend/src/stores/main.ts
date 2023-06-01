@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO} from "@/generated-sources";
+import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -7,7 +7,6 @@ import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
-import {FeatureFlagService} from "@/generated-sources/ai/giskard/service/ee/feature-flag-service";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
@@ -18,21 +17,21 @@ export interface AppNotification {
 
 interface State {
     appSettings: AppInfoDTO | null;
+    license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
-    features: { [key in FeatureFlagService.FeatureFlag]: boolean } | null;
 }
 
 export const useMainStore = defineStore('main', {
     state: (): State => ({
         appSettings: null,
+        license: null,
         coworkers: [],
-        notifications: [],
-        features: null
+        notifications: []
     }),
     getters: {
         authAvailable(state: State) {
-            return state.features?.AUTH;
+            return state.license?.features.AUTH;
         }
     },
     actions: {
@@ -68,19 +67,24 @@ export const useMainStore = defineStore('main', {
                 }
             });
         },
+        addSimpleNotification(text: string) {
+            this.addNotification({content: text, color: 'success'})
+        },
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
                 closeButton: false,
-                icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true
+                icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true,
             });
         },
         removeNotification(payload: AppNotification) {
             Vue.$toast.clear();
         },
-        async fetchFeatures() {
-            const features = await api.getFeatureFlags();
-            //@ts-ignore
-            this.features = features;
+        async fetchAppSettings() {
+            const response = await api.getUserAndAppSettings();
+            this.setAppSettings(response.app);
+        },
+        async fetchLicense() {
+            this.license = await api.getLicense();
         },
         async getUserProfile() {
             const userStore = useUserStore();

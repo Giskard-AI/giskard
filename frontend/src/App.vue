@@ -33,8 +33,6 @@ import IEditorOptions = editor.IEditorOptions;
 const userStore = useUserStore();
 const mainStore = useMainStore();
 
-mainStore.fetchFeatures();
-
 const loggedIn = computed(() => {
   return userStore.isLoggedIn;
 })
@@ -49,6 +47,6 @@ let monacoOptions: IEditorOptions = {
 provide('monacoOptions', monacoOptions);
 
 onBeforeMount(async () => {
-  await userStore.checkLoggedIn();
+  userStore.isLoggedIn = false;
 });
 </script>

@@ -22,6 +22,10 @@ public class AppConfigDTO {
     @Setter
     private AdminUserDTO user;
 
+    @Getter
+    @Setter
+    private LicenseDTO license;
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder

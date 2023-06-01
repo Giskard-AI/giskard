@@ -2,8 +2,48 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import RouterComponent from './components/RouterComponent.vue';
+import {useUserStore} from "@/stores/user";
+import {useMainStore} from "@/stores/main";
+
+
+async function routeGuard(to, from, next) {
+    const userStore = useUserStore();
+    const mainStore = useMainStore();
+
+    if (!mainStore.license) {
+        await mainStore.fetchLicense();
+    }
+    if (!mainStore.license?.active) {
+        if (to.path !== '/setup') {
+            next('/setup');
+        } else {
+            next();
+        }
+    } else {
+        await userStore.checkLoggedIn();
+
+        if (userStore.isLoggedIn && (to.path === '/auth/login' || to.path === '/')) {
+            next('/main/dashboard');
+        } else if (!userStore.isLoggedIn && (to.path === '/' || (to.path as string).startsWith('/main') || (to.path as string).startsWith('/setup'))) {
+            next('/auth/login');
+        } else if (to.path.startsWith('/main/admin') && !userStore.hasAdminAccess) {
+            next('/main');
+        } else {
+            next();
+        }
+    }
+}
+
 
 Vue.use(Router);
+Vue.mixin({
+    async beforeRouteEnter(to, from, next) {
+        await routeGuard(to, from, next);
+    },
+    async beforeRouteUpdate(to, from, next) {
+        await routeGuard(to, from, next);
+    }
+})
 
 export default new Router({
     mode: 'history',
@@ -13,6 +53,11 @@ export default new Router({
             path: '/',
             component: () => import(/* webpackChunkName: "start" */ './views/main/Start.vue'),
             children: [
+                {
+                    name: "setup",
+                    path: 'setup',
+                    component: () => import(/* webpackChunkName: "setup" */ './views/setup/Setup.vue')
+                },
                 {
                     path: 'auth',
                     component: () => import(/* webpackChunkName: "login" */ './views/auth/AuthPortal.vue'),
@@ -42,6 +87,7 @@ export default new Router({
                     redirect: '/main/dashboard',
                     children: [
                         {
+                            name: 'main-dashboard',
                             path: 'dashboard',
                             component: () => import(/* webpackChunkName: "main-dashboard" */ './views/main/Dashboard.vue'),
                         },
@@ -206,6 +252,7 @@ export default new Router({
                             ],
                         },
                         {
+                            name: 'admin',
                             path: 'admin',
                             component: () => import(/* webpackChunkName: "main-admin" */ './views/main/admin/Admin.vue'),
                             redirect: 'admin/general',

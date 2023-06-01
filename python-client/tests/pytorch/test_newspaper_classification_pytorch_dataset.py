@@ -1,6 +1,5 @@
 import pandas as pd
 import torch
-from scipy import special
 from torch import nn
 from torch.utils.data import Dataset as torch_dataset
 from torchtext.data.functional import to_map_style_dataset
@@ -11,7 +10,7 @@ from torchtext.vocab import build_vocab_from_iterator
 import tests.utils
 from giskard import PyTorchModel, Dataset
 
-
+torch_softmax = nn.Softmax(dim=1)
 train_iter = AG_NEWS(split="train")
 test_iter = AG_NEWS(split="test")
 ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
@@ -47,10 +46,6 @@ class PandasToTorch(torch_dataset):
         return torch.tensor(self.entries["text"].iloc[idx]), torch.tensor([0])
 
 
-def my_softmax(x):
-    return special.softmax(x, axis=1)
-
-
 class TextClassificationModel(nn.Module):
     def __init__(self, vocab_size, embed_dim, num_class):
         super(TextClassificationModel, self).__init__()
@@ -84,6 +79,9 @@ def test_newspaper_classification_pytorch_dataset():
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
     feature_names = ["text"]
+
+    def my_softmax(x):
+        return torch_softmax(x)
 
     my_model = PyTorchModel(
         name="my_BertForSequenceClassification",

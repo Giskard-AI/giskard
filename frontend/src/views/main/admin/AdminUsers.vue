@@ -74,7 +74,6 @@ const mainStore = useMainStore();
 
 const searchTerm = ref<string>("");
 const showInactive = ref<boolean>(false);
-const canAddUsers = ref<boolean>(true);
 
 const headers = computed(() => {
   return [
@@ -128,10 +127,12 @@ const users = computed(() => {
   return adminStore.users;
 });
 
+const canAddUsers = computed(() => {
+  return users.value.filter(u => u.activated).length < mainStore.license?.userLimit;
+});
+
 onMounted(async () => {
   await adminStore.getUsers();
-  const appSettings = mainStore.appSettings;
-  canAddUsers.value = !appSettings || !appSettings.seatsAvailable || appSettings.seatsAvailable > 0;
 })
 
 async function deleteUser(user: AdminUserDTOWithPassword) {
