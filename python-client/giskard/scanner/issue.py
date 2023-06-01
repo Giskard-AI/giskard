@@ -1,6 +1,6 @@
 from ..datasets import Dataset
 from ..models.base import BaseModel
-from ..ml_worker.testing.registry.slice_function import SliceFunction
+from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 
 from typing import Optional, Callable
 
@@ -8,7 +8,7 @@ from typing import Optional, Callable
 class Issue:
     def __init__(
         self,
-        slice_fn: SliceFunction,
+        slice_fn: SlicingFunction,
         model: Optional[BaseModel] = None,
         dataset: Optional[Dataset] = None,
         dataset_meta=None,
