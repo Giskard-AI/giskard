@@ -1,11 +1,5 @@
 <template>
   <div class="vc">
-    <div class="d-flex justify-space-between align-center">
-      <v-btn text color="secondary" @click="handleOpenGlobalInputs">
-        Global inputs
-        <v-icon>info</v-icon>
-      </v-btn>
-    </div>
     <v-container class="main-container vc">
       <v-progress-linear
           indeterminate
@@ -72,8 +66,6 @@ import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {useRoute, useRouter} from 'vue-router/composables';
-import {$vfm} from 'vue-final-modal';
-import TestSuiteExecutionInputsModal from '@/views/main/project/modals/TestSuiteExecutionInputsModal.vue';
 
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
@@ -179,15 +171,6 @@ onMounted(() => {
     router.push({name: 'test-suite-execution', params: {executionId: executions.value[0].id.toString()}})
   }
 })
-
-function handleOpenGlobalInputs() {
-  $vfm.show({
-    component: TestSuiteExecutionInputsModal,
-    bind: {
-      execution: selectedExecution.value
-    }
-  });
-}
 </script>
 
 <style scoped lang="scss">
