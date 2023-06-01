@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import sys
@@ -10,7 +11,6 @@ from pathlib import Path
 
 import google
 import grpc
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -105,6 +105,7 @@ def map_dataset_process_function_meta(callable_type):
             ],
             cellLevel=test.cell_level,
             columnType=test.column_type,
+            noCode=test.no_code
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
