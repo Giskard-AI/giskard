@@ -115,22 +115,6 @@ export default new Router({
                   },
                 },
                 {
-                  path: 'datasets',
-                  name: 'project-datasets',
-                  component: () => import('./views/main/project/Datasets.vue'),
-                  props: route => {
-                    return { projectId: Number(route.params.id) };
-                  },
-                },
-                {
-                  path: 'models',
-                  name: 'project-models',
-                  component: () => import('./views/main/project/Models.vue'),
-                  props: route => {
-                    return { projectId: Number(route.params.id) };
-                  },
-                },
-                {
                   path: 'inspection/:inspectionId',
                   name: 'project-inspector',
                   component: () => import('./views/main/project/InspectorWrapper.vue'),
