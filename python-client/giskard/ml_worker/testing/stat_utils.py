@@ -14,9 +14,7 @@ def paired_t_test(population_1, population_2, alternative, critical_quantile):
     """
 
     if alternative not in ["less", "greater"]:
-        raise ValueError(
-            "Incorrect alternative hypothesis! It has to be one of the following: ['less', 'greater']"
-        )
+        raise ValueError("Incorrect alternative hypothesis! It has to be one of the following: ['less', 'greater']")
 
     if np.array_equal(population_1, population_2):
         p_value = 1.0
@@ -70,9 +68,7 @@ def paired_wilcoxon(population_1, population_2, alternative, critical_quantile):
     """
 
     if alternative not in ["less", "greater"]:
-        raise ValueError(
-            "Incorrect alternative hypothesis! It has to be one of the following: ['less', 'greater']"
-        )
+        raise ValueError("Incorrect alternative hypothesis! It has to be one of the following: ['less', 'greater']")
 
     if np.array_equal(population_1, population_2):
         p_value = 1.0

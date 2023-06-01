@@ -7,6 +7,7 @@ extend-ignore =
     DAR201
     DAR101
     DAR401
+    E203
 exclude =
     .git
     __pycache__
