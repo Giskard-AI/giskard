@@ -3,7 +3,7 @@ package ai.giskard.service;
 import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
-import ai.giskard.repository.TestSuiteExecutionRepository;
+import ai.giskard.jobs.JobType;
 import ai.giskard.repository.ml.*;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ai.giskard.utils.TransactionUtils.executeAfterTransactionCommits;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
@@ -42,7 +41,7 @@ public class TestSuiteService {
     private final TestSuiteNewRepository testSuiteNewRepository;
     private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
-    private final TestSuiteExecutionRepository testSuiteExecutionRepository;
+    private final JobService jobService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -156,23 +155,21 @@ public class TestSuiteService {
 
 
     @Transactional
-    public void scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
+    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
         TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-        execution.setMlWorkerType(testSuite.getProject().getMlWorkerType());
 
         Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
-        testSuiteExecutionRepository.save(execution);
-
-        executeAfterTransactionCommits(() ->
-            testSuiteExecutionService.executeScheduledTestSuite(execution.getId(), suiteInputs));
+        return jobService.undetermined(() ->
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
+            testSuite.getProject().getMlWorkerType());
     }
 
     private static void verifyAllInputProvided(Map<String, String> providedInputs,

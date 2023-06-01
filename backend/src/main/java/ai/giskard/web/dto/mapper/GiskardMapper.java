@@ -1,6 +1,9 @@
 package ai.giskard.web.dto.mapper;
 
-import ai.giskard.domain.*;
+import ai.giskard.domain.Feedback;
+import ai.giskard.domain.Project;
+import ai.giskard.domain.Role;
+import ai.giskard.domain.User;
 import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -213,7 +216,5 @@ public interface GiskardMapper {
     TestSuiteExecutionDTO toDto(TestSuiteExecution save);
 
     List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
-
-    List<WorkerJobDTO> workerJobsToDTOs(List<? extends WorkerJob> workerJobs);
 
 }
