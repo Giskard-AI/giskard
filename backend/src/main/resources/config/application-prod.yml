@@ -34,8 +34,8 @@ spring:
       enabled: false
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/app
-    username: postgres
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: giskard
     password: y1QYbF2BtFUC
     hikari:
       poolName: Hikari
