@@ -13,6 +13,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.ml.TestResult' : 'TestResult',
     'ai.giskard.domain.ml.TestType' : 'TestType',
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
+    'ai.giskard.jobs.JobState' : 'JobState',
+    'ai.giskard.jobs.JobType' : 'JobType',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.MLWorkerInfoDTO$PlatformInfoDTO' : 'MLWorkerInfoDTO.PlatformInfoDTO',
@@ -29,6 +31,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
     'ai.giskard.web.dto.FilterDatasetDTO' : 'FilterDatasetDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
+    'ai.giskard.web.dto.JobDTO' : 'JobDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
     'ai.giskard.web.dto.MessageDTO' : 'MessageDTO',
     'ai.giskard.web.dto.ml.CodeBasedTestPresetDTO' : 'CodeBasedTestPresetDTO',
@@ -41,12 +44,14 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.ProjectPostDTO' : 'ProjectPostDTO',
     'ai.giskard.web.dto.ml.SingleTestResultDTO' : 'SingleTestResultDTO',
     'ai.giskard.web.dto.ml.SliceDTO' : 'SliceDTO',
+    'ai.giskard.web.dto.ml.SuiteTestExecutionDTO' : 'SuiteTestExecutionDTO',
     'ai.giskard.web.dto.ml.TestDTO' : 'TestDTO',
     'ai.giskard.web.dto.ml.TestEditorConfigDTO' : 'TestEditorConfigDTO',
     'ai.giskard.web.dto.ml.TestExecutionResultDTO' : 'TestExecutionResultDTO',
     'ai.giskard.web.dto.ml.TestExecutionStatusDTO' : 'TestExecutionStatusDTO',
     'ai.giskard.web.dto.ml.TestResultMessageDTO' : 'TestResultMessageDTO',
     'ai.giskard.web.dto.ml.TestSuiteDTO' : 'TestSuiteDTO',
+    'ai.giskard.web.dto.ml.TestSuiteExecutionDTO' : 'TestSuiteExecutionDTO',
     'ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO' : 'TestTemplateExecutionResultDTO',
     'ai.giskard.web.dto.ml.UpdateTestSuiteDTO' : 'UpdateTestSuiteDTO',
     'ai.giskard.web.dto.ml.write.FilePostDTO' : 'FilePostDTO',
@@ -99,6 +104,8 @@ export * from './ai/giskard/domain/ml/table/row-filter-type';
 export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/ml/test-type';
 export * from './ai/giskard/domain/mlworker-type';
+export * from './ai/giskard/jobs/job-state';
+export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
@@ -113,6 +120,7 @@ export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
 export * from './ai/giskard/web/dto/filter-dataset-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
+export * from './ai/giskard/web/dto/job-dto';
 export * from './ai/giskard/web/dto/jwttoken';
 export * from './ai/giskard/web/dto/message-dto';
 export * from './ai/giskard/web/dto/ml/code-based-test-preset-dto';
@@ -124,6 +132,7 @@ export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
+export * from './ai/giskard/web/dto/ml/suite-test-execution-dto';
 export * from './ai/giskard/web/dto/ml/slice-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
@@ -131,6 +140,7 @@ export * from './ai/giskard/web/dto/ml/test-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-status-dto';
 export * from './ai/giskard/web/dto/ml/test-result-message-dto';
 export * from './ai/giskard/web/dto/ml/test-suite-dto';
+export * from './ai/giskard/web/dto/ml/test-suite-execution-dto';
 export * from './ai/giskard/web/dto/ml/test-template-execution-result-dto';
 export * from './ai/giskard/web/dto/ml/update-test-suite-dto';
 export * from './ai/giskard/web/dto/ml/write/file-post-dto';
