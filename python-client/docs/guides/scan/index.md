@@ -58,9 +58,9 @@ If your ML model contains preprocessing functions (categorical encoding, scaling
 from giskard import wrap_model
 
 wrapped_model = wrap_model(some_classifier,
-                      model_type="classification", # or "regression"
-                      feature_names=["column1", "column2", ...],
-                      classification_labels=["label1", "label2", ...]) # not needed in case of "regression"
+                           model_type="classification", # or "regression"
+                           feature_names=["column1", "column2", ...],
+                           classification_labels=["label1", "label2", ...]) # not needed in case of "regression"
 ```
 
 :::{hint}
@@ -94,25 +94,25 @@ etc.).
 ```python
 import pandas as pd
 
-# option 1
+# option 1 (preferable)
 my_column_types = {"categorical_column": "category",
                    "text_column": "text",
                    "numeric_column": "numeric"}
 
-# option 2                 
-my_cat_columns = ["categorical_column"]
+# option 2 (preferable)                
+#my_cat_columns = ["categorical_column"]
 
-# option 3
-INFER_CAT_COLUMNS = True
+# option 3 (not very accurate)
+#INFER_CAT_COLUMNS = True
 
 from giskard import wrap_dataset
 
 wrapped_dataset = wrap_dataset(some_df,
-                          target="numeric_column",
-                          column_types=my_column_types,            # option 1
-                          # cat_columns=my_cat_columns,            # option 2
-                          # infer_column_types = INFER_CAT_COLUMNS # option 3
-                          )
+                               target="numeric_column",
+                               column_types=my_column_types,            # option 1
+                               # cat_columns=my_cat_columns,            # option 2
+                               # infer_column_types = INFER_CAT_COLUMNS # option 3
+                               )
 ```
 
 ```{eval-rst}
