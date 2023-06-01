@@ -79,6 +79,7 @@ def german_credit_catboost_raw_model(german_credit_data):
 
     return cb
 
+
 @pytest.fixture()
 def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
     return CatboostModel(
@@ -87,6 +88,7 @@ def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
         feature_names=list(input_types),
         classification_labels=german_credit_catboost_raw_model.classes_,
     )
+
 
 @pytest.fixture()
 def german_credit_test_data(german_credit_data):
