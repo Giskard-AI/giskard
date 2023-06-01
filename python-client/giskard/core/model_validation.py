@@ -207,7 +207,7 @@ def validate_label_with_target(model_name: str, classification_labels: Union[np.
             )
 
         to_append = " of the model: " + model_name if model_name else ""
-        target_values = target_values if is_string_dtype(target_values) else [str(label) for label in target_values]
+        target_values = [label for label in target_values]
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(

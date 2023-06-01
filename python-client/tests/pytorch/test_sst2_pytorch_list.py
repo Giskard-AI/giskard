@@ -54,14 +54,14 @@ def test_sst2_pytorch_list():
 
         return data_list
 
-    classification_labels = ["0", "1"]
+    classification_labels = [0, 1]
 
     def my_softmax(x):
         return torch_softmax(x)
 
     my_model = PyTorchModel(
         name="SST2-XLMR_BASE_ENCODER",
-        clf=model,
+        model=model,
         feature_names=["text"],
         model_type="classification",
         classification_labels=classification_labels,
