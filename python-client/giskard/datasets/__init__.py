@@ -5,6 +5,9 @@ import pandas as pd
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
 
+# threshold below which we don't perform:
+# - validate_column_categorization
+_low_stat_threshold = 100
 
 @configured_validate_arguments
 def wrap_dataset(dataset: pd.DataFrame, name: Optional[str] = None, target: Optional[str] = None,
