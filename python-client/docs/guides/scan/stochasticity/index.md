@@ -1,10 +1,10 @@
 # Stochasticity
 
-The stochasticity issue in machine learning refers to a situation where a model provides different results at each execution, even when the input remains the same. Stochasticity arises from the inherent randomness present in certain machine learning algorithms or processes, leading to variations in the model's output.
+The stochasticity issue in machine learning refers to a situation where a model provides different results at each execution, even when the input remains the same. Stochasticity arises from the inherent randomness present in certain machine learning algorithms or processes, leading to variations in the model's output. Avoiding stochastic behaviour is important to promote reproducibility, and obtain more reliable and consistent result from the models.
 
 ## Causes of Stochasticity
 
-Several factors can contribute to the occurrence of stochasticity in machine learning models:
+Several factors can contribute to the occurrence of stochasticity when training machine learning models:
 
 1. **Random Initialization**: Many machine learning algorithms, such as neural networks, utilize random initialization of parameters. The initial values of these parameters can have a significant impact on the model's training and subsequent predictions. As a result, different initializations can lead to divergent outcomes, contributing to stochastic behavior.
 
