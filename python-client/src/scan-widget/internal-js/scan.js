@@ -6,22 +6,13 @@
     // Tabs
     let rows = document.querySelectorAll("#gsk-scan .gsk-issue")
     rows.forEach(rowEl => {
-        {
-            rowEl.addEventListener("click", (event) => {
-                {
-                    event.preventDefault()
-                    if (event.target.classList.contains("gsk-debug")) {
-                        {
-                            alert("Not implemented yet")
-                            return;
-                        }
-                    }
-
-                    rowEl.classList.toggle("open")
-                    rowEl.classList.toggle("bg-zinc-700")
-                }
-            })
-        }
+        rowEl.addEventListener("click", (event) => {
+            {
+                event.preventDefault()
+                rowEl.classList.toggle("open")
+                rowEl.classList.toggle("bg-zinc-700")
+            }
+        })
     });
 
     const tabs = document.querySelectorAll("#gsk-scan [role='tabpanel']")
