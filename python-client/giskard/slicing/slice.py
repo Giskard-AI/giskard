@@ -123,7 +123,7 @@ class Query:
         return " & ".join([str(c) for c in self.get_all_clauses()])
 
     def init_code(self):
-        return f"Query([{', '.join([clause.init_code() for clause in self.clauses.values()])}])"
+        return f"Query([{', '.join([clause.init_code() for clause in self.get_all_clauses()])}])"
 
 
 def _optimize_column_clauses(clauses: Sequence[Clause]):
