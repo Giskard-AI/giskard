@@ -106,17 +106,21 @@
                                                                      :value.sync="testArguments[a.name]"/>
                                                     <ModelSelector :project-id="projectId" :label="a.name"
                                                                    :return-object="false"
-                                                                   v-if="a.type === 'BaseModel'"
+                                                                   v-else-if="a.type === 'BaseModel'"
                                                                    :value.sync="testArguments[a.name]"/>
+                                                    <SliceFunctionSelector :project-id="projectId" :label="a.name"
+                                                                           :return-object="false"
+                                                                           v-else-if="a.type === 'SliceFunction'"
+                                                                           :value.sync="testArguments[a.name]"/>
                                                     <v-text-field
-                                                            :step='a.type === "float" ? 0.1 : 1'
-                                                            v-model="testArguments[a.name]"
-                                                            v-if="['float', 'int'].includes(a.type)"
-                                                            hide-details
-                                                            single-line
-                                                            type="number"
-                                                            outlined
-                                                            dense
+                                                        :step='a.type === "float" ? 0.1 : 1'
+                                                        v-model="testArguments[a.name]"
+                                                        v-else-if="['float', 'int'].includes(a.type)"
+                                                        hide-details
+                                                        single-line
+                                                        type="number"
+                                                        outlined
+                                                        dense
                                                     />
                                                 </template>
                                             </v-col>
@@ -184,6 +188,7 @@ import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
+import SliceFunctionSelector from "@/views/main/utils/SliceFunctionSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;

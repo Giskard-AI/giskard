@@ -48,3 +48,4 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         return inner(_fn)
     else:
         return inner
+

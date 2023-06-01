@@ -1,4 +1,5 @@
 """Performance tests"""
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
@@ -16,7 +17,7 @@ from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slice_function import slicing_function
+from giskard.ml_worker.testing.registry.slice_function import slicing_function, SliceFunction
 from giskard.models.base import BaseModel
 
 
@@ -415,11 +416,17 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: B
     )
 
 
+@slicing_function(name="None")
+def identity_slicing_function(row: pd.Series):
+    return True
+
+
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(actual_slice: Dataset,
                  reference_slice: Dataset,
                  model: BaseModel,
-                 threshold: float = 0.1):
+                 threshold: float = 0.1,
+                 slice_function: SliceFunction = identity_slicing_function):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
