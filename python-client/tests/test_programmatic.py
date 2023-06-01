@@ -116,14 +116,13 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
             test_f1(threshold=0.2, dataset=german_credit_data)
         ).upload(client, "test_project_key")
 
-
- def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
-     from giskard.client.giskard_client import GiskardClient
-     client = GiskardClient("http://localhost:9000",
-                            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJBUEkiLCJhdXRoIjoiUk9MRV9BRE1JTiIsImV4cCI6MTY5Mjc3OTQzNH0.vGiKgS-q-1LykbvS4Rh5mkffU2FtHRyGc12NqxqUpWY")
-
-     german_credit_data.upload(client, 'test')
-     german_credit_model.upload(client, 'test')
+# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
+#     from giskard.client.giskard_client import GiskardClient
+#     client = GiskardClient("http://localhost:9000",
+#                            "")
+#
+#     german_credit_data.upload(client, 'test')
+#     german_credit_model.upload(client, 'test')
 #
 #     Suite(name="Test Suite 1") \
 #         .add_test(test_auc, threshold=0.2, dataset=german_credit_data) \
