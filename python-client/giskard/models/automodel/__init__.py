@@ -85,8 +85,12 @@ class Model(CloudpickleBasedModel):
         """
 
         if not model:
-            raise ValueError("The 'Model' class requires a 'model' object. In case you want to create a custom "
-                             "class without a 'model' object, please create a subclass of 'CustomModel' instead.")
+            raise ValueError(
+                "The 'Model' class cannot be initiated without a `model` argument. "
+                "\n`model` can be either a model object (classifier, regressor, etc.) or a prediction function."
+                "\nIf a model object is provided, we use a model-tailored serialization method during its upload."
+                "\nIf a prediction function is provided, we use cloudpickle to serialize it.")
+
         else:
             giskard_cls = infer_giskard_cls(model)
             # if the Auto class is overriden (thus != Auto) -> get the methods from the subclass
