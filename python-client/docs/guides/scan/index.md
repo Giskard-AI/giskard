@@ -244,7 +244,7 @@ wrapped_model = MyCustomModel(
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
   * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
-    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    the [tutorials](docs/tutorials/index.md)). If none of these
     libraries apply to you, we try to serialize your model with `cloudpickle`, if that also does not work, we
     ask you to provide us with your own serialization method.
   * `model_type`: The type of the model, either `regression` or `classification`.
@@ -265,7 +265,7 @@ wrapped_model = MyCustomModel(
     returns any object that could be directly fed to `model`.
   * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
     an object of the same type and shape as the `model` output.
-  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+  * `**kwargs`: Additional model-specific arguments (See [Models](docs/reference/models/index.rst)).
 
 ::::
 ::::{tab-item} Regression
@@ -296,7 +296,7 @@ wrapped_model = MyCustomModel(
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
   * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
-    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    the [tutorials](docs/tutorials/index.md)). If none of these
     libraries apply to you, we try to serialize your model with `cloudpickle`, if that also does not work, we
     ask you to provide us with your own serialization method.
   * `model_type`: The type of the model, either `regression` or `classification`.
@@ -310,14 +310,14 @@ wrapped_model = MyCustomModel(
     returns any object that could be directly fed to `model`.
   * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
     an object of the same type and shape as the `model` output.
-  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+  * `**kwargs`: Additional model-specific arguments (See [Models](docs/reference/models/index.rst)).
 
 ::::
 :::::
 ::::::
 :::::::
 
-### Model-specific [tutorials](../../guides/tutorials/index.md)
+### Model-specific [tutorials](docs/tutorials/index.md)
 
 :::::{tab-set}
 ::::{tab-item} Any function

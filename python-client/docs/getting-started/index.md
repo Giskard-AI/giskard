@@ -1,50 +1,61 @@
 # Getting Started
 
-
-```{toctree}
-:maxdepth: 2
-:hidden:
-
-scan/index
-test-suite/index
-slicing-and-transformation-functions/index
+Load the titanic demo models and dataset 👇
+```python
+from giskard.demo import titanic  # for demo purposes only 🛳️
+original_model, df = titanic()  # Replace with your dataframe creation
 ```
 
-::::::{grid} 1 1 2 2
-:gutter: 1
+Follow the code snippet below to wrap a dataset 👇
+```python
+from giskard import Dataset
 
-:::::{grid-item}
+# Wrap your Pandas Dataframe with Giskard dataset 🎁
+giskard_dataset = Dataset(df,
+                          target="Survived",
+                          name="Titanic dataset")
 
-::::{grid} 1 1 1 1
-:gutter: 1
+```
 
-(cards-clickable)=
-:::{card} <h3><center> Scan your ML model </center></h3>
-:link: scan/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/intro/Giskard_Turtle_new_set_FINAL_05.png" alt="scan" width="79%">
-:::
+Follow the code snippet below to wrap a model 👇
+```python
+from giskard import Model
 
-(cards-clickable)=
-:::{card} <h3><center> Slicing and transformation functions </center></h3>
-:link: slicing-and-transformation-functions/index.html
+# Wrap your model with Giskard model 🎁
+giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/intro/Giskard_Turtle_new_set_FINAL_06.png" alt="slice" width="100%">
-:::
+Follow the code snippet below to scan your model 👇
+```python
+import giskard
 
-:::::
+results = giskard.scan(wrapped_model, wrapped_dataset)
 
-:::::{grid-item}
+display(results)  # in your notebook
 
-::::{grid} 1 1 1 1
-:gutter: 1
+```
 
-(cards-clickable)=
-:::{card} <h3><center> Create a test suite </center></h3>
-:link: test-suite/index.html
-<img src="../assets/intro/test_turtle.png" alt="test" width="98%">
-::::
+Generate a test suite from the scan 👇
+```python
+test_suite = results.generate_test_suite("My first test suite")
 
+# You can run the test suite locally to verify that it reproduces the issues
+test_suite.run()
+```
 
-:::::
+Upload artefacts 👇
+```python
+from giskard import GiskardClient
 
-::::::
+# Create a Giskard client
+token = "API_TOKEN" # Find it in Settings
+client = GiskardClient(
+    url="http://localhost:19000",  # URL of your Giskard instance
+    token=token
+)
+
+my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
+
+# Upload to the current project ✉️
+test_suite.upload(client, "my_project")
+```

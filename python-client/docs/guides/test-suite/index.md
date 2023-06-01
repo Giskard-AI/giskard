@@ -31,7 +31,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 ## 2. Execute a Giskard test
 
 :::{hint}
-You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
+You can see all our tests in the [📖 Test Catalog](docs/catalogs/test-catalog/index.rst)
 :::
 
 ::::{tab-set}
@@ -93,7 +93,7 @@ result = test_metamorphic_invariance(wrapped_model, wrapped_dataset, add_three_y
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
-See [🔪 Create slices and transformations function / Transformation](../slicing-and-transformation-functions/index.md#transformation)
+See [🔪 Create slices and transformations function / Transformation](docs/guides/slicing-and-transformation-functions/index.md#transformation)
 to see how to create custom transformations
 
 :::
@@ -162,7 +162,7 @@ a test class or a test function.
 :::
 
 :::{tab-item} Shared test input
-![](../../assets/tests_examples.png)
+![](docs/assets/tests_examples.png)
 :::
 ::::
 

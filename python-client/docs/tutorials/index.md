@@ -1,4 +1,4 @@
-# ⏯️ Tutorials
+# Tutorials
 
 ```{toctree}
 :caption: Table of Contents
