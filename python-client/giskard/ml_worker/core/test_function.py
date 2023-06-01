@@ -56,8 +56,8 @@ class TestFunction:
                 os.makedirs(local_dir)
                 with open(Path(local_dir) / 'giskard-function.pkl', 'wb') as f:
                     cloudpickle.dump(self.func, f)
-                    if client is not None:
-                        client.log_artifacts(local_dir, posixpath.join("global", "tests", self.meta.uuid))
+                if client is not None:
+                    client.log_artifacts(local_dir, posixpath.join("global", "tests", self.meta.uuid))
 
         client.save_test_function_meta(self.meta.uuid,
                                        self.meta)
@@ -84,6 +84,7 @@ class TestFunction:
                 client.load_artifact(local_dir, posixpath.join("global", "tests", meta.uuid))
 
             with open(Path(local_dir) / 'giskard-function.pkl', 'rb') as f:
+                print(f)
                 func = pickle.load(f)
 
         meta.fn = func
