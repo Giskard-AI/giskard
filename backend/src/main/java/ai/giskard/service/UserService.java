@@ -189,13 +189,22 @@ public class UserService {
             .map(AdminUserDTO::new);
     }
 
+    /***
+     * Tries to delete a user.
+     * User cannot be the only admin (ie there must be one admin left after deletion)
+     * @param login
+     */
     public void deleteUser(String login) {
-        userRepository
-            .findOneByLogin(login)
-            .ifPresent(user -> {
-                user.setEnabled(false);
-                log.debug("Deleted[deactivated] user : {}", user);
+        userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
+            roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
+                if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
+                    throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
+                }
             });
+
+            user.setEnabled(false);
+            userRepository.save(user);
+        });
     }
 
     public void enableUser(String login) {

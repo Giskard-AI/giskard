@@ -78,130 +78,157 @@
               (item.featureValue && item.featureValue.length > 140) ? item.featureValue.slice(0, 140) + "..." : item.featureValue
             }}</span>
         </template>
+        <template v-slot:item.action="{item}"
+                  v-slot:item.id="{item}">
+          <v-btn
+              icon
+              @click.stop="deleteFeedback(item)"
+              @click.stop.prevent
+          >
+            <v-icon color="accent">delete</v-icon>
+          </v-btn>
+        </template>
       </v-data-table>
     </v-container>
-    <v-dialog width="90vw" v-model="openFeedbackDetail" @click:outside="$router.push({name: 'project-feedbacks'})">
+    <v-dialog width="90vw" v-model="openFeedbackDetail" @input="handleFeedbackDetailDialogClosed">
       <router-view/>
     </v-dialog>
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue, Watch} from "vue-property-decorator";
+<script setup lang="ts">
 import {api} from "@/api";
-import {readToken} from "@/store/main/getters";
-import {commitAddNotification} from '@/store/main/mutations';
-import FeedbackDetail from './FeedbackDetail.vue';
 import {FeedbackMinimalDTO} from "@/generated-sources";
+import {computed, onActivated, ref, watch} from 'vue';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 
-@Component({
-  components: {FeedbackDetail}
-})
-export default class FeedbackList extends Vue {
-  @Prop({required: true}) projectId!: number;
+const route = useRoute();
+const router = useRouter();
 
-  feedbacks: FeedbackMinimalDTO[] = [];
-  search = "";
-  modelFilter = "";
-  datasetFilter = "";
-  typeFilter = "";
-  groupByFeature = false
+const { projectId } = defineProps<{ projectId: number }>();
 
-  openFeedbackDetail = false
+const feedbacks = ref<FeedbackMinimalDTO[]>([]);
+const search = ref<string>('');
+const modelFilter = ref<string>('');
+const datasetFilter = ref<string>('');
+const typeFilter = ref<string>('');
+const groupByFeature = ref<boolean>(false);
+const openFeedbackDetail = ref<boolean>(false);
 
-  activated() {
-    this.fetchFeedbacks();
-    this.setOpenFeedbackDetail(this.$route)
+onActivated(() => {
+  fetchFeedbacks();
+  handleRouteChanged();
+});
+
+async function fetchFeedbacks() {
+  feedbacks.value = await api.getProjectFeedbacks(projectId);
+}
+
+async function openFeedback(obj) {
+  await router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
+}
+
+function handleRouteChanged() {
+  openFeedbackDetail.value = route.meta && route.meta.openFeedbackDetail
+}
+
+watch(() => route.meta, () => handleRouteChanged());
+
+function handleFeedbackDetailDialogClosed(isOpen) {
+  if (!isOpen && route.name !== 'project-feedbacks') {
+    router.push({name: 'project-feedbacks'});
   }
+}
 
-  @Watch("$route", {deep: true})
-  setOpenFeedbackDetail(to) {
-    this.openFeedbackDetail = to.meta && to.meta.openFeedbackDetail
+const tableHeaders = computed(() => [
+  {
+    text: "Model",
+    sortable: true,
+    value: "modelName",
+    align: "left",
+    filter: (value) => !modelFilter.value ? true : value == modelFilter.value,
+  },
+  {
+    text: "Dataset",
+    sortable: true,
+    value: "datasetName",
+    align: "left",
+    filter: (value) => !datasetFilter.value ? true : value == datasetFilter.value,
+  },
+  {
+    text: "User ID",
+    sortable: true,
+    value: "userLogin",
+    align: "left",
+  },
+  {
+    text: 'On',
+    value: 'createdOn',
+    sortable: true,
+    filterable: false,
+    align: 'left'
+  },
+  {
+    text: "Type",
+    sortable: true,
+    value: "feedbackType",
+    align: "left",
+    filter: (value) => !typeFilter.value ? true : value == typeFilter.value,
+  },
+  {
+    text: "Feature name",
+    sortable: true,
+    value: "featureName",
+    align: "left",
+  },
+  {
+    text: "Feature value",
+    sortable: true,
+    value: "featureValue",
+    align: "left",
+  },
+  {
+    text: "Choice",
+    sortable: true,
+    value: "feedbackChoice",
+    align: "left",
+  },
+  {
+    text: "Message",
+    sortable: true,
+    value: "feedbackMessage",
+    align: "left",
+  },
+  {
+    sortable: false,
+    filterable: false,
+    text: 'Actions',
+    value: 'action'
   }
+]);
 
-  get tableHeaders() {
-    return [
-      {
-        text: "Model",
-        sortable: true,
-        value: "modelName",
-        align: "left",
-        filter: (value) => !this.modelFilter ? true : value == this.modelFilter,
-      },
-      {
-        text: "Dataset",
-        sortable: true,
-        value: "datasetName",
-        align: "left",
-        filter: (value) => !this.datasetFilter ? true : value == this.datasetFilter,
-      },
-      {
-        text: "User ID",
-        sortable: true,
-        value: "userLogin",
-        align: "left",
-      },
-      {
-        text: 'On',
-        value: 'createdOn',
-        sortable: true,
-        filterable: false,
-        align: 'left'
-      },
-      {
-        text: "Type",
-        sortable: true,
-        value: "feedbackType",
-        align: "left",
-        filter: (value) => !this.typeFilter ? true : value == this.typeFilter,
-      },
-      {
-        text: "Feature name",
-        sortable: true,
-        value: "featureName",
-        align: "left",
-      },
-      {
-        text: "Feature value",
-        sortable: true,
-        value: "featureValue",
-        align: "left",
-      },
-      {
-        text: "Choice",
-        sortable: true,
-        value: "feedbackChoice",
-        align: "left",
-      },
-      {
-        text: "Message",
-        sortable: true,
-        value: "feedbackMessage",
-        align: "left",
-      },
-    ];
-  }
+const existingModels = computed(() => feedbacks.value.map((e) => e.modelName));
+const existingDatasets = computed(() => feedbacks.value.map((e) => e.datasetName));
+const existingTypes = computed(() => feedbacks.value.map((e) => e.feedbackType));
 
-  get existingModels() {
-    return this.feedbacks.map((e) => e.modelName);
-  }
-
-  get existingDatasets() {
-    return this.feedbacks.map((e) => e.datasetName);
-  }
-
-  get existingTypes() {
-    return this.feedbacks.map((e) => e.feedbackType);
-  }
-
-  public async fetchFeedbacks() {
-    this.feedbacks = await api.getProjectFeedbacks(this.projectId);
-  }
-
-  public async openFeedback(obj) {
-    await this.$router.push({name: 'feedback-detail', params: {feedbackId: obj.id}})
-  }
-
+function deleteFeedback(feedback: FeedbackMinimalDTO) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete feedback',
+      text: `Are you sure that you want to delete the feedback for feature '${feedback.featureName}' permanently?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedback(feedback.id);
+        await fetchFeedbacks();
+        close();
+      }
+    }
+  });
 }
 </script>
 

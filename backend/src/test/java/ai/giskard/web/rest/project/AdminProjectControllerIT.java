@@ -6,7 +6,10 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.service.FileLocationService;
 import ai.giskard.service.InitService;
+import ai.giskard.web.dto.PostImportProjectDTO;
+import ai.giskard.web.dto.PrepareImportProjectDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ProjectPostDTO;
 import ai.giskard.web.rest.controllers.ProjectController;
@@ -18,10 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +49,8 @@ class AdminProjectControllerIT {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private FileLocationService fileLocationService;
 
     @Autowired
     private InitService initService;
@@ -210,6 +218,36 @@ class AdminProjectControllerIT {
         Project updatedProject = projectRepository.getOneByName(PROJECTKEY);
         assertThat(updatedProject.getGuests()).contains(user);
     }
+
+    @Test
+    @Transactional
+    void exportImportProject() throws Exception {
+        Project project = projectRepository.getOneByName(PROJECTKEY);
+        String url = String.format("/api/v2/download/project/%d/export", project.getId());
+        assertThat(project.getKey()).isEqualTo("credit");
+        ResultActions resultActions = restUserMockMvc.perform(get(url))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
+            .andExpect(status().isOk());
+        byte[] res = resultActions.andReturn().getResponse().getContentAsByteArray();
+        String unzipUrl = String.format("/api/v2/project/import/prepare");
+        resultActions = restUserMockMvc.perform(multipart(unzipUrl).file(new MockMultipartFile("file", res)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.projectKeyAlreadyExists").value(true));
+        ObjectMapper objectMapper = new ObjectMapper();
+        PrepareImportProjectDTO prepareImportProjectDTO = objectMapper.readValue(resultActions.andReturn().getResponse().getContentAsString(), PrepareImportProjectDTO.class);
+        String nonConflictKey = "imported_credit";
+        PostImportProjectDTO projectDTO = new PostImportProjectDTO(new HashMap<String, String>(), nonConflictKey, prepareImportProjectDTO.getTemporaryMetadataDirectory());
+        String urlImport = "/api/v2/project/import";
+        restUserMockMvc.perform(post(urlImport).content(new ObjectMapper().writeValueAsString(projectDTO)).contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.key").value(nonConflictKey))
+            .andExpect(jsonPath("$.owner.user_id").value(userRepository.getOneByLogin(USERKEY).getLogin()));
+    }
+
+
 
 
     /**
