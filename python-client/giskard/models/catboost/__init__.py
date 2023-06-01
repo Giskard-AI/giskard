@@ -3,7 +3,7 @@ from typing import Union
 import mlflow
 
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import MLFlowBasedModel
+from giskard.models.base import MLFlowBasedModel
 
 
 class CatboostModel(MLFlowBasedModel):

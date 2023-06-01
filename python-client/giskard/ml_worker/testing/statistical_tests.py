@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 from typing import Callable
 
-from giskard.ml_worker.core.dataset import Dataset
-from giskard.core.model import Model
+from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
@@ -12,7 +12,7 @@ class StatisticalTests(AbstractTestCollection):
     def test_right_label(
         self,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label: str,
         threshold=0.5,
     ) -> SingleTestResult:
@@ -28,7 +28,7 @@ class StatisticalTests(AbstractTestCollection):
         Args:
            actual_slice(Dataset):
               Slice of the  actual dataset
-          model(Model):
+          model(BaseModel):
               Model used to compute the test
           classification_label(str):
               Classification label you want to test
@@ -63,7 +63,7 @@ class StatisticalTests(AbstractTestCollection):
     def test_output_in_range(
         self,
         actual_slice: Dataset,
-        model: Model,
+        model: BaseModel,
         classification_label=None,
         min_range: float = 0.3,
         max_range: float = 0.7,
@@ -88,7 +88,7 @@ class StatisticalTests(AbstractTestCollection):
         Args:
             actual_slice(Dataset):
                 Slice of the actual dataset
-            model(Model):
+            model(BaseModel):
                 Model used to compute the test
             classification_label(str):
                 Optional. Classification label you want to test
@@ -143,7 +143,7 @@ class StatisticalTests(AbstractTestCollection):
         gsk_dataset: Dataset,
         protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
         unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
-        model: Model,
+        model: BaseModel,
         positive_outcome,
         min_threshold=0.8,
         max_threshold=1.25,
@@ -177,7 +177,7 @@ class StatisticalTests(AbstractTestCollection):
                   Slice that defines the protected group from the full dataset given
               unprotected_slice(Callable):
                   Slice that defines the unprotected group from the full dataset given
-              model(Model):
+              model(BaseModel):
                   Model used to compute the test
               positive_outcome(str or float):
                   The target value that is considered a positive outcome in the dataset
