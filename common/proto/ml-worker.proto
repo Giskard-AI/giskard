@@ -22,7 +22,7 @@ service MLWorker {
   rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
   rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
-  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
+  rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -310,11 +310,12 @@ message FilterDatasetResponse {
   string error_message = 4;
 }
 
-message TestRegistryResponse{
+message CatalogResponse{
   map<string, TestFunction> tests = 1;
+  map<string, SliceFunction> slices = 2;
 }
 
-message TestFunction{
+message TestFunction {
   string uuid = 1;
   string name = 2;
   string displayName = 3;
@@ -325,6 +326,20 @@ message TestFunction{
   repeated TestFunctionArgument args = 8;
   repeated string tags = 9;
   string code = 10;
+  string type = 11;
+}
+
+message SliceFunction {
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated string tags = 8;
+  string code = 9;
+  string type = 10;
 }
 
 message TestFunctionArgument{

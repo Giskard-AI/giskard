@@ -7,8 +7,8 @@ import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestFunctionService;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.worker.CatalogResponse;
 import ai.giskard.worker.MLWorkerGrpc;
-import ai.giskard.worker.TestRegistryResponse;
 import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -62,14 +62,14 @@ public class MLWorkerCacheService {
             if (!isInternal && client == null) {
                 // Fallback to internal ML worker to not display empty catalog
                 return getTestFunctions(true).stream()
-                    .map(dto -> dto.toBuilder().potentiallyUnavailable(true).build())
+                    .peek(dto -> dto.setPotentiallyUnavailable(true))
                     .toList();
             } else if (client == null) {
                 return Collections.emptyList();
             }
 
             MLWorkerGrpc.MLWorkerBlockingStub blockingStub = client.getBlockingStub();
-            TestRegistryResponse response = blockingStub.getTestRegistry(Empty.newBuilder().build());
+            CatalogResponse response = blockingStub.getCatalog(Empty.newBuilder().build());
             return response.getTestsMap().values().stream()
                 .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
                 .toList();
