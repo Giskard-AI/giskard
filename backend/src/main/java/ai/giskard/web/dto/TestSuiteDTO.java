@@ -16,5 +16,6 @@ public class TestSuiteDTO {
     @JsonAlias("project_key")
     @UINullable
     private String projectKey;
+    private List<TestInputDTO> testInputs;
     private List<SuiteTestDTO> tests;
 }

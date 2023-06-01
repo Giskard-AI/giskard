@@ -20,15 +20,16 @@
                   <v-text-field label="Test suite name" autofocus v-model="name" :error-messages="errors"
                                 outlined></v-text-field>
                 </ValidationProvider>
+                <h2 v-if="showAdvancedSettings">Inputs</h2>
                 <v-simple-table>
                   <template v-slot:default>
                     <thead>
                     <tr>
                       <th class="text-left" id="input-name">
-                        Name
+                        Input name
                       </th>
                       <th class="text-left" id="input-type">
-                        Type
+                        Input type
                       </th>
                       <th id="input-options"></th>
                     </tr>
@@ -62,10 +63,83 @@
                     </tbody>
                   </template>
                 </v-simple-table>
-                <v-btn
-                    @click="() => suiteInputs.push({name: '', type: availableTypes[0], suiteInputType: 'suite'})">
-                  Add input
-                </v-btn>
+                <div class="d-flex flex-row-reverse pt-4">
+                  <v-btn
+                      @click="() => suiteInputs.push({name: '', type: availableTypes[0], suiteInputType: 'suite'})">
+                    <v-icon>add</v-icon>
+                    Add input
+                  </v-btn>
+                  <v-btn v-if="!showAdvancedSettings" class="mr-4"
+                         @click="() => showAdvancedSettings = true">
+                    <v-icon>settings</v-icon>
+                    Advanced settings
+                  </v-btn>
+                </div>
+                <h2 v-if="showAdvancedSettings">Shared inputs</h2>
+                <v-simple-table v-if="showAdvancedSettings">
+                  <template v-slot:default>
+                    <thead>
+                    <tr>
+                      <th class="text-left" id="input-name">
+                        Input name
+                      </th>
+                      <th class="text-left" id="input-type">
+                        Input type
+                      </th>
+                      <th class="text-left" id="input-type">
+                        Input value
+                      </th>
+                      <th id="input-options"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                        v-for="(input, index) in sharedSuiteInputs"
+                        :key="index"
+                    >
+                      <td>
+                        <ValidationProvider name="input name" rules="required" v-slot="{errors}">
+                          <v-text-field v-model="input.name" :error-messages="errors"></v-text-field>
+                        </ValidationProvider>
+                      </td>
+                      <td>
+                        <v-select
+                            v-model="input.type"
+                            :items="availableTypes"
+                        ></v-select>
+                      </td>
+                      <td>
+                        <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                         v-if="input.type === 'Dataset'" :value.sync="input.value"/>
+                        <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                       v-else-if="input.type === 'Model'" :value.sync="input.value"/>
+                        <v-text-field
+                            :step='input.type === "float" ? 0.1 : 1'
+                            v-model="input.value"
+                            v-else-if="['float', 'int'].includes(input.type)"
+                            hide-details
+                            single-line
+                            type="number"
+                            outlined
+                            dense
+                        />
+                      </td>
+                      <td>
+                        <v-btn icon @click="() => sharedSuiteInputs.splice(index, 1)">
+                          <v-icon color="accent">delete</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+                <div v-if="showAdvancedSettings" class="d-flex flex-row-reverse pt-4">
+                  <v-btn
+                      @click="() => sharedSuiteInputs.push({name: '', type: availableTypes[0], value: null, isAlias: false})">
+                    <v-icon>add</v-icon>
+                    Add shared input
+                  </v-btn>
+                </div>
               </v-col>
             </v-row>
           </v-card-text>
@@ -95,11 +169,13 @@
 import {onMounted, ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import {api} from '@/api';
-import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestInputDTO, TestSuiteDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import InputSettingsModal from '@/views/main/project/modals/ModelInputSettingsModal.vue';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
+import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 
 const {projectKey, projectId, suite} = defineProps<{
   projectKey: string,
@@ -110,7 +186,9 @@ const {projectKey, projectId, suite} = defineProps<{
 const dialog = ref<boolean>(false);
 const name = ref<string>('');
 const suiteInputs = ref<GenerateTestSuiteInputDTO[]>([]);
+const sharedSuiteInputs = ref<TestInputDTO[]>([]);
 const isLoading = ref<boolean>(false);
+const showAdvancedSettings = ref<boolean>(false);
 
 const router = useRouter();
 const {updateTestSuite} = useTestSuiteStore();
@@ -118,6 +196,7 @@ const {updateTestSuite} = useTestSuiteStore();
 onMounted(() => {
   if (suite) {
     name.value = suite.name;
+    sharedSuiteInputs.value = [...suite.testInputs];
   }
 })
 
@@ -129,7 +208,8 @@ async function submit(close) {
   if (suite) {
     await updateTestSuite(projectKey, {
       ...suite,
-      name: name.value
+      name: name.value,
+      testInputs: sharedSuiteInputs.value
     }).finally(() => isLoading.value = false);
   } else {
     mixpanel.track('Create test suite v2', {
@@ -138,7 +218,8 @@ async function submit(close) {
 
     const createdTestSuiteId = await api.generateTestSuite(projectKey, {
       name: name.value,
-      inputs: suiteInputs.value.map(val => ({...val}))
+      inputs: suiteInputs.value,
+      sharedInputs: sharedSuiteInputs.value
     } as GenerateTestSuiteDTO)
         .finally(() => isLoading.value = false);
 

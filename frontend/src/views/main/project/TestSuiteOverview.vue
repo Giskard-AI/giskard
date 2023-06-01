@@ -1,7 +1,4 @@
 <template>
-  <v-container v-if="latestExecution === null">
-    <p>No execution has been performed yet!</p>
-  </v-container>
   <TestSuiteExecutionOverview v-else :execution="latestExecution"/>
 </template>
 

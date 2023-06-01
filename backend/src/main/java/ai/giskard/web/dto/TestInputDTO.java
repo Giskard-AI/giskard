@@ -12,6 +12,7 @@ public class TestInputDTO {
     @NotBlank
     private String name;
     private String value;
+    private String type;
     @JsonAlias("is_alias")
     @JsonProperty("isAlias")
     private boolean isAlias;
