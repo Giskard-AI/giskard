@@ -112,4 +112,14 @@ public class TestSuiteController {
         return testSuiteService.updateTestInputs(suiteId, testUuid, inputs);
     }
 
+    @DeleteMapping("project/{projectKey}/suite/{suiteId}/suite-test/{suiteTestId}")
+    @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
+    @Transactional
+    public TestSuiteDTO updateTestInputs(@PathVariable("projectKey") String projectKey,
+                                         @PathVariable("suiteId") long suiteId,
+                                         @PathVariable("suiteTestId") long suiteTestId) {
+        return testSuiteService.removeSuiteTest(suiteId, suiteTestId);
+    }
+
+
 }
