@@ -110,17 +110,17 @@ class AucTest(GiskardTest):
 
     Example : The test is passed when the AUC for females is higher than 0.7
     """
-    actual_slice: Dataset
+    dataset: Dataset
     model: BaseModel
     threshold: float
 
-    def __init__(self, actual_slice: Dataset = None, model: BaseModel = None, threshold: float = None):
+    def __init__(self, dataset: Dataset = None, model: BaseModel = None, threshold: float = None):
         """
-        :param actual_slice: Actual dataset used to compute the test
+        :param dataset: dataset used to compute the test
         :param model: Model used to compute the test
         :param threshold: Threshold value of AUC metrics
         """
-        self.actual_slice = actual_slice
+        self.dataset = dataset
         self.model = model
         self.threshold = threshold
         super().__init__()
@@ -136,7 +136,7 @@ class AucTest(GiskardTest):
               passed:
                 TRUE if AUC metrics >= threshold
             """
-        return test_auc.test_fn(dataset=self.actual_slice, model=self.model, threshold=self.threshold)
+        return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold)
 
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])

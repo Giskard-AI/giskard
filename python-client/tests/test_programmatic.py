@@ -5,6 +5,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
 from giskard.models.base import BaseModel
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from tests.utils import MockedClient
 
 
@@ -53,7 +54,7 @@ def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
         Suite()
         .add_test(test_auc(threshold=0.2))
         .add_test(test_f1(threshold=0.2))
-        .run(actual_slice=german_credit_data, model=german_credit_model)[0]
+        .run(dataset=german_credit_data, model=german_credit_model)[0]
     )
 
 
@@ -63,12 +64,12 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
         .add_test(test_auc())
         .add_test(test_f1())
         .add_test(_test_a_greater_b())
-        .run(actual_slice=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)[0]
+        .run(dataset=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)[0]
     )
 
 
 def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseModel):
-    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
+    last_half = german_credit_data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False))
 
     shared_input = SuiteInput("dataset", Dataset)
 
@@ -80,13 +81,13 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseMode
         .run(
             model=german_credit_model,
             dataset=german_credit_data,
-            reference_slice=last_half)[0]
+            reference_dataset=last_half)[0]
     )
 
 
 def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: BaseModel):
-    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
-    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
+    first_half = german_credit_data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False))
+    last_half = german_credit_data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False))
 
     shared_input = SuiteInput("dataset", Dataset)
 
@@ -94,7 +95,7 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
         .add_test(test_auc(dataset=shared_input, threshold=0.2)) \
         .add_test(test_auc(dataset=shared_input, threshold=0.25)) \
         .add_test(test_auc(dataset=shared_input, threshold=0.3)) \
-        .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)
+        .run(model=german_credit_model, dataset=german_credit_data, actual_dataset=first_half, reference_dataset=last_half)
 
     assert result[0]
     assert len(result[1]) == 3
@@ -105,7 +106,7 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
 
     assert (
         Suite()
-        .add_test(AucTest(actual_slice=shared_input, threshold=0.2))
+        .add_test(AucTest(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)[0]
     )
 
