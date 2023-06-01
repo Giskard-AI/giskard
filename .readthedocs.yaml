@@ -11,7 +11,7 @@ build:
       - pip install pdm
 #      - pdm config python.use_venv false
     post_install:
-      - sh -c "pdm config python.use_venv false && cd python-client && pdm install -G doc"
+      - sh -c "pdm config python.use_venv false && cd python-client && pdm install -G doc && pdm config"
 #      - pip install -r python-client/requirements.txt
 
 
