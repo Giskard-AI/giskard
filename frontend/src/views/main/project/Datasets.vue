@@ -1,15 +1,5 @@
 <template>
   <div class="vertical-container">
-    <v-container class="mt-2 mb-0" v-if="isProjectOwnerOrAdmin">
-      <div class="d-flex justify-end align-center">
-        <v-btn tile small class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
-          Upload with API
-        </v-btn>
-        <v-btn text @click="loadDatasets()" color="secondary">Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-      </div>
-    </v-container>
     <v-container v-if="files.length > 0">
       <v-expansion-panels>
         <v-row dense no-gutters class="mr-12 ml-2 caption secondary--text text--lighten-3 pb-2">
