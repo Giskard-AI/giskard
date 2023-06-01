@@ -1,0 +1,47 @@
+<!-- ISSUES TABLE -->
+<div class="mb-4">
+    <table class="table-auto w-full text-white">
+        {% for issue in issues %}
+        <tbody class="first:border-t border-b border-zinc-400">
+            <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
+                <td class="p-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4 group-[.open]:rotate-90">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </td>
+                <td class="p-3">
+                    <code class="mono text-blue-300">
+                    {{issue.slice_fn|replace("&", "<br>")}}
+                </code>
+                </td>
+                <td class="p-3">
+                    {{issue.test_name}}
+                </td>
+                <td class="p-3">
+                    <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">{{"{:.2f}".format(issue.test_results.metric * 100) }}% than
+                        global</span>
+                </td>
+                <td class="p-3">
+                    <span class="text-gray-400">
+                        {{issue.test_results.actual_slices_size[0]}} samples ({{ '{:.2f}'.format(issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0])}}%)
+                    </span>
+                </td>
+                <td class="p-3 text-xs text-right space-x-1">
+                    <a href=""
+                        class="gsk-debug inline-block border border-emerald-100/50 text-emerald-100/90 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white px-2 py-0.5 rounded-sm">Debug</a>
+                </td>
+            </tr>
+            <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-400 bg-zinc-700">
+                <td colspan="6" class="p-3">
+                    <h4 class="uppercase">Examples</h4>
+                    <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
+                        {{issue.examples(3).to_html()}}
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        {% endfor %}
+    </table>
+</div>
+<!-- ISSUES TABLE END -->
