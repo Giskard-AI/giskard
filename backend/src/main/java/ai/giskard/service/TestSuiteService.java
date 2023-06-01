@@ -1,12 +1,10 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.*;
-import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
@@ -36,7 +34,6 @@ public class TestSuiteService {
     private final GiskardMapper giskardMapper;
     private final CodeTestTemplateService testTemplateService;
     private final TestSuiteNewRepository testSuiteNewRepository;
-    private final TestService testService;
 
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
