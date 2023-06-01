@@ -11,7 +11,7 @@ from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
 
 from giskard import Dataset
 from giskard.models.pytorch import PyTorchModel
-from utils import resource_dir
+from ..utils import resource_dir
 
 
 @pytest.fixture()
