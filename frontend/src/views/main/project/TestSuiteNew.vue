@@ -9,7 +9,6 @@
             <v-icon right>refresh</v-icon>
           </v-btn>
         </div>
-
       </v-col>
     </v-row>
     <v-row>
