@@ -14,7 +14,6 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
-import liquibase.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -85,7 +84,9 @@ public class ModelService {
             ExplainRequest request = ExplainRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
                 .setDataset(grpcMapper.createRef(dataset, false))
-                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
+                .putAllColumns(features.entrySet().stream()
+                    .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build();
 
             return client.getBlockingStub().explain(request);
