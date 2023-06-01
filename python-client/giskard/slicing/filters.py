@@ -1,9 +1,8 @@
 import logging
 from scipy import stats
 
-from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, \
-    test_diff_recall, test_diff_precision
+from giskard.datasets import Dataset
+from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, test_diff_recall, test_diff_precision
 
 
 class DataSliceFilter:
@@ -14,7 +13,6 @@ class DataSliceFilter:
 
 
 class InternalTestFilter(DataSliceFilter):
-
     def __init__(self, model, dataset, test_name=None, threshold=0.1):
         self.dataset = dataset
         self.model = model
@@ -80,9 +78,7 @@ class SignificanceFilter(DataSliceFilter):
 
         logging.debug(f"Mood’s median test p_value = {mt_pval:.2e}")
         if mt_pval > 1e-3:
-            logging.debug(
-                f"Mood’s median test signals no significance in the slices, stopping now."
-            )
+            logging.debug(f"Mood’s median test signals no significance in the slices, stopping now.")
             return []
 
         # Paired tests
