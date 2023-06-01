@@ -6,11 +6,17 @@ from giskard import Dataset
 from giskard.models.automodel import Model
 
 
-def test_autoserializablemodel_arbitrary():
-    class MyArbitraryModel(Model):
-        def model_predict(self, df):
-            return np.array(df["x"]).astype(float)
+class MyArbitraryModel(Model):
+    def model_predict(self, df):
+        return np.array(df["x"]).astype(float)
 
+
+class MySklearnModel(Model):
+    def model_predict(self, some_df: pd.DataFrame):
+        return self.model.predict_proba(some_df)
+
+
+def test_autoserializablemodel_arbitrary():
     my_model = MyArbitraryModel(
         model=lambda x: x ** 2,
         model_type="regression",
@@ -22,10 +28,6 @@ def test_autoserializablemodel_arbitrary():
 
 
 def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_data):
-    class MySklearnModel(Model):
-        def model_predict(self, some_df: pd.DataFrame):
-            return self.model.predict_proba(some_df)
-
     my_model = MySklearnModel(
         model=german_credit_raw_model,
         model_type="classification",
