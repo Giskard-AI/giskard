@@ -22,11 +22,16 @@ def remove_stale_pid_file(pid_file):
 
 
 def create_pid_file_path(is_server, url):
+    hash_value = ml_worker_id(is_server, url)
+    return run_dir / f"ml-worker-{hash_value}.pid"
+
+
+def ml_worker_id(is_server, url):
     key = f"{sys.executable}"
     if not is_server:
         key += url
     hash_value = hashlib.sha1(key.encode()).hexdigest()
-    return run_dir / f"ml-worker-{hash_value}.pid"
+    return hash_value
 
 
 def validate_url(_ctx, _param, value) -> AnyHttpUrl:

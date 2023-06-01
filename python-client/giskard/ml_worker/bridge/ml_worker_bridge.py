@@ -35,14 +35,13 @@ class MLWorkerBridge:
 
     def __init__(
             self,
-            local_port: int,
+            local_socket: str,
             client: GiskardClient,
             execution_loop=asyncio.get_event_loop(),
     ) -> None:
         self.loop = execution_loop
 
-        self.local_host = "localhost"
-        self.local_port = local_port
+        self.local_socket = local_socket
 
         self.client = client
 
@@ -141,11 +140,10 @@ class MLWorkerBridge:
             remote_writer.write(self.encryptor.encrypt(message, additional_data=self.key_id.encode()))
             await remote_writer.drain()
 
-            grpc_reader, grpc_writer = await asyncio.open_connection(
-                self.local_host, self.local_port
-            )
+            grpc_reader, grpc_writer = await asyncio.open_unix_connection(urlparse(self.local_socket).path)
+
             readers.add(grpc_reader)
-            logger.debug(f"Connected client {client} to grpc host {(self.local_host, self.local_port)}")
+            logger.debug(f"Connected client {client} to grpc host {self.local_socket}")
 
             await self.create_sync_task(client, grpc_reader, remote_writer,
                                         encrypted_writer=True,
