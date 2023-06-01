@@ -130,14 +130,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None,
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None,
-            validation=True
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = None,
+        column_types: Optional[Dict[str, str]] = None,
+        id: Optional[uuid.UUID] = None,
+        validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -218,16 +218,20 @@ class Dataset(ColumnMetadataMixin):
     @cached_property
     def _row_hashes(self):
         return pandas.Series(
-            map(lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
-                self.df.values), index=self.df.index)
+            map(
+                lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
+                self.df.values,
+            ),
+            index=self.df.index,
+        )
 
     @configured_validate_arguments
     def slice(
-            self,
-            slicing_function: Union[SlicingFunction, SlicingFunctionType],
-            row_level: bool = True,
-            cell_level=False,
-            column_name: Optional[str] = None,
+        self,
+        slicing_function: Union[SlicingFunction, SlicingFunctionType],
+        row_level: bool = True,
+        cell_level=False,
+        column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -405,9 +409,12 @@ class Dataset(ColumnMetadataMixin):
     @property
     def meta(self):
         return DatasetMeta(
-            name=self.name, target=self.target, column_types=self.column_types,
-            column_dtypes=self.column_dtypes, number_of_rows=self.number_of_rows,
-            category_features=self.category_features
+            name=self.name,
+            target=self.target,
+            column_types=self.column_types,
+            column_dtypes=self.column_dtypes,
+            number_of_rows=self.number_of_rows,
+            category_features=self.category_features,
         )
 
     @staticmethod
@@ -460,7 +467,7 @@ class Dataset(ColumnMetadataMixin):
                     column_types=saved_meta["column_types"],
                     column_dtypes=saved_meta["column_dtypes"],
                     number_of_rows=saved_meta["number_of_rows"],
-                    category_features=saved_meta["category_features"]
+                    category_features=saved_meta["category_features"],
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
@@ -468,8 +475,13 @@ class Dataset(ColumnMetadataMixin):
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)
-        return cls(df=df, name=meta.name, target=meta.target, column_types=meta.column_types,
-                   id=uuid.uuid4() if sample else uuid.UUID(dataset_id))
+        return cls(
+            df=df,
+            name=meta.name,
+            target=meta.target,
+            column_types=meta.column_types,
+            id=uuid.uuid4() if sample else uuid.UUID(dataset_id),
+        )
 
     @staticmethod
     def _cat_columns(meta):
@@ -505,7 +517,7 @@ class Dataset(ColumnMetadataMixin):
                         "original_size_bytes": original_size_bytes,
                         "compressed_size_bytes": compressed_size_bytes,
                         "number_of_rows": self.meta.number_of_rows,
-                        "category_features": self.meta.category_features
+                        "category_features": self.meta.category_features,
                     },
                     meta_f,
                     default_flow_style=False,
