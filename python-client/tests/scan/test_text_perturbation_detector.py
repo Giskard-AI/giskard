@@ -46,10 +46,15 @@ def test_llm_text_transformation():
 
     model = Model(chain, model_type='generative')
 
-    dataset = Dataset(pd.DataFrame({
-        "instruct": ["Paraphrase this", "Answer this question"],
-        "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"]
-    }), column_types={"instruct": "text", "question": "text"})
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "instruct": ["Paraphrase this", "Answer this question"],
+                "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"],
+            }
+        ),
+        column_types={"instruct": "text", "question": "text"},
+    )
 
     prediction = model.predict(dataset)
     assert prediction
