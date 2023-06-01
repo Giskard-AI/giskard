@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
@@ -38,7 +38,7 @@ class ModelPredictionResults(BaseModel):
     all_predictions: Optional[Any]
 
 
-class Model(ABC):
+class BaseModel(ABC):
     should_save_model_class = False
     id: uuid.UUID = None
 
@@ -87,8 +87,8 @@ class Model(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                if not issubclass(clazz, Model):
-                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
+                if not issubclass(clazz, BaseModel):
+                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
                 return clazz
         else:
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
@@ -268,9 +268,9 @@ class Model(ABC):
             )
 
 
-class WrapperModel(Model, ABC):
+class WrapperModel(BaseModel, ABC):
     """
-    A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
+    A subclass of a BaseModel that wraps an existing model object (clf) and uses it to make inference
     This class introduces a `data_preprocessing_function` which can be used
     to preprocess incoming data before it's passed
     to the underlying model
@@ -436,9 +436,9 @@ class MLFlowBasedModel(WrapperModel, ABC):
         ...
 
 
-class CustomModel(Model, ABC):
+class CustomModel(BaseModel, ABC):
     """
-    Helper class to extend in case a user needs to extend a Model
+    Helper class to extend in case a user needs to extend a BaseModel
     """
 
     should_save_model_class = True
