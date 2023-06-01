@@ -22,7 +22,7 @@ def validate_model(model: Model, validate_ds: Dataset):
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
-    if model.model_postprocessing_function is not None:
+    if isinstance(model, WrapperModel) and model.model_postprocessing_function is not None:
         validate_model_postprocessing_function(model.model_postprocessing_function)
 
     validate_classification_labels(model.meta.classification_labels, model_type)
