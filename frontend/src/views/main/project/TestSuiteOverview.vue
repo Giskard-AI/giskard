@@ -5,7 +5,7 @@
   <v-container v-else>
     <h2>
       <v-icon :color="latestExecution.result === TestResult.PASSED ? Colors.PASS : Colors.FAIL" size="40">{{
-          latestExecution.result === TestResult.PASSED ? 'done' : 'close'
+          testResultIcon
         }}
       </v-icon>
       Test Suite -
@@ -122,6 +122,21 @@ const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
 
 const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
+const testResultIcon = computed(() => {
+  if (latestExecution.value === null) {
+    return null;
+  }
+
+  switch (latestExecution.value.result) {
+    case TestResult.PASSED:
+      return 'done';
+    case TestResult.FAILED:
+      return 'close';
+    default:
+      return 'error';
+  }
+})
+
 const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 const filteredTest = computed(() => latestExecution.value === null ? [] : chain(suite.value!.tests)

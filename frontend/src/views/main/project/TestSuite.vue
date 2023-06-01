@@ -16,7 +16,7 @@
           <v-col cols="2">
             <v-tabs vertical>
               <v-tab :to="{name:'test-suite-overview'}">Overview</v-tab>
-              <v-tab :to="{name:'test-suite-tests'}">Tests</v-tab>
+              <v-tab :to="{name:'test-suite-tests'}">List of tests</v-tab>
               <v-tab :to="{name:'test-suite-executions'}">Execution</v-tab>
             </v-tabs>
           </v-col>
