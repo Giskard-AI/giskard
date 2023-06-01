@@ -174,17 +174,17 @@ class Suite:
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
 
         if any([arg for arg in required_args if
-                arg.name not in suite_args or arg.type != type(suite_args[arg.name]).__name__]):
+                arg.name not in suite_args or not is_same_type(arg.type, suite_args[arg.name])]):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return
 
         args = {
-            [arg.name]: suite_args[arg.name]
+            arg.name: suite_args[arg.name]
             for arg in required_args
         }
 
-        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg not in args]:
+        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg.name not in args]:
             # Set default value if not provided
             suite_args[arg.name] = arg.default
 
@@ -204,3 +204,12 @@ class Suite:
 
 def contains_tag(func: TestFunction, tag: str):
     return any([t for t in func.tags if t.upper() == tag.upper()])
+
+
+def is_same_type(require_type: str, obj: Any) -> bool:
+    if require_type == 'Model':
+        return isinstance(obj, Model)
+    if require_type == 'Dataset':
+        return isinstance(obj, Dataset)
+    else:
+        require_type == type(obj).__name__
