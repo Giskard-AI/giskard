@@ -158,7 +158,9 @@ export default new Router({
                                     path: 'debugger',
                                     name: 'project-debugger',
                                     component: () => import('./views/main/project/Debugger.vue'),
-
+                                    props: (route) => {
+                                        return { projectId: Number(route.params.id) }
+                                    }
                                 },
                                 {
                                     path: 'project-tests-catalog',
