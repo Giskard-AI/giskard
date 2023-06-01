@@ -14,4 +14,5 @@ public class TestSuiteNewDTO {
     @JsonAlias("project_key")
     private String projectKey;
     private List<SuiteTestDTO> tests;
+
 }
