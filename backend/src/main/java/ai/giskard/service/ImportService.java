@@ -42,7 +42,7 @@ public class ImportService {
     private final ProjectRepository projectRepository;
 
 
-    private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Path pathToMetadataDirectory, Project savedProject) {
+    private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Project savedProject) {
         Map<UUID, UUID> mapFormerNewIdDataset = new HashMap<>();
         datasets.forEach(dataset -> {
             UUID formerId = dataset.getId();
@@ -143,7 +143,7 @@ public class ImportService {
 
         // Save new objects in memory
         Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, savedProject);
-        Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, pathMetadataDirectory, savedProject);
+        Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, savedProject);
         saveImportFeedback(feedbacks, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset, importedUsersToCurrent);
         saveImportTestSuites(testSuites, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset);
 
