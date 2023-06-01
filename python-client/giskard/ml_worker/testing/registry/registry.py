@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Dict
 
+from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
 
@@ -22,8 +23,15 @@ class Dataset:
     name: str
 
 
+def find_plugin_location():
+    if udf_repo_available:
+        return udf_root
+    else:
+        return Path(expand_env_var(settings.home)) / "plugins"
+
+
 logger = logging.getLogger(__name__)
-plugins_root = Path(expand_env_var(settings.home)) / "plugins"
+plugins_root = find_plugin_location()
 
 
 def _get_plugin_method_full_name(func):
