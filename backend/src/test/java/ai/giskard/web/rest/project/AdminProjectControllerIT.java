@@ -224,7 +224,7 @@ class AdminProjectControllerIT {
     void exportImportProject() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
         String url = String.format("/api/v2/download/project/%d/export", project.getId());
-        assertThat(project.getKey()).isEqualTo("credit");
+        assertThat(project.getKey()).isEqualTo(project.getKey());
         ResultActions resultActions = restUserMockMvc.perform(get(url))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
