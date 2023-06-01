@@ -2,7 +2,7 @@ import hashlib
 import os
 import uuid
 from functools import wraps
-from typing import Dict
+from typing import Dict, Optional
 
 from mixpanel import Consumer, Mixpanel
 
@@ -42,9 +42,11 @@ class GiskardAnalyticsCollector:
     prod_mp_project_key = "2c3efacc6c26ffb991a782b476b8c620"
     server_info: Dict = None
     mp: Mixpanel
+    giskard_version: Optional[str]
 
     def __init__(self) -> None:
         self.is_enabled = not settings.disable_analytics
+        self.giskard_version = None
         if self.is_enabled:
             self.mp = self.configure_mixpanel()
             self.distinct_user_id = GiskardAnalyticsCollector.machine_based_user_id()
@@ -72,12 +74,15 @@ class GiskardAnalyticsCollector:
     @threaded
     @analytics_method
     def track(self, event_name, properties=None, meta=None, force=False):
+        if not self.giskard_version:
+            import giskard
+            self.giskard_version = giskard.get_version()
         if self.is_enabled or force:
-            merged_props = []
+            merged_props = {"giskard_version": self.giskard_version}
             if properties is not None:
-                merged_props += properties.items()
+                merged_props = {**merged_props, **properties}
             if self.server_info is not None:
-                merged_props += self.server_info.items()
+                merged_props = {**merged_props, **self.server_info}
 
             self.mp.track(
                 distinct_id=self.distinct_user_id,
