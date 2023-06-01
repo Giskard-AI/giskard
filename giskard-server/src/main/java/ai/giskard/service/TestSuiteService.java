@@ -3,6 +3,8 @@ package ai.giskard.service;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.repository.ml.DatasetRepository;
+import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -27,11 +29,24 @@ public class TestSuiteService {
 
     private final TestSuiteRepository testSuiteRepository;
     private final TestRepository testRepository;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
     private final GiskardMapper giskardMapper;
     private final CodeTestTemplateService testTemplateService;
 
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
+        TestSuite suite = testSuiteRepository.getById(dto.getId());
+        if (dto.getActualDatasetId() != null && !suite.getProject().equals(datasetRepository.getById(dto.getActualDatasetId()).getProject())) {
+            throw new IllegalArgumentException("Actual dataset is not part of the test project");
+        }
+        if (dto.getReferenceDatasetId() != null && !suite.getProject().equals(datasetRepository.getById(dto.getReferenceDatasetId()).getProject())) {
+            throw new IllegalArgumentException("Reference dataset is not part of the test project");
+        }
+        if (dto.getModelId() != null && !suite.getProject().equals(modelRepository.getById(dto.getModelId()).getProject())) {
+            throw new IllegalArgumentException("Model is not part of the test project");
+        }
+
         TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, dto.getId()));
         giskardMapper.updateTestSuiteFromDTO(dto, testSuite);
         return testSuite;

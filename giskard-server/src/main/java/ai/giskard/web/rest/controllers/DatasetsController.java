@@ -2,6 +2,7 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
+import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -35,6 +36,13 @@ public class DatasetsController {
     public List<DatasetDTO> listProjectDatasets(@PathVariable @NotNull Long projectId) {
         return giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId));
     }
+
+
+    @GetMapping("datasets/{datasetId}/metadata")
+    public DatasetMetadataDTO getDatasetMetadata(@PathVariable @NotNull Long datasetId) {
+        return datasetService.getMetadata(datasetId);
+    }
+
 
     /**
      * Get the rows in the specified range

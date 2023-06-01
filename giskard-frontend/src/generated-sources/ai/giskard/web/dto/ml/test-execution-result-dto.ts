@@ -10,4 +10,5 @@ export interface TestExecutionResultDTO {
     result: NamedSingleTestResultDTO[];
     status: TestResult;
     testId: number;
+    testName: string;
 }

@@ -36,7 +36,7 @@ import {
     UpdateMeDTO,
     UpdateTestSuiteDTO,
     UserDTO
-} from '@/generated-sources';
+} from './generated-sources';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -90,11 +90,16 @@ function trackError(error) {
         console.error("Failed to track API Error", e)
     }
 }
+function replacePlaceholders(detail: string) {
+    return detail.replaceAll("GISKARD_ADDRESS", window.location.hostname);
+}
 
 async function errorInterceptor(error) {
     if (error.code !== AxiosError.ERR_CANCELED) {
         trackError(error);
     }
+
+
     if (error.response) {
         if (error.response.status === 401) {
             removeLocalToken();
@@ -113,6 +118,8 @@ async function errorInterceptor(error) {
                 title = error.response.data.title || error.message;
                 detail = error.response.data.detail || error.request.responseURL;
             }
+
+            detail = replacePlaceholders(detail);
 
             Vue.$toast(
                 {
@@ -175,7 +182,7 @@ export const api = {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
     async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO>(`/settings/ml-worker-info`);
+        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/settings/ml-worker-info`);
     },
     async saveGeneralSettings(settings: GeneralSettings) {
         return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);

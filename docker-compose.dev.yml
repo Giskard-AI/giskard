@@ -5,13 +5,7 @@ services:
     ports:
       - "5432:5432"
 
-  jupyter:
-    build:
-      context: ./giskard-demo-notebook
-      dockerfile: demo-notebook.dockerfile
-
   frontend:
-    platform: linux/amd64
     build:
       context: giskard-frontend
       dockerfile: Dockerfile

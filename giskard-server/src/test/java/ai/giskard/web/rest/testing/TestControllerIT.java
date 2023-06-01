@@ -12,6 +12,7 @@ import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.InitService;
 import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -67,5 +68,20 @@ class TestControllerIT {
             .andExpect(jsonPath("$.collections.[*].title").isNotEmpty())
             .andExpect(jsonPath("$.collections.[*].items").isNotEmpty())
             .andExpect(jsonPath("$.testAvailability").isNotEmpty());
+    }
+
+    @Test
+    @Transactional
+    void testDatasetMetadata() throws Exception {
+        Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin("admin"));
+        Optional<Dataset> dataset = project.getDatasets().stream().findFirst();
+        Assertions.assertFalse(dataset.isEmpty(), "demo dataset not found");
+        restUserMockMvc.perform(get(String.format("/api/v2/datasets/%s/metadata", dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.id").isNotEmpty())
+            .andExpect(jsonPath("$.target").isString())
+            .andExpect(jsonPath("$.featureTypes").isNotEmpty())
+            .andExpect(jsonPath("$.columnTypes").isNotEmpty());
     }
 }

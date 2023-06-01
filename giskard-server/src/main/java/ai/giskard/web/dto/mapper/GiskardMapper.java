@@ -61,6 +61,7 @@ public interface GiskardMapper {
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
     @Mapping(target = "testSuites", ignore = true)
+    @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
     @Mapping(target = "createdBy", ignore = true)
@@ -73,6 +74,7 @@ public interface GiskardMapper {
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
     @Mapping(target = "testSuites", ignore = true)
+    @Mapping(target = "mlWorkerType", ignore = true)
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
     TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);

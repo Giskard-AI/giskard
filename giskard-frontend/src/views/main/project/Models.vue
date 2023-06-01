@@ -14,7 +14,8 @@
           <v-col cols="4">Name</v-col>
           <v-col cols="1">Python</v-col>
           <v-col cols="1">Size</v-col>
-          <v-col cols="3">Uploaded on</v-col>
+          <v-col cols="2">Uploaded on</v-col>
+          <v-col cols="1">Id</v-col>
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
@@ -31,8 +32,11 @@
           <v-col cols="1">
             <div>{{ m.size | fileSize }}</div>
           </v-col>
-          <v-col cols="3">
+          <v-col cols="2">
             <div>{{ m.createdDate | date }}</div>
+          </v-col>
+          <v-col cols="1">
+            <div>{{ m.id }}</div>
           </v-col>
           <v-col cols="3">
             <div>

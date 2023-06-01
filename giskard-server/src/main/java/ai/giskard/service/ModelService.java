@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
@@ -40,7 +41,7 @@ public class ModelService {
 
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
         RunModelForDataFrameResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
             assert modelUploadStatus.getCode().equals(UploadStatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
@@ -67,7 +68,7 @@ public class ModelService {
     }
 
     public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             mlWorkerService.upload(client, model);
             mlWorkerService.upload(client, dataset);
 
@@ -81,9 +82,9 @@ public class ModelService {
         }
     }
 
-    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
+    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             mlWorkerService.upload(client, model);
 
             response = client.getBlockingStub().explainText(
@@ -92,7 +93,7 @@ public class ModelService {
                     .setFeatureName(featureName)
                     .putAllColumns(features)
                     .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
-                    .setNSamples(500)
+                    .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );
         }
@@ -123,7 +124,7 @@ public class ModelService {
 
     private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
         RunModelResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient()) {
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             mlWorkerService.upload(client, model);
             mlWorkerService.upload(client, dataset);
 

@@ -18,6 +18,7 @@ export namespace AppConfigDTO {
         buildBranch: string;
         buildCommitId: string;
         buildCommitTime: any /* TODO: Missing translation of java.time.Instant */;
+        externalMlWorkerEntrypointPort: number;
         generalSettings: GeneralSettings;
         planCode: string;
         planName: string;

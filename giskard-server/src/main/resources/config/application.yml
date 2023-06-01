@@ -227,4 +227,4 @@ giskard:
   borderLineThreshold: 0.1
   home: giskard-home
   regressionThreshold: 0.15
-
+  limeNumberSamples: 500

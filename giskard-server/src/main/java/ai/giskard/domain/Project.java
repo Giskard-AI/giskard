@@ -3,18 +3,22 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.utils.JSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity(name = "projects")
@@ -22,6 +26,20 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Project extends AbstractAuditingEntity {
+    @Converter
+    public static class InspectionSettingsConverter extends JSONStringAttributeConverter<InspectionSettings> {
+        @Override
+        public TypeReference<InspectionSettings> getValueTypeRef() {
+            return new TypeReference<>() {
+            };
+        }
+
+        @Override
+        public InspectionSettings nullConverter() {
+            return new InspectionSettings();
+        }
+    }
+
     @Getter
     @Setter
     @NotNull
@@ -73,6 +91,24 @@ public class Project extends AbstractAuditingEntity {
     private Set<User> guests = new HashSet<>();
 
 
+    @Getter
+    @Setter
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = InspectionSettingsConverter.class)
+    private InspectionSettings inspectionSettings;
+
+
+    @Setter
+    @Getter
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault(value = "EXTERNAL")
+    private MLWorkerType mlWorkerType = MLWorkerType.EXTERNAL;
+
+    public boolean isUsingInternalWorker() {
+        return mlWorkerType == MLWorkerType.INTERNAL;
+    }
+
     public void addGuest(User user) {
         this.guests.add(user);
     }
@@ -87,5 +123,19 @@ public class Project extends AbstractAuditingEntity {
         this.name = name;
         this.description = description;
         this.owner = owner;
+        this.inspectionSettings = new InspectionSettings();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Project project = (Project) o;
+        return getKey().equals(project.getKey());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getKey());
     }
 }

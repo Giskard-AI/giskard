@@ -25,9 +25,11 @@ public class MLWorkerInfoDTO {
         private String version;
     }
 
+
     private PlatformInfoDTO platform;
     private String interpreter;
     private String interpreterVersion;
+    private String giskardClientVersion;
     private Map<String, String> installedPackages;
     private int internalGrpcPort;
     @JsonProperty("isRemote")

@@ -47,6 +47,9 @@ public class InitService {
     private static final Map<String, String> zillowColumnTypes = new HashMap<>();
     private static final String CLASSPATH = "classpath:";
     private static final String PROJECTDIR = "demo_projects/";
+    public static final String ZILLOW_PROJECT_KEY = "zillow";
+    public static final String ENRON_PROJECT_KEY = "enron";
+    public static final String GERMAN_CREDIT_PROJECT_KEY = "credit";
 
     static {
         germanCreditColumnTypes.put("account_check_status", "object");
@@ -174,31 +177,28 @@ public class InitService {
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
-        String zillowProjectKey = "zillow";
-        String enronProjectKey = "enron";
-        String germanCreditProjectKey = "credit";
 
         return Map.of(
-            zillowProjectKey, new ProjectConfig("House Pricing Regression", "aicreator",
+            ZILLOW_PROJECT_KEY, new ProjectConfig("House Pricing Regression", "aicreator",
                 ModelUploadParamsDTO.builder().modelType("regression")
-                    .projectKey(zillowProjectKey)
+                    .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
                     .featureNames(zillowFeatureTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
-                    .projectKey(zillowProjectKey)
+                    .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Data")
                     .featureTypes(zillowFeatureTypes)
                     .columnTypes(zillowColumnTypes)
                     .target("SalePrice")
                     .build()
             ),
-            enronProjectKey, new ProjectConfig("Email Classification", "aitester",
+            ENRON_PROJECT_KEY, new ProjectConfig("Email Classification", "aitester",
                 ModelUploadParamsDTO.builder().modelType("classification")
                     .classificationLabels(List.of("CALIFORNIA CRISIS", "INFLUENCE", "INTERNAL", "REGULATION"))
-                    .projectKey(enronProjectKey)
+                    .projectKey(ENRON_PROJECT_KEY)
                     .name("Email Classification Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
@@ -208,14 +208,14 @@ public class InitService {
                     .name("Email data")
                     .featureTypes(enronFeatureTypes)
                     .columnTypes(enronColumnTypes)
-                    .projectKey(enronProjectKey)
+                    .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build()
             ),
-            germanCreditProjectKey, new ProjectConfig("Credit Scoring Classification", "admin",
+            GERMAN_CREDIT_PROJECT_KEY, new ProjectConfig("Credit Scoring Classification", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")
                     .classificationLabels(List.of("Default", "Not default"))
-                    .projectKey(germanCreditProjectKey)
+                    .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .name("Credit Scoring Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
@@ -223,7 +223,7 @@ public class InitService {
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Credit Scoring data")
-                    .projectKey(germanCreditProjectKey)
+                    .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .target("default")
                     .featureTypes(germanCreditFeatureTypes)
                     .columnTypes(germanCreditColumnTypes)
@@ -326,6 +326,7 @@ public class InitService {
             User owner = userRepository.getOneByLogin(ownerLogin);
             Assert.notNull(owner, "Owner does not exist in database");
             Project project = new Project(projectKey, projectName, projectName, owner);
+            project.setMlWorkerType(MLWorkerType.INTERNAL);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
             List<String> models = getFileNames(projectKey, "models");
@@ -345,7 +346,6 @@ public class InitService {
      * @param projectKey key of the project
      * @param type       type (models/datasets)
      * @return List of names
-     * @throws IOException
      */
     private List<String> getFileNames(String projectKey, String type) throws IOException {
         String path = PROJECTDIR + projectKey + "/" + type + "/*";
@@ -382,7 +382,7 @@ public class InitService {
         Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
         ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
         // hacky way to override features list, we should rely on project export/import in the future to handle demo projects
-        if ("enron".equals(projectKey) && "pytorch_bert".equals(filename)) {
+        if (ENRON_PROJECT_KEY.equals(projectKey) && "pytorch_bert".equals(filename)) {
             modelDTO.setFeatureNames(Lists.newArrayList("Content"));
         }
         ModelUploadParamsDTO modelDTOCopy = ModelUploadParamsDTO.builder().modelType(modelDTO.getModelType())
