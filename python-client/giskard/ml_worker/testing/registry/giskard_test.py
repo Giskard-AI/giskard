@@ -106,9 +106,13 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_fn, meta)
 
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
         self.is_initialized = True
         self.params = kwargs
+
+        for idx, arg in enumerate(args):
+            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+
         return self
 
     def execute(self) -> Result:

@@ -160,16 +160,16 @@ class GiskardTestRegistry:
                 doc=func_doc,
                 module_doc=inspect.getmodule(func).__doc__.strip() if inspect.getmodule(func).__doc__ else None,
                 args={
-                    name: TestFunctionArgument(
-                        name=name,
-                        type=parameters[name].annotation.__qualname__,
-                        optional=parameters[name].default != inspect.Parameter.empty and parameters[
-                            name].default is not None,
-                        default=None
-                        if parameters[name].default == inspect.Parameter.empty
-                        else parameters[name].default,
+                    parameter.name: TestFunctionArgument(
+                        name=parameter.name,
+                        type=parameter.annotation.__qualname__,
+                        optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                        default=None,
+                        argOrder=idx
+                        if parameter.default == inspect.Parameter.empty
+                        else parameter.default,
                     )
-                    for name in parameters
+                    for idx, parameter in enumerate(parameters.values())
                     if name != 'self'
                 },
                 version=None
@@ -217,3 +217,4 @@ def new_getfile(object, _old_getfile=inspect.getfile):
 inspect.getfile = new_getfile
 
 tests_registry = GiskardTestRegistry()
+

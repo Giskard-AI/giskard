@@ -2,8 +2,7 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult
-from giskard.ml_worker.generated.ml_worker_pb2 import TestMessage, TestMessageType
+from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
 from giskard.ml_worker.testing.utils import Direction
@@ -153,7 +152,7 @@ def _test_metamorphic(
     )
     passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
@@ -348,7 +347,7 @@ def _test_metamorphic_t_test(
 
     p_value = _compare_probabilities_t_test(result_df, direction, window_size, critical_quantile)
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
@@ -536,7 +535,7 @@ def _test_metamorphic_wilcoxon(
 
     p_value = _compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
-    messages = [TestMessage(type=TestMessageType.INFO, text=f"{modified_rows_count} rows were perturbed")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
