@@ -4,13 +4,14 @@ import Router from 'vue-router';
 import RouterComponent from './components/RouterComponent.vue';
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
+import {exponentialRetry} from "@/utils/job-utils";
 
 
 async function routeGuard(to, from, next) {
     const userStore = useUserStore();
     const mainStore = useMainStore();
     if (!mainStore.license) {
-        await mainStore.fetchLicense();
+        await exponentialRetry(mainStore.fetchLicense);
     }
     if (!mainStore.license?.active) {
         if (to.path !== '/setup') {
