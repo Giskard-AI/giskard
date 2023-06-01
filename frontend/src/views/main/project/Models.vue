@@ -67,14 +67,17 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No models uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
 import { api } from '@/api';
+import { apiURL } from "@/env";
 import { Role } from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
 import { ModelDTO } from '@/generated-sources';
@@ -86,6 +89,7 @@ import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -99,6 +103,28 @@ const props = defineProps<Props>();
 
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
+
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "${apiURL}" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)
+
+# Load your model (example: SKLearn model)
+from joblib import load
+my_sklearn_regressor = load("sklearn_regressor.joblib")
+
+# Create a Giskard Model
+from giskard import SKLearnModel
+my_giskard_model = SKLearnModel(my_sklearn_regressor, 
+                                model_type="regression",
+                                name="My SKLearn Regressor")
+
+# Upload your model on Giskard
+project_key = "${project.key}" # Current project key
+my_giskard_model.upload(client, project_key)`
+)
 
 const project = computed(() => {
   return projectStore.project(props.projectId)

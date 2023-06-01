@@ -56,13 +56,16 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No files uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#3.-create-a-giskard-dataset" target="_blank">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
+import { apiURL } from "@/env";
 import { api } from "@/api";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
@@ -73,6 +76,7 @@ import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -89,6 +93,32 @@ const props = defineProps<Props>();
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "${apiURL}" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)
+
+# Load your data (example: from a csv file as a pandas dataframe)
+import pandas as pd
+my_df = pd.read_csv("data.csv")
+my_column_types = {"categorical_column": "category",
+                   "text_column": "text",
+                   "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
+
+# Create a Giskard Dataset
+from giskard import Dataset
+my_dataset = Dataset(df=my_df, 
+                     target="numeric_column",
+                     column_types=my_column_types,
+                     name="My Dataset")
+
+# Upload your dataset on Giskard
+project_key = "${project.key}" # Current project key
+my_dataset.upload(client, project_key)`
+)
 
 const project = computed(() => {
   return projectStore.project(props.projectId)

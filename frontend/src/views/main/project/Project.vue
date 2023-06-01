@@ -89,6 +89,26 @@
       </v-card>
     </v-dialog>
 
+    <!-- Quick start dialog -->
+    <v-dialog v-model="openQuickStart" max-width="70vw">
+      <v-card flat>
+        <v-card-title flat>
+          Quick start guide
+          <v-spacer></v-spacer>
+          <v-btn text href="https://docs.giskard.ai/start/" target="_blank">
+            <span>Documentation</span>
+            <v-icon right>mdi-open-in-new</v-icon>
+
+          </v-btn>
+          <!-- <v-btn color="secondary" href="https://docs.giskard.ai/start/" target="_blank">
+            <v-icon left>mdi-file-document-outline</v-icon>
+            <span>Documentation</span>
+          </v-btn> -->
+        </v-card-title>
+        <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
+      </v-card>
+    </v-dialog>
+
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
@@ -106,8 +126,10 @@ import mixpanel from "mixpanel-browser";
 import { useRouter, useRoute } from "vue-router/composables";
 import { useMainStore } from "@/stores/main";
 import { useUserStore } from "@/stores/user";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
+import QuickStartStepper from "@/components/QuickStartStepper.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -115,6 +137,7 @@ const route = useRoute();
 const mainStore = useMainStore();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
+const projectArtifactsStore = useProjectArtifactsStore();
 
 interface Props {
   id: number
@@ -125,6 +148,7 @@ const props = defineProps<Props>();
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
+const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
 const tabsMap = new Map([
@@ -206,6 +230,13 @@ onMounted(async () => {
   await projectStore.getProject({ id: props.id });
   await mainStore.getCoworkers();
   updateCurrentTab();
+  await projectArtifactsStore.setProjectId(props.id, false);
+
+  if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
+    console.log('Datasets length', projectArtifactsStore.datasets.length);
+    console.log('Models length', projectArtifactsStore.models.length);
+    openQuickStart.value = true;
+  }
 })
 </script>
 
