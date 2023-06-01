@@ -23,7 +23,6 @@ const searchSession = ref("");
 const displayComponents = computed(() => props.activeSessionId === null);
 
 const filteredSessions = computed(() => {
-  if (searchSession.value.length == 0) return orderByDate(debuggingSessions.value);
 
   return orderByDate(debuggingSessions.value.filter((session) => {
     const dataset = session.dataset;
