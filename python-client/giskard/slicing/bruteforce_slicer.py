@@ -20,12 +20,14 @@ class BruteForceSlicer(BaseSlicer):
         (feature,) = features
 
         # Quantile-based binning
-        _, cut_bin = pd.qcut(data[feature], q=10, retbins=True, duplicates="drop", labels=False)
+        _, cut_bin = pd.qcut(data[feature], q=4, retbins=True, duplicates="drop", labels=False)
 
-        intervals_df = pd.DataFrame(cut_bin, columns=["col"])
-        result_df = intervals_df.rolling(window=2).apply(lambda x: list(x)).dropna()
+        result_df=[]
+        for i in range(len(cut_bin)-1):
+            result_df.append([cut_bin[i],cut_bin[i+1]])
+
         clauses = []
-        for interval in result_df["col"].tolist():
+        for interval in result_df:
             clauses.append([GreaterThan(feature, interval[0], True), LowerThan(feature, interval[1], True)])
 
         slice_candidates = [QueryBasedSliceFunction(Query(clause)) for clause in clauses]
