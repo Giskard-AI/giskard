@@ -10,7 +10,10 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+
+import static ai.giskard.security.ee.jwt.JWTFilter.AUTHORIZATION_HEADER;
 
 /**
  * This filter is applied for every request and will check for authentication.
@@ -34,9 +37,11 @@ public class GiskardAuthFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         if (!this.licenseService.getCurrentLicense().isActive()) {
             this.noLicenseAuthFilter.doFilter(request, response, chain);
-        } else if (this.licenseService.hasFeature(FeatureFlag.AUTH)) {
+        } else if (this.licenseService.hasFeature(FeatureFlag.AUTH) || httpServletRequest.getHeader(AUTHORIZATION_HEADER) != null) {
+            // even if AUTH isn't enabled (no multi-user support), check the token for python client/ML Worker requests
             this.jwtFilter.doFilter(request, response, chain);
         } else {
             this.noAuthFilter.doFilter(request, response, chain);
