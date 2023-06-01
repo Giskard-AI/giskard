@@ -100,7 +100,7 @@
 <script lang="ts" setup>
 
 import {api} from "@/api";
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {
   DatasetDTO,
   ModelDTO,
@@ -161,10 +161,13 @@ async function loadData() {
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
 
-  if (selectedTest.value !== null) {
-    selectedTest.value = suiteResults.tests.find(test => test.testId === selectedTest.value?.testId) ?? null;
-  }
 }
+
+watch(() => suite.value, () => {
+  if (selectedTest.value !== null && suite.value !== null) {
+    selectedTest.value = suite.value.tests.find(test => test.testId === selectedTest.value?.testId) ?? null;
+  }
+})
 
 const testSuiteResults = computed(() => {
   if (!executions.value) {

@@ -8,9 +8,15 @@
       <v-btn v-if="editedInputs === null" icon @click="editInputs()" color="primary">
         <v-icon right>edit</v-icon>
       </v-btn>
-      <v-btn v-else icon @click="saveEditedInputs()" color="primary">
-        <v-icon right>save</v-icon>
-      </v-btn>
+      <div v-else>
+        <v-btn icon @click="saveEditedInputs()" color="primary">
+          <v-icon right>save</v-icon>
+        </v-btn>
+        <v-btn icon @click="editedInputs = null" color="error">
+          <v-icon right>cancel</v-icon>
+        </v-btn>
+      </div>
+
     </div>
     <div>
       <v-list v-if="props.test.arguments && editedInputs === null">
@@ -61,7 +67,7 @@
 import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestDefinitionDTO, TestInputDTO} from "@/generated-sources";
 import _ from "lodash";
 import TestResultTimeline from '@/components/TestResultTimeline.vue';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {ArrayReducers} from '@/utils/array-reducers';
 import {api} from '@/api';
@@ -108,6 +114,8 @@ async function saveEditedInputs() {
 
   emit('updateTestSuite', saved);
 }
+
+watch(() => props.test, () => editedInputs.value = null);
 
 const inputType = computed(() => sortedArguments.value
     .reduce(ArrayReducers.toMap(arg => arg.name, arg => arg.type), {})
