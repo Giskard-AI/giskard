@@ -89,7 +89,7 @@ class DataProcessor:
         df = ds.df
         df.loc[df[dataset.df.loc[df.index].ne(df)].dropna(how='all').index, GISKARD_HASH_COLUMN] = float('NaN')
         from ...core.dataset_caching import generate_row_hashes
-        generate_row_hashes(ds, True)
+        generate_row_hashes(ds)
 
         if len(self.pipeline):
             ds.data_processor = self
