@@ -35,14 +35,14 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
     def _get_name(cls) -> str:
         return 'transformations'
 
-    def __init__(self, func: TransformationFunctionType, row_level=True, cell_level=False):
+    def __init__(self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False):
         self.func = func
         self.row_level = row_level
         self.cell_level = cell_level
 
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
-        if meta is None:
+        if meta is None and func is not None:
             meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
                                                                       cell_level=self.cell_level))
         super().__init__(self, meta)
