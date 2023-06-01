@@ -31,7 +31,7 @@ import {
     TestDTO,
     TestExecutionResultDTO,
     TestSuiteCreateDTO,
-    TestSuiteDTO,
+    TestSuiteDTO, TestSuiteNewDTO,
     TestTemplatesResponse,
     TokenAndPasswordVM,
     UpdateMeDTO,
@@ -296,6 +296,9 @@ export const api = {
     },
     async getProjectDatasets(id: number) {
         return axiosProject.get<unknown, DatasetDTO[]>(`/${id}/datasets`);
+    },
+    async getTestSuitesNew(projectId: number) {
+        return apiV2.get<unknown, TestSuiteNewDTO[]>(`testing/project/${projectId}/suites-new`);
     },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
