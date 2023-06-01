@@ -17,7 +17,7 @@ wrapped_dataset = Dataset(
 )
 ```
 :::{info}
-The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties such as the target column (ground truth variable). This object gets passed to the [Giskard model wrapper](../wrap_model/index.md).
+For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
 :::
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
