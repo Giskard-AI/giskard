@@ -23,6 +23,9 @@ def test_dataset_index_is_preserved(german_credit_data, german_credit_model):
 
     # Try with an index that is not a sequence of integers
     dataset.df.set_index(pd.to_datetime(dataset.df.index), inplace=True)
+    # Reset hash since it is based on index
+    dataset._dataset_hash = None
+    dataset._dataset_hash_initialized = False
     original_idx = dataset.df.index.copy()
 
     _ = test_accuracy(
