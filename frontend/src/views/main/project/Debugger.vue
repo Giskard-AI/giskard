@@ -19,6 +19,24 @@ const searchInspection = ref("");
 
 const displayComponents = computed(() => props.activeInspectionId === null);
 
+const filteredInspections = computed(() => {
+  if (searchInspection.value.length == 0) return inspections.value;
+
+  return inspections.value.filter((inspection) => {
+    const dataset = inspection.dataset;
+    const model = inspection.model;
+
+    return (
+      inspection.id.toString().includes(searchInspection.value) ||
+      dataset.name.toLowerCase().includes(searchInspection.value.toLowerCase()) ||
+      dataset.id.toString().includes(searchInspection.value) ||
+      model.name.toLowerCase().includes(searchInspection.value.toLowerCase()) ||
+      model.id.toString().includes(searchInspection.value)
+    );
+  });
+
+})
+
 async function loadInspections() {
   inspections.value = await api.getProjectInspections(props.projectId)
 }
@@ -62,7 +80,7 @@ onActivated(() => loadInspections());
     <v-container fluid class="vc" v-if="inspections.length > 0">
       <v-row>
         <v-col cols="4">
-          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection" disabled></v-text-field>
+          <v-text-field v-show="displayComponents" label="Search for an inspection session" append-icon="search" outlined v-model="searchInspection"></v-text-field>
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
@@ -86,7 +104,7 @@ onActivated(() => loadInspections());
           <v-col cols="1">Actions</v-col>
         </v-row>
 
-        <v-expansion-panel v-for="inspection in inspections" :key="inspection.id" v-show="displayComponents" @click="toggleActiveInspection(inspection.id)">
+        <v-expansion-panel v-for="inspection in filteredInspections" :key="inspection.id" v-show="displayComponents" @click="toggleActiveInspection(inspection.id)">
           <v-expansion-panel-header :disableIconRotate="true">
             <v-row dense no-gutters class="align-center">
               <v-col cols="3">Generic name</v-col>
