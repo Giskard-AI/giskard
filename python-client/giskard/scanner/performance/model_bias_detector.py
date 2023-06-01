@@ -110,6 +110,10 @@ class ModelBiasDetector:
         detector = IssueFinder(self.metrics, self.threshold)
         issues = detector.detect(precooked, dataset, slices)
 
+        # Restore the original model
+        for issue in issues:
+            issue.model = model
+
         return issues
 
 
@@ -176,6 +180,7 @@ class IssueFinder:
                     metric_value_slice=metric_val,
                     metric_value_reference=ref_metric_val,
                     slice_size=len(sliced_dataset),
+                    threshold=self.threshold,
                 )
 
                 issues.append(
