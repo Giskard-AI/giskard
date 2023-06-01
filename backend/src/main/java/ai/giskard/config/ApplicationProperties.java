@@ -19,6 +19,7 @@ public class ApplicationProperties {
     private String mlWorkerHost;
     private int mlWorkerPort;
     private int externalMlWorkerEntrypointPort;
+    private String externalMlWorkerEntrypointHost;
     private boolean externalMlWorkerEnabled;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;

@@ -76,12 +76,11 @@ class TestControllerIT {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin("admin"));
         Optional<Dataset> dataset = project.getDatasets().stream().findFirst();
         Assertions.assertFalse(dataset.isEmpty(), "demo dataset not found");
-        restUserMockMvc.perform(get(String.format("/api/v2/datasets/%s/metadata", dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
+        restUserMockMvc.perform(get(String.format("/api/v2/project/%s/datasets/%s", dataset.get().getProject().getKey(), dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.target").isString())
-            .andExpect(jsonPath("$.featureTypes").isNotEmpty())
-            .andExpect(jsonPath("$.columnTypes").isNotEmpty());
+            .andExpect(jsonPath("$.featureTypes").isNotEmpty());
     }
 }

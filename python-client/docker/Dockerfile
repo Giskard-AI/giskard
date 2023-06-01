@@ -104,5 +104,10 @@ WORKDIR $PYSETUP_PATH
 ENV GSK_HOST=0.0.0.0
 ENV PYTHONPATH=.
 
-CMD ["python", "giskard/cli.py", "worker", "start", "-s"]
+# Since artifacts can't be loaded from server (no real API token specified) read them directly from "projects" directory
+# where they're put after demo projects are created and not from "cache"
+ENV GSK_CACHE_DIR=projects
+ENV GSK_HOME=/giskard-home
+
+CMD ["python", "giskard/cli.py", "worker", "start", "-s", "-k", "INTERNAL_ML_WORKER"]
 EXPOSE 50051

@@ -2,10 +2,10 @@
  * Generated from ai.giskard.web.dto.TestSuiteCreateDTO
  */
 export interface TestSuiteCreateDTO {
-    actualDatasetId?: number | null;
-    modelId: number;
+    actualDatasetId?: string | null;
+    modelId: string;
     name: string;
     projectId: number;
-    referenceDatasetId?: number | null;
+    referenceDatasetId?: string | null;
     shouldGenerateTests: boolean;
 }

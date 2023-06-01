@@ -10,9 +10,9 @@ import java.util.List;
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findAllByProjectId(Long projectId);
 
-    List<Feedback> findAllByDatasetId(Long datasetId);
+    List<Feedback> findAllByDatasetId(String datasetId);
 
-    List<Feedback> findAllByModelId(Long modelId);
+    List<Feedback> findAllByModelId(String modelId);
 
     List<Feedback> findAllByProjectIdAndUserId(Long projectId, Long userId);
 

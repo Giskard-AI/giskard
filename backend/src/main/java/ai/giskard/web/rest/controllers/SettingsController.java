@@ -99,6 +99,7 @@ public class SettingsController {
                 .planCode("open-source")
                 .planName("Open Source")
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+                .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
                 .roles(roles)
                 .build())
             .user(userDTO)

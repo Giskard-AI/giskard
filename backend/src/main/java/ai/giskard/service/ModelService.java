@@ -10,7 +10,6 @@ import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
@@ -31,23 +30,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ModelService {
     private final DatasetRepository datasetRepository;
-    private final TestSuiteRepository testSuiteRepository;
     final FeedbackRepository feedbackRepository;
     final ModelRepository modelRepository;
     private final PermissionEvaluator permissionEvaluator;
     private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
-    private final FileLocationService locationService;
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
 
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
+    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
-            assert modelUploadStatus.getCode().equals(UploadStatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
         return response;
@@ -56,7 +51,7 @@ public class ModelService {
     private RunModelForDataFrameResponse getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features, MLWorkerClient client) {
         RunModelForDataFrameResponse response;
         RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
+            .setModel(grpcMapper.createRef(model))
             .setDataframe(DataFrame.newBuilder().addRows(DataRow.newBuilder().putAllColumns(features)).build());
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
@@ -71,14 +66,11 @@ public class ModelService {
         return response;
     }
 
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
+    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-            mlWorkerService.upload(client, dataset);
-
             ExplainRequest request = ExplainRequest.newBuilder()
-                .setModel(grpcMapper.serialize(model))
-                .setDataset(grpcMapper.serialize(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setDataset(grpcMapper.createRef(dataset))
                 .putAllColumns(features)
                 .build();
 
@@ -89,11 +81,9 @@ public class ModelService {
     public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-
             response = client.getBlockingStub().explainText(
                 ExplainTextRequest.newBuilder()
-                    .setModel(grpcMapper.serialize(model))
+                    .setModel(grpcMapper.createRef(model))
                     .setFeatureName(featureName)
                     .putAllColumns(features)
                     .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
@@ -104,7 +94,7 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(Long modelId, Long datasetId) throws IOException {
+    public Inspection createInspection(String modelId, String datasetId) throws IOException {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getById(datasetId);
@@ -126,15 +116,12 @@ public class ModelService {
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
+    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) {
         RunModelResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-            mlWorkerService.upload(client, dataset);
-
             RunModelRequest request = RunModelRequest.newBuilder()
-                .setModel(grpcMapper.serialize(model))
-                .setDataset(grpcMapper.serialize(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setDataset(grpcMapper.createRef(dataset))
                 .build();
 
             response = client.getBlockingStub().runModel(request);

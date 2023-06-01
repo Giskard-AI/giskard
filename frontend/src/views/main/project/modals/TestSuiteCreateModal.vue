@@ -41,7 +41,7 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import {api} from "@/api";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import {ModelDTO} from '@/generated-sources';
+import {DatasetDTO, ModelDTO} from '@/generated-sources';
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import mixpanel from "mixpanel-browser";
 
@@ -52,8 +52,8 @@ export default class TestSuiteCreateModal extends Vue {
   @Prop({required: true}) projectId!: number;
   public name: string = "";
   model: ModelDTO | null = null;
-  referenceDS: ModelDTO | null = null;
-  actualDS: ModelDTO | null = null;
+  referenceDS: DatasetDTO | null = null;
+  actualDS: DatasetDTO | null = null;
   shouldCreateAutoTests: boolean = true;
 
   public async submit() {

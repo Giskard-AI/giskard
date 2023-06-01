@@ -18,7 +18,7 @@ import java.time.Instant;
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AbstractAuditingEntity extends BaseEntity {
+public abstract class AbstractAuditingEntity {
     @lombok.Setter
     @lombok.Getter
     @CreatedBy

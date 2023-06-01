@@ -12,6 +12,6 @@ import java.util.Map;
 @NoArgsConstructor
 @UIModel
 public class PredictionInputDTO {
-    private Long datasetId;
+    private String datasetId;
     private Map<String, String> features;
 }

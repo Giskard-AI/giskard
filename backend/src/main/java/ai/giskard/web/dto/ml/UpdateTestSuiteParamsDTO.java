@@ -10,7 +10,7 @@ import lombok.Setter;
 public class UpdateTestSuiteParamsDTO {
     private Long testId;
     private Long testSuiteId;
-    private Long referenceDatasetId;
-    private Long actualDatasetId;
-    private Long modelId;
+    private String referenceDatasetId;
+    private String actualDatasetId;
+    private String modelId;
 }

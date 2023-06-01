@@ -25,7 +25,7 @@
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <div class="secondary--text font-weight-bold">
-              {{ m.name }}
+              {{ m.name || m.id }}
             </div>
           </v-col>
           <v-col cols="1">
@@ -37,8 +37,8 @@
           <v-col cols="2">
             <div>{{ m.createdDate | date }}</div>
           </v-col>
-          <v-col cols="1">
-            <div>{{ m.id }}</div>
+          <v-col cols="1" class="id-container" :title="m.id">
+            {{ m.id }}
           </v-col>
           <v-col cols="3">
             <div>
@@ -112,7 +112,7 @@ export default class Models extends Vue {
     this.models.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
-  public async deleteModelPickle(id: number, fileName: string) {
+  public async deleteModelPickle(id: string, fileName: string) {
     mixpanel.track('Delete model', {id});
 
     if (await this.$dialog.showAndWait(DeleteModal, {
@@ -143,5 +143,10 @@ export default class Models extends Vue {
 <style>
 div.v-dialog {
   overflow-y: hidden;
+}
+.id-container {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

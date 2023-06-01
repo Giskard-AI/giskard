@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import explain, explain_text
 
 
@@ -21,8 +21,8 @@ from giskard.ml_worker.core.model_explanation import explain, explain_text
     ],
 )
 def test_explain(ds_name: str, model_name: str, include_feature_names: bool, request):
-    ds: GiskardDataset = request.getfixturevalue(ds_name)
-    model: GiskardModel = request.getfixturevalue(model_name)
+    ds: Dataset = request.getfixturevalue(ds_name)
+    model: Model = request.getfixturevalue(model_name)
 
     # Try without feature names, it should also work
     if not include_feature_names:
@@ -32,13 +32,13 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
 
     assert explanations and explanations.get("explanations")
 
-    if model.model_type == "classification":
-        for l in model.classification_labels:
+    if model.is_classification:
+        for l in model.meta.classification_labels:
             label_explanation = explanations.get("explanations").get(l)
             assert label_explanation
             for l, e in label_explanation.items():
                 assert np.issubdtype(type(e), np.floating), f"'{l}' explanation value isn't float"
-    elif model.model_type == "regression":
+    elif model.is_regression:
         assert "default" in explanations.get("explanations")
         exp = explanations.get("explanations").get("default")
         for l, e in exp.items():

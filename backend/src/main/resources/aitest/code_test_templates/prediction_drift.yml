@@ -8,8 +8,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: false
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |
       #region Documentation
@@ -52,8 +52,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: false
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |
       #region Documentation
@@ -140,8 +140,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: false
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation
@@ -230,8 +230,8 @@ items:
     isMultipleDatasets: true
     isGroundTruthRequired: false
     modelTypes:
-      - MULTICLASS_CLASSIFICATION
-      - BINARY_CLASSIFICATION
+      - CLASSIFICATION
+
     # language=Python
     code: |-
       #region Documentation

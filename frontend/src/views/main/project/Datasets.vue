@@ -22,14 +22,13 @@
         </v-row>
 
         <v-expansion-panel v-for="f in files" :key="f.id">
-          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2"
-                                    :class="{'file-xl': f.name.indexOf('.xls') > 0, 'file-csv': f.name.indexOf('.csv') > 0}">
+          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2">
             <v-row dense no-gutters align="center">
-              <v-col cols="4" class="font-weight-bold">{{ f.name }}</v-col>
-              <v-col cols="1">{{ f.size | fileSize }}</v-col>
+              <v-col cols="4" class="font-weight-bold">{{ f.name || f.id }}</v-col>
+              <v-col cols="1">{{ f.originalSizeBytes | fileSize }}</v-col>
               <v-col cols="3">{{ f.createdDate | date }}</v-col>
               <v-col cols="2">{{ f.target }}</v-col>
-              <v-col cols="1"> {{ f.id }}</v-col>
+              <v-col cols="1" class="id-container" :title="f.id"> {{ f.id }}</v-col>
               <v-col>
                 <span>
               <v-tooltip bottom dense>
@@ -74,9 +73,8 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import {api} from '@/api';
-import {performApiActionWithNotif} from '@/api-commons';
 import {commitAddNotification} from '@/store/main/mutations';
-import {FileDTO, ProjectDTO} from '@/generated-sources';
+import {DatasetDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 
@@ -88,7 +86,7 @@ export default class Datasets extends Vue {
   @Prop({type: Number, required: true}) projectId!: number;
   @Prop({type: Boolean, default: false}) isProjectOwnerOrAdmin!: boolean;
 
-  public files: FileDTO[] = [];
+  public files: DatasetDTO[] = [];
   public fileData = null;
   public lastVisitedFileId;
   public filePreviewHeader: { text: string, value: string, sortable: boolean }[] = [];
@@ -103,18 +101,7 @@ export default class Datasets extends Vue {
     this.files.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
   }
 
-  public async upload_data() {
-    mixpanel.track('Upload dataset');
-    let project: ProjectDTO = await api.getProject(this.projectId);
-    await performApiActionWithNotif(this.$store,
-        () => api.uploadDataFile(project.key, this.fileData),
-        () => {
-          this.loadDatasets()
-          this.fileData = null;
-        })
-  }
-
-  public async deleteDataFile(id: number, fileName: string) {
+  public async deleteDataFile(id: string, fileName: string) {
     mixpanel.track('Delete dataset', {id});
     if (await this.$dialog.showAndWait(DeleteModal, {
       width: 600,
@@ -129,12 +116,12 @@ export default class Datasets extends Vue {
     }
   }
 
-  public downloadDataFile(id: number) {
+  public downloadDataFile(id: string) {
     mixpanel.track('Download dataset file', {id});
     api.downloadDataFile(id)
   }
 
-  public async peakDataFile(id: number) {
+  public async peakDataFile(id: string) {
     if (this.lastVisitedFileId != id) {
       this.lastVisitedFileId = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
       try {
@@ -176,5 +163,10 @@ export default class Datasets extends Vue {
 
 div.v-input {
   width: 400px;
+}
+
+.id-container {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

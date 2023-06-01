@@ -2,13 +2,15 @@ import pytest
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.core import SupportedModelTypes
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.core.model import Model
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.sklearn import SKLearnModel
 
 
 @pytest.fixture()
-def linear_regression_diabetes() -> GiskardModel:
+def linear_regression_diabetes_raw():
     timer = Timer()
     diabetes = datasets.load_diabetes()
 
@@ -34,9 +36,15 @@ def linear_regression_diabetes() -> GiskardModel:
 
     timer.stop(f"Model MSE: {mean_squared_error(diabetes_y_test, diabetes_y_pred)}")
 
-    return GiskardModel(
-        prediction_function=regressor.predict,
-        model_type="regression",
+    return regressor
+
+
+@pytest.fixture()
+def linear_regression_diabetes(linear_regression_diabetes_raw) -> Model:
+    diabetes = datasets.load_diabetes()
+    return SKLearnModel(
+        clf=linear_regression_diabetes_raw,
+        model_type=SupportedModelTypes.REGRESSION,
         feature_names=diabetes["feature_names"],
     )
 
@@ -44,7 +52,7 @@ def linear_regression_diabetes() -> GiskardModel:
 @pytest.fixture()
 def diabetes_dataset():
     diabetes = datasets.load_diabetes()
-    return GiskardDataset(
+    return Dataset(
         df=datasets.load_diabetes(as_frame=True)["data"],
         feature_types={feature: "numeric" for feature in diabetes["feature_names"]},
         target="target",
@@ -56,8 +64,9 @@ def diabetes_dataset_with_target():
     loaded = datasets.load_diabetes(as_frame=True)
     data = loaded["data"]
     data["target"] = loaded["target"]
-    return GiskardDataset(
+    return Dataset(
         df=data,
         feature_types={feature: "numeric" for feature in list(data.columns)},
+        column_types=data.dtypes.apply(lambda x: x.name).to_dict(),
         target="target",
     )

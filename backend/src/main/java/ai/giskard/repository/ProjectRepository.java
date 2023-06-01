@@ -16,6 +16,8 @@ import static ai.giskard.web.rest.errors.EntityNotFoundException.By;
 public interface ProjectRepository extends MappableJpaRepository<Project, Long> {
     @EntityGraph(attributePaths = "guests")
     Optional<Project> findOneWithGuestsById(Long id);
+    @EntityGraph(attributePaths = "guests")
+    Optional<Project> findOneWithGuestsByKey(String key);
 
     List<Project> getProjectsByOwnerOrGuestsContains(User owner, User guest);
 

@@ -1,27 +1,28 @@
 import pandas as pd
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.core import SupportedModelTypes
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
-from giskard.ml_worker.testing.utils import apply_perturbation_inplace
-from giskard.ml_worker.utils.logging import timer
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
 from giskard.ml_worker.testing.utils import Direction
+from giskard.ml_worker.testing.utils import apply_perturbation_inplace
+from giskard.ml_worker.utils.logging import timer
 
 
 class MetamorphicTests(AbstractTestCollection):
     @staticmethod
     def _predict_numeric_result(
-        ds: GiskardDataset, model: GiskardModel, output_proba=True, classification_label=None
+            ds: Dataset, model: Model, output_proba=True, classification_label=None
     ):
-        if model.model_type == "regression" or not output_proba:
-            return model.run_predict(ds).raw_prediction
-        elif model.model_type == "classification" and classification_label is not None:
-            return model.run_predict(ds).all_predictions[classification_label].values
-        elif model.model_type == "classification":
-            return model.run_predict(ds).probabilities
+        if model.is_regression or not output_proba:
+            return model.predict(ds).raw_prediction
+        elif model.is_classification and classification_label is not None:
+            return model.predict(ds).all_predictions[classification_label].values
+        elif model.is_classification:
+            return model.predict(ds).probabilities
 
     @staticmethod
     def _prediction_ratio(prediction, perturbed_prediction):
@@ -33,11 +34,11 @@ class MetamorphicTests(AbstractTestCollection):
 
     @staticmethod
     def _perturb_and_predict(
-        ds: GiskardDataset,
-        model: GiskardModel,
-        perturbation_dict,
-        output_proba=True,
-        classification_label=None,
+            ds: Dataset,
+            model: Model,
+            perturbation_dict,
+            output_proba=True,
+            classification_label=None,
     ):
         results_df = pd.DataFrame()
         results_df["prediction"] = MetamorphicTests._predict_numeric_result(
@@ -57,69 +58,78 @@ class MetamorphicTests(AbstractTestCollection):
     @timer("Compare and predict the data")
     def _compare_prediction(self, results_df, prediction_task, direction, output_sensitivity=None):
         if direction == Direction.Invariant:
-            if prediction_task == "classification":
+            if prediction_task == SupportedModelTypes.CLASSIFICATION:
                 passed_idx = results_df.loc[
                     results_df["prediction"] == results_df["perturbed_prediction"]
-                ].index.values
+                    ].index.values
 
-            elif prediction_task == "regression":
+            elif prediction_task == SupportedModelTypes.REGRESSION:
                 results_df["predict_difference_ratio"] = results_df.apply(
                     lambda x: self._prediction_ratio(x["prediction"], x["perturbed_prediction"]),
                     axis=1,
                 )
                 passed_idx = results_df.loc[
                     results_df["predict_difference_ratio"] < output_sensitivity
-                ].index.values
+                    ].index.values
 
         elif direction == Direction.Increasing:
             passed_idx = results_df.loc[
                 results_df["prediction"] < results_df["perturbed_prediction"]
-            ].index.values
+                ].index.values
 
         elif direction == Direction.Decreasing:
             passed_idx = results_df.loc[
                 results_df["prediction"] > results_df["perturbed_prediction"]
-            ].index.values
+                ].index.values
 
         failed_idx = results_df.loc[~results_df.index.isin(passed_idx)].index.values
         return passed_idx, failed_idx
 
     def _compare_probabilities_t_test(self, result_df, direction, window_size=0.1, critical_quantile=0.05):
 
-          if direction == Direction.Invariant:
-              p_value = equivalence_t_test(result_df['prediction'], result_df['perturbed_prediction'], window_size=window_size, critical_quantile=critical_quantile)[1]
+        if direction == Direction.Invariant:
+            p_value = \
+                equivalence_t_test(result_df['prediction'], result_df['perturbed_prediction'], window_size=window_size,
+                                   critical_quantile=critical_quantile)[1]
 
-          elif direction == Direction.Increasing:
-              p_value = paired_t_test(result_df['prediction'], result_df['perturbed_prediction'], alternative='less', critical_quantile=critical_quantile)[1]
+        elif direction == Direction.Increasing:
+            p_value = paired_t_test(result_df['prediction'], result_df['perturbed_prediction'], alternative='less',
+                                    critical_quantile=critical_quantile)[1]
 
-          elif direction == Direction.Decreasing:
-              p_value = paired_t_test(result_df['prediction'], result_df['perturbed_prediction'], alternative='greater', critical_quantile=critical_quantile)[1]
+        elif direction == Direction.Decreasing:
+            p_value = paired_t_test(result_df['prediction'], result_df['perturbed_prediction'], alternative='greater',
+                                    critical_quantile=critical_quantile)[1]
 
-          return p_value
+        return p_value
 
     def _compare_probabilities_wilcoxon(self, result_df, direction, window_size=0.2, critical_quantile=0.05):
 
-          if direction == Direction.Invariant:
-              p_value = equivalence_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'], window_size=window_size, critical_quantile=critical_quantile)[1]
+        if direction == Direction.Invariant:
+            p_value = \
+                equivalence_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'],
+                                     window_size=window_size,
+                                     critical_quantile=critical_quantile)[1]
 
-          elif direction == Direction.Increasing:
-              p_value = paired_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'], alternative='less', critical_quantile=critical_quantile)[1]
+        elif direction == Direction.Increasing:
+            p_value = paired_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'], alternative='less',
+                                      critical_quantile=critical_quantile)[1]
 
-          elif direction == Direction.Decreasing:
-              p_value = paired_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'], alternative='greater', critical_quantile=critical_quantile)[1]
+        elif direction == Direction.Decreasing:
+            p_value = paired_wilcoxon(result_df['prediction'], result_df['perturbed_prediction'], alternative='greater',
+                                      critical_quantile=critical_quantile)[1]
 
-          return p_value
+        return p_value
 
     def _test_metamorphic(
-        self,
-        direction: Direction,
-        actual_slice: GiskardDataset,
-        model,
-        perturbation_dict,
-        threshold: float,
-        classification_label=None,
-        output_sensitivity=None,
-        output_proba=True,
+            self,
+            direction: Direction,
+            actual_slice: Dataset,
+            model,
+            perturbation_dict,
+            threshold: float,
+            classification_label=None,
+            output_sensitivity=None,
+            output_proba=True,
     ) -> SingleTestResult:
         actual_slice.df.reset_index(drop=True, inplace=True)
 
@@ -132,7 +142,7 @@ class MetamorphicTests(AbstractTestCollection):
         )
 
         passed_idx, failed_idx = self._compare_prediction(
-            results_df, model.model_type, direction, output_sensitivity
+            results_df, model.meta.model_type, direction, output_sensitivity
         )
         passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
@@ -152,7 +162,7 @@ class MetamorphicTests(AbstractTestCollection):
         )
 
     def test_metamorphic_invariance(self,
-                                    df: GiskardDataset,
+                                    df: Dataset,
                                     model,
                                     perturbation_dict,
                                     threshold=0.5,
@@ -173,9 +183,9 @@ class MetamorphicTests(AbstractTestCollection):
         more than 50%(threshold 0.5) of males have unchanged outputs
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
               Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -209,12 +219,12 @@ class MetamorphicTests(AbstractTestCollection):
         )
 
     def test_metamorphic_increasing(self,
-                                    df: GiskardDataset,
+                                    df: Dataset,
                                     model,
                                     perturbation_dict,
                                     threshold=0.5,
                                     classification_label=None
-    ):
+                                    ):
         """
         Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -230,9 +240,9 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is increasing for more than 50% of people in the dataset
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
               Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -253,9 +263,9 @@ class MetamorphicTests(AbstractTestCollection):
               TRUE if metric > threshold
         """
         assert (
-            model.model_type != "classification"
-            or str(classification_label) in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                not model.is_classification
+                or str(classification_label) in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic(
             direction=Direction.Increasing,
@@ -267,7 +277,7 @@ class MetamorphicTests(AbstractTestCollection):
         )
 
     def test_metamorphic_decreasing(
-        self, df: GiskardDataset, model, perturbation_dict, threshold=0.5, classification_label=None
+            self, df: Dataset, model, perturbation_dict, threshold=0.5, classification_label=None
     ):
         """
         Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -284,9 +294,9 @@ class MetamorphicTests(AbstractTestCollection):
          default probability is decreasing for more than 50% of people in the dataset
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
               Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
               Model used to compute the test
             perturbation_dict(dict):
               Dictionary of the perturbations. It provides the perturbed features as key
@@ -308,9 +318,9 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert (
-            model.model_type != "classification"
-            or classification_label in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                not model.is_classification
+                or classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic(
             direction=Direction.Decreasing,
@@ -321,46 +331,45 @@ class MetamorphicTests(AbstractTestCollection):
             threshold=threshold,
         )
 
-
     def _test_metamorphic_t_test(self,
-                                direction: Direction,
-                                actual_slice: GiskardDataset,
-                                model,
-                                perturbation_dict,
-                                window_size: float,
-                                critical_quantile: float,
-                                classification_label=None,
-                                output_proba=True
-                                ) -> SingleTestResult:
+                                 direction: Direction,
+                                 actual_slice: Dataset,
+                                 model,
+                                 perturbation_dict,
+                                 window_size: float,
+                                 critical_quantile: float,
+                                 classification_label=None,
+                                 output_proba=True
+                                 ) -> SingleTestResult:
 
-         actual_slice.df.reset_index(drop=True, inplace=True)
+        actual_slice.df.reset_index(drop=True, inplace=True)
 
-         result_df, modified_rows_count = self._perturb_and_predict(actual_slice,
-                                                                    model,
-                                                                    perturbation_dict,
-                                                                    output_proba=output_proba,
-                                                                    classification_label=classification_label)
+        result_df, modified_rows_count = self._perturb_and_predict(actual_slice,
+                                                                   model,
+                                                                   perturbation_dict,
+                                                                   output_proba=output_proba,
+                                                                   classification_label=classification_label)
 
-         p_value = self._compare_probabilities_t_test(result_df, direction, window_size, critical_quantile)
+        p_value = self._compare_probabilities_t_test(result_df, direction, window_size, critical_quantile)
 
-         messages = [TestMessage(
-             type=TestMessageType.INFO,
-             text=f"{modified_rows_count} rows were perturbed"
-         )]
+        messages = [TestMessage(
+            type=TestMessageType.INFO,
+            text=f"{modified_rows_count} rows were perturbed"
+        )]
 
-         return self.save_results(SingleTestResult(
-             actual_slices_size=[len(actual_slice)],
-             metric=p_value,
-             passed=p_value < critical_quantile,
-             messages=messages))
+        return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            metric=p_value,
+            passed=p_value < critical_quantile,
+            messages=messages))
 
     def test_metamorphic_decreasing_t_test(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        critical_quantile=0.05,
-                                        classification_label=None
-                                        ):
+                                           df: Dataset,
+                                           model,
+                                           perturbation_dict,
+                                           critical_quantile=0.05,
+                                           classification_label=None
+                                           ):
         """
         Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -373,9 +382,9 @@ class MetamorphicTests(AbstractTestCollection):
                  causes a statistically significant probability decrease.
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
                 Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -395,25 +404,25 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert (
-            model.model_type != "classification"
-            or str(classification_label) in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                not model.is_classification
+                or str(classification_label) in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic_t_test(direction=Direction.Decreasing,
-                                          actual_slice=df,
-                                          model=model,
-                                          perturbation_dict=perturbation_dict,
-                                          classification_label=classification_label,
-                                          window_size=float("nan"),
-                                          critical_quantile=critical_quantile)
+                                             actual_slice=df,
+                                             model=model,
+                                             perturbation_dict=perturbation_dict,
+                                             classification_label=classification_label,
+                                             window_size=float("nan"),
+                                             critical_quantile=critical_quantile)
 
     def test_metamorphic_increasing_t_test(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        critical_quantile=0.05,
-                                        classification_label=None
-                                        ):
+                                           df: Dataset,
+                                           model,
+                                           perturbation_dict,
+                                           critical_quantile=0.05,
+                                           classification_label=None
+                                           ):
         """
         Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -426,9 +435,9 @@ class MetamorphicTests(AbstractTestCollection):
                  causes a statistically significant probability increase.
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
                 Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -448,26 +457,25 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert (
-            model.model_type != "classification"
-            or str(classification_label) in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
-
+                not model.is_classification
+                or str(classification_label) in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic_t_test(direction=Direction.Increasing,
-                                          actual_slice=df,
-                                          model=model,
-                                          perturbation_dict=perturbation_dict,
-                                          classification_label=classification_label,
-                                          window_size=float("nan"),
-                                          critical_quantile=critical_quantile)
+                                             actual_slice=df,
+                                             model=model,
+                                             perturbation_dict=perturbation_dict,
+                                             classification_label=classification_label,
+                                             window_size=float("nan"),
+                                             critical_quantile=critical_quantile)
 
     def test_metamorphic_invariance_t_test(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        window_size: float,
-                                        critical_quantile: float,
-                                        ) -> SingleTestResult:
+                                           df: Dataset,
+                                           model,
+                                           perturbation_dict,
+                                           window_size: float,
+                                           critical_quantile: float,
+                                           ) -> SingleTestResult:
         """
         Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
 
@@ -483,9 +491,9 @@ class MetamorphicTests(AbstractTestCollection):
         perturbed sample is statistically within a window determined by the user.
 
         Args:
-              df(GiskardDataset):
+              df(Dataset):
                   Dataset used to compute the test
-              model(GiskardModel):
+              model(Model):
                   Model used to compute the test
               perturbation_dict(dict):
                   Dictionary of the perturbations. It provides the perturbed features as key
@@ -507,52 +515,51 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         return self._test_metamorphic_t_test(direction=Direction.Invariant,
-                                      actual_slice=df,
-                                      model=model,
-                                      perturbation_dict=perturbation_dict,
-                                      window_size=window_size,
-                                      critical_quantile=critical_quantile)
-
+                                             actual_slice=df,
+                                             model=model,
+                                             perturbation_dict=perturbation_dict,
+                                             window_size=window_size,
+                                             critical_quantile=critical_quantile)
 
     def _test_metamorphic_wilcoxon(self,
-                                direction: Direction,
-                                actual_slice: GiskardDataset,
-                                model,
-                                perturbation_dict,
-                                window_size: float,
-                                critical_quantile: float,
-                                classification_label=None,
-                                output_proba=True
-                                ) -> SingleTestResult:
+                                   direction: Direction,
+                                   actual_slice: Dataset,
+                                   model,
+                                   perturbation_dict,
+                                   window_size: float,
+                                   critical_quantile: float,
+                                   classification_label=None,
+                                   output_proba=True
+                                   ) -> SingleTestResult:
 
-         actual_slice.df.reset_index(drop=True, inplace=True)
+        actual_slice.df.reset_index(drop=True, inplace=True)
 
-         result_df, modified_rows_count = self._perturb_and_predict(actual_slice,
-                                                                    model,
-                                                                    perturbation_dict,
-                                                                    output_proba=output_proba,
-                                                                    classification_label=classification_label)
+        result_df, modified_rows_count = self._perturb_and_predict(actual_slice,
+                                                                   model,
+                                                                   perturbation_dict,
+                                                                   output_proba=output_proba,
+                                                                   classification_label=classification_label)
 
-         p_value = self._compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
+        p_value = self._compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
-         messages = [TestMessage(
-             type=TestMessageType.INFO,
-             text=f"{modified_rows_count} rows were perturbed"
-         )]
+        messages = [TestMessage(
+            type=TestMessageType.INFO,
+            text=f"{modified_rows_count} rows were perturbed"
+        )]
 
-         return self.save_results(SingleTestResult(
-             actual_slices_size=[len(actual_slice)],
-             metric=p_value,
-             passed=p_value < critical_quantile,
-             messages=messages))
+        return self.save_results(SingleTestResult(
+            actual_slices_size=[len(actual_slice)],
+            metric=p_value,
+            passed=p_value < critical_quantile,
+            messages=messages))
 
     def test_metamorphic_decreasing_wilcoxon(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        critical_quantile=0.05,
-                                        classification_label=None
-                                        ):
+                                             df: Dataset,
+                                             model,
+                                             perturbation_dict,
+                                             critical_quantile=0.05,
+                                             classification_label=None
+                                             ):
         """
         Summary: Tests if the model probability decreases when the feature values are perturbed
 
@@ -565,9 +572,9 @@ class MetamorphicTests(AbstractTestCollection):
                  causes a statistically significant probability decrease.
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
                 Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -587,25 +594,25 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert (
-            model.model_type != "classification"
-            or str(classification_label) in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                not model.is_classification
+                or str(classification_label) in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic_wilcoxon(direction=Direction.Decreasing,
-                                          actual_slice=df,
-                                          model=model,
-                                          perturbation_dict=perturbation_dict,
-                                          classification_label=classification_label,
-                                          window_size=float("nan"),
-                                          critical_quantile=critical_quantile)
+                                               actual_slice=df,
+                                               model=model,
+                                               perturbation_dict=perturbation_dict,
+                                               classification_label=classification_label,
+                                               window_size=float("nan"),
+                                               critical_quantile=critical_quantile)
 
     def test_metamorphic_increasing_wilcoxon(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        critical_quantile=0.05,
-                                        classification_label=None
-                                        ):
+                                             df: Dataset,
+                                             model,
+                                             perturbation_dict,
+                                             critical_quantile=0.05,
+                                             classification_label=None
+                                             ):
         """
         Summary: Tests if the model probability increases when the feature values are perturbed
 
@@ -618,9 +625,9 @@ class MetamorphicTests(AbstractTestCollection):
                  causes a statistically significant probability increase.
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
                 Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -640,25 +647,25 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         assert (
-            model.model_type != "classification"
-            or str(classification_label) in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                not model.is_classification
+                or str(classification_label) in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         return self._test_metamorphic_wilcoxon(direction=Direction.Increasing,
-                                          actual_slice=df,
-                                          model=model,
-                                          perturbation_dict=perturbation_dict,
-                                          classification_label=classification_label,
-                                          window_size=float("nan"),
-                                          critical_quantile=critical_quantile)
+                                               actual_slice=df,
+                                               model=model,
+                                               perturbation_dict=perturbation_dict,
+                                               classification_label=classification_label,
+                                               window_size=float("nan"),
+                                               critical_quantile=critical_quantile)
 
     def test_metamorphic_invariance_wilcoxon(self,
-                                        df: GiskardDataset,
-                                        model,
-                                        perturbation_dict,
-                                        window_size=0.2,
-                                        critical_quantile=0.05
-                                        ) -> SingleTestResult:
+                                             df: Dataset,
+                                             model,
+                                             perturbation_dict,
+                                             window_size=0.2,
+                                             critical_quantile=0.05
+                                             ) -> SingleTestResult:
         """
         Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
 
@@ -674,9 +681,9 @@ class MetamorphicTests(AbstractTestCollection):
         perturbed sample is statistically within a window determined by the user.
 
         Args:
-            df(GiskardDataset):
+            df(Dataset):
                 Dataset used to compute the test
-            model(GiskardModel):
+            model(Model):
                 Model used to compute the test
             perturbation_dict(dict):
                 Dictionary of the perturbations. It provides the perturbed features as key
@@ -698,8 +705,8 @@ class MetamorphicTests(AbstractTestCollection):
         """
 
         return self._test_metamorphic_wilcoxon(direction=Direction.Invariant,
-                                      actual_slice=df,
-                                      model=model,
-                                      perturbation_dict=perturbation_dict,
-                                      window_size=window_size,
-                                      critical_quantile=critical_quantile)
+                                               actual_slice=df,
+                                               model=model,
+                                               perturbation_dict=perturbation_dict,
+                                               window_size=window_size,
+                                               critical_quantile=critical_quantile)

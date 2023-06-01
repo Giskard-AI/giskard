@@ -10,7 +10,7 @@
           <v-radio
               v-for="n in datasets"
               :key="n.id"
-              :label="n.name"
+              :label="n.name || n.id"
               :value="n"
           ></v-radio>
         </v-radio-group>

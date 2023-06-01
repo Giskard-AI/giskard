@@ -1,10 +1,13 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.Project;
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.DatasetService;
+import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
-import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.MessageDTO;
 import ai.giskard.web.dto.PrepareDeleteDTO;
@@ -12,6 +15,8 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Table;
 
@@ -27,6 +32,7 @@ public class DatasetsController {
     private final DatasetRepository datasetRepository;
     private final GiskardMapper giskardMapper;
     private final DatasetService datasetService;
+    private final ProjectRepository projectRepository;
     private final ProjectFileDeletionService deletionService;
     private final UsageService usageService;
 
@@ -42,10 +48,12 @@ public class DatasetsController {
         return giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId));
     }
 
-
-    @GetMapping("datasets/{datasetId}/metadata")
-    public DatasetMetadataDTO getDatasetMetadata(@PathVariable @NotNull Long datasetId) {
-        return datasetService.getMetadata(datasetId);
+    @GetMapping("project/{projectKey}/datasets/{datasetId}")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public DatasetDTO getDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey,
+                                     @PathVariable("datasetId") @NotNull String datasetId) {
+        return giskardMapper.datasetToDatasetDTO(datasetRepository.getById(datasetId));
     }
 
 
@@ -57,7 +65,7 @@ public class DatasetsController {
      */
 
     @GetMapping("/dataset/{datasetId}/rows")
-    public String getRows(@PathVariable @NotNull Long datasetId, @NotNull int offset, @NotNull int size) throws IOException {
+    public String getRows(@PathVariable @NotNull String datasetId, @NotNull int offset, @NotNull int size) {
         Table filteredTable = datasetService.getRows(datasetId, offset, offset + size);
         return filteredTable.write().toString("json");
     }
@@ -71,23 +79,36 @@ public class DatasetsController {
      * @throws IOException
      */
     @GetMapping("/dataset/{datasetId}/details")
-    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull Long datasetId) {
+    public DatasetDetailsDTO datasetDetails(@PathVariable @NotNull String datasetId) {
         return datasetService.getDetails(datasetId);
     }
 
     @DeleteMapping("/dataset/{datasetId}")
-    public MessageDTO deleteDataset(@PathVariable @NotNull Long datasetId) {
+    public MessageDTO deleteDataset(@PathVariable @NotNull String datasetId) {
         deletionService.deleteDataset(datasetId);
         return new MessageDTO("Dataset {} has been deleted", datasetId);
     }
 
     @GetMapping("/dataset/prepare-delete/{datasetId}")
-    public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull Long datasetId) {
+    public PrepareDeleteDTO prepareDatasetDelete(@PathVariable @NotNull String datasetId) {
         return usageService.prepareDeleteDataset(datasetId);
     }
 
     @GetMapping("/dataset/{datasetId}/features")
-    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull Long datasetId) {
+    public List<FeatureMetadataDTO> datasetFeaturesMetadata(@PathVariable @NotNull String datasetId) {
         return datasetService.getFeaturesWithDistinctValues(datasetId);
+    }
+
+    @PostMapping("project/{projectKey}/datasets")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {
+        Project project = projectRepository.getOneByKey(projectKey);
+        if (datasetRepository.existsById(dto.getId())) {
+            throw new GiskardRuntimeException(String.format("Dataset already exists %s", dto.getId()));
+        }
+        Dataset dataset = giskardMapper.fromDTO(dto);
+        dataset.setProject(project);
+        datasetRepository.save(dataset);
     }
 }
