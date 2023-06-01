@@ -12,7 +12,7 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 import tests.utils
-from giskard import Model, wrap_dataset
+from giskard import Model, Dataset
 ```
 ## Wrap dataset
 ```python
@@ -28,7 +28,7 @@ raw_data = {
 df = pd.DataFrame(raw_data, columns=["text", "label"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(df.head(), 
+wrapped_dataset = Dataset(df.head(), 
                                name="test dataset", 
                                target="label")
 ```

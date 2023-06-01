@@ -211,7 +211,7 @@ onActivated(async () => {
 
 <style scoped>
 .debugger-logo {
-  width: max(20vw, 150px);
+  width: min(17.5vw, 200px);
   margin-top: 2rem;
 }
 

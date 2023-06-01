@@ -60,5 +60,5 @@ def wrap_dataset(
         - If none of the above arguments are provided, the column types are inferred automatically.
     """
 
-    print("Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+    print("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
     return Dataset(df, name, target, cat_columns, column_types)

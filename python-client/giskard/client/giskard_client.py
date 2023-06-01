@@ -158,7 +158,7 @@ class GiskardClient:
             column_types=res["columnTypes"],
             column_dtypes=res["columnDtypes"],
             number_of_rows=res["numberOfRows"],
-            category_features=res["categoryFeatures"],
+            category_features=res["categoryFeatures"]
         )
 
     def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):

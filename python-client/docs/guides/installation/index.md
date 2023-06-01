@@ -38,3 +38,9 @@ To see the available commands, you can execute:
 giskard server --help  
 ```
 For the full documentation, go to <project:/cli/index.rst>.
+
+## 3. Connect the Giskard ML worker
+In order to connect the ML worker, Execute the following command in your terminal:
+```sh
+giskard worker start -u http://localhost:19000/
+```
