@@ -112,6 +112,9 @@ class Dataset:
                 "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset. "
                 "In this case, we assume that there's no categorical columns in your Dataset.")
 
+        from giskard.core.dataset_validation import validate_column_types_vs_dtypes
+        validate_column_types_vs_dtypes(self)
+
     def add_slicing_function(self, slicing_function: SlicingFunction):
         self.data_processor.add_step(slicing_function)
         return self
