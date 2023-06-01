@@ -1,7 +1,8 @@
 <template>
     <v-container fluid class="vc" v-if="testSuites.length > 0">
         <div class="d-flex flex-row-reverse pb-4">
-            <v-btn color="primary" @click="createTestSuite">
+            <v-btn color="primary" @click="createTestSuite" class="grey--text text--darken-4">
+                <v-icon left>add</v-icon>
                 New test suite
             </v-btn>
         </div>
@@ -15,9 +16,9 @@
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
         <v-alert class="text-center">
-            <p class="create-session-message headline blue-grey--text">You haven't created any test suite for this project. <br>Please create a new one.</p>
+            <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
         </v-alert>
-        <v-btn tile @click="createTestSuite" color="primary">
+        <v-btn tile @click="createTestSuite" color="primary" class="grey--text text--darken-4">
             <v-icon>add</v-icon>
             Create a new test suite
         </v-btn>
@@ -62,10 +63,6 @@ async function createTestSuite() {
 </script>
 
 <style scoped>
-.create-session-message {
-    font-size: 1.125rem;
-}
-
 .test-suite-logo {
     max-width: 30%;
     margin-top: 2rem;
