@@ -11,6 +11,38 @@ from torch.utils.data import Dataset as torch_dataset
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import MLFlowBasedModel
 
+# There's no casting currently from str to torch.dtype
+str_to_torch_dtype = {
+    'torch.float32' : torch.float32,
+    'torch.float': torch.float,
+
+    'torch.float64' : torch.float64,
+    'torch.double' : torch.double,
+
+    'torch.complex64' : torch.complex64,
+    'torch.cfloat' : torch.cfloat,
+
+    'torch.float16' : torch.float16,
+    'torch.half': torch.half,
+
+    'torch.bfloat16': torch.bfloat16,
+
+    'torch.uint8': torch.uint8,
+
+    'torch.int8': torch.int8,
+
+    'torch.int16': torch.int16,
+    'torch.short': torch.short,
+
+    'torch.int32': torch.int32,
+    'torch.int': torch.int,
+
+    'torch.int64': torch.int64,
+    'torch.long': torch.long,
+
+    'torch.bool': torch.bool
+}
+
 
 class TorchMinimalDataset(torch_dataset):
     def __init__(self, df: pd.DataFrame, torch_dtype=torch.float32):
@@ -48,7 +80,7 @@ class PyTorchModel(MLFlowBasedModel):
                          classification_labels=classification_labels)
 
         self.device = device
-        self.torch_dtype = torch_dtype
+        self.torch_dtype = str(torch_dtype)
 
     @classmethod
     def load_clf(cls, local_dir):
@@ -66,7 +98,7 @@ class PyTorchModel(MLFlowBasedModel):
         # Use isinstance to check if o is an instance of X or any subclass of X
         # Use is to check if the type of o is exactly X, excluding subclasses of X
         if isinstance(data, pd.DataFrame):
-            data = TorchMinimalDataset(data, self.torch_dtype)
+            data = TorchMinimalDataset(data, str_to_torch_dtype[self.torch_dtype])
         elif not isinstance(data, torch_dataset) and not isinstance(data, DataLoader):
             raise Exception(f"The output of data_preprocessing_function is of type={type(data)}.\n \
                             Make sure that your data_preprocessing_function outputs one of the following: \n \
@@ -101,7 +133,7 @@ class PyTorchModel(MLFlowBasedModel):
         return predictions.squeeze()
 
     def save_pytorch_meta(self, local_path):
-        with open(Path(local_path) / 'giskard-model-pytorch-meta.yaml', 'w') as f:
+        with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
             yaml.dump(
                 {
                     "device": self.device,
@@ -110,9 +142,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
-
-        if self.torch_dtype != torch.float32 or self.device != 'cpu':
-            self.save_pytorch_meta(local_path)
+        self.save_pytorch_meta(local_path)
 
     @classmethod
     def load(cls, local_dir, **kwargs):
@@ -120,8 +150,8 @@ class PyTorchModel(MLFlowBasedModel):
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs['device'] = pytorch_meta.device
-                kwargs['torch_dtype'] = pytorch_meta.torch_dtype
+                kwargs['device'] = pytorch_meta['device']
+                kwargs['torch_dtype'] = pytorch_meta['torch_dtype']
                 super().load(local_dir, **kwargs)
         else:
             raise ValueError(
