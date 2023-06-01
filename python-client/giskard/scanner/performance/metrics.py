@@ -5,7 +5,6 @@ from ...models.base import BaseModel
 from ...datasets.base import Dataset
 
 
-
 class PerformanceMetric(ABC):
     name: str
     greater_is_better = True
