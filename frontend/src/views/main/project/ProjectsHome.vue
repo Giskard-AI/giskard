@@ -202,7 +202,7 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultRoute: string = 'project-test-suites';
+const defaultRoute: string = 'project-catalog';
 
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
