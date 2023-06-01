@@ -242,7 +242,7 @@ export default new Router({
                   children: [],
                 },
                 {
-                  path: 'test-suite/:suiteId',
+                  path: 'testing/:suiteId',
                   name: 'test-suite',
                   component: () => import('./views/main/project/TestSuite.vue'),
                   props: route => {
