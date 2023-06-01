@@ -44,4 +44,7 @@ public class Filter {
 
     @UINullable
     private Float maxDiffThreshold;
+
+    @UINullable
+    private Long sliceId;
 }

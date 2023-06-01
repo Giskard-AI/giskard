@@ -90,7 +90,7 @@ management:
 spring:
   servlet:
     multipart:
-      enabled: false
+      enabled: true
 
   application:
     name: giskard

@@ -3,7 +3,6 @@ package ai.giskard.grpc;
 import ai.giskard.exception.MLWorkerException;
 import ai.giskard.worker.MLWorkerErrorInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.rpc.DebugInfo;
 import io.grpc.*;
 import io.grpc.protobuf.StatusProto;
 import org.apache.commons.lang3.exception.ExceptionUtils;

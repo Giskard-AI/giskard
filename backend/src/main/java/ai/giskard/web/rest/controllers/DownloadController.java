@@ -1,11 +1,15 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.FileLocationService;
+import ai.giskard.service.GiskardRuntimeException;
+import ai.giskard.service.ProjectService;
 import ai.giskard.utils.GSKFileUtils;
 import ai.giskard.utils.GiskardStringUtils;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +35,8 @@ public class DownloadController {
     private final ModelRepository modelRepository;
     private final DatasetRepository datasetRepository;
     private final PermissionEvaluator permissionEvaluator;
+    private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
 
     @GetMapping("/model/{modelId}")
     @Transactional
@@ -55,6 +58,18 @@ public class DownloadController {
         Path path = fileLocationService.resolvedDatasetPath(dataset);
         String name = "giskard_dataset_" + (dataset.getName() != null ? dataset.getName() : dataset.getId());
         return createDecompressedStreamResponse(path, name);
+    }
+
+    @GetMapping("/project/{id}/export")
+    @Transactional
+    public @ResponseBody ResponseEntity<byte[]> exportProject(@PathVariable("id") Long id) throws IOException {
+            Project project = this.projectRepository.findById(id).orElseThrow(() -> new GiskardRuntimeException("Could not find your project in the database"));
+            permissionEvaluator.canReadProject(id);
+            byte[] zFile = this.projectService.export(id);
+            HttpHeaders resHeaders = new HttpHeaders();
+            resHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            resHeaders.setContentDispositionFormData("attachment", GiskardStringUtils.toSlug(project.getKey()) + ".zip");
+            return new ResponseEntity<>(zFile, resHeaders ,HttpStatus.OK);
     }
 
     private ResponseEntity<InputStreamResource> createDecompressedStreamResponse(Path path, String name) throws IOException {

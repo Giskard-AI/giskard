@@ -5,7 +5,6 @@ import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.Counter;

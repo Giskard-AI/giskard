@@ -4,7 +4,6 @@ import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;
 
 import java.net.URI;
-import java.util.List;
 
 public class MLWorkerProblem extends AbstractThrowableProblem { //NOSONAR: ok to have deep inheritance
 

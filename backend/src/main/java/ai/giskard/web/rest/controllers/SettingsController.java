@@ -6,6 +6,7 @@ import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.GeneralSettingsService;
+import ai.giskard.service.ee.FeatureFlagService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -36,6 +37,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
@@ -61,6 +63,8 @@ public class SettingsController {
 
     @Autowired
     private final MLWorkerService mlWorkerService;
+
+    private final FeatureFlagService featureFlagService;
 
 
     @PostMapping("")
@@ -89,6 +93,7 @@ public class SettingsController {
         } catch (Exception e) {
             log.warn("Failed to parse gitCommitTime {}", gitCommitTime);
         }
+
         return AppConfigDTO.builder()
             .app(AppConfigDTO.AppInfoDTO.builder()
                 .generalSettings(settingsService.getSettings())
@@ -104,6 +109,11 @@ public class SettingsController {
                 .build())
             .user(userDTO)
             .build();
+    }
+
+    @GetMapping("/featureFlags")
+    public Map<FeatureFlagService.FeatureFlag, Boolean> getFeatureFlags() {
+        return featureFlagService.getAllFeatures();
     }
 
     @GetMapping("/ml-worker-info")
