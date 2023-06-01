@@ -6,10 +6,6 @@
           <v-col :align="'right'">
             <div class="d-flex flex-row-reverse">
               <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
-              <v-btn text color="secondary" :to="{name: 'test-suite-compare-executions'}">
-                Compare executions
-                <v-icon>compare</v-icon>
-              </v-btn>
               <v-btn text @click="loadData()" color="secondary">Reload
                 <v-icon right>refresh</v-icon>
               </v-btn>
@@ -21,9 +17,10 @@
             <v-tabs vertical>
               <v-tab :to="{name:'test-suite-overview'}">Overview</v-tab>
               <v-tab :to="{name:'test-suite-executions'}">Past executions</v-tab>
+              <v-tab :to="{name:'test-suite-compare-executions'}">Compare executions</v-tab>
             </v-tabs>
           </v-col>
-          <v-col cols="10" class="vc">
+          <v-col class="vc" cols="10">
             <router-view/>
           </v-col>
         </v-row>
