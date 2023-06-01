@@ -46,6 +46,12 @@ export const useTestSuitesStore = defineStore('testSuites', {
         this.testSuitesComplete.push(testSuiteComplete);
       }
     },
+    async updateSuiteName(suite: TestSuiteDTO) {
+      if (this.projectId !== null) {
+        await api.updateTestSuite(suite.projectKey!, suite);
+        await this.reload();
+      }
+    },
     setCurrentTestSuiteId(suiteId: number | null) {
       this.currentTestSuiteId = suiteId;
     },

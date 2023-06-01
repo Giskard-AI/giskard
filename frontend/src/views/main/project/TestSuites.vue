@@ -4,7 +4,7 @@
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
                     <v-col cols="4">
-                        <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field>
+                        <!-- <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field> -->
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end">
@@ -162,6 +162,7 @@ import { TYPE } from "vue-toastification";
 import InlineEditText from '@/components/InlineEditText.vue';
 import { $vfm } from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import { test } from "node:test";
 
 
 
@@ -175,7 +176,6 @@ const latestExecutions = computed(() => {
     const executions = testSuitesStore.testSuitesComplete.map(suite => suite.executions);
     return executions.map(executionsSuite => executionsSuite.length === 0 ? null : executionsSuite[0]);
 });
-
 
 const testSuitesStore = useTestSuitesStore();
 const { testSuites } = storeToRefs(testSuitesStore);
@@ -226,8 +226,12 @@ onActivated(async () => {
 })
 
 function renameSuite(suiteId: number, name: string) {
-    // testSuitesStore.renameTestSuite(suiteId, name);
-    return;
+    const currentSuite = testSuitesStore.testSuites.find(s => s.id === suiteId);
+
+    if (currentSuite) {
+        currentSuite.name = name;
+        testSuitesStore.updateSuiteName(currentSuite);
+    }
 }
 
 function deleteTestSuite(suite: any) {
