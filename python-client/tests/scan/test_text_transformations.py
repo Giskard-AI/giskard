@@ -14,6 +14,7 @@ def test_gender_transformation():
                 "It did not work.",
                 "“They pushed the feature just 1 minute before the user test”",
                 "He hates doing user tests!",
+                "Il déteste faire les tests en langue française",
             ]
         }
     )
@@ -28,6 +29,7 @@ def test_gender_transformation():
     assert transformed_text[1] == "It did not work.".lower()
     assert transformed_text[2] == "“They pushed the feature just 1 minute before the user test”".lower()
     assert transformed_text[3] == "She hates doing user tests!".lower()
+    assert transformed_text[4] == "Elle déteste faire les tests en langue français".lower()
 
 
 def test_uppercase_transformation():
