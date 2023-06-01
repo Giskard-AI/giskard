@@ -21,6 +21,8 @@ def test_dataset_metadata_indexer():
     provider.generate_metadata.return_value = pd.DataFrame({"test1": [1, 2], "test2": [3, 4]})
     provider.supported_types.return_value = ["text", "category"]
 
+    MetadataProviderRegistry.register(provider)
+
     df = pd.DataFrame({"col1": ["hello", "world"], "col2": ["CAT1", "CAT2"], "col3": [1, 2]})
     dataset = wrap_dataset(df, column_types={"col1": "text", "col2": "category", "col3": "numeric"})
 
