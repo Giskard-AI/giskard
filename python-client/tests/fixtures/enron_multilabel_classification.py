@@ -118,6 +118,7 @@ def enron_data_full() -> Dataset:
     # We filter 879 rows (if Primary topics exists (i.e. if coarse genre 1.1 is selected) )
     data_filtered = data[data["Target"].notnull()]
     data_filtered = data_filtered.head(150)  # Sample to make the scan faster
+    data_filtered.Year = data_filtered.Year.astype(float)
     return Dataset(df=data_filtered, target="Target", cat_columns=['Week_day', 'Month'])
 
 
