@@ -110,4 +110,4 @@ jhipster:
 # ===================================================================
 
 giskard:
-  home: ${HOME}/giskard-home
+  home: ${user.home}/giskard-home
