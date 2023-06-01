@@ -59,15 +59,40 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn
-                        color="primary"
-                        text
-                        @click="executeTestSuite(close)"
-                        :disabled="!isAllParamsSet() || running"
-                >
-                    <v-icon>arrow_right</v-icon>
-                    Run test suite
-                </v-btn>
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                            color="primary"
+                            outlined
+                            :disabled="!isAllParamsSet()"
+                            :loading="running"
+                            v-bind="attrs"
+                        >
+                            <v-icon @click="executeTestSuite(close)">arrow_right</v-icon>
+                            <span @click="executeTestSuite(close)" class="pe-2">Run test suite</span>
+                            <v-icon class="ps-2 primary-left-border" v-on="on">mdi-menu-down</v-icon>
+                        </v-btn>
+                    </template>
+                    <v-list>
+                        <v-list-item>
+                            <v-tooltip bottom v-if="testSuiteInputs.length === 1 && !running">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                        color="secondary"
+                                        text
+                                        @click="tryTestSuite(close)"
+                                        v-bind="attrs" v-on="on"
+                                        :disabled="!isAllParamsSet()"
+                                    >
+                                        <v-icon>science</v-icon>
+                                        Try test suite
+                                    </v-btn>
+                                </template>
+                                <span>Try out the test suite on a dataset sample.<br/>The execution result won't be saved!</span>
+                            </v-tooltip>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-card-actions>
         </v-card>
       </div>
@@ -177,7 +202,7 @@ async function executeTestSuite(close) {
       ));
 
       if (props.compareMode) {
-          await Promise.all(jobUuids);
+          await Promise.all(jobUuids.map(({trackJob}) => trackJob));
           await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
       } else {
           mainStore.addNotification({content: 'Test suite execution has been scheduled', color: TYPE.SUCCESS});
@@ -187,6 +212,23 @@ async function executeTestSuite(close) {
       running.value = false;
       close();
   }
+}
+
+async function tryTestSuite(close) {
+    mixpanel.track('Try test suite', {suiteId: props.suiteId});
+    running.value = true;
+
+    try {
+        const input = testSuiteInputs.value[0];
+        await testSuiteStore.tryTestSuite([
+            ...Object.values(input.globalInput),
+            ...Object.values(input.sharedInputs)
+        ]);
+    } finally {
+        running.value = false;
+        close();
+        await router.push({name: 'test-suite-overview'})
+    }
 }
 </script>
 
@@ -213,6 +255,10 @@ async function executeTestSuite(close) {
     border: 1px solid #000000;
     margin: 8px;
     padding: 4px;
+}
+
+.primary-left-border {
+    border-left: 1px solid #087038;
 }
 
 </style>
