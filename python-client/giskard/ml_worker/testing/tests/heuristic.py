@@ -54,7 +54,7 @@ def test_right_label(
     return TestResult(
         actual_slices_size=[len(actual_slice)],
         metric=passed_ratio,
-        passed=passed_ratio > threshold,
+        passed=bool(passed_ratio > threshold),
     )
 
 
@@ -133,5 +133,5 @@ def test_output_in_range(
     return TestResult(
         actual_slices_size=[len(actual_slice)],
         metric=passed_ratio,
-        passed=passed_ratio >= threshold,
+        passed=bool(passed_ratio >= threshold),
     )

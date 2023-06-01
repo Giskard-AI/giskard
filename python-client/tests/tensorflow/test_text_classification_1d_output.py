@@ -1,27 +1,25 @@
-import tensorflow as tf
+from pathlib import Path
+
 import pandas as pd
+import tensorflow as tf
 from tensorflow.keras import layers
 
+import tests.utils
 from giskard import TensorFlowModel, Dataset
 
-import tests.utils
-
-data_url = "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
-
-dataset = tf.keras.utils.get_file("aclImdb_v1", data_url,
-                                  untar=True, cache_dir='.',
-                                  cache_subdir='')
+dataset = tf.keras.utils.get_file("aclImdb",
+                                  "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+                                  untar=True)
 
 
 def test_text_classification_1d_output():
-
     batch_size = 32
 
     raw_test_ds = tf.keras.utils.text_dataset_from_directory(
-        'aclImdb/test',
+        Path(dataset) / 'test',
         batch_size=batch_size)
 
-    test_dataset = {'Review' : [], 'Label' : []}
+    test_dataset = {'Review': [], 'Label': []}
     for text_batch, label_batch in raw_test_ds.take(782):
         for i in range(8):
             test_dataset['Review'].append(text_batch.numpy()[i])
@@ -40,7 +38,7 @@ def test_text_classification_1d_output():
     seed = 42
 
     raw_train_ds = tf.keras.utils.text_dataset_from_directory(
-        'aclImdb/train',
+        Path(dataset) / 'train',
         batch_size=batch_size,
         validation_split=0.2,
         subset='training',
@@ -53,20 +51,20 @@ def test_text_classification_1d_output():
     embedding_dim = 16
 
     model = tf.keras.Sequential([
-      layers.Embedding(max_features + 1, embedding_dim),
-      layers.Dropout(0.2),
-      layers.GlobalAveragePooling1D(),
-      layers.Dropout(0.2),
-      layers.Dense(1)
-      ])
+        layers.Embedding(max_features + 1, embedding_dim),
+        layers.Dropout(0.2),
+        layers.GlobalAveragePooling1D(),
+        layers.Dropout(0.2),
+        layers.Dense(1)
+    ])
 
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                   optimizer='adam',
                   metrics=['accuracy'])
 
     export_model = tf.keras.Sequential([
-      vectorize_layer,
-      model
+        vectorize_layer,
+        model
     ])
 
     export_model.compile(
