@@ -7,7 +7,7 @@
           <template v-slot:activator="{ on, attrs }">
             <v-icon v-on="on" class="pr-5" medium>info</v-icon>
           </template>
-          <h3> Inspection </h3>
+          <h3> Debugging session </h3>
           <div class="d-flex">
             <div> Id</div>
             <v-spacer />
