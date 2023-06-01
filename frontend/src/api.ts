@@ -43,7 +43,7 @@ import {
     UpdateTestSuiteDTO,
     UserDTO
 } from './generated-sources';
-import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
 import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
@@ -275,13 +275,13 @@ export const api = {
     async getProjectModels(id: number) {
         return axiosProject.get<unknown, ModelDTO[]>(`/${id}/models`);
     },
-    async prepareImport(formData: FormData){
-        const headers = { 'Content-Type': 'multipart/form-data' };
+    async prepareImport(formData: FormData) {
+        const headers = {'Content-Type': 'multipart/form-data'};
         return axiosProject.post<unknown, PrepareImportProjectDTO>(`/import/prepare`, formData, {
             headers: headers
         });
     },
-    async importProject(postImportProject: PostImportProjectDTO){
+    async importProject(postImportProject: PostImportProjectDTO) {
         return axiosProject.post<unknown, ProjectDTO>(`/import`, postImportProject);
     },
     async deleteDatasetFile(datasetId: string) {
@@ -305,7 +305,7 @@ export const api = {
     downloadDataFile(id: string) {
         downloadURL(`${API_V2_ROOT}/download/dataset/${id}`);
     },
-    downloadExportedProject(id: number){
+    downloadExportedProject(id: number) {
         downloadURL(`${API_V2_ROOT}/download/project/${id}/export`);
     },
     async peekDataFile(datasetId: string) { //TODO
@@ -455,7 +455,7 @@ export const api = {
             datasetId: datasetId,
             code: code
         });
-    }
+    },
     async getTestsCatalog(projectId: number) {
         return apiV2.get<unknown, TestCatalogDTO>(`/testing/tests/test-catalog`, {params: {projectId}});
     },
