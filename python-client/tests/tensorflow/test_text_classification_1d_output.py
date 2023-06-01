@@ -10,7 +10,8 @@ from giskard.models.tensorflow import TensorFlowModel
 
 dataset = tf.keras.utils.get_file("aclImdb",
                                   "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-                                  untar=True)
+                                  untar=True,
+                                  cache_dir=Path.home() / ".giskard")
 
 
 def test_text_classification_1d_output():

@@ -20,9 +20,11 @@ def analytics_method(f):
         try:
             if not settings.disable_analytics:
                 return f(*args, **kwargs)
-        except BaseException:  # NOSONAR
-            pass
-
+        except BaseException as e:  # NOSONAR
+            try:
+                analytics.track('tracking error', {'error': str(e)})
+            except BaseException:  # NOSONAR
+                pass
     return inner_function
 
 
@@ -67,8 +69,8 @@ class GiskardAnalyticsCollector:
             "Giskard User": server_info.get("user"),
         }
 
-    @analytics_method
     @threaded
+    @analytics_method
     def track(self, event_name, properties=None, meta=None, force=False):
         if self.is_enabled or force:
             merged_props = []
