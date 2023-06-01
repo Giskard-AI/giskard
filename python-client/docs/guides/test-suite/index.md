@@ -166,45 +166,8 @@ a test class or a test function.
 :::
 ::::
 
-## 4. Save a test suite
 
-::::{tab-set}
-:::{tab-item} Test suite saving
-
-```python
-from giskard import test_f1, test_accuracy, Suite, GiskardClient
-
-url = "http://localhost:19000"  # If Giskard is installed locally (for installation, see: https://docs.giskard.ai/start/guides/installation)
-# url = "http://app.giskard.ai" # If you want to upload on giskard URL
-token = "API_TOKEN"  # you can generate your API token in the Admin tab of the Giskard application (for installation, see: https://docs.giskard.ai/start/guides/installation)
-project_name = "enron"
-
-# Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
-
-# Create a project
-client.create_project(project_name, "Project name", "Small description of the project")
-
-suite = Suite()
-.add_test(test_f1(dataset=wrapped_dataset))
-.add_test(test_accuracy(dataset=wrapped_dataset))
-.upload(client, project_name)
-```
-
-#### Description
-
-In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters expect
-the dataset to "expose" it as a run input. We then save it to the 'enron' project created previously
-
-```{eval-rst}
-.. autoclass:: giskard.Suite
-   :members:
-```
-
-:::
-::::
-
-## 5. Create a custom test
+## 4. Create a custom test
 
 ::::{tab-set}
 :::{tab-item} Using function
@@ -300,3 +263,7 @@ In order to define a custom test class, you need to extends `GiskardTest` and im
 
 :::
 ::::
+
+{% hint style="success" %}
+To upload your test suite to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+{% endhint %}
