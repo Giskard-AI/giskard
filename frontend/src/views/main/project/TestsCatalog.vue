@@ -9,16 +9,16 @@
                 <v-row class="fill-height">
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search test" append-icon="search" outlined v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="test in filteredTestFunctions">
-                                    <v-divider />
+                                    <v-divider/>
                                     <v-list-item :value="test">
                                         <v-list-item-content>
                                             <v-list-item-title class="test-title">
                                                 <div class="d-flex align-center">
                                                     {{ test.displayName ?? test.name }}
-                                                    <v-spacer class="flex-grow-1" />
+                                                    <v-spacer class="flex-grow-1"/>
                                                     <v-tooltip bottom v-if="test.potentiallyUnavailable">
                                                         <template v-slot:activator="{ on, attrs }">
                                                             <div v-bind="attrs" v-on="on">

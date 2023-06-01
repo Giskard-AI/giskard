@@ -15,7 +15,10 @@ import java.util.List;
 @Builder
 @UIModel
 public class CatalogDTO {
+    @Builder.Default
     private List<TestFunctionDTO> tests = new ArrayList<>();
+    @Builder.Default
     private List<SlicingFunctionDTO> slices = new ArrayList<>();
+    @Builder.Default
     private List<TransformationFunctionDTO> transformations = new ArrayList<>();
 }
