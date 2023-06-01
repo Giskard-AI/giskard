@@ -31,6 +31,7 @@ from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentErr
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
+from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
@@ -49,12 +50,14 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, ml_worker, client: GiskardClient, address=None, remote=None) -> None:
+    def __init__(self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None,
+                 loop=asyncio.get_event_loop()) -> None:
         super().__init__()
         self.ml_worker = ml_worker
         self.address = address
         self.remote = remote
         self.client = client
+        self.loop = loop
 
     def echo_orig(self, request, context):
         logger.debug(f"echo: {request.msg}")
@@ -400,9 +403,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def stopWorker(self, request: google.protobuf.empty_pb2.Empty,
-                   context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
+                   context: grpc.ServicerContext) -> google.protobuf.empty_pb2.Empty:
         logger.info('Received request to stop the worker')
-        asyncio.run(self.ml_worker.stop())
+        self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
     @staticmethod
