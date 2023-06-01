@@ -114,13 +114,13 @@ import {
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
-import {ArrayReducers} from '@/utils/array-reducers';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
 import TestSuiteCompareTest from '@/views/main/project/TestSuiteCompareTest.vue';
 import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
 import {useTrackJob} from '@/utils/use-track-job';
+import {chain} from 'lodash';
 
 const props = defineProps<{
   projectId: number,
@@ -177,15 +177,16 @@ const testSuiteResults = computed(() => {
     return {};
   }
 
-  return executions.value
+  return chain(executions.value)
       .map(execution => (execution.results ?? []).map(
           result => ({
             testResult: result,
             testSuiteResult: execution
           })
       ))
-      .reduce((flattened, results) => flattened.concat(results), [])
-      .reduce(ArrayReducers.groupBy(result => result.testResult.test.testId), {})
+      .flatten()
+      .groupBy(result => result.testResult.test.testId)
+      .values();
 });
 
 useRouterTabsSynchronization([

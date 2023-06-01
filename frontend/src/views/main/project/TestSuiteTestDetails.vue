@@ -65,11 +65,10 @@
 <script lang="ts" setup>
 
 import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestDefinitionDTO, TestInputDTO} from "@/generated-sources";
-import _ from "lodash";
+import _, {chain} from "lodash";
 import TestResultTimeline from '@/components/TestResultTimeline.vue';
 import {computed, ref, watch} from 'vue';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
-import {ArrayReducers} from '@/utils/array-reducers';
 import {api} from '@/api';
 
 const props = defineProps<{
@@ -117,7 +116,9 @@ async function saveEditedInputs() {
 
 watch(() => props.test, () => editedInputs.value = null);
 
-const inputType = computed(() => sortedArguments.value
-    .reduce(ArrayReducers.toMap(arg => arg.name, arg => arg.type), {})
+const inputType = computed(() => chain(sortedArguments.value)
+    .keyBy('name')
+    .mapValues('type')
+    .values()
 );
 </script>
