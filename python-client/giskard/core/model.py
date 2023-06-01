@@ -1,18 +1,17 @@
+import cloudpickle
 import logging
+import mlflow.sklearn
+import numpy
+import pandas as pd
 import pickle
 import posixpath
 import tempfile
 import uuid
-from pathlib import Path
-from typing import Optional, Any, Union
-
-import cloudpickle
-import mlflow.sklearn
-import numpy
-import pandas as pd
 import yaml
 from mlflow.pyfunc import PyFuncModel
+from pathlib import Path
 from pydantic import BaseModel
+from typing import Optional, Any, Union
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta
@@ -223,6 +222,10 @@ class Model:
             df = df[self.meta.feature_names]
             if column_types:
                 column_types = {k: v for k, v in column_types.items() if k in self.meta.feature_names}
+
+        for cname, ctype in column_types.items():
+            if cname not in df:
+                df[cname] = None
 
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)
