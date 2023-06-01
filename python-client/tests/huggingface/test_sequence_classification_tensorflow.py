@@ -10,13 +10,13 @@ import tests.utils
 
 def test_sequence_classification_distilbert_base_uncased_tensorflow():
 
-    tokenizer_distilbert_base_uncased = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    tokenizer_distilbert_base_uncased = AutoTokenizer.from_pretrained("stevhliu/my_awesome_model")
 
     id2label = {0: "NEGATIVE", 1: "POSITIVE"}
     label2id = {"NEGATIVE": 0, "POSITIVE": 1}
 
     model_distilbert_base_uncased = TFAutoModelForSequenceClassification.from_pretrained(
-        "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id
+        "stevhliu/my_awesome_model", num_labels=2, id2label=id2label, label2id=label2id
     )
 
     text = "This was a masterpiece. Not completely faithful to the books, but enthralling from beginning to end. Might be my favorite of the three."
@@ -32,7 +32,7 @@ def test_sequence_classification_distilbert_base_uncased_tensorflow():
         return tokenizer_distilbert_base_uncased(list(df['text']), return_tensors="tf")
 
     my_model = HuggingFaceModel(
-        name="distilbert-base-uncased",
+        name="stevhliu/my_awesome_model",
         clf=model_distilbert_base_uncased,
         feature_names=feature_names,
         model_type="classification",
