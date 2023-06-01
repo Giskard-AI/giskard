@@ -11,7 +11,7 @@
         </router-link>
         <span v-show="currentTab !== null">
           <span>/</span>
-          {{ currentTabString }}
+          {{ currentTab?.charAt(0).toUpperCase() + currentTab?.slice(1) }}
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -138,19 +138,6 @@ const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
 const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
-
-const tabsMap = new Map([
-  ["properties", "Properties"],
-  ["catalog", "Catalog"],
-  ["test-suites", "Test"],
-  ["test-suite", "Test"],
-  ["debugger", "Debugger"],
-  ["feedbacks", "Feedback"],
-]);
-
-const currentTabString = computed(() => {
-  return currentTab.value ? tabsMap.get(currentTab.value) : null;
-});
 
 const userProfile = computed(() => {
   return userStore.userProfile;
