@@ -1,5 +1,5 @@
 import tempfile
-from typing import List, Iterable, Union, Callable, Any
+from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,12 +11,12 @@ from giskard.core.core import ModelMeta, ModelType
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import validate_is_pandasdataframe, validate_target, configured_validate_arguments
 from giskard.datasets.base import Dataset
-from giskard.models.base import BaseModel, WrapperModel
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.models.base import BaseModel, WrapperModel
 
 
 @configured_validate_arguments
-def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
+def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
@@ -166,7 +166,7 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
 
 
 @configured_validate_arguments
-def validate_features(feature_names: Union[List[str], None] = None, validate_df: Union[pd.DataFrame, None] = None):
+def validate_features(feature_names: Optional[List[str]] = None, validate_df: Optional[pd.DataFrame] = None):
     if (
             feature_names is not None
             and validate_df is not None

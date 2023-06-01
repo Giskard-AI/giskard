@@ -2,7 +2,7 @@ import re
 import typing
 import uuid
 from collections import Counter
-from typing import Union
+from typing import Optional, List
 
 import numpy as np
 import pandas as pd
@@ -13,8 +13,8 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import validate_classification_label
+from giskard.models.base import BaseModel
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -386,7 +386,7 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
 
     passed = bool(metric <= threshold)
 
-    messages: Union[typing.List[TestMessage], None] = None
+    messages: Optional[List[TestMessage]] = None
 
     if not passed:
         messages = [
@@ -487,7 +487,7 @@ def _test_series_drift_psi(
 def _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data):
     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
-    messages: Union[typing.List[TestMessage], None] = None
+    messages: Optional[List[TestMessage]] = None
     if filtered_modalities:
         messages = [
             TestMessage(
@@ -651,7 +651,7 @@ def test_drift_prediction_ks(actual_dataset: Dataset, reference_dataset: Dataset
 
 
 def _generate_message_ks(passed, result, threshold, data_type):
-    messages: Union[typing.List[TestMessage], None] = None
+    messages: Optional[List[TestMessage]] = None
     if not passed:
         messages = [
             TestMessage(
@@ -720,7 +720,7 @@ def test_drift_prediction_earth_movers_distance(actual_dataset: Dataset, referen
     metric = _calculate_earth_movers_distance(prediction_reference, prediction_actual)
 
     passed = True if threshold is None else bool(metric <= threshold)
-    messages: Union[typing.List[TestMessage], None] = None
+    messages: Optional[typing.List[TestMessage]] = None
 
     if not passed:
         messages = [
