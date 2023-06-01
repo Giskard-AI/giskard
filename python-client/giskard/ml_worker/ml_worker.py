@@ -43,7 +43,7 @@ class MLWorker:
                 ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
             ],
         )
-    
+
         if is_server:
             port = settings.port if settings.port else find_free_port()
             address = f"{settings.host}:{port}"
@@ -52,7 +52,7 @@ class MLWorker:
             # On Windows, we cannot use Unix sockets, so we use TCP.
             # Port 40052 is only used internally between the worker and the bridge.
             if sys.platform == "win32":
-                address = f"localhost:40052"
+                address = "localhost:40052"
             else:
                 self.socket_file_location = f"{settings.home_dir / 'run' / f'ml-worker-{worker_id}.sock'}"
                 address = f"unix://{self.socket_file_location}"
