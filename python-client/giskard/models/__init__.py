@@ -26,7 +26,7 @@ def wrap_model(model,
 
     Args:
         model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]): The trained model to be wrapped.
-        model_type (ModelType): The type of the model to be wrapped.
+        model_type (ModelType): The type of the model, either regression or classification.
         data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]): A function that processes the input data before feeding it to the model.
         model_postprocessing_function (Optional[Callable[[Any], Any]]): A function that processes the output of the model.
         name (Optional[str]): The name of the model.
