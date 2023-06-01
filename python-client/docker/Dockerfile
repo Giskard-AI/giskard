@@ -40,19 +40,19 @@ RUN apt-get update && \
         build-essential vim
 
 RUN pip install --upgrade pip && \
-    pip install -U pip setuptools
+    pip install -U pip && \
+    pip install pdm
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
+COPY ./python-client/pyproject.toml ./python-client/pdm.lock ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --only main ; fi"
+WORKDIR $PYSETUP_PATH/python-client
+RUN pdm install
 
 
 
