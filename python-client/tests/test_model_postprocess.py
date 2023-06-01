@@ -98,6 +98,13 @@ def test_raises_error_if_classifier_shape_is_not_right():
     with pytest.raises(ValueError):
         result = WrapperModel._postprocess(model, data)
 
+def test_should_convert_to_numpy():
+    model = _make_model_mock(["one", "two"])
+    result = WrapperModel._postprocess(model, [1, 2, 3, 4])
+    assert isinstance(result, np.ndarray)
+
+
+
 
 
 
