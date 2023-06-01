@@ -169,9 +169,9 @@ onActivated(() => loadDebuggingSessions());
       <InspectorWrapper v-if="!displayComponents" :projectId="projectId" :inspectionId="activeSessionId"></InspectorWrapper>
     </v-container>
 
-    <v-container v-else class="vc mt-12">
+    <v-container v-else class="vc mt-6">
       <v-alert class="text-center">
-        <p class="create-session-message headline blue-grey--text">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
+        <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
       <AddDebuggingSessionModal v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
       <div class="d-flex justify-center mb-6">
@@ -182,10 +182,6 @@ onActivated(() => loadDebuggingSessions());
 </template>
 
 <style scoped>
-.create-session-message {
-  font-size: 1.125rem;
-}
-
 .debugger-logo {
   max-width: 30%;
   margin-top: 2rem;
