@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
@@ -120,6 +121,7 @@ public class TestController {
     @Transactional
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
+            Project project = projectRepository.getById(request.getProjectId());
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = new HashMap<>();
             response.getTestsMap().values().forEach((TestFunction fn) -> registry.put(fn.getId(), fn));
@@ -130,7 +132,7 @@ public class TestController {
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder().setTestId(request.getTestId());
 
             for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue()));
+                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
