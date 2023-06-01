@@ -39,8 +39,8 @@
                             <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                            v-else-if="input.type === 'BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
-                            <SliceFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                                   v-else-if="input.type === 'SliceFunction'"
+                            <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                                   v-else-if="input.type === 'SlicingFunction'"
                                                    :value.sync="editedInputs[input.name].value"/>
                             <ValidationProvider
                                 name="value"
@@ -124,7 +124,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {chain} from "lodash";
 import {$vfm} from "vue-final-modal";
 import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
-import SliceFunctionSelector from "@/views/main/utils/SliceFunctionSelector.vue";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },

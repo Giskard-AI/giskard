@@ -108,9 +108,9 @@
                                                                    :return-object="false"
                                                                    v-else-if="a.type === 'BaseModel'"
                                                                    :value.sync="testArguments[a.name]"/>
-                                                    <SliceFunctionSelector :project-id="projectId" :label="a.name"
+                                                    <SlicingFunctionSelector :project-id="projectId" :label="a.name"
                                                                            :return-object="false"
-                                                                           v-else-if="a.type === 'SliceFunction'"
+                                                                           v-else-if="a.type === 'SlicingFunction'"
                                                                            :value.sync="testArguments[a.name]"/>
                                                     <v-text-field
                                                         :step='a.type === "float" ? 0.1 : 1'
@@ -188,7 +188,7 @@ import {$vfm} from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
-import SliceFunctionSelector from "@/views/main/utils/SliceFunctionSelector.vue";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;

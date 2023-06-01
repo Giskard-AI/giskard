@@ -1,7 +1,7 @@
 import pytest
 
 import giskard.ml_worker.testing.tests.statistical as statistical
-from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @pytest.mark.parametrize(
@@ -105,8 +105,8 @@ def test_disparate_impact(data, model, request):
     model = request.getfixturevalue(model)
     results = statistical.test_disparate_impact(
         gsk_dataset=data,
-        protected_slice=SliceFunction(lambda df: df[df.sex == "female"], row_level=False),
-        unprotected_slice=SliceFunction(lambda df: df[df.sex == "male"], row_level=False),
+        protected_slice=SlicingFunction(lambda df: df[df.sex == "female"], row_level=False),
+        unprotected_slice=SlicingFunction(lambda df: df[df.sex == "male"], row_level=False),
         model=model,
         positive_outcome="Not default",
     )
