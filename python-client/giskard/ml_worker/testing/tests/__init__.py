@@ -1,3 +1,7 @@
-import giskard.ml_worker.testing.tests.heuristic
-import giskard.ml_worker.testing.tests.performance
+from giskard.ml_worker.testing.tests import heuristic
+from giskard.ml_worker.testing.tests import performance
 
+__all__ = [
+    'heuristic',
+    'performance'
+]

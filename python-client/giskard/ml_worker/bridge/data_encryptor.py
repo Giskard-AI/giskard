@@ -35,8 +35,7 @@ class DataEncryptor:
     def decrypt(self, encrypted_data):
         cipher = AES.new(self.key, AES.MODE_GCM, nonce=encrypted_data[:KEY_LENGTH_BYTES])
         plain_data = cipher.decrypt_and_verify(
-            encrypted_data[KEY_LENGTH_BYTES:-KEY_LENGTH_BYTES],
-            encrypted_data[-KEY_LENGTH_BYTES:]
+            encrypted_data[KEY_LENGTH_BYTES:-KEY_LENGTH_BYTES], encrypted_data[-KEY_LENGTH_BYTES:]
         )
 
         return plain_data
