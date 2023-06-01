@@ -1,6 +1,5 @@
 package ai.giskard.ml.tunnel;
 
-import ai.giskard.config.SpringContext;
 import ai.giskard.service.ml.MLWorkerDataEncryptor;
 import ai.giskard.service.ml.MLWorkerSecurityService;
 import com.google.common.eventbus.EventBus;
@@ -33,12 +32,16 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
 
     private Optional<InnerServerStartResponse> innerServerData = Optional.empty();
 
-    private final MLWorkerSecurityService mlWorkerSecurityService = SpringContext.getBean(MLWorkerSecurityService.class);
+    private final MLWorkerSecurityService mlWorkerSecurityService;
 
     private final ChannelRegistry channelRegistry = new ChannelRegistry();
 
     @Getter
     private EventBus eventBus = new EventBus();
+
+    public OuterChannelHandler(MLWorkerSecurityService mlWorkerSecurityService) {
+        this.mlWorkerSecurityService = mlWorkerSecurityService;
+    }
 
     private void initInnerServer(SocketChannel outerChannel, String keyId) {
         this.innerServerData = Optional.of(startInnerServer(outerChannel, keyId));

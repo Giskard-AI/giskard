@@ -1,6 +1,7 @@
 package ai.giskard.ml.tunnel;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.service.ml.MLWorkerSecurityService;
 import com.google.common.eventbus.Subscribe;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -29,13 +30,17 @@ public class MLWorkerTunnelService {
     private static final Logger log = LoggerFactory.getLogger(MLWorkerTunnelService.class);
     public static final int LENGTH_FIELD_LENGTH_BYTES = 4;
     private final ApplicationProperties applicationProperties;
+    private final MLWorkerSecurityService mlWorkerSecurityService;
 
     @Getter
     private Optional<InnerServerStartResponse> innerServerDetails = Optional.empty();
 
 
-    public MLWorkerTunnelService(ApplicationProperties applicationProperties) {
+    public MLWorkerTunnelService(
+        ApplicationProperties applicationProperties,
+        MLWorkerSecurityService mlWorkerSecurityService) {
         this.applicationProperties = applicationProperties;
+        this.mlWorkerSecurityService = mlWorkerSecurityService;
     }
 
     @PostConstruct
@@ -49,7 +54,7 @@ public class MLWorkerTunnelService {
         EventLoopGroup group = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap();
 
-        OuterChannelHandler outerChannelHandler = new OuterChannelHandler();
+        OuterChannelHandler outerChannelHandler = new OuterChannelHandler(mlWorkerSecurityService);
         ChannelInitializer<SocketChannel> outerChannelInitializer = new ChannelInitializer<>() {
             @Override
             protected void initChannel(SocketChannel outerChannel) {
