@@ -23,8 +23,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
     'ai.giskard.web.dto.CreateFeedbackReplyDTO' : 'CreateFeedbackReplyDTO',
     'ai.giskard.web.dto.DataUploadParamsDTO' : 'DataUploadParamsDTO',
-    'ai.giskard.web.dto.DatasetDescribeColumnDTO' : 'DatasetDescribeColumnDTO',
     'ai.giskard.web.dto.DatasetMetadataDTO' : 'DatasetMetadataDTO',
+    'ai.giskard.web.dto.DatasetPageDTO' : 'DatasetPageDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
     'ai.giskard.web.dto.ExplainTextResponseDTO' : 'ExplainTextResponseDTO',
     'ai.giskard.web.dto.FeatureMetadataDTO' : 'FeatureMetadataDTO',
@@ -83,6 +83,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.TestSuiteDTO' : 'TestSuiteDTO',
     'ai.giskard.web.dto.TransformationFunctionDTO' : 'TransformationFunctionDTO',
     'ai.giskard.web.dto.TransformationResultDTO' : 'TransformationResultDTO',
+    'ai.giskard.web.dto.TransformationResultMessageDTO' : 'TransformationResultMessageDTO',
     'ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword' : 'AdminUserDTO.AdminUserDTOWithPassword',
     'ai.giskard.web.dto.user.AdminUserDTO' : 'AdminUserDTO',
     'ai.giskard.web.dto.user.PasswordChangeDTO' : 'PasswordChangeDTO',
@@ -116,8 +117,8 @@ export * from './ai/giskard/web/dto/config/mlworker-info-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
 export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/web/dto/data-upload-params-dto';
-export * from './ai/giskard/web/dto/dataset-describe-column-dto';
 export * from './ai/giskard/web/dto/dataset-metadata-dto';
+export * from './ai/giskard/web/dto/dataset-page-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/explain-text-response-dto';
 export * from './ai/giskard/web/dto/feature-metadata-dto';
@@ -174,6 +175,7 @@ export * from './ai/giskard/web/dto/test-suite-complete-dto';
 export * from './ai/giskard/web/dto/test-suite-dto';
 export * from './ai/giskard/web/dto/transformation-function-dto';
 export * from './ai/giskard/web/dto/transformation-result-dto';
+export * from './ai/giskard/web/dto/transformation-result-message-dto';
 export * from './ai/giskard/web/dto/user/admin-user-dto';
 export * from './ai/giskard/web/dto/user/password-change-dto';
 export * from './ai/giskard/web/dto/user/role-dto';

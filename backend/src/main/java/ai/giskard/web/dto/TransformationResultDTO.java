@@ -8,8 +8,7 @@ import java.util.List;
 @Data
 @UIModel
 public class TransformationResultDTO {
-
-    private int totalRow;
-    private int modifiedRow;
-    private List<DatasetDescribeColumnDTO> describeColumns;
+    private String datasetId;
+    private int totalRows;
+    private List<TransformationResultMessageDTO> modifications;
 }
