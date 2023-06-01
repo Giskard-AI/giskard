@@ -16,7 +16,7 @@ class CategorySlicer(BaseSlicer):
         (feature,) = features
 
         # Make slices
-        values = data[feature].unique().tolist()
+        values = data[feature].dropna().unique().tolist()
         slice_candidates = [QueryBasedSliceFunction(Query([EqualTo(feature, val)])) for val in values]
 
         return slice_candidates
