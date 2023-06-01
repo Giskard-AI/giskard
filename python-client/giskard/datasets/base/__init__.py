@@ -132,7 +132,7 @@ class Dataset(ColumnMetadataMixin):
     id: uuid.UUID
     data_processor: DataProcessor
     _dataset_hash: Optional[pd.Series]
-    _dataset_hash_initialized: False
+    _dataset_hash_initialized = False
 
     @configured_validate_arguments
     def __init__(
