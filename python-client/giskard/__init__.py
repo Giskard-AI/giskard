@@ -14,6 +14,7 @@ from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
 from giskard.models.tensorflow import TensorFlowModel
+from giskard.models.huggingface import HuggingFaceModel
 
 configure_logging()
 if sys.version_info >= (3, 8):
@@ -41,5 +42,6 @@ __all__ = [
     'AbstractTestCollection',
     'test',
     'PyTorchModel',
-    'TensorFlowModel'
+    'TensorFlowModel',
+    'HuggingFaceModel'
 ]
