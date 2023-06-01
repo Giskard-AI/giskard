@@ -148,17 +148,6 @@ export default new Router({
                                             }
                                         },
                                         {
-                                            path: 'test',
-                                            name: 'test-suite-tests',
-                                            component: () => import('./views/main/project/TestSuiteTests.vue'),
-                                            props: (route) => {
-                                                return {
-                                                    projectId: Number(route.params.id),
-                                                    suiteId: Number(route.params.suiteId),
-                                                }
-                                            }
-                                        },
-                                        {
                                             path: 'execution/compare',
                                             name: 'test-suite-compare-executions',
                                             component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
@@ -166,18 +155,6 @@ export default new Router({
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id)
-                                                }
-                                            }
-                                        },
-                                        {
-                                            path: 'test/:testUuid/compare',
-                                            name: 'test-suite-compare-test',
-                                            component: () => import('./views/main/project/TestSuiteCompareTest.vue'),
-                                            props: (route) => {
-                                                return {
-                                                    suiteId: Number(route.params.suiteId),
-                                                    projectId: Number(route.params.id),
-                                                    testUuid: Number(route.params.id)
                                                 }
                                             }
                                         },
