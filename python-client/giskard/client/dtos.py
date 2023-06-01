@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class TestInputDTO(BaseModel):
     name: str
     value: str
-    params: List['TestInputDTO']
+    params: List['TestInputDTO'] = list()
     is_alias: bool = False
 
 
