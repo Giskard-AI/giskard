@@ -3,6 +3,7 @@ import { api } from '@/api';
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSession from '@/components/AddDebuggingSession.vue';
 import InspectorWrapper from './InspectorWrapper.vue';
+import InlineEditText from '@/components/InlineEditText.vue';
 import { computed, ref, onActivated } from "vue";
 
 interface Props {
@@ -66,6 +67,18 @@ async function deleteDebuggingSession(id: number) {
 
 }
 
+async function renameSession(id: number, name: string) {
+  const currentSession = debuggingSessions.value.find(s => s.id === id);
+  if (currentSession) {
+    currentSession.name = name;
+    await api.updateInspectionName(id, {
+      name: name,
+      datasetId: currentSession.dataset.id,
+      modelId: currentSession.model.id
+    });
+  }
+}
+
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
 
@@ -106,7 +119,7 @@ onActivated(() => loadDebuggingSessions());
       </v-row>
 
       <v-expansion-panels>
-        <v-row dense no-gutters class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2" v-if="displayComponents">
+        <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2" v-if="displayComponents">
           <v-col cols="3">Session name</v-col>
           <v-col cols="1">Session ID</v-col>
           <v-col cols="2">Created at</v-col>
@@ -118,9 +131,12 @@ onActivated(() => loadDebuggingSessions());
         </v-row>
 
         <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click="toggleActiveSession(session.id)">
-          <v-expansion-panel-header :disableIconRotate="true">
-            <v-row dense no-gutters class="align-center">
-              <v-col cols="3">{{ session.name }}</v-col>
+          <v-expansion-panel-header disableIconRotate=true class="grey lighten-5" tile>
+            <v-row class="px-2 py-1 align-center">
+              <v-col cols="3">
+                <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
+                </InlineEditText>
+              </v-col>
               <v-col cols="1">{{ session.id }}</v-col>
               <v-col cols="2">{{ formatDate(session.createdDate) }}</v-col>
               <v-col cols="1">{{ session.dataset.name }}</v-col>
