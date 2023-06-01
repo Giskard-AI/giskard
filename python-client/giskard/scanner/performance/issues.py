@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 from ..issues import Issue, IssueInfo
 from ...models.base import BaseModel
