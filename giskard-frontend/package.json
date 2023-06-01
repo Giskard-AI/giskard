@@ -17,6 +17,7 @@
     "@types/mixpanel-browser": "^2.38.0",
     "@types/mousetrap": "^1.6.9",
     "@types/numeral": "^2.0.2",
+    "autoprefixer": "^10",
     "axios": "^0.27.2",
     "core-js": "^3.24.1",
     "crypto-js": "^4.1.1",
@@ -24,10 +25,13 @@
     "echarts": "^5.3.3",
     "lodash": "^4.17.21",
     "mixpanel-browser": "^2.45.0",
+    "monaco-editor": "^0.34.0",
     "mousetrap": "^1.6.5",
     "numeral": "^2.0.6",
+    "postcss": "^8",
     "register-service-worker": "^1.7.2",
     "rrweb-snapshot": "^1.1.14",
+    "tailwindcss": "^3",
     "typesafe-vuex": "^3.2.2",
     "vee-validate": "^3.4.13",
     "vue": "^2.7.8",
@@ -48,6 +52,7 @@
     "@types/vue-moment": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.27.1",
+    "@vue/cli": "^5.0.8",
     "@vue/cli-plugin-pwa": "^5.0.4",
     "@vue/cli-plugin-typescript": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
@@ -60,12 +65,14 @@
     "sass": "~1.54.4",
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.4",
+    "vue-cli-plugin-tailwind": "~3.0.0",
     "vue-cli-plugin-vuetify": "^2.5.1",
     "vue-template-compiler": "^2.7.8",
     "vuetify-loader": "^1.9.2"
   },
   "postcss": {
     "plugins": {
+      "tailwindcss": {},
       "autoprefixer": {}
     }
   },

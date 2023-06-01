@@ -6,7 +6,7 @@
           <v-card class="elevation-12">
             <ValidationObserver ref="observer" v-slot="{ invalid }">
             <v-form @submit.prevent="">
-            <v-toolbar dark prominent :src="require('@/assets/wallpaper-skyline-reduced.jpg')">
+            <v-toolbar dark prominent :src="require('@/assets/wallpaper.jpg')">
               <v-toolbar-title>{{appName}} - Reset Password</v-toolbar-title>
             </v-toolbar>
             <v-card-text>

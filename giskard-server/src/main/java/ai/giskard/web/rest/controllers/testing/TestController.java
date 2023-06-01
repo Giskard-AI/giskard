@@ -1,26 +1,37 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
-import ai.giskard.repository.ml.TestExecutionRepository;
-import ai.giskard.repository.ml.TestRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ml.*;
 import ai.giskard.service.CodeTestTemplateService;
+import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.TestService;
+import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.RunAdhocTestRequest;
 import ai.giskard.web.dto.TestTemplatesResponse;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
+import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
+import com.google.protobuf.Empty;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
@@ -35,6 +46,11 @@ public class TestController {
     private final TestSuiteRepository testSuiteRepository;
     private final TestExecutionRepository testExecutionRepository;
     private final CodeTestTemplateService codeTestTemplateService;
+    private final MLWorkerService mlWorkerService;
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final GRPCMapper grpcMapper;
+
     private final GiskardMapper giskardMapper;
 
     @GetMapping("")
@@ -102,4 +118,67 @@ public class TestController {
         return codeTestTemplateService.getTemplates(suiteId);
     }
 
+    @GetMapping("/test-templates")
+    public Object getTestTemplates() throws InvalidProtocolBufferException {
+        TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+
+        return JsonFormat.printer().print(response);
+    }
+
+    @PostMapping("/run-test")
+    @Transactional
+    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) throws IOException {
+        try (MLWorkerClient client = mlWorkerService.createClient()) {
+            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+            Map<String, TestFunction> registry = new HashMap<>();
+            response.getFunctionsList().forEach((TestFunction fn) -> {
+                registry.put(fn.getId(), fn);
+            });
+            TestFunction test = registry.get(request.getTestId());
+            Map<String, String> argumentTypes = Maps.transformValues(test.getArgumentsMap(), TestFunctionArgument::getType);
+
+            RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
+                .setTestId(request.getTestId());
+
+            for (Map.Entry<String, Object> entry : request.getInputs().entrySet()) {
+                String inputName = entry.getKey();
+                Object inputValue = entry.getValue();
+                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
+                argumentBuilder.setName(inputName);
+                switch (argumentTypes.get(inputName)) {
+                    case "GiskardDataset":
+                        argumentBuilder.setDataset(grpcMapper.serialize(datasetRepository.getById(((Integer) inputValue).longValue())));
+                        break;
+                    case "GiskardModel":
+                        argumentBuilder.setModel(grpcMapper.serialize(modelRepository.getById(((Integer) inputValue).longValue())));
+                        break;
+                    case "float":
+                        argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
+                        break;
+                    case "string":
+                        argumentBuilder.setString((String) inputValue);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
+                }
+                builder.addArguments(argumentBuilder.build());
+            }
+
+            TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(
+                builder.build()
+            );
+            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(test.getId());
+            res.setResult(testResultMessage);
+            if (testResultMessage.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                res.setStatus(TestResult.FAILED);
+            } else {
+                res.setStatus(TestResult.PASSED);
+            }
+            return res;
+        }
+
+        //TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+
+        //return JsonFormat.printer().print(response);
+    }
 }

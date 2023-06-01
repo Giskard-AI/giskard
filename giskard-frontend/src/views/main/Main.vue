@@ -52,8 +52,8 @@
       </v-layout>
     </v-navigation-drawer>
 
-    <div class="pa-1 vertical-container">
-      <router-view></router-view>
+    <div class="pa-0 vertical-container overflow-hidden h100">
+      <router-view class="overflow-hidden h100"></router-view>
     </div>
   </v-main>
 </template>
@@ -109,7 +109,7 @@ export default class Main extends Vue {
 
 
 .background {
-  background-image: url("~@/assets/wallpaper-skyline-reduced.jpg");
+  background-image: none;
   background-position: 0 20%;
   background-size: auto 100%;
 }

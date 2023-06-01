@@ -1,9 +1,35 @@
 $color-pack: false;
 
-@import '~vuetify/src/styles/main.sass';
+//@import '~vuetify/src/styles/main.sass';
 @import "./font-awesome/scss/fontawesome.scss";
 @import "./font-awesome/scss/solid.scss";
 @import "./font-awesome/scss/brands.scss";
+
+html {
+  scrollbar-width: thin;
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 4px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: white;
+    box-shadow: inset 0 0 4px #d2d2d2;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #8f8f8f;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: white;
+  }
+}
+
+@import "../assets/tailwind.css";
 
 .w100 {
   width: 100%;
@@ -37,20 +63,68 @@ $notification-spinner-size: 20px;
 }
 
 .vertical-container {
-  @extend .d-flex;
-  @extend .flex-grow-1;
-  @extend .flex-column;
+  //@extend .d-flex;
+  //@extend .flex-grow-1;
+  //@extend .flex-column;
 
   & > .v-tabs,
   & > .v-toolbar,
   & > .row {
     flex-grow: 0;
-     margin-bottom: 0;
+    margin-bottom: 0;
   }
 }
 
 .vertical-container .v-main__wrap {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 72px;
+  right: 0;
+}
+
+.h100 {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.oh {
+  overflow: hidden;
+}
+
+.os {
+  overflow-y: auto;
+}
+
+.debug {
+  background-color: lightcoral;
+}
+
+//.v-tabs.fill-height {
+//  display: flex;
+//  flex-direction: column;
+//  .v-tabs-bar{
+//    flex-shrink: 0;
+//  }
+//  .v-tabs-items{
+//    flex-grow: 1;
+//    display: flex;
+//    flex-direction: column;
+//    .v-window__container{
+//      flex-grow: 1;
+//    }
+//  }
+//}
+
+.v-window__container {
+  overflow: hidden;
+}
+
+.v-tabs-items {
+  flex: 1;
+  overflow: hidden;
 }
