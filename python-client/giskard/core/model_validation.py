@@ -1,5 +1,5 @@
 import tempfile
-from typing import List
+from typing import List, Iterable
 
 import numpy as np
 import pandas as pd
@@ -112,7 +112,7 @@ def validate_model_type(model_type):
 
 def validate_classification_labels(classification_labels: List[str], model_type: SupportedModelTypes):
     if model_type == SupportedModelTypes.CLASSIFICATION:
-        if classification_labels is not None and isinstance(classification_labels, Iterable):  # type: ignore
+        if classification_labels is not None and isinstance(classification_labels, Iterable):
             if len(classification_labels) <= 1:
                 raise ValueError(
                     f"Invalid classification_labels parameter: {classification_labels}. "
