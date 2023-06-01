@@ -11,13 +11,15 @@ import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.SingleTestResultDTO;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.*;
+import ai.giskard.worker.RunTestSuiteRequest;
+import ai.giskard.worker.TestFunction;
+import ai.giskard.worker.TestRegistryResponse;
+import ai.giskard.worker.TestSuiteResultMessage;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.protobuf.Empty;
@@ -196,10 +198,14 @@ public class TestSuiteService {
             try {
                 TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
 
+                Map<String, SuiteTest> tests = testSuite.getTests().stream()
+                    .collect(Collectors.toMap(SuiteTest::getTestId, Function.identity()));
+
                 execution.setResult(testSuiteResultMessage.getIsPass() ? TestResult.PASSED : TestResult.FAILED);
                 execution.setResults(testSuiteResultMessage.getResultsList().stream()
-                    .collect(Collectors.toMap(NamedSingleTestResult::getName,
-                        namedSingleTestResult -> new SingleTestResultDTO(namedSingleTestResult.getResult()))));
+                    .map(namedSingleTestResult ->
+                        new SuiteTestExecution(tests.get(namedSingleTestResult.getName()), execution, namedSingleTestResult.getResult()))
+                    .toList());
             } catch (Exception e) {
                 log.error("Error while executing test suite {}", testSuite.getName(), e);
                 execution.setResult(TestResult.ERROR);

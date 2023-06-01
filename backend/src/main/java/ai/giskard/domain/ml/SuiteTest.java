@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,4 +30,7 @@ public class SuiteTest {
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL)
     private List<TestInput> testInputs = new java.util.ArrayList<>();
 
+    @OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 }

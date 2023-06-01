@@ -1,4 +1,4 @@
-import type {SingleTestResultDTO} from './single-test-result-dto';
+import type {TestExecutionDto} from './test-execution-dto';
 import type {TestResult} from './../../../domain/ml/test-result';
 
 /**
@@ -8,6 +8,6 @@ export interface TestSuiteExecutionDTO {
     executionDate: any /* TODO: Missing translation of java.util.Date */;
     inputs: {[key: string]: string};
     result: TestResult;
-    results: {[key: string]: SingleTestResultDTO};
+    results: TestExecutionDto[];
     suiteId: number;
 }

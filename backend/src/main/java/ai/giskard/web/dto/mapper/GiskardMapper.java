@@ -179,6 +179,7 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
+    @Mapping(target = "executions", ignore = true)
     SuiteTest fromDTO(SuiteTestDTO dto);
 
     @AfterMapping

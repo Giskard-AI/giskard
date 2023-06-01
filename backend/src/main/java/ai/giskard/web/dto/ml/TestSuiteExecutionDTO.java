@@ -6,9 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -20,8 +19,7 @@ public class TestSuiteExecutionDTO {
     Date executionDate;
 
     private Map<String, String> inputs;
-    @Enumerated(EnumType.STRING)
     TestResult result;
-    private Map<String, SingleTestResultDTO> results;
+    private List<TestExecutionDto> results;
 
 }
