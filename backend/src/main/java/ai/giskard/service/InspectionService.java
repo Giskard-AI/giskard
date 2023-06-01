@@ -235,4 +235,14 @@ public class InspectionService {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
     }
+
+    public List<Inspection> getInspections() {
+        return inspectionRepository.findAll();
+    }
+
+    public List<Inspection> getInspectionsByProjectId(Long projectId) {
+        List<Inspection> inspections =  getInspections();
+        inspections.removeIf(inspection -> !inspection.getModel().getProject().getId().equals(projectId));
+        return inspections;
+    }
 }
