@@ -14,9 +14,9 @@
             <column name="created_date" type="TIMESTAMP"/>
             <column name="last_modified_by" type="VARCHAR(50)"/>
             <column name="last_modified_date" type="TIMESTAMP"/>
-            <column name="column_types" type="VARCHAR"/>
+            <column name="column_dtypes" type="VARCHAR"/>
             <column name="compressed_size_bytes" type="BIGINT"/>
-            <column name="feature_types" type="VARCHAR"/>
+            <column name="column_types" type="VARCHAR"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="original_size_bytes" type="BIGINT"/>
             <column name="target" type="VARCHAR(255)"/>

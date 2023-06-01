@@ -98,7 +98,7 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
-    @Mapping(source = "featureTypes", target = "featureTypes")
+    @Mapping(source = "columnTypes", target = "columnTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
     UserDTO userToUserDTO(User user);
@@ -133,7 +133,7 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     ProjectModel fromDTO(ModelDTO dto);
 
-    @Mapping(source = "featureTypes", target = "featureTypes")
+    @Mapping(source = "columnTypes", target = "columnTypes")
     @Mapping(target = "inspections", ignore = true)
     @Mapping(target = "project", ignore = true)
     @Mapping(target = "createdBy", ignore = true)

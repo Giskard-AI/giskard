@@ -6,6 +6,8 @@ import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestInput;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
+import ai.giskard.domain.ColumnType;
+import ai.giskard.domain.ml.*;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
@@ -42,7 +44,6 @@ public class TestSuiteService {
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
     private final TestFunctionRepository testFunctionRepository;
-    private final TestInputRepository testInputRepository;
 
     public Map<String, RequiredInputDTO> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
@@ -132,7 +133,7 @@ public class TestSuiteService {
             .map(giskardMapper::fromDTO)
             .toList());
         test.getTestInputs().forEach(input -> input.setTest(test));
-        
+
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 

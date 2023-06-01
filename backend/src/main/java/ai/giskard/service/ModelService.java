@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
@@ -60,11 +60,11 @@ public class ModelService {
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
-        if (dataset.getFeatureTypes() != null) {
-            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
-        }
         if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+            requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+        }
+        if (dataset.getColumnDtypes() != null) {
+            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
         }
         response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
@@ -90,7 +90,7 @@ public class ModelService {
                     .setModel(grpcMapper.createRef(model))
                     .setFeatureName(featureName)
                     .putAllColumns(features)
-                    .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
+                    .putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
                     .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );
