@@ -129,13 +129,7 @@ watch(() => route.meta, () => handleRouteChanged());
 
 onActivated(async () => {
   if (activeDebuggingSessionId.value) {
-    await router.push({
-      name: 'inspection',
-      params: {
-        projectId: props.projectId.toString(),
-        inspectionId: activeDebuggingSessionId.value.toString()
-      }
-    });
+    await openInspection(props.projectId.toString(), activeDebuggingSessionId.value.toString());
   }
   fetchDebuggingSessions();
   handleRouteChanged();
