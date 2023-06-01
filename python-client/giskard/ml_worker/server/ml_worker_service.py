@@ -18,6 +18,7 @@ import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
@@ -139,30 +140,46 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTestSuite(self, request: ml_worker_pb2.RunTestSuiteRequest,
                      context: grpc.ServicerContext) -> ml_worker_pb2.TestSuiteResultMessage:
-        tests = list(map(tests_registry.get_test, request.testId))
+        log_listener = LogListener()
 
-        global_arguments = self.parse_test_arguments(request.globalArguments)
+        try:
+            tests = list(map(tests_registry.get_test, request.testId))
 
-        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+            logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
 
-        suite = Suite()
-        for test in tests:
-            fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testId == test.id).arguments)
-            suite.add_test(test.fn, **fixed_arguments)
+            global_arguments = self.parse_test_arguments(request.globalArguments)
 
-        is_pass, results = suite.run(**global_arguments)
+            suite = Suite()
+            for test in tests:
+                fixed_arguments = self.parse_test_arguments(
+                    next(x for x in request.fixedArguments if x.testId == test.id).arguments)
+                suite.add_test(test.fn, **fixed_arguments)
 
-        result_list = list(results.values())
+            is_pass, results = suite.run(**global_arguments)
 
-        named_single_test_result = []
-        for i in range(len(tests)):
-            named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(name=tests[i].id,
-                                                    result=map_result_to_single_test_result(result_list[i]))
+            result_list = list(results.values())
+
+            named_single_test_result = []
+            for i in range(len(tests)):
+                named_single_test_result.append(
+                    ml_worker_pb2.NamedSingleTestResult(name=tests[i].id,
+                                                        result=map_result_to_single_test_result(result_list[i]))
+                )
+
+            return ml_worker_pb2.TestSuiteResultMessage(
+                is_error=False,
+                is_pass=is_pass,
+                results=named_single_test_result,
+                logs=log_listener.close()
             )
-
-        return ml_worker_pb2.TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+        except Exception as exc:
+            logger.error("An unexpected error arose during the test suite execution: %s", exc)
+            return ml_worker_pb2.TestSuiteResultMessage(
+                is_error=True,
+                is_pass=False,
+                results=[],
+                logs=log_listener.close()
+            )
 
     def parse_test_arguments(self, request_arguments):
         arguments = {}
