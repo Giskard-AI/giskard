@@ -1,15 +1,20 @@
 <template>
     <v-list>
-        <v-list-item v-for="input in inputs" :track-by="input" class="pl-0 pr-0">
+        <v-list-item v-for="(input, index) in inputs" :track-by="input" class="pl-0 pr-0">
             <v-row>
                 <v-col>
-                    <v-list-item-content class="py-0">
-                        <v-list-item-title>{{ input.name }}</v-list-item-title>
-                        <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
-                        <v-list-item-action-text v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
+                    <v-list-item-content class="py-2">
+                        <v-list-item-title class="input-name">{{ input.name }}: <span class="input-type">{{ input.type }}</span> <span v-if="test?.args[index].optional" class="input-type">= {{ test.args[index].defaultValue }}</span>
+                            <span v-if="(test?.args[index].optional === false) && (test?.args[index].type !== 'Kwargs')" class="input-required">Required</span>
+                        </v-list-item-title>
+                        <!-- <v-list-item-subtitle v-if="test?.args[index]">
+                            <span v-if="test.args[index].optional" class="input-optional">Optional</span>
+                            <span v-else class="input-required">Required</span>
+                        </v-list-item-subtitle> -->
+                        <!-- <v-list-item-action-text v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
                             Optional. Default:
                             <code>{{ props.test.args.find(a => a.name === input.name).defaultValue }}</code>
-                        </v-list-item-action-text>
+                        </v-list-item-action-text> -->
                     </v-list-item-content>
                 </v-col>
                 <v-col class="input-column">
@@ -89,5 +94,39 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
 <style lang="scss" scoped>
 .input-column {
     width: 300px;
+}
+
+.input-name {
+    font-family: 'Roboto Mono', monospace;
+    opacity: 0.875;
+}
+
+.input-type {
+    font-size: 0.875rem;
+    opacity: 0.875;
+}
+
+.input-required {
+    text-transform: uppercase;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #FFC70A;
+    border: 1px solid #FFC70A;
+    border-radius: 4px;
+    padding: 0 4px;
+    background-color: rgba(255, 199, 10, 0.1);
+}
+
+.input-optional {
+    text-transform: uppercase;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #4caf50;
+    border: 1px solid #4caf50;
+    border-radius: 4px;
+    padding: 0 4px;
+    background-color: rgba(76, 175, 80, 0.1);
 }
 </style>
