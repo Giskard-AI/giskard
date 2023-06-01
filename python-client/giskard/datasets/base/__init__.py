@@ -487,7 +487,7 @@ class Dataset:
 
         return Dataset(
             df=df,
-            target=self.target,
+            target=self.target if self.target in df.columns else None,
             column_types={key: val for key, val in self.column_types.items() if key in df.columns},
         )
 
