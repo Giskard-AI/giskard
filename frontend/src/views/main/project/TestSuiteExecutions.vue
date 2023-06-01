@@ -4,29 +4,28 @@
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
-      <v-btn text @click="loadExecutions()" color="secondary">Reload
-        <v-icon right>refresh</v-icon>
-      </v-btn>
     </div>
     <v-progress-linear
         indeterminate
-        v-if="executions === null"
+        v-if="executionsAndJobs === undefined"
         color="primary"
         class="mt-2"
     ></v-progress-linear>
-    <p v-else-if="executions.length === 0">No execution has been performed yet!</p>
+    <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
     <v-row v-else>
       <v-col cols="3">
         <v-list three-line>
           <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
-            <template v-for="execution in executions">
+            <template v-for="e in executionsAndJobs">
               <v-divider/>
-              <v-list-item :value="execution" :disabled="!execution.completionDate">
+              <v-list-item :value="e.execution" :disabled="e.disabled">
                 <v-list-item-content>
-                  <v-list-item-title v-text="execution.executionDate"></v-list-item-title>
+                  <v-list-item-title>
+                      {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
+                  </v-list-item-title>
                   <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="executionStatusColor(execution)">
-                      {{ executionStatusMessage(execution) }}
+                    <v-chip class="mr-2" x-small :color="e.color">
+                      {{ e.state }}
                     </v-chip>
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -54,10 +53,20 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
-import {DatasetDTO, ModelDTO, TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {api} from '@/api';
+import {computed, ref} from 'vue';
+import {
+  DatasetDTO,
+  JobDTO,
+  JobState,
+  ModelDTO,
+  TestCatalogDTO,
+  TestResult,
+  TestSuiteExecutionDTO
+} from '@/generated-sources';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
+import moment from 'moment';
+import {Colors} from '@/utils/colors';
+import {Comparators} from '@/utils/comparators';
 
 const props = defineProps<{
   projectId: number,
@@ -65,18 +74,12 @@ const props = defineProps<{
   registry: TestCatalogDTO,
   models: { [key: string]: ModelDTO },
   datasets: { [key: string]: DatasetDTO },
-  inputs: { [name: string]: string }
+  inputTypes: { [name: string]: string },
+  executions?: TestSuiteExecutionDTO[],
+  trackedExecutions: { [uuid: string]: JobDTO}
 }>();
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
-const executions = ref<TestSuiteExecutionDTO[] | null>(null);
-
-onMounted(() => loadExecutions());
-
-async function loadExecutions() {
-  executions.value = null;
-  executions.value = await api.listTestSuiteExecutions(props.projectId, props.suiteId);
-}
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -87,24 +90,46 @@ function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
     case TestResult.FAILED:
       return "fail";
     default:
-      return "in progress";
+      return "N/A";
+  }
+}
+
+function jobStatusMessage(job: JobDTO): string {
+  switch (job.state) {
+    case JobState.SCHEDULED:
+      return "scheduled";
+    case JobState.RUNNING:
+      return "running";
+    default:
+      return "N/A";
   }
 }
 
 function executionStatusColor(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
     case TestResult.PASSED:
-      return "#4caf50";
+      return Colors.PASS;
     case TestResult.ERROR:
     case TestResult.FAILED:
-      return "#f44336";
+      return Colors.FAIL;
+    default:
+      return "#607d8b";
+  }
+}
+
+function jobStatusColor(job: JobDTO): string {
+  switch (job.state) {
+    case JobState.SCHEDULED:
+      return "#607d8b";
+    case JobState.RUNNING:
+      return "#009688";
     default:
       return "#607d8b";
   }
 }
 
 function formatInputValue(input: string, value: string): string {
-  switch (props.inputs[input]) {
+  switch (props.inputTypes[input]) {
     case 'Dataset':
       return props.datasets[value].name;
     case 'Model':
@@ -123,9 +148,44 @@ const executionBreadcrumbs = computed(() =>
     selectedExecution.value === null ? [executionItem] : [
       executionItem,
       {
-        text: selectedExecution.value.executionDate,
+        text: moment(selectedExecution.value.executionDate)
+            .format('MMM Do YY, h:mm:ss a'),
         disabled: false
       }
     ]);
+
+
+type ExecutionTabItem = {
+  date: any,
+  disabled: boolean,
+  state: string,
+  color: string,
+  execution?: TestSuiteExecutionDTO
+}
+
+const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
+  if (props.executions === undefined) {
+    return undefined;
+  }
+
+  return  ([] as ExecutionTabItem[])
+      .concat(props.executions
+          .map(e => ({
+            date: e.executionDate,
+            disabled: false,
+            state: executionStatusMessage(e),
+            color: executionStatusColor(e),
+            execution: e
+          })))
+      .concat(Object.values(props.trackedExecutions)
+          .map(j => ({
+            date: j.scheduledDate,
+            disabled: true,
+            state: jobStatusMessage(j),
+            color: jobStatusColor(j)
+          })))
+      .sort(Comparators.comparing(e => e.date))
+      .reverse();
+});
 
 </script>
