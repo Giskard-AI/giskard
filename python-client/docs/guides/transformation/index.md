@@ -1,4 +1,4 @@
-# 🔪 Transform your dataset
+# Transform your dataset
 
 :::{warning}
 First you'll need to create a dataset,
