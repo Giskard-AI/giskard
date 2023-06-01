@@ -4,8 +4,11 @@
             <v-tab :to="{name: 'project-catalog-tests'}">
                 Tests
             </v-tab>
-            <v-tab :to="{name: 'project-catalog-filters'}">
-                Filters
+            <v-tab :to="{name: 'project-catalog-slicing-functions'}">
+                Slicing functions
+            </v-tab>
+            <v-tab :to="{name: 'project-catalog-transformation-functions'}">
+                Transformation functions
             </v-tab>
         </v-tabs>
         <router-view/>
