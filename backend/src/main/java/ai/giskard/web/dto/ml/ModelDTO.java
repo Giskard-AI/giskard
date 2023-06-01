@@ -34,6 +34,7 @@ public class ModelDTO {
     private List<String> featureNames;
     @JsonAlias("classification_labels")
     private List<String> classificationLabels;
+    private String classificationLabelsDtype;
 
     @JsonProperty("id")
     @NotNull
