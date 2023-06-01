@@ -86,12 +86,11 @@ def validate_model_save_load(model: Model):
     Validates if the model can be pickled and un-pickled using cloud pickle
     """
     try:
-        loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save_to_local_dir(f)
             model.save_data_preparation_function(f)
-            loaded_model = loader_class.read_model_from_local_dir(f)
-            loaded_data_prep_fn = loader_class.read_data_preparation_function_from_artifact(f)
+            loaded_model = model.read_model_from_local_dir(f)
+            loaded_data_prep_fn = model.read_data_preparation_function_from_artifact(f)
             return loaded_model, loaded_data_prep_fn
     except Exception as e:
         raise ValueError("Failed to validate model saving and loading from local disk") from e
