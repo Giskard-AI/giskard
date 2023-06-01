@@ -25,27 +25,29 @@
   </v-main>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { appName } from '@/env';
-import { dispatchPasswordRecovery } from '@/store/main/actions';
+<script setup lang="ts">
+import { appName as appname } from '@/env';
+import {ref} from "vue";
+import {useRouter} from "vue-router/composables";
+import {useUserStore} from "@/stores/user";
 
-@Component
-export default class Login extends Vue {
-  public valid = true;
-  public userId: string = '';
-  public appName = appName;
+const router = useRouter();
+const userStore = useUserStore();
 
-  public cancel() {
-    this.$router.back();
-  }
+const valid = ref<boolean>(true);
+const userId = ref<string>('');
+const appName = ref<string>(appname as string)
 
-  public submit() {
-    if (this.userId) {
-      dispatchPasswordRecovery(this.$store, { userId: this.userId });
-    }
+function cancel() {
+  router.back();
+}
+
+function submit() {
+  if (userId.value) {
+    userStore.passwordRecovery({userId: userId.value});
   }
 }
+
 </script>
 
 <style>

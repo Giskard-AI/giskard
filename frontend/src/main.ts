@@ -8,7 +8,6 @@ import vuetify from './plugins/vuetify';
 import './plugins/vee-validate';
 import App from './App.vue';
 import router from './router';
-import store from '@/store';
 import './registerServiceWorker';
 // import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css';
@@ -23,13 +22,19 @@ import _ from "lodash";
 
 import './styles/global.scss';
 import './styles/colors.scss';
+import vfmPlugin from 'vue-final-modal'
+import pinia from "@/stores";
+import VueMoment from "vue-moment";
+import VuetifyDialog from "vuetify-dialog";
 
 Vue.config.productionTip = false;
 
+Vue.use(vfmPlugin);
+
 new Vue({
     router,
-    store,
     vuetify,
+    pinia,
     render: (h) => h(App)
 }).$mount('#app');
 
@@ -58,6 +63,12 @@ Vue.use(Toast, {
         return toast;
     }
 });
+Vue.use(VueMoment);
+Vue.use(VuetifyDialog, {
+    context: {
+        vuetify
+    }
+})
 
 export function setupMixpanel() {
     const isDev = process.env.NODE_ENV === 'development';

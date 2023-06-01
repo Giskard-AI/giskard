@@ -1,7 +1,5 @@
 import {AxiosResponse} from 'axios';
-import {State} from './store/state';
-import {Store} from 'vuex';
-import {commitAddNotification, commitRemoveNotification} from '@/store/main/mutations';
+import {useMainStore} from "@/stores/main";
 
 export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
   const fileURL = window.URL.createObjectURL(new Blob([response.data]));
@@ -12,19 +10,19 @@ export function dialogDownloadFile(response: AxiosResponse, fileName: string) {
   fileLink.click();
 }
 
-export async function performApiActionWithNotif(store: Store<State>,
-  apiAction: () => any,
+export async function performApiActionWithNotif(apiAction: () => any,
   callbackFn: () => any,
 ) {
+  const mainStore = useMainStore();
   const loadingNotification = { content: 'Please wait...', showProgress: true };
   try {
-    commitAddNotification(store, loadingNotification);
+    mainStore.addNotification(loadingNotification);
     const response = await apiAction();
     callbackFn();
-    commitRemoveNotification(store, loadingNotification);
-    commitAddNotification(store, { content: response.message, color: 'success'});
+    mainStore.removeNotification(loadingNotification);
+    mainStore.addNotification({ content: response.message, color: 'success'});
   } catch (error) {
-    commitRemoveNotification(store, loadingNotification);
-    commitAddNotification(store, { content: error.response.detail, color: 'error' });
+    mainStore.removeNotification(loadingNotification);
+    mainStore.addNotification({ content: error.response.detail, color: 'error' });
   }
 }
