@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -11,7 +12,7 @@ from sklearn.linear_model import LinearRegression
 
 
 def titanic_df():
-    df = pd.read_csv("https://raw.githubusercontent.com/Giskard-AI/giskard-examples/main/datasets/titanic_train.csv")
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "titanic.csv"))
     df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
     _classification_labels = {0: "no", 1: "yes"}
     df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
