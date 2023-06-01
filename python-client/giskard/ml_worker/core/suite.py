@@ -18,6 +18,19 @@ logger = logging.getLogger(__name__)
 suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
 
 
+class TestSuiteResult(tuple):
+    def _repr_html_(self):
+        passed = self[0]
+        tests_results = ''.join([f"<h3>Test: {key}</h3>{value._repr_html_()}" for key, value in self[1].items()])
+        return """
+               <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
+               {3}
+               """.format('green' if passed else 'red',
+                          '✓' if passed else '𐄂',
+                          'succeed' if passed else 'failed',
+                          tests_results)
+
+
 class SuiteInput:
     type: Any
     name: str
@@ -116,7 +129,7 @@ class Suite:
         logger.info(f"result: {'success' if result else 'failed'}")
         for (test_name, r) in res.items():
             logger.info(f"{test_name}: {format_test_result(r)}")
-        return result, res
+        return TestSuiteResult((result, res))
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
