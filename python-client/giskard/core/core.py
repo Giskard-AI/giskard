@@ -186,7 +186,7 @@ class CallableMeta(SavableMeta, ABC):
         try:
             code = inspect.getsource(callable_obj)
         except Exception as e:
-            logger.info(f"Failed to extract test function code {self.full_name}", e)
+            logger.info(f"Failed to extract test function code {self.full_name}: %s" % e)
         return code
 
     @staticmethod
