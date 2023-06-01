@@ -523,6 +523,11 @@ class WrapperModel(BaseModel, ABC):
 
     @abstractmethod
     def save_model(self, local_path: Union[str, Path]) -> None:
+        """
+        Saving the model object.
+
+        :param local_path: path to the saved model
+        """
         ...
 
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
