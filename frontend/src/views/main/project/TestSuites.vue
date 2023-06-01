@@ -48,17 +48,9 @@ onActivated(async () => await testSuitesStore.loadTestSuites(props.projectId))
 
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
-    const date = new Date();
-    const formattedDate = date.getFullYear() + '-' +
-        ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
-        ('0' + date.getDate()).slice(-2) + ' ' +
-        ('0' + date.getHours()).slice(-2) + ':' +
-        ('0' + date.getMinutes()).slice(-2) + ':' +
-        ('0' + date.getSeconds()).slice(-2);
-
     const suite = await api.createTestSuite(project.key, {
         id: null,
-        name: `Test suite ${formattedDate}`,
+        name: `Unnamed test suite`,
         projectKey: project.key,
         testInputs: [],
         tests: []
