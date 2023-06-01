@@ -140,7 +140,7 @@ export default new Router({
                                     props: (route) => {
                                         return {
                                             projectId: Number(route.params.id),
-                                            suiteId: Number(route.params.suiteId)
+                                            suiteId: Number(route.params.suiteId),
                                         }
                                     },
                                     children: [{
@@ -151,6 +151,17 @@ export default new Router({
                                             return {
                                                 suiteId: Number(route.params.suiteId),
                                                 projectId: Number(route.params.id)
+                                            }
+                                        }
+                                    }, {
+                                        path: 'execution/:executionId',
+                                        name: 'test-suite-new-execution',
+                                        component: () => import('./views/main/project/TestSuiteNew.vue'),
+                                        props: (route) => {
+                                            return {
+                                                suiteId: Number(route.params.suiteId),
+                                                projectId: Number(route.params.id),
+                                                executionDate: Number(route.params.executionId)
                                             }
                                         }
                                     }]

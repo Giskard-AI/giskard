@@ -15,6 +15,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 public class TestSuiteExecutionDTO extends WorkerJobDTO {
+    Long id;
     Long suiteId;
     private Map<String, String> inputs;
     @UINullable
