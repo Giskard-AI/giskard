@@ -59,9 +59,16 @@
           <p class="text-h6">Global inputs</p>
           <TestInputList :models="props.models" :inputs="selectedExecution.inputs"
                          :input-types="props.inputTypes" :datasets="props.datasets"/>
-          <p class="pt-4 text-h6">Results</p>
-          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"
-                                     :models="props.models" :datasets="props.datasets"/>
+          <div v-if="selectedExecution.result === TestResult.ERROR">
+            <p class="pt-4 text-h6">Error</p>
+            <p>{{ selectedExecution.message }}</p>
+          </div>
+          <div v-else>
+            <p class="pt-4 text-h6">Results</p>
+            <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"
+                                       :models="props.models" :datasets="props.datasets"/>
+          </div>
+
         </div>
       </v-col>
     </v-row>

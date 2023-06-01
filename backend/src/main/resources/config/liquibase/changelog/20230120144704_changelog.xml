@@ -6,5 +6,8 @@
         <addColumn tableName="suite_test_execution">
             <column name="inputs" type="VARCHAR"/>
         </addColumn>
+        <addColumn tableName="test_suite_execution">
+            <column name="message" type="VARCHAR"/>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

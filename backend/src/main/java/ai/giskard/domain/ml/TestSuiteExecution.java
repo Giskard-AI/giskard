@@ -29,6 +29,8 @@ public class TestSuiteExecution extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TestResult result;
 
+    private String message;
+
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL)
     private List<SuiteTestExecution> results = new ArrayList<>();
 
