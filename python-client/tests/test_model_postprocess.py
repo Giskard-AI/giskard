@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from giskard import WrapperModel
 from giskard.core.core import ModelMeta
 
+
 def test_postprocess():
     model = Mock(WrapperModel)
     meta = Mock(ModelMeta)
@@ -25,7 +26,7 @@ def test_postprocess():
     if WrapperModel.is_binary_classification:
         assert result.shape[1] == 2
 
-    data_prepocessing_function_output = np.array([[0.6],[0.4]])
+    data_prepocessing_function_output = np.array([[0.6], [0.4]])
     result = WrapperModel._postprocess(model, data_prepocessing_function_output)
 
     assert result.ndim == 2

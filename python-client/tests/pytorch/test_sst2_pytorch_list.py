@@ -4,7 +4,6 @@ import torchtext.functional as F
 import torchtext.transforms as T
 from scipy import special
 from torch.hub import load_state_dict_from_url
-from torch.utils.data import DataLoader
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
@@ -33,7 +32,7 @@ text_transform = T.Sequential(
     T.AddToken(token=bos_idx, begin=True),
     T.AddToken(token=eos_idx, begin=False),
 )
-batch_size = 16
+batch_size = 1
 
 dev_datapipe = SST2(split="dev")
 dev_dataframe = pd.DataFrame(dev_datapipe, columns=["text", "label"])
@@ -50,15 +49,14 @@ def apply_transform(x):
     return text_transform(x[0]), x[1]
 
 
-def test_sst2_pytorch_dataloader():
-    def collate_batch(batch):
-        return F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
-
+def test_sst2_pytorch_list():
     def pandas_to_torch(test_df):
-        test_datapipe_transformed = IterableWrapper(test_df["text"]).map(apply_transform)
-        test_datapipe_transformed = test_datapipe_transformed.batch(batch_size)
-        test_datapipe_transformed = test_datapipe_transformed.rows2columnar(["token_ids", "target"])
-        return DataLoader(test_datapipe_transformed, batch_size=None, collate_fn=collate_batch)
+        test_datapipe_transformed = IterableWrapper(dev_dataframe.head()["text"]).map(apply_transform)
+        data_list = []
+        for entry in test_datapipe_transformed:
+            data_list.append(F.to_tensor([entry[0]], padding_value=padding_idx).to(device))
+
+        return data_list
 
     classification_labels = ["0", "1"]
     my_model = PyTorchModel(
