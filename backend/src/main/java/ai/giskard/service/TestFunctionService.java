@@ -10,12 +10,10 @@ import org.springframework.stereotype.Service;
 
 public class TestFunctionService extends CallableService<TestFunction, TestFunctionDTO> {
 
-    private final GiskardMapper giskardMapper;
     private final TestFunctionRepository testFunctionRepository;
 
     public TestFunctionService(TestFunctionRepository testFunctionRepository, GiskardMapper giskardMapper) {
         super(testFunctionRepository, giskardMapper);
-        this.giskardMapper = giskardMapper;
         this.testFunctionRepository = testFunctionRepository;
     }
 
