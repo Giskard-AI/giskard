@@ -48,7 +48,7 @@ class PerformanceIssue(Issue):
 
     @property
     def metric(self):
-        return self.info.metric.name
+        return f"{self.info.metric.name} = {self.info.metric_value_slice:.2f}"
 
     @property
     def deviation(self):
