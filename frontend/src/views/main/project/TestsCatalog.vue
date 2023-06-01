@@ -84,7 +84,7 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
+                                            <p class="test-description pt-2 mb-4">{{ selectedTestDescription }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
@@ -168,6 +168,14 @@ let testArguments = ref<{ [name: string]: TestInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
+
+const selectedTestDescription = computed(() => {
+    if (selected.value === null) {
+        return '';
+    }
+
+    return selected.value.doc.split("Args:")[0];
+})
 
 
 async function runTest() {
