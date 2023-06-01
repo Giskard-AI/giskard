@@ -15,6 +15,7 @@ def flatten(xs):
 
 
 class ModelCache:
+    # @TODO: improve this
     prediction_cache: Dict[str, Any]
 
     vectorized_get_cache_or_na = None
