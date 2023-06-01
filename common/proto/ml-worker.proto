@@ -164,7 +164,7 @@ message TestArgument{
     int32 int = 5;
     string str = 6;
     bool bool = 7;
-
+    ArtifactRef sliceFunction = 8;
   }
 }
 
