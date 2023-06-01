@@ -34,6 +34,7 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -48,6 +49,23 @@ def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
     else:
         raise ValueError(f"Illegal file type: {meta.file_type}")
     return path.exists(), path
+
+
+def map_callable_function(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.CallableFunction(
+            uuid=test.uuid,
+            name=test.name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
@@ -158,10 +176,52 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             describeColumns=[
                 ml_worker_pb2.DatasetDescribeColumn(
                     columnName=col,
-                    count=desc[col]['count'],
-                    unique=desc[col]['unique'],
-                    top=str(desc[col]['top']),
-                    freq=desc[col]['freq'],
+                    count=int(desc[col]['count']),
+                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
+                    top=desc[col]['top'] if 'top' in desc[col] else None,
+                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
+                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
+                    std=desc[col]['std'] if 'std' in desc[col] else None,
+                    min=desc[col]['min'] if 'min' in desc[col] else None,
+                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
+                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
+                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
+                    max=desc[col]['max'] if 'max' in desc[col] else None,
+                ) for col in desc.columns
+            ]
+        )
+
+    def runAdHocTransformation(
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.TransformationResultMessage:
+        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+
+        result = dataset.transform(transformation_function)
+        desc = result.df.describe()
+
+        modified_rows = 0
+        for idx, r in dataset.df.iterrows():
+            if not r.equals(result.df.loc[idx]):
+                modified_rows += 1
+
+        return ml_worker_pb2.TransformationResultMessage(
+            totalRow=len(dataset.df.index),
+            modifiedRow=modified_rows,
+            describeColumns=[
+                ml_worker_pb2.DatasetDescribeColumn(
+                    columnName=col,
+                    count=int(desc[col]['count']),
+                    unique=desc[col]['unique'] if 'unique' in desc[col] else None,
+                    top=desc[col]['top'] if 'top' in desc[col] else None,
+                    freq=desc[col]['freq'] if 'freq' in desc[col] else None,
+                    mean=desc[col]['mean'] if 'mean' in desc[col] else None,
+                    std=desc[col]['std'] if 'std' in desc[col] else None,
+                    min=desc[col]['min'] if 'min' in desc[col] else None,
+                    twentyFive=desc[col]['25%'] if '25%' in desc[col] else None,
+                    fifty=desc[col]['50%'] if '50%' in desc[col] else None,
+                    seventyFive=desc[col]['75%'] if '75%' in desc[col] else None,
+                    max=desc[col]['max'] if 'max' in desc[col] else None,
                 ) for col in desc.columns
             ]
         )
@@ -223,6 +283,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 value = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
                 value = SlicingFunction.load(arg.slicingFunction.id, self.client, None)
+            elif arg.HasField("transformationFunction"):
+                value = TransformationFunction.load(arg.transformationFunction.id, self.client, None)
             elif arg.HasField("float"):
                 value = float(arg.float)
             elif arg.HasField("int"):
@@ -463,20 +525,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
             for test in tests_registry.get_all().values()
             if test.type == 'TEST'
-        }, slices={
-            test.uuid: ml_worker_pb2.SlicingFunction(
-                uuid=test.uuid,
-                name=test.name,
-                module=test.module,
-                doc=test.doc,
-                code=test.code,
-                moduleDoc=test.module_doc,
-                tags=test.tags,
-                type=test.type
-            )
-            for test in tests_registry.get_all().values()
-            if test.type == 'SLICE'
-        })
+        },
+            slices=map_callable_function('SLICE'),
+            transformations=map_callable_function('TRANSFORMATION')
+        )
 
     @staticmethod
     def pandas_df_to_proto_df(df):

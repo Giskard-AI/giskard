@@ -41,8 +41,12 @@
                                            v-else-if="input.type === 'BaseModel'"
                                            :value.sync="editedInputs[input.name].value"/>
                             <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                                   v-else-if="input.type === 'SlicingFunction'"
-                                                   :value.sync="editedInputs[input.name].value"/>
+                                                     v-else-if="input.type === 'SlicingFunction'"
+                                                     :value.sync="editedInputs[input.name].value"/>
+                            <TransformationFunctionSelector :project-id="projectId" :label="input.name"
+                                                            :return-object="false"
+                                                            v-else-if="input.type === 'TransformationFunction'"
+                                                            :value.sync="editedInputs[input.name].value"/>
                             <ValidationProvider
                                 name="value"
                                 v-else-if="['float', 'int'].includes(input.type)"
@@ -126,6 +130,7 @@ import {chain} from "lodash";
 import {$vfm} from "vue-final-modal";
 import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
+import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },

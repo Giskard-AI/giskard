@@ -109,9 +109,14 @@
                                                                    v-else-if="a.type === 'BaseModel'"
                                                                    :value.sync="testArguments[a.name]"/>
                                                     <SlicingFunctionSelector :project-id="projectId" :label="a.name"
-                                                                           :return-object="false"
-                                                                           v-else-if="a.type === 'SlicingFunction'"
-                                                                           :value.sync="testArguments[a.name]"/>
+                                                                             :return-object="false"
+                                                                             v-else-if="a.type === 'SlicingFunction'"
+                                                                             :value.sync="testArguments[a.name]"/>
+                                                    <TransformationFunctionSelector :project-id="projectId"
+                                                                                    :label="a.name"
+                                                                                    :return-object="false"
+                                                                                    v-else-if="a.type === 'TransformationFunction'"
+                                                                                    :value.sync="testArguments[a.name]"/>
                                                     <v-text-field
                                                         :step='a.type === "float" ? 0.1 : 1'
                                                         v-model="testArguments[a.name]"
@@ -189,6 +194,7 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
+import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;

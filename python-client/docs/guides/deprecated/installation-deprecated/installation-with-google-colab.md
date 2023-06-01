@@ -50,5 +50,5 @@ now:
 * Create your GiskardClient with:\
   `GiskardClient('https://xxxx-xx-xx-xx-xx.xx.ngrok.io')` (replacing with the URL from your console).
 
-That's it, you are now ready to use Giskard in Colab! Now you can start [uploading a model](../upload-your-model/)!
+That's it, you are now ready to use Giskard in Colab! Now you can start [uploading a model](../upload-your-model-deprecated/)!
 &#x20;

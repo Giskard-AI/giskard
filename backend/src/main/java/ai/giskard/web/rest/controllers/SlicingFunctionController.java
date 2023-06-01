@@ -36,14 +36,14 @@ public class SlicingFunctionController {
 
     @GetMapping("/slices/{uuid}")
     @Transactional(readOnly = true)
-    public SlicingFunctionDTO getTestFunction(@PathVariable("uuid") @NotNull UUID uuid) {
+    public SlicingFunctionDTO getSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid) {
         return giskardMapper.toDTO(slicingFunctionRepository.getById(uuid));
     }
 
     @GetMapping("/slices/{sliceFnUuid}/dataset/{datasetUuid}")
     @Transactional(readOnly = true)
-    public SlicingResultDTO runAdHocTest(@PathVariable("sliceFnUuid") @NotNull UUID sliceFnUuid,
-                                         @PathVariable("datasetUuid") @NotNull UUID datasetUuid) {
+    public SlicingResultDTO runAdHocFunction(@PathVariable("sliceFnUuid") @NotNull UUID sliceFnUuid,
+                                             @PathVariable("datasetUuid") @NotNull UUID datasetUuid) {
         SlicingFunction slicingFunction = slicingFunctionRepository.getById(sliceFnUuid);
         Dataset dataset = datasetRepository.getById(datasetUuid);
 
@@ -64,8 +64,8 @@ public class SlicingFunctionController {
 
     @PutMapping("/slices/{uuid}")
     @Transactional
-    public SlicingFunctionDTO updateTestFunction(@PathVariable("uuid") @NotNull UUID uuid,
-                                                 @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
+    public SlicingFunctionDTO updateSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid,
+                                                    @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         return slicingFunctionService.save(slicingFunction);
     }
 

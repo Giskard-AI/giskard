@@ -12,7 +12,7 @@ description: How to add your custom ML tests to Giskard's open-source project
 * Write your test inside one of the classes (`MetamorphicTests`, `HeuristicTests`, `PerformanceTests` or `DriftTests`) inside this [repo](https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/ml\_worker/testing). If your test does not fit these classes, you can also create a custom class in a new file.
 * We recommend writing unit tests for your test functions: this is the way you can execute and debug your test! Unit tests should be placed in [this directory](https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test).
 
-:::{info}
+:::{hint}
 **Fixtures**
 
 A unit test is executed with a _test model_ and _test data_ provided as fixtures.
@@ -22,13 +22,13 @@ For example, in [test\_precision](https://github.com/Giskard-AI/giskard/blob/mai
 
 * To use this test on Giskard UI, we recommend you write the same code in the Giskard UI following these steps in our [doc](https://docs.giskard.ai/start/guides/create-tests-from-your-review/create-your-custom-test).
 
-:::{info}
+:::{hint}
 Even if your test works, it won’t appear in Giskard's frontend, unless you re-create it as a custom test in Giskard UI.
 :::
 
 * Create a Pull Request
 
-:::{info}
+:::{hint}
 **Example**
 
 Let us guide you with an **example where you want to create a heuristic test function**:

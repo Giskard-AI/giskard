@@ -47,8 +47,12 @@
                                        v-else-if="input.type === 'BaseModel'"
                                        :value.sync="props.modelValue[input.name].value"/>
                         <SlicingFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                               v-else-if="input.type === 'SlicingFunction'"
-                                               :value.sync="props.modelValue[input.name].value"/>
+                                                 v-else-if="input.type === 'SlicingFunction'"
+                                                 :value.sync="props.modelValue[input.name].value"/>
+                        <TransformationFunctionSelector :project-id="projectId" :label="input.name"
+                                                        :return-object="false"
+                                                        v-else-if="input.type === 'TransformationFunction'"
+                                                        :value.sync="props.modelValue[input.name].value"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
                                 v-model="props.modelValue[input.name].value"
@@ -84,6 +88,7 @@ import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },

@@ -18,6 +18,7 @@ from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes, ColumnType
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -30,9 +31,10 @@ class Nuniques(Enum):
 
 
 class DataProcessor:
-    pipeline: List[Union[SlicingFunction]] = []
+    pipeline: List[Union[SlicingFunction, TransformationFunction]] = []
 
-    def add_step(self, processor: Union[SlicingFunction]):
+    @configured_validate_arguments
+    def add_step(self, processor: Union[SlicingFunction, TransformationFunction]):
         if not len(self.pipeline) or self.pipeline[-1] != processor:
             self.pipeline.append(processor)
         return self
@@ -43,19 +45,13 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
 
-            if isinstance(step, SlicingFunction):
-                if step.row_level:
-                    df = df.loc[df.apply(step, axis=1)]
-                else:
-                    df = step(df)
-            else:
-                raise ValueError("Unsupported pipeline step, only SlicingFunction is supported")
+            df = step(df)
 
             if apply_only_last:
                 break
 
         if df.empty:
-            raise ValueError("The slicing_function provided is invalid, as it returned an empty dataset.")
+            raise ValueError("Processing pipeline produced an empty dataset")
 
         ret = Dataset(df=df,
                       name=dataset.name,
@@ -119,15 +115,26 @@ class Dataset:
                 "In this case, we assume that there's no categorical columns in your Dataset."
             )
 
+        from giskard.core.dataset_validation import validate_column_types_vs_dtypes
+        validate_column_types_vs_dtypes(self)
+
     def add_slicing_function(self, slicing_function: SlicingFunction):
         self.data_processor.add_step(slicing_function)
         return self
 
-    def slice(self, slicing_function: Union[SlicingFunction, None]):
+    def add_transformation_function(self, slicing_function: SlicingFunction):
+        self.data_processor.add_step(slicing_function)
+        return self
+
+    def slice(self, slicing_function: Optional[SlicingFunction] = None):
         if slicing_function:
             return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
         else:
             return self
+
+    @configured_validate_arguments
+    def transform(self, transformation_function: TransformationFunction):
+        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
     def process(self):
         return self.data_processor.apply(self)
