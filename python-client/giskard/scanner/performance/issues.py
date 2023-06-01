@@ -1,13 +1,13 @@
 from dataclasses import dataclass
-from functools import cache
+from functools import lru_cache
 
-from ..issues import Issue
-from ...models.base import BaseModel
-from ...datasets.base import Dataset
 from .metrics import PerformanceMetric
+from ..issues import Issue
+from ...datasets.base import Dataset
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
 from ...slicing.slice import QueryBasedSliceFunction
 from ...slicing.text_slicer import MetadataSliceFunction
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 
 
 @dataclass
@@ -70,7 +70,7 @@ class PerformanceIssue(Issue):
             return [self.info.slice_fn.feature]
         return self.model.meta.feature_names or self.dataset.columns
 
-    @cache
+    @lru_cache
     def examples(self, n=3):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction
