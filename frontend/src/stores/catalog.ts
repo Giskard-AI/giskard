@@ -36,7 +36,10 @@ export const useCatalogStore = defineStore('catalog', {
         },
         sliceFunctions(state: State) {
             return latestVersions(state.catalog?.slices)
-        }
+        },
+        sliceFunctionsByUuid(state: State) {
+            return keyByUuid(state.catalog?.slices)
+        },
     },
     actions: {
         async loadCatalog(projectId: number) {
