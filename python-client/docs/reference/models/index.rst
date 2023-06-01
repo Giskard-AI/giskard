@@ -1,18 +1,16 @@
 Models
 ============
 
-We provide a :class:`~.giskard.Model` class that automatically wraps your ML model with the correct wrapper among:
+Currently we only support ML models from: :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` and :code:`huggingface`.
+We provide a factory method :class:`~.giskard.wrap_model` that automatically wraps your ML model with the correct wrapper among:
 
 - :class:`~giskard.SKLearnModel`
 - :class:`~giskard.CatboostModel`
 - :class:`~giskard.PyTorchModel`
 - :class:`~giskard.TensorFlowModel`
 - :class:`~giskard.HuggingFaceModel`
-- :class:`~giskard.CloudpickleBasedModel` (abstract class in case of fall-back).
 
-.. autoclass:: giskard.Model
-
-   .. automethod:: __new__
+.. autofunction:: giskard.wrap_model
 
 These are our predefined model wrappers:
 
@@ -76,13 +74,18 @@ These classes are based on the following base classes:
    .. automethod:: download
    .. automethod:: upload
 
-.. autoclass:: giskard.CloudpickleBasedModel
-
-   .. automethod:: __init__
-   .. automethod:: save_model
-   .. automethod:: load_model
-
 In order to create your custom wrapper you could use:
 
-.. autoclass:: giskard.Model (if your prediction function involves a :code:`model` object)
-.. autoclass:: giskard.CustomModel (if your prediction function does not involves a :code:`model` object)
+.. autoclass:: giskard.CustomModel
+
+Here are some additional factory methods:
+
+.. autofunction:: giskard.model_from_sklearn
+
+.. autofunction:: giskard.model_from_catboost
+
+.. autofunction:: giskard.model_from_pytorch
+
+.. autofunction:: giskard.model_from_tensorflow
+
+.. autofunction:: giskard.model_from_huggingface
