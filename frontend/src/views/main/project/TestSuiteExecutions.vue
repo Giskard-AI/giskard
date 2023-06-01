@@ -54,22 +54,8 @@
           </v-list-item-group>
         </v-list>
       </v-col>
-      <v-col v-if="selectedExecution">
-        <div class="pl-4">
-          <p class="text-h6">Global inputs</p>
-          <TestInputList :models="models" :inputs="selectedExecution.inputs"
-                         :input-types="inputs" :datasets="datasets"/>
-          <div v-if="selectedExecution.result === TestResult.ERROR">
-            <p class="pt-4 text-h6">Error</p>
-            <p>{{ selectedExecution.message }}</p>
-          </div>
-          <div v-else>
-            <p class="pt-4 text-h6">Results</p>
-            <TestSuiteExecutionResults :execution="selectedExecution" :registry="registry"
-                                       :models="models" :datasets="datasets"/>
-          </div>
-
-        </div>
+      <v-col>
+        <router-view></router-view>
       </v-col>
     </v-row>
   </div>
@@ -77,19 +63,16 @@
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed, onMounted} from 'vue';
 import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
-import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import {Colors} from '@/utils/colors';
-import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
 import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {formatDate} from '@/filters';
+import {useRoute, useRouter} from 'vue-router/composables';
 
-const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
@@ -144,8 +127,12 @@ const executionItem = {
   disabled: true
 };
 
+const route = useRoute();
+
+const selectedExecution = computed(() => executions.value.find(e => e.id === route.params.executionId));
+
 const executionBreadcrumbs = computed(() =>
-    selectedExecution.value === null ? [executionItem] : [
+    !selectedExecution.value ? [executionItem] : [
       executionItem,
       {
         text: formatDate(selectedExecution.value.executionDate),
@@ -156,8 +143,6 @@ const executionBreadcrumbs = computed(() =>
 function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];
 }
-
-useRouterParamSynchronization('test-suite-new-execution', 'executionId', executions, selectedExecution, 'id');
 
 type ExecutionTabItem = {
   date: any,
@@ -192,4 +177,11 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
       .reverse();
 });
 
+const router = useRouter();
+
+onMounted(() => {
+  if (executions.value && !route.params.executionId) {
+    router.push({name: 'test-suite-new-execution', params: {executionId: executions.value[0].id.toString()}})
+  }
+})
 </script>
