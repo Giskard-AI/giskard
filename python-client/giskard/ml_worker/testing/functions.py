@@ -16,11 +16,9 @@ class GiskardTestFunctions:
     statistical: StatisticalTests
     performance: PerformanceTests
 
-
     def __init__(self) -> None:
         self.tests_results = []
         self.metamorphic = MetamorphicTests(self.tests_results)
         self.statistical = StatisticalTests(self.tests_results)
         self.performance = PerformanceTests(self.tests_results)
         self.drift = DriftTests(self.tests_results)
-
