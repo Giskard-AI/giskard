@@ -92,8 +92,8 @@ spring:
     multipart:
       enabled: true
       # TODO: env variable to set max upload size (might be useful when importing projects with big models/datasets)
-      max-file-size: 16MB
-      max-request-size: 16MB
+      max-file-size: 1000MB
+      max-request-size: 1000MB
   application:
     name: giskard
   profiles:

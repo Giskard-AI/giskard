@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -111,28 +109,19 @@ public class ModelService {
         inspection.setModel(model);
         inspection = inspectionRepository.save(inspection);
 
-        RunModelResponse predictions = predictSerializedDataset(model, dataset);
-        if (predictions == null) {
-            return inspection;
-        }
-        Path inspectionPath = fileLocationService.resolvedInspectionPath(model.getProject().getKey(), inspection.getId());
-        Files.createDirectories(inspectionPath);
-        Files.write(inspectionPath.resolve("predictions.csv"), predictions.getResultsCsvBytes().toByteArray());
-        Files.write(inspectionPath.resolve("calculated.csv"), predictions.getCalculatedCsvBytes().toByteArray());
+        predictSerializedDataset(model, dataset, inspection.getId());
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) {
-        RunModelResponse response;
+    private void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             RunModelRequest request = RunModelRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
                 .setDataset(grpcMapper.createRef(dataset))
+                .setInspectionId(inspectionId)
+                .setProjectKey(model.getProject().getKey())
                 .build();
-
-            response = client.getBlockingStub().runModel(request);
+            client.getBlockingStub().runModel(request);
         }
-
-        return response;
     }
 }

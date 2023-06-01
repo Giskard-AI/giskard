@@ -15,7 +15,7 @@ service MLWorker {
   rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
   rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
-  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
@@ -130,6 +130,8 @@ message RunModelForDataFrameRequest{
 message RunModelRequest{
   ArtifactRef model = 1;
   ArtifactRef dataset = 2;
+  uint64 inspectionId = 3;
+  string project_key = 4;
 }
 
 message RunModelResponse{

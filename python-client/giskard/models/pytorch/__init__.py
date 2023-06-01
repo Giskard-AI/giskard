@@ -164,7 +164,7 @@ class PyTorchModel(MLFlowBasedModel):
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 kwargs["device"] = pytorch_meta["device"]
                 kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
-                kwargs["iterate_dataset"] = pytorch_meta["iterate_dataset"]
+                kwargs["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
                 return super().load(local_dir, **kwargs)
         else:
             raise ValueError(
