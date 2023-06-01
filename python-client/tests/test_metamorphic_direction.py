@@ -1,13 +1,12 @@
 import pytest
 
+import giskard.ml_worker.testing.tests.metamorphic as metamorphic
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
 
 def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
-    tests = GiskardTestFunctions()
     perturbation = {"bmi": lambda x: x.bmi + x.bmi * 0.1}
-    results = tests.metamorphic.test_metamorphic_increasing(
+    results = metamorphic.test_metamorphic_increasing(
         df=ds, model=model, perturbation_dict=perturbation, threshold=threshold
     )
 
@@ -17,9 +16,8 @@ def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
 
 
 def _test_metamorphic_decreasing_regression(ds: Dataset, model, threshold):
-    tests = GiskardTestFunctions()
     perturbation = {"age": lambda x: x.age - x.age * 0.1}
-    results = tests.metamorphic.test_metamorphic_decreasing(
+    results = metamorphic.test_metamorphic_decreasing(
         df=ds, model=model, perturbation_dict=perturbation, threshold=threshold
     )
     assert results.actual_slices_size[0] == 442
@@ -28,9 +26,8 @@ def _test_metamorphic_decreasing_regression(ds: Dataset, model, threshold):
 
 
 def _test_metamorphic_increasing_classification(df, model, threshold):
-    tests = GiskardTestFunctions()
     perturbation = {"duration_in_month": lambda x: x.duration_in_month + x.duration_in_month * 0.5}
-    results = tests.metamorphic.test_metamorphic_increasing(
+    results = metamorphic.test_metamorphic_increasing(
         df=df,
         model=model,
         classification_label=model.meta.classification_labels[0],
@@ -44,9 +41,8 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
 
 
 def _test_metamorphic_decreasing_classification(df, model, threshold):
-    tests = GiskardTestFunctions()
     perturbation = {"duration_in_month": lambda x: x.duration_in_month * 0.5}
-    results = tests.metamorphic.test_metamorphic_decreasing(
+    results = metamorphic.test_metamorphic_decreasing(
         df=df,
         model=model,
         classification_label=model.meta.classification_labels[0],
@@ -79,9 +75,8 @@ def test_metamorphic_decreasing_regression(diabetes_dataset, linear_regression_d
 
 def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit_model):
     with pytest.raises(Exception):
-        tests = GiskardTestFunctions()
         perturbation = {"duration_in_month": lambda x: x.duration_in_month * 0.5}
-        tests.metamorphic.test_metamorphic_decreasing(
+        metamorphic.test_metamorphic_decreasing(
             df=german_credit_test_data,
             model=german_credit_model,
             classification_label="random_value",
@@ -92,9 +87,8 @@ def test_metamorphic_decreasing_exception(german_credit_test_data, german_credit
 
 def test_metamorphic_increasing_exception(german_credit_test_data, german_credit_model):
     with pytest.raises(Exception):
-        tests = GiskardTestFunctions()
         perturbation = {"duration_in_month": lambda x: x.duration_in_month * 0.5}
-        tests.metamorphic.test_metamorphic_increasing(
+        metamorphic.test_metamorphic_increasing(
             df=german_credit_test_data,
             model=german_credit_model,
             classification_label="random_value",
@@ -105,8 +99,8 @@ def test_metamorphic_increasing_exception(german_credit_test_data, german_credit
 
 def test_metamorphic_increasing_t_test(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_increasing_t_test(
+
+    results = metamorphic.test_metamorphic_increasing_t_test(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -119,8 +113,8 @@ def test_metamorphic_increasing_t_test(german_credit_test_data, german_credit_mo
 
 def test_metamorphic_decreasing_t_test(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_decreasing_t_test(
+
+    results = metamorphic.test_metamorphic_decreasing_t_test(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -133,8 +127,8 @@ def test_metamorphic_decreasing_t_test(german_credit_test_data, german_credit_mo
 
 def test_metamorphic_increasing_wilcoxon(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_increasing_wilcoxon(
+
+    results = metamorphic.test_metamorphic_increasing_wilcoxon(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -147,8 +141,8 @@ def test_metamorphic_increasing_wilcoxon(german_credit_test_data, german_credit_
 
 def test_metamorphic_decreasing_wilcoxon(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_decreasing_wilcoxon(
+
+    results = metamorphic.test_metamorphic_decreasing_wilcoxon(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -161,8 +155,8 @@ def test_metamorphic_decreasing_wilcoxon(german_credit_test_data, german_credit_
 
 def test_metamorphic_increasing_t_test_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_increasing_t_test(
+
+    results = metamorphic.test_metamorphic_increasing_t_test(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -175,8 +169,8 @@ def test_metamorphic_increasing_t_test_nopert(german_credit_test_data, german_cr
 
 def test_metamorphic_decreasing_t_test_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_decreasing_t_test(
+
+    results = metamorphic.test_metamorphic_decreasing_t_test(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -189,8 +183,8 @@ def test_metamorphic_decreasing_t_test_nopert(german_credit_test_data, german_cr
 
 def test_metamorphic_increasing_wilcoxon_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_increasing_wilcoxon(
+
+    results = metamorphic.test_metamorphic_increasing_wilcoxon(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,
@@ -203,8 +197,8 @@ def test_metamorphic_increasing_wilcoxon_nopert(german_credit_test_data, german_
 
 def test_metamorphic_decreasing_wilcoxon_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
-    tests = GiskardTestFunctions()
-    results = tests.metamorphic.test_metamorphic_decreasing_wilcoxon(
+
+    results = metamorphic.test_metamorphic_decreasing_wilcoxon(
         df=german_credit_test_data,
         model=german_credit_model,
         perturbation_dict=perturbation,

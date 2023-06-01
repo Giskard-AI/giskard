@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'giskard'
+project = 'Giskard'
 copyright = '2023, Giskard AI'
 author = 'Giskard AI'
 release = '2.0.0'
@@ -16,7 +16,6 @@ release = '2.0.0'
 
 extensions = ["myst_parser",
               'sphinx.ext.todo',
-              'sphinx_rtd_theme',  # 'sphinx.ext.viewcode',
               'sphinx.ext.napoleon',
               'sphinx.ext.autodoc',
               'sphinx.ext.linkcode']
@@ -28,8 +27,32 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# -----------------------------------------------------------------------------
+# HTML output
+# -----------------------------------------------------------------------------
+
+html_title = "Giskard Docs"
+
 html_theme = 'furo'
 # html_static_path = ['_static']
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "red",
+        "color-brand-content": "#CC3333",
+        "color-admonition-background": "orange",
+    },
+    "sidebar_hide_name": False,
+    "navigation_with_keys": True,
+    "announcement": '<p style="color:#FF0000"> 🚧 Please note that this documentation is still a work-in-progress! 🚧</p>',
+    "top_of_page_button": "edit",
+    "source_repository": "https://github.com/Giskard-AI/giskard",
+    "source_branch": "feature/sphinx-documentation",
+    "source_directory": "python-client/docs/",
+    "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/feature/sphinx-documentation/python-client/docs/{filename}",
+}
+
+html_logo = "imgs/giskard_logo.png"
 
 import os
 import sys
