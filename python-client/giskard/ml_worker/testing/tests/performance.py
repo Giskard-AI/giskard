@@ -38,7 +38,7 @@ def _test_classification_score(
     _verify_target_availability(gsk_dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     gsk_dataset.df.reset_index(drop=True, inplace=True)
-    actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
+    actual_target = gsk_dataset.df[gsk_dataset.target]
     prediction = model.predict(gsk_dataset).prediction
     if is_binary_classification:
         metric = score_fn(actual_target, prediction, pos_label=model.meta.classification_labels[1])
@@ -54,7 +54,7 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: BaseModel, threshold: floa
     _verify_target_availability(gsk_dataset)
     gsk_dataset.df.reset_index(drop=True, inplace=True)
     prediction = model.predict(gsk_dataset).prediction
-    actual_target = gsk_dataset.df[gsk_dataset.target].astype(str)
+    actual_target = gsk_dataset.df[gsk_dataset.target]
 
     metric = accuracy_score(actual_target, prediction)
 
