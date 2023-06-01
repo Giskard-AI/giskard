@@ -1933,6 +1933,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sphinx-tabs"
+version = "3.4.1"
+requires_python = "~=3.7"
+summary = "Tabbed views for Sphinx"
+dependencies = [
+    "docutils~=0.18.0",
+    "pygments",
+    "sphinx",
+]
+
+[[package]]
 name = "sphinxcontrib-applehelp"
 version = "1.0.4"
 requires_python = ">=3.8"
@@ -2413,7 +2424,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:f6584a20a193901f45e8781bd3d590dce1758c0ad2c10e0bdbbe2692162a16db"
+content_hash = "sha256:da09a2b6555e64c370ea70477b81cb362a124d45e93a45925ead496079e72844"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -4508,6 +4519,10 @@ content_hash = "sha256:f6584a20a193901f45e8781bd3d590dce1758c0ad2c10e0bdbbe26921
 "sphinx-rtd-theme 1.2.0" = [
     {url = "https://files.pythonhosted.org/packages/35/b4/40faec6790d4b08a6ef878feddc6ad11c3872b75f52273f1418c39f67cd6/sphinx_rtd_theme-1.2.0.tar.gz", hash = "sha256:a0d8bd1a2ed52e0b338cbe19c4b2eef3c5e7a048769753dac6a9f059c7b641b8"},
     {url = "https://files.pythonhosted.org/packages/b3/46/c167351699e5dc126798385cf37c26ba9df7a26c6f8855661d9f966d6ced/sphinx_rtd_theme-1.2.0-py2.py3-none-any.whl", hash = "sha256:f823f7e71890abe0ac6aaa6013361ea2696fc8d3e1fa798f463e82bdb77eeff2"},
+]
+"sphinx-tabs 3.4.1" = [
+    {url = "https://files.pythonhosted.org/packages/4f/2d/80293fbb2aa82d457f9df0de85800b11e3bfd5008b118bddb303a797e5c5/sphinx_tabs-3.4.1-py3-none-any.whl", hash = "sha256:7cea8942aeccc5d01a995789c01804b787334b55927f29b36ba16ed1e7cb27c6"},
+    {url = "https://files.pythonhosted.org/packages/aa/9b/a54949728ff067e4d0997c934e97569dbf3bb4e9c0d63ff3377be4cc3831/sphinx-tabs-3.4.1.tar.gz", hash = "sha256:d2a09f9e8316e400d57503f6df1c78005fdde220e5af589cc79d493159e1b832"},
 ]
 "sphinxcontrib-applehelp 1.0.4" = [
     {url = "https://files.pythonhosted.org/packages/06/c1/5e2cafbd03105ce50d8500f9b4e8a6e8d02e22d0475b574c3b3e9451a15f/sphinxcontrib_applehelp-1.0.4-py3-none-any.whl", hash = "sha256:29d341f67fb0f6f586b23ad80e072c8e6ad0b48417db2bde114a4c9746feb228"},
