@@ -26,6 +26,10 @@
         </template>
         <span>Inviting users is only available in Giskard Starter or above.</span>
       </v-tooltip>
+      <v-btn small tile color="primaryLight" class="primaryLightBtn ml-2" :to="{ name: 'project-overview' }" @click="tab = null">
+        <v-icon dense left>info</v-icon>
+        Info
+      </v-btn>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small v-bind="attrs" v-on="on">
