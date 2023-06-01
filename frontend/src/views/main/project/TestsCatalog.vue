@@ -50,24 +50,12 @@
                             </v-btn>
                         </div>
 
-                        <!-- <div class="d-flex justify-space-between">
-
-                        </div> -->
-                        <!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
                         <div class="vc overflow-x-hidden pr-5">
                             <v-alert v-if="selected.potentiallyUnavailable" color="warning" border="left" outlined colored-border icon="warning">
                                 <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
                                 <pre></pre>
                                 <StartWorkerInstructions />
                             </v-alert>
-
-                            <!-- <div id="description-group" class="py-4">
-                                <div class="d-flex">
-                                    <v-icon left class="group-icon pb-1 mr-1">mdi-text-box</v-icon>
-                                    <span class="group-title">Description</span>
-                                </div>
-                                <p class="test-description pt-2 mb-4">{{ selected.doc }}</p>
-                            </div> -->
 
                             <div class="py-4" id="description-group">
                                 <v-expansion-panels multiple v-model="panel" flat>
@@ -84,13 +72,11 @@
                                             </template>
                                         </v-expansion-panel-header>
                                         <v-expansion-panel-content>
-                                            <p class="test-description pt-2 mb-4">{{ selectedTestDescription }}</p>
+                                            <p class="selected-test-description pt-2 mb-4">{{ selectedTestDescription }}</p>
                                         </v-expansion-panel-content>
                                     </v-expansion-panel>
                                 </v-expansion-panels>
                             </div>
-
-                            <!-- <v-divider></v-divider> -->
 
                             <div id="inputs-group" class="py-4 mb-4">
                                 <div class="d-flex">
@@ -108,9 +94,6 @@
                                 <TestExecutionResultBadge class="mt-4" v-if="testResult" :result="testResult" />
                             </div>
 
-                            <!-- <v-divider></v-divider> -->
-
-
                             <div id="usage-group" class="py-4 mb-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
@@ -118,8 +101,6 @@
                                 </div>
                                 <CodeSnippet class="mt-2" :codeContent="selectedTestUsage" :key="selected.name + '_usage'" :language="'python'"></CodeSnippet>
                             </div>
-
-                            <!-- <v-divider></v-divider> -->
 
                             <div id="code-group" class="py-4">
                                 <div class="d-flex">
@@ -319,7 +300,7 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     padding: 0;
 }
 
-.test-description {
+.selected-test-description {
     font-family: 'Roboto Mono', monospace;
     white-space: break-spaces;
     font-size: 0.925rem;
@@ -336,7 +317,6 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .group-icon {
-    // color: rgba($color: #000000, $alpha: 0.7);
     color: #087038;
     font-size: 1.25rem;
     margin-top: 0.3rem;
