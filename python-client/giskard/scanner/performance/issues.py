@@ -73,9 +73,8 @@ class PerformanceIssue(Issue):
     def examples(self, n=3):
         ex_dataset = self.dataset.slice(self.info.slice_fn)
         predictions = self.model.predict(ex_dataset).prediction
-        examples = ex_dataset.df.copy()
-        bad_pred_mask = examples[self.dataset.target] != predictions
-        examples = examples[bad_pred_mask]
+        bad_pred_mask = ex_dataset.df[self.dataset.target] != predictions
+        examples = ex_dataset.df[bad_pred_mask].copy()
 
         # Keep only interesting columns
         features = self._features()
