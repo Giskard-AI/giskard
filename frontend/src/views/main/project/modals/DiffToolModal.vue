@@ -11,7 +11,7 @@
                 Differences
             </v-card-title>
             <v-card-text class="card-content">
-                <v-row>
+                <v-row v-if="diffs">
                     <v-col cols=6>
                         <span v-for="diff in diffs" v-if="!diff.added"
                               :class="{'removed': diff.removed}">{{ diff.value }}</span>
@@ -21,6 +21,7 @@
                               :class="{'added': diff.added}">{{ diff.value }}</span>
                     </v-col>
                 </v-row>
+                <v-progress-circular indeterminate v-else/>
             </v-card-text>
 
             <v-divider></v-divider>
@@ -41,7 +42,7 @@
 
 <script setup lang="ts">
 
-import {computed} from "vue";
+import {onMounted, ref} from "vue";
 
 const Diff = require('diff');
 
@@ -50,7 +51,12 @@ const props = defineProps<{
     newValue: string
 }>()
 
-const diffs = computed(() => Diff.diffChars(props.oldValue, props.newValue));
+const diffs = ref(null)
+
+onMounted(() => {
+    new Promise((resolve) => resolve(Diff.diffChars(props.oldValue, props.newValue)))
+        .then((value) => diffs.value = value)
+})
 
 </script>
 
