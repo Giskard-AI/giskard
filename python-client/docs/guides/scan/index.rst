@@ -1,6 +1,7 @@
 🔍 Scan your ML model
 ===============
 
+Before 
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
 Prerequisites
