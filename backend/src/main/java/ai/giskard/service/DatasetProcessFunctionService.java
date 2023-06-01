@@ -15,6 +15,8 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         existing = super.update(existing, dto);
         existing.setCellLevel(dto.isCellLevel());
         existing.setColumnType(dto.getColumnType());
+        existing.setProcessType(dto.getProcessType());
+        existing.setClauses(dto.getClauses());
         return existing;
     }
 }
