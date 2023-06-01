@@ -59,4 +59,10 @@ public class Dataset extends AbstractAuditingEntity {
 
     private Long compressedSizeBytes;
 
+    private long numberOfRows;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, Set<String>> categoryFeatures;
+
 }

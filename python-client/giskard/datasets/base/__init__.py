@@ -374,6 +374,12 @@ class Dataset(ColumnMetadataMixin):
                 self.meta,
                 original_size_bytes=original_size_bytes,
                 compressed_size_bytes=compressed_size_bytes,
+                number_of_rows=len(self.df.index),
+                category_features={
+                    column: self.df[column].unique()
+                    for column, column_type in self.meta.column_types.values()
+                    if column_type == 'category'
+                }
             )
         return dataset_id
 
