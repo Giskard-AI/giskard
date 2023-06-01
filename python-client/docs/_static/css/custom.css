@@ -44,6 +44,18 @@ body {
     border: none !important;
 }
 
+.article-container a:not(.headerlink):not(.github-stars a):not(:hover) {
+    color: var(--color-content-foreground);
+}
+
+.article-container a:not(.headerlink) {
+    text-decoration: underline;
+}
+
+a {
+    text-decoration: none;
+}
+
 /* toc */
 .toc-title {
     color: var(--color-toc-title);
