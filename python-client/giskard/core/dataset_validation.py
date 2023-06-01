@@ -106,7 +106,7 @@ def validate_column_categorization(ds: Dataset):
                     )
                 except ValueError:
                     pass
-            elif ds.column_types[column] == SupportedColumnTypes.Numeric.value:
+            elif ds.column_types[column] == SupportedColumnTypes.NUMERIC.value:
                 try:
                     pd.to_numeric(ds.df[column])
                 except ValueError:
