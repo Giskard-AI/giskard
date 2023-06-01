@@ -3,17 +3,11 @@ import re
 
 import pandas as pd
 
-from .entity_swap import typos, gender_switch_en, gender_switch_fr
+from .entity_swap import typos
 from ... import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
-from .entity_swap import religion_dict_en, religion_dict_fr
-import json
-from pathlib import Path
-
-with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
-    nationalities_dict = json.load(f)
 
 
 class TextTransformation(TransformationFunction):
@@ -117,9 +111,9 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return text.translate(str.maketrans('', '', self._punctuation))
 
 
-class TextDictBasedTransformation(TextTransformation):
-    name = "Switch gender"
+class TextLanguageBasedTransformation(TextTransformation):
     needs_dataset = True
+    dict_with_all_language = None
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
@@ -129,104 +123,109 @@ class TextDictBasedTransformation(TextTransformation):
         return dataset.df
 
     def make_perturbation(self, row):
-        text = row[self.column]
-        language = row["language__gsk__meta"]
-        split_text = text.split()
-        new_words = []
-        for token in split_text:
-            new_word = self._switch(token, language)
-            if new_word != token:
-                new_words.append(new_word)
-
-        new_text = text
-        for original_word, switched_word in new_words:
-            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
-        return new_text
+        raise NotImplementedError()
 
     def _switch(self, word, language):
         raise NotImplementedError()
 
-
-class TextGenderTransformation(TextDictBasedTransformation):
-
-    def _switch(self, word, language):
+    def _select_dict(self, language):
         if pd.isna(language):
-            return word
-        elif (language == "en") and (word.lower() in gender_switch_en):
-            return [word, gender_switch_en[word.lower()]]
-        elif (language == "fr") and (word.lower() in gender_switch_fr):
-            return [word, gender_switch_fr[word.lower()]]
-        else:
-            return word
+            return None
+        elif language == "en":
+            return self.dict_with_all_language["dict_en"]
+        elif language == "fr":
+            return self.dict_with_all_language["dict_fr"]
 
 
-class TextReligionTransformation(TextDictBasedTransformation):
+class TextGenderTransformation(TextLanguageBasedTransformation):
+    from .entity_swap import gender_switch_en, gender_switch_fr
+    name = "Switch Gender"
+    dict_with_all_language = {"dict_en": gender_switch_en,
+                              "dict_fr": gender_switch_fr}
 
     def make_perturbation(self, row):
         text = row[self.column]
         new_text = text
         language = row["language__gsk__meta"]
-        if language == "en":
-            religion_dict = religion_dict_en
-        elif language == "fr":
-            religion_dict = religion_dict_fr
-        else:
+        gender_dict = self._select_dict(language)
+        if gender_dict is None:
+            return new_text
+        split_text = text.split()
+        new_words = []
+        for token in split_text:
+            new_word = self._switch(token, gender_dict)
+            if new_word is not None:
+                new_words.append(new_word)
+
+        for original_word, switched_word in new_words:
+            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+        return new_text
+
+    def _switch(self, word, gender_dict):
+        if word.lower() in gender_dict:
+            return [word, gender_dict[word.lower()]]
+
+
+class TextReligionTransformation(TextLanguageBasedTransformation):
+    from .entity_swap import religion_dict_en, religion_dict_fr
+    name = "Switch Religion"
+    dict_with_all_language = {"dict_en": religion_dict_en,
+                              "dict_fr": religion_dict_fr
+                              }
+
+    def make_perturbation(self, row):
+        # Get text
+        text = row[self.column]
+        new_text = text
+        # Get language and corresponding dictionary
+        language = row["language__gsk__meta"]
+        religion_dict = self._select_dict(language)
+        # Check if we support this language
+        if religion_dict is None:
             return new_text
 
         for religious_word_list in religion_dict:
             for i in range(len(religious_word_list)):
-                match = re.search(fr'\b{religious_word_list[i]}s?\b', text.lower(), re.IGNORECASE)
+                match = self._search_for_word_with_plural(word=religious_word_list[i], target_text=text)
                 if match is not None and not pd.isna(religious_word_list[(i + 1) % len(religious_word_list)]):
                     lwbound, upbound = match.span()
                     new_text = new_text[:lwbound] + religious_word_list[(i + 1) % len(religious_word_list)] + new_text[
                                                                                                               upbound:]
-
         return new_text
 
+    def _search_for_word_with_plural(self, word, target_text):
+        return re.search(fr'\b{word}s?\b', target_text.lower(), re.IGNORECASE)
 
-class TextNationalityTransformation(TextDictBasedTransformation):
+
+class TextNationalityTransformation(TextLanguageBasedTransformation):
+    import json
+    from pathlib import Path
+    with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
+        nationalities_dict = json.load(f)
+    dict_with_all_language = {"dict_en": nationalities_dict["en"],
+                              "dict_fr": nationalities_dict["fr"]
+                              }
+    name = "Switch nationality"
+
     def make_perturbation(self, row):
         text = row[self.column]
         new_text = text
         language = row["language__gsk__meta"]
-        if language == "en":
-            nationalities_word_dict = nationalities_dict["en"]
-        elif language == "fr":
-            nationalities_word_dict = nationalities_dict["fr"]
-        else:
+        nationalities_word_dict = self._select_dict(language)
+
+        if nationalities_word_dict is None:
             return new_text
 
-        for country in nationalities_word_dict["country"]["high-income"]:
-            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None:
-                lwbound, upbound = match.span()
-                new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["country"]["low-income"]) + \
-                           new_text[upbound:]
-
-        for country in nationalities_word_dict["nationality"]["high-income"]:
-            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None:
-                lwbound, upbound = match.span()
-                new_text = new_text[:lwbound] + random.choice(
-                    nationalities_word_dict["nationality"]["low-income"]) + \
-                           new_text[upbound:]
-
-
-        for country in nationalities_word_dict["country"]["low-income"]:
-            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None:
-                lwbound, upbound = match.span()
-                new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["country"]["high-income"]) + \
-                           new_text[upbound:]
-
-        for country in nationalities_word_dict["nationality"]["low-income"]:
-            match = re.search(fr'\b{country}\b', text.lower(), re.IGNORECASE)
-            if match is not None:
-                lwbound, upbound = match.span()
-                new_text = new_text[:lwbound] + random.choice(nationalities_word_dict["nationality"]["high-income"]) + \
-                           new_text[upbound:]
+        location_type_list = ["country", "nationality"]
+        income_list = ["high-income", "low-income"]
+        for income_id in range(len(income_list)):
+            for location_type in location_type_list:
+                for location in nationalities_word_dict[location_type][income_list[income_id]]:
+                    match = re.search(fr'\b{location}\b', text.lower(), re.IGNORECASE)
+                    if match is not None:
+                        lwbound, upbound = match.span()
+                        new_text = new_text[:lwbound] + random.choice(
+                            nationalities_word_dict[location_type][income_list[(income_id + 1) % 2]]) + new_text[
+                                                                                                        upbound:]
 
         return new_text
-
-
-

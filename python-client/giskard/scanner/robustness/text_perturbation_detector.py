@@ -1,25 +1,26 @@
-import numpy as np
-import pandas as pd
 from typing import Sequence, Optional
 
+import numpy as np
+import pandas as pd
+
+from .issues import RobustnessIssue, RobustnessIssueInfo
 from .text_transformations import TextTransformation
+from ..decorators import detector
 from ..issues import Issue
+from ..logger import logger
+from ..registry import Detector
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from ..registry import Detector
-from .issues import RobustnessIssue, RobustnessIssueInfo
-from ..decorators import detector
-from ..logger import logger
 
 
 @detector(name="text_perturbation", tags=["text_perturbation", "robustness", "nlp", "classification", "regression"])
 class TextPerturbationDetector(Detector):
     def __init__(
-        self,
-        transformations: Optional[Sequence[TextTransformation]] = None,
-        threshold: float = 0.05,
-        output_sensitivity=0.05,
-        num_samples: int = 1_000,
+            self,
+            transformations: Optional[Sequence[TextTransformation]] = None,
+            threshold: float = 0.05,
+            output_sensitivity=0.05,
+            num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -65,11 +66,11 @@ class TextPerturbationDetector(Detector):
         ]
 
     def _detect_issues(
-        self,
-        model: BaseModel,
-        dataset: Dataset,
-        transformation: TextTransformation,
-        features: Sequence[str],
+            self,
+            model: BaseModel,
+            dataset: Dataset,
+            transformation: TextTransformation,
+            features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
