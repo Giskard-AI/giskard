@@ -85,6 +85,31 @@ jobs:
           --push \
           frontend
 
+      - name: Build <current version>+latest global image
+        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/giskard
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:latest \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --file Dockerfile \
+          --push \
+          .
+
+      - name: Build <current version> global image
+        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
+        env:
+          IMAGE: docker.io/giskardai/giskard
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:${{ steps.tag.outputs.version }} \
+          --file Dockerfile \
+          --push \
+          .
+
       - name: Invoke deployment hook
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
         run: |
