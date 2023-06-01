@@ -96,7 +96,7 @@ def wrap_model(model,
     giskard_cls = infer_giskard_cls(model)
     if giskard_cls:
         print("Your model is successfully wrapped by Giskard's '"
-              + str(giskard_cls.__class__) + "' wrapper class.")
+              + str(giskard_cls.__name__) + "' wrapper class.")
         return giskard_cls(model=model,
                            model_type=model_type,
                            data_preprocessing_function=data_preprocessing_function,
