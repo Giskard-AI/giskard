@@ -39,7 +39,7 @@ interface State {
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
     tryResult: TestSuiteExecutionDTO | null,
-    trackedJobs: { [uuid: string]: JobDTO }
+    trackedJobs: { [uuid: string]: JobDTO },
     statusFilter: string,
     searchFilter: string
 }
