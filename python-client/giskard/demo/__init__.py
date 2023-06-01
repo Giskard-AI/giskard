@@ -1,27 +1,30 @@
 import pandas as pd
+from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 
+
 def titanic():
     df = pd.read_csv("https://raw.githubusercontent.com/Giskard-AI/giskard-examples/main/datasets/titanic_train.csv")
-    df.dropna(inplace=True)
     df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
-    cat_cols=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]
-    num_cols=["PassengerId", "Age", "Fare"]
-    text_cols=["Name"]
+    cat_cols = ['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]
+    num_cols = ["PassengerId", "Age", "Fare"]
+    text_cols = ["Name"]
     target = "Survived"
 
     # tfidf the text column
     text_transformer = Pipeline([('tfidf', TfidfVectorizer(lowercase=False, strip_accents=None))])
 
     # transform and scale the numeric columns
-    num_transformer = Pipeline([('scaler', StandardScaler())])
+    num_transformer = Pipeline([('imputer', SimpleImputer(strategy='median')), ('scaler', StandardScaler())])
 
     # one hot encode the categorical values
-    cat_transormer = Pipeline([('onehot', OneHotEncoder(handle_unknown='ignore',
+    cat_transormer = Pipeline([('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+                               ('onehot', OneHotEncoder(handle_unknown='ignore',
                                                         sparse=False))])
 
     # Perform preprocessing of the columns with the above pipelines
@@ -34,9 +37,14 @@ def titanic():
     clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', LogisticRegression())])
 
-    y = df[target]
+    Y = df[target]
     X = df.drop(target, axis=1)
-    clf.fit(X, y)
-    print("accuracy = ", round(clf.score(X, y) * 100, 2), "%")
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=0.50, random_state=30,
+                                                                        stratify=Y)
 
-    return clf, df
+    clf.fit(X_train, Y_train)
+    print("accuracy = ", round(clf.score(X_test, Y_test) * 100, 2), "%")
+
+    test_data = pd.concat([X_test, Y_test], axis=1)
+
+    return clf, test_data
