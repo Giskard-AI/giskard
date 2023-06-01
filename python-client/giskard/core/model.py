@@ -341,7 +341,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         super().save(local_path)
 
     @abstractmethod
-    def save_with_mlflow    (self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         ...
 
 
