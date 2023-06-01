@@ -5,11 +5,13 @@ import pandas as pd
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slice_function import SliceFunction
 from giskard.models.base import BaseModel
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
+@validate_classification_label
 def test_right_label(
         actual_slice: Dataset,
         model: BaseModel,
@@ -46,9 +48,6 @@ def test_right_label(
     """
     actual_slice.df.reset_index(drop=True, inplace=True)
     prediction_results = model.predict(actual_slice).prediction
-    assert (
-        classification_label in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
@@ -61,6 +60,7 @@ def test_right_label(
 
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
+@validate_classification_label
 def test_output_in_range(
     actual_slice: Dataset,
     model: BaseModel,
@@ -118,9 +118,6 @@ def test_output_in_range(
         results_df["output"] = prediction_results.raw_prediction
 
     elif model.is_classification:
-        assert (
-                classification_label in model.meta.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
         results_df["output"] = prediction_results.all_predictions[classification_label]
 
     else:
