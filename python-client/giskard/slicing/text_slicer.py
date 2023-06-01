@@ -196,5 +196,3 @@ class MetadataSliceFunction(SlicingFunction):
 
     def _should_save_locally(self) -> bool:
         return True
-
-

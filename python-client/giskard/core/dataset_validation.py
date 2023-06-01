@@ -1,4 +1,6 @@
 import pandas as pd
+from pandas.core.dtypes.common import is_string_dtype
+
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
 from giskard.datasets.base import Dataset
@@ -15,6 +17,14 @@ def validate_target(ds: Dataset):
             raise ValueError(
                 f"Invalid target parameter:"
                 f" '{ds.target}' column is not present in the dataset with columns: {list(ds.df.columns)}"
+            )
+
+        target_values = ds.df[ds.target].unique()
+        if not is_string_dtype(target_values):
+            print(
+                'Hint: "Your target variable values are numeric. '
+                "It is recommended to have Human readable string as your target values "
+                'to make results more understandable in Giskard."'
             )
 
 
