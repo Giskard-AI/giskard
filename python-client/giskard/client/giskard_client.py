@@ -191,7 +191,7 @@ class GiskardClient:
                 "featureNames": anonymize(meta.feature_names),
                 "language": "PYTHON",
                 "classificationLabels": anonymize(meta.classification_labels),
-                "classificationLabels": anonymize(meta.classification_labels),
+                "classificationLabelsDtype": class_label_dtype,
                 "loader_module": meta.loader_module,
                 "loader_class": meta.loader_class,
                 "size": size,
