@@ -201,15 +201,19 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
             return new_text
 
         for religious_word_list in religion_dict:
-            for i in range(len(religious_word_list)):
-                match = self._search_for_word_with_plural(word=religious_word_list[i], target_text=text)
-                if match is not None and not pd.isna(religious_word_list[(i + 1) % len(religious_word_list)]):
+            for i, religious_word in enumerate(religious_word_list):
+                match = self._search_for_word_with_plural(word=religious_word, target_text=text)
+                if match is None:
+                    continue
+                replacement_word = religious_word_list[(i + 1) % len(religious_word_list)]
+                if replacement_word is not None:
                     lwbound, upbound = match.span()
                     new_text = (
                         new_text[:lwbound]
                         + religious_word_list[(i + 1) % len(religious_word_list)]
                         + new_text[upbound:]
                     )
+
         return new_text
 
     def _search_for_word_with_plural(self, word, target_text):
@@ -233,6 +237,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         if nationalities_word_dict is None:
             return new_text
 
+        # @TODO: clean up this code
         location_type_list = ["country", "nationality"]
         income_list = ["high-income", "low-income"]
         for income_id in range(len(income_list)):
