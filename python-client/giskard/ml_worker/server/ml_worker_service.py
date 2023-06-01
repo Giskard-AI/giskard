@@ -4,6 +4,7 @@ import platform
 import re
 import sys
 
+import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -11,7 +12,6 @@ import pkg_resources
 import psutil
 import tqdm
 
-import giskard
 from giskard.ml_worker.core.giskard_dataset import GiskardDataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
@@ -20,26 +20,9 @@ from giskard.ml_worker.core.model_explanation import (
 )
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.generated.ml_worker_pb2 import (
-    DataFrame,
-    DataRow,
-    EchoMsg,
-    ExplainRequest,
-    ExplainResponse,
-    ExplainTextRequest,
-    ExplainTextResponse,
-    MLWorkerInfo,
-    MLWorkerInfoRequest,
-    PlatformInfo,
-    RunModelForDataFrameRequest,
-    RunModelForDataFrameResponse,
-    RunModelRequest,
-    RunModelResponse,
-    RunTestRequest,
-    TestResultMessage,
-    UploadStatus,
-    UploadStatusCode, FileUploadMetadata, FileType, )
+from giskard.ml_worker.generated.ml_worker_pb2 import *
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
@@ -65,7 +48,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.port = port
         self.remote = remote
 
-    def echo(self, request, context):
+    def echo_orig(self, request, context):
         globals()["echo_count"] += 1
         return EchoMsg(msg=f"Response {echo_count}: {request.msg}")
 
@@ -129,6 +112,27 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             internal_grpc_port=self.port,
             is_remote=self.remote,
         )
+
+    def runAdHocTest(self, request: RunAdHocTestRequest,
+                     context: grpc.ServicerContext) -> TestResultMessage:
+
+        test = tests_registry.get_test(request.testId)
+        arguments = {}
+        for arg in request.arguments:
+            if arg.HasField('dataset'):
+                value = deserialize_dataset(arg.dataset)
+            elif arg.HasField('model'):
+                value = deserialize_model(arg.model)
+            elif arg.HasField('float'):
+                value = float(arg.float)
+            elif arg.HasField('string'):
+                value = str(arg.string)
+            else:
+                raise IllegalArgumentError("Unknown argument type")
+            arguments[arg.name] = value
+        logger.info(f"Executing {test.name}")
+        test_result = test.fn(**arguments)
+        return TestResultMessage(results=[NamedSingleTestResult(name=test.id, result=test_result)])
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
@@ -253,6 +257,30 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return RunModelResponse(
             results_csv=results.to_csv(index=False), calculated_csv=calculated.to_csv(index=False)
         )
+
+    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
+                        context: grpc.ServicerContext) -> TestRegistryResponse:
+        globals()["echo_count"] += 1
+        return TestRegistryResponse(functions=[
+            TestFunction(
+                id=test.id,
+                name=test.name,
+                module=test.module,
+                doc=test.doc,
+                module_doc=test.module_doc,
+                tags=test.tags,
+                arguments={
+                    a.name: TestFunctionArgument(
+                        name=a.name,
+                        type=a.type,
+                        optional=a.optional,
+                        default=str(a.default)
+                    ) for a
+                    in test.args.values()}
+
+            )
+            for test in tests_registry.get_all().values()
+        ])
 
     @staticmethod
     def pandas_df_to_proto_df(df):

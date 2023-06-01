@@ -74,7 +74,7 @@ $notification-spinner-size: 20px;
   }
 }
 
-.vc{
+.vc {
   @extend .vertical-container
 }
 
@@ -98,6 +98,7 @@ $notification-spinner-size: 20px;
   &.tall {
     height: 9999px;
   }
+
   &.x-tall {
     height: 999999px;
   }
@@ -123,6 +124,7 @@ $notification-spinner-size: 20px;
     //  flex-grow: 1;
     //}
   }
+}
 
 
 $vt-color-error: white !default;
@@ -131,7 +133,8 @@ $vt-text-color-error: #bb0000 !default;
 .Vue-Toastification__toast--error {
   border: 2px solid $vt-text-color-error;
   border-left: 10px solid $vt-text-color-error;
-  .Vue-Toastification__close-button{
+
+  .Vue-Toastification__close-button {
     color: black;
   }
 
@@ -148,8 +151,8 @@ $vt-text-color-error: #bb0000 !default;
 }
 
 // fix for https://github.com/yariksav/vuetify-dialog/issues/139
-.v-dialog--scrollable{
-  .v-dialog-wrapper{
+.v-dialog--scrollable {
+  .v-dialog-wrapper {
     overflow: auto;
   }
 }
