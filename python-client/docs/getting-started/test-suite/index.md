@@ -115,6 +115,9 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ## 3. Create & Execute a test suite
 
+A test suite is a collection of tests that can be parameterized to accommodate various scenarios. Each test within the
+suite may have some parameters left unspecified. When executing the test suite, you can provide the missing parameters
+through the run method. This allows for flexible and customizable test execution based on your specific needs.
 ::::{tab-set}
 
 :::{tab-item} Model as input
@@ -127,7 +130,7 @@ from giskard import Model, Dataset, test_f1, test_accuracy, Suite
 wrapped_dataset = Dataset(...)
 
 # Create a suite and add a F1 test and an accuracy test
-# Note that all the parameters are specified excect dataset
+# Note that all the parameters are specified except dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
 .add_test(test_f1(dataset=wrapped_dataset))
