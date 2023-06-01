@@ -9,7 +9,7 @@ To inspect & test your model, we ask you to upload a `prediction_function` that 
 \
 The **easiest way is to use an ML Pipeline** as your `predict_proba` function (see the [example below](wrap-your-prediction-function.md#wrap-a-prediction-function-without-a-pipeline-1)). If you don't have such a pipeline, no problem! We provide you with an example without a pipeline!
 
-:::{info}
+:::{hint}
 **The two reasons why we ask you to turn your model into a pipeline**
 
 * We have a **holistic approach** to ML inspection & test: an ML model is not only the ML inference step. It's the whole pipeline that creates the results. Many bugs and strange behaviors are coming from the pre-processing steps
@@ -69,7 +69,7 @@ To execute the whole **notebook** for the above example, use [this notebook in C
 
 The proper and easiest way to upload a model in Giskard is to provide a model **pipeline** to the upload function in Giskard.&#x20;
 
-:::{info}
+:::{hint}
 To put your model to production, it's a common practice to turn all your data preprocessing, training, and inference steps into one unique pipeline. For example, see [here](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) how to do this with sklearn.
 :::
 

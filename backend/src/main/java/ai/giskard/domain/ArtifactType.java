@@ -4,7 +4,8 @@ public enum ArtifactType {
     MODEL,
     DATASET,
     TEST,
-    SLICE;
+    SLICE,
+    TRANSFORMATION;
 
     public static ArtifactType fromDirectoryName(String directoryName) {
         return switch (directoryName.toLowerCase()) {
@@ -12,8 +13,9 @@ public enum ArtifactType {
             case "datasets" -> DATASET;
             case "tests" -> TEST;
             case "slices" -> SLICE;
+            case "transformations" -> TRANSFORMATION;
             default -> throw new IllegalArgumentException(
-                "Invalid artifact type, possible values are: 'models', 'datasets', 'tests', 'slices'"
+                "Invalid artifact type, possible values are: 'models', 'datasets', 'tests', 'slices', 'transformations'"
             );
         };
     }

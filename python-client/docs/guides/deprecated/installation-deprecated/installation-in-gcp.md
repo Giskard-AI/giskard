@@ -21,11 +21,11 @@ gcloud compute firewall-rules create giskard-main --allow tcp:19000
 gcloud compute firewall-rules create giskard-worker --allow tcp:40051
 ```
 
-:::{info}
+:::{hint}
 Make sure you have the **proper rights** to open a port. If not contact your GCP administrator.&#x20;
 :::
 
-:::{info}
+:::{hint}
 Creating the firewall rules can also be done **through UI** in the `VPC Network`section:
 
 * Go to the `firewall` in `VPC Network` section of GCP
@@ -61,7 +61,7 @@ sudo docker compose up -d --force-recreate --no-build
 * Get the external IP address of your Giskard VM in the `VM instances` section of the `Compute Engine`
 * Go to **`http://<your IP address>:19000`** in your web browser
 
-:::{info}
+:::{hint}
 You can stop the instance and restart it when you need to save your GCP compute costs. However, note that&#x20;
 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
@@ -72,5 +72,5 @@ You can stop the instance and restart it when you need to save your GCP compute 
 
 * The user id is `admin` and the password is `admin`
 
-That's it, you are now ready to use Giskard in GCP! Now you can start [uploading a model](../upload-your-model/)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
+That's it, you are now ready to use Giskard in GCP! Now you can start [uploading a model](../upload-your-model-deprecated/)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
 
