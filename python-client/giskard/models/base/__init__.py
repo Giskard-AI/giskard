@@ -13,7 +13,6 @@ from typing import Optional, Any, Union, Callable, Iterable
 import cloudpickle
 import mlflow
 import numpy as np
-import pandas
 import pandas as pd
 import pydantic
 import yaml
@@ -25,6 +24,7 @@ from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset, GISKARD_HASH_COLUMN, GISKARD_COLUMN_PREFIX
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.base.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
 
@@ -65,7 +65,7 @@ class BaseModel(ABC):
     """
     should_save_model_class = False
     id: uuid.UUID = None
-    prediction_cache: pandas.DataFrame
+    model_cache: ModelCache
 
     @configured_validate_arguments
     def __init__(
@@ -75,7 +75,7 @@ class BaseModel(ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
-            prediction_cache: Optional[pandas.DataFrame] = None
+            model_cache: Optional[ModelCache] = None
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -112,7 +112,8 @@ class BaseModel(ABC):
                     "Duplicates are found in 'classification_labels', please only provide unique values."
                 )
 
-        self.prediction_cache = prediction_cache if prediction_cache is not None else pd.DataFrame(data={}, index=[])
+        self.model_cache = ModelCache(
+            classification_labels=classification_labels) if model_cache is None else ModelCache
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -169,7 +170,7 @@ class BaseModel(ABC):
                 default_flow_style=False,
             )
 
-            uncompressed_bytes = save_df(self.prediction_cache)
+            uncompressed_bytes = save_df(self.model_cache.to_df())
             compressed_bytes = compress(uncompressed_bytes)
             pred_f.write(compressed_bytes)
 
@@ -259,42 +260,39 @@ class BaseModel(ABC):
         timer = Timer()
 
         # Read cache
-        cached_predictions = dataset.df[GISKARD_HASH_COLUMN].isin(self.prediction_cache)
+        cached_predictions = self.model_cache.read_from_cache(dataset.df[GISKARD_HASH_COLUMN])
+        missing = pd.isna(cached_predictions)
+        if len(missing.shape) > 1:
+            missing = np.any(missing, axis=1)
 
-        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[~cached_predictions], row_level=False))
+        df = self.prepare_dataframe(dataset.slice(lambda x: dataset.df[missing], row_level=False))
 
-        raw_prediction = self.predict_df(df)
+        if len(df) > 0:
+            raw_prediction = self.predict_df(df)
+            self.model_cache.set_cache(dataset.df[missing][GISKARD_HASH_COLUMN], raw_prediction)
 
-        labels = self.meta.classification_labels if self.meta.classification_labels is not None else ['raw_prediction']
-
-        self.prediction_cache = pd.concat([
-            self.prediction_cache,
-            pd.DataFrame(raw_prediction, columns=labels, index=dataset.df[~cached_predictions][GISKARD_HASH_COLUMN])
-        ])
-        self.prediction_cache = self.prediction_cache[~self.prediction_cache.index.duplicated()]
-
-        raw_prediction = self.prediction_cache.loc[dataset.df[GISKARD_HASH_COLUMN]][labels].values
+            cached_predictions[missing] = raw_prediction
 
         if self.is_regression:
             result = ModelPredictionResults(
-                prediction=raw_prediction[:, 0], raw_prediction=raw_prediction[:, 0], raw=raw_prediction[:, 0]
+                prediction=cached_predictions, raw_prediction=cached_predictions, raw=cached_predictions
             )
         elif self.is_classification:
             labels = np.array(self.meta.classification_labels)
             threshold = self.meta.classification_threshold
 
             if threshold is not None and len(labels) == 2:
-                predicted_lbl_idx = (raw_prediction[:, 1] > threshold).astype(int)
+                predicted_lbl_idx = (cached_predictions[:, 1] > threshold).astype(int)
             else:
-                predicted_lbl_idx = raw_prediction.argmax(axis=1)
+                predicted_lbl_idx = cached_predictions.argmax(axis=1)
 
-            all_predictions = pd.DataFrame(raw_prediction, columns=labels)
+            all_predictions = pd.DataFrame(cached_predictions, columns=labels)
 
             predicted_labels = labels[predicted_lbl_idx]
-            probability = raw_prediction[range(len(predicted_lbl_idx)), predicted_lbl_idx]
+            probability = cached_predictions[range(len(predicted_lbl_idx)), predicted_lbl_idx]
 
             result = ModelPredictionResults(
-                raw=raw_prediction,
+                raw=cached_predictions,
                 prediction=predicted_labels,
                 raw_prediction=predicted_lbl_idx,
                 probabilities=probability,
@@ -404,7 +402,8 @@ class BaseModel(ABC):
         constructor_params = meta.__dict__
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-        return clazz.load(local_dir, prediction_cache=prediction_cache, **constructor_params)
+        return clazz.load(local_dir, model_cache=ModelCache(prediction_cache, meta.classification_labels),
+                          **constructor_params)
 
     @classmethod
     def load(cls, local_dir, **kwargs):
