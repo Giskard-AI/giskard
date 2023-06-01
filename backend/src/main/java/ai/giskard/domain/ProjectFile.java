@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Setter
 public abstract class ProjectFile extends AbstractAuditingEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
     private String fileName;
 

@@ -17,8 +17,8 @@ import java.util.Set;
 @Setter
 public class TestSuiteNew extends AbstractAuditingEntity {
     @Id
-    //@GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue
+    private Long id;
     @NotNull
     private String name;
 
