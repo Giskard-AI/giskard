@@ -1,4 +1,4 @@
-# Wrap your ML model
+# 🎁 Wrap your ML model
 
 To use your model with Giskard, you can either:
 
