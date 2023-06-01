@@ -15,10 +15,10 @@ You can see all our slicing function in the [🔪 Slicing Function Catalog](../.
 :::{tab-item} Sentiment analysis
 
 ```python
-from giskard import wrap_dataset
+from giskard import Dataset
 from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 positive_sentiment_slice = wrapped_dataset.slice(positive_sentiment_analysis(column_name='content'))
 
@@ -31,9 +31,9 @@ positive_sentiment_slice.df.head()
 :::{tab-item} Using a lambda
 
 ```python
-from giskard import wrap_dataset
+from giskard import Dataset
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 afternoon_slice = wrapped_dataset.slice(lambda row: row['Hour'] > 12)
 
@@ -47,10 +47,10 @@ afternoon_slice.df.head()
 
 ```python
 import pandas
-from giskard import wrap_dataset, slicing_function
+from giskard import Dataset, slicing_function
 import pandas as pd
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 
 @slicing_function(row_level=False)
@@ -78,10 +78,10 @@ You can see all our slicing function in the [🔪 Slicing Function Catalog](../.
 :::{tab-item} Text transformation
 
 ```python
-from giskard import wrap_dataset
+from giskard import Dataset
 from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 keyboard_typo = wrapped_dataset.transform(keyboard_typo_transformation(column_name='content'))
 
@@ -94,10 +94,10 @@ keyboard_typo.df.head()
 
 ```python
 import pandas
-from giskard import wrap_dataset, transformation_function
+from giskard import Dataset, transformation_function
 import pandas as pd
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 
 @transformation_function
@@ -121,11 +121,11 @@ You can chain as many slicing and transformation as you need
 :::
 
 ```python
-from giskard import wrap_dataset
+from giskard import Dataset
 from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
 from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
 
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 positive_sentiment_with_typo = wrapped_dataset.slice(positive_sentiment_analysis(column_name='content')).transform(
     keyboard_typo_transformation(column_name='content'))
