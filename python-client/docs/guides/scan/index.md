@@ -1,8 +1,5 @@
 ```{toctree}
-:caption: Table of Contents
-:name: mastertoc
 :maxdepth: 2
-:hidden:
 
 performance_bias/index
 robustness/index
