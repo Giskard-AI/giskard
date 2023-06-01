@@ -69,11 +69,11 @@ def _test_upload_model(model: SKLearnModel, ds: Dataset):
     if model.is_regression:
         # Warning Scenario: classification_labels is sent for regression model
         with pytest.warns(UserWarning):
-            model_id = model.upload(client, 'test-project', ds)
+            model.upload(client, 'test-project', ds)
     else:
-        model_id = model.upload(client, 'test-project', ds)
+        model.upload(client, 'test-project', ds)
 
-    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(model_id))
+    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(model.id))
 
     artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
     assert len(artifact_requests) > 0

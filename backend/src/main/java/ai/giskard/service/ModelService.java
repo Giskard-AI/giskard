@@ -45,8 +45,6 @@ public class ModelService {
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            //UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
-            //assert modelUploadStatus.getCode().equals(StatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
         return response;
