@@ -35,7 +35,8 @@ class Dataset:
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
-        self.feature_types = self.extract_feature_types(list(self.column_types.keys()), cat_columns)
+        self.feature_types = feature_types if feature_types else self.extract_feature_types(
+            list(self.column_types.keys()), cat_columns)
 
     @staticmethod
     def extract_feature_types(all_columns, cat_columns):
