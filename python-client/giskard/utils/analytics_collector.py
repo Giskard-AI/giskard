@@ -7,6 +7,7 @@ from typing import Dict
 from mixpanel import Consumer, Mixpanel
 
 from giskard.settings import settings
+from giskard.utils import threaded
 
 
 def analytics_method(f):
@@ -67,6 +68,7 @@ class GiskardAnalyticsCollector:
         }
 
     @analytics_method
+    @threaded
     def track(self, event_name, properties=None, meta=None, force=False):
         if self.is_enabled or force:
             merged_props = []
@@ -79,7 +81,7 @@ class GiskardAnalyticsCollector:
                 distinct_id=self.distinct_user_id,
                 event_name=event_name,
                 properties=dict(merged_props),
-                meta=meta,
+                meta=meta
             )
 
     @staticmethod
