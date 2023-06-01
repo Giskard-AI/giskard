@@ -1,8 +1,5 @@
-import re
-
 import numpy as np
 import pandas as pd
-import requests_mock
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,7 +8,6 @@ from torch.utils.data.dataset import random_split
 
 import tests.utils
 from giskard import PyTorchModel, Dataset
-from giskard.client.giskard_client import GiskardClient
 
 
 class ManualLinearRegression(nn.Module):
@@ -122,25 +118,6 @@ def test_linear_regression_pytorch_dataframe():
 
     my_model = PyTorchModel(name="my_linear_model", clf=model, feature_names=feature_names, model_type="regression")
 
-    # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
-    )
-    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
-    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-
-    with requests_mock.Mocker() as m:
-        m.register_uri(requests_mock.POST, artifact_url_pattern)
-        m.register_uri(requests_mock.POST, models_url_pattern)
-        m.register_uri(requests_mock.GET, settings_url_pattern)
-
-        url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        client = GiskardClient(url, token)
-        my_model.upload(client, "test-project", my_test_dataset)
-
-        tests.utils.match_model_id(my_model.id)
-        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
-        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
+    tests.utils.verify_model_upload(my_model, my_test_dataset)
