@@ -22,23 +22,6 @@
                 Transformation functions
             </v-btn>
         </div>
-        <!-- <v-tabs>
-            <v-tab :to="{ name: 'project-catalog-datasets' }">
-                Datasets
-            </v-tab>
-            <v-tab :to="{ name: 'project-catalog-models' }">
-                Models
-            </v-tab>
-            <v-tab :to="{ name: 'project-catalog-tests' }">
-                Tests
-            </v-tab>
-            <v-tab :to="{ name: 'project-catalog-slicing-functions' }">
-                Slicing functions
-            </v-tab>
-            <v-tab :to="{ name: 'project-catalog-transformation-functions' }">
-                Transformation functions
-            </v-tab>
-        </v-tabs> -->
         <router-view />
     </div>
     <LoadingFullscreen v-else name="catalog" />
@@ -49,9 +32,10 @@ import { onActivated } from "vue";
 import { useCatalogStore } from "@/stores/catalog";
 import { storeToRefs } from "pinia";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { useRouter } from "vue-router/composables";
+import { useRouter, useRoute } from "vue-router/composables";
 
 const router = useRouter();
+const route = useRoute();
 
 let props = defineProps<{
     projectId: number,
@@ -65,7 +49,9 @@ const defaultRoute = 'project-catalog-datasets';
 
 onActivated(async () => {
     await catalogStore.loadCatalog(props.projectId)
-    await router.push({ name: defaultRoute });
+    if (route.name === 'project-catalog') {
+        await router.push({ name: defaultRoute });
+    }
 });
 </script>
 
