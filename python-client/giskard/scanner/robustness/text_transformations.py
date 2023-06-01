@@ -2,9 +2,9 @@ import random
 import re
 
 import pandas as pd
-from langdetect import detect_langs
 
 from .entity_swap import typos, gender_switch_en, gender_switch_fr
+from ... import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -83,14 +83,14 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
+                word = word[:idx] + word[idx + 1:]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in typos:
                     replacement = random.choice(typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
+                    text_modified = word[:j] + replacement + word[j + 1:]
                     return text_modified
         return word
 
@@ -113,17 +113,26 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
 class TextGenderTransformation(TextTransformation):
     name = "Switch gender"
+    needs_dataset = True
 
-    def make_perturbation(self, x):
-        language = detect_langs(x)[0].lang
-        split_text = x.split()
+    def execute(self, dataset: Dataset) -> pd.DataFrame:
+        feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
+        meta_dataframe = dataset.column_meta[self.column, "text"].add_suffix('__gsk__meta')
+        feature_data = feature_data.join(meta_dataframe)
+        dataset.df.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation, axis=1)
+        return dataset.df
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+        split_text = text.split()
         new_words = []
         for token in split_text:
             new_word = self._switch(token, language)
             if new_word != token:
                 new_words.append(new_word)
 
-        new_text = x
+        new_text = text
         for original_word, switched_word in new_words:
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
         return new_text
