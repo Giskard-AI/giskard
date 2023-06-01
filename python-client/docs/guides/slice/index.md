@@ -13,7 +13,7 @@ This section explains you how to create your own slicing function or customize t
 
 ## Generate automatically some slicing functions through the scan
 
-Giskard enables you to automatically generate the slicing functions that are the most insightul for your ML models. You can easily extract the results of the scan features using the following code:
+Giskard enables you to automatically generate the slicing functions that are the most insightul for your ML models. You can easily extract the results of the [scan feature](docs/guides/scan/index) using the following code:
 
 ```
 from giskard import Dataset, Model
@@ -99,4 +99,8 @@ train_df.slice(my_func3(threshold=20), column_name='Age')
 
 
 ## Save your slicing function
+Saving your slincing function in the Giskard server will enable you to:
+* Use your slices for testing purposes: you slices can be used as *fixtures* of your test suite
+* Further debug the examples inside your data slice using explanation
+
 To upload your slicing function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
