@@ -39,7 +39,7 @@ def _test_classification_score(score_fn, gsk_dataset: Dataset, model: Model, thr
     else:
         metric = score_fn(actual_target, prediction, average="macro")
 
-    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
+    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
 def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 1.0):
@@ -50,7 +50,7 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 
 
     metric = accuracy_score(actual_target, prediction)
 
-    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold)
+    return TestResult(actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold))
 
 
 def _test_regression_score(score_fn, giskard_ds, model: Model, threshold: float = 1.0, r2=False):
@@ -66,7 +66,7 @@ def _test_regression_score(score_fn, giskard_ds, model: Model, threshold: float 
     return TestResult(
         actual_slices_size=[len(giskard_ds)],
         metric=metric,
-        passed=metric >= threshold if r2 else metric <= threshold,
+        passed=bool(metric >= threshold if r2 else metric <= threshold),
     )
 
 
@@ -85,7 +85,7 @@ def _test_diff_prediction(test_fn, model, actual_slice, reference_slice, thresho
         actual_slices_size=[len(actual_slice)],
         reference_slices_size=[len(reference_slice)],
         metric=change_pct,
-        passed=change_pct < threshold,
+        passed=bool(change_pct < threshold),
     )
 
 
@@ -162,7 +162,7 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
 
         metric = roc_auc_score(actual_slice.df[actual_slice.target], predictions, multi_class="ovo")
 
-    return TestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=metric >= threshold)
+    return TestResult(actual_slices_size=[len(actual_slice)], metric=metric, passed=bool(metric >= threshold))
 
 
 @test(name="F1", tags=["performance"])
