@@ -41,22 +41,3 @@ docker compose pull
 docker compose up -d --force-recreate --no-build
 
 ```
-
-#### Install Giskard Python library
-
-```sh
-# Download preview wheel
-pip install https://github.com/Giskard-AI/giskard-examples/blob/feature/new-upload-api/preview-dist/giskard-1.9.0-py3-none-any.whl?raw=true
-```
-
-#### Access the Jupyter notebook to get our examples
-
-```sh
-# Clone giskard-examples
-git clone https://github.com/Giskard-AI/giskard-examples.git
-# Go to giskard-examples directory
-cd giskard-examples
-# Checkout the preview branch
-git checkout poc/function-storage
-# Open the `AI test v2 preview` notebook project with your favorite tool
-```
