@@ -23,9 +23,6 @@
                 </v-col>
             </v-row>
         </v-alert>
-        <v-btn icon @click="openSettings" color="secondary" v-if="!compact">
-            <v-icon>settings</v-icon>
-        </v-btn>
     </div>
 </template>
 
@@ -33,12 +30,10 @@
 
 import {SuiteTestDTO, SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed} from 'vue';
-import {api} from '@/api';
 import {$vfm} from 'vue-final-modal';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 import {plurialize} from "../../../utils/string.utils";
 import {Colors} from "@/utils/colors";
 import {timeSince} from "@/utils/time.utils";
@@ -87,18 +82,6 @@ const successRatio = computed(() => ({
 
 const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
     : props.tests.filter(({result}) => result !== undefined));
-
-async function openSettings() {
-    const project = await api.getProject(projectId.value!)
-    $vfm.show({
-        component: EditTestSuiteModal,
-        bind: {
-            projectKey: project.key,
-            projectId: project.id,
-            suite: suite.value
-        }
-    });
-}
 
 function openLogs() {
     $vfm.show({
