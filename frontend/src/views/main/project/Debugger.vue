@@ -150,8 +150,7 @@ onActivated(() => loadInspections());
 
     <v-container v-else class="vc mt-12">
       <v-alert class="text-center">
-        <h1 class="headline bold">No inspection sessions for debugging</h1>
-        <p class="create-inspection-message">You haven't created any inspection session for this project. Please, create a new one in order to debug your models and datasets.</p>
+        <p class="create-inspection-message headline blue-grey--text">You haven't created any inspection session for this project. <br>Please, create a new one in order to debug your models and datasets.</p>
       </v-alert>
       <InspectionDialog v-bind:project-id="projectId" v-on:createInspection="createNewInspection"></InspectionDialog>
       <div class="d-flex justify-center mb-6">
