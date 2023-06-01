@@ -91,6 +91,7 @@ wrapped_model = wrap_model(...)
 dataset = wrap_dataset(...)
 
 result = test_f1(dataset=dataset, model=wrapped_model).execute()
+
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
