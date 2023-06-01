@@ -13,7 +13,6 @@ from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.testing.registry.decorators_utils import validate_arg_type, drop_arg, \
     make_all_optional_or_suite_input, set_return_type
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
-from giskard.ml_worker.testing.registry.utils import is_local_function
 
 SlicingFunctionType = Callable[..., bool]
 
@@ -92,9 +91,6 @@ class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
             return data.loc[data.apply(lambda row: self.func(row, **self.params), axis=1)]
         else:
             return self.func(data, **self.params)
-
-    def _should_save_locally(self) -> bool:
-        return True
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
