@@ -1,19 +1,19 @@
 import tempfile
 from typing import List, Iterable
-
 import yaml
 import numpy as np
 import pandas as pd
 from pandas.core.dtypes.common import is_string_dtype
-
 from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import BaseModel, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
 from giskard.datasets.base import Dataset
+from pydantic import validate_arguments
 
 
+@validate_arguments(config=type('', (object,), {'arbitrary_types_allowed': True}))
 def validate_model(model: BaseModel, validate_ds: Dataset):
     model_type = model.meta.model_type
 
@@ -156,9 +156,9 @@ def validate_classification_labels(classification_labels: List[str], model_type:
 
 def validate_features(feature_names=None, validate_df=None):
     if (
-        feature_names is not None
-        and validate_df is not None
-        and not set(feature_names).issubset(set(validate_df.columns))
+            feature_names is not None
+            and validate_df is not None
+            and not set(feature_names).issubset(set(validate_df.columns))
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
