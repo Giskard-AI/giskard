@@ -120,7 +120,7 @@ async function peakDataFile(id: string) {
     lastVisitedFileId.value = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
     try {
       const response = await api.peekDataFile(id)
-      const headers = Object.keys(response[0])
+        const headers = Object.keys(response.content[0])
       filePreviewHeader.value = headers.filter(e => e != GISKARD_INDEX_COLUMN_NAME).map(e => {
         return {text: e.trim(), value: e, sortable: false}
       });
@@ -131,7 +131,7 @@ async function peakDataFile(id: string) {
           sortable: false
         }].concat(filePreviewHeader.value);
       }
-      filePreviewData.value = response
+        filePreviewData.value = response.content
     } catch (error) {
       useMainStore().addNotification({content: error.response.statusText, color: 'error'});
       filePreviewHeader.value = [];

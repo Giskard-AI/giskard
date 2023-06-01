@@ -16,7 +16,7 @@ public class SlicingFunctionService extends CallableService<SlicingFunction, Sli
     private final SlicingFunctionRepository slicingFunctionRepository;
 
     public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository, GiskardMapper giskardMapper) {
-        super(slicingFunctionRepository);
+        super(slicingFunctionRepository, giskardMapper);
         this.giskardMapper = giskardMapper;
         this.slicingFunctionRepository = slicingFunctionRepository;
     }
@@ -31,6 +31,9 @@ public class SlicingFunctionService extends CallableService<SlicingFunction, Sli
 
     protected SlicingFunction create(SlicingFunctionDTO dto) {
         SlicingFunction function = giskardMapper.fromDTO(dto);
+        if (function.getArgs() != null) {
+            function.getArgs().forEach(arg -> arg.setFunction(function));
+        }
         function.setVersion(slicingFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
         return function;
     }
