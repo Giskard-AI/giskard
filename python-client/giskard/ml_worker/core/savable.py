@@ -1,10 +1,9 @@
+import cloudpickle
 import logging
 import os
 import posixpath
 from pathlib import Path
 from typing import Optional, Generic
-
-import cloudpickle
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import DT, SMT, SavableMeta
@@ -97,9 +96,7 @@ class Savable(Generic[DT, SMT]):
         data = cls._read_from_local_dir(local_dir, meta)
 
         if data is None:
-            if client is None:
-                # internal worker case, no token based http client
-                assert f"Cannot find existing {name} {uuid}"
+            assert client is not None, f"Cannot find existing {name} {uuid}"
             client.load_artifact(local_dir, posixpath.join(project_key or "global", name, uuid))
 
         return cls._read_from_local_dir(local_dir, meta)

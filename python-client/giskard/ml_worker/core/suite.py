@@ -23,8 +23,7 @@ class SuiteInput:
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        if type not in suite_input_types:
-            assert f'Type should be one of those: {suite_input_types}'
+        assert ptype in suite_input_types, f'Type should be one of those: {suite_input_types}'
         self.name = name
         self.type = ptype
 
@@ -169,8 +168,9 @@ class Suite:
             test_identifier = f"{test_fn.meta.module}.{test_fn.meta.name}"
             if any([test for test in self.tests if test.test_identifier == test_identifier]):
                 test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
-        elif any([test for test in self.tests if test.test_identifier == test_identifier]):
-            assert f"The test identifier {test_identifier} as already been assigned to a test"
+        else:
+            assert not any([test for test in self.tests if
+                            test.test_identifier == test_identifier]), f"The test identifier {test_identifier} as already been assigned to a test"
 
         self.tests.append(TestPartial(test_fn, params, test_identifier))
 
@@ -215,7 +215,7 @@ class Suite:
         }
 
         if any([arg for arg in required_args if
-                arg.name not in input_dict or not arg.type == input_dict[arg.name].type.__name__]):
+                arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__]):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return

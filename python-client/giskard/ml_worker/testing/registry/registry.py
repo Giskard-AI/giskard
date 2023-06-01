@@ -1,3 +1,4 @@
+import cloudpickle
 import hashlib
 import importlib.util
 import inspect
@@ -9,8 +10,6 @@ import sys
 import uuid
 from pathlib import Path
 from typing import Optional, Dict, Any
-
-import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, TestFunctionArgument
 from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
@@ -209,8 +208,8 @@ def new_getfile(object, _old_getfile=inspect.getfile):
     for name, member in inspect.getmembers(object):
         if inspect.isfunction(member) and object.__qualname__ + '.' + member.__name__ == member.__qualname__:
             return inspect.getfile(member)
-    else:
-        raise TypeError('Source for {!r} not found'.format(object))
+        else:
+            raise TypeError('Source for {!r} not found'.format(object))
 
 
 # Override getfile to have it working over Jupyter Notebook files
