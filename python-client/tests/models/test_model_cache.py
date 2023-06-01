@@ -7,6 +7,7 @@ import xxhash
 
 import giskard
 from giskard import Model, Dataset
+from giskard.core.core import SupportedModelTypes
 from giskard.models.cache import ModelCache
 
 
@@ -147,7 +148,7 @@ def test_predict_with_complex_dataset():
 
 
 def test_model_cache_multiple_index_type():
-    model_cache = ModelCache()
+    model_cache = ModelCache(SupportedModelTypes.REGRESSION)
     hashes = list(map(lambda x: xxhash.xxh3_128_hexdigest(str(x)), [-18313, 42, 184391849]))
 
     int_idx = pd.Series(hashes, index=[-18313, 42, 184391849])
