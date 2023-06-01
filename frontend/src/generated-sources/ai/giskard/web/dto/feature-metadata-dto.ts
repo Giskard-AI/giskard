@@ -1,4 +1,4 @@
-import type {ColumnType} from '../../domain/column-type';
+import type {ColumnType} from './../../domain/column-type';
 
 /**
  * Generated from ai.giskard.web.dto.FeatureMetadataDTO

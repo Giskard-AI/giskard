@@ -2,7 +2,7 @@
     <v-list>
         <v-list-item v-for="input in inputs" :track-by="input" class="pl-0 pr-0">
             <v-row>
-                <v-col cols="3">
+                <v-col>
                     <v-list-item-content>
                         <v-list-item-title>{{ input.name }}</v-list-item-title>
                         <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
@@ -13,36 +13,9 @@
                         </v-list-item-action-text>
                     </v-list-item-content>
                 </v-col>
-                <v-col cols="3">
-                    <v-btn-toggle
-                            v-model="buttonToggleValues[input.name]"
-                            @change="item => handleTypeSelected(input.name, item)">
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" v-bind="attrs">
-                                    <span class="hidden-sm-and-down">Input</span>
-                                    <v-icon right>input</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Set as a suite input</span>
-                        </v-tooltip>
-                        <v-tooltip bottom>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-on="on" v-bind="attrs">
-                                    <span class="hidden-sm-and-down">Alias</span>
-                                    <v-icon right>link</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Set an alias to this input</span>
-                        </v-tooltip>
-                    </v-btn-toggle>
-                </v-col>
-                <v-col cols="6">
+                <v-col>
                     <template v-if="!editing">
-                        <span v-if="!props.testInputs.hasOwnProperty(input.name)" class="italic">
-                          Suite input
-                        </span>
-                        <span v-if="props.testInputs[input.name]?.isAlias">
+            <span v-if="props.testInputs[input.name]?.isAlias">
                     {{ props.testInputs[input.name].value }}
                   </span>
                         <span v-else-if="input.name in props.testInputs && input.type === 'Model'">
@@ -60,10 +33,7 @@
                             }}</span>
                     </template>
                     <div v-else-if="props.modelValue" class="d-flex">
-                      <span v-if="!props.modelValue.hasOwnProperty(input.name)">
-                        Suite input
-                      </span>
-                        <template v-else-if="!props.modelValue[input.name].isAlias">
+                        <template v-if="!props.modelValue[input.name].isAlias">
                             <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
                                              v-if="input.type === 'Dataset'"
                                              :value.sync="props.modelValue[input.name].value"/>
@@ -101,6 +71,13 @@
                                 dense
                                 hide-details
                         ></v-select>
+
+                        <div class="shared-switch" v-if="sharedInputs">
+                            <v-switch v-if="sharedInputs.filter(i => i.type === input.type).length > 0"
+                                      v-model="props.modelValue[input.name].isAlias"
+                                      @change="() => props.modelValue[input.name].value = null"
+                                      label="Shared input"></v-switch>
+                        </div>
                     </div>
 
                 </v-col>
@@ -112,11 +89,10 @@
 <script setup lang="ts">
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import {computed, ref, watch} from 'vue';
+import {computed} from 'vue';
 import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {chain} from "lodash";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },
@@ -130,56 +106,15 @@ const props = defineProps<{
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
 
-
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
     type: props.inputs[name]
 })));
 
 
-const buttonToggleValues = ref<{ [name: string]: number | null }>({});
-
-watch(() => [props.modelValue, props.inputs], () => {
-    if (props.modelValue) {
-        buttonToggleValues.value = chain(props.inputs)
-            .mapValues((_, name) => {
-                console.log(name, props.modelValue)
-                if (!props.modelValue!.hasOwnProperty(name)) {
-                    return 0;
-                } else if (props.modelValue![name].isAlias) {
-                    return 1;
-                } else {
-                    return null;
-                }
-            })
-            .value();
-    } else {
-        buttonToggleValues.value = {};
-    }
-}, {deep: true})
-
-function handleTypeSelected(input: string, item: number) {
-    switch (item) {
-        case 0:
-            delete props.modelValue![input];
-            break;
-        case 1:
-            props.modelValue![input] = {
-                isAlias: true,
-                name: input,
-                type: props.inputs[input],
-                value: null
-            };
-            break;
-        default:
-            props.modelValue![input] = {
-                isAlias: false,
-                name: input,
-                type: props.inputs[input],
-                value: null
-            };
-            break;
-    }
+function linkInput(name: string, link: boolean) {
+    props.modelValue![name].value = '';
+    props.modelValue![name].isAlias = link;
 }
 
 </script>

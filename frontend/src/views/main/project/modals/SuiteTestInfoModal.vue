@@ -72,8 +72,8 @@ import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import MonacoEditor from 'vue-monaco';
 import {api} from '@/api';
-import TestInputListSelector from '@/components/TestInputListSelector.vue';
 import {editor} from 'monaco-editor';
+import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -110,14 +110,13 @@ function resizeEditor() {
 }
 
 function editInputs() {
-  editedInputs.value = test.args
-      .reduce((editedInputs, arg) => {
-        editedInputs[arg.name] = {
-          ...suiteTest.testInputs[arg.name],
-          name: arg.name
-        };
-        return editedInputs;
-      }, {});
+    editedInputs.value = Object.values(suiteTest.testInputs)
+        .reduce((e, arg) => {
+            e[arg.name] = {
+                ...arg
+            };
+            return e;
+        }, {});
 }
 
 async function saveEditedInputs() {
