@@ -18,7 +18,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, TestFunctionArgument
 from giskard.core.core import SupportedModelTypes
 
 logger = logging.getLogger(__name__)
@@ -278,6 +278,66 @@ class GiskardClient:
 
         print(
             f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}"
+        )
+
+    def save_test_function_meta(self, project_key, dataset_id, meta: TestFunctionMeta):
+        self._session.post(f"project/{project_key}/test-functions", json={
+            "uuid": meta.uuid,
+            "name": meta.name,
+            "display_name": meta.display_name,
+            "module": meta.module,
+            "doc": meta.code,
+            "module_doc": meta.module_doc,
+            "code": meta.code,
+            "tags": meta.tags,
+            "args":
+                {
+                    arg.name: {
+                        "name": arg.name,
+                        "type": arg.type,
+                        "default": arg.default,
+                        "optional": arg.optional
+                    } for arg in meta.args.values()
+                 }
+        })
+
+        self.analytics.track(
+            "Upload test function",
+            {
+                "project": anonymize(project_key),
+                "uuid": anonymize(dataset_id),
+                "name": anonymize(meta.name),
+                "module": anonymize(meta.module),
+                "tags": anonymize(meta.tags)
+            },
+        )
+
+        print(
+            f"Function successfully uploaded to project key '{project_key}' with UUID = {meta.uuid}"
+        )
+
+    def load_test_function_meta(self, project_key: str, uuid: str) -> TestFunctionMeta:
+        res = self._session.get(f"project/{project_key}/test-functions/{uuid}").json()
+        return TestFunctionMeta(
+            uuid=res["uuid"],
+            name=res["name"],
+            display_name=res["display_name"],
+            module=res["module"],
+            doc=res["doc"],
+            module_doc=res["module_doc"],
+            code=res["code"],
+            tags=res["tags"],
+            version=res["version"],
+            fn=None,
+            args=
+            {
+                arg["name"]: TestFunctionArgument(
+                    name=arg["name"],
+                    type=arg["type"],
+                    default=arg["default"],
+                    optional=arg["optional"]
+                ) for arg in res["args"]
+            }
         )
 
     def get_server_info(self):
