@@ -1,4 +1,4 @@
-# Create a test suite
+# 🧪 Create a test suite
 
 :::{warning}
 First you'll need to create a Model and a dataset (And scan your model),
