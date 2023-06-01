@@ -92,6 +92,22 @@ def test_shared_input(german_credit_data: Dataset, german_credit_model: Model):
     )
 
 
+def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: Model):
+    first_half = german_credit_data.slice(lambda df: df.head(len(df) // 2))
+    last_half = german_credit_data.slice(lambda df: df.tail(len(df) // 2))
+
+    shared_input = SuiteInput("dataset", Dataset)
+
+    result = Suite() \
+        .add_test(test_auc, actual_slice=shared_input, threshold=0.2) \
+        .add_test(test_auc, actual_slice=shared_input, threshold=0.25) \
+        .add_test(test_auc, actual_slice=shared_input, threshold=0.3) \
+        .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)
+
+    assert result[0]
+    assert len(result[1].items()) == 3
+
+
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Model):
     shared_input = SuiteInput("dataset", Dataset)
 
@@ -113,7 +129,6 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
     Suite().add_test(test_auc, threshold=0.2, actual_slice=german_credit_data).add_test(
         test_f1, threshold=0.2, actual_slice=german_credit_data
     ).save(client, "test_project_key")
-
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
 #

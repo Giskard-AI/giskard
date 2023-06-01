@@ -1,5 +1,6 @@
 import inspect
 import logging
+import uuid
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Callable, Optional
 
@@ -48,6 +49,7 @@ class ModelInput(SuiteInput):
 class TestPartial:
     test_func: Any
     provided_inputs: Mapping[str, Any]
+    test_identifier: Union[int, str]
 
 
 def single_binary_result(test_results: List):
@@ -83,9 +85,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[f"{test_partial.test_func.__module__}.{test_partial.test_func.__name__}"] = run_test(
-                test_partial.test_func, test_params
-            )
+            res[test_partial.test_identifier] = run_test(test_partial.test_func, test_params)
 
         result = single_binary_result(list(res.values()))
 
@@ -141,18 +141,29 @@ class Suite:
             suite_tests.append(SuiteTestDTO(testId=create_test_function_id(t.test_func), testInputs=inputs))
         return TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest], **params):
+    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], GiskardTest],
+                 test_identifier: Optional[Union[int, str]] = None, **params):
         """
         Add a test to the Suite
         :param test_fn: A test method that will be executed or an instance of a GiskardTest class
+        :param test_identifier: A unique test identifier used to track the test result
         :param params: default params to be passed to the test method,
           will be ignored if test_fn is an instance of GiskardTest
         :return: The current instance of the test Suite to allow chained call
         """
         if isinstance(test_fn, GiskardTest):
-            self.tests.append(TestPartial(type(test_fn), {k: v for k, v in test_fn.__dict__.items() if v is not None}))
-        else:
-            self.tests.append(TestPartial(test_fn, params))
+            test_fn = type(test_fn)
+            params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
+
+        if test_identifier is None:
+            test_identifier = f"{test_fn.__module__}.{test_fn.__name__}"
+            if any([test for test in self.tests if test.test_identifier == test_identifier]):
+                test_identifier = f"{test_identifier}-{str(uuid.uuid4())}"
+        elif any([test for test in self.tests if test.test_identifier == test_identifier]):
+            assert f"The test identifier {test_identifier} as already been assigned to a test"
+
+        self.tests.append(TestPartial(test_fn, params, test_identifier))
+
         return self
 
     def find_required_params(self):
