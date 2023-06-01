@@ -69,6 +69,15 @@ public class TestSuiteController {
         return giskardMapper.toDTO(testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId));
     }
 
+    @PutMapping("project/{projectKey}/suite/{suiteId}")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public TestSuiteDTO updateTestSuite(@PathVariable("projectKey") @NotBlank String projectKey,
+                                        @PathVariable("suiteId") long suiteId,
+                                        @RequestBody TestSuiteDTO testSuiteDTO) {
+        return testSuiteService.updateTestSuite(suiteId, testSuiteDTO);
+    }
+
     @GetMapping("project/{projectId}/suite/{suiteId}/complete")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional(readOnly = true)
