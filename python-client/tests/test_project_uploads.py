@@ -55,7 +55,7 @@ def test_validate_deterministic_model():
     data = pd.DataFrame(np.random.rand(5, 1))
     ones = np.ones(len(data))
     constant_model = SKLearnModel(
-        clf=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
+        model=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
         model_type=SupportedModelTypes.CLASSIFICATION,
     )
     ds = Dataset(df=data)
@@ -88,14 +88,18 @@ def test_validate_column_types(german_credit_data, german_credit_test_data):
     with pytest.raises(ValueError) as e:
         ds.column_types = {c: original_column_types[c] for c in original_column_types if c not in {ds.target, "sex"}}
         validate_column_types(ds)
-    assert e.match(r"Invalid column_types parameter: Please declare the type for {'sex'} columns")
+    assert e.match(
+        r"The following keys \['sex'\] are missing from 'column_types'\. "
+        r"Please make sure that the column names in `column_types` covers all the existing columns in your dataset\.")
 
     with pytest.raises(ValueError) as e:
         new_ft = dict(original_column_types)
         new_ft["non-existing-column"] = SupportedColumnTypes.CATEGORY.value
         ds.column_types = new_ft
         validate_column_types(ds)
-    assert e.match(r"Missing columns in dataframe according to column_types: {'non-existing-column'}")
+    assert e.match(r"The provided keys \['non-existing-column'\] in 'column_types' are not part of your dataset "
+                   r"'columns'\. Please make sure that the column names in `column_types` refers "
+                   r"to existing columns in your dataset\.")
 
     broken_types = dict(test_ds.column_types)
     broken_types["people_under_maintenance"] = SupportedColumnTypes.CATEGORY.value

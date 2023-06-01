@@ -29,13 +29,13 @@ def test_error():
 
     my_model = PyTorchModel(
         name="my_linear_model",
-        clf=model,
+        model=model,
         feature_names=["x"],
         model_type="regression",
         data_preprocessing_function=preproc_func,
     )
 
-    my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
+    my_test_dataset = Dataset(df.head(), name="test dataset", target="y")
 
     with pytest.raises(Exception) as e:
         validate_model(my_model, validate_ds=my_test_dataset)

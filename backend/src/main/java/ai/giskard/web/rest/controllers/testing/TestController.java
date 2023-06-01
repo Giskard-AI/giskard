@@ -1,8 +1,8 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunction;
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
@@ -39,7 +39,7 @@ public class TestController {
     private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
-    @Transactional
+    @Transactional(readOnly = true)
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
             .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid()));
@@ -48,7 +48,7 @@ public class TestController {
 
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
             Map<String, String> argumentTypes = testFunction.getArgs().stream()
-                .collect(Collectors.toMap(TestFunctionArgument::getName, TestFunctionArgument::getType));
+                .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
 
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
                 .setTestUuid(request.getTestUuid());
@@ -67,9 +67,5 @@ public class TestController {
             }
             return res;
         }
-
-        //TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-
-        //return JsonFormat.printer().print(response);
     }
 }

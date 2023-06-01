@@ -4,4 +4,5 @@
 export interface InspectionCreateDTO {
     datasetId: string;
     modelId: string;
+    name: string;
 }

@@ -10,7 +10,7 @@ from giskard import cli_utils
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.ml_worker_bridge import MLWorkerBridge
 from giskard.ml_worker.testing.registry.registry import load_plugins
-from giskard.ml_worker.utils.error_interceptor import ErrorInterceptor
+from giskard.ml_worker.utils.request_interceptor import MLWorkerRequestInterceptor
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ class MLWorker:
         from giskard.ml_worker.utils.network import find_free_port
 
         server = grpc.aio.server(
-            interceptors=[ErrorInterceptor()],
+            interceptors=[MLWorkerRequestInterceptor()],
             options=[
                 ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
                 ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),

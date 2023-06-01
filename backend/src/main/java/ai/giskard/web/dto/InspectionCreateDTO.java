@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @UIModel
 public class InspectionCreateDTO {
+    private String name;
     private UUID modelId;
     private UUID datasetId;
 }
