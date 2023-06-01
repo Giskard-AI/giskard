@@ -113,6 +113,8 @@ def test_text_classification_using_tf_NN():
     httpretty.register_uri(httpretty.POST, models_url_pattern)
     httpretty.register_uri(httpretty.GET, settings_url_pattern)
 
+    url = "http://giskard-host:12345"
+    token = "SECRET_TOKEN"
     client = GiskardClient(url, token)
     # enron = client.create_project('test-project', "Email Classification", "Email Classification")
     my_model.upload(client, 'test-project', my_test_dataset)

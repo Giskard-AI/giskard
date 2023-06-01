@@ -28,10 +28,10 @@ class TensorFlowModel(MLFlowBasedModel):
                          classification_labels=classification_labels)
 
     @classmethod
-    def read_model_from_local_dir(cls, local_path):
+    def load_clf(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
-    def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.tensorflow.save_model(self.clf,
                                      path=local_path,
                                      mlflow_model=mlflow_meta)
