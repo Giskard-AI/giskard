@@ -23,7 +23,6 @@ class DanTransformation(TransformationFunction):
     def _prepare_prompt(self):
         out = self.prompt
         for key, value in self.prompt_params.items():
-            print("REPLACE", f"[{key.upper()}]", value)
             out = out.replace(f"[{key.upper()}]", value)
         return out
 
