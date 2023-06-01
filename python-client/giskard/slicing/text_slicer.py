@@ -139,8 +139,6 @@ def _avg_word_length(text):
     return np.mean([len(w) for w in words])
 
 
-_cache = {}
-
 
 # @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
 class TextMetadataSliceFunction(SlicingFunction):
@@ -152,13 +150,15 @@ class TextMetadataSliceFunction(SlicingFunction):
 
     def __call__(self, data: pd.DataFrame):
         # @TODO: this is the slowest part, should disappear once we support metadata
-        meta = _cache.get(id(data))
-        if meta is None:
-            meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
-            _cache[id(data)] = meta
+        meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
 
         data_with_meta = data.join(meta)
         data_filtered = self.query.run(data_with_meta)
+        
+        # @TODO: HACK HACK HACK we do this just to avoid returning an empty slice
+        # It will get filtered out later, but we need to return something.
+        if len(data_filtered) == 0:
+            return data_with_meta.loc[:, data.columns].iloc[:1]
 
         return data_filtered.loc[:, data.columns]
 
