@@ -129,7 +129,7 @@ class Suite:
                 if issubclass(type(p), Dataset) or issubclass(type(p), Model):
                     if str(p.id) not in uploaded_uuids:
                         p.upload(client, project_key)
-                    inputs[pname] = TestInputDTO(name=pname, value=p.id)
+                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
                 else:
