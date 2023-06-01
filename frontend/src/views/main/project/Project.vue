@@ -146,6 +146,10 @@
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
           Feedback
         </v-tab>
+        <v-tab :to="{name: 'project-debugger'}">
+          <v-icon left small>mdi-debug-step-over</v-icon>
+          Debugger
+        </v-tab>
 				<v-tab :to="{name: 'project-test-suites'}">
           <v-icon left small>mdi-list-status</v-icon>
           Test suites️
