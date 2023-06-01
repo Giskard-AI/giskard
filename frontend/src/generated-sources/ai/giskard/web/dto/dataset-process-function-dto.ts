@@ -6,6 +6,7 @@ import type {DatasetProcessFunctionType} from './dataset-process-function-type';
  */
 export interface DatasetProcessFunctionDTO extends CallableDTO {
     cellLevel: boolean;
+    clauses: {[key: string]: any}[];
     columnType?: string | null;
     processType: DatasetProcessFunctionType;
 }

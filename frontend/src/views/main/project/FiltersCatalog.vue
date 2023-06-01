@@ -137,8 +137,7 @@
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-filter-check</v-icon>
                                     <span class="group-title">Clauses</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code"
-                                             :key="selected.name + '_source_code'"></CodeSnippet>
+                                <SlicingClauses class="mt-2" :clauses="selected.code"></SlicingClauses>
                             </div>
                         </div>
                     </v-col>
@@ -169,6 +168,7 @@ import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue"
 import {alphabeticallySorted} from "@/utils/comparators";
 import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import SlicingClauses from "@/components/SlicingClauses.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 let props = defineProps<{

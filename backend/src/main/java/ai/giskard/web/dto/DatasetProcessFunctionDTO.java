@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
@@ -15,4 +18,5 @@ public class DatasetProcessFunctionDTO extends CallableDTO {
     @UINullable
     private String columnType;
     private DatasetProcessFunctionType processType;
+    private List<Map<String, Object>> clauses;
 }

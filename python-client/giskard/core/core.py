@@ -272,6 +272,7 @@ class DatasetProcessFunctionMeta(CallableMeta):
     cell_level: bool
     column_type: Optional[str]
     process_type: DatasetProcessFunctionType
+    clauses: Optional[List[Dict[str, Any]]]
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
@@ -280,10 +281,12 @@ class DatasetProcessFunctionMeta(CallableMeta):
                  version: Optional[int] = None,
                  type: str = None,
                  process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
-                 cell_level: bool = False):
+                 cell_level: bool = False,
+                 clauses: Optional[List[Dict[str, Any]]] = None):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
         self.process_type = process_type
+        self.clauses = clauses
 
         if cell_level:
             if inspect.isclass(callable_obj):
@@ -305,7 +308,8 @@ class DatasetProcessFunctionMeta(CallableMeta):
             **json,
             'cellLevel': self.cell_level,
             'columnType': self.column_type,
-            'processType': self.process_type.value
+            'processType': self.process_type.value,
+            'clauses': self.clauses
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -313,6 +317,7 @@ class DatasetProcessFunctionMeta(CallableMeta):
         self.cell_level = json["cellLevel"]
         self.column_type = json["columnType"]
         self.process_type = DatasetProcessFunctionType[json["processType"]]
+        self.clauses = json["clauses"]
 
 
 DT = TypeVar('DT')
