@@ -23,5 +23,22 @@ RUN npm run build
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
 FROM nginx:alpine
 
+RUN apk update &&  \
+    apk add git git-daemon spawn-fcgi fcgiwrap apache2-utils && \
+    rm -rf /var/cache/apk/*
+
+ARG GIT_USER=giskard
+ARG GIT_PASSWORD=giskard123!
+
+RUN mkdir /usr/share/nginx/git &&  \
+    htpasswd -b -c /usr/share/nginx/git/.htpasswd $GIT_USER $GIT_PASSWORD && \
+    cd usr/share/nginx/git && \
+    mkdir udf.git && \
+    cd udf.git && \
+    git --bare init && \
+    git update-server-info
+
 COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 COPY packaging/nginx.conf /etc/nginx/conf.d/default.conf
+COPY packaging/99_start.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/99_start.sh
