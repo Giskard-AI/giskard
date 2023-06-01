@@ -1,3 +1,4 @@
+import logging
 import warnings
 from typing import Optional, Sequence
 
@@ -25,6 +26,8 @@ class Scanner:
 
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
+
+        logging.debug(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
 
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():

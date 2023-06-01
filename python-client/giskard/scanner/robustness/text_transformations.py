@@ -2,7 +2,7 @@ import string
 import random
 import pandas as pd
 
-from ...scanner.robustness.entity_swap import typos
+from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
 
@@ -14,11 +14,17 @@ def text_uppercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
     return df
 
 
+text_uppercase.name = "Transform to uppercase"
+
+
 @transformation_function(row_level=False)
 def text_lowercase(df: pd.DataFrame, column: str) -> pd.DataFrame:
     df = df.copy()
     df[column] = df[column].str.lower()
     return df
+
+
+text_lowercase.name = "Transform to lowercase"
 
 
 @transformation_function(row_level=False)
@@ -28,20 +34,28 @@ def text_titlecase(df: pd.DataFrame, column: str) -> pd.DataFrame:
     return df
 
 
-class TextTransformation(TransformationFunction):
-    def execute(self, data: pd.Series):
-        series_to_perturb = data.copy()
-        series_perturbed = series_to_perturb.apply(self.perturbation)
-        return series_perturbed
+text_titlecase.name = "Transform to title case"
 
-    def perturbation(self, x):
-        return x
+
+class TextTransformation(TransformationFunction):
+    row_level = False
+
+    def __init__(self, column):
+        self.column = column
+
+    def execute(self, data: pd.DataFrame):
+        data = data.copy()
+        data[self.column] = data[self.column].apply(self.make_perturbation)
+        return data
+
+    def make_perturbation(self, text: str) -> str:
+        raise NotImplementedError()
 
 
 class TextTypoTransformation(TextTransformation):
-    name = "Typo"
+    name = "Add typos"
 
-    def perturbation(self, x):
+    def make_perturbation(self, x):
         split_text = x.split(" ")
         new_text = []
         for token in split_text:
@@ -76,7 +90,7 @@ class TextTypoTransformation(TextTransformation):
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
-    def perturbation(self, x):
+    def make_perturbation(self, x):
         split_text = x.split(" ")
         new_text = []
         for token in split_text:
