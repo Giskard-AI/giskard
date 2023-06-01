@@ -9,11 +9,11 @@ from giskard.path_utils import get_size
 
 
 class PyTorchModel(Model):
-    def __init__(self, clf, model_type: SupportedModelTypes, name: str = None, data_preparation_function=None,
+    def __init__(self, clf, model_type: SupportedModelTypes, name: str = None, data_preprocessing_function=None,
                  feature_names=None, classification_threshold=0.5, classification_labels=None,
                  loader_module:str = 'giskard.models.pytorch', loader_class:str = 'PyTorchModel') -> None:
 
-        super().__init__(clf, model_type, name, data_preparation_function, feature_names,
+        super().__init__(clf, model_type, name, data_preprocessing_function, feature_names,
                          classification_threshold, classification_labels, loader_module, loader_class)
 
     @classmethod
