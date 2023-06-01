@@ -39,6 +39,10 @@ class Dataset:
         self.column_types = self.extract_column_types(self.df)
         self.feature_types = feature_types if feature_types else self.extract_feature_types(
             list(self.column_types.keys()), cat_columns)
+        if id is None:
+            self.id = uuid.uuid4()
+        else:
+            self.id = id
 
     @staticmethod
     def extract_feature_types(all_columns, cat_columns):
@@ -54,10 +58,6 @@ class Dataset:
                 feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
 
         return feature_types
-        if id is None:
-            self.id = uuid.uuid4()
-        else:
-            self.id = id
 
     @staticmethod
     def extract_column_types(df):
@@ -72,8 +72,7 @@ class Dataset:
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
-            if client is not None:
-                client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -130,9 +129,13 @@ class Dataset:
 
         df = cls.load(local_dir / "data.csv.zst")
         df = cls.cast_column_to_types(df, meta.column_types)
-        return cls(df=df, name=meta.name, target=meta.target, feature_types=meta.feature_types,
-                   id=uuid.UUID(dataset_id)
-                   )
+        return cls(
+            df=df,
+            name=meta.name,
+            target=meta.target,
+            feature_types=meta.feature_types,
+            id=uuid.UUID(dataset_id)
+        )
 
     @staticmethod
     def _cat_columns(meta):
