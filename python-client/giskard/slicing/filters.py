@@ -2,7 +2,7 @@ import logging
 from scipy import stats
 
 from giskard.datasets import Dataset
-from giskard.ml_worker.testing.tests.performance import test_diff_f1
+from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, test_diff_recall, test_diff_precision
 
 
 class DataSliceFilter:
@@ -13,24 +13,34 @@ class DataSliceFilter:
 
 
 class InternalTestFilter(DataSliceFilter):
-    def __init__(self, model, og_dataset, test=test_diff_f1, threshold=0.1):
-        self.dataset = og_dataset
+    def __init__(self, model, dataset, test_name=None, threshold=0.1):
+        self.dataset = dataset
         self.model = model
-        self.test = test
         self.threshold = threshold
+
+        if test_name == "f1":
+            self.test = test_diff_f1
+        if test_name == "accuracy":
+            self.test = test_diff_accuracy
+        if test_name == "recall":
+            self.test = test_diff_recall
+        if test_name == "precision":
+            self.test = test_diff_precision
+        if test_name == "rmse":
+            self.test = test_diff_rmse
+        if test_name is None:
+            self.test = test_diff_f1
 
     def _diff_test(self, data_slice):
         # Convert slice to Giskard Dataframe
-        g_dataset = Dataset(
-            data_slice,
-            target_col=self.dataset.target,
-            class_labels=self.dataset.class_labels,
-            column_types=self.dataset.column_types,
-        )
+        slice_dataset = Dataset(data_slice.data)
+                                # target_col=self.dataset.target,
+                                # column_types=self.dataset.column_types
+
         # Apply the test
         test_res = self.test(
-            actual_slice=g_dataset,
-            reference_slice=self.dataset,
+            actual_slice=slice_dataset,
+            reference_slice=self.dataset,  # Could exclude slice_dataset for independence
             model=self.model,
             threshold=self.threshold,
         )

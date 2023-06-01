@@ -16,35 +16,82 @@ from ..slicing.tree_slicer import DecisionTreeSlicer
 from ..slicing.category_slicer import CategorySlicer
 from ..slicing.multiscale_slicer import MultiscaleSlicer
 
+from giskard.ml_worker.testing.tests.performance import test_diff_f1, test_diff_rmse, test_diff_accuracy, \
+    test_diff_recall, test_diff_precision
+
 
 class PerformanceScan:
     tags = ["performance", "classification", "regression"]
 
-    def __init__(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None):
+    def __init__(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, test_names=None):
         self.params = {}
         self.model = model
         self.dataset = dataset
+        self.test_names = test_names
 
-    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt"):
+    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt",
+            test_names: list = None,
+            threshold=0.1):
         model = model or self.model
         dataset = dataset or self.dataset
+        test_names = test_names or self.test_names
+        tests = []
+
+        if "f1" in test_names:
+            tests.append(test_diff_f1)
+        if "accuracy" in test_names:
+            tests.append(test_diff_accuracy)
+        if "recall" in test_names:
+            tests.append(test_diff_recall)
+        if "precision" in test_names:
+            tests.append(test_diff_precision)
+        if "rmse" in test_names:
+            tests.append(test_diff_rmse)
+        if test_names is None:
+            if model.is_classification:
+                tests.append(test_diff_f1)
+            else:
+                tests.append(test_diff_rmse)
 
         if model is None:
             raise ValueError("You need to provide a model to test.")
         if dataset is None:
             raise ValueError("You need to provide an evaluation dataset.")
 
-        # Should check model type
         # …
 
         # Calculate loss
         meta = self._calculate_meta(model, dataset)
         slices = self.find_slices(dataset.select_columns(model.meta.feature_names), meta, slicer)
-
-        # @TODO: filter this @mathieuroques ;)
-        issues = [Issue(slice_fn, model, dataset) for slice_fn in slices]
+        issues = self._find_issues(slices, model, dataset, tests, threshold)
 
         return PerformanceScanResult(issues)
+
+    def _find_issues(self, slices, model, dataset, tests, threshold):
+        issues = []
+        for s in slices:
+            for test in tests:
+                test_result = self._diff_test(s, model, dataset, test, threshold)
+                if not test_result.passed:
+                    issues.append(Issue(s, model, dataset, test_result))
+
+        return issues
+
+    def _diff_test(self, slice_fn, model, dataset, test, threshold):
+        # Convert slice to Giskard Dataframe
+        sliced_dataset = dataset.slice(slice_fn)
+        # target_col=self.dataset.target,
+        # column_types=self.dataset.column_types
+
+        # Apply the test
+        test_res = test(
+            actual_slice=sliced_dataset,
+            reference_slice=dataset,  # Could exclude slice_dataset for independence
+            model=model,
+            threshold=threshold,
+        )
+
+        return test_res
 
     def _calculate_meta(self, model, dataset):
         true_target = dataset.df.loc[:, dataset.target].values
@@ -57,7 +104,7 @@ class PerformanceScan:
 
         return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
 
-    def find_slices(self, dataset, meta: pd.DataFrame, slicer_name):
+    def find_slices(self, dataset, model, meta: pd.DataFrame, slicer_name):
         df_with_meta = dataset.df.join(meta)
         target_col = "__gsk__loss"
 
