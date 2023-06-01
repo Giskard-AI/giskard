@@ -63,7 +63,7 @@ tasks {
 
     create<PythonTask>("test") {
         module = "pytest"
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        command = "-n auto -c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
     }
 
     idea {
