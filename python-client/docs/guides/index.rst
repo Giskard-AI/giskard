@@ -4,9 +4,10 @@ User Guide
 .. toctree::
    :maxdepth: 2
 
-   test-catalog/index
-   slicing-function-catalog/index
-   transformation-function-catalog/index
+    test-catalog/index
+    slicing-function-catalog/index
+    transformation-function-catalog/index
 
-   installation/index
-   tutorials/index
+    custom-wrapper/index
+    installation/index
+    tutorials/index
