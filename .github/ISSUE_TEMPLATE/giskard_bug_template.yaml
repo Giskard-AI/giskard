@@ -1,0 +1,97 @@
+name: 🐛 Bug report
+description: If something isn't working 🔧
+body:
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue would you like to report?
+      multiple: false
+      options:
+        - Bug
+        - Build/Install
+        - Performance
+        - Documentation Bug
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure that this fits our [GitHub Issues Policy](https://github.com/Giskard-AI/giskard/blob/main/ISSUES.md) as we only address code/doc bugs, performance issues, feature requests and build/installation issues on GitHub.
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      description: Giskard installed from
+      options:
+        - source
+        - docker
+    validations:
+      required: true
+  - type: input
+    id: giskard-lib-version
+    attributes:
+      label: Giskard Library Version
+      description: You can  obtain the Giskard library version with `python -c "import giskard ; print(giskard.__version__)"`
+      placeholder: e.g., 1.3.0
+    validations:
+      required: true
+  - type: input
+    id: giskard-server-version
+    attributes:
+      label: Giskard Server Version
+      description: You can obtain the Giskard Server version by logging to http://localhost:19000 (if running on docker) or http://localhost:9000 (if running on local) using admin credentials. Navigate to admin page on left bottom. Giskard server version is available under "Application"
+      placeholder: e.g., 1.3.0
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS Platform and Distribution
+      description:
+      placeholder: e.g., Linux Ubuntu 16.04
+    validations:
+      required: false
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description:
+      placeholder: e.g., 3.9
+    validations:
+      required: false
+  - type: textarea
+    id: packages
+    attributes:
+      label: Installed python packages
+      description: You can list the currently installed python packages in the environment by running `pip list --format freeze`
+      placeholder:
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Current Behaviour?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened!"
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: code-to-reproduce
+    attributes:
+      label: Standalone code OR list down the steps to reproduce the issue
+      description: Provide a reproducible test case OR the list of steps that is the bare minimum necessary to generate the problem. If possible, please share a link to Colab/Jupyter/any notebook.
+      placeholder: Tell us what you see!
+      value:
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
