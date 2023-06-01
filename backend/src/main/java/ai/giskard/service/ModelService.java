@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.Map;
@@ -26,7 +25,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ModelService {
     private final DatasetRepository datasetRepository;
@@ -100,8 +98,8 @@ public class ModelService {
 
     public Inspection createInspection(String name, UUID modelId, UUID datasetId) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
-        ProjectModel model = modelRepository.getById(modelId);
-        Dataset dataset = datasetRepository.getById(datasetId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Inspection inspection = new Inspection();

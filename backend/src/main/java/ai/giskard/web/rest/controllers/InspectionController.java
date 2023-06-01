@@ -9,14 +9,12 @@ import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
-import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomUtils;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.tablesaw.api.Table;
 
@@ -47,9 +45,8 @@ public class InspectionController {
      * @return list of filtered rows
      */
     @PostMapping("/inspection/{inspectionId}/rowsFiltered")
-    @Transactional
     public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws IOException {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
 
         Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filter);
@@ -95,7 +92,7 @@ public class InspectionController {
 
     @GetMapping("/inspection/{id}")
     public InspectionDTO getInspection(@PathVariable @NotNull Long id) {
-        Inspection inspection = inspectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.INSPECTION, id));
+        Inspection inspection = inspectionRepository.getMandatoryById(id);
         return giskardMapper.toDTO(inspection);
     }
 

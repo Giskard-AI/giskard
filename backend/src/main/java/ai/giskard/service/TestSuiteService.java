@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FunctionArgument;
+import ai.giskard.domain.MLWorkerType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
@@ -9,6 +10,7 @@ import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
+import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
@@ -19,6 +21,7 @@ import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +33,12 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TestSuiteService {
     private final GiskardMapper giskardMapper;
     private final TestSuiteRepository testSuiteRepository;
     private final TestSuiteExecutionService testSuiteExecutionService;
+    private final TestSuiteExecutionRepository testSuiteExecutionRepository;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
@@ -75,10 +78,16 @@ public class TestSuiteService {
         return res;
     }
 
-
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
+        Hibernate.initialize(testSuite.getFunctionInputs());
+        Hibernate.initialize(testSuite.getTests());
+        for (SuiteTest test : testSuite.getTests()) {
+            for (FunctionInput i : test.getFunctionInputs()) {
+                Hibernate.initialize(i.getParams());
+            }
+        }
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -89,9 +98,11 @@ public class TestSuiteService {
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
-        return jobService.undetermined(() ->
-                testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
-            testSuite.getProject().getMlWorkerType());
+        MLWorkerType mlWorkerType = testSuite.getProject().getMlWorkerType();
+        return jobService.undetermined(() -> {
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs);
+            testSuiteExecutionRepository.save(execution);
+        }, projectId, JobType.TEST_SUITE_EXECUTION, mlWorkerType);
     }
 
     private static void verifyAllInputProvided(Map<String, String> providedInputs,
@@ -107,7 +118,7 @@ public class TestSuiteService {
     }
 
     public TestSuiteDTO updateTestInputs(long suiteId, long testId, List<FunctionInputDTO> inputs) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testId == t.getId())
@@ -157,7 +168,6 @@ public class TestSuiteService {
         return testSuiteRepository.save(suite);
     }
 
-    @Transactional
     public Long generateTestSuite(String projectKey, GenerateTestSuiteDTO dto) {
 
         Project project = projectRepository.getOneByKey(projectKey);
@@ -179,7 +189,7 @@ public class TestSuiteService {
                 .map(giskardMapper::fromDTO)
                 .toList());
             suite.getTests().addAll(response.getTestsList().stream()
-                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
+                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
                 .toList());
 
             return testSuiteRepository.save(suite).getId();
@@ -205,16 +215,15 @@ public class TestSuiteService {
     }
 
     public TestSuiteDTO removeSuiteTest(long suiteId, long suiteTestId) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         testSuite.getTests().removeIf(suiteTest -> suiteTest.getId() == suiteTestId);
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    @Transactional
     public TestSuiteDTO updateTestSuite(long suiteId, TestSuiteDTO testSuiteDTO) {
-        TestSuite testSuite = testSuiteRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         testSuite.setName(testSuiteDTO.getName());
         testSuite.getFunctionInputs().clear();
@@ -225,7 +234,6 @@ public class TestSuiteService {
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
-    @Transactional
 
     public void deleteTestSuite(long suiteId) {
         testSuiteRepository.deleteById(suiteId);
