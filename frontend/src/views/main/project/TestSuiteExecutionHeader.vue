@@ -8,7 +8,8 @@
                         No execution has been performed yet!
                     </h4>
                     <h4 v-else-if="props.execution.result === TestResult.ERROR">
-                        An error arose during the execution. Check the <span @click="openLogs" class="clickable">execution logs.</span>
+                        An error arose during the execution. Executed <b>{{ timeSince(execution.executionDate) }}</b>.
+                        Check the <span @click="openLogs" class="clickable">execution logs.</span>
                     </h4>
                     <h4 v-else>Test suite
                         {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
@@ -16,6 +17,7 @@
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
                         <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
+                        Executed <b>{{ timeSince(execution.executionDate) }}</b>.
                         Check the <span @click="openLogs" class="clickable">execution logs.</span>
                     </h4>
                 </v-col>
@@ -39,6 +41,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 import {plurialize} from "../../../utils/string.utils";
 import {Colors} from "@/utils/colors";
+import {timeSince} from "@/utils/time.utils";
 
 const props = defineProps<{
     tests: {

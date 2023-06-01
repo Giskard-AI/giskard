@@ -27,17 +27,15 @@
                 </v-tabs>
                 <v-row class="mt-0 overview-container pl-3 pr-3">
                     <v-col>
-                        <div class="d-flex align-center">
-                            <div v-if="hasTest && route.name === 'test-suite-overview'"
-                                 :to="{ name: 'test-suite-executions' }">
-                          <span>
-                              <b>{{ suite.tests.length }}</b>
-                              test{{ suite.tests.length > 1 ? 's' : '' }} | </span>
-                                <span v-if="latestExecution">
-                              Latest execution <b>{{ timeSince(latestExecution.executionDate) }}</b>
-                          </span>
-                                <span v-else>Never executed</span>
-                            </div>
+                        <div class="d-flex align-center justify-center">
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
+                                      item-text="label"
+                                      variant="underlined" hide-details="auto" dense class="mr-4 max-w-200" outlined>
+                            </v-select>
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
+                                          outlined hide-details="auto"
+                                          class="max-w-200"
+                                          dense></v-text-field>
                             <div class="flex-grow-1"/>
                             <v-btn tile class='mx-1' v-if="hasTest && hasInput" @click='openRunTestSuite(true)'
                                    color="secondary">
@@ -66,13 +64,12 @@
 
 import {computed, onActivated, watch} from "vue";
 import {useMainStore} from "@/stores/main";
-import {useTestSuiteStore} from '@/stores/test-suite';
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import {useCatalogStore} from "@/stores/catalog";
-import {timeSince} from "../../../utils/time.utils";
 
 const props = defineProps<{
     projectId: number,
@@ -80,7 +77,8 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {suite, inputs, executions, hasTest, hasInput} = storeToRefs(useTestSuiteStore())
+const {setStatusFilter, setSearchFilter} = useTestSuiteStore()
+const {suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter} = storeToRefs(useTestSuiteStore())
 
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
@@ -141,5 +139,9 @@ async function openRunTestSuite(compareMode: boolean) {
 
 .test-suite-name {
     color: rgb(32, 57, 48);
+}
+
+.max-w-200 {
+    max-width: 200px;
 }
 </style>
