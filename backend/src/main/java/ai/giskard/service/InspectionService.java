@@ -250,7 +250,7 @@ public class InspectionService {
     }
 
     public Inspection updateInspectionName(long inspectionId, String name) {
-        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
+        Inspection inspection = inspectionRepository.getById(inspectionId);
         inspection.setName(name);
         return inspectionRepository.save(inspection);
     }
