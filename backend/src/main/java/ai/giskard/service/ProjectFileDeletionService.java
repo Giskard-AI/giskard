@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,7 +55,7 @@ public class ProjectFileDeletionService {
         try {
             datasetRepository.flush();
             log.info("Removing dataset: {}", datasetPath);
-            Files.deleteIfExists(datasetPath);
+            FileSystemUtils.deleteRecursively(datasetPath);
         } catch (Exception e) {
             throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", datasetPath), e);
         }
@@ -83,7 +84,7 @@ public class ProjectFileDeletionService {
             modelRepository.flush();
             Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
             log.info("Removing model: {}", modelPath);
-            Files.deleteIfExists(modelsDirectory.resolve(modelPath));
+            FileSystemUtils.deleteRecursively(modelsDirectory.resolve(modelPath));
         } catch (IOException e) {
             throw new GiskardRuntimeException(String.format("Failed to remove model files %s", modelPath), e);
         }
