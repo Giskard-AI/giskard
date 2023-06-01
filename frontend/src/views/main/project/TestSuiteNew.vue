@@ -80,7 +80,8 @@
                 :executions="executions"
                 :models="allModels"
                 :datasets="allDatasets"
-                :inputTypes="inputs"/>
+                :inputTypes="inputs"
+                :registry="registry"/>
           </v-tab-item>
         </v-tabs-items>
       </v-col>
