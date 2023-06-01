@@ -21,6 +21,21 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
     assert results.passed
 
 
+def test_metamorphic_invariance_with_non_linear_index(german_credit_test_data, german_credit_model):
+    @transformation_function()
+    def perturbation(x: pd.Series) -> pd.Series:
+        x.sex = "female" if x.sex == "male" else "male"
+        return x
+
+    dataset = german_credit_test_data.slice(lambda df: df.sample(100), row_level=False)
+
+    results = metamorphic.test_metamorphic_invariance(
+        model=german_credit_model, dataset=dataset, transformation_function=perturbation, threshold=0.1
+    ).execute()
+
+    assert results.passed
+
+
 def _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, threshold):
     @transformation_function()
     def perturbation(x: pd.Series) -> pd.Series:
