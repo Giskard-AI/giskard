@@ -265,5 +265,3 @@ Suite().add_test(tests.performance.test_f1).add_test(tests.heuristic.test_right_
 The catalog will be uploaded after starting the external ML Worker
 :::
 
-&#x20;
-
