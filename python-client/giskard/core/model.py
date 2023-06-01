@@ -337,7 +337,7 @@ class WrapperModel(Model, ABC):
 
             if raw_predictions.ndim > 2:
                 raise ValueError(
-                    f"The output of your clf has shape {raw_predictions.shape} but we expect it to be (n_entries, n_classes)."
+                    f"The output of your clf has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes)."
                 )
 
         # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
@@ -358,7 +358,7 @@ class WrapperModel(Model, ABC):
         # For classification models, the last dimension must be equal to the number of classes
         if raw_predictions.shape[-1] != len(self.meta.classification_labels):
             raise ValueError(
-                f"The output of your clf has shape {raw_predictions.shape} but we expect it to be (n_entries, n_classes), \n"
+                f"The output of your clf has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
                 f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
             )
 
