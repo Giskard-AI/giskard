@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import {api} from '@/api';
-import {DatasetDTO, ModelDTO} from "@/generated-sources";
+import { api } from '@/api';
+import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import {computed, onActivated, ref} from "vue";
+import { computed, onActivated, ref } from "vue";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 interface Props {
-    projectId: number;
+  projectId: number;
 }
 
 const props = defineProps<Props>();
@@ -31,12 +33,12 @@ const missingValues = computed(() => {
 
 const emit = defineEmits(['createDebuggingSession'])
 
-async function createNewDebugginSession() {
+async function createNewDebuggingSession() {
     loading.value = true;
-    const debuggingSession = await api.prepareInspection({
-        datasetId: selectedDataset.value!.id,
-        modelId: selectedModel.value!.id,
-        name: sessionName.value,
+    const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
+    datasetId: selectedDataset.value!.id,
+    modelId: selectedModel.value!.id,
+    name: sessionName.value,
         sample: true
     });
     loading.value = false;
@@ -44,7 +46,7 @@ async function createNewDebugginSession() {
 
     closeDialog();
 
-    emit('createDebuggingSession', debuggingSession);
+  emit('createDebuggingSession', newDebuggingSession);
 }
 
 function closeDialog() {
@@ -75,32 +77,28 @@ onActivated(() => {
 
 <template>
   <div class="text-center">
-      <v-dialog v-model="dialog" width="60vw">
-          <template v-slot:activator="{ on, attrs }">
-              <v-btn color="primaryLight" class="primaryLightBtn" v-bind="attrs" v-on="on" @click="resetInputs">
-                  <v-icon left>add</v-icon>
-                  New debugging session
-              </v-btn>
-          </template>
-          <v-card>
-              <v-card-title class="headline">Create a new debugging session</v-card-title>
-              <v-card-text>
-                  <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense
-                                hide-details></v-text-field>
-                  <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
-                  <v-spacer></v-spacer>
-                  <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :return-object="true"
-                                   label="Dataset" class="selector"></DatasetSelector>
-              </v-card-text>
-              <v-card-actions>
-                  <v-btn text @click="closeDialog">Cancel</v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebugginSession"
-                         :disabled="missingValues" :loading="loading">Create
-                  </v-btn>
-              </v-card-actions>
-          </v-card>
-      </v-dialog>
+    <v-dialog v-model="dialog" width="60vw">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn color="primaryLight" class="primaryLightBtn" v-bind="attrs" v-on="on" @click="resetInputs">
+          <v-icon left>add</v-icon>
+          New debugging session
+        </v-btn>
+      </template>
+      <v-card>
+        <v-card-title class="headline">Create a new debugging session</v-card-title>
+        <v-card-text>
+          <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense hide-details></v-text-field>
+          <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
+          <v-spacer></v-spacer>
+          <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :return-object="true" label="Dataset" class="selector"></DatasetSelector>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="closeDialog">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues"  :loading="loading">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
