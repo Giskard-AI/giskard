@@ -18,9 +18,11 @@
           <v-tab>Tests</v-tab>
           <v-tab>Configuration</v-tab>
           <v-tab>Execution</v-tab>
+          <v-tab class="d-none">Compare executions</v-tab>
+          <v-tab class="d-none">Compare tests</v-tab>
         </v-tabs>
       </v-col>
-      <v-col>
+      <v-col cols="10">
         <v-tabs-items v-model="tab">
           <v-tab-item :transition="false">
             <div>Inputs</div>
@@ -52,10 +54,13 @@
                   <v-col>
                     <TestSuiteTestDetails
                         :project-id="projectId"
+                        :suite-id="suiteId"
                         :test="registry.tests[selectedTest.testId]"
                         :models="allModels"
                         :datasets="allDatasets"
-                        :inputs="selectedTest.testInputs"/>
+                        :inputs="selectedTest.testInputs"
+                        :executions="testSuiteResults[selectedTest.testId]"
+                        @updateTestSuite="loadData"/>
                   </v-col>
                 </v-row>
               </v-col>
@@ -72,7 +77,21 @@
                                  :datasets="allDatasets"
                                  :inputTypes="inputs"
                                  :executions="executions"
-                                 :tracked-executions="trackedJobs"/>          </v-tab-item>
+                                 :tracked-executions="trackedJobs"/>
+          </v-tab-item>
+          <v-tab-item :transition="false">
+            <TestSuiteCompareExecutions
+                :executions="executions"
+                :models="allModels"
+                :datasets="allDatasets"
+                :inputTypes="inputs"
+                :registry="registry"/>
+          </v-tab-item>
+          <v-tab-item :transition="false">
+            <TestSuiteCompareTest
+                :executions="executions"
+                :registry="registry"/>
+          </v-tab-item>
         </v-tabs-items>
       </v-col>
     </v-row>
@@ -82,7 +101,7 @@
 <script lang="ts" setup>
 
 import {api} from "@/api";
-import {onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {
   DatasetDTO,
   ModelDTO,
@@ -94,8 +113,12 @@ import {
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
+import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
+import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
+import TestSuiteCompareTest from '@/views/main/project/TestSuiteCompareTest.vue';
 import {useTrackJob} from '@/utils/use-track-job';
-import {useMainStore} from '@/stores/main';
+import {chain} from 'lodash';
+import {useMainStore} from "@/stores/main";
 
 const props = defineProps<{
   projectId: number,
@@ -103,6 +126,7 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
+
 const suite = ref<TestSuiteNewDTO | null>(null);
 const registry = ref<TestFunctionDTO[]>([]);
 const tab = ref<any>(null);
@@ -142,10 +166,43 @@ async function loadData() {
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
 }
 
+watch(() => suite.value, () => {
+  if (selectedTest.value !== null && suite.value !== null) {
+    selectedTest.value = suite.value.tests.find(test => test.testId === selectedTest.value?.testId) ?? null;
+  }
+})
+
+const testSuiteResults = computed(() => {
+  if (!executions.value) {
+    return {};
+  }
+
+  return chain(executions.value)
+      .map(execution => (execution.results ?? []).map(
+          result => ({
+            testResult: result,
+            testSuiteResult: execution
+          })
+      ))
+      .flatten()
+      .groupBy(result => result.testResult.test.testId)
+      .values();
+});
+
+useRouterTabsSynchronization([
+  'test-suite-new-inputs',
+  'test-suite-new-test',
+  'test-suite-new-configuration',
+  'test-suite-new-execution',
+  'test-suite-new-compare-executions',
+  'test-suite-new-compare-test'
+], tab);
+
 const {
   trackedJobs,
   addJob
 } = useTrackJob();
+
 async function onExecutionScheduled(jobUuid: string) {
   const result = await addJob(jobUuid);
   if (result) {

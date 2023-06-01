@@ -82,7 +82,10 @@ class Model(ABC):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
                 return clazz
         else:
-            return cls
+            # return cls
+            # TODO: temporarly consider models as sk-learn compatible, later rely on reading a model class from metadata
+            from giskard import SKLearnModel
+            return SKLearnModel
 
     def save_meta(self, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
@@ -188,37 +191,6 @@ class Model(ABC):
         """
         ...
 
-
-class WrapperModel(Model, ABC):
-    """
-    A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
-    This class introduces a `data_preprocessing_function` which can be used
-    to preprocess incoming data before it's passed
-    to the underlying model
-    """
-    clf: PyFuncModel
-    data_preprocessing_function: any
-
-    def __init__(self,
-                 clf,
-                 model_type: Union[SupportedModelTypes, str],
-                 data_preprocessing_function=None,
-                 name: str = None, feature_names=None,
-                 classification_threshold=0.5, classification_labels=None) -> None:
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
-        self.clf = clf
-        self.data_preprocessing_function = data_preprocessing_function
-
-    def predict_df(self, df):
-        if self.data_preprocessing_function:
-            df = self.data_preprocessing_function(df)
-        raw_prediction = self.clf_predict(df)
-        return raw_prediction
-
-    @abstractmethod
-    def clf_predict(self, df):
-        ...
-
     def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
         from giskard.core.model_validation import validate_model
 
@@ -252,12 +224,46 @@ class WrapperModel(Model, ABC):
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
+
         clazz = cls.determine_model_class(local_dir)
-        return clazz(
-            clf=clazz.read_model_from_local_dir(local_dir),
-            data_preprocessing_function=clazz.load_data_preprocessing_function(local_dir),
-            **meta.__dict__
-        )
+
+        return clazz.load(local_dir, **meta.__dict__)
+
+    @classmethod
+    @abstractmethod
+    def load(cls, local_dir, **kwargs):
+        ...
+
+
+class WrapperModel(Model, ABC):
+    """
+    A subclass of a Model that wraps an existing model object (clf) and uses it to make inference
+    This class introduces a `data_preprocessing_function` which can be used
+    to preprocess incoming data before it's passed
+    to the underlying model
+    """
+    clf: PyFuncModel
+    data_preprocessing_function: any
+
+    def __init__(self,
+                 clf,
+                 model_type: Union[SupportedModelTypes, str],
+                 data_preprocessing_function=None,
+                 name: str = None, feature_names=None,
+                 classification_threshold=0.5, classification_labels=None) -> None:
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
+        self.clf = clf
+        self.data_preprocessing_function = data_preprocessing_function
+
+    def predict_df(self, df):
+        if self.data_preprocessing_function:
+            df = self.data_preprocessing_function(df)
+        raw_prediction = self.clf_predict(df)
+        return raw_prediction
+
+    @abstractmethod
+    def clf_predict(self, df):
+        ...
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
@@ -268,6 +274,15 @@ class WrapperModel(Model, ABC):
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
         with open(Path(local_path) / "giskard-data-prep.pkl", 'wb') as f:
             cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
+
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        return cls(clf=cls.load_clf(local_dir), **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def load_clf(cls, local_dir):
+        ...
 
     @staticmethod
     def load_data_preprocessing_function(local_path: Union[str, Path]):
