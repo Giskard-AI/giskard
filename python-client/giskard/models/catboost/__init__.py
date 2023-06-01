@@ -13,8 +13,13 @@ class CatboostModel(Model):
         if feature_names is None and hasattr(clf, 'feature_names_'):
             feature_names = list(getattr(clf, 'feature_names_'))
 
-        super().__init__(clf, model_type, name, data_preprocessing_function, feature_names,
-                         classification_threshold, classification_labels)
+        super().__init__(clf=clf,
+                         model_type=model_type,
+                         name=name,
+                         data_preprocessing_function=data_preprocessing_function,
+                         feature_names=feature_names,
+                         classification_threshold=classification_threshold,
+                         classification_labels=classification_labels)
 
     @staticmethod
     def read_model_from_local_dir(local_path):
