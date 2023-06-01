@@ -42,7 +42,7 @@ class Dataset:
         from giskard.core.dataset_validation import validate_dataset
         validate_dataset(self)
 
-        dataset_id = uuid.uuid4().hex
+        dataset_id = str(uuid.uuid4())
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
             client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
