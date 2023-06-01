@@ -232,7 +232,7 @@ dependencies {
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.14.2")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
     implementation("org.apache.commons:commons-compress:1.21")
-
+    implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.google.protobuf:protobuf-java-util:3.21.9")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")

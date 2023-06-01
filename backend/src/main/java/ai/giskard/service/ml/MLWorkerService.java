@@ -19,21 +19,22 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -88,12 +89,22 @@ public class MLWorkerService {
         List<Integer> validRows = new ArrayList<>();
         CountDownLatch finishedLatch = new CountDownLatch(1);
         try (InputStream inputStream = fileUploadService.decompressFileToStream(path)) { // Maybe decompressFileToStream should go in some utils?
-            // Read headers
+            // Create record iterator
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String headers = reader.readLine();
+            final CSVFormat csvFormat = CSVFormat.Builder.create()
+                //.setHeader(HEADERS)
+                .setAllowMissingColumnNames(true)
+                .build();
+            final Iterator<CSVRecord> records = csvFormat.parse(reader).iterator();
+
+            StringWriter sw = new StringWriter();
+            CSVPrinter printer = new CSVPrinter(sw, CSVFormat.DEFAULT);
+            printer.printRecord(records.next());
+            String headers = sw.toString();
+
             AtomicReference<String> error = new AtomicReference<>();
 
-            StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, reader, validRows, limit, error));
+            StreamObserver<FilterDatasetRequest> observer = client.getNonBlockingStub().filterDataset(new FilterDatasetResponseStreamObserver(requestObserverRef, finishedLatch, records, validRows, limit, error));
             requestObserverRef.set(observer);
 
             FilterDatasetMetadata.Builder metaBuilder = FilterDatasetMetadata.newBuilder()
@@ -140,7 +151,7 @@ public class MLWorkerService {
     private class FilterDatasetResponseStreamObserver implements StreamObserver<FilterDatasetResponse> {
         private final AtomicReference<StreamObserver<FilterDatasetRequest>> requestObserverRef;
         private final CountDownLatch finishedLatch;
-        private final BufferedReader reader;
+        private final Iterator<CSVRecord> iterator;
         private final List<Integer> result;
         private final Integer limit;
         private final AtomicReference<String> error;
@@ -153,11 +164,14 @@ public class MLWorkerService {
                 // Start streaming requests. For now, use arbitrary chunk size of FILTER_CHUNK_SIZE_ROWS lines
                 int linesRead = 0;
                 int idx = 0;
-                String line;
-                StringBuilder sb = new StringBuilder();
-                while ((line = reader.readLine()) != null) { // Will read every line...
+                StringWriter sw = new StringWriter();
+                CSVPrinter printer = new CSVPrinter(sw, CSVFormat.DEFAULT);
+
+                while (iterator.hasNext()) { // Will read every line...
+                    CSVRecord line = iterator.next();
                     linesRead++;
-                    sb.append(line).append("\n");
+                    printer.printRecord(line);
+                    printer.println();
 
                     // If our limit is set, and we hit it, we stop reading the file.
                     if (limit > 0 && linesRead > limit) {
@@ -165,15 +179,15 @@ public class MLWorkerService {
                     }
 
                     if (linesRead == FILTER_CHUNK_SIZE_ROWS) {
-                        requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), StandardCharsets.UTF_8)).build()).setIdx(idx).build());
+                        requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sw.toString(), StandardCharsets.UTF_8)).build()).setIdx(idx).build());
                         linesRead = 0;
-                        sb = new StringBuilder();
                         idx++;
+                        sw.flush();
                     }
                 }
 
                 if (linesRead > 0) { // We still had some in the buffer, send em
-                    requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sb.toString(), "utf-8")).build()).setIdx(idx).build());
+                    requestObserverRef.get().onNext(FilterDatasetRequest.newBuilder().setData(Chunk.newBuilder().setContent(ByteString.copyFrom(sw.toString(), "utf-8")).build()).setIdx(idx).build());
                 }
 
                 requestObserverRef.get().onCompleted();
