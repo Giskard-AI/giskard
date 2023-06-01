@@ -69,7 +69,7 @@ class PerformanceBiasDetector:
 
         loss = self.loss
         if loss is None:
-            loss = "log_loss" if model.meta.type == "classification" else "mse"
+            loss = "log_loss" if model.is_classification else "mse"
 
         if callable(loss):
             try:
@@ -80,7 +80,7 @@ class PerformanceBiasDetector:
             # Validate string loss function
             if loss not in ["log_loss", "mse", "mae"]:
                 invalid_loss = loss
-                loss = "log_loss" if model.meta.type == "classification" else "mse"
+                loss = "log_loss" if model.is_classification == "classification" else "mse"
                 warning(f"PerformanceBiasDetector: Unknown loss function `{invalid_loss}`. Using `{loss}` instead.")
 
             if loss == "log_loss":
