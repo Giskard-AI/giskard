@@ -43,4 +43,3 @@ def test_sequence_classification_distilbert_base_uncased_pytorch():
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
-    
