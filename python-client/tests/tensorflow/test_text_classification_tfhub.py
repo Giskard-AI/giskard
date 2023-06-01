@@ -2,7 +2,7 @@ import pandas as pd
 import tensorflow as tf
 import tensorflow_hub as hub
 from sklearn import model_selection
-import tensorflow_text
+import tensorflow_text # noqa
 
 from giskard.client.giskard_client import GiskardClient
 from giskard import TensorFlowModel, Dataset
@@ -11,8 +11,6 @@ import requests_mock
 import re
 import tests.utils
 
-#tfhub_handle_encoder = 'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/1'
-#tfhub_handle_preprocess = 'https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3'
 tfhub_handle_preprocess = hub.load("https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
 tfhub_handle_preprocess = hub.KerasLayer(
     "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3")
@@ -20,38 +18,19 @@ tfhub_handle_encoder = hub.KerasLayer(
     "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/2",
     trainable=True)
 
-def test_text_classification_tfhub():
 
-    column_types={
-        'Target': "category",
-        "Subject": "text",
-        "Content": "text",
-        "Week_day": "category",
-        "Month": "category",
-        "Hour": "numeric",
-        "Nb_of_forwarded_msg": "numeric",
-        "Year": "numeric",
-    }
+def test_text_classification_tfhub():
 
     data_filtered = pd.read_csv('tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
 
-    Y = data_filtered["Target"]
-    X = data_filtered.drop(columns=["Target"])
-    X_train,X_test,Y_train,Y_test = model_selection.train_test_split(X, Y,test_size=0.20, random_state = 30, stratify = Y)
+    classification_labels_mapping = {'REGULATION': 0, 'INTERNAL': 1, 'CALIFORNIA CRISIS': 2, 'INFLUENCE': 3}
 
-    #=======================================================================================
+    y = data_filtered['Target'].map(classification_labels_mapping)
+    x = data_filtered['Content']
+    x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y,
+                                                                        test_size=0.20, random_state=30, stratify=y)
 
-    classification_labels_mapping = {'REGULATION': 0,'INTERNAL': 1,'CALIFORNIA CRISIS': 2,'INFLUENCE': 3}
-
-    Y = data_filtered['Target'].map(classification_labels_mapping)
-    X = data_filtered['Content']
-    X_train,X_test,Y_train,Y_test = model_selection.train_test_split(X, Y,test_size=0.20, random_state = 30, stratify = Y)
-
-    test_df = pd.DataFrame(list(zip(list(X_test), list(Y_test))), columns=["Content", "Target"])
-
-    from tensorflow.keras.utils import to_categorical
-    Y_train = to_categorical(Y_train)
-    Y_test = to_categorical(Y_test)
+    test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 
     def build_classifier_model():
 
@@ -71,10 +50,9 @@ def test_text_classification_tfhub():
                                clf=model,
                                feature_names=['Content'],
                                model_type="classification",
-                               classification_labels=['0','1','2','3'])
+                               classification_labels=['0', '1', '2', '3'])
 
     # defining the giskard dataset
-
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target", cat_columns=['Week_day', 'Month'])
 
     artifact_url_pattern = re.compile(
@@ -90,12 +68,8 @@ def test_text_classification_tfhub():
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
         client = GiskardClient(url, token)
-        # enron = client.create_project('test-project', "Email Classification", "Email Classification")
         my_model.upload(client, 'test-project', my_test_dataset)
 
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
         tests.utils.match_url_patterns(m.request_history, models_url_pattern)
-
-if __name__=="__main__":
-    test_text_classification_tfhub()

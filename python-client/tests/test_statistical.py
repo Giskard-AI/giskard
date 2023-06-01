@@ -2,6 +2,7 @@ import pytest
 
 from giskard.ml_worker.testing.functions import GiskardTestFunctions
 
+
 @pytest.mark.parametrize(
     "data,model,label,threshold,expected_metric,actual_slices_size",
     [
@@ -35,9 +36,7 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
         ("enron_data", "enron_model", 0, 0.01, 0.1, 10),
     ],
 )
-def test_statistical_filtered(
-    data, model, threshold, label, expected_metric, actual_slices_size, request
-):
+def test_statistical_filtered(data, model, threshold, label, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
@@ -62,9 +61,7 @@ def test_statistical_filtered(
         ("enron_data", "enron_model", 0, 0.1, 0.32, 25),
     ],
 )
-def test_output_in_range_clf(
-    data, model, threshold, label, expected_metric, actual_slices_size, request
-):
+def test_output_in_range_clf(data, model, threshold, label, expected_metric, actual_slices_size, request):
     tests = GiskardTestFunctions()
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
@@ -101,6 +98,7 @@ def test_output_in_range_reg(data, model, threshold, expected_metric, actual_sli
     assert round(results.metric, 2) == expected_metric
     assert results.passed
 
+
 def test_disparate_impact(german_credit_data, german_credit_model):
     tests = GiskardTestFunctions()
     results = tests.statistical.test_disparate_impact(
@@ -108,6 +106,6 @@ def test_disparate_impact(german_credit_data, german_credit_model):
         protected_slice=lambda df: df[df.sex == "female"],
         unprotected_slice=lambda df: df[df.sex == "male"],
         model=german_credit_model,
-        positive_outcome="Not default"
+        positive_outcome="Not default",
     )
     assert results.passed, f"DI = {results.metric}"
