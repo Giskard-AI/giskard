@@ -64,7 +64,7 @@ async function createTestSuite() {
 
 <style scoped>
 .test-suite-logo {
-    width: max(17.5vw, 150px);
+    width: min(17.5vw, 150px);
     margin-top: 2rem;
 }
 </style>

@@ -49,9 +49,8 @@
 <script setup lang="ts">
 
 import {computed, onMounted, ref} from 'vue';
-import {CallableDTO, FunctionInputDTO} from '@/generated-sources';
+import {CallableDTO, DatasetProcessFunctionDTO, FunctionInputDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import {chain} from 'lodash';
 import {useMainStore} from "@/stores/main";
 
 const props = defineProps<{
@@ -62,13 +61,15 @@ const props = defineProps<{
 }>();
 
 const functionInputs = ref<{ [name: string]: FunctionInputDTO }>({});
+const inputs = ref<{ [name: string]: string }>({});
 
 onMounted(() => loadData());
 
 const emits = defineEmits(['save', 'cancel'])
 
+
 async function loadData() {
-    functionInputs.value = props.function.args.reduce((result, arg) => {
+    functionInputs.value = props.function.args?.reduce((result, arg) => {
         result[arg.name] = props.defaultValue[arg.name] ?? {
             name: arg.name,
             type: arg.type,
@@ -77,15 +78,29 @@ async function loadData() {
             params: []
         }
         return result
-    }, {} as { [name: string]: FunctionInputDTO })
+    }, {} as { [name: string]: FunctionInputDTO }) ?? {};
+
+    let processFunction = props.function as DatasetProcessFunctionDTO;
+    if (processFunction.cellLevel) {
+        functionInputs.value = {
+            ...functionInputs.value,
+            column_name: {
+                type: 'str',
+                value: null,
+                isAlias: false,
+                name: 'column_name',
+                params: []
+            }
+        }
+    }
+
+    inputs.value = Object.entries(functionInputs.value)
+        .reduce((result, [key, value]) => {
+            result[key] = value.type
+            return result
+        }, {})
 }
 
-const inputs = computed(() =>
-    chain(props.function.args)
-        .keyBy('name')
-        .mapValues('type')
-        .value()
-);
 
 const invalid = computed(() => Object.values(functionInputs.value)
     .findIndex(param => param.value === null || param.value.trim() === '') !== -1)

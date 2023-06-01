@@ -7,6 +7,7 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.web.dto.DatasetMetadataDTO;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.FeatureMetadataDTO;
+import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
@@ -18,10 +19,9 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,6 +34,7 @@ public class DatasetService {
     private final FileLocationService locationService;
     private final FileUploadService fileUploadService;
     private final PermissionEvaluator permissionEvaluator;
+    private final InspectionService inspectionService;
 
     /**
      * Read table from file
@@ -96,9 +97,23 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
+    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax, RowFilterDTO rowFilter) throws IOException {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
+
+        if (rowFilter.getFilter() != null) {
+            table = inspectionService.getRowsFiltered(table, rowFilter.getFilter());
+        }
+
+        if (rowFilter.getRemoveRows() != null) {
+            Table finalTable = table;
+            table = table.dropRows(Arrays.stream(rowFilter.getRemoveRows())
+                .mapToObj(idx -> finalTable.stream().filter(row -> row.getInt(GISKARD_DATASET_INDEX_COLUMN_NAME) == idx).findFirst())
+                .filter(Optional::isPresent)
+                .mapToInt(row -> row.get().getRowNumber())
+                .toArray());
+        }
+
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
                 .collect(Collectors.toMap(Function.identity(), row::getObject)))
