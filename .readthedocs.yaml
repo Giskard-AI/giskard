@@ -12,7 +12,7 @@ build:
       - which python
 #      - pdm config python.use_venv false
     post_install:
-      - sh -c "which python && cd python-client && pdm config python.use_venv false && pdm info && pdm install -G doc && pdm config && pip list && pip --version && python -c 'import myst_parser;print(11111 )'"
+      - sh -c "which python && cd python-client && pdm config python.use_venv false && pdm info && pdm install -G doc && pdm config && pip list && pip --version && python -c 'import myst_parser;print(123)'"
 #      - pip install -r python-client/requirements.txt
 
 
