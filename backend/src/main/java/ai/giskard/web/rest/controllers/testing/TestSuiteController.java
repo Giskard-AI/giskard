@@ -121,7 +121,7 @@ public class TestSuiteController {
     public TestSuiteNewDTO addTestToSuite(@PathVariable("projectId") long projectId,
                                           @PathVariable("suiteId") long suiteId,
                                           @Valid @RequestBody SuiteTestDTO suiteTest) {
-        return testSuiteService.addTestToSuite(suiteId, suiteTest);
+        return giskardMapper.toDTO(testSuiteService.addTestToSuite(suiteId, suiteTest));
     }
 
     @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
