@@ -121,13 +121,13 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = [],
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = [],
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
