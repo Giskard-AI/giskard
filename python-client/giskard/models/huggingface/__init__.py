@@ -44,9 +44,9 @@ class HuggingFaceModel(WrapperModel):
         huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
-                pytorch_meta = yaml.load(f, Loader=yaml.Loader)
+                huggingface_meta_file = yaml.load(f, Loader=yaml.Loader)
 
-        return AutoModel.from_pretrained(local_path, from_tf=pytorch_meta["from_tf"])
+        return AutoModel.from_pretrained(local_path, from_tf=huggingface_meta_file["from_tf"])
 
     def save_huggingface_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
