@@ -101,6 +101,11 @@ def _test_diff_prediction(
 
 @test(name="AUC test class", tags=["performance"])
 class AucTest(GiskardTest):
+    """
+    Test if the model AUC performance is higher than a threshold for a given slice
+
+    Example : The test is passed when the AUC for females is higher than 0.7
+    """
     actual_slice: Dataset
     model: Model
     threshold: float
@@ -109,11 +114,27 @@ class AucTest(GiskardTest):
                  actual_slice: Dataset = None,
                  model: Model = None,
                  threshold: float = None):
+        """
+        Init an AucTest instance, can be passed in Suite.add_test method
+        :param actual_slice: Slice of the actual dataset
+        :param model: Model used to compute the test
+        :param threshold: Threshold value of AUC metrics
+        """
         self.actual_slice = actual_slice
         self.model = model
         self.threshold = threshold
 
     def execute(self) -> SingleTestResult:
+        """
+
+        :return:
+          actual_slices_size:
+            Length of actual_slice tested
+          metric:
+            The AUC performance metric
+          passed:
+            TRUE if AUC metrics >= threshold
+        """
         return test_auc(self.actual_slice, self.model, self.threshold)
 
 
