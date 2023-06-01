@@ -47,3 +47,12 @@ def titanic():
     test_data = pd.concat([X_test, Y_test], axis=1)
 
     return clf, test_data
+
+
+def preprocessor_and_model():
+    clf, _ = titanic()
+
+    def preprocessor(df):
+        return clf[0].transform(df)
+
+    return preprocessor, clf[1]
