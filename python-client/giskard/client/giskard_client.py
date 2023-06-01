@@ -160,7 +160,7 @@ class GiskardClient:
         return DatasetMeta(
             name=res['name'],
             target=res['target'],
-            feature_types=res['featureTypes'],
+            column_meanings=res['columnMeanings'],
             column_types=res['columnTypes'],
         )
 
@@ -256,7 +256,7 @@ class GiskardClient:
             "id": dataset_id,
             "name": meta.name,
             "target": meta.target,
-            "featureTypes": meta.feature_types,
+            "columnMeanings": meta.column_meanings,
             "columnTypes": meta.column_types,
             "originalSizeBytes": original_size_bytes,
             "compressedSizeBytes": compressed_size_bytes
@@ -268,7 +268,7 @@ class GiskardClient:
                 "id": anonymize(dataset_id),
                 "name": anonymize(meta.name),
                 "target": anonymize(meta.target),
-                "featureTypes": anonymize(meta.feature_types),
+                "columnMeanings": anonymize(meta.column_meanings),
                 "columnTypes": anonymize(meta.column_types),
                 "original_size_bytes": original_size_bytes,
                 "compressed_size_bytes": compressed_size_bytes
