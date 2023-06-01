@@ -26,7 +26,18 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-debugger' }" value="debugger">
+            <v-list-item v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" :to="{
+              name: 'inspection', params: {
+                projectId: route.params.id,
+                inspectionId: debuggingSessionsStore.currentDebuggingSessionId,
+              }
+            }" value="debugger">
+              <v-list-item-content>
+                <v-icon>mdi-shield-search</v-icon>
+                <div class="caption">Debugger</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item v-else :to="{ name: 'project-debugger' }" value="debugger">
               <v-list-item-content>
                 <v-icon>mdi-shield-search</v-icon>
                 <div class="caption">Debugger</div>
@@ -87,14 +98,15 @@
 <script lang="ts" setup>
 import { useUserStore } from "@/stores/user";
 import { useMainStore } from "@/stores/main";
-import { computed, ref } from "vue";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
 const mainStore = useMainStore();
 const userStore = useUserStore();
-
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 let warningMessage = ref<string>()
 

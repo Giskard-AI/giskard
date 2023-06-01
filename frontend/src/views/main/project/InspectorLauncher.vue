@@ -34,8 +34,11 @@ import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
 import { useRouter } from "vue-router/composables";
 import OverlayLoader from "@/components/OverlayLoader.vue";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
 const router = useRouter();
+
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 interface Props {
   projectId: number,
@@ -77,12 +80,9 @@ async function launchInspector() {
   try {
     creatingInspection.value = true;
     const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
+    debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);
     await router.push({
-      name: 'inspection',
-      params: {
-        projectId: props.projectId.toString(),
-        inspectionId: inspection.id.toString()
-      }
+      name: 'project-debugger',
     })
     reset();
   } finally {
