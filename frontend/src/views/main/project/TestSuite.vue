@@ -32,8 +32,15 @@
                             <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
                             </v-select>
                             <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text" outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense></v-text-field>
-                            <div class="flex-grow-1" />
-                            <v-btn color="primary" large text disabled>Export</v-btn>
+                            <div class="flex-grow-1"></div>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <div v-on="on">
+                                        <v-btn color="primary" large text @click="openExportDialog" disabled>Export</v-btn>
+                                    </div>
+                                </template>
+                                <span>Coming soon</span>
+                            </v-tooltip>
                             <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress" @click='openRunTestSuite(true)' color="primary">
                                 Compare
                             </v-btn>
@@ -66,6 +73,7 @@ import { useCatalogStore } from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 import { api } from "@/api";
 import { useTestSuitesStore } from "@/stores/test-suites";
+import ExportTestModalVue from "./modals/ExportTestModal.vue";
 
 const testSuitesStore = useTestSuitesStore();
 
@@ -75,7 +83,6 @@ const props = defineProps<{
     suiteId: number
 }>();
 
-const mainStore = useMainStore();
 const {
     suite,
     inputs,
@@ -135,6 +142,12 @@ async function openSettings() {
 async function reditectToTesting() {
     testSuitesStore.setCurrentTestSuiteId(null);
     await router.push({ name: 'project-testing' });
+}
+
+function openExportDialog() {
+    $vfm.show({
+        component: ExportTestModalVue,
+    });
 }
 
 </script>
