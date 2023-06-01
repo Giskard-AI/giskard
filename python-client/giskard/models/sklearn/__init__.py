@@ -18,8 +18,6 @@ class SKLearnModel(MLFlowBasedModel):
 
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))
-        if feature_names is None and hasattr(clf, "feature_names_in_"):
-            feature_names = list(getattr(clf, "feature_names_in_"))
 
         super().__init__(
             clf=clf,

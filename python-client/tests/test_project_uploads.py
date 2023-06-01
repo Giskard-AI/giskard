@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from sklearn.dummy import DummyClassifier
 
-from giskard.core.core import SupportedFeatureTypes, SupportedModelTypes
-from giskard.core.dataset_validation import validate_column_categorization, validate_feature_types
+from giskard.core.core import SupportedColumnTypes, SupportedModelTypes
+from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
 from giskard.core.model import ModelPredictionResults
 from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
 from giskard.core.validation import validate_is_pandasdataframe
@@ -71,7 +71,7 @@ def test_validate_deterministic_model():
         validate_deterministic_model(constant_model, ds, ModelPredictionResults(raw=ones * 0.99999))
 
 
-def test_validate_feature_types(german_credit_data, german_credit_test_data):
+def test_validate_column_types(german_credit_data, german_credit_test_data):
     test_ds = german_credit_test_data
     ds = german_credit_data
 
@@ -81,28 +81,28 @@ def test_validate_feature_types(german_credit_data, german_credit_test_data):
     ):
         validate_column_categorization(test_ds)
 
-    test_ds.feature_types = {c: test_ds.feature_types[c] for c in test_ds.feature_types if c != test_ds.target}
+    test_ds.column_types = {c: test_ds.column_types[c] for c in test_ds.column_types if c != test_ds.target}
     validate_column_categorization(ds)
-    original_feature_types = ds.feature_types
+    original_column_types = ds.column_types
 
     with pytest.raises(ValueError) as e:
-        ds.feature_types = {c: original_feature_types[c] for c in original_feature_types if c not in {ds.target, "sex"}}
-        validate_feature_types(ds)
-    assert e.match(r"Invalid feature_types parameter: Please declare the type for {'sex'} columns")
+        ds.column_types = {c: original_column_types[c] for c in original_column_types if c not in {ds.target, "sex"}}
+        validate_column_types(ds)
+    assert e.match(r"Invalid column_types parameter: Please declare the type for {'sex'} columns")
 
     with pytest.raises(ValueError) as e:
-        new_ft = dict(original_feature_types)
-        new_ft["non-existing-column"] = SupportedFeatureTypes.CATEGORY.value
-        ds.feature_types = new_ft
-        validate_feature_types(ds)
-    assert e.match(r"Missing columns in dataframe according to feature_types: {'non-existing-column'}")
+        new_ft = dict(original_column_types)
+        new_ft["non-existing-column"] = SupportedColumnTypes.CATEGORY.value
+        ds.column_types = new_ft
+        validate_column_types(ds)
+    assert e.match(r"Missing columns in dataframe according to column_types: {'non-existing-column'}")
 
-    broken_types = dict(test_ds.feature_types)
-    broken_types["people_under_maintenance"] = SupportedFeatureTypes.CATEGORY.value
-    broken_types["sex"] = SupportedFeatureTypes.NUMERIC.value
+    broken_types = dict(test_ds.column_types)
+    broken_types["people_under_maintenance"] = SupportedColumnTypes.CATEGORY.value
+    broken_types["sex"] = SupportedColumnTypes.NUMERIC.value
     with pytest.warns(
             UserWarning,
             match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
     ):
-        test_ds.feature_types = broken_types
+        test_ds.column_types = broken_types
         validate_column_categorization(test_ds)
