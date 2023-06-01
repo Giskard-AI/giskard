@@ -29,10 +29,6 @@
                     <v-icon small>close</v-icon>
                     Failed
                 </v-chip>
-                <v-btn color="primary" outlined small>
-                    <v-icon small>info</v-icon>
-                    Debug
-                </v-btn>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                         <div v-on="on">
