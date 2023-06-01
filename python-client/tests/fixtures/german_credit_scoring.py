@@ -56,7 +56,7 @@ def german_credit_data() -> Dataset:
 
 
 @pytest.fixture()
-def german_credit_catboost(german_credit_data) -> Model:
+def german_credit_catboost(german_credit_data) -> SKLearnModel:
     from catboost import CatBoostClassifier
     from sklearn import model_selection
 
@@ -139,7 +139,7 @@ def german_credit_raw_model(german_credit_data):
 
 
 @pytest.fixture()
-def german_credit_model(german_credit_raw_model) -> Model:
+def german_credit_model(german_credit_raw_model) -> SKLearnModel:
     return SKLearnModel(
         clf=german_credit_raw_model,
         model_type=SupportedModelTypes.CLASSIFICATION,
@@ -150,7 +150,7 @@ def german_credit_model(german_credit_raw_model) -> Model:
 
 
 @pytest.fixture()
-def german_credit_always_default_model(german_credit_data) -> Model:
+def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
     X = german_credit_data.df.drop(columns="default")
     y = german_credit_data.df["default"]
 
