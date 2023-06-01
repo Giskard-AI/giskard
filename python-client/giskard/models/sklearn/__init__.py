@@ -1,23 +1,26 @@
-from typing import Union
+from typing import Union, Callable, Iterable, Any, Optional
+import pandas as pd
 from giskard.core.core import SupportedModelTypes
+from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
 
 try:
     import mlflow
-except ImportError:
-    pass
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install mlflow-skinny'") from e
 
 
 class SKLearnModel(MLFlowBasedModel):
+    @validate_args
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
-                 name: str = None,
-                 data_preprocessing_function=None,
-                 model_postprocessing_function=None,
-                 feature_names=None,
-                 classification_threshold=0.5,
-                 classification_labels=None) -> None:
+                 name: Optional[str] = None,
+                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+                 model_postprocessing_function: Callable[[Any], Any] = None,
+                 feature_names: Optional[Iterable] = None,
+                 classification_threshold: float = 0.5,
+                 classification_labels: Optional[Iterable] = None) -> None:
 
         if classification_labels is None and hasattr(clf, "classes_"):
             classification_labels = list(getattr(clf, "classes_"))

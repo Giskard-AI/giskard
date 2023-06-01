@@ -1,8 +1,10 @@
 from typing import Dict, Optional, List
 import pandas as pd
 from giskard.datasets.base import Dataset
+from giskard.core.validation import validate_args
 
 
+@validate_args
 def dataset(df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,

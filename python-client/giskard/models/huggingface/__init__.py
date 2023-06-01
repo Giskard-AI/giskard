@@ -1,32 +1,38 @@
-from typing import Union
+from typing import Union, Optional, Iterable, Any, Callable
+import pandas as pd
 import logging
 from scipy import special
 from pathlib import Path
 import yaml
 from giskard.core.core import SupportedModelTypes
+from giskard.core.validation import validate_args
 from giskard.models.base import WrapperModel
 
 try:
     import torch
-    from transformers import pipeline, pipelines
-except ImportError:
-    pass
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install torch'") from e
 
+try:
+    from transformers import pipeline, pipelines
+except ImportError as e:
+    raise ImportError("Please install it via 'pip install transformers'") from e
 
 logger = logging.getLogger(__name__)
 
 
 class HuggingFaceModel(WrapperModel):
+    @validate_args
     def __init__(
         self,
         clf,
         model_type: Union[SupportedModelTypes, str],
-        name: str = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: float = 0.5,
+        classification_labels: Optional[Iterable] = None
     ) -> None:
 
         super().__init__(
