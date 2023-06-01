@@ -28,10 +28,6 @@ items:
       #                Threshold value for PSI
       #
       #        Returns:
-      #            actual_slices_size:
-      #                Length of rows with given categorical feature in actual slice
-      #            reference_slices_size:
-      #                Length of rows with given categorical feature in reference slice
       #            metric:
       #                The total psi score between the actual and reference datasets
       #            passed:
@@ -72,10 +68,6 @@ items:
       #                Threshold for p-value of chi-square
       #
       #        Returns:
-      #            actual_slices_size:
-      #                Length of rows with given categorical feature in actual slice
-      #            reference_slices_size:
-      #                Length of rows with given categorical feature in reference slice
       #            metric:
       #                The pvalue of chi square test
       #            passed:
@@ -116,10 +108,6 @@ items:
       #                Threshold for p-value of KS test
       #
       #        Returns:
-      #            actual_slices_size:
-      #                Length of rows with given numerical feature in actual slice
-      #            reference_slices_size:
-      #                Length of rows with given numerical feature in reference slice
       #            metric:
       #                The pvalue of KS test
       #            passed:
@@ -160,10 +148,6 @@ items:
       #                Threshold for earth movers distance
       #
       #        Returns:
-      #            actual_slices_size:
-      #                Length of rows with given numerical feature in actual slice
-      #            reference_slices_size:
-      #                Length of rows with given numerical feature in reference slice
       #            metric:
       #                The earth movers distance
       #            passed:

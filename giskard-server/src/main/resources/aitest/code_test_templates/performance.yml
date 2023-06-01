@@ -28,8 +28,6 @@ items:
       #              Threshold value of AUC metrics
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The AUC performance metric
       #          passed:
@@ -67,8 +65,6 @@ items:
       #              Threshold value for F1 Score
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The F1 score metric
       #          passed:
@@ -111,10 +107,6 @@ items:
       #              Threshold value for F1 Score difference
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The F1 Score difference  metric
       #          passed:
@@ -157,10 +149,6 @@ items:
       #          threshold(float):
       #              Threshold value for F1 Score difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The F1 Score difference  metric
       #          passed:
@@ -198,8 +186,6 @@ items:
       #          threshold(float):
       #              Threshold value for Accuracy
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The Accuracy metric
       #          passed:
@@ -240,10 +226,6 @@ items:
       #          threshold(float):
       #              Threshold value for Accuracy Score difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The Accuracy difference  metric
       #          passed:
@@ -286,10 +268,6 @@ items:
       #          threshold(float):
       #              Threshold value for Accuracy difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The Accuracy difference  metric
       #          passed:
@@ -327,8 +305,6 @@ items:
       #              Threshold value for Precision
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The Precision metric
       #          passed:
@@ -369,10 +345,6 @@ items:
       #          threshold(float):
       #              Threshold value for Precision difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The Precision difference  metric
       #          passed:
@@ -410,8 +382,6 @@ items:
       #              Threshold value for Recall
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The Recall metric
       #          passed:
@@ -453,10 +423,6 @@ items:
       #              Threshold value for Recall difference
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The Recall difference  metric
       #          passed:
@@ -493,8 +459,6 @@ items:
       #              Threshold value for RMSE
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The RMSE metric
       #          passed:
@@ -534,10 +498,6 @@ items:
       #          threshold(float):
       #              Threshold value for RMSE difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The RMSE difference  metric
       #          passed:
@@ -579,10 +539,6 @@ items:
       #          threshold(float):
       #              Threshold value for RMSE difference
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The RMSE difference  metric
       #          passed:
@@ -619,10 +575,6 @@ items:
       #              Threshold value for MAE
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
-      #          reference_slices_size:
-      #              Length of reference_slice tested
       #          metric:
       #              The MAE metric
       #          passed:
@@ -658,8 +610,6 @@ items:
       #              Threshold value for R-Squared
       #
       #      Returns:
-      #          actual_slices_size:
-      #              Length of actual_slice tested
       #          metric:
       #              The R-Squared metric
       #          passed:
