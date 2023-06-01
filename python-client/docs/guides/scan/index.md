@@ -389,9 +389,9 @@ Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
-results = giskard.scan(wrapped_model, wrapped_dataset)
+scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
-display(results)  # in your notebook
+display(scan_results)  # in your notebook
 ```
 
 In the notebook, this will produce a widget that allows you to explore the detected issues:
@@ -401,7 +401,7 @@ You can also get a table of the scan results as a `pandas.DataFrame`. This is us
 the scan to a CSV or HTML file.
 
 ```python
-results_df = results.to_dataframe()
+results_df = scan_results.to_dataframe()
 results_df.to_csv("scan_results_my_model.csv")
 ```
 
@@ -412,9 +412,9 @@ tests (a test suite) that will reproduce those issues.
 You can then interactively debug the problems by uploading the generate test suite to Giskard UI.
 
 ```python
-results = giskard.scan(wrapped_model, wrapped_dataset)
+scan_results = giskard.scan(wrapped_model, wrapped_dataset)
 
-test_suite = results.generate_test_suite("My first test suite")
+test_suite = scan_results.generate_test_suite("My first test suite")
 
 # You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()
