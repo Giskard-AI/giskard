@@ -2,6 +2,7 @@ import logging
 import os
 import re
 from pathlib import Path
+from typing import Optional
 
 import click
 import docker
@@ -76,8 +77,16 @@ def get_image_name(version=None):
     return f"{IMAGE_NAME}:{version}"
 
 
-def get_container(version=None) -> Container:
-    return create_docker_client().containers.get(get_container_name(version))
+def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
+    name = get_container_name(version)
+    try:
+        return create_docker_client().containers.get(name)
+    except NotFound:
+        if quit_if_not_exists:
+            logger.error(f"Container {name} could not be found. Run `giskard server start` to create the container")
+            raise click.Abort()
+        else:
+            return None
 
 
 def _start(attached=False, version=None):
@@ -93,9 +102,9 @@ def _start(attached=False, version=None):
 
     home_volume = _get_home_volume()
 
-    try:
-        container = get_container(version)
-    except NotFound:
+    container = get_container(version, quit_if_not_exists=False)
+
+    if not container:
         container = create_docker_client().containers.create(get_image_name(version),
                                                              detach=not attached,
                                                              name=get_container_name(version),
@@ -127,8 +136,9 @@ def _pull_image(version):
         try:
             create_docker_client().images.pull(IMAGE_NAME, tag=version)
         except NotFound:
-            logger.error(f"Image {get_image_name(version)} not found")
-            exit(1)
+            logger.error(
+                f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml")
+            raise click.Abort()
 
 
 @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
@@ -196,15 +206,13 @@ def stop():
 
     Stops a running Giskard server. Does nothing if Giskard server is not running.
     """
-    try:
-        container = get_container()
-        if container.status != 'exited':
-            logger.info("Stopping Giskard Server")
-            container.stop()
-        else:
-            logger.info(f"Giskard container {container.name} is not running")
-    except NotFound:
-        logger.info(f"Giskard container {get_container_name()} is not found")
+    container = get_container()
+    if container.status != 'exited':
+        logger.info("Stopping Giskard Server")
+        container.stop()
+        logger.info("Giskard Server stopped")
+    else:
+        logger.info(f"Giskard container {container.name} is not running")
 
 
 @server.command("restart")
@@ -330,6 +338,10 @@ def update(version):
     logger.info(f"Giskard Server updated to {version}")
 
 
+def convert_version_to_number(version: str) -> int:
+    return int(''.join(re.findall(r'\d', version)))
+
+
 @server.command("status")
 @common_options
 def status():
@@ -347,7 +359,7 @@ def status():
 
     latest = _fetch_latest_tag()
 
-    if version != latest:
+    if convert_version_to_number(version) < convert_version_to_number(version):
         logger.info(f"A new version is available: {latest}")
 
     container = get_container()
