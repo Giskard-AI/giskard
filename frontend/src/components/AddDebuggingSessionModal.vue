@@ -4,7 +4,9 @@ import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import { computed, onActivated, ref } from "vue";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 interface Props {
   projectId: number;
@@ -30,8 +32,8 @@ const missingValues = computed(() => {
 
 const emit = defineEmits(['createDebuggingSession'])
 
-async function createNewDebugginSession() {
-  const debuggingSession = await api.prepareInspection({
+async function createNewDebuggingSession() {
+  const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
     datasetId: selectedDataset.value!.id,
     modelId: selectedModel.value!.id,
     name: sessionName.value
@@ -39,7 +41,7 @@ async function createNewDebugginSession() {
 
   closeDialog();
 
-  emit('createDebuggingSession', debuggingSession);
+  emit('createDebuggingSession', newDebuggingSession);
 }
 
 function closeDialog() {
@@ -88,7 +90,7 @@ onActivated(() => {
         <v-card-actions>
           <v-btn text @click="closeDialog">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
+          <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

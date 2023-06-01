@@ -14,6 +14,7 @@ import ai.giskard.web.dto.CreateFeedbackDTO;
 import ai.giskard.web.dto.CreateFeedbackReplyDTO;
 import ai.giskard.web.dto.FeedbackDTO;
 import ai.giskard.web.dto.FeedbackMinimalDTO;
+import ai.giskard.web.dto.FeedbackReplyDTO;
 import ai.giskard.web.dto.mapper.FeedbackMapper;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.UnauthorizedException;
@@ -25,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static ai.giskard.service.MailService.FeedbackNotificationType.*;
@@ -142,4 +144,40 @@ public class FeedbackController {
             throw new UnauthorizedException("Delete", Entity.FEEDBACK);
         }
     }
+
+
+    @GetMapping("/{feedbackId}/replies")
+    @Transactional
+    public List<FeedbackReplyDTO> getRepliesOfFeedback(@PathVariable("feedbackId") long feedbackId) {
+        List<FeedbackReply> replies = new ArrayList<>();
+        Feedback feedback = feedbackRepository.findOneById(feedbackId);
+
+        String currUserLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
+        if (SecurityUtils.isCurrentUserAdmin() ||
+            feedback.getProject().getOwner().getLogin().equals(currUserLogin) ||
+            feedback.getUser().getLogin().equals(currUserLogin)
+        ) {
+            replies = feedbackReplyRepository.findAllByFeedback(feedback);
+        }
+        return feedbackMapper.feedbackRepliesToFeedbackReplyDTOs(replies);
+    }
+
+
+    @DeleteMapping("/{feedbackId}/replies/{feedbackReplyId}")
+    public ResponseEntity<Void> deleteFeedbackReply(@PathVariable("feedbackId") long feedbackId, @PathVariable("feedbackReplyId") long feedbackReplyId) {
+        FeedbackReply feedbackReply = feedbackReplyRepository.findOneById(feedbackReplyId);
+        Long currUserId = SecurityUtils.getCurrentAuthenticatedUserId();
+        if (SecurityUtils.isCurrentUserAdmin() ||
+            feedbackReply.getFeedback().getProject().getOwner().getId().equals(currUserId) ||
+            feedbackReply.getUser().getId().equals(currUserId)
+        ) {
+            List<FeedbackReply> repliesToReply = feedbackReplyRepository.findAllByReplyToReply(feedbackReplyId);
+            feedbackReplyRepository.deleteAll(repliesToReply);
+            feedbackReplyRepository.delete(feedbackReply);
+            return ResponseEntity.noContent().build();
+        } else {
+            throw new UnauthorizedException("Delete", Entity.FEEDBACK_REPLY);
+        }
+    }
+
 }
