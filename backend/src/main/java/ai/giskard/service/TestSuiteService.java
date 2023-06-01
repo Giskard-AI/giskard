@@ -200,7 +200,6 @@ public class TestSuiteService {
                         namedSingleTestResult -> new SingleTestResultDTO(namedSingleTestResult.getResult()))));
             } catch (Exception e) {
                 log.error("Error while executing test suite {}", testSuite.getName(), e);
-
                 execution.setResult(TestResult.ERROR);
             }
 
