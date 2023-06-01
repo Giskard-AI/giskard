@@ -1,9 +1,9 @@
 from typing import Sequence
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...performance import PerformanceIssue
-from ....models.base import BaseModel
-from ....datasets.base import Dataset
-from ...logger import logger
+from ..performance import PerformanceIssue
+from ...models.base import BaseModel
+from ...datasets.base import Dataset
+from ..logger import logger
 from giskard.scanner.performance.performance_bias_detector import PerformanceBiasDetector, IssueFinder
 from abc import abstractmethod
 
