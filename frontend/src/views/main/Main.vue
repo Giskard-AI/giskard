@@ -1,24 +1,16 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer
-        dark
-        fixed
-        app
-        persistent
-        class="background"
-        mobile-breakpoint="sm"
-        width="72"
-    >
+    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="72" color="#91f7c0">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
           <v-list-item to="/">
             <v-list-item-content>
               <div class="align-center text-center">
-                <img src="@/assets/logo_v2_white.png" alt="Giskard icon" width="45px"/>
+                <img src="@/assets/logo_v2.png" alt="Giskard icon" width="45px" />
               </div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
+          <v-divider />
           <v-list-item to="/main/projects">
             <v-list-item-content>
               <v-icon>web</v-icon>
@@ -38,14 +30,14 @@
               </v-tooltip>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
+          <v-divider />
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
               <v-icon>mdi-cog</v-icon>
               <div class="caption">Settings</div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
+          <v-divider />
           <v-list-item to="/main/profile/view" v-if="authAvailable">
             <v-list-item-content>
               <v-icon>person</v-icon>
@@ -69,9 +61,9 @@
 </template>
 
 <script lang="ts" setup>
-import {useUserStore} from "@/stores/user";
-import {useMainStore} from "@/stores/main";
-import {computed, ref} from "vue";
+import { useUserStore } from "@/stores/user";
+import { useMainStore } from "@/stores/main";
+import { computed, ref } from "vue";
 import moment from "moment/moment";
 
 const mainStore = useMainStore();
@@ -114,8 +106,6 @@ async function logout() {
 </script>
 
 <style scoped>
-
-
 .background {
   background-image: none;
   background-position: 0 20%;
