@@ -1,4 +1,3 @@
-import tempfile
 from typing import List, Iterable
 
 import numpy as np
@@ -18,15 +17,6 @@ def validate_model(
 ):
     model_type = model.meta.model_type
 
-    loaded_model, loaded_data_prep_fn = validate_model_save_load(model)
-    model = Model(
-        clf=loaded_model,
-        data_preprocessing_function=loaded_data_prep_fn,
-        model_type=model.meta.model_type,
-        feature_names=model.meta.feature_names,
-        classification_labels=model.meta.classification_labels,
-        classification_threshold=model.meta.classification_threshold
-    )
     if model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
@@ -78,21 +68,6 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
         warning("Model is stochastic and not deterministic. Prediction function returns different results"
                 "after being invoked for the same data multiple times.")
-
-
-def validate_model_save_load(model: Model):
-    """
-    Validates if the model can be pickled and un-pickled using cloud pickle
-    """
-    try:
-        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
-            model.save_to_local_dir(f)
-            model.save_data_preprocessing_function(f)
-            loaded_model = Model.read_model_from_local_dir(f)
-            loaded_data_prep_fn = Model.read_data_preprocessing_function_from_artifact(f)
-            return loaded_model, loaded_data_prep_fn
-    except Exception as e:
-        raise ValueError("Failed to validate model saving and loading from local disk") from e
 
 
 def validate_data_preprocessing_function(prediction_function):

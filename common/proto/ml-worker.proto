@@ -84,7 +84,7 @@ message ExplainTextRequest{
   ArtifactRef model = 1;
   string feature_name = 2;
   map<string, string> columns = 3;
-  map<string, string> column_meanings = 4;
+  map<string, string> feature_types = 4;
   uint32 n_samples = 5;
 }
 
@@ -121,7 +121,7 @@ message RunModelForDataFrameRequest{
   ArtifactRef model = 1;
   DataFrame dataframe = 2;
   string target = 3;
-  map<string, string> column_meanings = 4;
+  map<string, string> feature_types = 4;
   map<string, string> column_types = 5;
 
 }
