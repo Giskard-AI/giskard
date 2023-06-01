@@ -308,11 +308,11 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-        self.save_with_mflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        self.save_with_mlflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
     @abstractmethod
-    def save_with_mflow(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
         ...
 
 
