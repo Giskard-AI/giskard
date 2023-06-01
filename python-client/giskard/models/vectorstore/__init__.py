@@ -1,14 +1,10 @@
-import uuid
-from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Union
-
 import cloudpickle
+from giskard.core.model import Model
 from langchain import OpenAI
 from langchain.chains import RetrievalQA
-
-from giskard.core.model import Model
 from langchain.vectorstores import Chroma
+from pathlib import Path
+from typing import Union
 
 
 class RetrievalQAModel(Model):
