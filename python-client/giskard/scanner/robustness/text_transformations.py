@@ -1,11 +1,12 @@
-import re
 import random
+import re
+
 import pandas as pd
 
+from giskard.scanner.robustness.entity_swap import gender_switch_en
 from .entity_swap import typos
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 from ...ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.scanner.robustness.entity_swap import gender_switch_en
 
 
 @transformation_function(row_level=False)
@@ -58,6 +59,9 @@ class TextTransformation(TransformationFunction):
 
     def make_perturbation(self, text: str) -> str:
         raise NotImplementedError()
+
+    def _should_save_locally(self) -> bool:
+        return True
 
 
 class TextTypoTransformation(TextTransformation):

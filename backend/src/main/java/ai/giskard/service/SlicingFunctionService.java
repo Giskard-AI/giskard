@@ -5,6 +5,7 @@ import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 
@@ -19,6 +20,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         this.slicingFunctionRepository = slicingFunctionRepository;
     }
 
+    @Transactional
     public SlicingFunctionDTO save(SlicingFunctionDTO slicingFunction) {
         return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunctionRepository.findById(slicingFunction.getUuid())
             .map(existing -> update(existing, slicingFunction))
