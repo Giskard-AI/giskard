@@ -25,6 +25,8 @@ from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
+GISKARD_COLUMN_PREFIX = '__GISKARD_'
+
 logger = logging.getLogger(__name__)
 
 
