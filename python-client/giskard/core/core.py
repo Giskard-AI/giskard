@@ -8,7 +8,7 @@ class SupportedModelTypes(Enum):
     REGRESSION = "regression"
 
 
-class SupportedColumnType(Enum):
+class SupportedFeatureTypes(Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"

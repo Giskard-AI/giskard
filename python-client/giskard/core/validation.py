@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from giskard.client.python_utils import warning
-from giskard.core.core import SupportedModelTypes, SupportedColumnType
+from giskard.core.core import SupportedModelTypes, SupportedFeatureTypes
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 
