@@ -93,7 +93,8 @@ Test = Union[GiskardTest, Function]
 
 
 class GiskardTestMethod(GiskardTest):
-    params: ...
+    params = None
+    is_initialized = False
 
     def __init__(self, test_fn: Function) -> None:
         self.test_fn = test_fn
