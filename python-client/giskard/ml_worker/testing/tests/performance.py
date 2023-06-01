@@ -96,7 +96,7 @@ def _test_diff_prediction(
             " reference_dataset is equal to zero"
         )
 
-    passed = abs(rel_change) < threshold if absolute else rel_change > threshold
+    passed = abs(rel_change) < threshold if absolute else rel_change > -threshold
 
     return TestResult(
         actual_slices_size=[len(actual_slice)],
