@@ -70,9 +70,9 @@ We currently have 5 pre-defined wrappers with their own methods of serialization
 - {class}`~giskard.HuggingFaceModel`
 
 Let's start from the following tutorial: <project:../../guides/tutorials/pytorch/sst2_iterable.md>. Where instead of
-passing a `model`, `data_preprocessing_function` and `model_postprocessing_function` to `wrap_model` as follows:
+passing a `model`, `data_preprocessing_function` and `model_postprocessing_function` to `Model` as follows:
 ```python
-wrapped_model = wrap_model(name="SST2-XLMR_BASE_ENCODER",
+wrapped_model = Model(name="SST2-XLMR_BASE_ENCODER",
                            model=model,
                            feature_names=["text"],
                            model_type="classification",

@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import tensorflow as tf
 from sklearn import model_selection
-from giskard import wrap_dataset, wrap_model
+from giskard import Dataset, Model
 ```
 ## Wrap dataset
 ```python
@@ -23,7 +23,7 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y,
 test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df.head(), 
+wrapped_dataset = Dataset(test_df.head(), 
                                name="test dataset", 
                                target="Target")
 ```
@@ -53,7 +53,7 @@ def build_classifier_model():
 model = build_classifier_model()
 ```
 ```python
-wrapped_model = wrap_model(name="Tensorflow_text_classification_tfhub",
+wrapped_model = Model(name="Tensorflow_text_classification_tfhub",
                            model=model,
                            feature_names=['Content'],
                            model_type="classification",
