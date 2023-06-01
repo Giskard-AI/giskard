@@ -92,8 +92,8 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         uploaded_uuids.append(str(p.meta.uuid))
         return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
                             params=[
-                                build_test_input_dto(client, p, pname, p.meta.args[pname].type, project_key,
-                                                     uploaded_uuids) for pname, p in
+                                build_test_input_dto(client, value, pname, value.meta.args[pname].type, project_key,
+                                                     uploaded_uuids) for pname, value in
                                 p.params.items()])
     elif isinstance(p, SuiteInput):
         return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
