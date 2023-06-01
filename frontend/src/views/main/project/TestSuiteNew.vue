@@ -113,12 +113,12 @@ let inputs = ref<{
 }>({});
 const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
-const executions = ref<TestSuiteExecutionDTO[] | null>(null);
+const executions = ref<TestSuiteExecutionDTO[]>();
 
 onMounted(() => loadData());
 
 async function loadData() {
-  executions.value = null;
+  executions.value = undefined;
 
   // Call api in parallel to shorten loading time
   const [
