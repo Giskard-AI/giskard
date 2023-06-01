@@ -57,7 +57,7 @@ class PerformanceIssue(Issue):
 
     @property
     def deviation(self):
-        return f"{self.info.metric_rel_delta * 100:.2f}% than global"
+        return f"{self.info.metric_rel_delta * 100:+.2f}% than global"
 
     @property
     def description(self):
