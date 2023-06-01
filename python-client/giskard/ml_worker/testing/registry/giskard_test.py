@@ -87,12 +87,3 @@ class GiskardTestMethod(GiskardTest):
 
     def execute(self) -> Result:
         return self.data(**self.params)
-
-def my_test() -> bool:
-    print(1)
-    return True
-
-def test_tets():
-    test  = GiskardTestMethod(my_test)
-    test.set_params()
-    test.execute()
