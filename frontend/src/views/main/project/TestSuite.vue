@@ -20,7 +20,6 @@
               </v-btn>
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
-                     v-if="currentExecution !== null"
                      :to="{name: 'project-tests-catalog', query: {suiteId: suiteId}}"
                      color="secondary">
                 <v-icon>add</v-icon>

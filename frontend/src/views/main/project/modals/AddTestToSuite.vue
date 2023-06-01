@@ -74,14 +74,14 @@ const {projectId, test, suiteId, testArguments} = defineProps<{
 
 const dialog = ref<boolean>(false);
 const testSuites = ref<TestSuiteDTO[]>([]);
-const selectedSuite = ref<TestSuiteDTO | null>(null);
+const selectedSuite = ref<number | null>(null);
 const testInputs = ref<{ [name: string]: TestInputDTO }>({});
 
 onMounted(() => loadData());
 
 async function loadData() {
   testSuites.value = await api.getTestSuites(projectId);
-  selectedSuite.value = testSuites.value.find(({id}) => id === suiteId) ?? null
+  selectedSuite.value = testSuites.value.find(({id}) => id === suiteId)?.id ?? null
   testInputs.value = test.args.reduce((result, arg) => {
     result[arg.name] = {
       name: arg.name,
@@ -105,11 +105,13 @@ async function submit(close) {
   const suiteTest: SuiteTestDTO = {
     testUuid: test.uuid,
     testInputs: chain(testInputs.value)
-        .omitBy(({value}) => value === null || value.trim() === '')
+        .omitBy(({value}) => value === null
+            || (typeof value === 'string' && value.trim() === '')
+            || (typeof value === 'number' && value === Number.NaN))
         .value() as { [name: string]: TestInputDTO }
   }
 
-  await api.addTestToSuite(projectId, selectedSuite.value!.id!, suiteTest);
+  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
   close();
 }
 
