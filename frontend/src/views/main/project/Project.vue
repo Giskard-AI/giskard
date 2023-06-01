@@ -86,21 +86,21 @@
 
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <v-tabs v-model=" tab " optional>
-        <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
-          <v-icon left small>mdi-comment-multiple-outline</v-icon>
-          Feedback
+        <v-tab :to=" { name: 'project-catalog-tests' } " value="catalog-tests">
+          <v-icon left small>mdi-list-status</v-icon>
+          Catalog
+        </v-tab>
+        <v-tab :to=" { name: 'project-test-suites' } " value="test-suites">
+          <v-icon left small>mdi-list-status</v-icon>
+          Test suites
         </v-tab>
         <v-tab :to=" { name: 'project-debugger' } " value="debugger">
           <v-icon left small>mdi-debug-step-over</v-icon>
           Debugger
         </v-tab>
-        <v-tab :to=" { name: 'project-test-suites' } " value="test-suites">
-          <v-icon left small>mdi-list-status</v-icon>
-          Test suites️
-        </v-tab>
-        <v-tab :to=" { name: 'project-catalog-tests' } " value="catalog-tests">
-          <v-icon left small>mdi-list-status</v-icon>
-          Catalog
+        <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
+          <v-icon left small>mdi-comment-multiple-outline</v-icon>
+          Feedback
         </v-tab>
       </v-tabs>
       <keep-alive>
