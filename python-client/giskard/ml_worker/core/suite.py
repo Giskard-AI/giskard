@@ -185,7 +185,7 @@ class Suite:
                 test_params[pname] = kwargs[pname]
         return test_params
 
-    def save(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: str):
         """
         Saves the test suite to the Giskard backend and sets its ID.
 

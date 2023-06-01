@@ -1,7 +1,6 @@
 package ai.giskard.web.dto.ml;
 
 import com.dataiku.j2ts.annotations.UIModel;
-import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
