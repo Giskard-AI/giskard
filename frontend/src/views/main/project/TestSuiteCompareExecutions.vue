@@ -6,7 +6,7 @@
           <TestSuiteExecutionHeader :execution="comparison.execution" :tests="comparison.tests" compact/>
         </v-card-title>
         <v-card-text>
-          <SuiteTestExecutionList :tests="comparison.tests" compact/>
+          <SuiteTestExecutionList :tests="comparison.tests" compact is-past-execution/>
         </v-card-text>
       </v-card>
     </v-col>
