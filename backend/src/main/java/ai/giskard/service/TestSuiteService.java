@@ -3,6 +3,7 @@ package ai.giskard.service;
 import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.jobs.JobType;
 import ai.giskard.repository.ml.*;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
 @Transactional
@@ -36,7 +40,8 @@ public class TestSuiteService {
     private final CodeTestTemplateService testTemplateService;
     private final TestSuiteNewRepository testSuiteNewRepository;
     private final TestService testService;
-
+    private final TestSuiteExecutionService testSuiteExecutionService;
+    private final JobService jobService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -92,9 +97,7 @@ public class TestSuiteService {
         ProjectModel model = suite.getModel();
 
         if (model.getModelType() == ModelType.CLASSIFICATION) {
-            model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
-                substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
-            });
+            model.getClassificationLabels().stream().findFirst().ifPresent(label -> substitutions.putIfAbsent("CLASSIFICATION LABEL", label));
         }
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
@@ -148,5 +151,36 @@ public class TestSuiteService {
                 });
         });
         return res;
+    }
+
+
+    @Transactional
+    public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
+        TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
+            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+
+        TestSuiteExecution execution = new TestSuiteExecution(testSuite);
+        execution.setInputs(inputs.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
+
+        verifyAllInputProvided(inputs, testSuite, suiteInputs);
+
+        return jobService.undetermined(() ->
+            testSuiteExecutionService.executeScheduledTestSuite(execution, suiteInputs), projectId, JobType.TEST_SUITE_EXECUTION,
+            testSuite.getProject().getMlWorkerType());
+    }
+
+    private static void verifyAllInputProvided(Map<String, String> providedInputs,
+                                               TestSuiteNew testSuite,
+                                               Map<String, String> requiredInputs) {
+        List<String> missingInputs = requiredInputs.keySet().stream()
+            .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
+            .toList();
+        if (!missingInputs.isEmpty()) {
+            throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
+                .formatted(String.join(", ", missingInputs), testSuite.getName()));
+        }
     }
 }

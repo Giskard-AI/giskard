@@ -19,9 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -98,6 +100,15 @@ public class TestSuiteController {
     public Map<String, String> getSuiteInputs(@PathVariable("projectId") @NotNull Long projectId,
                                               @PathVariable("suiteId") @NotNull Long suiteId) {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
+    }
+
+    @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
+    @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
+    @Transactional
+    public UUID scheduleTestSuiteExecution(@PathVariable("projectId") @NotNull Long projectId,
+                                           @PathVariable("suiteId") @NotNull Long suiteId,
+                                           @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+        return testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
     }
 
     @PostMapping("project/{projectKey}/suites")
