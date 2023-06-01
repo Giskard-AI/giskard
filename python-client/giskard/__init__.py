@@ -7,6 +7,8 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
 from giskard.core.model import Dataset
 from giskard.core.model import Model
+from giskard.core.model import WrapperModel
+from giskard.core.model import MLFlowBasedModel
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 from giskard.ml_worker.testing.registry.decorators import test
@@ -36,6 +38,8 @@ __all__ = [
     'SingleTestResult',
     'Project',
     'Model',
+    'WrapperModel',
+    'MLFlowBasedModel',
     'SKLearnModel',
     'Dataset',
     'GiskardClient',
