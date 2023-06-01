@@ -1,4 +1,12 @@
-import {DatasetDTO, JobDTO, ModelDTO, TestFunctionDTO, TestSuiteDTO, TestSuiteExecutionDTO} from '@/generated-sources';
+import {
+    DatasetDTO,
+    JobDTO,
+    ModelDTO,
+    RequiredInputDTO,
+    TestFunctionDTO,
+    TestSuiteDTO,
+    TestSuiteExecutionDTO
+} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
 import {chain} from 'lodash';
@@ -8,7 +16,7 @@ import mixpanel from 'mixpanel-browser';
 
 interface State {
     projectId: number | null,
-    inputs: { [name: string]: string },
+    inputs: { [name: string]: RequiredInputDTO },
     suite: TestSuiteDTO | null,
     registry: TestFunctionDTO[],
     datasets: { [key: string]: DatasetDTO },

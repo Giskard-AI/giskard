@@ -19,6 +19,6 @@ public class TestSuiteCompleteDTO {
     private List<DatasetDTO> datasets;
     private List<ModelDTO> models;
     private List<TestSuiteExecutionDTO> executions;
-    private Map<String, String> inputs;
+    private Map<String, RequiredInputDTO> inputs;
 
 }
