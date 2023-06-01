@@ -16,6 +16,6 @@ public class SuiteTestDTO {
     private long id;
     @JsonAlias("test_uuid")
     @NotNull
-    private UUID testUuid;;
+    private UUID testUuid;
     private Map<@NotBlank String, @Valid TestInputDTO> testInputs;
 }
