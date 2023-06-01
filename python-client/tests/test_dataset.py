@@ -92,7 +92,7 @@ def test_nonvalid_df_column_types():
 def test_dataset_raises_exception_if_mixed_column_types():
     df = pd.DataFrame({"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Dataset(df, target="target")
 
 
