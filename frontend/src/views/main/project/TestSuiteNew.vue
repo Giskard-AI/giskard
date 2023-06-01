@@ -115,10 +115,7 @@ const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
 const executions = ref<TestSuiteExecutionDTO[] | null>(null);
 
-onMounted(async () => {
-  await loadData();
-  onRouteUpdate();
-});
+onMounted(() => loadData());
 
 async function loadData() {
   executions.value = null;
