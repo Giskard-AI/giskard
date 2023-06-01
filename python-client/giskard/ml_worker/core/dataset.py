@@ -3,7 +3,7 @@ import posixpath
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, List
 
 import pandas as pd
 import yaml
@@ -11,7 +11,7 @@ from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
-from giskard.core.core import DatasetMeta
+from giskard.core.core import DatasetMeta, SupportedColumnMeanings
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -28,13 +28,17 @@ class Dataset:
             df: pd.DataFrame,
             name: Optional[str] = None,
             target: Optional[str] = None,
-            column_meanings: Dict[str, str] = None,
+            cat_features: Optional[List[str]] = None
     ) -> None:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        self.column_meanings = dict(column_meanings) if column_meanings else None
-        self.column_types = self.df.dtypes.apply(lambda x: x.name).to_dict()
+        self.column_types = self.extract_column_types(self.df)
+        self.column_meanings = {f: SupportedColumnMeanings.CATEGORY for f in cat_features}
+
+    @staticmethod
+    def extract_column_types(df):
+        return df.dtypes.apply(lambda x: x.name).to_dict()
 
     def save(self, client: GiskardClient, project_key: str):
         from giskard.core.dataset_validation import validate_dataset
@@ -104,8 +108,16 @@ class Dataset:
             df=df,
             name=meta.name,
             target=meta.target,
-            column_meanings=meta.column_meanings
-        )
+            cat_features=cls._cat_features(meta))
+
+    @staticmethod
+    def _cat_features(meta):
+        return [fname for (fname, ftype) in meta.feature_types.items() if
+                ftype == SupportedColumnMeanings.CATEGORY]
+
+    @property
+    def cat_features(self):
+        return self._cat_features(self.meta)
 
     def _save_to_local_dir(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", 'wb') as f:
@@ -137,7 +149,7 @@ class Dataset:
             df=slice_fn(self.df),
             name=self.name,
             target=self.target,
-            column_meanings=self.column_meanings)
+            cat_features=self.cat_features)
 
     def __len__(self):
         return len(self.df)
