@@ -4,23 +4,24 @@
       <v-container class="main-container vc">
         <v-row class="fill-height">
           <v-col cols="4" class="vc fill-height">
-            <v-text-field label="Search test" v-model="searchFilter"></v-text-field>
+            <v-text-field label="Search test" append-icon="search" outlined v-model="searchFilter"></v-text-field>
             <v-list three-line v-if="testFunctions">
               <v-list-item-group v-model="selected" color="primary" mandatory>
                 <template v-for="test in filteredTestFunctions">
                   <v-divider/>
-                  <v-list-item :value="test">
-                    <v-list-item-content>
-                      <v-list-item-title v-text="test.name" class="test-title"></v-list-item-title>
+                    <v-list-item :value="test">
+                        <v-list-item-content>
+                            <v-list-item-title class="test-title">
+                                {{ test.name }} <span v-if="test.potentiallyUnavailable">Warning</span>
+                            </v-list-item-title>
+                            <v-list-item-subtitle v-if="test.tags">
+                                <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
+                                    {{ tag }}
+                                </v-chip>
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
 
-                      <v-list-item-subtitle v-if="test.tags">
-                        <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
-                          {{ tag }}
-                        </v-chip>
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-
-                  </v-list-item>
+                    </v-list-item>
                 </template>
               </v-list-item-group>
             </v-list>
