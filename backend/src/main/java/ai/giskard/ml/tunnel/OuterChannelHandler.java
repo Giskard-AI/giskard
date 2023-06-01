@@ -8,22 +8,21 @@ import com.google.common.util.concurrent.SettableFuture;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.local.LocalAddress;
+import io.netty.channel.local.LocalServerChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.ByteBufFormat;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.SocketUtils;
 
 import javax.crypto.SecretKey;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.UUID;
 
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
@@ -40,7 +39,6 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Getter
     private EventBus eventBus = new EventBus();
-
 
     private void initInnerServer(SocketChannel outerChannel, String keyId) {
         this.innerServerData = Optional.of(startInnerServer(outerChannel, keyId));
@@ -67,7 +65,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.warn("Caught exception in outer server handler", cause);
+        log.error("Caught exception in outer server handler", cause);
         Channel outerChannel = ctx.channel();
         ctx.close().addListener(future -> log.info("Service channel connection is lost: {}", outerChannel.id()));
 
@@ -126,42 +124,45 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         channelRegistry.getInnerChannelByOuterChannelId(outerChannel.id()).ifPresent(innerChannel -> {
             log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
             SecretKey key = channelRegistry.getOuterChannelKey(outerChannel.id()).getKey();
-            innerChannel.writeAndFlush(
-                new MLWorkerDataEncryptor(key).decryptPayload(in)
-            );
+
+            ByteBuf msg = new MLWorkerDataEncryptor(key).decryptPayload(in);
+            if (msg.readableBytes() != 0) {
+                innerChannel.writeAndFlush(msg);
+            }
         });
     }
 
 
     private InnerServerStartResponse startInnerServer(SocketChannel serviceOuterChannel, String keyId) {
         final SettableFuture<Channel> innerChannelFuture = SettableFuture.create();
-        int innerPort = SocketUtils.findAvailableTcpPort();
+        EventLoopGroup group = new DefaultEventLoopGroup();
 
-        SocketAddress address = new InetSocketAddress(innerPort);
-        EventLoopGroup group = new NioEventLoopGroup();
+        SocketAddress localAddress = new LocalAddress(UUID.randomUUID().toString());
+
+        ChannelInitializer<Channel> innerChannelHandler = new ChannelInitializer<>() {
+            @Override
+            protected void initChannel(Channel ch) {
+                ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast(
+                    new LoggingHandler("Inner channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
+                    new InnerChannelHandler(
+                        serviceOuterChannel,
+                        channelRegistry,
+                        innerChannelFuture,
+                        keyId
+                    ));
+            }
+        };
         ChannelFuture bindFuture = new ServerBootstrap()
             .group(group)
-            .channel(NioServerSocketChannel.class)
-            .childHandler(new ChannelInitializer<>() {
-                @Override
-                protected void initChannel(Channel ch) {
-                    ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast(
-                        new LoggingHandler("Inner channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
-                        new InnerChannelHandler(
-                            serviceOuterChannel,
-                            channelRegistry,
-                            innerChannelFuture,
-                            keyId
-                        ));
-                }
-            })
-            .localAddress(innerPort)
+            .channel(LocalServerChannel.class)
+            .childHandler(innerChannelHandler)
+            .localAddress(localAddress)
             .bind();
 
         bindFuture.addListener(future -> {
             if (future.isSuccess()) {
-                log.info("Started inner server {} for incoming service channel {}", address, serviceOuterChannel.id());
+                log.info("Started inner server {} for incoming service channel {}", localAddress, serviceOuterChannel.id());
             }
         });
         serviceOuterChannel.closeFuture().addListener(future -> {
@@ -173,14 +174,6 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
             eventBus.post(innerServerData);
 
         });
-        return new InnerServerStartResponse(innerPort, innerChannelFuture, group);
-    }
-
-    public record InnerServerStartResponse(
-        int port,
-        SettableFuture<Channel> innerChannelFuture,
-        EventLoopGroup group
-    ) {
-
+        return new InnerServerStartResponse(localAddress, innerChannelFuture, group);
     }
 }

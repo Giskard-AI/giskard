@@ -73,9 +73,12 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
         Channel outerChannel = channelRegistry.getOuterChannelByInnerChannelId(ctx.channel().id());
         ByteBuf in = (ByteBuf) msg;
         int originalLength = in.readableBytes();
-        log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ctx.channel().id(), outerChannel.id());
 
-        outerChannel.writeAndFlush(Unpooled.wrappedBuffer(encryptor.encrypt(ByteBufUtil.getBytes(in))));
+        if (originalLength != 0) {
+            log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ctx.channel().id(), outerChannel.id());
+            byte[] bytes = encryptor.encrypt(ByteBufUtil.getBytes(in));
+            outerChannel.writeAndFlush(Unpooled.wrappedBuffer(bytes));
+        }
     }
 
     @Override

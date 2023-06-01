@@ -79,7 +79,7 @@ class GiskardClient:
         self._session.auth = BearerAuth(token)
         self.analytics = GiskardAnalyticsCollector()
         try:
-            server_settings = self._session.get("settings").json()
+            server_settings = self._session.get("settings/ml-worker-connect").json()
             self.analytics.init(server_settings)
         except Exception:
             logger.warning(f"Failed to fetch server settings", exc_info=True)

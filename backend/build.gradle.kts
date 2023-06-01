@@ -1,5 +1,5 @@
-import com.google.protobuf.gradle.*
-import org.gradle.api.JavaVersion
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.protobuf
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,7 +24,7 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
-    id("com.google.protobuf") version "0.8.18"
+    id("com.google.protobuf") version "0.9.2"
 }
 
 group = "ai.giskard"
@@ -151,6 +151,8 @@ dependencies {
     implementation("io.grpc:grpc-census:$grpcVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
+
+
     testImplementation("io.grpc:grpc-testing:$grpcVersion")
 
     implementation(platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"))

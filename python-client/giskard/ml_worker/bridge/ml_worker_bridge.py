@@ -169,8 +169,8 @@ class MLWorkerBridge:
             try:
                 while not reader.at_eof():
                     if encrypted_reader:
-                        length = await reader.read(4)
-                        data = await reader.read(int.from_bytes(length, 'big'))
+                        length = await reader.readexactly(4)
+                        data = await reader.readexactly(int.from_bytes(length, 'big'))
                         if len(data):
                             data = self.encryptor.decrypt(data)
                     else:
