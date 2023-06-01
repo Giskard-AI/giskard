@@ -75,12 +75,23 @@ class PyTorchModel(MLFlowBasedModel):
                             - torch.DataLoader")
 
         predictions = []
-        with torch.no_grad():
-            for entry in data:
-                try:  # for the case of 1 input
-                    predictions.append(self.clf(entry).detach().numpy())
-                except:  # for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+
+        # Figuring out the input shape
+        to_unpack = False
+        for entry in data:
+            # to_unpack = True, for the case of 2 inputs or more, like (input1, offset) or (input1, input2)
+            # to_unpack = False, for the case of 1 input
+            to_unpack = True if isinstance(entry, tuple) else False
+            break
+
+        if to_unpack:
+            with torch.no_grad():
+                for entry in data:
                     predictions.append(self.clf(*entry).detach().numpy())
+        else:
+            with torch.no_grad():
+                for entry in data:
+                    predictions.append(self.clf(entry).detach().numpy())
 
         predictions = np.squeeze(np.array(predictions))
 
@@ -110,7 +121,7 @@ class PyTorchModel(MLFlowBasedModel):
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 kwargs['device'] = pytorch_meta.device
-                kwargs['torch_dtype'] =     pytorch_meta.torch_dtype
+                kwargs['torch_dtype'] = pytorch_meta.torch_dtype
                 super().load(local_dir, **kwargs)
         else:
             raise ValueError(
