@@ -1,8 +1,8 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.TestFunctionArgument;
-import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
@@ -121,6 +121,8 @@ public class TestController {
     public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         TestFunction testFunction = testFunctionRepository.findById(UUID.fromString(request.getTestUuid()))
             .orElseThrow(() -> new EntityNotFoundException(TEST_FUNCTION, request.getTestUuid().toString()));
+
+        Project project = projectRepository.getById(request.getProjectId());
 
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
             Map<String, String> argumentTypes = testFunction.getArgs().stream()

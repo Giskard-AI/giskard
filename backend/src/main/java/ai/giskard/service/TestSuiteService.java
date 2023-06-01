@@ -1,15 +1,14 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.Project;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.*;
-import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -29,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ai.giskard.web.rest.errors.Entity.TEST;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 
@@ -50,6 +50,7 @@ public class TestSuiteService {
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
+    private final TestFunctionRepository testFunctionRepository;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -133,12 +134,14 @@ public class TestSuiteService {
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
-        TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
 
         Map<String, String> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            Collection<TestFunctionArgumentDTO> signatureArgs = catalog.getTests().get(test.getTestId()).getArguments().values();
+            Collection<TestFunctionArgument> signatureArgs = suite.getTests().stream()
+                .flatMap(t -> t.getTestFunction().getArgs().stream())
+                .toList();
+
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
             signatureArgs.stream()
@@ -256,7 +259,7 @@ public class TestSuiteService {
             suite.setProject(project);
             suite.setName(dto.getName());
             suite.getTests().addAll(response.getTestsList().stream()
-                .map(test -> new SuiteTest(suite, test))
+                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
                 .toList());
 
             return testSuiteNewRepository.save(suite).getId();
