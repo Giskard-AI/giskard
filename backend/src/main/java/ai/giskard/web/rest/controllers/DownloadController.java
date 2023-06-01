@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class DownloadController {
 
     @GetMapping("/model/{modelId}")
     @Transactional
-    public ResponseEntity<InputStreamResource> downloadModel(@PathVariable("modelId") String modelId) throws IOException {
+    public ResponseEntity<InputStreamResource> downloadModel(@PathVariable("modelId") UUID modelId) throws IOException {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
@@ -47,7 +48,7 @@ public class DownloadController {
 
     @GetMapping("/dataset/{id}")
     @Transactional
-    public ResponseEntity<InputStreamResource> downloadDataset(@PathVariable("id") String datasetId) throws IOException {
+    public ResponseEntity<InputStreamResource> downloadDataset(@PathVariable("id") UUID datasetId) throws IOException {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
 

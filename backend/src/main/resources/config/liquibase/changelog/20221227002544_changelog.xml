@@ -41,7 +41,7 @@
     <changeSet id="1672097148194-12-modify" author="andreyavtomonov">
 
         <addColumn tableName="project_models">
-            <column name="id_new" type="VARCHAR(32)">
+            <column name="id_new" type="UUID">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -51,7 +51,7 @@
         <renameColumn tableName="project_models" oldColumnName="id_new" newColumnName="id"/>
 
         <addColumn tableName="datasets">
-            <column name="id_new" type="VARCHAR(32)">
+            <column name="id_new" type="UUID">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
@@ -60,13 +60,13 @@
         <dropColumn tableName="datasets" columnName="id"/>
         <renameColumn tableName="datasets" oldColumnName="id_new" newColumnName="id"/>
 
-        <modifyDataType tableName="test_suite" columnName="model_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="inspections" columnName="model_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="feedbacks" columnName="model_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="test_suite" columnName="actual_dataset_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="test_suite" columnName="reference_dataset_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="feedbacks" columnName="dataset_id" newDataType="varchar(32)"/>
-        <modifyDataType tableName="inspections" columnName="dataset_id" newDataType="varchar(32)"/>
+        <modifyDataType tableName="test_suite" columnName="model_id" newDataType="UUID"/>
+        <modifyDataType tableName="inspections" columnName="model_id" newDataType="UUID"/>
+        <modifyDataType tableName="feedbacks" columnName="model_id" newDataType="UUID"/>
+        <modifyDataType tableName="test_suite" columnName="actual_dataset_id" newDataType="UUID"/>
+        <modifyDataType tableName="test_suite" columnName="reference_dataset_id" newDataType="UUID"/>
+        <modifyDataType tableName="feedbacks" columnName="dataset_id" newDataType="UUID"/>
+        <modifyDataType tableName="inspections" columnName="dataset_id" newDataType="UUID"/>
 
     </changeSet>
     <changeSet id="1672097148194-12-add" author="andreyavtomonov">

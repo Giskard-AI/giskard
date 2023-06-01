@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 public class GRPCMapper {
 
     public ArtifactRef createRef(ProjectModel model) {
-        return ArtifactRef.newBuilder().setProjectKey(model.getProject().getKey()).setId(model.getId()).build();
+        return ArtifactRef.newBuilder().setProjectKey(model.getProject().getKey()).setId(model.getId().toString()).build();
     }
 
     public ArtifactRef createRef(Dataset ds) {
-        return ArtifactRef.newBuilder().setProjectKey(ds.getProject().getKey()).setId(ds.getId()).build();
+        return ArtifactRef.newBuilder().setProjectKey(ds.getProject().getKey()).setId(ds.getId().toString()).build();
     }
 
 }
