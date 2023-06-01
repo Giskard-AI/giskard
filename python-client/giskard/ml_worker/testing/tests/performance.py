@@ -249,7 +249,8 @@ def test_accuracy(dataset: Dataset, model: BaseModel, slicing_function: SlicingF
 
 
 @test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
-def test_precision(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None, threshold: float = 1.0):
+def test_precision(dataset: Dataset, model: BaseModel, slicing_function: SlicingFunction = None,
+                   threshold: float = 1.0):
     """
     Test if the model Precision is higher than a threshold for a given slice
 
@@ -435,6 +436,7 @@ def test_diff_accuracy(actual_dataset: Dataset, reference_dataset: Dataset, mode
         test_name="Accuracy",
     )
 
+
 @test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(actual_dataset: Dataset,
                  reference_dataset: Dataset,
@@ -598,6 +600,7 @@ def test_diff_reference_actual_f1(actual_dataset: Dataset, reference_dataset: Da
         test_f1.test_fn, model, actual_dataset.slice(slicing_function),
         reference_dataset.slice(slicing_function), threshold, test_name="F1 Score"
     )
+
 
 @test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(actual_dataset: Dataset, reference_dataset: Dataset, model: BaseModel,
