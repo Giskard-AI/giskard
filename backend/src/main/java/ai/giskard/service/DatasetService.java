@@ -100,7 +100,7 @@ public class DatasetService {
     public Table getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax) {
         Table table = readTableByDatasetId(id);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        return table.inRange(rangeMin, rangeMax);
+        return table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax));
     }
 
     @Transactional
