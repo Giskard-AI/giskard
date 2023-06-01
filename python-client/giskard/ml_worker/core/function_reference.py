@@ -35,7 +35,6 @@ class FunctionReference:
 
         if func_name.startswith('__main__'):
             reference = cloudpickle.dumps(func)
-            cloudpickle.register_pickle_by_value()
             func_name += hashlib.sha1(reference).hexdigest()
 
         return cls(func, func_name)
