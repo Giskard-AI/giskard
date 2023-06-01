@@ -97,9 +97,11 @@ RUN pip install  \
 
 FROM builder-base as proto-builder
 
+WORKDIR $PYSETUP_PATH/python-client
+# install dev dependencies needed to protobuf code generation
+RUN pdm install --group dev,proto
 WORKDIR $PYSETUP_PATH
 
-RUN poetry install --only main,dev
 COPY ./common/proto ./proto
 COPY ./python-client/giskard ./giskard
 COPY ./python-client/scripts ./scripts
@@ -111,8 +113,7 @@ RUN mkdir -p giskard/ml_worker/generated && \
       --grpc_python_out=giskard/ml_worker/generated \
       --mypy_out=giskard/ml_worker/generated \
       --mypy_grpc_out=giskard/ml_worker/generated \
-      proto/ml-worker.proto && \
-    python scripts/fix_grpc_generated_imports.py giskard/ml_worker/generated giskard.ml_worker.generated
+      proto/ml-worker.proto
 
 # <<< ML-WORKER
 
