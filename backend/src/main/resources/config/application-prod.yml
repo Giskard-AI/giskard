@@ -18,6 +18,7 @@ logging:
     ROOT: INFO
     tech.jhipster: INFO
     ai.giskard: INFO
+    com.zaxxer.hikari.HikariConfig: DEBUG
 
 management:
   metrics:
@@ -39,6 +40,10 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+      maximum-pool-size: 8
+      minimum-idle: 10
+      connection-timeout: 20000
+      leak-detection-threshold: 10000
   jpa:
     database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
   # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
