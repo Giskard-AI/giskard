@@ -158,7 +158,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         is_pass, results = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result in results:
+        for identifier, result in results.items():
             identifier_single_test_results.append(
                 ml_worker_pb2.IdentifierSingleTestResult(
                     id=identifier, result=map_result_to_single_test_result(result)
