@@ -7,11 +7,12 @@ import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
+import {TYPE} from "vue-toastification";
 import AppInfoDTO = AppConfigDTO.AppInfoDTO;
 
 export interface AppNotification {
     content: string;
-    color?: string;
+    color?: TYPE
     showProgress?: boolean;
 }
 
@@ -71,12 +72,13 @@ export const useMainStore = defineStore('main', {
             });
         },
         addSimpleNotification(text: string) {
-            this.addNotification({content: text, color: 'success'})
+            this.addNotification({content: text, color: TYPE.SUCCESS})
         },
         addNotification(payload: AppNotification) {
             Vue.$toast(payload.content, {
                 closeButton: false,
                 icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true,
+                type: payload.color
             });
         },
         removeNotification(payload: AppNotification) {

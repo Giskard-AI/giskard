@@ -37,6 +37,7 @@ import {useMainStore} from "@/stores/main";
 import {copyToClipboard} from "@/global-keys";
 import {useRoute} from "vue-router/composables";
 import {apiURL} from "@/env";
+import {TYPE} from "vue-toastification";
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -45,6 +46,6 @@ const route = useRoute();
 
 async function copyMLWorkerCommand() {
     await copyToClipboard(`giskard worker start -u ${apiURL}`);
-    mainStore.addNotification({content: 'Copied', color: '#262a2d'});
+    mainStore.addNotification({content: 'Copied', color: TYPE.INFO});
 }
 </script>

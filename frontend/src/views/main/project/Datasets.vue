@@ -65,19 +65,20 @@
 </template>
 
 <script setup lang="ts">
-import { apiURL } from "@/env";
-import { api } from "@/api";
-import { Role } from "@/enums";
+import {apiURL} from "@/env";
+import {api} from "@/api";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { onBeforeMount, ref, computed, onMounted } from "vue";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
+import {JWTToken} from "@/generated-sources";
+import {TYPE} from "vue-toastification";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -169,8 +170,8 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({ content: error.response.statusText, color: 'error' });
-      filePreviewHeader.value = [];
+        useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
+        filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
   }

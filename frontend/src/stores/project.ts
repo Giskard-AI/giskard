@@ -2,6 +2,7 @@ import {ProjectDTO, ProjectPostDTO} from "@/generated-sources";
 import {defineStore} from "pinia";
 import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
+import {TYPE} from "vue-toastification";
 
 interface State {
     projects: ProjectDTO[]
@@ -55,7 +56,7 @@ export const useProjectStore = defineStore('project', {
                 mainStore.addNotification(loadingNotification);
                 await api.createProject(payload);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Success', color: 'success'});
+                mainStore.addNotification({content: 'Success', color: TYPE.SUCCESS});
                 await this.getProjects();
             } catch (error) {
                 await mainStore.checkApiError(error);
@@ -69,10 +70,10 @@ export const useProjectStore = defineStore('project', {
                 mainStore.addNotification(loadingNotification);
                 await api.deleteProject(payload.id);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Success', color: 'success'});
+                mainStore.addNotification({content: 'Success', color: TYPE.SUCCESS});
             } catch (error) {
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: `Error: ${error.message}`, color: 'error'});
+                mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
                 await mainStore.checkApiError(error);
             }
         },
@@ -83,11 +84,11 @@ export const useProjectStore = defineStore('project', {
                 mainStore.addNotification(loadingNotification);
                 const response = await api.editProject(payload.id, payload.data);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Success', color: 'success'});
+                mainStore.addNotification({content: 'Success', color: TYPE.SUCCESS});
                 this.setProject(response);
             } catch (error) {
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: `Error: ${error.message}`, color: 'error'});
+                mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
                 await mainStore.checkApiError(error);
             }
         },
@@ -98,7 +99,7 @@ export const useProjectStore = defineStore('project', {
                 mainStore.addNotification(loadingNotification);
                 const response = await api.inviteUserToProject(payload.projectId, payload.userId);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Done', color: 'success'});
+                mainStore.addNotification({content: 'Done', color: TYPE.SUCCESS});
                 this.setProject(response);
             } catch (error) {
                 await mainStore.checkApiError(error);
@@ -113,7 +114,7 @@ export const useProjectStore = defineStore('project', {
                 const response = await api.uninviteUserFromProject(payload.projectId, payload.userId);
                 this.setProject(response);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Done', color: 'success'});
+                mainStore.addNotification({content: 'Done', color: TYPE.SUCCESS});
             } catch (error) {
                 mainStore.removeNotification(loadingNotification);
                 await mainStore.checkApiError(error);
@@ -124,7 +125,11 @@ export const useProjectStore = defineStore('project', {
             const mainStore = useMainStore();
             try {
                 api.downloadExportedProject(id);
-                mainStore.addNotification({content: 'Project is being exported', color: 'success', showProgress: true});
+                mainStore.addNotification({
+                    content: 'Project is being exported',
+                    color: TYPE.SUCCESS,
+                    showProgress: true
+                });
             } catch (err) {
                 await mainStore.checkApiError(err);
                 throw new Error(err.response.data.detail);
