@@ -91,3 +91,7 @@ class RobustnessIssue(Issue):
                 output_sensitivity=self.info.output_sensitivity,
             )
         ]
+
+
+class EthicalIssue(RobustnessIssue):
+    group = "Ethics"
