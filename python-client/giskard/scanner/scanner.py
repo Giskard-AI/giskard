@@ -1,5 +1,6 @@
 import datetime
 import warnings
+from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
@@ -10,7 +11,8 @@ from .registry import DetectorRegistry
 from .result import ScanResult
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
-from ..models.base import BaseModel
+from ..models.base import BaseModel, WrapperModel
+from ..utils import fullname
 from ..utils.analytics_collector import analytics
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -26,8 +28,6 @@ class Scanner:
 
     def analyze(self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        self._collect_analytics(model, dataset)
-
         if model.is_generative:
             logger.warning(
                 "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
@@ -82,6 +82,7 @@ class Scanner:
         )
 
         issues = self._postprocess(issues)
+        self._collect_analytics(model, dataset, issues, elapsed)
 
         return ScanResult(issues)
 
@@ -96,14 +97,20 @@ class Scanner:
 
         return issues
 
-    def _collect_analytics(self, model, dataset):
+    def _collect_analytics(self, model, dataset, issues, elapsed):
+        inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
+        issues_cnt = Counter([fullname(i) for i in issues]) if issues else {}
+
         analytics.track(
             "scan",
             {
-                "model_class": model.__class__.__name__,
+                "model_class": fullname(model),
+                "inner_model_class": inner_model_class,
                 "model_id": str(model.id),
                 "model_type": model.meta.model_type.value,
                 "dataset_id": str(dataset.id) if dataset is not None else "none",
+                "elapsed": elapsed,
+                **issues_cnt
             },
         )
 
