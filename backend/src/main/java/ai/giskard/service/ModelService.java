@@ -65,8 +65,8 @@ public class ModelService {
         if (dataset.getColumnTypes() != null) {
             requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
         }
-        if (dataset.getColumnDTypes() != null) {
-            requestBuilder.putAllColumnDtypes(dataset.getColumnDTypes());
+        if (dataset.getColumnDtypes() != null) {
+            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
         }
         response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
