@@ -17,7 +17,7 @@ class SupportedColumnTypes(Enum):
     TEXT = "text"
 
 
-ColumnType = Union[SupportedColumnTypes, Literal["numeric", "category", "text",]]
+ColumnType = Union[SupportedColumnTypes, Literal["numeric", "category", "text"]]
 
 
 @dataclass

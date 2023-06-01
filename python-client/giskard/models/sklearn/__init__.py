@@ -4,12 +4,12 @@ import pandas as pd
 
 import mlflow
 from giskard.core.core import ModelType
-from giskard.core.validation import validate_args
+from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
 
 class SKLearnModel(MLFlowBasedModel):
-    @validate_args
+    @configured_validate_arguments
     def __init__(self,
                  clf,
                  model_type: ModelType,
