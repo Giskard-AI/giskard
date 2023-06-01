@@ -54,6 +54,9 @@ class DataProcessor:
             if apply_only_last:
                 break
 
+        if df.empty:
+            raise ValueError("The slicing_function provided is invalid, as it returned an empty dataset.")
+
         ret = Dataset(df=df,
                       name=dataset.name,
                       target=dataset.target,
@@ -87,6 +90,8 @@ class Dataset:
             column_types: Optional[Dict[str, str]] = None,
             id: Optional[uuid.UUID] = None
     ) -> None:
+        if df.empty:
+            raise ValueError("Please provide a non-empty df to construct the Dataset object.")
         if id is None:
             self.id = uuid.uuid4()
         else:
