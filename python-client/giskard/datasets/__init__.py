@@ -36,10 +36,6 @@ def wrap_dataset(dataset: pd.DataFrame,
         Dataset:
             A Giskard Dataset object that wraps the input Pandas DataFrame.
 
-    Raises:
-        TypeError:
-            If the input dataset is not a Pandas DataFrame or if cat_columns is not a list of strings.
-
     Notes:
 
         - If `column_types` are provided, they are used to set the column types for the Dataset.
