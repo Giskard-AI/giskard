@@ -1,4 +1,4 @@
-import type {SlicingFunctionDTO} from './slicing-function-d-t-o';
+import type {SlicingFunctionDTO} from './slicing-function-dto';
 import type {TestFunctionDTO} from './test-function-dto';
 
 /**

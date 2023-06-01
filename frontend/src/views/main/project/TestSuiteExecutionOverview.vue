@@ -81,7 +81,7 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
     }))
     .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
     .filter(({suiteTest}) => {
-        const test = suiteTest.testFunction;
+        const test = suiteTest.test;
 
         const keywords = searchFilter.value.split(' ')
             .map(keyword => keyword.trim().toLowerCase())

@@ -6,7 +6,7 @@ import type {TestInputDTO} from './test-input-dto';
  */
 export interface SuiteTestDTO {
     id?: number | null;
-    testFunction: TestFunctionDTO;
+    test: TestFunctionDTO;
     testInputs: {[key: string]: TestInputDTO};
     testUuid: string;
 }

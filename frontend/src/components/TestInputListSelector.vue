@@ -15,6 +15,7 @@
                 </v-col>
                 <v-col cols="3">
                     <v-select v-model="buttonToggleValues[input.name]"
+                              outlined dense hide-details
                               :items="inputTypeSelector"
                               return-object
                               item-text="name"
