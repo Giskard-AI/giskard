@@ -265,20 +265,20 @@ function deleteTestSuite(suite: any) {
 }
 
 .success-icon {
-    color: #00C853;
+    color: #66AD5B;
 }
 
 .failed-icon {
-    color: #D50000;
+    color: #EB5E59;
 }
 
 .passed-tests {
     margin-top: 0.25rem;
-    color: #00C853;
+    color: #66AD5B;
 }
 
 .failed-tests {
     margin-top: 0.25rem;
-    color: #D50000;
+    color: #EB5E59;
 }
 </style>
