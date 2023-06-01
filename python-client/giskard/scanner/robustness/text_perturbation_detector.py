@@ -19,7 +19,7 @@ class TextPerturbationDetector(Detector):
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
         threshold: float = 0.05,
-        output_sensitivity=0.05,
+        output_sensitivity: float = 0.05,
         num_samples: int = 1_000,
     ):
         self.transformations = transformations
