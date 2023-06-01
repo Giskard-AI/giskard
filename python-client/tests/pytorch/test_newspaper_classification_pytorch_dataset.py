@@ -1,8 +1,8 @@
 import os
 import re
 
-import httpretty
 import pandas as pd
+import requests_mock
 import torch
 from scipy import special
 from torch import nn
@@ -76,7 +76,6 @@ class TextClassificationModel(nn.Module):
 
 
 # @pytest.mark.skip(reason="WIP")
-@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_newspaper_classification_pytorch_dataset():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -106,18 +105,16 @@ def test_newspaper_classification_pytorch_dataset():
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
+    with requests_mock.Mocker() as m:
+        m.register_uri(requests_mock.POST, artifact_url_pattern)
+        m.register_uri(requests_mock.POST, models_url_pattern)
+        m.register_uri(requests_mock.GET, settings_url_pattern)
 
-    httpretty.register_uri(httpretty.POST, artifact_url_pattern)
-    httpretty.register_uri(httpretty.POST, models_url_pattern)
-    httpretty.register_uri(httpretty.GET, settings_url_pattern)
+        url = "http://giskard-host:12345"
+        token = "SECRET_TOKEN"
+        client = GiskardClient(url, token)
+        my_model.upload(client, 'test-project', my_test_dataset)
 
-    url = "http://giskard-host:12345"
-    token = "SECRET_TOKEN"
-    client = GiskardClient(url, token)
-    my_model.upload(client, 'test-project', my_test_dataset)
-
-    tests.utils.match_model_id(my_model.id)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
-    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
-
-    os.system("rm -r output enron_with_categories")
+        tests.utils.match_model_id(my_model.id)
+        tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
+        tests.utils.match_url_patterns(m.request_history, models_url_pattern)
