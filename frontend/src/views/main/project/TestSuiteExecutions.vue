@@ -64,6 +64,7 @@ import TestInputList from '@/components/TestInputList.vue';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import moment from 'moment';
 import useRouterParamSynchronization from '@/utils/use-router-param-synchronization';
+import {Colors} from '@/utils/colors';
 
 const props = defineProps<{
   projectId: number,
@@ -93,10 +94,10 @@ function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
 function executionStatusColor(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
     case TestResult.PASSED:
-      return "#4caf50";
+      return Colors.PASS;
     case TestResult.ERROR:
     case TestResult.FAILED:
-      return "#f44336";
+      return Colors.FAIL;
     default:
       return "#607d8b";
   }

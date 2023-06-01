@@ -188,11 +188,21 @@ export default new Router({
                                         {
                                             path: 'execution/compare',
                                             name: 'test-suite-new-compare-executions',
-                                            component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                                             props: (route) => {
                                                 return {
                                                     suiteId: Number(route.params.suiteId),
                                                     projectId: Number(route.params.id)
+                                                }
+                                            }
+                                        },
+                                        {
+                                            path: 'test/:testId/compare',
+                                            name: 'test-suite-new-compare-test',
+                                            props: (route) => {
+                                                return {
+                                                    suiteId: Number(route.params.suiteId),
+                                                    projectId: Number(route.params.id),
+                                                    testId: Number(route.params.id)
                                                 }
                                             }
                                         },

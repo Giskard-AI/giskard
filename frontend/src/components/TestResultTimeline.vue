@@ -4,7 +4,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
-              :color="execution.testResult.passed ? '#4caf50' : '#f44336'"
+              :color="execution.testResult.passed ? Colors.PASS : Colors.FAIL"
               icon
               v-bind="attrs"
               v-on="on"
@@ -24,6 +24,7 @@
 
 import {SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
+import {Colors} from '@/utils/colors';
 
 const {executions} = defineProps<{
   executions: {

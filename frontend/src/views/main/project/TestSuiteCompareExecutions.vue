@@ -98,7 +98,6 @@ function countBestPerformingTests(comparison: ExecutionComparison): number {
       .length;
 }
 
-
 </script>
 
 <style scoped lang="scss">
@@ -111,6 +110,6 @@ function countBestPerformingTests(comparison: ExecutionComparison): number {
 }
 
 .failed {
-  color: #f44336;
+  color: #F44336;
 }
 </style>
