@@ -102,6 +102,7 @@ public class TestSuiteController {
         return testSuiteService.getSuiteInputs(projectId, suiteId);
     }
 
+
     @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
@@ -111,6 +112,16 @@ public class TestSuiteController {
         testSuiteService.scheduleTestSuiteExecution(projectId, suiteId, inputs);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("project/{projectId}/suite-new/{suiteId}/test/{testId}/inputs")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO updateTestInputs(@PathVariable("projectId") long projectId,
+                                            @PathVariable("suiteId") long suiteId,
+                                            @PathVariable("testId") @NotBlank String testId,
+                                            @Valid @RequestBody Map<@NotBlank String, @NotNull String> inputs) {
+       return testSuiteService.updateTestInputs(suiteId, testId, inputs);
     }
 
     @PostMapping("project/{projectKey}/suites")

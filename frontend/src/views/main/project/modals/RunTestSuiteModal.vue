@@ -21,34 +21,11 @@
         </v-card-title>
 
         <v-card-text>
-          <v-list>
-            <v-list-item v-for="input in inputs" :track-by="input" class="pl-0 pr-0">
-              <v-row>
-                <v-col>
-                  <v-list-item-content>
-                    <v-list-item-title>{{ input.name }}</v-list-item-title>
-                    <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-col>
-                <v-col>
-                  <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                   v-if="input.type === 'Dataset'" :value.sync="testSuiteInputs[input.name]"/>
-                  <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                 v-if="input.type === 'Model'" :value.sync="testSuiteInputs[input.name]"/>
-                  <v-text-field
-                      :step='input.type === "float" ? 0.1 : 1'
-                      v-model="testSuiteInputs[input.name]"
-                      v-if="['float', 'int'].includes(input.type)"
-                      hide-details
-                      single-line
-                      type="number"
-                      outlined
-                      dense
-                  />
-                </v-col>
-              </v-row>
-            </v-list-item>
-          </v-list>
+          <TestInputListSelector
+              :model-value="testSuiteInputs"
+              :inputs="props.inputs"
+              :project-id="props.projectId"
+          />
         </v-card-text>
 
         <v-divider></v-divider>
@@ -73,19 +50,16 @@
 <script setup lang="ts">
 
 import {computed, ref} from 'vue';
-import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
-import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
 import {commitAddNotification} from '@/store/main/mutations';
 import store from '@/store';
+import TestInputListSelector from '@/components/TestInputListSelector.vue';
 
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  inputs: {
-    [name: string]: string
-  }
+  inputs: { [name: string]: string }
 }>();
 
 const dialog = ref<boolean>(false);

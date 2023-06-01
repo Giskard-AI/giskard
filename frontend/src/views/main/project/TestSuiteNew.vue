@@ -54,11 +54,13 @@
                   <v-col>
                     <TestSuiteTestDetails
                         :project-id="projectId"
+                        :suite-id="suiteId"
                         :test="registry.tests[selectedTest.testId]"
                         :models="allModels"
                         :datasets="allDatasets"
                         :inputs="selectedTest.testInputs"
-                        :executions="testSuiteResults[selectedTest.testId]"/>
+                        :executions="testSuiteResults[selectedTest.testId]"
+                        @updateTestSuite="loadData" />
                   </v-col>
                 </v-row>
               </v-col>
@@ -120,11 +122,11 @@ const props = defineProps<{
   suiteId: number
 }>();
 
-let suite = ref<TestSuiteNewDTO | null>(null);
-let registry = ref<TestCatalogDTO | null>(null);
-let tab = ref<any>(null);
-let selectedTest = ref<SuiteTestDTO | null>(null);
-let inputs = ref<{ [name: string]: string }>({});
+const suite = ref<TestSuiteNewDTO | null>(null);
+const registry = ref<TestCatalogDTO | null>(null);
+const tab = ref<any>(null);
+const selectedTest = ref<SuiteTestDTO | null>(null);
+const inputs = ref<{ [name: string]: string }>({});
 const allDatasets = ref<{ [key: string]: DatasetDTO }>({});
 const allModels = ref<{ [key: string]: ModelDTO }>({});
 const executions = ref<TestSuiteExecutionDTO[]>();
@@ -158,6 +160,10 @@ async function loadData() {
 
   allDatasets.value = Object.fromEntries(datasets.map(x => [x.id, x]));
   allModels.value = Object.fromEntries(models.map(x => [x.id, x]));
+
+  if (selectedTest.value !== null) {
+    selectedTest.value = suiteResults.tests.find(test => test.testId === selectedTest.value?.testId) ?? null;
+  }
 }
 
 const testSuiteResults = computed(() => {
