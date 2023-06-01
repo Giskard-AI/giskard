@@ -44,7 +44,7 @@ class HuggingFaceModel(WrapperModel):
         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
         model_postprocessing_function: Callable[[Any], Any] = None,
         feature_names: Optional[Iterable] = None,
-        classification_threshold: float = 0.5,
+        classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None
     ) -> None:
         """
@@ -60,10 +60,7 @@ class HuggingFaceModel(WrapperModel):
             classification_threshold (float, optional): The classification probability threshold for binary classification models.
             classification_labels (Iterable, optional): The labels for classification models.
 
-        Returns:
-            None
-
-        Sets the following instance attributes:
+        Notes:
             huggingface_module (Type): The type of the HuggingFace module used by the model.
             pipeline_task (str, optional): The task performed by the HuggingFace pipeline, if applicable.
         """

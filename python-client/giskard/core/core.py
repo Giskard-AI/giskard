@@ -114,7 +114,7 @@ class CallableMeta(SavableMeta):
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
-                 name: str = None,
+                 name: Optional[str] = None,
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None
@@ -205,7 +205,7 @@ class TestFunctionMeta(CallableMeta):
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
-                 name: str = None,
+                 name: Optional[str] = None,
                  tags: List[str] = None,
                  version: Optional[int] = None):
         if callable_obj:
