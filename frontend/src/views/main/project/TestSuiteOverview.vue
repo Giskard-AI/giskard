@@ -52,9 +52,10 @@
           </v-card-text>
         </v-card>
       </v-col>
-
     </v-row>
-
+    <p class="pt-4 text-h6">Detailed results</p>
+    <TestSuiteExecutionResults :execution="latestExecution" :registry="registry" m
+                               :models="models" :datasets="datasets"/>
   </v-container>
 </template>
 
@@ -66,8 +67,9 @@ import {TestResult} from '@/generated-sources';
 import {useMainStore} from '@/stores/main';
 import {Colors} from '@/utils/colors';
 import {chain} from 'lodash';
+import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 
-const {executions, registry} = storeToRefs(useTestSuiteStore());
+const {executions, registry, models, datasets} = storeToRefs(useTestSuiteStore());
 
 const latestExecution = computed(() => executions.value.length === 0 ? null : executions.value[0]);
 
