@@ -35,10 +35,22 @@ class Dataset:
         self.df = pd.DataFrame(df)
         self.target = target
         self.column_types = self.extract_column_types(self.df)
+        self.feature_types = self.extract_feature_types(list(self.column_types.keys()), cat_columns)
+
+    @staticmethod
+    def extract_feature_types(all_columns, cat_columns):
+        feature_types = {}
         if cat_columns:
-            self.feature_types = {f: SupportedFeatureTypes.CATEGORY for f in cat_columns}
-        else:
-            self.feature_types = feature_types
+            for cat_col in cat_columns:
+                feature_types[cat_col] = SupportedFeatureTypes.CATEGORY.value
+            for col in all_columns:
+                if col not in cat_columns:
+                    feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
+        else:  # TODO: Implement smarter inference
+            for col in all_columns:
+                feature_types[col] = SupportedFeatureTypes.NUMERIC.value if type(col) != str else SupportedFeatureTypes.TEXT.value
+
+        return feature_types
 
     @staticmethod
     def extract_column_types(df):
