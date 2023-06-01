@@ -53,6 +53,7 @@ def german_credit_data() -> Dataset:
     )
     return Dataset(
         df=df,
+        name='Test german credit scoring dataset',
         target="default",
         column_types=input_types,
     )
