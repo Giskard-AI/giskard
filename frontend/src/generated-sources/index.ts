@@ -75,6 +75,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
     'ai.giskard.web.dto.TestFunctionDTO' : 'TestFunctionDTO',
     'ai.giskard.web.dto.TestInputDTO' : 'TestInputDTO',
+    'ai.giskard.web.dto.TestSuiteCompleteDTO' : 'TestSuiteCompleteDTO',
     'ai.giskard.web.dto.TestSuiteCreateDTO' : 'TestSuiteCreateDTO',
     'ai.giskard.web.dto.TestSuiteNewDTO' : 'TestSuiteNewDTO',
     'ai.giskard.web.dto.TestTemplatesResponse' : 'TestTemplatesResponse',
@@ -131,8 +132,8 @@ export * from './ai/giskard/web/dto/ml/named-single-test-result-dto';
 export * from './ai/giskard/web/dto/ml/project-dto';
 export * from './ai/giskard/web/dto/ml/project-post-dto';
 export * from './ai/giskard/web/dto/ml/single-test-result-dto';
-export * from './ai/giskard/web/dto/ml/slice-dto';
 export * from './ai/giskard/web/dto/ml/suite-test-execution-dto';
+export * from './ai/giskard/web/dto/ml/slice-dto';
 export * from './ai/giskard/web/dto/ml/test-dto';
 export * from './ai/giskard/web/dto/ml/test-editor-config-dto';
 export * from './ai/giskard/web/dto/ml/test-execution-result-dto';

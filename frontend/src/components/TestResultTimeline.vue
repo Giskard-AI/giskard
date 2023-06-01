@@ -13,7 +13,7 @@
             <v-icon>circle</v-icon>
           </v-btn>
         </template>
-        <span>{{ execution.testSuiteResult.executionDate | moment('MMM Do YY, h:mm:ss a') }}</span>
+        <span>{{ execution.testSuiteResult.executionDate | date }}</span>
       </v-tooltip>
     </div>
   </div>
