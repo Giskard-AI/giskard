@@ -43,7 +43,13 @@ class SklearnClassificationScoreMixin:
     def _calculate_metric(self, y_true, y_pred, model: BaseModel):
         metric_fn = getattr(sklearn.metrics, self._sklearn_metric)
         if model.is_binary_classification:
-            return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, pos_label=1, average="binary")
+            return metric_fn(
+                y_true,
+                y_pred,
+                labels=model.meta.classification_labels,
+                pos_label=model.meta.classification_labels[1],
+                average="binary",
+            )
 
         return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, average="macro")
 
