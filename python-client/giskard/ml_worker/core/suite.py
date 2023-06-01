@@ -205,8 +205,8 @@ class Suite:
         for t in self.tests:
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
-                testInputs=[build_test_input_dto(client, p, pname, project_key, uploaded_uuids) for pname, p in
-                            t.provided_inputs.items()]
+                testInputs={pname: build_test_input_dto(client, p, pname, project_key, uploaded_uuids) for pname, p in
+                            t.provided_inputs.items()}
             ))
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
