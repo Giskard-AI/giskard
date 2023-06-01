@@ -3,6 +3,7 @@ import warnings
 from time import perf_counter
 from typing import Optional, Sequence
 
+from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
 from .result import ScanResult
@@ -24,10 +25,7 @@ class Scanner:
 
     def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        analytics.track("scan", {"model_class": model.__class__.__name__,
-                                 "model_id": str(model.id),
-                                 "model_type": model.meta.model_type.value,
-                                 "dataset_id": str(dataset.id)})
+        self._collect_analytics(model, dataset)
         validate_model(model=model, validate_ds=dataset)
 
         maybe_print("Running scan…", verbose=verbose)
@@ -64,7 +62,31 @@ class Scanner:
             verbose=verbose,
         )
 
+        issues = self._postprocess(issues)
+
         return ScanResult(issues)
+
+    def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
+        # If we detected a StochasticityIssue, we will have a possibly false
+        # positive DataLeakageIssue. We remove it here.
+        from .stochasticity.stochasticity_detector import StochasticityIssue
+        from .data_leakage.data_leakage_detector import DataLeakageIssue
+
+        if any(isinstance(issue, StochasticityIssue) for issue in issues):
+            issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
+
+        return issues
+
+    def _collect_analytics(self, model, dataset):
+        analytics.track(
+            "scan",
+            {
+                "model_class": model.__class__.__name__,
+                "model_id": str(model.id),
+                "model_type": model.meta.model_type.value,
+                "dataset_id": str(dataset.id),
+            },
+        )
 
     def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
         """Returns the detector instances."""
