@@ -220,7 +220,7 @@ Finally 🎉, you can scan your model for vulnerabilities using:
 ```python
 import giskard
 
-results = giskard.scan(wrapped_model, wrapped_dataset, tests=["f1", "accuracy"])
+results = giskard.scan(wrapped_model, wrapped_dataset)
 
 display(results)  # in your notebook
 ```
