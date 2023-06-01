@@ -5,6 +5,7 @@
 :hidden:
 
 getting-started/index
+getting-started/quickstart
 ```
 
 ```{toctree}
