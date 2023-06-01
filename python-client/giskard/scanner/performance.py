@@ -177,7 +177,7 @@ class PerformanceScan:
         if slicer_name == "ms":
             return MultiscaleSlicer(dataset, target=target)
         if slicer_name == "bf":
-            return BruteForceSlicer(dataset,target=target)
+            return BruteForceSlicer(dataset, target=target)
 
         raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
@@ -266,7 +266,7 @@ tailwind.config = {{
 
 </html>
 """
-        escaped = html.replace('"', '&quot;')
+        escaped = html.replace('"', "&quot;")
 
         return f'<iframe srcdoc="{escaped}" style="width: 100%; height: 100vh; border: none;"></iframe>'
 
@@ -304,3 +304,17 @@ tailwind.config = {{
 </div>
 <!-- ISSUES TABLE END -->
 """
+
+    def to_dataframe(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "slice": str(issue.slice_fn),
+                    "metric": issue.test_name,
+                    "metric_value": f"−{issue.test_results.metric*100:.2f}% than global",
+                    "size": f"{issue.test_results.actual_slices_size[0]} samples ({100 * (issue.test_results.actual_slices_size[0] / issue.test_results.reference_slices_size[0]):.2f}%)",
+                }
+                for issue in self.issues
+            ]
+        )
+        return df
