@@ -1,6 +1,6 @@
-from ...models.base import BaseModel
-from ...datasets.base import Dataset
-from ..logger import logger
+from models.base import BaseModel
+from datasets.base import Dataset
+from scanner.logger import logger
 import pandas as pd
 
 

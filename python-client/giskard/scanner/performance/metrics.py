@@ -4,7 +4,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
 
-from giskard.scanner.prediction.metric import OverconfidenceDetector,BorderlineDetector
+
 
 class PerformanceMetric(ABC):
     name: str
@@ -114,38 +114,6 @@ class MeanAbsoluteError(SklearnRegressionScoreMixin, RegressionPerformanceMetric
     _sklearn_metric = "mean_absolute_error"
 
 
-class ProbaMAE(PerformanceMetric):
-    name = "probamae"
-    greater_is_better = False
-
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
-        if not model.is_classification:
-            raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
-
-        ocd = OverconfidenceDetector(model, dataset)
-
-        return self._calculate_metric(ocd)
-
-    def _calculate_metric(self,ocd) -> float:
-        return ocd.get_proba_rmse()
-
-class Borderline(PerformanceMetric):
-
-    name = "borderline"
-    greater_is_better = True
-
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
-        if not model.is_classification:
-            raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
-
-        bld = BorderlineDetector(model, dataset)
-
-        return self._calculate_metric(bld)
-
-    def _calculate_metric(self, bld) -> float:
-        return bld.get_proba_rmse()
-
-
 _metrics_register = {
     "f1": F1Score,
     "accuracy": Accuracy,
@@ -154,8 +122,6 @@ _metrics_register = {
     "auc": AUC,
     "mse": MeanSquaredError,
     "mae": MeanAbsoluteError,
-    "probamae": ProbaMAE,
-    "borderline":Borderline,
 }
 
 
