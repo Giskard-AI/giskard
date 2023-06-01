@@ -27,23 +27,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -74,6 +73,7 @@ public class InitService {
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
+    private final ResourceLoader resourceLoader;
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
         return Map.of(
@@ -244,61 +244,66 @@ public class InitService {
     }
 
     private void loadDatasets(Project project) throws IOException {
-        getArtifactResouceStream(project, "datasets").forEach(resource -> {
-            try {
-                saveDatasetResource(project, resource);
-            } catch (IOException e) {
-                logger.warn("Failed to save demo dataset {}", resource);
-            }
-        });
+        List<String> ids = copyResource(project, "datasets");
+
+        for (String id : ids) {
+            Path metaPath = fileLocationService.resolvedDatasetPath(project.getKey(), id).resolve("giskard-dataset-meta.yaml");
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            DatasetDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), DatasetDTO.class);
+            Dataset dataset = giskardMapper.fromDTO(loadedMeta);
+            dataset.setProject(project);
+            datasetRepository.save(dataset);
+        }
     }
 
     private void loadModels(Project project) throws IOException {
-        getArtifactResouceStream(project, "models").forEach(resource -> {
-            try {
-                saveDModelResource(project, resource);
-            } catch (IOException e) {
-                logger.warn("Failed to save demo dataset {}", resource);
-            }
-        });
+        List<String> ids = copyResource(project, "models");
+
+        for (String id : ids) {
+            Path metaPath = fileLocationService.resolvedModelPath(project.getKey(), id).resolve("giskard-model-meta.yaml");
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ModelDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), ModelDTO.class);
+            ProjectModel model = giskardMapper.fromDTO(loadedMeta);
+            model.setProject(project);
+            modelRepository.save(model);
+        }
     }
 
-    private Stream<Resource> getArtifactResouceStream(Project project, String artifactType) throws IOException {
-        String path = "classpath:" + Paths.get("demo_projects", project.getKey(), artifactType, "*");
+    private List<String> copyResource(Project project, String artifactType) throws IOException {
+        Resource[] artifactResources;
+        List<String> artifactIds = new ArrayList<>();
+
+        Path originalRoot = Paths.get("demo_projects", project.getKey(), artifactType);
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        return Arrays.stream(resolver.getResources(path)).filter(resource -> {
-            try {
-                return resource.getFile().isDirectory();
-            } catch (IOException e) {
-                logger.warn("Failed to read demo resource {}", resource.getFilename());
-                return false;
+
+        try {
+            artifactResources = resolver.getResources(originalRoot.resolve("**").toString());
+        } catch (FileNotFoundException e) {
+            logger.info("Failed to load demo project resources: {}: {}", project.getKey(), artifactType);
+            return Collections.emptyList();
+        }
+
+        for (Resource resource : artifactResources) {
+            byte[] content = resource.getInputStream().readAllBytes();
+
+            Path resourcePath = Paths.get(((ClassPathResource) resource).getPath());
+            Path relativeResourcePath = originalRoot.relativize(resourcePath);
+            Path destination = fileLocationService.resolvedProjectHome(project.getKey()).resolve(artifactType).resolve(relativeResourcePath);
+
+            if (relativeResourcePath.getNameCount() == 1 && !relativeResourcePath.getName(0).toString().isEmpty()) {
+                artifactIds.add(relativeResourcePath.getName(0).toString());
             }
-        });
-    }
 
-    private void saveDModelResource(Project project, Resource resource) throws IOException {
-        Path metaPath = resource.getFile().toPath().resolve("giskard-model-meta.yaml");
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ModelDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), ModelDTO.class);
-        ProjectModel model = giskardMapper.fromDTO(loadedMeta);
-        model.setProject(project);
-        modelRepository.save(model);
-
-        FileUtils.copyDirectory(resource.getFile().getParentFile(), fileLocationService.modelsDirectory(project.getKey()).toFile());
-    }
-
-    private void saveDatasetResource(Project project, Resource resource) throws IOException {
-        Path metaPath = resource.getFile().toPath().resolve("giskard-dataset-meta.yaml");
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        DatasetDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), DatasetDTO.class);
-        Dataset dataset = giskardMapper.fromDTO(loadedMeta);
-        dataset.setProject(project);
-        datasetRepository.save(dataset);
-
-        FileUtils.copyDirectory(resource.getFile().getParentFile(), fileLocationService.datasetsDirectory(project.getKey()).toFile());
+            if (content.length == 0) {
+                FileUtils.forceMkdir(destination.toFile());
+            } else {
+                FileUtils.writeByteArrayToFile(destination.toFile(), content);
+            }
+        }
+        return artifactIds;
     }
 
 

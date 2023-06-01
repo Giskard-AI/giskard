@@ -16,6 +16,8 @@ services:
     build:
       dockerfile: python-client/docker/Dockerfile
       context: .
+    volumes:
+      - giskard-home:/giskard-home
 
   backend:
     image: 'docker.io/giskardai/backend:${TAG-latest}'

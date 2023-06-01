@@ -86,7 +86,7 @@ class Dataset:
 
         if client is None:
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{dataset_id}"
+            assert local_dir.exists(), f"Cannot find existing dataset {project_key}.{dataset_id}"
             with open(Path(local_dir) / 'giskard-dataset-meta.yaml') as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = DatasetMeta(
