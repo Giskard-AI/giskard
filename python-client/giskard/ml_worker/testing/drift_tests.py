@@ -27,12 +27,8 @@ class DriftTests(AbstractTestCollection):
         # we bound distribution probability by min_distribution_probability
         min_distribution_probability = 0.0001
 
-        expected_distribution_bounded = max(
-            expected_distribution[category], min_distribution_probability
-        )
-        actual_distribution_bounded = max(
-            actual_distribution[category], min_distribution_probability
-        )
+        expected_distribution_bounded = max(expected_distribution[category], min_distribution_probability)
+        actual_distribution_bounded = max(actual_distribution[category], min_distribution_probability)
         modality_psi = (expected_distribution_bounded - actual_distribution_bounded) * np.log(
             expected_distribution_bounded / actual_distribution_bounded
         )
@@ -44,17 +40,13 @@ class DriftTests(AbstractTestCollection):
         if max_categories is not None and len(all_modalities) > max_categories:
             var_count_expected = dict(Counter(reference_series).most_common(max_categories))
             other_modalities_key = "other_modalities_" + uuid.uuid1().hex
-            var_count_expected[other_modalities_key] = len(reference_series) - sum(
-                var_count_expected.values()
-            )
+            var_count_expected[other_modalities_key] = len(reference_series) - sum(var_count_expected.values())
             categories_list = list(var_count_expected.keys())
 
             var_count_actual = Counter(actual_series)
             # For test data, we take the same category names as expected_data
             var_count_actual = {i: var_count_actual[i] for i in categories_list}
-            var_count_actual[other_modalities_key] = len(actual_series) - sum(
-                var_count_actual.values()
-            )
+            var_count_actual[other_modalities_key] = len(actual_series) - sum(var_count_actual.values())
 
             all_modalities = categories_list
         else:
@@ -74,13 +66,9 @@ class DriftTests(AbstractTestCollection):
         expected_distribution = expected_frequencies / len(reference_series)
         actual_distribution = actual_frequencies / len(actual_series)
         total_psi = 0
-        output_data = pd.DataFrame(
-            columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"]
-        )
+        output_data = pd.DataFrame(columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"])
         for category in range(len(all_modalities)):
-            modality_psi = DriftTests._calculate_psi(
-                category, actual_distribution, expected_distribution
-            )
+            modality_psi = DriftTests._calculate_psi(category, actual_distribution, expected_distribution)
 
             total_psi += modality_psi
             row = {
@@ -126,9 +114,7 @@ class DriftTests(AbstractTestCollection):
         # so that reference and actual has the same size
         # See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787
         k_norm = actual_series.shape[0] / reference_series.shape[0]
-        output_data = pd.DataFrame(
-            columns=["Modality", "Reference_frequencies", "Actual_frequencies", "Chi_square"]
-        )
+        output_data = pd.DataFrame(columns=["Modality", "Reference_frequencies", "Actual_frequencies", "Chi_square"])
         for i in range(len(all_modalities)):
             chi_square_value = (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
                 expected_frequencies[i] * k_norm
@@ -153,9 +139,9 @@ class DriftTests(AbstractTestCollection):
 
     @staticmethod
     def _validate_feature_type(gsk_dataset, column_name, feature_type):
-        assert gsk_dataset.feature_types[column_name] == feature_type, (
-            f'Column "{column_name}" is not of type "{feature_type}"'
-        )
+        assert (
+            gsk_dataset.feature_types[column_name] == feature_type
+        ), f'Column "{column_name}" is not of type "{feature_type}"'
 
     @staticmethod
     def _validate_column_name(actual_ds, reference_ds, column_name):
@@ -225,9 +211,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if total_psi <= threshold
         """
-        actual_series, reference_series = self._extract_series(
-            actual_ds, reference_ds, column_name, "category"
-        )
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, "category")
 
         messages, passed, total_psi = self._test_series_drift_psi(
             actual_series,
@@ -291,9 +275,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric > threshold
         """
-        actual_series, reference_series = self._extract_series(
-            actual_ds, reference_ds, column_name, "category"
-        )
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, "category")
 
         messages, p_value, passed = self._test_series_drift_chi(
             actual_series,
@@ -349,9 +331,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric >= threshold
         """
-        actual_series, reference_series = self._extract_series(
-            actual_ds, reference_ds, column_name, "numeric"
-        )
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, "numeric")
 
         result = self._calculate_ks(actual_series, reference_series)
 
@@ -404,9 +384,7 @@ class DriftTests(AbstractTestCollection):
             passed:
                 TRUE if metric <= threshold
         """
-        actual_series, reference_series = self._extract_series(
-            actual_ds, reference_ds, column_name, "numeric"
-        )
+        actual_series, reference_series = self._extract_series(actual_ds, reference_ds, column_name, "numeric")
 
         metric = self._calculate_earth_movers_distance(actual_series, reference_series)
 
@@ -507,22 +485,16 @@ class DriftTests(AbstractTestCollection):
         psi_contribution_percent,
         threshold,
     ):
-        total_psi, output_data = self._calculate_drift_psi(
-            actual_series, reference_series, max_categories
-        )
+        total_psi, output_data = self._calculate_drift_psi(actual_series, reference_series, max_categories)
         passed = True if threshold is None else total_psi <= threshold
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-        messages = self._generate_message_modalities(
-            main_drifting_modalities_bool, output_data, test_data
-        )
+        messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
         return messages, passed, total_psi
 
     @staticmethod
     def _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data):
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [
-            w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)
-        ]
+        filtered_modalities = [w for w in modalities_list if not re.match(DriftTests.other_modalities_pattern, w)]
         messages: Union[typing.List[TestMessage], None] = None
         if filtered_modalities:
             messages = [
@@ -610,16 +582,10 @@ class DriftTests(AbstractTestCollection):
         max_categories,
         threshold,
     ):
-        chi_square, p_value, output_data = self._calculate_chi_square(
-            actual_series, reference_series, max_categories
-        )
+        chi_square, p_value, output_data = self._calculate_chi_square(actual_series, reference_series, max_categories)
         passed = p_value > threshold
-        main_drifting_modalities_bool = (
-            output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-        )
-        messages = self._generate_message_modalities(
-            main_drifting_modalities_bool, output_data, test_data
-        )
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        messages = self._generate_message_modalities(main_drifting_modalities_bool, output_data, test_data)
         return messages, p_value, passed
 
     def test_drift_prediction_ks(
@@ -671,9 +637,7 @@ class DriftTests(AbstractTestCollection):
         ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
         prediction_reference = (
-            pd.Series(
-                model.predict(reference_slice).all_predictions[classification_label].values
-            )
+            pd.Series(model.predict(reference_slice).all_predictions[classification_label].values)
             if model.is_classification
             else pd.Series(model.predict(reference_slice).prediction)
         )
