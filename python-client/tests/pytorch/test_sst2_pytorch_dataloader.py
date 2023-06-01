@@ -21,7 +21,7 @@ def my_softmax(x):
     return special.softmax(x, axis=1)
 
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 padding_idx = 1
 bos_idx = 0
@@ -59,25 +59,28 @@ def test_sst2_pytorch_dataloader():
         return F.to_tensor(batch["token_ids"], padding_value=padding_idx).to(device)
 
     def pandas_to_torch(test_df):
-        test_datapipe_transformed = IterableWrapper(test_df['text']).map(apply_transform)
+        test_datapipe_transformed = IterableWrapper(test_df["text"]).map(apply_transform)
         test_datapipe_transformed = test_datapipe_transformed.batch(batch_size)
         test_datapipe_transformed = test_datapipe_transformed.rows2columnar(["token_ids", "target"])
         return DataLoader(test_datapipe_transformed, batch_size=None, collate_fn=collate_batch)
 
-    classification_labels = ['0', '1']
-    my_model = PyTorchModel(name='SST2-XLMR_BASE_ENCODER',
-                            clf=model,
-                            feature_names=['text'],
-                            model_type="classification",
-                            classification_labels=classification_labels,
-                            data_preprocessing_function=pandas_to_torch,
-                            model_postprocessing_function=my_softmax)
+    classification_labels = ["0", "1"]
+    my_model = PyTorchModel(
+        name="SST2-XLMR_BASE_ENCODER",
+        clf=model,
+        feature_names=["text"],
+        model_type="classification",
+        classification_labels=classification_labels,
+        data_preprocessing_function=pandas_to_torch,
+        model_postprocessing_function=my_softmax,
+    )
 
     # defining the giskard dataset
     my_test_dataset = Dataset(dev_dataframe.head(), name="test dataset", target="label")
 
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
@@ -89,7 +92,7 @@ def test_sst2_pytorch_dataloader():
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
         client = GiskardClient(url, token)
-        my_model.upload(client, 'test-project', my_test_dataset)
+        my_model.upload(client, "test-project", my_test_dataset)
 
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
