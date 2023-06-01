@@ -1,7 +1,7 @@
 <template>
   <v-tabs v-if="data">
     <v-tab>Overview</v-tab>
-    <v-tab @change="onInspectorActivated">Inspector</v-tab>
+    <v-tab @change="onInspectorActivated">Debugger</v-tab>
     <v-tab-item class="height85vh">
       <div class="d-flex flex-column metadata fill-height align-baseline">
         <v-container class="w100 flex-grow-1 ">
