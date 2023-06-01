@@ -66,7 +66,7 @@ class TextTransformer:
                 text_transformed = self.char_perturbation(text_transformed)
                 text_transformed = self.title_case(text_transformed)
                 text_transformed = self.word_perturbation(text_transformed)
-                new_text.append(text_transformed)
+                new_text.append(str(text_transformed))
         return " ".join(new_text)
 
     def char_perturbation(self, text):
