@@ -7,7 +7,7 @@ build:
   jobs:
     post_create_environment:
       - pip install pdm
-      - pdm install -p python-client
+      - pdm proto
       - pdm export -p python-client --without-hashes -G doc -o requirements-sphinx.txt
 
 sphinx:
