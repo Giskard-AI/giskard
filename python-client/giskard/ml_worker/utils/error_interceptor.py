@@ -24,6 +24,7 @@ pool = ThreadPoolExecutor()
 
 
 class ErrorInterceptor(grpc.aio.ServerInterceptor):
+
     @staticmethod
     async def terminate_with_exception(error_code: StatusCode, e: Exception, context: ServicerContext):
         detail = any_pb2.Any()
@@ -38,7 +39,7 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
         await context.abort_with_status(rpc_status.to_status(rich_status))
 
     async def intercept_service(self, continuation: Callable[[grpc.HandlerCallDetails],
-                                                             Awaitable[grpc.RpcMethodHandler]],
+    Awaitable[grpc.RpcMethodHandler]],
                                 handler_call_details: grpc.HandlerCallDetails) -> grpc.RpcMethodHandler:
         def _wrapper(behavior):
             @functools.wraps(behavior)

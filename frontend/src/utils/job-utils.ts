@@ -1,6 +1,6 @@
 import {JobDTO, JobState} from '@/generated-sources';
 import {api} from '@/api';
-import {computeOnValueChanged, voidFunction} from '@/functional-utils';
+import {computeOnValueChanged, voidFunction} from '@/utils/functional-utils';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
