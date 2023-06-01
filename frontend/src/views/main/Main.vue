@@ -1,6 +1,6 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="72" color="primary">
+    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="72" color="primaryLight">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
           <v-list-item to="/">
