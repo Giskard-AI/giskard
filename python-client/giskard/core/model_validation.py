@@ -17,8 +17,7 @@ from giskard.ml_worker.core.dataset import Dataset
 def validate_model(model: Model, validate_ds: Dataset):
     model_type = model.meta.model_type
 
-    # TODO: replace model with loaded_model, and continue validation with it
-    model = validate_model_loading_and_saving(model) # noqa
+    model = validate_model_loading_and_saving(model)
 
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
