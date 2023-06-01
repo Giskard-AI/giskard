@@ -35,7 +35,6 @@ public class InspectionController {
     private final GiskardMapper giskardMapper;
     private final PermissionEvaluator permissionEvaluator;
 
-
     /**
      * Retrieve the row specified by the given range on the dataset
      * TODO Replace with spring pagination
@@ -72,6 +71,26 @@ public class InspectionController {
         ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
         ((ObjectNode) result).set("columns", objectMapper.valueToTree(filteredTable.columnNames()));
         return result;
+    }
+
+
+    /**
+     * get all inspections
+     * @return list of inspections
+     */
+    @GetMapping("/inspections")
+    public List<InspectionDTO> getInspections() {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspections());
+    }
+
+    /**
+     * get all inspections for a project
+     * @param projectId id of the project
+     * @return list of inspections
+     */
+    @GetMapping("project/{projectId}/inspections")
+    public List<InspectionDTO> listProjectInspections(@PathVariable @NotNull Long projectId) {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspectionsByProjectId(projectId));
     }
 
     @GetMapping("/inspection/{id}")
