@@ -63,11 +63,11 @@ export const useTestSuiteStore = defineStore('testSuite', {
     actions: {
         async reload() {
             if (this.suiteId !== null && this.projectId !== null) {
-                await this.loadTestSuite(this.projectId, this.suiteId!);
+                await this.loadTestSuites(this.projectId, this.suiteId!);
                 testSuiteCompareStore.reset()
             }
         },
-        async loadTestSuite(projectId: number, suiteId: number) {
+        async loadTestSuites(projectId: number, suiteId: number) {
             const completeSuite = await api.getTestSuiteComplete(projectId, suiteId);
 
             this.projectId = projectId;
