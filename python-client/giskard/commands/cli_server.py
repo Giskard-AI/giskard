@@ -5,14 +5,17 @@ import click
 import requests
 import yaml
 
-import docker
+logger = logging.getLogger(__name__)
 
 giskard_home_path = os.path.expanduser("~/giskard-home")
 giskard_settings_path = giskard_home_path + "/giskard-settings.yml"
 
-client = docker.from_env()
+try:
+    import docker
 
-logger = logging.getLogger(__name__)
+    client = docker.from_env()
+except Exception as e:
+    logger.error("Failed to create Docker client", e)
 
 
 @click.group("server", help="Giskard UI management", context_settings={"show_default": True})
