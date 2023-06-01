@@ -11,18 +11,11 @@ from torch.utils.data import DataLoader
 from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
 from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
-from torch import nn
 
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
 
-url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "application/json"
-model_name = "uploaded model"
-b_content_type = b"application/json"
-
+import tests.utils
 
 def my_softmax(x):
     return special.softmax(x, axis=1)
@@ -59,7 +52,6 @@ model = XLMR_BASE_ENCODER.get_model(head=classifier_head).to(device)
 def apply_transform(x):
     return text_transform(x[0]), x[1]
 
-
 @httpretty.activate(verbose=True, allow_net_connect=False)
 @pytest.mark.skip(reason="WIP")
 def test_sst2_pytorch_dataloader():
@@ -85,31 +77,20 @@ def test_sst2_pytorch_dataloader():
     # defining the giskard dataset
     my_test_dataset = Dataset(dev_dataframe.head(), name="test dataset", target="label")
 
-    my_model.predict(my_test_dataset)
     artifact_url_pattern = re.compile(
         "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+    settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
     httpretty.register_uri(httpretty.POST, artifact_url_pattern)
     httpretty.register_uri(httpretty.POST, models_url_pattern)
+    httpretty.register_uri(httpretty.GET, settings_url_pattern)
 
+    url = "http://giskard-host:12345"
+    token = "SECRET_TOKEN"
     client = GiskardClient(url, token)
     my_model.upload(client, 'test-project', my_test_dataset)
 
-    assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(my_model.id))
-
-    artifact_requests = [i for i in httpretty.latest_requests() if artifact_url_pattern.match(i.url)]
-    assert len(artifact_requests) > 0
-    for req in artifact_requests:
-        assert req.headers.get("Authorization") == auth
-        assert int(req.headers.get("Content-Length")) > 0
-
-    artifact_requests = [i for i in httpretty.latest_requests() if models_url_pattern.match(i.url)]
-    assert len(artifact_requests) > 0
-    for req in artifact_requests:
-        assert req.headers.get("Authorization") == auth
-        assert int(req.headers.get("Content-Length")) > 0
-        assert req.headers.get("Content-Type") == "application/json"
-
-if __name__ == "__main__":
-    test_sst2_pytorch_dataloader()
+    tests.utils.match_model_id(my_model.id)
+    tests.utils.match_url_patterns(httpretty.latest_requests(), artifact_url_pattern)
+    tests.utils.match_url_patterns(httpretty.latest_requests(), models_url_pattern)
