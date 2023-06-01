@@ -5,6 +5,7 @@
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="GSK_CACHE_DIR" value="projects" />
     </envs>
     <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python" />
     <option name="SDK_NAME" value="Python (giskard)" />
