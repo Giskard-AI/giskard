@@ -76,7 +76,7 @@ async function launchInspector() {
   mixpanel.track('Create inspection', { datasetId: datasetSelected.value!.id, modelId: props.model.id });
   try {
     creatingInspection.value = true;
-    const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id });
+    const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
     // await router.push({name: 'project-inspector', params: {inspectionId: inspection.id.toString()}});
     await router.push({
       name: 'project-debugger',
