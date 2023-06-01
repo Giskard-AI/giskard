@@ -76,9 +76,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api";
-import { MLWorkerInfoDTO } from "@/generated-sources";
+import { apiURL } from "@/env";
+import { MLWorkerInfoDTO, ProjectDTO } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import StartWorkerInstructions from "./StartWorkerInstructions.vue";
+
+interface Props {
+  project: ProjectDTO;
+}
+
+const props = defineProps<Props>();
 
 const step = ref<number>(1);
 const toggleArtifactType = ref<string>("dataset");
@@ -87,14 +94,12 @@ const toggleTestType = ref<string>("scan");
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
-const backendUrl: string = "http://localhost:19000";
-const projectKey: string = "my_project_key";
 const apiAccessToken: string = "my_API_Access_Token";
 
 const clientCodeContent = computed(() => {
   return `# Create a Giskard client
 from giskard import GiskardClient
-url = "${backendUrl}" # URL of your Giskard instance
+url = "${apiURL}" # URL of your Giskard instance
 token = "${apiAccessToken}" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)`
 })
@@ -117,7 +122,7 @@ wrapped_dataset = wrap_dataset(
   # column_types=None # # Optional: if not provided, it is inferred automatically
 )
   
-dataset_id = wrapped_dataset.upload(client, "${projectKey}")`
+dataset_id = wrapped_dataset.upload(client, "${props.project.key}")`
 })
 
 const modelCodeContent = computed(() => {
@@ -147,7 +152,7 @@ wrapped_model = wrap_model(
   # classification_threshold=0.5, # Default: 0.5
 )
 
-model_id = wrapped_model.upload(client, "${projectKey}")`
+model_id = wrapped_model.upload(client, "${props.project.key}")`
 })
 
 const scanCodeContent: string = `import giskard
@@ -162,7 +167,7 @@ const manualTestCodeContent = computed(() => {
 suite = Suite()
   .add_test(test_f1(actual_slice=wrapped_dataset))
   .add_test(DataQuality(dataset=wrapped_dataset, column_name='species', category='Setosa'))
-  .save(client, "${projectKey}")`
+  .save(client, "${props.project.key}")`
 });
 
 const emit = defineEmits(["close"]);

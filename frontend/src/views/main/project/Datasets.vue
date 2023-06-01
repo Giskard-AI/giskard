@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import { api } from '@/api';
+import { apiURL } from "@/env";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import { computed, onBeforeMount, ref } from 'vue';
@@ -82,7 +83,7 @@ const filePreviewData = ref<any[]>([]);
 const codeContent = computed(() =>
   `# Create a Giskard client
 from giskard import GiskardClient
-url = "http://localhost:19000" # URL of your Giskard instance
+url = "${apiURL}" # URL of your Giskard instance
 token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
 client = GiskardClient(url, token)
 
