@@ -49,10 +49,15 @@ class DecisionTreeSlicer(BaseSlicer):
 
         data = data.loc[:, features + [target]].dropna()
 
+        min_samples = max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
+
+        if len(data) < min_samples:
+            return []
+
         criterion = self._choose_tree_criterion(data.loc[:, target].values)
+
         logging.debug(f"Using `{criterion}` criterion")
 
-        min_samples = max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
         data_var = data.loc[:, target].var()
 
         dt = DecisionTreeRegressor(

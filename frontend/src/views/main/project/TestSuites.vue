@@ -57,7 +57,7 @@ async function createTestSuite() {
         id: null,
         name: 'Unnamed test suite',
         projectKey: project.key,
-        testInputs: [],
+        functionInputs: [],
         tests: []
     });
 

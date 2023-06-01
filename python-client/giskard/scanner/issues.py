@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Optional, Any
+from typing import List, Optional, Any
 from abc import ABC, abstractmethod
 
 from ..datasets import Dataset
@@ -22,11 +22,15 @@ class Issue(ABC):
         self.info = info
 
     def __repr__(self):
-        return f"<Issue level='{self.level}'>"
+        return f"<{self.__class__.__name__} level='{self.level}'>"
 
     @property
     def is_major(self) -> bool:
         return self.level == "major"
+
+    @property
+    def features(self) -> List[str]:
+        return []
 
     @property
     @abstractmethod
@@ -57,5 +61,13 @@ class Issue(ABC):
     def importance(self) -> float:
         ...
 
-    def generate_tests(self) -> list:
+    @property
+    def slicing_fn(self):
+        return None
+
+    @property
+    def transformation_fn(self):
+        return None
+
+    def generate_tests(self, with_names=False) -> list:
         return []
