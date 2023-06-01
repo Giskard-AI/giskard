@@ -1,8 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
-
+import pytest
 from giskard import TensorFlowModel, Dataset
-
 import tests.utils
 
 
@@ -21,8 +20,10 @@ def create_model():
     return model
 
 
+@pytest.mark.skip(
+    reason="This is a computer vision model, eventhough it used to work, now we \
+    enforce that the dataset class takes df as argument. Should be included once we introduce CV type datasets.")
 def test_mnist():
-
     (train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
 
     train_labels = train_labels[:100]
