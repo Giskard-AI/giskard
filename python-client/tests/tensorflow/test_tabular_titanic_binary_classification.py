@@ -42,7 +42,7 @@ def test_tabular_titanic_binary_classification():
 
     my_model = TensorFlowModel(
         name=TF_FILENAME,
-        clf=model_seq,
+        model=model_seq,
         feature_names=list(new_data.keys()),
         model_type="classification",
         classification_labels=['0', '1'],
