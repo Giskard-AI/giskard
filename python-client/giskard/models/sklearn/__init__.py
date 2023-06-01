@@ -1,6 +1,8 @@
-from typing import Union, Callable, Iterable, Any, Optional
+from typing import Callable, Iterable, Any, Optional
+
 import pandas as pd
-from giskard.core.core import SupportedModelTypes
+
+from giskard.core.core import ModelType
 from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
 
@@ -14,7 +16,7 @@ class SKLearnModel(MLFlowBasedModel):
     @validate_args
     def __init__(self,
                  clf,
-                 model_type: Union[SupportedModelTypes, str],
+                 model_type: ModelType,
                  name: Optional[str] = None,
                  data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                  model_postprocessing_function: Callable[[Any], Any] = None,

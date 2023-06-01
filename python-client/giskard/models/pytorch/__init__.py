@@ -1,10 +1,12 @@
-from typing import Union
-from pathlib import Path
-import yaml
-import pandas as pd
-import numpy as np
 import collections
-from giskard.core.core import SupportedModelTypes
+from pathlib import Path
+from typing import Union
+
+import numpy as np
+import pandas as pd
+import yaml
+
+from giskard.core.core import ModelType
 from giskard.models.base import MLFlowBasedModel
 from ..utils import map_to_tuples
 
@@ -55,7 +57,7 @@ class PyTorchModel(MLFlowBasedModel):
     def __init__(
             self,
             clf,
-            model_type: Union[SupportedModelTypes, str],
+            model_type: ModelType,
             torch_dtype=torch.float32,
             device="cpu",
             name: str = None,

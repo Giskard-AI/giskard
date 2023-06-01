@@ -6,16 +6,18 @@ import posixpath
 import tempfile
 import uuid
 from abc import abstractmethod, ABC
+from inspect import signature, isfunction
 from pathlib import Path
 from typing import Optional, Any, Union, Callable, Iterable
+
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
 from pydantic import BaseModel
-from inspect import signature, isfunction
+
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import ModelMeta, SupportedModelTypes
+from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
 from giskard.core.validation import validate_args
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
@@ -47,7 +49,7 @@ class BaseModel(ABC):
     @validate_args
     def __init__(
             self,
-            model_type: Union[SupportedModelTypes, str],
+            model_type: ModelType,
             name: str = None,
             feature_names: Optional[Iterable] = None,
             classification_threshold: float = 0.5,
@@ -294,7 +296,7 @@ class WrapperModel(BaseModel, ABC):
     def __init__(
             self,
             clf: Any,
-            model_type: Union[SupportedModelTypes, str],
+            model_type: ModelType,
             data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
             model_postprocessing_function: Callable[[Any], Any] = None,
             name: str = None,

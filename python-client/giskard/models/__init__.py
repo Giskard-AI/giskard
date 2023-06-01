@@ -1,13 +1,15 @@
 from importlib import import_module
-from typing import Union, Callable, Optional, Iterable, Any
+from typing import Callable, Optional, Iterable, Any
+
 import pandas as pd
-from giskard.core.core import SupportedModelTypes
+
+from giskard.core.core import ModelType
 from giskard.core.validation import validate_args
-from giskard.models.sklearn import SKLearnModel
 from giskard.models.catboost import CatboostModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.tensorflow import TensorFlowModel
 from giskard.models.huggingface import HuggingFaceModel
+from giskard.models.pytorch import PyTorchModel
+from giskard.models.sklearn import SKLearnModel
+from giskard.models.tensorflow import TensorFlowModel
 
 try:
     import torch
@@ -28,7 +30,7 @@ def get_class(_lib, _class):
 
 @validate_args
 def model(clf,
-          model_type: Union[SupportedModelTypes, str],
+          model_type: ModelType,
           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
           model_postprocessing_function: Callable[[Any], Any] = None,
           name: Optional[str] = None,
@@ -63,7 +65,7 @@ def model(clf,
 
 @validate_args
 def model_from_sklearn(clf,
-                       model_type: Union[SupportedModelTypes, str],
+                       model_type: ModelType,
                        name: Optional[str] = None,
                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                        model_postprocessing_function: Callable[[Any], Any] = None,
@@ -82,7 +84,7 @@ def model_from_sklearn(clf,
 
 @validate_args
 def model_from_catboost(clf,
-                        model_type: Union[SupportedModelTypes, str],
+                        model_type: ModelType,
                         name: Optional[str] = None,
                         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                         model_postprocessing_function: Callable[[Any], Any] = None,
@@ -101,7 +103,7 @@ def model_from_catboost(clf,
 
 @validate_args
 def model_from_pytorch(clf,
-                       model_type: Union[SupportedModelTypes, str],
+                       model_type: ModelType,
                        torch_dtype: Optional[torch.dtype] = torch.float32,
                        device: Optional[str] = "cpu",
                        name: Optional[str] = None,
@@ -126,7 +128,7 @@ def model_from_pytorch(clf,
 
 @validate_args
 def model_from_tensorflow(clf,
-                          model_type: Union[SupportedModelTypes, str],
+                          model_type: ModelType,
                           name: Optional[str] = None,
                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                           model_postprocessing_function: Callable[[Any], Any] = None,
@@ -145,7 +147,7 @@ def model_from_tensorflow(clf,
 
 @validate_args
 def model_from_huggingface(clf,
-                           model_type: Union[SupportedModelTypes, str],
+                           model_type: ModelType,
                            name: Optional[str] = None,
                            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                            model_postprocessing_function: Callable[[Any], Any] = None,

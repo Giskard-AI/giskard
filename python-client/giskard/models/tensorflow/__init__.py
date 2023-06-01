@@ -1,7 +1,9 @@
-from typing import Union, Optional, Iterable, Any, Callable
-import pandas as pd
 import logging
-from giskard.core.core import SupportedModelTypes
+from typing import Optional, Iterable, Any, Callable
+
+import pandas as pd
+
+from giskard.core.core import ModelType
 from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
 
@@ -17,7 +19,7 @@ class TensorFlowModel(MLFlowBasedModel):
     @validate_args
     def __init__(self,
                  clf,
-                 model_type: Union[SupportedModelTypes, str],
+                 model_type: ModelType,
                  name: Optional[str] = None,
                  data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
                  model_postprocessing_function: Callable[[Any], Any] = None,
@@ -44,3 +46,5 @@ class TensorFlowModel(MLFlowBasedModel):
 
     def clf_predict(self, data):
         return self.clf.predict(data)
+
+TensorFlowModel(model_type="asd")
