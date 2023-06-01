@@ -44,7 +44,7 @@ def init_udf_repository() -> bool:
 def update_udf_repository():
     repo = Repo(udf_root)
 
-    logger.info(f'Repository already existing, fetching updates')
+    logger.info('Repository already existing, fetching updates')
     origin = repo.remotes.origin
     origin.pull()
 

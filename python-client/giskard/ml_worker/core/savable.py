@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class Savable(Generic[DT, SMT]):
-
     data: DT
     meta: SMT
 
@@ -105,11 +104,9 @@ class Savable(Generic[DT, SMT]):
 
         return cls._read_from_local_dir(local_dir, meta)
 
-
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: SMT):
         if not local_dir.exists():
             return None
         with open(Path(local_dir) / 'data.pkl', 'rb') as f:
             return cls(cloudpickle.load(f), meta)
-

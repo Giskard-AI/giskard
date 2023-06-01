@@ -1,10 +1,9 @@
 """API Client to interact with the Giskard app"""
-import inspect
 import logging
 import os
 import posixpath
 from pathlib import Path
-from typing import List, Any
+from typing import List
 from urllib.parse import urljoin
 from uuid import UUID
 
@@ -20,7 +19,7 @@ from giskard.client.analytics_collector import GiskardAnalyticsCollector, anonym
 from giskard.client.dtos import TestSuiteNewDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, TestFunctionArgument, SMT, SupportedModelTypes , SupportedModelTypes
+from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT, SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
