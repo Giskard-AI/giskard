@@ -2,14 +2,16 @@
   <div class="vertical-container">
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
-      <v-btn @click="reloadModels">
-        Reload
-        <v-icon right>refresh</v-icon>
-      </v-btn>
-      <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
-        Upload with API
-        <v-icon right>mdi-application-braces-outline</v-icon>
-      </v-btn>
+      <div class="mr-2">
+        <v-btn @click="reloadModels">
+          Reload
+          <v-icon right>refresh</v-icon>
+        </v-btn>
+        <v-btn v-if="projectArtifactsStore.models.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
+          Upload with API
+          <v-icon right>mdi-application-braces-outline</v-icon>
+        </v-btn>
+      </div>
     </div>
     <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
       <v-card flat>
@@ -79,6 +81,7 @@
 import { api } from '@/api';
 import { apiURL } from "@/env";
 import { Role } from "@/enums";
+import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
@@ -90,6 +93,7 @@ import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -106,15 +110,15 @@ const modelToInspect = ref<ModelDTO | null>(null);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(
-// language=Python
-    () =>
-  `from giskard import Model, GiskardClient
+  // language=Python
+  () =>
+    `from giskard import Model, GiskardClient
 from giskard.demo import titanic  # for demo purposes only 🛳️
 
 original_model, _ = titanic()  # Replace with your model creation
 
 # Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
+token = "${apiAccessToken.value?.id_token}"
 client = GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
@@ -142,6 +146,16 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
+
+function openUploadDialog() {
+  $vfm.show({
+    component: UploadArtifactModal,
+    bind: {
+      title: 'Upload a model',
+      codeContent: codeContent.value,
+    },
+  });
+}
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
