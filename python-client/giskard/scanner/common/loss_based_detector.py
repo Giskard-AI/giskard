@@ -1,3 +1,5 @@
+import datetime
+from time import perf_counter
 import pandas as pd
 from typing import Sequence
 from abc import abstractmethod
@@ -35,14 +37,30 @@ class LossBasedDetector:
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
         # Calculate loss
+        logger.debug(f"{self.__class__.__name__}: Calculating loss")
+        start = perf_counter()
         meta = self._calculate_loss(model, dataset)
+        elapsed = perf_counter() - start
+        logger.debug(f"{self.__class__.__name__}: Loss calculated (took {datetime.timedelta(seconds=elapsed)})")
 
         # Find slices
+        logger.debug(f"{self.__class__.__name__}: Finding data slices")
+        start = perf_counter()
         dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
         slices = self._find_slices(dataset_to_slice, meta)
+        elapsed = perf_counter() - start
+        logger.debug(
+            f"{self.__class__.__name__}: {len(slices)} slices found (took {datetime.timedelta(seconds=elapsed)})"
+        )
 
         # Create issues from the slices
+        logger.debug(f"{self.__class__.__name__}: Analyzing issues")
+        start = perf_counter()
         issues = self._find_issues(slices, model, dataset, meta)
+        elapsed = perf_counter() - start
+        logger.debug(
+            f"{self.__class__.__name__}: {len(issues)} issues found (took {datetime.timedelta(seconds=elapsed)})"
+        )
 
         return issues
 
