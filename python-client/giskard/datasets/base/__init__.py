@@ -3,14 +3,12 @@ import posixpath
 import tempfile
 import uuid
 from pathlib import Path
-from typing import Callable, Dict, Optional, List
-
+from typing import Callable, Dict, Optional, List, Hashable
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from enum import Enum
 import yaml
 from zstandard import ZstdDecompressor
-
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.python_utils import warning
 from giskard.client.io_utils import save_df, compress
@@ -44,7 +42,7 @@ class Dataset:
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
-        self.check_object_dtype_castability(self.df)
+        self.check_hashability(self.df)
         self.column_dtypes = self.extract_column_dtypes(self.df)
         if column_types:
             self.column_types = column_types
@@ -55,23 +53,21 @@ class Dataset:
         else:
             self.column_types = self.infer_column_types(self.df, self.column_dtypes, no_cat=True)
             warning(
-                "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset."
+                "You did not provide any of [column_types, cat_columns, infer_column_types = True] for your Dataset. "
                 "In this case, we assume that there's no categorical columns in your Dataset.")
 
     @staticmethod
-    def check_object_dtype_castability(df):
+    def check_hashability(df):
         df_objects = df.select_dtypes(include='object')
-        non_supported_cols = []
+        non_hashable_cols = []
         for col in df_objects.columns:
-            if not isinstance(df[col].iat[0], str):
-                try:
-                    float(df[col].iat[0])
-                except TypeError:
-                    non_supported_cols.append(col)
+            if not isinstance(df[col].iat[0], Hashable):
+                non_hashable_cols.append(col)
 
-        if non_supported_cols:
+        if non_hashable_cols:
             raise TypeError(
-                f"The following columns in your df: {non_supported_cols} don't contain strings or numbers (our only supported data types).")
+                f"The following columns in your df: {non_hashable_cols} are not hashable. "
+                f"We currently support only hashable column types such as int, bool, str, tuple and not list or dict.")
 
     @staticmethod
     def infer_column_types(df, column_dtypes, no_cat=False):
