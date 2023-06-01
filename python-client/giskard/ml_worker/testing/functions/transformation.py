@@ -69,13 +69,12 @@ def uppercase_transformation(text: str) -> str:
     return text.upper()
 
 
-@transformation_function(name="To lowercase", tags=['text'])
-def lowercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
+@transformation_function(name="To lowercase", tags=['text'], cell_level=True)
+def lowercase_transformation(text: str) -> str:
     """
     Transform the text of the column 'column_name' to lowercase
     """
-    x[column_name] = x[column_name].lower()
-    return x
+    return text.lower()
 
 
 @transformation_function(name="Strip punctuation", tags=['text'])
