@@ -131,7 +131,7 @@ catalog [#accessing-the-giskard-catalog](create-your-custom-test-wip-v2.md#acces
 
 ```
 is_pass, results = Suite()
-        .add_test(AucTest(actual_dataset=german_credit_data_a, threshold=0.3))
+        .add_test(test_auc(actual_dataset=german_credit_data_a, threshold=0.3))
         .add_test(test_f1, actual_dataset=german_credit_data_b, threshold=0.2)
         .run(model=german_credit_model)
 ```
@@ -174,7 +174,7 @@ token = "" # you can generate your API token in the Admin tab of the Giskard app
 client = GiskardClient(url, token)
 
 Suite()
-  .add_test(AucTest(actual_dataset=german_credit_data_a, threshold=0.3))
+  .add_test(test_auc(actual_dataset=german_credit_data_a, threshold=0.3))
   .add_test(test_f1, actual_dataset=german_credit_data_b, threshold=0.2)
   .upload(client, "test_project_key")
 ```

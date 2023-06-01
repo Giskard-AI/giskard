@@ -99,9 +99,6 @@
                   <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
                 </v-tab>
               </v-tabs>
-              <v-btn icon @click="initMLWorkerInfo">
-                <v-icon>refresh</v-icon>
-              </v-btn>
             </v-card-title>
             <v-card-text>
               <v-alert
@@ -211,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeMount, ref, watch} from "vue";
+import {computed, onBeforeMount, onUnmounted, ref, watch} from "vue";
 import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
@@ -220,6 +217,7 @@ import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import {schedulePeriodicJob} from "@/utils/job-utils";
 
 const mainStore = useMainStore();
 
@@ -234,28 +232,30 @@ const installedPackagesSearch = ref<string>("");
 const upgradeModal = ref<boolean>(false);
 
 const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
-  text: 'Version',
-  value: 'version',
-  width: '30%'
+    text: 'Version',
+    value: 'version',
+    width: '30%'
 }];
 
+const refreshingRef = ref<() => void>();
 
 onBeforeMount(async () => {
-  // TODO: Vue 2 does not support top level await in <script setup>, this can be moved when we migrate to Vue 3
-  await initMLWorkerInfo();
+    refreshingRef.value = schedulePeriodicJob(initMLWorkerInfo, 1000)
 })
+
+onUnmounted(() => refreshingRef.value!())
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
-  if (allMLWorkerSettings.value.length) {
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-    installedPackagesData.value = currentWorker.value !== null ?
-        Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
-          name: key,
-          version: value
-        })) : [];
-  }
+    if (allMLWorkerSettings.value.length) {
+        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+        installedPackagesData.value = currentWorker.value !== null ?
+            Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
+                name: key,
+                version: value
+            })) : [];
+    }
 }, {deep: true})
 
 function isWorkerAvailable(isInternal: boolean): boolean {
@@ -273,13 +273,9 @@ async function saveGeneralSettings(settings: GeneralSettings) {
 
 async function initMLWorkerInfo() {
   try {
-    currentWorker.value = null;
-    mlWorkerSettingsLoading.value = true;
-    allMLWorkerSettings.value = await api.getMLWorkerSettings();
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+      allMLWorkerSettings.value = await api.getMLWorkerSettings();
+      currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
   } catch (error) {
-  } finally {
-    mlWorkerSettingsLoading.value = false;
   }
 }
 
@@ -289,7 +285,6 @@ function epochToDate(epoch: number) {
 
 async function stopMLWorker() {
   await api.stopMLWorker(!externalWorkerSelected.value);
-  await initMLWorkerInfo();
 }
 </script>
 

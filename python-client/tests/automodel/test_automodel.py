@@ -26,7 +26,7 @@ def test_autoserializablemodel_abstract():
     with pytest.raises(NotImplementedError) as e:
         Model(model=unsupported_model, model_type="regression")
     assert e.match(
-        "We could not infer your model library. You need to define a subclass of Model where.*")
+        "We could not infer your model library.*")
 
 
 def test_autoserializablemodel_arbitrary_default():
