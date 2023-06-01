@@ -3,7 +3,7 @@ import pandas as pd
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
 from giskard.datasets.base import Dataset
-from giskard.datasets import _low_stat_threshold
+from giskard.datasets import low_stat_threshold
 
 
 def validate_target(ds: Dataset):
@@ -68,7 +68,7 @@ def validate_numeric_columns(ds: Dataset):
 
 
 def validate_column_categorization(ds: Dataset):
-    if len(ds.df) <= _low_stat_threshold:
+    if len(ds.df) <= low_stat_threshold:
         return
 
     nuniques = ds.df.nunique()
