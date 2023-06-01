@@ -19,14 +19,12 @@ public class UsageService {
     public PrepareDeleteDTO prepareDeleteDataset(UUID datasetId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByDatasetId(datasetId)));
-        // TODO: add suite test newt
         return res;
     }
 
     public PrepareDeleteDTO prepareDeleteModel(UUID modelId) {
         PrepareDeleteDTO res = new PrepareDeleteDTO();
         res.setFeedbacks(giskardMapper.toLightFeedbacks(feedbackRepository.findAllByModelId(modelId)));
-        // TODO: add suite test newt
         return res;
     }
 }
