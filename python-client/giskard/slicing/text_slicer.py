@@ -129,7 +129,7 @@ class TextSlicer(BaseSlicer):
     def _get_deviant_tokens(self, feature, target, max_tokens=100):
         from scipy import stats
 
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False)
+        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False, binary=True)
         X = vectorizer.transform(self.dataset.df[feature])
 
         critical_target = self.dataset.df[target].quantile(0.75)
@@ -140,11 +140,7 @@ class TextSlicer(BaseSlicer):
         totals = Y.sum(axis=0)
         tokens = vectorizer.get_feature_names_out()
 
-        # Skip edge case: empty group
-        if totals.min() < 1:
-            return []
-
-        mask = counts.max(axis=-1) > 5
+        mask = (counts.max(axis=-1) > 5) & (counts.min(axis=-1) > 0)
 
         _data = []
         for token, token_counts in zip(tokens[mask], counts[mask]):
