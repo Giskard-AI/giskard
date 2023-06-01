@@ -15,5 +15,7 @@ public abstract class DatasetProcessFunction extends Callable {
     private boolean cellLevel;
     @Column
     private String columnType;
+    @Column()
+    private boolean noCode;
 
 }
