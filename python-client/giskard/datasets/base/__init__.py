@@ -112,8 +112,8 @@ class Dataset:
             An instance of the `DataProcessor` class used for data processing.
     """
 
-    name: str
-    target: str
+    name: Optional[str]
+    target: Optional[str]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
