@@ -77,105 +77,20 @@ onActivated(() => {
           New debugging session
         </v-btn>
       </template>
-      <v-stepper non-linear v-model="currentStep">
-        <v-stepper-header>
-          <v-stepper-step step="1" :complete="currentStep > 1">
-            Select a model
-          </v-stepper-step>
-          <v-divider></v-divider>
-          <v-stepper-step step="2" :complete="currentStep > 2">
-            Select a dataset
-          </v-stepper-step>
-          <v-divider></v-divider>
-          <v-stepper-step step="3" :complete="currentStep > 3">
-            Define a session name
-            <small>Optional</small>
-          </v-stepper-step>
-          <v-divider></v-divider>
-          <v-stepper-step step="4" :complete="currentStep > 4">
-            Review
-          </v-stepper-step>
-        </v-stepper-header>
-
-        <v-stepper-items>
-          <v-stepper-content step="1">
-            <v-card>
-              <v-card-text>
-                <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
-              </v-card-text>
-              <v-card-actions>
-                <v-btn text @click="closeDialog">Cancel</v-btn>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="currentStep = 2" :disabled="selectedModel === null">Next</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-stepper-content>
-
-          <v-stepper-content step="2">
-            <v-card>
-              <v-card-text>
-                <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :label="'Dataset'" class="selector"></DatasetSelector>
-              </v-card-text>
-              <v-card-actions class="d-flex justify-space-between">
-                <v-btn text @click="closeDialog">Cancel</v-btn>
-                <div class="d-flex justify-end">
-                  <v-btn text @click="currentStep = 1" class="mr-2">Back</v-btn>
-                  <v-btn color="primary" @click="currentStep = 3" :disabled="selectedDataset === null">Next</v-btn>
-                </div>
-              </v-card-actions>
-            </v-card>
-          </v-stepper-content>
-
-          <v-stepper-content step="3">
-            <v-card>
-              <v-card-text>
-                <v-text-field label="Debugging session name (optional)" class="selector" v-model="sessionName" outlined dense hide-details></v-text-field>
-              </v-card-text>
-              <v-card-actions class="d-flex justify-space-between">
-                <v-btn text @click="closeDialog">Cancel</v-btn>
-                <div class="d-flex justify-end">
-                  <v-btn text @click="currentStep = 2" class="mr-2">Back</v-btn>
-                  <v-btn color="primary" @click="currentStep = 4">Next</v-btn>
-                </div>
-              </v-card-actions>
-            </v-card>
-          </v-stepper-content>
-
-          <v-stepper-content step="4">
-            <v-card>
-              <v-card-text>
-                <v-list class="d-flex">
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title>Model</v-list-item-title>
-                      <v-list-item-subtitle>{{ selectedModel?.name }}</v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title>Dataset</v-list-item-title>
-                      <v-list-item-subtitle>{{ selectedDataset?.name }}</v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title>Debugging session</v-list-item-title>
-                      <v-list-item-subtitle>{{ sessionName || 'Unnamed session' }}</v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-card-text>
-              <v-card-actions class="d-flex justify-space-between">
-                <v-btn text @click="closeDialog">Cancel</v-btn>
-                <div class="d-flex justify-end">
-                  <v-btn text @click="currentStep = 3" class="mr-2">Back</v-btn>
-                  <v-btn color="primary" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
-                </div>
-              </v-card-actions>
-            </v-card>
-          </v-stepper-content>
-        </v-stepper-items>
-      </v-stepper>
+      <v-card>
+        <v-card-title class="headline">Create a new debugging session</v-card-title>
+        <v-card-text>
+          <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense hide-details></v-text-field>
+          <ModelSelector :projectId="projectId" :value.sync="selectedModel" class="selector"></ModelSelector>
+          <v-spacer></v-spacer>
+          <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" label="Dataset" class="selector"></DatasetSelector>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="closeDialog">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
   </div>
 </template>
