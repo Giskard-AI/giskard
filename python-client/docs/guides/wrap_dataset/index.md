@@ -1,4 +1,4 @@
-# Wrap your dataset to create a Giskard dataset
+# Wrap your dataset
 
 The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
 column (ground truth variable), etc. This object gets passed to the Giskard model wrapper (
