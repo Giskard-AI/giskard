@@ -72,7 +72,7 @@ onActivated(() => {
   <div class="text-center">
     <v-dialog v-model="dialog" width="60vw">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn color="primary" v-bind="attrs" v-on="on" @click="resetInputs">
+        <v-btn color="primary" class="grey--text text--darken-4" v-bind="attrs" v-on="on" @click="resetInputs">
           <v-icon left>add</v-icon>
           New debugging session
         </v-btn>
@@ -88,7 +88,7 @@ onActivated(() => {
         <v-card-actions>
           <v-btn text @click="closeDialog">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
+          <v-btn color="primary" class="grey--text text--darken-4" @click="createNewDebugginSession" :disabled="missingValues">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -41,7 +41,7 @@
           </v-col>
           <v-col cols="3">
             <div>
-              <v-btn small tile color="primary" @click="showInspectDialog = true; modelToInspect = m">
+              <v-btn small tile color="primary" class="grey--text text--darken-4" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
                 Debug
               </v-btn>
