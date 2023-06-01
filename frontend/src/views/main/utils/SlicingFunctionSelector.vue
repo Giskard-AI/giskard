@@ -14,7 +14,19 @@
             :dense="fullWidth"
             hide-details
             :prepend-inner-icon="icon ? 'mdi-knife' : null"
-        ></v-select>
+        >
+            <template v-slot:append-item v-if="allowNoCodeSlicing">
+                <!-- TODO add NO CODE slices -->
+                <v-list-item @click="createSlice">
+                    <v-list-item-content>
+                        <v-list-item-title>
+                            <v-icon>add</v-icon>
+                            Create new slice
+                        </v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+            </template>
+        </v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
         </v-btn>
@@ -24,13 +36,14 @@
 <script setup lang="ts">
 
 
-import {FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
+import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import {computed} from "vue";
 import {$vfm} from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
 import {chain} from "lodash";
+import CreateSliceModal from "@/views/main/project/modals/CreateSliceModal.vue";
 
 const props = withDefaults(defineProps<{
     projectId: number,
@@ -38,10 +51,13 @@ const props = withDefaults(defineProps<{
     fullWidth: boolean,
     value?: string,
     args?: Array<FunctionInputDTO>,
-    icon: boolean
+    icon: boolean,
+    dataset?: DatasetDTO,
+    allowNoCodeSlicing: boolean
 }>(), {
     fullWidth: true,
-    icon: false
+    icon: false,
+    allowNoCodeSlicing: false
 });
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
@@ -104,6 +120,15 @@ async function updateArgs() {
         },
         cancel: {}
     });
+}
+
+async function createSlice() {
+    await $vfm.show({
+        component: CreateSliceModal,
+        bind: {
+            dataset: props.dataset
+        }
+    })
 }
 
 const hasArguments = computed(() => props.value && slicingFunctionsByUuid.value[props.value].args.length > 0)
