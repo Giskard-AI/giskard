@@ -113,7 +113,7 @@ class PerformanceScan:
             reference_dataset=dataset,  # Could exclude slice_dataset for independence
             model=model,
             threshold=threshold,
-            absolute=False
+            absolute=False,
         )
 
         res = test.execute()
@@ -218,8 +218,8 @@ class PerformanceScanResult(ScanResult):
     </div>
 
     <div class="bg-zinc-800 px-3 py-2 border-r border-t border-l border-gray-500">
-        Performance
-        <span class="ml-1 rounded-full text-xs w-4 h-4 inline-block text-center bg-red-400">{len(self.issues)}</span>
+        Model bias
+        <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-red-400">{len(self.issues)}</span>
     </div>
 
     <div class="flex-grow border-b border-gray-500"></div>
@@ -229,9 +229,19 @@ class PerformanceScanResult(ScanResult):
         issues_table = self._make_issues_table_html()
 
         main_content = f"""
-<div class="dark:text-white dark:bg-zinc-800 p-4 pt-8 mb-4">
-    <h2 class="uppercase">{len(self.issues)} performance issues detected</h2>
-    <p class="my-1">We detected {len(self.issues)} data slices where the model exhibits low performance.</p>
+<div class="dark:text-white dark:bg-zinc-800 p-4 pt-4 mb-4">
+    <div class="p-3 mt-2 bg-amber-100/40 rounded-sm w-full flex align-middle">
+        <div class="text-amber-100">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mt-0.5 w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+        </div>
+
+        <p class="ml-2 my-1 text-amber-100 text-sm">
+            We detected some spots in your data where the model has a tendency to make incorrect
+            predictions.
+        </p>
+    </div>
 
     <div class="flex items-center space-x-1">
         <h2 class="uppercase my-4 mr-2 font-medium">Issues</h2>
@@ -239,7 +249,14 @@ class PerformanceScanResult(ScanResult):
 
     {issues_table}    
     
-    <h2 class="uppercase mb-4 mt-8 mr-2 font-mediums">Why does this happen?</h2>
+    <h2 class="uppercase mb-2 mt-8 mr-2 font-mediums flex">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-5 h-5 mr-1">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+        </svg>
+        Why does this happen?
+    </h2>
     <p class="my-1">
         Performance bias can happen for a different reasons:
     </p>
@@ -248,6 +265,28 @@ class PerformanceScanResult(ScanResult):
         <li>Wrong labels in the training set in the low-performing data slices</li>
         <li>Drift between your training set and the test set</li>
     </ul>
+
+    <h2 class="uppercase mb-2 mt-8 mr-2 font-mediums flex">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-5 h-5 mr-1">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z" />
+        </svg>
+        How to correct this?
+    </h2>
+    <p class="my-1 max-w-xl">
+        We strongly recommend that you inspect the incorrect samples in the detected low-performing data
+        slices. This will allow you to find the right feature engineering or data augmentation strategies to
+        avoid such biases.
+    </p>
+
+    <div class="my-5 space-x-2">
+        <a href="#" class="bg-orange-700 hover:bg-orange-600 inline-block py-2 px-3 rounded-sm">Customize
+            Test
+            Suite</a>
+        <a href="#" class="bg-zinc-500 hover:bg-emerald-500 inline-block py-2 px-3 rounded-sm">Debug Test
+            Suite</a>
+    </div>
 </div>
 """
 
@@ -289,6 +328,11 @@ table.dataframe {{
         rows.forEach(rowEl => {{
             rowEl.addEventListener("click", (event) => {{
                 event.preventDefault()
+                if (event.target.classList.contains("gsk-debug")) {{
+                    alert("Not implemented yet")
+                    return;
+                }}
+
                 rowEl.classList.toggle("open")
                 rowEl.classList.toggle("bg-zinc-700")
             }})
@@ -322,7 +366,7 @@ table.dataframe {{
             tr = issue.test_results
             rows += f"""
 <tbody class="first:border-t border-b border-zinc-400">
-    <tr class="gsk-issue group peer text-left cursor-pointer hover:bg-zinc-700">
+    <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
         <td class="p-3">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                 stroke-width="1.5" stroke="currentColor" class="w-4 h-4 group-[.open]:rotate-90">
@@ -332,7 +376,7 @@ table.dataframe {{
         </td>
         <td class="p-3">
             <code class="mono text-blue-300">
-                {issue.slice_fn}
+                {str(issue.slice_fn).replace("&", "<br>")}
             </code>
         </td>
         <td class="p-3">
@@ -346,12 +390,16 @@ table.dataframe {{
                 {tr.actual_slices_size[0]} samples ({100 * (tr.actual_slices_size[0] / tr.reference_slices_size[0]):.2f}%)
             </span>
         </td>
+        <td class="p-3 text-xs text-right space-x-1">
+            <a href=""
+                class="gsk-debug inline-block border border-emerald-100/50 text-emerald-100/90 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white px-2 py-0.5 rounded-sm">Debug</a>
+        </td>
     </tr>
     <tr class="gsk-issue-detail text-left collapse peer-[.open]:visible border-b border-zinc-400 bg-zinc-700">
-        <td colspan="5" class="p-3">
-            <h4 class="uppercase w-100">Examples</h4>
-            <div class="text-white text-sm">
-            {issue.examples(3).to_html()}
+        <td colspan="6" class="p-3">
+            <h4 class="uppercase">Examples</h4>
+            <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
+                {issue.examples(3).to_html()}
             </div>
         </td>
     </tr>
