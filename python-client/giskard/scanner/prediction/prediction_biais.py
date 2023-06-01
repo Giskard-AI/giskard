@@ -53,8 +53,3 @@ class BorderlineBiaisDetector(PredictionBiasDetector):
         meta = oc.get_dataset()
         return meta
 
-# class DataLeakageBiaisDetector(PredictionBiasDetector):
-#     def _get_meta(self,model,dataset):
-#         oc = BorderlineDetector(model, dataset)
-#         meta = oc.get_dataset()
-#         return meta
