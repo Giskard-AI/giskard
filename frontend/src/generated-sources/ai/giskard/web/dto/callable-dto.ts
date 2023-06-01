@@ -14,5 +14,5 @@ export interface CallableDTO {
     potentiallyUnavailable: boolean;
     tags: string[];
     uuid: string;
-    version: number;
+    version?: number | null;
 }

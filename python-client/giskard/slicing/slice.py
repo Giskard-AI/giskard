@@ -46,23 +46,25 @@ class ComparisonClause(Clause):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, equal={repr(self.equal)})"
 
 
-class StringContains(Clause):
-    def __init__(self, column, value):
+class StringClause(Clause):
+    def __init__(self, column, value, method, isNot=False):
         self.column = column
         self.value = value
+        self.method = method
+        self.isNot = isNot
 
     def __repr__(self) -> str:
-        return f"<Clause ('{self.value}' in `{self.column}`)>"
+        return f"<Clause ('{self.value}' ${'not' if self.isNot else ''} ${self.method} `{self.column}`)>"
 
     def __str__(self) -> str:
-        return f"{self.column} contains '{self.value}'"
+        return f"{self.column} ${'not' if self.isNot else ''} ${self.method} '{self.value}'"
 
     def to_pandas(self):
         value = self.value.lower().replace("'", "\\'")
-        return f"`{self.column}`.str.lower().str.contains('{value}')"
+        return f"${'not ' if self.isNot else ''}`{self.column}`.str.lower().str.${self.method}('{value}')"
 
     def init_code(self):
-        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
+        return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)}, {repr(self.method)}, {repr(self.isNot)})"
 
 
 class GreaterThan(ComparisonClause):
@@ -75,6 +77,10 @@ class LowerThan(ComparisonClause):
 
 class EqualTo(ComparisonClause):
     _operator = "=="
+
+
+class NotEqualTo(ComparisonClause):
+    _operator = "!="
 
 
 class Query:

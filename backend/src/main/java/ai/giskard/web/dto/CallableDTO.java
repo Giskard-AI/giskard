@@ -1,6 +1,7 @@
 package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UIModel;
+import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -34,6 +35,7 @@ public class CallableDTO {
     @NotBlank
     @JsonAlias("display_name")
     private String displayName;
+    @UINullable
     private Integer version;
     private String module;
     private String doc;

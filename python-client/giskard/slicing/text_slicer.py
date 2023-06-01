@@ -7,15 +7,13 @@ from typing import Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from ..ml_worker.testing.registry.registry import get_object_uuid
-
-from ..core.core import DatasetProcessFunctionMeta
-
 from .base import BaseSlicer
-from .slice import Query, QueryBasedSliceFunction, StringContains
+from .slice import Query, QueryBasedSliceFunction, StringClause
 from .utils import get_slicer
 from ..client.python_utils import warning
+from ..core.core import DatasetProcessFunctionMeta
 from ..datasets.base import Dataset
+from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 from ..slicing.category_slicer import CategorySlicer
 
@@ -90,7 +88,7 @@ class TextSlicer(BaseSlicer):
             warning(f"Could not get meaningful tokens for textual feature `{feature}`. Are you sure this is text?")
             return []
 
-        return [QueryBasedSliceFunction(Query([StringContains(feature, token)])) for token in tokens]
+        return [QueryBasedSliceFunction(Query([StringClause(feature, token, 'contains')])) for token in tokens]
 
     def _get_top_tokens(self, feature, target):
         vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
