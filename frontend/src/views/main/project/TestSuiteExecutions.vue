@@ -1,106 +1,81 @@
 <template>
-  <div>
-    <div class="d-flex justify-space-between">
+  <div class="vc">
+    <div class="d-flex justify-space-between align-center">
       <v-breadcrumbs
           :items="executionBreadcrumbs"
       ></v-breadcrumbs>
+      <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-executions'}">
+        Compare executions
+        <v-icon>compare</v-icon>
+      </v-btn>
     </div>
-    <v-progress-linear
-        indeterminate
-        v-if="executionsAndJobs === undefined"
-        color="primary"
-        class="mt-2"
-    ></v-progress-linear>
-    <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
-    <v-row v-else>
-      <v-col cols="3">
-        <v-list three-line>
-          <v-list-item-group v-model="selectedExecution" color="primary" mandatory>
-            <template v-for="e in executionsAndJobs">
-              <v-divider/>
-              <v-list-item :value="e.execution" :disabled="e.disabled">
-                <v-list-item-content>
-                  <v-list-item-title>
-                      {{ e.date | moment('MMM Do YY, h:mm:ss a') }}
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip class="mr-2" x-small :color="e.color">
-                      {{ e.state }}
-                    </v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </template>
-          </v-list-item-group>
-        </v-list>
-      </v-col>
-      <v-col v-if="selectedExecution" cols="9">
-        <div class="pl-4">
-          <p class="text-h6">Inputs</p>
-          <v-list-item v-for="[input, value] in Object.entries(selectedExecution.inputs)" :track-by="input">
-            <v-list-item-content>
-              <v-list-item-title>{{ input }}</v-list-item-title>
-              <v-list-item-subtitle> {{ formatInputValue(input, value) }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-expansion-panels flat>
-            <v-expansion-panel>
-              <v-expansion-panel-header class="pa-0 text-h6">Logs</v-expansion-panel-header>
-              <v-expansion-panel-content class="pa-0">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon color="primary"
-                           @click=copyLogs
-                           v-bind="attrs"
-                           v-on="on">
-                      <v-icon>content_copy</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Copy logs</span>
-                </v-tooltip>
-                <pre class="log-viewer">{{ selectedExecution.logs }}</pre>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-          <p class="pt-4 text-h6">Results</p>
-          <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"/>
-        </div>
-      </v-col>
-    </v-row>
+    <v-container class="main-container vc">
+      <v-progress-linear
+          indeterminate
+          v-if="executionsAndJobs === undefined"
+          color="primary"
+          class="mt-2"
+      ></v-progress-linear>
+      <p v-else-if="executionsAndJobs.length === 0">No execution has been performed yet!</p>
+      <v-row v-else class="fill-height">
+        <v-col cols="3" class="vc fill-height">
+          <v-list three-line>
+            <v-list-item-group color="primary" mandatory>
+              <div v-for="e in executionsAndJobs" :key="e.date">
+                <v-divider/>
+                <v-list-item v-if="e.disabled" disabled>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      {{ e.date | date }}
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip class="mr-2" x-small :color="e.color">
+                        {{ e.state }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item v-else
+                             :to="{name: 'test-suite-new-execution', params: {executionId: e.execution.id}}">
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      <div class="d-flex justify-space-between">
+                        <span>{{ e.execution.executionDate | date }}</span>
+                        <TestResultHeatmap :results="executionResults(e.execution)"/>
+                      </div>
+                    </v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-chip class="mr-2" x-small :color="e.color">
+                        {{ e.state }}
+                      </v-chip>
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </div>
+            </v-list-item-group>
+          </v-list>
+        </v-col>
+        <v-col class="vc fill-height">
+          <router-view></router-view>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
-import {
-  DatasetDTO,
-  JobDTO,
-  JobState,
-  ModelDTO,
-  TestCatalogDTO,
-  TestResult,
-  TestSuiteExecutionDTO
-} from '@/generated-sources';
-import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
-import moment from 'moment';
+import {computed, onMounted} from 'vue';
+import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import {Colors} from '@/utils/colors';
 import {Comparators} from '@/utils/comparators';
-import {useMainStore} from '@/stores/main';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {formatDate} from '@/filters';
+import {useRoute, useRouter} from 'vue-router/composables';
 
-const props = defineProps<{
-  projectId: number,
-  suiteId: number,
-  registry: TestCatalogDTO,
-  models: { [key: string]: ModelDTO },
-  datasets: { [key: string]: DatasetDTO },
-  inputTypes: { [name: string]: string },
-  executions?: TestSuiteExecutionDTO[],
-  trackedExecutions: { [uuid: string]: JobDTO }
-}>();
-
-const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
-const mainStore = useMainStore();
+const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
 function executionStatusMessage(execution: TestSuiteExecutionDTO): string {
   switch (execution.result) {
@@ -149,32 +124,27 @@ function jobStatusColor(job: JobDTO): string {
   }
 }
 
-function formatInputValue(input: string, value: string): string {
-  switch (props.inputTypes[input]) {
-    case 'Dataset':
-      return props.datasets[value].name;
-    case 'Model':
-      return props.models[value].name;
-    default:
-      return value;
-  }
-}
-
 const executionItem = {
   text: 'Executions',
   disabled: true
 };
 
+const route = useRoute();
+
+const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId));
+
 const executionBreadcrumbs = computed(() =>
-    selectedExecution.value === null ? [executionItem] : [
+    !selectedExecution.value ? [executionItem] : [
       executionItem,
       {
-        text: moment(selectedExecution.value.executionDate)
-            .format('MMM Do YY, h:mm:ss a'),
+        text: formatDate(selectedExecution.value.executionDate),
         disabled: false
       }
     ]);
 
+function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
+  return execution.results ? execution.results.map(result => result.passed) : [];
+}
 
 type ExecutionTabItem = {
   date: any,
@@ -185,12 +155,12 @@ type ExecutionTabItem = {
 }
 
 const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
-  if (props.executions === undefined) {
+  if (executions.value === undefined) {
     return undefined;
   }
 
-  return  ([] as ExecutionTabItem[])
-      .concat(props.executions
+  return ([] as ExecutionTabItem[])
+      .concat(executions.value
           .map(e => ({
             date: e.executionDate,
             disabled: false,
@@ -198,7 +168,7 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
             color: executionStatusColor(e),
             execution: e
           })))
-      .concat(Object.values(props.trackedExecutions)
+      .concat(Object.values(trackedJobs.value)
           .map(j => ({
             date: j.scheduledDate,
             disabled: true,
@@ -209,18 +179,18 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
       .reverse();
 });
 
-function copyLogs() {
-  if (selectedExecution.value?.logs) {
-    navigator.clipboard.writeText(selectedExecution.value.logs);
-    mainStore.addNotification({content: 'Copied logs to clipboard', color: '#262a2d'});
-  }
-}
+const router = useRouter();
 
+onMounted(() => {
+  if (executions.value && !route.params.executionId) {
+    router.push({name: 'test-suite-new-execution', params: {executionId: executions.value[0].id.toString()}})
+  }
+})
 </script>
 
 <style scoped lang="scss">
-.log-viewer {
-  overflow: auto;
-  max-height: 400px;
+.main-container {
+  width: 100%;
+  max-width: 100%;
 }
 </style>

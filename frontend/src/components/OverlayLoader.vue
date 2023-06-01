@@ -3,7 +3,7 @@
              :color="solid ? '#ffffff':'#cdcdcd90'" :opacity="solid ? 1: 0.46"
              :class="classes"
              :z-index="100">
-    <v-progress-circular class="ma-2" :size="size" color="primary" indeterminate></v-progress-circular>
+    Vue.component("v-chart", ECharts);
   </v-overlay>
 </template>
 

@@ -17,6 +17,9 @@ def validate_model(model: Model, validate_ds: Dataset):
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
+    if model.model_postprocessing_function is not None:
+        validate_model_postprocessing_function(model.model_postprocessing_function)
+
     validate_classification_labels(model.meta.classification_labels, model_type)
 
     if model.is_classification:
@@ -48,7 +51,7 @@ def validate_model_execution(model: Model, dataset: Dataset) -> None:
         prediction = model.predict(validation_ds)
     except Exception as e:
         raise ValueError(
-            "Invalid prediction_function input.\n"
+            "Invalid model.predict() input.\n"
             "Please make sure that model.predict(dataset) does not return an error "
             "message before uploading in Giskard"
         ) from e
@@ -72,10 +75,17 @@ def validate_deterministic_model(model: Model, validate_ds: Dataset, prev_predic
         )
 
 
-def validate_data_preprocessing_function(prediction_function):
-    if not callable(prediction_function):
+def validate_data_preprocessing_function(f):
+    if not callable(f):
         raise ValueError(
-            f"Invalid prediction_function parameter: {prediction_function}. Please specify Python function."
+            f"Invalid data_preprocessing_function parameter: {f}. Please specify Python function."
+        )
+
+
+def validate_model_postprocessing_function(f):
+    if not callable(f):
+        raise ValueError(
+            f"Invalid model_postprocessing_function parameter: {f}. Please specify Python function."
         )
 
 
@@ -153,7 +163,7 @@ def validate_label_with_target(classification_labels, target_values=None, target
 def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
     assert len(df) == len(prediction), (
         f"Number of rows ({len(df)}) of dataset provided does not match with the "
-        f"number of rows ({len(prediction)}) of prediction_function output"
+        f"number of rows ({len(prediction)}) of model.predict output"
     )
     if isinstance(prediction, np.ndarray) or isinstance(prediction, list):
         if model_type == SupportedModelTypes.CLASSIFICATION:
@@ -168,14 +178,14 @@ def validate_prediction_output(df: pd.DataFrame, model_type, prediction):
 
 def validate_classification_prediction(classification_labels, prediction):
     if not np.all(np.logical_and(prediction >= 0, prediction <= 1)):
-        warning(
-            "Output of the prediction_function returns values out of range [0,1]. "
-            "The output of Multiclass and Binary classifications should be within the range [0,1]"
-        )
+        warning("Output of model.predict returns values out of range [0,1]. "
+                "The output of Multiclass and Binary classifications should be within the range [0,1]")
     if not np.all(np.isclose(np.sum(prediction, axis=1), 1, atol=0.0000001)):
-        warning(
-            "Sum of output values of prediction_function is not equal to 1."
-            " For Multiclass and Binary classifications, the sum of probabilities should be 1"
+        warning("Sum of output values of model.predict is not equal to 1."
+                " For Multiclass and Binary classifications, the sum of probabilities should be 1")
+    if prediction.shape[1] != len(classification_labels):
+        raise ValueError(
+            "Prediction output label shape and classification_labels shape do not match"
         )
     if prediction.shape[1] != len(classification_labels):
         raise ValueError("Prediction output label shape and classification_labels shape do not match")
