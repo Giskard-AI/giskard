@@ -24,6 +24,27 @@
         </template>
         <span>Inviting users is only available in Giskard Starter or above.</span>
       </v-tooltip>
+      <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+            <v-icon>mdi-dots-horizontal</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense tile>
+          <v-list-item link @click="exportProject(project.id)">
+            <v-list-item-title>
+              <v-icon dense left color="primary">mdi-application-export</v-icon>
+              Export
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item link @click="openDeleteDialog = true">
+            <v-list-item-title class="accent--text">
+              <v-icon dense left color="accent">delete</v-icon>
+              Delete
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-toolbar>
 
     <!-- Share dialog -->
@@ -45,27 +66,44 @@
       </v-card>
     </v-dialog>
 
+    <!-- Delete dialog -->
+    <v-dialog persistent max-width="340" v-model="openDeleteDialog">
+      <v-card>
+        <v-card-title>
+          Are you sure you want to delete project?
+        </v-card-title>
+        <v-card-text class="accent--text">
+          All data and files will be lost!
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" text @click="openDeleteDialog = false">Cancel</v-btn>
+          <v-btn color="accent" text @click="deleteProject();">Ok</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
-      <v-tabs v-model="tab" optional>
-        <v-tab :to="{ name: 'project-feedbacks' }" value="feedbacks">
+      <v-tabs v-model=" tab " optional>
+        <v-tab :to=" { name: 'project-feedbacks' } " value="feedbacks">
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
           Feedback
         </v-tab>
-        <v-tab :to="{ name: 'project-debugger' }" value="debugger">
+        <v-tab :to=" { name: 'project-debugger' } " value="debugger">
           <v-icon left small>mdi-debug-step-over</v-icon>
           Debugger
         </v-tab>
-        <v-tab :to="{ name: 'project-test-suites' }" value="test-suites">
+        <v-tab :to=" { name: 'project-test-suites' } " value="test-suites">
           <v-icon left small>mdi-list-status</v-icon>
           Test suites️
         </v-tab>
-        <v-tab :to="{ name: 'project-catalog-tests' }" value="catalog-tests">
+        <v-tab :to=" { name: 'project-catalog-tests' } " value="catalog-tests">
           <v-icon left small>mdi-list-status</v-icon>
           Catalog
         </v-tab>
       </v-tabs>
       <keep-alive>
-        <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
+        <router-view :isProjectOwnerOrAdmin=" isProjectOwnerOrAdmin "></router-view>
       </keep-alive>
     </v-container>
 
@@ -77,11 +115,13 @@ import { computed, onMounted, ref, watch } from "vue";
 import { IUserProfileMinimal } from "@/interfaces";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
+import { useRouter } from "vue-router/composables";
 import { useMainStore } from "@/stores/main";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
 
+const router = useRouter();
 
 const mainStore = useMainStore();
 const userStore = useUserStore();
@@ -95,6 +135,7 @@ const props = defineProps<Props>();
 
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
+const openDeleteDialog = ref<boolean>(false);
 const tab = ref<string | null>(null);
 
 const userProfile = computed(() => {
@@ -129,6 +170,23 @@ async function inviteUser() {
       openShareDialog.value = false
     } catch (e) {
       console.error(e)
+    }
+  }
+}
+
+function exportProject(id: number) {
+  mixpanel.track('Export project', { id });
+  projectStore.exportProject(id);
+}
+
+async function deleteProject() {
+  if (project.value) {
+    try {
+      mixpanel.track('Delete project', { id: project.value!.id });
+      await projectStore.deleteProject({ id: project.value!.id })
+      await router.push('/main/dashboard');
+    } catch (e) {
+      console.error(e.message);
     }
   }
 }
