@@ -12,8 +12,8 @@ public enum ComparisonType {
     DOES_NOT_CONTAINS(true, "does not contain", "giskard.slicing.slice.ContainsWord(%s, %s, is_not=True)"),
     STARTS_WITH(true, "startswith", "giskard.slicing.slice.StartsWith(%s, %s)"),
     ENDS_WITH(true, "endswith", "giskard.slicing.slice.EndsWith(%s, %s)"),
-    IS_EMPTY(false, "is empty", "giskard.slicing.slice.IsNa(%s, %s, is_not=True)"),
-    IS_NOT_EMPTY(false, "is not empty", "giskard.slicing.slice.IsNa(%s, %s, is_not=False)");
+    IS_EMPTY(false, "is empty", "giskard.slicing.slice.IsNa(%s, is_not=True)"),
+    IS_NOT_EMPTY(false, "is not empty", "giskard.slicing.slice.IsNa(%s, is_not=False)");
 
     private final boolean valueRequired;
     private final String symbol;
