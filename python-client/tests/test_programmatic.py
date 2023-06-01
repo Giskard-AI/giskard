@@ -95,7 +95,7 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
         .run(model=german_credit_model, dataset=german_credit_data, actual_slice=first_half, reference_slice=last_half)
 
     assert result[0]
-    assert len(result[1].items()) == 3
+    assert len(result[1]) == 3
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
