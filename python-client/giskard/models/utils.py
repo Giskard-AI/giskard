@@ -14,10 +14,7 @@ def map_to_tuples(data: Iterator):
     return map(lambda x: (x,), data)
 
 
-def numpy_encoder(some_list: List):
+def np_types_to_native(some_list: List):
     if some_list is not None:
-        if isinstance(some_list[0], np.integer):
-            return [int(i) for i in some_list]
-        if isinstance(some_list[0], np.floating):
-            return [float(i) for i in some_list]
+        return [i.item() if isinstance(i, np.generic) else i for i in some_list]
     return some_list
