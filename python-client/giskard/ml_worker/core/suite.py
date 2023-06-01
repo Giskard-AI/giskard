@@ -205,8 +205,6 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
-
-
             suite_tests.append(SuiteTestDTO(
                 testUuid=t.giskard_test.upload(client),
                 functionInputs={
