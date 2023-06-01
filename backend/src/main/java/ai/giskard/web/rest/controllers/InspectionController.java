@@ -59,7 +59,7 @@ public class InspectionController {
             rangeMax = filteredTable.rowCount();
         }
         if (rangeMin > rangeMax) {
-            throw new IllegalArgumentException("minumum range shoud be less than maximum range");
+            throw new IllegalArgumentException("minimum range should be less than maximum range");
         }
 
         Table filteredMTable = isRandom ? filteredTable.sampleN(rangeMax - rangeMin - 1)
