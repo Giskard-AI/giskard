@@ -19,7 +19,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -27,7 +27,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::
@@ -35,14 +35,15 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 
 ## 2. Wrap your dataset
 
-The Giskard `Dataset` is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
-column (ground truth variable), etc. This object gets passed to the Giskard `Model` wrapper (
+The Giskard dataset is a wrapper of `pandas.DataFrame`. It contains additional properties like the name of the target
+column (ground truth variable), etc. This object gets passed to the Giskard model wrapper (
 See [Wrap your model](#wrap-your-model)) for evaluation.
 
 The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
 etc.). The preprocessing steps should be wrapped in a function that gets assigned to `data_preprocessing_function` of
-the [Model](../../reference/models/index.rst#giskard.Model) class. 
+the [wrap_model](../../reference/models/index.rst#giskard.wrap_model) method.
 
+### Usage of [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset)
 ```python
 import pandas as pd
 
@@ -51,10 +52,10 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
                         "size": ["medium"],
                         "species": ["Setosa"]})
 
-from giskard import Dataset
+from giskard import wrap_dataset
 
-wrapped_dataset = Dataset(
-  df=iris_df, 
+wrapped_dataset = wrap_dataset(
+  dataset=iris_df, 
   target="species", # Optional but a MUST if available
   cat_columns=["size"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
@@ -62,7 +63,7 @@ wrapped_dataset = Dataset(
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `df`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
+  * `dataset`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
      ground truth variable (target).
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
@@ -79,49 +80,26 @@ wrapped_dataset = Dataset(
 ## 3. Wrap your model
 
 To use your model with Giskard, you can simply wrap your model
-with the [Model](../../reference/models/index.rst#giskard.Model) class. The objective of this wrapper is to encapsulate 
+with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
 the entire prediction process, starting from the **raw** `pandas.DataFrame` and leading up to the final predictions. 
 
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
-
-👉 <b> Option A: Use the default [Model](../../reference/models/index.rst#giskard.Model) class (See [Use `Model`](#use-model)) </b>
-
-The [Model](../../reference/models/index.rst#giskard.Model) class automatically infer the ML library of your `model` 
-object and provides suitable:
-
-  1. serialization methods (provided by `save_model` and `load_model` methods).
-  2. prediction methods (provided by the `model_predict` method).
-
-Our pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
-`tensorflow` and `huggingface` libraries. If none of these libraries are detected, `cloudpickle`
-is used as default for serialization, and you will be asked to provide your own prediction method.
-
-👉 <b> Option B: Customize the [Model](../../reference/models/index.rst#giskard.Model) class (See [Customize `Model`](#customize-model)) </b>
-
-The user is invited to customise the [Model](../../reference/models/index.rst#giskard.Model) class:
-
-- You can choose to override only `model_predict` and take advantage of our internal serialization methods.
-
-- You can choose to also override `save_model` and `load_model` where you provide your own serialization
-of the `model` object.
-
-👉 <b> Check some tutorials (See [Model-specific tutorials](#model-specific-tutorials)) </b>
 
 :::{important}
 - For model-specific usages, try our [tutorials](../../guides/tutorials/index.md).
 - For wrapping any python function in Giskard, try this [guide](../../guides/custom-wrapper/index.md).
 :::
 
-### Use [Model](../../reference/models/index.rst#giskard.Model)
+### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
-from giskard import Model
+from giskard import wrap_model
 
 clf = LogisticRegression()
 
-wrapped_model = Model(
+wrapped_model = wrap_model(
   model=clf,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'],
@@ -154,11 +132,11 @@ wrapped_model = Model(
 ::::::
 ::::::{tab-item} Regression
 ```python
-from giskard import Model
+from giskard import wrap_model
 
 reg = LinearRegression()
 
-wrapped_model = Model(
+wrapped_model = wrap_model(
   model=reg,
   model_type="regression",
   # name="my_regression_model", # Optional
@@ -183,64 +161,6 @@ wrapped_model = Model(
 
 ::::::
 :::::::
-
-### Customize [Model](../../reference/models/index.rst#giskard.Model)
-In order to provide your own prediction function you can simply extend the [Model](../../reference/models/index.rst#giskard.Model) class
-by overriding the `model_predict` method.
-
-This method will take your pandas dataframe filtered according to the `feature_names` you provide, and outputs:
-
-- if classification: an array ($n\times m$) of probabilities corresponding to $n$ data entries (rows of pandas.DataFrame)
-    and $m$ classification_labels. In the case of binary classification, an array of ($n\times 1$) probabilities is also accepted.
-    Make sure that the probability provided is for the first label provided in classification_labels.
-- if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
-
-<b> Here's an example </b>:
-:::::::{tab-set}
-::::::{tab-item} Classification
-```python
-from giskard import Model
-import pandas as pd
-
-clf = LogisticRegression()
-
-class MyExtendedModel(Model):
-  def model_predict(self, df: pd.DataFrame):
-    """
-    Here goes any preprocessing you want to do
-    """
-    return self.model.predict_proba(df)
-
-wrapped_model = MyExtendedModel(
-  model=clf,
-  model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'])
-```
-::::::
-
-::::::{tab-item} Regression
-```python
-from giskard import Model
-import pandas as pd
-
-reg = LinearRegression()
-
-class MyExtendedModel(Model):
-  def model_predict(self, df: pd.DataFrame):
-    """
-    Here goes any preprocessing you want to do
-    """
-    return self.model.predict(df)
-
-wrapped_model = MyExtendedModel(
-  model=reg,
-  model_type="regression")
-```
-::::::
-:::::::
-
-In case your model is not an object, e.g. a simple function or if it orginates from an online API, check our 
-"Wrap any python function with Giskard" [guide](../../guides/custom-wrapper/index.md).
 
 ### Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}

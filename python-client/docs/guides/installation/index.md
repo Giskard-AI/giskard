@@ -9,7 +9,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
 ```
 
 :::
@@ -17,7 +17,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
 ```
 
 :::

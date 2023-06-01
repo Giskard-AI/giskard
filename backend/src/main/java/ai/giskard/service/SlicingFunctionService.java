@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 
-public class SlicingFunctionService extends CallableService<SlicingFunction, SlicingFunctionDTO> {
+public class SlicingFunctionService extends DatasetProcessFunctionService<SlicingFunction, SlicingFunctionDTO> {
 
     private final GiskardMapper giskardMapper;
     private final SlicingFunctionRepository slicingFunctionRepository;
