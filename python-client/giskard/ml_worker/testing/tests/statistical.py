@@ -115,13 +115,13 @@ def test_output_in_range(
 
     prediction_results = model.predict(actual_slice)
 
-    if model.meta.model_type == "regression":
+    if model.is_regression:
         results_df["output"] = prediction_results.raw_prediction
 
-    elif model.meta.model_type == "classification":
+    elif model.is_classification:
         assert (
-            classification_label in model.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+                classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
         results_df["output"] = prediction_results.all_predictions[classification_label]
 
     else:
@@ -142,7 +142,6 @@ def test_output_in_range(
 
 # TODO: support type in the future
 def test_disparate_impact(
-        self,
         gsk_dataset: Dataset,
         protected_slice: Callable[[pd.DataFrame], pd.DataFrame],
         unprotected_slice: Callable[[pd.DataFrame], pd.DataFrame],
@@ -224,10 +223,8 @@ def test_disparate_impact(
         )
     ]
 
-    return self.save_results(
-        TestResult(
-            metric=disparate_impact_score,
-            passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
-            messages=messages,
-        )
+    return TestResult(
+        metric=disparate_impact_score,
+        passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
+        messages=messages,
     )
