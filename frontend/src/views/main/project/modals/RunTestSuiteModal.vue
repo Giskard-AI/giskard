@@ -52,9 +52,8 @@
 import {computed, ref} from 'vue';
 import {api} from '@/api';
 import mixpanel from 'mixpanel-browser';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
 import TestInputListSelector from '@/components/TestInputListSelector.vue';
+import {useMainStore} from '@/stores/main';
 
 const props = defineProps<{
   projectId: number,
@@ -75,6 +74,8 @@ const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   name,
   type: props.inputs[name]
 })));
+
+const mainStore = useMainStore();
 
 function isAllParamsSet() {
   return Object.keys(props.inputs)
@@ -98,7 +99,7 @@ async function executeTestSuite() {
 
   try {
     const jobUuid = await api.executeTestSuiteNew(props.projectId, props.suiteId, testSuiteInputs.value);
-    commitAddNotification(store, {content: 'Test suite execution has been scheduled', color: 'success'});
+    mainStore.addNotification({content: 'Test suite execution has been scheduled', color: 'success'});
     emit('uuid', jobUuid);
   } finally {
     running.value = false;
