@@ -3,7 +3,6 @@ import warnings
 from time import perf_counter
 from typing import Optional, Sequence
 
-from ..client.python_utils import warning
 
 from .issues import Issue
 from .logger import logger
@@ -25,16 +24,28 @@ class Scanner:
         self.params = params or dict()
         self.only = only
 
-    def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
+    def analyze(self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
         self._collect_analytics(model, dataset)
 
         if model.is_generative:
-            warning("Generative and LLM support is in alpha version.")
+            logger.warning(
+                "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
+            )
+            if dataset is None:
+                logger.warning(
+                    "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
+                )
+                from llm.utils import load_default_dataset
+
+                dataset = load_default_dataset()
+                model = model.rewrite_prompt(template="{question}", feature_names=["question"])
         else:
+            if dataset is None:
+                raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")
             validate_model(model=model, validate_ds=dataset)
 
-        maybe_print("Running scan…", verbose=verbose)
+        maybe_print("🔎 Running scan…", verbose=verbose)
         time_start = perf_counter()
 
         # Collect the detectors
@@ -90,7 +101,7 @@ class Scanner:
                 "model_class": model.__class__.__name__,
                 "model_id": str(model.id),
                 "model_type": model.meta.model_type.value,
-                "dataset_id": str(dataset.id),
+                "dataset_id": str(dataset.id) if dataset is not None else "none",
             },
         )
 
