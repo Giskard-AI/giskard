@@ -28,6 +28,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.DatasetMetadataDTO' : 'DatasetMetadataDTO',
     'ai.giskard.web.dto.DatasetPageDTO' : 'DatasetPageDTO',
     'ai.giskard.web.dto.DatasetProcessFunctionDTO' : 'DatasetProcessFunctionDTO',
+    'ai.giskard.web.dto.DatasetProcessFunctionType' : 'DatasetProcessFunctionType',
     'ai.giskard.web.dto.DatasetProcessingResultDTO' : 'DatasetProcessingResultDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
     'ai.giskard.web.dto.ExplainTextResponseDTO' : 'ExplainTextResponseDTO',
@@ -121,6 +122,7 @@ export * from './ai/giskard/web/dto/data-upload-params-dto';
 export * from './ai/giskard/web/dto/dataset-metadata-dto';
 export * from './ai/giskard/web/dto/dataset-page-dto';
 export * from './ai/giskard/web/dto/dataset-process-function-dto';
+export * from './ai/giskard/web/dto/dataset-process-function-type';
 export * from './ai/giskard/web/dto/dataset-processing-result-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/explain-text-response-dto';

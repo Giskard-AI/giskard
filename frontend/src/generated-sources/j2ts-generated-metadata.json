@@ -33,6 +33,7 @@
     "ai.giskard.web.dto.ml.CodeBasedTestPresetDTO": "CodeBasedTestPresetDTO",
     "ai.giskard.web.dto.TestSuiteCompleteDTO": "TestSuiteCompleteDTO",
     "ai.giskard.web.dto.SuiteTestDTO": "SuiteTestDTO",
+    "ai.giskard.web.dto.DatasetProcessFunctionType": "DatasetProcessFunctionType",
     "ai.giskard.jobs.JobState": "JobState",
     "ai.giskard.web.dto.SlicingFunctionDTO": "SlicingFunctionDTO",
     "ai.giskard.web.dto.GenerateTestSuiteDTO": "GenerateTestSuiteDTO",

@@ -265,10 +265,15 @@ class TestFunctionMeta(CallableMeta):
         return {p.name: p for p in parameters}
 
 
+class DatasetProcessFunctionType(Enum):
+    CLAUSES = "CLAUSES"
+    CODE = "CODE"
+
+
 class DatasetProcessFunctionMeta(CallableMeta):
     cell_level: bool
     column_type: Optional[str]
-    no_code: bool
+    process_type: DatasetProcessFunctionType
 
     def __init__(self,
                  callable_obj: Union[Callable, Type] = None,
@@ -276,11 +281,11 @@ class DatasetProcessFunctionMeta(CallableMeta):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None,
-                 no_code: bool = False,
+                 process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
                  cell_level: bool = False):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
-        self.no_code = no_code
+        self.process_type = process_type
 
         if cell_level:
             if inspect.isclass(callable_obj):
@@ -302,14 +307,14 @@ class DatasetProcessFunctionMeta(CallableMeta):
             **json,
             'cellLevel': self.cell_level,
             'columnType': self.column_type,
-            'noCode': self.no_code
+            'processType': self.process_type
         }
 
     def init_from_json(self, json: Dict[str, Any]):
         super().init_from_json(json)
         self.cell_level = json["cellLevel"]
         self.column_type = json["columnType"]
-        self.no_code = json["noCode"]
+        self.process_type = json["processType"]
 
 
 DT = TypeVar('DT')

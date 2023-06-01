@@ -1,4 +1,5 @@
 import type {CallableDTO} from './callable-dto';
+import type {DatasetProcessFunctionType} from './dataset-process-function-type';
 
 /**
  * Generated from ai.giskard.web.dto.DatasetProcessFunctionDTO
@@ -6,5 +7,5 @@ import type {CallableDTO} from './callable-dto';
 export interface DatasetProcessFunctionDTO extends CallableDTO {
     cellLevel: boolean;
     columnType?: string | null;
-    noCode: boolean;
+    processType: DatasetProcessFunctionType;
 }
