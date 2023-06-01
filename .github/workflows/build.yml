@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  pull_request_target:
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -20,8 +20,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v3.1.0
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+#        with:
+#          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-node@v3
         with:
@@ -99,7 +99,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build --info --parallel
 
-      - name: "Python client: archive built artifacts"
+      - name:  "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         uses: actions/upload-artifact@v3
         with:
