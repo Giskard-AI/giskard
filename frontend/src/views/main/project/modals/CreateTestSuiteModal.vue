@@ -147,10 +147,7 @@ function handleInputSettingsClick(input: GenerateTestSuiteInputDTO) {
     },
     on: {
       async save(meta) {
-        console.log(input)
-        console.log(meta)
         Object.assign(input, meta);
-        console.log(input)
 
       }
     }
