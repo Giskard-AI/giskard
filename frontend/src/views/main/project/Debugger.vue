@@ -54,6 +54,11 @@ function toggleActiveSession(newActiveSessionId: Props["activeSessionId"]) {
   }
 }
 
+function showPastSessions() {
+  resetSearchInput();
+  toggleActiveSession(null);
+}
+
 function createDebuggingSession(debuggingSession: InspectionDTO) {
   debuggingSessions.value.push(debuggingSession);
   toggleActiveSession(null);
@@ -93,6 +98,10 @@ function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
   });
 }
 
+function resetSearchInput() {
+  searchSession.value = "";
+}
+
 onActivated(() => loadDebuggingSessions());
 </script>
 
@@ -105,7 +114,7 @@ onActivated(() => loadDebuggingSessions());
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="!displayComponents" @click="toggleActiveSession(null)" class="mr-4 pa-2 text--secondary">
+            <v-btn v-if="!displayComponents" @click="showPastSessions" class="mr-4 pa-2 text--secondary">
               <v-icon left>history</v-icon>Past sessions
             </v-btn>
             <AddDebuggingSession v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSession>
@@ -126,7 +135,7 @@ onActivated(() => loadDebuggingSessions());
         </v-row>
 
         <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click.stop="toggleActiveSession(session.id)" class="expansion-panel">
-          <v-expansion-panel-header disableIconRotate=true class="grey lighten-5" tile>
+          <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
               <v-col cols="3">
                 <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
