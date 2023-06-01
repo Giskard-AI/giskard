@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Optional, Any, Union, Callable, Iterable
 
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
-import yaml
-import mlflow
 import pydantic
+import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import ModelMeta, SupportedModelTypes, ModelType
@@ -24,6 +24,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
+from ..utils import np_types_to_native
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -111,7 +112,7 @@ class BaseModel(ABC):
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
-            classification_labels=classification_labels,
+            classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
             classification_threshold=classification_threshold,
@@ -173,7 +174,7 @@ class BaseModel(ABC):
         with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def prepare_dataframe(self, dataset: Dataset):
+    def prepare_dataframe(self, df, column_dtypes=None, target=None):
         """
         Prepares a Pandas DataFrame for inference by ensuring the correct columns are present and have the correct data types.
 
@@ -187,19 +188,19 @@ class BaseModel(ABC):
             ValueError: If the target column is found in the dataset.
             ValueError: If a specified feature name is not found in the dataset.
         """
-        df = dataset.df.copy()
-        column_dtypes = dict(dataset.column_dtypes) if dataset.column_dtypes else None
+        df = df.copy()
+        column_dtypes = dict(column_dtypes) if column_dtypes else None
 
         if column_dtypes:
             for cname, ctype in column_dtypes.items():
                 if cname not in df:
                     df[cname] = None
 
-        if dataset.target:
-            if dataset.target in df.columns:
-                df.drop(dataset.target, axis=1, inplace=True)
-            if column_dtypes and dataset.target in column_dtypes:
-                del column_dtypes[dataset.target]
+        if target:
+            if target in df.columns:
+                df.drop(target, axis=1, inplace=True)
+            if column_dtypes and target in column_dtypes:
+                del column_dtypes[target]
 
         if self.meta.feature_names:
             if set(self.meta.feature_names) > set(df.columns):
@@ -244,7 +245,7 @@ class BaseModel(ABC):
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
         timer = Timer()
-        df = self.prepare_dataframe(dataset)
+        df = self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
         raw_prediction = self.predict_df(df)
 
@@ -275,7 +276,7 @@ class BaseModel(ABC):
             )
         else:
             raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
-        timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
+        timer.stop(f"Predicted dataset with shape {df.shape}")
         return result
 
     @abstractmethod
@@ -490,15 +491,11 @@ class WrapperModel(BaseModel, ABC):
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
             logger.warning(
-                f"\nYour binary classification model prediction is of the shape {raw_predictions.shape}. \n"
-                f"In Giskard we expect the shape {(raw_predictions.shape[0], 2)} for binary classification models. \n"
-                "We automatically inferred the second class prediction but please make sure that \n"
-                "the probability output of your model corresponds to the first label of the \n"
-                f"classification_labels ({self.meta.classification_labels}) you provided us with.",
+                "Please make sure that your model's output corresponds to the second label in classification_labels.",
                 exc_info=True,
             )
 
-            raw_predictions = np.append(raw_predictions, 1 - raw_predictions, axis=1)
+            raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
         # For classification models, the last dimension must be equal to the number of classes
         if raw_predictions.shape[-1] != len(self.meta.classification_labels):

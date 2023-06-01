@@ -58,7 +58,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else>
+    <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#3.-create-a-giskard-dataset" target="_blank">full documentation</a> for more information.</p>
@@ -89,18 +89,20 @@
 </template>
 
 <script setup lang="ts">
-import { apiURL } from "@/env";
-import { api } from "@/api";
-import { Role } from "@/enums";
+import {apiURL} from "@/env";
+import {api} from "@/api";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { onBeforeMount, ref, computed } from "vue";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import {JWTToken} from "@/generated-sources";
+import {TYPE} from "vue-toastification";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -118,31 +120,29 @@ const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
 const openDialog = ref<boolean>(false);
+const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
-  `# Create a Giskard client
-from giskard import GiskardClient
-url = "${apiURL}" # URL of your Giskard instance
-token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
-client = GiskardClient(url, token)
+  `from giskard import Dataset, GiskardClient
+from giskard.demo import titanic  # for demo purposes only 🛳️
 
-# Load your data (example: from a csv file as a pandas dataframe)
-import pandas as pd
-my_df = pd.read_csv("data.csv")
-my_column_types = {"categorical_column": "category",
-                   "text_column": "text",
-                   "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
+_, df = titanic()  # Replace with your dataframe creation
 
-# Create a Giskard Dataset
-from giskard import Dataset
-my_dataset = Dataset(df=my_df, 
-                     target="numeric_column",
-                     column_types=my_column_types,
-                     name="My Dataset")
+# Create a Giskard client
+token = "${apiAccessToken.value!.id_token}"
+client = GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
 
-# Upload your dataset on Giskard
-project_key = "${project.key}" # Current project key
-my_dataset.upload(client, project_key)`
+# Wrap your Pandas Dataframe with Giskard dataset 🎁
+giskard_dataset = Dataset(df,
+                          target="Survived",
+                          name="Titanic dataset")
+
+# Upload to the current project ✉️
+giskard_dataset.upload(client, "${project.value!.key}")
+`
 )
 
 const project = computed(() => {
@@ -192,8 +192,8 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({ content: error.response.statusText, color: 'error' });
-      filePreviewHeader.value = [];
+        useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
+        filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
   }
@@ -209,8 +209,20 @@ async function reloadDatasets() {
   await projectArtifactsStore.loadDatasetsWithNotification();
 }
 
+const generateApiAccessToken = async () => {
+  try {
+    apiAccessToken.value = await api.getApiAccessToken();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
+});
+
+onMounted(async () => {
+  if (projectArtifactsStore.datasets.length === 0) await generateApiAccessToken();
 });
 </script>
 

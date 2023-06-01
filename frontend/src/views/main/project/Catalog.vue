@@ -28,11 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import { onActivated } from "vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { storeToRefs } from "pinia";
+import {onActivated, onDeactivated, ref} from "vue";
+import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { useRouter, useRoute } from "vue-router/composables";
+import {schedulePeriodicJob} from "@/utils/job-utils";
 
 const router = useRouter();
 const route = useRoute();
@@ -47,12 +48,20 @@ const { catalog } = storeToRefs(catalogStore);
 
 const defaultRoute = 'project-catalog-datasets';
 
+const refreshingRef = ref<() => void>();
+
 onActivated(async () => {
+    refreshingRef.value = schedulePeriodicJob(async () => await catalogStore.loadCatalog(props.projectId), 1000)
     await catalogStore.loadCatalog(props.projectId)
     if (route.name === 'project-catalog') {
         await router.push({ name: defaultRoute });
     }
 });
+
+onDeactivated(() => {
+    console.log('onUnmounted')
+    refreshingRef.value!()
+})
 </script>
 
 <style scoped>

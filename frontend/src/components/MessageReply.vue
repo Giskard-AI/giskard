@@ -3,42 +3,40 @@
     <div>
       <span class="subtitle-2">{{ isCurrentUser ? 'me' : (author.displayName || author.user_id) }}</span>
       <span class="caption font-weight-light mx-2">{{ createdOn | date }}</span>
+      <v-btn icon small color="accent" v-if="isCurrentUser" @click="deleteReply(replyId)">
+        <v-icon small>mdi-delete</v-icon>
+      </v-btn>
     </div>
     <div style="white-space: break-spaces">{{ content }}</div>
-    <div v-if="replies">
+    <div v-if="replies && type == 'reply'">
       <div v-for="r in replies" :key="r.id" class="indented my-1">
-        <message-reply :author="r.user" :createdOn="r.createdOn" :content="r.content"></message-reply>
+        <message-reply :replyId="r.id" :author="r.user" :createdOn="r.createdOn" :content="r.content" :type="'reply'" :repliable="false" :replies="[]" @delete="deleteReply(r.id)"></message-reply>
       </div>
     </div>
-    <div v-if="repliable" class="my-1" :class="{'indented': replies && replies.length}">
-      <v-btn icon small @click="replyBoxToggle = !replyBoxToggle; reply = ''">
-        <v-icon v-if="!openReplyBox" color="primary">mdi-reply</v-icon>
-        <v-icon v-else color="accent" :disabled="!reply && !hideableBox">mdi-close</v-icon>
-      </v-btn>
-      <v-btn icon small color="primary" v-if="openReplyBox" :disabled="!reply" @click="emitSendReply">
-        <v-icon>mdi-send</v-icon>
-      </v-btn>
-      <v-textarea
-          v-if="openReplyBox"
-          v-model="reply"
-          placeholder="Add a reply..."
-          rows=1
-          class="mb-2"
-          no-resize
-          outlined
-          hide-details
-      ></v-textarea>
+    <div v-if="repliable" class="my-1" :class="{ 'indented': replies && replies.length }">
+      <v-textarea class="mb-2 reply-input" v-if="openReplyBox" v-model="reply" placeholder="Add a reply..." rows="1" no-resize outlined hide-details :clearable="false">
+        <template v-slot:append v-if="reply">
+          <v-btn icon small color="accent" @click="replyBoxToggle = !replyBoxToggle; reply = ''">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-btn icon small class="pl-1" color="primary" @click=" emitSendReply ">
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+        </template>
+      </v-textarea>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from "vue";
-import {useUserStore} from "@/stores/user";
+import { computed, ref } from "vue";
+import { useUserStore } from "@/stores/user";
 
 const userStore = useUserStore();
 
 interface Props {
+  replyId: number,
+  type: string,
   author: any,
   createdOn: string,
   content: string,
@@ -48,7 +46,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["reply"])
+const emit = defineEmits(["reply", "delete"])
 
 const replyBoxToggle = ref<boolean>(false);
 const reply = ref<string>("");
@@ -65,6 +63,10 @@ function emitSendReply() {
   emit('reply', reply.value);
   reply.value = '';
   replyBoxToggle.value = false;
+}
+
+function deleteReply(id: number) {
+  emit('delete', id);
 }
 </script>
 

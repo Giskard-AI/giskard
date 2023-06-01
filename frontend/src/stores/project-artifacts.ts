@@ -1,7 +1,8 @@
-import { DatasetDTO, ModelDTO } from '@/generated-sources';
-import { defineStore } from 'pinia';
-import { useMainStore } from '@/stores/main';
-import { api } from '@/api';
+import {DatasetDTO, ModelDTO} from '@/generated-sources';
+import {defineStore} from 'pinia';
+import {useMainStore} from '@/stores/main';
+import {api} from '@/api';
+import {TYPE} from "vue-toastification";
 
 interface State {
   projectId: number | null;
@@ -31,14 +32,14 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         mainStore.removeNotification(loadingNotification);
       } catch (error) {
         mainStore.removeNotification(loadingNotification);
-        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
         await mainStore.checkApiError(error);
       }
     },
     async loadDatasets() {
       if (this.projectId === null) return;
       this.datasets = await api.getProjectDatasets(this.projectId!);
-      this.datasets = this.datasets.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
+      this.datasets.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
     },
     async loadModelsWithNotification() {
       if (this.projectId === null) return;
@@ -50,14 +51,14 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
         mainStore.removeNotification(loadingNotification);
       } catch (error) {
         mainStore.removeNotification(loadingNotification);
-        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
         await mainStore.checkApiError(error);
       }
     },
     async loadModels() {
       if (this.projectId === null) return;
       this.models = await api.getProjectModels(this.projectId!);
-      this.models = this.models.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
+      this.models.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
     },
     async loadProjectArtifacts(displayNotification: boolean = true) {
       if (this.projectId === null) return;
@@ -72,7 +73,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
           mainStore.removeNotification(loadingNotification);
         } catch (error) {
           mainStore.removeNotification(loadingNotification);
-          mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+          mainStore.addNotification({content: `Error: ${error.message}`, color: TYPE.ERROR});
           await mainStore.checkApiError(error);
         }
       } else {

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import giskard.ml_worker.testing.tests.metamorphic as metamorphic
+import giskard.testing.tests.metamorphic as metamorphic
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
@@ -18,6 +18,21 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
                                                       transformation_function=perturbation, threshold=0.1).execute()
 
     assert results.actual_slices_size[0] == 1000
+    assert results.passed
+
+
+def test_metamorphic_invariance_with_non_linear_index(german_credit_test_data, german_credit_model):
+    @transformation_function()
+    def perturbation(x: pd.Series) -> pd.Series:
+        x.sex = "female" if x.sex == "male" else "male"
+        return x
+
+    dataset = german_credit_test_data.slice(lambda df: df.sample(100), row_level=False)
+
+    results = metamorphic.test_metamorphic_invariance(
+        model=german_credit_model, dataset=dataset, transformation_function=perturbation, threshold=0.1
+    ).execute()
+
     assert results.passed
 
 

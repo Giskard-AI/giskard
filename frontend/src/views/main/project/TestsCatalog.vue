@@ -30,7 +30,8 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="test.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
+                                                <v-chip class="mr-2" v-for="tag in alphabeticallySorted(test.tags)"
+                                                        x-small :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
                                             </v-list-item-subtitle>
@@ -123,12 +124,14 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
 import _, { chain } from "lodash";
-import { computed, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
+import {api} from "@/api";
+import {computed, inject, onActivated, ref, watch} from "vue";
+import {pasterColor} from "@/utils";
+import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
-import { TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO } from "@/generated-sources";
+import {editor} from "monaco-editor";
+import {FunctionInputDTO, TestFunctionDTO, TestInputDTO, TestTemplateExecutionResultDTO} from "@/generated-sources";
 import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import { $vfm } from 'vue-final-modal';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -136,6 +139,8 @@ import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import {alphabeticallySorted} from "@/utils/comparators";
+import IEditorOptions = editor.IEditorOptions;
 
 let props = defineProps<{
     projectId: number,
@@ -146,7 +151,8 @@ let props = defineProps<{
 const searchFilter = ref<string>("");
 let { testFunctions } = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
-let testArguments = ref<{ [name: string]: TestInputDTO }>({})
+let tryMode = ref(true)
+let testArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
@@ -222,13 +228,6 @@ watch(selected, (value) => {
         }))
         .value()
 });
-
-
-function sorted(arr: any[]) {
-    const res = _.cloneDeep(arr);
-    res.sort()
-    return res;
-}
 
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined

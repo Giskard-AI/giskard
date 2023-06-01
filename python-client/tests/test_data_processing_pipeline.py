@@ -168,3 +168,17 @@ def test_chain_with_parameters(german_credit_data: Dataset):
     assert len(german_credit_data.df) == 1000
     ds = german_credit_data.process()
     assert len(ds.df) == 188
+
+
+def test_transformation_without_type():
+    @transformation_function(row_level=True)
+    def add_positive_sentence(row):
+        row = row.copy()
+        row.text += " I love this!"
+        return row
+
+    df = pd.DataFrame([{'text': 'testing.'}])
+    dataset = Dataset(df, cat_columns=[])
+    transformed_dataset = dataset.transform(add_positive_sentence)
+
+    assert transformed_dataset.df.iloc[0].text == 'testing. I love this!'

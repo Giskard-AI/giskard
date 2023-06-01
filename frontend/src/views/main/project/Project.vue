@@ -98,12 +98,7 @@
           <v-btn text href="https://docs.giskard.ai/start/" target="_blank">
             <span>Documentation</span>
             <v-icon right>mdi-open-in-new</v-icon>
-
           </v-btn>
-          <!-- <v-btn color="secondary" href="https://docs.giskard.ai/start/" target="_blank">
-            <v-icon left>mdi-file-document-outline</v-icon>
-            <span>Documentation</span>
-          </v-btn> -->
         </v-card-title>
         <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
       </v-card>
@@ -233,8 +228,6 @@ onMounted(async () => {
   await projectArtifactsStore.setProjectId(props.id, false);
 
   if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
-    console.log('Datasets length', projectArtifactsStore.datasets.length);
-    console.log('Models length', projectArtifactsStore.models.length);
     openQuickStart.value = true;
   }
 })

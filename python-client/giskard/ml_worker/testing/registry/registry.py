@@ -3,7 +3,6 @@ import importlib.util
 import inspect
 import logging
 import os
-import random
 import sys
 import uuid
 from pathlib import Path
@@ -27,28 +26,15 @@ logger = logging.getLogger(__name__)
 plugins_root = find_plugin_location()
 
 
-def generate_func_id(name) -> str:
-    rd = random.Random()
-    rd.seed(hashlib.sha512(name.encode('utf-8')).hexdigest())
-    func_id = str(uuid.UUID(int=rd.getrandbits(128), version=4))
-    return str(func_id)
-
-
-def get_object_uuid(func) -> str:
-    if hasattr(func, 'meta'):
-        return func.meta.uuid
-
-    func_name = f"{func.__module__}.{func.__name__}"
-
-    if func_name.startswith('__main__'):
-        reference = cloudpickle.dumps(func)
-        func_name += hashlib.sha512(reference).hexdigest()
-
-    return generate_func_id(func_name)
+def get_object_uuid(obj) -> str:
+    if hasattr(obj, 'meta') and hasattr(obj.meta, 'uuid'):
+        return obj.meta.uuid
+    obj_hash = hashlib.sha512(cloudpickle.dumps(obj)).hexdigest()
+    return str(uuid.uuid5(uuid.NAMESPACE_OID, obj_hash))
 
 
 def load_plugins():
-    giskard_tests_module = "giskard.ml_worker.testing.tests"
+    giskard_tests_module = "giskard.testing.tests"
     if giskard_tests_module not in sys.modules:
         importlib.import_module(giskard_tests_module)
     else:

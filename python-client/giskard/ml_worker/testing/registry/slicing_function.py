@@ -1,10 +1,10 @@
 import functools
 import inspect
-import pickle
 import sys
 from pathlib import Path
-from typing import Optional, List, Union, Type, Callable
+from typing import Optional, List, Union, Type, Callable, Any, Dict
 
+import cloudpickle
 import pandas as pd
 
 from giskard.core.core import DatasetProcessFunctionMeta
@@ -19,7 +19,7 @@ SlicingFunctionType = Callable[..., bool]
 default_tags = ['filter']
 
 
-class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
+class SlicingFunction(Savable[Any, DatasetProcessFunctionMeta]):
     """
     A slicing function used to subset data.
 
@@ -28,11 +28,11 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
     :param row_level: Whether the slicing function should operate on rows or columns. Defaults to True.
     :type row_level: bool
     """
-    func: SlicingFunctionType = None
-    row_level: bool = True
-    cell_level: bool = False
-    params = {}
-    is_initialized = False
+    func: SlicingFunctionType
+    row_level: bool
+    cell_level: bool
+    params: Dict
+    is_initialized: bool
 
     @classmethod
     def _get_name(cls) -> str:
@@ -44,7 +44,7 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         """
         return 'slices'
 
-    def __init__(self, func: SlicingFunctionType, row_level=True, cell_level=False):
+    def __init__(self, func: Optional[SlicingFunctionType], row_level=True, cell_level=False):
         """
         Initializes a new instance of the SlicingFunction class.
 
@@ -53,16 +53,18 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         :param row_level: Whether the slicing function should operate on rows or the whole dataframe. Defaults to True.
         :type row_level: bool
         """
+        self.is_initialized = False
+        self.params = {}
         self.func = func
         self.row_level = row_level
         self.cell_level = cell_level
 
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
-        if meta is None:
-            meta = tests_registry.register(
-                DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE', cell_level=self.cell_level))
-        super().__init__(func, meta)
+        if meta is None and func is not None:
+            meta = DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE', cell_level=self.cell_level)
+            tests_registry.register(meta)
+        super().__init__(self, meta)
 
     def __call__(self, *args, **kwargs) -> 'SlicingFunction':
         self.is_initialized = True
@@ -90,28 +92,28 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         else:
             return self.func(data, **self.params)
 
-    def _should_save_locally(self) -> bool:
-        return self.data.__module__.startswith('__main__')
-
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: DatasetProcessFunctionMeta):
-        if not meta.module.startswith('__main__'):
-            func = getattr(sys.modules[meta.module], meta.name)
+        _slicing_function: Optional[SlicingFunction]
+        if local_dir.exists():
+            with open(local_dir / 'data.pkl', 'rb') as f:
+                _slicing_function = cloudpickle.load(f)
         else:
-            if not local_dir.exists():
-                return None
-            with open(Path(local_dir) / 'data.pkl', 'rb') as f:
-                func = pickle.load(f)
+            try:
+                func = getattr(sys.modules[meta.module], meta.name)
 
-        if inspect.isclass(func) or hasattr(func, 'meta'):
-            _slicing_function = func()
-        else:
-            _slicing_function = cls(func)
-            tests_registry.add_func(meta)
-            _slicing_function.meta = meta
+                if inspect.isclass(func) or hasattr(func, 'meta'):
+                    _slicing_function = func()
+                else:
+                    _slicing_function = cls(func)
+                    _slicing_function.meta = meta
+            except Exception:
+                return None
+
+        tests_registry.register(_slicing_function.meta)
 
         return _slicing_function
 

@@ -31,11 +31,23 @@ async function copyCode() {
 </script>
 
 <template>
-  <pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"></code><v-btn class="copy-button" small icon @click="copyCode"><v-icon small>mdi-content-copy</v-icon><span v-show="copied" class="copied-message">Copied</span></v-btn></pre>
+    <!-- //NOSONAR --><pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"/>
+        <v-btn class="copy-button" small icon @click="copyCode">
+            <v-icon small>mdi-content-copy</v-icon>
+          <span v-show="copied" class="copied-message">Copied</span>
+        </v-btn>
+    </pre>
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 100 1000;
+  font-stretch: 0% 200%;
+  src: url('../assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
+
+}
 
 .pre-block {
   background-color: #F4F4F4;
