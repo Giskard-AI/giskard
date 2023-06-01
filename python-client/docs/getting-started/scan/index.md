@@ -49,7 +49,7 @@ import pandas as pd
 
 iris_df = pd.DataFrame({"sepal length": [5.1],
                         "sepal width": [3.5],
-                        "size": ["medium"],
+                        "petal size": ["medium"],
                         "species": ["Setosa"]})
 
 from giskard import wrap_dataset
@@ -57,7 +57,7 @@ from giskard import wrap_dataset
 wrapped_dataset = wrap_dataset(
   dataset=iris_df, 
   target="species", # Optional but a MUST if available
-  cat_columns=["size"] # Optional but a MUST if available. Inferred automatically if not.
+  cat_columns=["petal size"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
   # column_types=None # # Optional: if not provided, it is inferred automatically
   )
@@ -79,43 +79,58 @@ wrapped_dataset = wrap_dataset(
 
 ## 3. Wrap your model
 
-To use your model with Giskard, you can simply wrap your model
-with [wrap_model](../../reference/models/index.rst#giskard.wrap_model). The objective of this wrapper is to encapsulate 
-the entire prediction process, starting from the **raw** `pandas.DataFrame` and leading up to the final predictions. 
+To use your model with Giskard, you can wrap either your:
+- <b>prediction function</b> that contains all your data preprocessing steps.
+- <b>model object</b> in addition to a data preprocessing function.
 
-If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
-`model` or inside the `data_preprocessing_function` of the Giskard model you create.
-
-:::{important}
-- For model-specific usages, try our [tutorials](../../guides/tutorials/index.md).
-- For wrapping any python function in Giskard, try this [guide](../../guides/custom-wrapper/index.md).
+:::{hint}
+The main difference between the two is that,
+upon the [upload](#upload-your-model-and-dataset-to-giskard-ui) to the Giskard server, we use `cloudpickle` to serialise 
+the <b>prediction function</b> while we use a model-tailored serialization for the <b>model object</b> case.
 :::
 
-### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
-::::::{tab-item} Classification
+::::::{tab-item} Wrap a prediction function
+Your prediction function should encapsulate all the data preprocessing steps.
+It takes as input, the <b>raw</b> pandas dataframe filtered according to the `feature_names` and 
+returns a `numpy.array` of predictions. You can also define a prediction function that calls
+your model from an online API.
+
+:::::{tab-set}
+::::{tab-item} Classification
+The expected output from your prediction function is an array ($n\times m$) of probabilities corresponding to $n$ data entries (rows of pandas.DataFrame)
+and $m$ classification_labels. In the case of binary classification, an array of ($n\times 1$) probabilities is also accepted.
+In this case, make sure that the probability provided is for the first label provided in classification_labels.
+
 ```python
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
 from giskard import wrap_model
 
+scaler = StandardScaler()
 clf = LogisticRegression()
 
+def prediction_function(df: pd.DataFrame) -> np.ndarray:
+  #Scale all the numerical variables
+  num_cols = ["sepal length", "sepal width"]
+  df[num_cols] = scaler.transform(df[num_cols])
+  
+  return clf.predict_proba(df)
+
+
 wrapped_model = wrap_model(
-  model=clf,
+  prediction_function,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
   # name="my_iris_classification_model", # Optional
-  # feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
   # classification_threshold=0.5, # Default: 0.5
-  # data_preprocessing_function=None, # Optional
-  # model_postprocessing_function=None, # Optional
-  # **kwargs # Additional model-specific arguments
-  )
+)
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check 
-    the [tutorials](../../guides/tutorials/index.md)). If none of these
-    libraries apply to you, or if you ML model is a custom python function: check our "Wrap any python function with Giskard" 
-    [guide](../../guides/custom-wrapper/index.md).
+  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a `numpy.ndarray` of predictions.
   * `model_type`: The type of the model, either `regression` or `classification`.
   * `classification_labels`: The list of unique categories contained in your dataset target variable.
 
@@ -123,31 +138,124 @@ wrapped_model = wrap_model(
   * `name`: Name of the wrapped model.
   * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
   * `classification_threshold`: Model threshold for binary classification problems.
-  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and 
-     returns any object that could be directly fed to `model`.
-  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns 
-     an object of the same type and shape as the `model` output.
-  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
-::::::
-::::::{tab-item} Regression
+::::
+::::{tab-item} Regression
+The expected output from your prediction function is an array of predictions corresponding to data entries (rows of pandas.DataFrame).
 ```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 from giskard import wrap_model
 
 reg = LinearRegression()
 
+def prediction_function(df: pd.DataFrame) -> np.ndarray:
+  df['x'] = df['x']*2
+  return reg.predict(df)
+
 wrapped_model = wrap_model(
-  model=reg,
+  prediction_function,
   model_type="regression",
+  feature_names=['x', 'y'], # Default: all columns of your dataset
   # name="my_regression_model", # Optional
-  # feature_names=['x', 'y'], # Default: all columns of your dataset
-  # data_preprocessing_function=None, # Optional
+  )
+```
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a `numpy.ndarray` of predictions.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+
+::::
+:::::
+::::::
+::::::{tab-item} Wrap a model object
+Providing the model object to `wrap_model` allows us to automatically infer the ML library of your `model`
+object and provide suitable:
+
+1. serialization methods (provided by `save_model` and `load_model` methods).
+2. prediction methods (provided by the `model_predict` method).
+
+Our pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
+`tensorflow` and `huggingface` libraries. If none of these libraries are detected, `cloudpickle`
+is used as default for serialization, and you will be asked to provide your own prediction method.
+:::::{tab-set}
+::::{tab-item} Classification
+
+```python
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from giskard import wrap_model
+
+scaler = StandardScaler()
+clf = LogisticRegression()
+
+def preprocessing_function(df: pd.DataFrame) -> pd.DataFrame:
+  #Scale all the numerical variables
+  num_cols = ["sepal length", "sepal width"]
+  df[num_cols] = scaler.transform(df[num_cols])
+
+  return df
+
+wrapped_model = wrap_model(
+  data_preprocessing_function=preprocessing_function, # Optional
+  model=clf,
+  model_type="classification",
+  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
+  feature_names=['sepal length', 'sepal width'], # Default: all columns of your dataset
+  # name="my_iris_classification_model", # Optional
+  # classification_threshold=0.5, # Default: 0.5
   # model_postprocessing_function=None, # Optional
   # **kwargs # Additional model-specific arguments
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface`.
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    libraries apply to you: check out <b>"Customize the wrapper"</b>.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `classification_threshold`: Model threshold for binary classification problems.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
+    returns any object that could be directly fed to `model`.
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
+    an object of the same type and shape as the `model` output.
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+
+::::
+::::{tab-item} Regression
+```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from giskard import wrap_model
+
+reg = LinearRegression()
+
+def preprocessing_function(df: pd.DataFrame) -> pd.DataFrame:
+  df['x'] = df['x']*2
+  return df
+
+wrapped_model = wrap_model(
+  data_preprocessing_function=preprocessing_function, # Optional
+  model=reg,
+  model_type="regression",
+  feature_names=['x', 'y'], # Default: all columns of your dataset
+  # name="my_regression_model", # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+)
+```
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    libraries apply to you: check out <b>"Customize the wrapper"</b>.
   * `model_type`: The type of the model, either `regression` or `classification`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
@@ -159,6 +267,103 @@ wrapped_model = wrap_model(
     an object of the same type and shape as the `model` output.
   * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
+::::
+:::::
+::::::
+::::::{tab-item} Customise the wrapper
+You can customise the [Model](../../reference/models/index.rst#giskard.Model) class by:
+
+- Choosing to override only `model_predict` and take advantage of our internal serialization methods.
+
+- Choosing to also override `save_model` and `load_model` where you provide your own serialization
+  of the `model` object.
+
+:::::{tab-set}
+::::{tab-item} Classification
+```python
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from giskard import Model
+
+scaler = StandardScaler()
+clf = LogisticRegression()
+
+class MyCustomModel(Model):
+  def model_predict(self, df: pd.DataFrame):
+    num_cols = ["sepal length", "sepal width"]
+    df[num_cols] = scaler.transform(df[num_cols])
+    return self.model.predict_proba(df)
+
+wrapped_model = MyCustomModel(
+  model=clf,
+  model_type="classification",
+  classification_labels=['Setosa', 'Versicolor', 'Virginica']
+  # name="my_iris_classification_model", # Optional
+  # classification_threshold=0.5, # Default: 0.5
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+)
+```
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    libraries apply to you, we try to serialize your model with `cloudpickle`, if that also does not work, we
+    ask you to provide us with your own serialization method.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+  * `classification_labels`: The list of unique categories contained in your dataset target variable.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `classification_threshold`: Model threshold for binary classification problems.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
+    returns any object that could be directly fed to `model`.
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
+    an object of the same type and shape as the `model` output.
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+
+::::
+::::{tab-item} Regression
+```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from giskard import Model
+
+reg = LinearRegression()
+
+class MyCustomModel(Model):
+  def model_predict(self, df: pd.DataFrame):
+    df['x'] = df['x']*2
+    return self.model.predict(df)
+
+wrapped_model = MyCustomModel(
+  model=reg,
+  model_type="regression",
+  feature_names=['x', 'y'], # Default: all columns of your dataset
+  # name="my_regression_model", # Optional
+  # model_postprocessing_function=None, # Optional
+  # **kwargs # Additional model-specific arguments
+)
+```
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+  * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    the [tutorials](../../guides/tutorials/index.md)). If none of these
+    libraries apply to you, we try to serialize your model with `cloudpickle`, if that also does not work, we
+    ask you to provide us with your own serialization method.
+  * `model_type`: The type of the model, either `regression` or `classification`.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+  * `name`: Name of the wrapped model.
+  * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your dataset.
+  * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies preprocessing and
+    returns any object that could be directly fed to `model`.
+  * `model_postprocessing_function`: A function that takes a `model` output as input, applies postprocessing and returns
+    an object of the same type and shape as the `model` output.
+  * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+
+::::
+:::::
 ::::::
 :::::::
 
