@@ -37,8 +37,20 @@
                 <li>Use of complex models with large number of parameters that tend to overfit the training data</li>
             </ul>
             </p>
+            {% elif issues[0].__class__.__name__ == "OverconfidenceIssue" %}
+            <p>
+                We found some data slices in your dataset containing significant number of overconfident predictions.
+                Overconfident predictions are rows that are incorrect but are predicted with high probabilities or
+                confidence scores. This happens when:
+            <ul class="list-disc ml-4 my-1">
+                <li>Not enough examples in the overconfident data slice in the training set</li>
+                <li>Wrong label in the training set in the overconfident data slice</li>
+                <li>For imbalanced dataset, the model could assign high probabilities to predictions of the majority
+                    class</li>
+            </ul>
+            </p>
             {% else %}
-            <p>{{ issues[0].group }}</p>
+            <p>Found issues for {{ issues[0].group }}</p>
             {% endif %}
         </div>
     </div>
