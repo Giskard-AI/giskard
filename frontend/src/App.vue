@@ -18,6 +18,7 @@
         </v-container>
       </v-main>
       <router-view v-else/>
+      <modals-container></modals-container>
     </v-app>
   </div>
 </template>

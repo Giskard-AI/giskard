@@ -128,7 +128,8 @@ public class TestSuiteController {
     }
 
     @PostMapping("suites")
-    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId)")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#dto.projectId) " +
+        "or @permissionEvaluator.isGuestWithAnyRole(#dto.projectId, @AuthoritiesConstants.AICREATOR, @AuthoritiesConstants.AITESTER)")
     public TestSuiteDTO createTestSuite(@Valid @RequestBody TestSuiteCreateDTO dto) {
         TestSuite testSuite = giskardMapper.fromDTO(dto);
         return testSuiteService.createTestSuite(testSuite, dto.isShouldGenerateTests());
