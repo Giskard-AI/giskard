@@ -1,5 +1,6 @@
 import {
     DatasetDTO,
+    FunctionInputDTO,
     JobDTO,
     JobState,
     ModelDTO,
@@ -85,7 +86,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
 
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
-        async runTestSuite(input: { [name: string]: string }) {
+        async runTestSuite(input: Array<FunctionInputDTO>) {
             return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
         },
         async trackJob(uuid: string) {

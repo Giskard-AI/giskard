@@ -87,7 +87,7 @@ async function openRunTestSuite(compareMode: boolean) {
             }
         });
     } else {
-        await runTestSuite({});
+        await runTestSuite([]);
     }
 }
 

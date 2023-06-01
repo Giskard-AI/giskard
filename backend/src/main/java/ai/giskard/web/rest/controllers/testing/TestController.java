@@ -9,7 +9,9 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.dto.FunctionInputDTO;
 import ai.giskard.web.dto.RunAdhocTestRequest;
+import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.worker.RunAdHocTestRequest;
 import ai.giskard.worker.TestResultMessage;
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class TestController {
     private final MLWorkerService mlWorkerService;
     private final ProjectRepository projectRepository;
     private final TestArgumentService testArgumentService;
-
+    private final GiskardMapper giskardMapper;
     private final TestFunctionRepository testFunctionRepository;
 
     @PostMapping("/run-test")
@@ -49,9 +50,10 @@ public class TestController {
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
                 .setTestUuid(request.getTestUuid());
 
-            for (Map.Entry<String, String> entry : request.getInputs().entrySet()) {
+            for (FunctionInputDTO input : request.getInputs()) {
                 builder.addArguments(testArgumentService
-                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
+                    .buildTestArgument(argumentTypes, input.getName(), input.getValue(), project.getKey(),
+                        giskardMapper.fromDTO(input).getParams()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
