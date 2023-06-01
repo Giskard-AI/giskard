@@ -51,8 +51,8 @@ import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
 import {useUserStore} from "@/stores/user";
-import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -459,6 +459,7 @@ export const api = {
         return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
     },
 
+    },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
             headers: {
@@ -472,4 +473,4 @@ export const api = {
             license: license
         });
     }
-}
+};
