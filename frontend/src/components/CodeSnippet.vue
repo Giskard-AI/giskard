@@ -60,6 +60,7 @@ async function copyCode() {
   padding-left: 0;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  font-size: 0.8rem;
 }
 
 .copy-button {
