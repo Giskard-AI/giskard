@@ -82,6 +82,13 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        with:
+          path: $HOME/.giskard
+          key: giskard-test-resources
+          restore-keys: giskard-test-resources
+
       - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
