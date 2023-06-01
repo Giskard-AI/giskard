@@ -114,6 +114,12 @@ dependencies = [
     "pandas<2",
 ]
 
+[project.optional-dependencies]
+scan = [
+    "optbinning>=0.17",
+]
+
+
 [tool.black]
 # https://github.com/psf/black
 target-version = ['py38', 'py39', 'py310']
