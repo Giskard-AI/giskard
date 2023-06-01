@@ -101,7 +101,7 @@ dependencies = [
     "mlflow-skinny>=2",
     "numpy>=1.22.0",
     "scikit-learn>=1.0",
-    "scipy>=1.7.3,<1.8",
+    "scipy>=1.7.3",
     "shap>=0.41.0",
     "eli5>=0.12.0",
     "ipython", # eli5.show_prediction doesn't work without ipython
