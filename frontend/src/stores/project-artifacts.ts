@@ -21,10 +21,38 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
       this.projectId = projectId;
       await this.loadProjectArtifacts(displayNotification);
     },
+    async loadDatasetsWithNotification() {
+      if (this.projectId === null) return;
+      const mainStore = useMainStore();
+      const loadingNotification = { content: 'Loading datasets', showProgress: true };
+      try {
+        mainStore.addNotification(loadingNotification);
+        await this.loadDatasets();
+        mainStore.removeNotification(loadingNotification);
+      } catch (error) {
+        mainStore.removeNotification(loadingNotification);
+        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        await mainStore.checkApiError(error);
+      }
+    },
     async loadDatasets() {
       if (this.projectId === null) return;
       this.datasets = await api.getProjectDatasets(this.projectId!);
       this.datasets = this.datasets.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
+    },
+    async loadModelsWithNotification() {
+      if (this.projectId === null) return;
+      const mainStore = useMainStore();
+      const loadingNotification = { content: 'Loading models', showProgress: true };
+      try {
+        mainStore.addNotification(loadingNotification);
+        await this.loadModels();
+        mainStore.removeNotification(loadingNotification);
+      } catch (error) {
+        mainStore.removeNotification(loadingNotification);
+        mainStore.addNotification({ content: `Error: ${error.message}`, color: 'error' });
+        await mainStore.checkApiError(error);
+      }
     },
     async loadModels() {
       if (this.projectId === null) return;
