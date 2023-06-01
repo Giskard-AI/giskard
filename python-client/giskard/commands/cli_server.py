@@ -37,13 +37,7 @@ def server() -> None:
 
 
 def update_options(fn):
-    fn = click.option(
-        "--version",
-        "version",
-        is_flag=False,
-        default="",
-        help="Version to update to."
-    )(fn)
+    fn = click.option("--version", "version", is_flag=False, default="", help="Version to update to.")(fn)
     return fn
 
 
@@ -81,12 +75,13 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
     name = get_container_name(version)
     try:
         return create_docker_client().containers.get(name)
-    except NotFound as e:
+    except NotFound:
         if quit_if_not_exists:
             logger.error(f"Container {name} could not be found. Run `giskard server start` to create the container")
             raise click.Abort()
         else:
             return None
+
 
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
@@ -104,15 +99,13 @@ def _start(attached=False, version=None):
     container = get_container(version, quit_if_not_exists=False)
 
     if not container:
-        container = create_docker_client().containers.create(get_image_name(version),
-                                                             detach=not attached,
-                                                             name=get_container_name(version),
-                                                             ports={7860: port,
-                                                                    40051: ml_worker_port},
-                                                             volumes={
-                                                                 home_volume.name: {'bind': '/home/giskard/datadir',
-                                                                                    'mode': 'rw'}
-                                                             })
+        container = create_docker_client().containers.create(
+            get_image_name(version),
+            detach=not attached,
+            name=get_container_name(version),
+            ports={7860: port, 40051: ml_worker_port},
+            volumes={home_volume.name: {'bind': '/home/giskard/datadir', 'mode': 'rw'}},
+        )
     container.start()
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
 
@@ -135,7 +128,9 @@ def _pull_image(version):
         try:
             create_docker_client().images.pull(IMAGE_NAME, tag=version)
         except NotFound:
-            logger.error(f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml")
+            logger.error(
+                f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml"
+            )
             raise click.Abort()
 
 
@@ -177,14 +172,15 @@ def _get_home_volume():
 
 
 @server.command("start")
-@click.option("--attach", "-a", "attached",
-              is_flag=True,
-              default=False,
-              help="Starts the server and attaches to it, displaying logs in console.")
-@click.option("--version",
-              "version",
-              required=False,
-              help="Version of Giskard server to start")
+@click.option(
+    "--attach",
+    "-a",
+    "attached",
+    is_flag=True,
+    default=False,
+    help="Starts the server and attaches to it, displaying logs in console.",
+)
+@click.option("--version", "version", required=False, help="Version of Giskard server to start")
 @common_options
 def start(attached, version):
     """\b
@@ -214,13 +210,8 @@ def stop():
 
 
 @server.command("restart")
-@click.argument("service",
-                type=click.Choice(["backend", "frontend", "worker", "db"]),
-                required=False)
-@click.option("--hard", "hard",
-              is_flag=True,
-              default=False,
-              help="Hard restart. Restarts the whole container")
+@click.argument("service", type=click.Choice(["backend", "frontend", "worker", "db"]), required=False)
+@click.option("--hard", "hard", is_flag=True, default=False, help="Hard restart. Restarts the whole container")
 @common_options
 def restart(service, hard):
     """\b
@@ -251,19 +242,9 @@ def restart(service, hard):
 
 
 @server.command("logs")
-@click.argument("service",
-                type=click.Choice(["backend", "frontend", "worker", "db"]),
-                required=False)
-@click.option("--lines",
-              "-l",
-              "nb_lines",
-              default=300,
-              type=click.IntRange(0),
-              help="Number of log lines to show")
-@click.option("--follow", "-f", "follow",
-              is_flag=True,
-              default=False,
-              help="Follow the logs stream")
+@click.argument("service", type=click.Choice(["backend", "frontend", "worker", "db"]), required=False)
+@click.option("--lines", "-l", "nb_lines", default=300, type=click.IntRange(0), help="Number of log lines to show")
+@click.option("--follow", "-f", "follow", is_flag=True, default=False, help="Follow the logs stream")
 @common_options
 def logs(service, nb_lines, follow):
     """\b
@@ -287,12 +268,14 @@ def logs(service, nb_lines, follow):
 
 
 @server.command("diagnose")
-@click.option("--out_path",
-              "-o",
-              "local_dir",
-              default=os.getcwd(),
-              type=click.Path(),
-              help="Destination directory to save diagnose archive to")
+@click.option(
+    "--out_path",
+    "-o",
+    "local_dir",
+    default=os.getcwd(),
+    type=click.Path(),
+    help="Destination directory to save diagnose archive to",
+)
 @common_options
 def diagnose(local_dir):
     """\b
@@ -313,10 +296,7 @@ def diagnose(local_dir):
 
 @server.command("update")
 @common_options
-@click.argument(
-    "version",
-    required=False,
-    default=None)
+@click.argument("version", required=False, default=None)
 def update(version):
     """\b
     Update Giskard Server. Uses the latest available version if not specified.
@@ -370,16 +350,14 @@ def status():
 
 
 @server.command("clean")
-@click.option("--data", "delete_data",
-              is_flag=True,
-              help="Delete user data (giskard-home volume)")
+@click.option("--data", "delete_data", is_flag=True, help="Delete user data (giskard-home volume)")
 @common_options
 def clean(delete_data):
     """\b
     Delete Docker container, container (and possibly a volume) associated with the current version of Giskard Server
     """
     data_deletion_confirmed = delete_data and click.confirm(
-        "Are you sure you want to delete user data (giskard-home volume)? " \
+        "Are you sure you want to delete user data (giskard-home volume)? "
         "This will permanently erase all of the Giskard activity results")
 
     client = create_docker_client()
