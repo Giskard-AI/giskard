@@ -13,25 +13,19 @@
       </v-btn-toggle>
       <v-menu>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn
-              small
-              color="primary"
-              dark
-              v-bind="attrs"
-              v-on="on"
-          >
+          <v-btn color="primary" v-bind="attrs" class="grey--text text--darken-4" v-on="on" small>
             <v-icon left>add</v-icon>
             Add Project
           </v-btn>
         </template>
         <v-list>
           <v-list-item-group>
-            <v-list-item @click="openCreateDialog=true">
+            <v-list-item @click="openCreateDialog = true">
               <v-list-item-content>
                 New
               </v-list-item-content>
             </v-list-item>
-            <v-list-item @click="openImportDialog=true">
+            <v-list-item @click="openImportDialog = true">
               <v-list-item-content>
                 Import
               </v-list-item-content>
@@ -53,10 +47,7 @@
         </v-row>
       </v-card>
       <v-hover v-slot="{ hover }" v-for="p in projects" :key="p.id">
-        <v-card outlined tile class="grey lighten-5 project"
-                :class="[{'info': hover}]"
-                :to="{name: 'project-overview', params: {id: p.id}}"
-                v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
+        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" :to="{ name: 'project-overview', params: { id: p.id } }" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id">
           <v-row class="pa-2">
             <v-col cols=2>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -68,7 +59,7 @@
               <div>{{ p.description || "-" }}</div>
             </v-col>
             <v-col cols=2>
-              <div :class="{'font-weight-bold': p.owner.id === userProfile.id}">
+              <div :class="{ 'font-weight-bold': p.owner.id === userProfile.id }">
                 {{ p.owner.user_id === userProfile.user_id ? "me" : (p.owner.displayName || p.owner.user_id) }}
               </div>
             </v-col>
@@ -93,12 +84,8 @@
           <v-form @submit.prevent="prepareImport()">
             <v-card-title>Import project</v-card-title>
             <v-card-text>
-              <ValidationProvider name="File" rules="required" v-slot="{errors}">
-                <v-file-input accept=".zip"
-                              label="Select a project to import"
-                              @change="file = $event"
-                              :error-messages="errors"
-                ></v-file-input>
+              <ValidationProvider name="File" rules="required" v-slot="{ errors }">
+                <v-file-input accept=".zip" label="Select a project to import" @change="file = $event" :error-messages="errors"></v-file-input>
               </ValidationProvider>
             </v-card-text>
             <v-card-actions>
@@ -118,15 +105,12 @@
           <v-form @submit.prevent="ImportIfNoConflictKey()">
             <v-card-text>
               <div class="title">Set new key for the imported project</div>
-              <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{errors}">
-                <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
-                              :error-messages="errors"></v-text-field>
+              <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{ errors }">
+                <v-text-field label="Project Key*" type="text" v-model="newProjectKey" :error-messages="errors"></v-text-field>
               </ValidationProvider>
               <div v-if="loginsImportedProject.length !== 0">
                 <div class="title">Map users</div>
-                <v-list
-                    style="max-height: 1200px"
-                    class="overflow-y-auto overflow-x-hidden">
+                <v-list style="max-height: 1200px" class="overflow-y-auto overflow-x-hidden">
                   <template v-for="item in loginsImportedProject">
                     <v-row align="center" justify="center" dense>
                       <v-col cols="4">
@@ -138,8 +122,7 @@
                         <v-icon> mdi-arrow-right</v-icon>
                       </v-col>
                       <v-col cols="6">
-                        <v-select hide-details dense :items="loginsCurrentInstance"
-                                  v-model="mapLogins[item]"></v-select>
+                        <v-select hide-details dense :items="loginsCurrentInstance" v-model="mapLogins[item]"></v-select>
                       </v-col>
                     </v-row>
                   </template>
@@ -164,13 +147,11 @@
           <v-form @submit.prevent="submitNewProject()">
             <v-card-title>New project details</v-card-title>
             <v-card-text>
-              <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{errors}">
-                <v-text-field label="Project Name*" type="text" v-model="newProjectName"
-                              :error-messages="errors"></v-text-field>
+              <ValidationProvider name="Name" mode="eager" rules="required" v-slot="{ errors }">
+                <v-text-field label="Project Name*" type="text" v-model="newProjectName" :error-messages="errors"></v-text-field>
               </ValidationProvider>
-              <ValidationProvider name="Key" mode="eager" rules="required" v-slot="{errors}">
-                <v-text-field label="Project Key*" type="text" v-model="newProjectKey"
-                              :error-messages="errors"></v-text-field>
+              <ValidationProvider name="Key" mode="eager" rules="required" v-slot="{ errors }">
+                <v-text-field label="Project Key*" type="text" v-model="newProjectKey" :error-messages="errors"></v-text-field>
               </ValidationProvider>
               <v-text-field label="Project Description" type="text" v-model="newProjectDesc"></v-text-field>
               <div v-if="projectCreateError" class="caption error--text">{{ projectCreateError }}</div>
@@ -189,16 +170,16 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {ValidationObserver} from "vee-validate";
-import {Role} from "@/enums";
-import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
-import {toSlug} from "@/utils";
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, onMounted, ref, watch } from "vue";
+import { ValidationObserver } from "vee-validate";
+import { Role } from "@/enums";
+import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
+import { toSlug } from "@/utils";
+import { useRoute, useRouter } from "vue-router/composables";
 import moment from "moment";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {api} from "@/api";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
 
 const route = useRoute();
@@ -251,7 +232,7 @@ const isCreator = computed(() => {
 
 const projects = computed(() => {
   return projectStore.projects
-      .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
+    .sort((a, b) => moment(b.createdDate).diff(moment(a.createdDate)));
 })
 
 // functions
@@ -267,22 +248,22 @@ async function prepareImport() {
   let formData = new FormData();
   formData.append('file', file.value);
   return await api.prepareImport(formData)
-      .then(response => {
-        loginsCurrentInstance.value = response.loginsCurrentInstance;
-        loginsImportedProject.value = response.loginsImportedProject;
-        metadataDirectoryPath.value = response.temporaryMetadataDirectory;
-        openImportDialog.value = false;
-        openPrepareDialog.value = true;
-        loginsImportedProject.value.forEach((item, index) => {
-          if (index >= loginsCurrentInstance.value.length) {
-            mapLogins.value[item] = loginsCurrentInstance.value[0];
-          } else {
-            mapLogins.value[item] = loginsCurrentInstance.value[index];
-          }
-        });
-        newProjectKey.value = response.projectKey;
-      })
-      .finally(() => preparingImport.value = false);
+    .then(response => {
+      loginsCurrentInstance.value = response.loginsCurrentInstance;
+      loginsImportedProject.value = response.loginsImportedProject;
+      metadataDirectoryPath.value = response.temporaryMetadataDirectory;
+      openImportDialog.value = false;
+      openPrepareDialog.value = true;
+      loginsImportedProject.value.forEach((item, index) => {
+        if (index >= loginsCurrentInstance.value.length) {
+          mapLogins.value[item] = loginsCurrentInstance.value[0];
+        } else {
+          mapLogins.value[item] = loginsCurrentInstance.value[index];
+        }
+      });
+      newProjectKey.value = response.projectKey;
+    })
+    .finally(() => preparingImport.value = false);
 }
 
 async function ImportIfNoConflictKey() {
@@ -306,16 +287,16 @@ async function ImportIfNoConflictKey() {
     if (file) {
       formData.append('file', file.value);
     }
-    mixpanel.track('Import project', {projectkey: newProjectKey.value});
+    mixpanel.track('Import project', { projectkey: newProjectKey.value });
     const postImportProject: PostImportProjectDTO = {
       mappedUsers: mapLogins.value,
       projectKey: newProjectKey.value,
       pathToMetadataDirectory: metadataDirectoryPath.value
     }
     api.importProject(postImportProject)
-        .then((p) => {
-          router.push({name: 'project-overview', params: {id: p.id}})
-        })
+      .then((p) => {
+        router.push({ name: 'project-overview', params: { id: p.id } })
+      })
   }
 }
 
