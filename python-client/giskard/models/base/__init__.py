@@ -521,6 +521,16 @@ class WrapperModel(BaseModel, ABC):
         if self.model_postprocessing_function:
             self.save_model_postprocessing_function(local_path)
 
+    def save_model(self, local_path: Union[str, Path], mlflow_meta=None) -> None:
+        try:
+            model_file = Path(local_path) / "model.pkl"
+            with open(model_file, "wb") as f:
+                cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
+        except ValueError:
+            raise ValueError(
+                "We couldn't save your model with cloudpickle. Please provide us with your own "
+                "serialisation method by overriding the save_model() and load_model() methods.")
+
     def save_data_preprocessing_function(self, local_path: Union[str, Path]):
         with open(Path(local_path) / "giskard-data-preprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
@@ -536,9 +546,17 @@ class WrapperModel(BaseModel, ABC):
         return cls(model=cls.load_model(local_dir), **kwargs)
 
     @classmethod
-    @abstractmethod
     def load_model(cls, local_dir):
-        ...
+        local_path = Path(local_dir)
+        model_path = local_path / "model.pkl"
+        if model_path.exists():
+            with open(model_path, "rb") as f:
+                model = cloudpickle.load(f)
+                return model
+        else:
+            raise ValueError(
+                "We couldn't load your model with cloudpickle. Please provide us with your own "
+                "serialisation method by overriding the save_model() and load_model() methods.")
 
     @classmethod
     def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
@@ -566,7 +584,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
     An abstract base class for models that are serializable by the MLFlow library.
 
     This class provides functionality for saving the model with MLFlow in addition to saving other metadata with the
-    `save` method. Subclasses should implement the `save_with_mlflow` method to provide their own MLFlow-specific model
+    `save` method. Subclasses should implement the `save_model` method to provide their own MLFlow-specific model
     saving functionality.
     """
 
@@ -577,12 +595,9 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         if not self.id:
             self.id = uuid.uuid4()
-        self.save_with_mlflow(local_path, mlflow.models.Model(model_uuid=str(self.id)))
+        self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
-    @abstractmethod
-    def save_with_mlflow(self, local_path, mlflow_meta: mlflow.models.Model):
-        ...
 
 
 class CustomModel(BaseModel, ABC):
