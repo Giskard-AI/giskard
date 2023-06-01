@@ -60,7 +60,6 @@ import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
 import {computed} from "vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
-import _ from "lodash";
 import {Colors} from "@/utils/colors";
 import {$vfm} from "vue-final-modal";
 import SuiteTestInfoModal from "@/views/main/project/modals/SuiteTestInfoModal.vue";
@@ -122,12 +121,6 @@ const transformationFunction = computed(() => {
         return undefined;
     }
 })
-
-function sorted(arr: any[]) {
-    const res = _.cloneDeep(arr);
-    res.sort()
-    return res;
-}
 
 
 async function editTests() {
