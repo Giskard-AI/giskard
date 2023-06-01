@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def explain(model: Model, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
         prepared_df = model.prepare_dataframe(
-            Dataset(df=df, target=dataset.target, feature_types=dataset.feature_types)
+            Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
         )
         columns_in_original_order = (
             model.meta.feature_names
@@ -37,7 +37,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
     def predict_array(array):
         return model.predict_df(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
-    example = background_example(df, dataset.feature_types)
+    example = background_example(df, dataset.column_types)
     kernel = shap.KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df, silent=True)
 

@@ -1828,7 +1828,7 @@ python-versions = ">=3.7,<3.11"
 name = "nvidia-cublas-cu11"
 version = "11.10.3.66"
 description = "CUBLAS native runtime libraries"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3"
 
@@ -1840,7 +1840,7 @@ wheel = "*"
 name = "nvidia-cuda-nvrtc-cu11"
 version = "11.7.99"
 description = "NVRTC native runtime libraries"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3"
 
@@ -1852,7 +1852,7 @@ wheel = "*"
 name = "nvidia-cuda-runtime-cu11"
 version = "11.7.99"
 description = "CUDA Runtime native Libraries"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3"
 
@@ -1864,7 +1864,7 @@ wheel = "*"
 name = "nvidia-cudnn-cu11"
 version = "8.5.0.96"
 description = "cuDNN runtime libraries"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3"
 
@@ -3067,7 +3067,7 @@ python-versions = ">=3.6"
 name = "torch"
 version = "1.13.1"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7.0"
 
@@ -3344,7 +3344,7 @@ watchdog = ["watchdog"]
 name = "wheel"
 version = "0.40.0"
 description = "A built-package format for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -3420,7 +3420,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.5,<3.11"
-content-hash = "c679fc3e9ce1ec22c2f74d7b604b8c991fd53b4ba340d0e5bcb4bc8c6b515f32"
+content-hash = "9be65c8f9b311497e5e8d8c6da963ab1740d0270e19e49e7ec840b03617fcee0"
 
 [metadata.files]
 absl-py = [
