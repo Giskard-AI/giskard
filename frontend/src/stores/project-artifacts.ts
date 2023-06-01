@@ -38,7 +38,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
     async loadDatasets() {
       if (this.projectId === null) return;
       this.datasets = await api.getProjectDatasets(this.projectId!);
-      this.datasets = this.datasets.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
+      this.datasets.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
     },
     async loadModelsWithNotification() {
       if (this.projectId === null) return;
@@ -57,7 +57,7 @@ export const useProjectArtifactsStore = defineStore('projectArtifacts', {
     async loadModels() {
       if (this.projectId === null) return;
       this.models = await api.getProjectModels(this.projectId!);
-      this.models = this.models.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
+      this.models.sort((a, b) => (new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1));
     },
     async loadProjectArtifacts(displayNotification: boolean = true) {
       if (this.projectId === null) return;
