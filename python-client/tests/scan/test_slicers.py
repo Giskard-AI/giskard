@@ -5,6 +5,7 @@ import numpy as np
 from giskard import wrap_dataset
 from giskard.slicing.slice import QueryBasedSliceFunction
 from giskard.slicing.slice import GreaterThan, LowerThan
+from giskard.slicing.text_slicer import TextSlicer
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 
 
@@ -67,3 +68,11 @@ def test_slicer_on_numerical_feature(slicer_cls):
 
     assert intervals[3][0] == pytest.approx(599.5, abs=1)
     assert intervals[3][1] is None
+
+
+def test_text_slicer_enforces_cast_to_string():
+    dataset = _make_demo_dataset()
+
+    slicer = TextSlicer(dataset)
+    slices = slicer.find_metadata_slices("feature1", "loss")
+    assert len(slices) > 0
