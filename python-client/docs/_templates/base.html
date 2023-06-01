@@ -1,11 +1,6 @@
 <!doctype html>
 <html class="no-js" {% if language is not none %} lang="{{ language }}" {% endif %}>
 <head>
-    {%- block site_meta -%}
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark">
-
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
         w[l] = w[l] || [];
@@ -21,6 +16,10 @@
         f.parentNode.insertBefore(j, f);
     })(window, document, 'script', 'dataLayer', 'GTM-PQ9MJ64');</script>
     <!-- End Google Tag Manager -->
+    {%- block site_meta -%}
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark">
 
     {%- if metatags %}{{ metatags }}{% endif -%}
 
@@ -96,6 +95,12 @@
     {%- block extrahead -%}{%- endblock -%}
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9MJ64"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
 {% block body %}
 <script>
     document.body.dataset.theme = localStorage.getItem("theme") || "auto";
