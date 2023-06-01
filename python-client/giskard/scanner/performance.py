@@ -219,7 +219,7 @@ class PerformanceScanResult(ScanResult):
         issues_table = self._make_issues_table_html()
 
         main_content = f"""
-<div class="dark:text-white dark:bg-zinc-800 p-4 mt-8 mb-4">
+<div class="dark:text-white dark:bg-zinc-800 p-4 pt-8 mb-4">
     <h2 class="uppercase">{len(self.issues)} performance issues detected</h2>
     <p class="my-1">We detected {len(self.issues)} data slices where the model exhibits low performance.</p>
 
@@ -242,21 +242,30 @@ class PerformanceScanResult(ScanResult):
 """
 
         html = f"""
-<div class="dark">
-<div class="dark:text-white dark:bg-zinc-900">
-{tab_header}
-{main_content}
-</div>
-</div>
+<!doctype html>
+<html lang="en">
+<head>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {{
     darkMode: 'class'
 }}
 </script>
-"""
+</head>
+<body>
+        <div class="dark">
+<div class="dark:text-white dark:bg-zinc-900">
+{tab_header}
+{main_content}
+</div>
+</div>
+</body>
 
-        return html
+</html>
+"""
+        escaped = html.replace('"', '&quot;')
+
+        return f'<iframe srcdoc="{escaped}" style="width: 100%; height: 100vh; border: none;"></iframe>'
 
     def _make_issues_table_html(self):
         rows = ""
