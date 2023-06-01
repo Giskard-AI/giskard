@@ -22,7 +22,7 @@ public class TestFunction implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String displayName;
     @Column(nullable = false)
     private int version;

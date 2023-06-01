@@ -461,8 +461,12 @@ export const api = {
             inputs
         });
     },
-    async getTestFunctions() {
-        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
+    async getTestFunctions(projectId: number) {
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`, {
+            params: {
+                projectId
+            }
+        });
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
