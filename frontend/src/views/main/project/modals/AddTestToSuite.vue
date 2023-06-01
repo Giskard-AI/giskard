@@ -30,6 +30,7 @@
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Inputs</p>
                 <TestInputListSelector
+                    :editing="true"
                     :project-id="projectId"
                     :inputs="inputs"
                     :model-value="testInputs" />
