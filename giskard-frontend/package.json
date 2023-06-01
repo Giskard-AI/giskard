@@ -17,7 +17,6 @@
     "@types/mixpanel-browser": "^2.38.0",
     "@types/mousetrap": "^1.6.9",
     "@types/numeral": "^2.0.2",
-    "autoprefixer": "^10",
     "axios": "^0.27.2",
     "core-js": "^3.24.1",
     "crypto-js": "^4.1.1",
@@ -31,7 +30,6 @@
     "postcss": "^8",
     "register-service-worker": "^1.7.2",
     "rrweb-snapshot": "^1.1.14",
-    "tailwindcss": "^3",
     "typesafe-vuex": "^3.2.2",
     "vee-validate": "^3.4.13",
     "vue": "^2.7.13",
@@ -64,16 +62,9 @@
     "sass": "~1.54.4",
     "sass-loader": "^13.0.0",
     "typescript": "^4.7.4",
-    "vue-cli-plugin-tailwind": "~3.0.0",
     "vue-cli-plugin-vuetify": "^2.5.1",
     "vue-template-compiler": "^2.7.8",
     "vuetify-loader": "^1.9.2"
-  },
-  "postcss": {
-    "plugins": {
-      "tailwindcss": {},
-      "autoprefixer": {}
-    }
   },
   "browserslist": [
     "> 1%",
