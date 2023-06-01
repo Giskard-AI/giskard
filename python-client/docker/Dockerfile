@@ -52,7 +52,7 @@ COPY ./python-client/pyproject.toml ./python-client/pdm.lock ./
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
 WORKDIR $PYSETUP_PATH/python-client
-RUN pdm install
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then pdm install ; else pdm install --prod ; fi"
 
 
 
