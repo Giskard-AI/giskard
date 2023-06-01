@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
 from sklearn import metrics
+from typing import Optional
+from collections import defaultdict
 from pandas.api.types import is_numeric_dtype, is_categorical_dtype
-
+from ..models.base import BaseModel
+from ..datasets.base import Dataset
 
 from .result import ScanResult
 from ..slicing.opt_slicer import OptSlicer
@@ -15,12 +18,12 @@ from ..slicing.multiscale_slicer import MultiscaleSlicer
 class PerformanceScan:
     tags = ["performance", "classification", "regression"]
 
-    def __init__(self, model: None, dataset=None):
+    def __init__(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None):
         self.params = {}
         self.model = model
         self.dataset = dataset
 
-    def run(self, model=None, dataset=None, slicer="opt"):
+    def run(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None, slicer="opt"):
         model = model or self.model
         dataset = dataset or self.dataset
 
@@ -32,58 +35,65 @@ class PerformanceScan:
         # Should check model type
         # …
 
-        # TODO: support giskard.Model
-        true_target = dataset.target
-        pred = model.predict(self.dataset.to_giskard())
-
         # Calculate loss
-        if "loss" not in dataset.meta().columns:
-            loss = np.array(
-                [
-                    metrics.log_loss([true_label], [probs], labels=dataset.class_labels)
-                    for true_label, probs in zip(true_target, pred.raw)
-                ]
-            )
-            dataset.add_meta_column("loss", loss)
-
-        slices = self.find_slices(dataset.select_columns(model.meta.feature_names), slicer)
+        meta = self._calculate_meta(model, dataset)
+        slices = self.find_slices(dataset.select_columns(model.meta.feature_names), meta, slicer)
 
         return slices
 
-    def find_slices(self, dataset, slicer_name):
-        target_col = "meta__loss"
+    def _calculate_meta(self, model, dataset):
+        true_target = dataset.df.loc[:, dataset.target].values
+        pred = model.predict(dataset)
+
+        loss_values = [
+            metrics.log_loss([true_label], [probs], labels=model.meta.classification_labels)
+            for true_label, probs in zip(true_target, pred.raw)
+        ]
+
+        return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
+
+    def find_slices(self, dataset, meta: pd.DataFrame, slicer_name):
+        df_with_meta = dataset.df.join(meta)
+        target_col = "__gsk__loss"
+
+        # Columns by type
+        cols_by_type = {
+            type_val: [col for col, col_type in dataset.column_types.items() if col_type == type_val]
+            for type_val in ["numeric", "category", "text"]
+        }
 
         # Numerical features
-        num_cols = list(dataset.select_columns(col_type="number").columns)
-
-        if slicer_name == "opt":
-            slicer = OptSlicer(dataset.df(True), target=target_col)
-        elif slicer_name == "tree":
-            slicer = DecisionTreeSlicer(dataset.df(True), target=target_col)
-        elif slicer_name == "ms":
-            slicer = MultiscaleSlicer(dataset.df(True), target=target_col)
-        else:
-            raise ValueError(f"Invalid slicer `{slicer_name}`.")
+        slicer = self._get_slicer(slicer_name, df_with_meta, target_col)
 
         slices = []
-        for col in num_cols:
+        for col in cols_by_type["numeric"]:
             slices.extend(slicer.find_slices([col]))
 
         # Categorical features
-        cat_cols = list(dataset.select_columns(col_type="category").columns)
-
-        slicer = CategorySlicer(dataset.df(True), target=target_col)
-        for col in cat_cols:
+        slicer = CategorySlicer(df_with_meta, target=target_col)
+        for col in cols_by_type["category"]:
             slices.extend(slicer.find_slices([col]))
 
         # @TODO: FIX THIS
-        # # Text features
-        # text_cols = list(dataset.select_columns(col_type="text").columns)
-        # slicer = TextSlicer(dataset.df(True), target=target_col)
-        # for col in text_cols:
-        #     slices.extend(slicer.find_slices([col]))
+        # Text features
+        slicer = TextSlicer(df_with_meta, target=target_col)
+        for col in cols_by_type["text"]:
+            slices.extend(slicer.find_slices([col]))
+
+        # @TODO: Should probably bind back to original dataset, but how to to pass
+        # cleanly also the metadata needed for the plots? Maybe need a wrapper object
+        # like Issue or similar.
 
         return PerformanceScanResult(slices)
+
+    def _get_slicer(self, slicer_name, data, target):
+        if slicer_name == "opt":
+            return OptSlicer(data, target=target)
+        if slicer_name == "tree":
+            return DecisionTreeSlicer(data, target=target)
+        if slicer_name == "ms":
+            return MultiscaleSlicer(data, target=target)
+        raise ValueError(f"Invalid slicer `{slicer_name}`.")
 
 
 class PerformanceScanResult(ScanResult):
@@ -127,9 +137,7 @@ class PerformanceScanResult(ScanResult):
             html_output += "</ul>"
 
             chart_html = self._make_chart_html(feature, slices)
-            html_output += (
-                "<div style='width:48%;margin-left:2%;'>" + chart_html + "</div>"
-            )
+            html_output += "<div style='width:48%;margin-left:2%;'>" + chart_html + "</div>"
             html_output += "</div></div>"
 
         return html_output
@@ -143,7 +151,7 @@ class PerformanceScanResult(ScanResult):
         pdata = pd.DataFrame(
             {
                 "feature": data.loc[:, feature],
-                "loss": data.loc[:, "meta__loss"],
+                "loss": data.loc[:, "__gsk__loss"],
                 "slice": "Background",
                 "slice_color": "#1d4ed8",
             }
