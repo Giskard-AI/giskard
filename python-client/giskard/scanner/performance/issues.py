@@ -137,7 +137,7 @@ _metric_test_mapping = {
 
 
 def _metric_to_test_object(metric: PerformanceMetric):
-    from giskard.testing.tests import performance as performance_tests
+    from ...testing.tests import performance as performance_tests
 
     try:
         test_name = _metric_test_mapping[metric.__class__.__name__]
