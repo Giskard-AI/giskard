@@ -1,5 +1,7 @@
-import requests_mock
 import re
+
+import requests_mock
+
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
 
@@ -26,11 +28,19 @@ def verify_model_upload(my_model, my_data):
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
+    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings/ml-worker-connect")
 
     with requests_mock.Mocker() as m:
         m.register_uri(requests_mock.POST, artifact_url_pattern)
         m.register_uri(requests_mock.POST, models_url_pattern)
         m.register_uri(requests_mock.GET, settings_url_pattern)
+        m.register_uri(requests_mock.GET, ml_worker_connect_url_pattern,
+                       json={
+                           "externalMlWorkerEntrypointPort": 40051,
+                           "externalMlWorkerEntrypointHost": None,
+                           "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
+                           "keyId": "fh1sjr7h"}
+                       )
 
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
