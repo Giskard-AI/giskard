@@ -17,7 +17,9 @@ class LlmIssueInfo:
     perturbed_data_slice: Dataset
     perturbed_data_slice_predictions: ModelPredictionResults
     fail_data_idx: list
+    output_sensitivity = float
     threshold: float
+
 
 
 class LlmIssue(Issue):
@@ -73,4 +75,3 @@ class LlmIssue(Issue):
     @property
     def importance(self) -> float:
         return self.info.fail_ratio
-
