@@ -68,7 +68,7 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
     )
 
 
-def test_shared_input(german_credit_data: Dataset, german_credit_model: BaseModel):
+def test_shared_input(german_credit_model: BaseModel, german_credit_data: Dataset):
     last_half = german_credit_data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False))
 
     shared_input = SuiteInput("dataset", Dataset)
