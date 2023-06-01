@@ -5,6 +5,21 @@
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
             Project Settings
+            <v-spacer></v-spacer>
+            <v-list dense tile class="d-flex">
+              <v-list-item link @click="exportProject">
+                <v-list-item-title>
+                  <v-icon dense left color="primary">mdi-application-export</v-icon>
+                  Export
+                </v-list-item-title>
+              </v-list-item>
+              <v-list-item link @click="deleteProject">
+                <v-list-item-title class="accent--text">
+                  <v-icon dense left color="accent">delete</v-icon>
+                  Delete
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
           </v-card-title>
           <v-card-text class="container">
             <v-row>
@@ -163,6 +178,8 @@ const modelsComponentRef = ref<any>(null);
 const project = computed(() => useProjectStore().project(props.projectId))
 const projectStore = useProjectStore();
 
+const emit = defineEmits(['exportProject', 'deleteProject'])
+
 function reloadDataObjects() {
   datasetsComponentRef.value.loadDatasets();
   modelsComponentRef.value.loadModelPickles();
@@ -236,6 +253,16 @@ async function editProject(data: ProjectPostDTO) {
   } catch (e) {
     console.error(e.message);
   }
+}
+
+function exportProject() {
+  emit('exportProject', project.value!.id);
+  console.log('export project');
+}
+
+function deleteProject() {
+  emit('deleteProject', project.value!.id);
+  console.log('delete project');
 }
 </script>
 
