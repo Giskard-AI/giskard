@@ -91,7 +91,9 @@ spring:
   servlet:
     multipart:
       enabled: true
-
+      # TODO: env variable to set max upload size (might be useful when importing projects with big models/datasets)
+      max-file-size: 16MB
+      max-request-size: 16MB
   application:
     name: giskard
   profiles:
@@ -227,3 +229,5 @@ giskard:
   home: giskard-home
   regressionThreshold: 0.15
   limeNumberSamples: 500
+
+
