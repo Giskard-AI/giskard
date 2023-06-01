@@ -1,10 +1,11 @@
 # @TODO: simplify this module, don’t need this complexity.
-import operator
 import itertools
-from collections import defaultdict
-from abc import ABC, abstractmethod
-from typing import Callable, Sequence
+import operator
 import re
+from abc import ABC, abstractmethod
+from collections import defaultdict
+from typing import Callable, Sequence
+
 import numpy as np
 import pandas as pd
 
@@ -161,9 +162,6 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def __str__(self):
         return str(self.query)
-
-    def _should_save_locally(self) -> bool:
-        return True
 
 
 def _pretty_str(value):

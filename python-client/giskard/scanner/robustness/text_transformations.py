@@ -1,5 +1,6 @@
-import re
 import random
+import re
+
 import pandas as pd
 from langdetect import detect_langs
 
@@ -30,9 +31,6 @@ class TextTransformation(TransformationFunction):
 
     def make_perturbation(self, text: str) -> str:
         raise NotImplementedError()
-
-    def _should_save_locally(self) -> bool:
-        return True
 
 
 class TextUppercase(TextTransformation):

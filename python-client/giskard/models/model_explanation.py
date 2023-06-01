@@ -8,9 +8,9 @@ import pandas as pd
 import shap
 from eli5.lime import TextExplainer
 
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import timer
+from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,14 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
+        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
         if dataset.target in df.columns:
             prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
         else:
             prepared_ds = Dataset(df=df, column_types=dataset.column_types)
-        prepared_df = model.prepare_dataframe(prepared_ds)
+        prepared_df = model.prepare_dataframe(prepared_ds.df,
+                                              column_dtypes=prepared_ds.column_dtypes,
+                                              target=prepared_ds.target)
         columns_in_original_order = (
             model.meta.feature_names
             if model.meta.feature_names
@@ -31,13 +34,14 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
         # Make sure column order is the same as in df
         return prepared_df[columns_in_original_order]
 
-    df = model.prepare_dataframe(dataset)
+    df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
     feature_names = list(df.columns)
 
     input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
-        return model.predict_df(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
+        arr_df = pd.DataFrame(array, columns=list(df.columns))
+        return model.predict_df(prepare_df(arr_df))
 
     example = background_example(df, dataset.column_types)
     kernel = shap.KernelExplainer(predict_array, example)

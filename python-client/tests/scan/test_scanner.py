@@ -1,4 +1,5 @@
 import pytest
+from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.result import ScanResult
 
@@ -9,6 +10,9 @@ def test_scanner_returns_non_empty_scan_result(german_credit_data, german_credit
 
     assert isinstance(result, ScanResult)
     assert result.has_issues()
+
+    test_suite = result.generate_test_suite()
+    assert isinstance(test_suite, Suite)
 
 
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):

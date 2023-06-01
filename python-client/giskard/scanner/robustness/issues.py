@@ -1,6 +1,6 @@
-from functools import cache
 import pandas as pd
 import numpy as np
+from functools import lru_cache
 from dataclasses import dataclass
 
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -49,7 +49,7 @@ class RobustnessIssue(Issue):
     def description(self) -> str:
         return ""
 
-    @cache
+    @lru_cache
     def examples(self, n=3) -> pd.DataFrame:
         rng = np.random.default_rng(142)
         idx = rng.choice(self.info.fail_data_idx, min(len(self.info.fail_data_idx), n), replace=False)
@@ -80,7 +80,7 @@ class RobustnessIssue(Issue):
         return self.info.fail_ratio
 
     def generate_tests(self) -> list:
-        from giskard.testing.tests.metamorphic import test_metamorphic_invariance
+        from ...testing.tests.metamorphic import test_metamorphic_invariance
 
         return [
             test_metamorphic_invariance(

@@ -30,7 +30,8 @@
                                                 </div>
                                             </v-list-item-title>
                                             <v-list-item-subtitle v-if="test.tags">
-                                                <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
+                                                <v-chip class="mr-2" v-for="tag in alphabeticallySorted(test.tags)"
+                                                        x-small :color="pasterColor(tag)">
                                                     {{ tag }}
                                                 </v-chip>
                                             </v-list-item-subtitle>
@@ -105,7 +106,7 @@
 
 <script setup lang="ts">
 import {api} from "@/api";
-import _, {chain} from "lodash";
+import {chain} from "lodash";
 import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
@@ -118,6 +119,7 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import {alphabeticallySorted} from "@/utils/comparators";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -168,13 +170,6 @@ watch(selected, (value) => {
         }))
         .value()
 });
-
-
-function sorted(arr: any[]) {
-    const res = _.cloneDeep(arr);
-    res.sort()
-    return res;
-}
 
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
