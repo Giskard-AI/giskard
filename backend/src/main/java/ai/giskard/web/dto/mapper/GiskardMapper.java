@@ -215,6 +215,7 @@ public interface GiskardMapper {
     @Mapping(target = "testFunction", ignore = true)
     TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
 
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
     TestFunctionDTO toDTO(TestFunction testFunction);
 
     @Mapping(target = "suiteTests", ignore = true)
