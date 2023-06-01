@@ -21,7 +21,7 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card outlined tile class="grey lighten-5" v-for="m in           models          " :key="m.id">
+      <v-card outlined tile class="grey lighten-5" v-for="m in                 models                " :key="m.id">
         <v-row class="px-2 py-1 align-center">
           <v-col cols="4">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -42,7 +42,7 @@
           <v-col cols="3">
             <div>
               <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
-                <v-icon dense left>policy</v-icon>
+                <!-- <v-icon dense left>policy</v-icon> -->
                 Debug
               </v-btn>
               <v-tooltip bottom>
@@ -53,7 +53,7 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit="deleteModelPickle(m.id)" />
+              <DeleteModal v-if=" isProjectOwnerOrAdmin " :id=" m.id " :file-name=" m.fileName " type="model" @submit=" deleteModelPickle(m.id) " />
             </div>
           </v-col>
         </v-row>
@@ -61,8 +61,8 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
-        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel="cancelLaunchInspector()" />
+      <v-dialog persistent max-width="600" v-model=" showInspectDialog " class="inspector-launcher-container">
+        <InspectorLauncher :projectId=" projectId " :model=" modelToInspect " @cancel=" cancelLaunchInspector() " />
       </v-dialog>
 
     </v-container>

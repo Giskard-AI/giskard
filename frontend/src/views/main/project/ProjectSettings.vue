@@ -69,7 +69,7 @@
       </v-col>
     </v-row>
 
-    <v-divider class="my-4"></v-divider>
+    <v-divider class="my-6"></v-divider>
 
     <v-row>
       <v-col cols="6">
@@ -78,7 +78,7 @@
             Datasets
           </v-card-title>
           <v-card-text>
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Alias libero iure, modi eveniet perspiciatis rem tempora corrupti ex voluptatibus veritatis corporis delectus ducimus laboriosam assumenda quo odio necessitatibus labore! Nam vel dolorum omnis, inventore aliquid, dolore consequuntur sunt cum, quaerat est repellendus velit?
+            <Datasets :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
           </v-card-text>
         </v-card>
       </v-col>
@@ -89,7 +89,7 @@
             Models
           </v-card-title>
           <v-card-text>
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Alias libero iure, modi eveniet perspiciatis rem tempora corrupti ex voluptatibus veritatis corporis delectus ducimus laboriosam assumenda quo odio necessitatibus labore! Nam vel dolorum omnis, inventore aliquid, dolore consequuntur sunt cum, quaerat est repellendus velit?
+            <Models :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
           </v-card-text>
         </v-card>
       </v-col>
