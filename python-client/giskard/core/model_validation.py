@@ -1,5 +1,5 @@
 import tempfile
-from typing import List, Iterable
+from typing import List, Iterable, Union
 import yaml
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ from pydantic import validate_arguments
 
 
 @validate_arguments(config=type('', (object,), {'arbitrary_types_allowed': True}))
-def validate_model(model: BaseModel, validate_ds: Dataset):
+def validate_model(model: BaseModel, validate_ds: Union[Dataset, None]):
     model_type = model.meta.model_type
 
     model = validate_model_loading_and_saving(model)
