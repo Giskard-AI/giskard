@@ -12,7 +12,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.google_drive_utils import download_file_from_google_drive
+from tests.url_utils import fetch_from_ftp
 
 # Constants.
 LABELS_LIST = [
@@ -34,24 +34,15 @@ TARGET_COLUMN_NAME = "medical_specialty"
 LANGUAGE = "english"
 
 # Paths.
-PATH_DATA = os.path.join(".", "datasets", "medical_transcript_classification_dataset", "mtsamples.csv")
-
-
-def fetch_dataset():
-    data_dir = Path.home() / ".giskard" / "medical_transcript_classification_dataset"
-    data_path = os.path.join(data_dir, "mtsamples.csv")
-
-    if not data_dir.exists():
-        data_dir.mkdir(parents=True)
-        download_file_from_google_drive('19X_KYo0Q2wPP26ergNY76Pj4lnd2MeLm', data_path)
-
-    df = pd.read_csv(data_path)
-    return df
+DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources",
+                        "medical_transcript_classification_dataset", "mtsamples.csv")
+DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv"
 
 
 def load_data() -> pd.DataFrame:
     # Download dataset.
-    df = fetch_dataset()
+    fetch_from_ftp(DATA_URL, DATA_PATH)
+    df = pd.read_csv(DATA_PATH)
 
     # Drop useless columns.
     df = df.drop(columns=COLUMNS_DROP)

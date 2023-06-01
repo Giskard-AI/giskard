@@ -7,10 +7,11 @@ from lightgbm import LGBMClassifier
 from pandas.api.types import union_categoricals
 
 from giskard import Dataset, Model
-from tests.google_drive_utils import download_file_from_google_drive
+from tests.url_utils import fetch_from_ftp
 
-# Paths.
-DATA_DIRECTORY = Path.home() / ".giskard" / "fraud_detection_classification_dataset"
+# Data.
+DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "fraud_detection_classification_dataset", "{}")
+DATA_PATH = Path.home() / ".giskard" / "fraud_detection_classification_dataset"
 
 # Constants.
 TARGET_COLUMN = 'isTest'
@@ -69,23 +70,18 @@ CATEGORICALS = [f_name
 
 
 def fetch_dataset():
-    if not DATA_DIRECTORY.exists():
-        DATA_DIRECTORY.mkdir(parents=True)
-        download_file_from_google_drive('1Q68bTZ-mPC4tfl_6CUNW04clVbDf1rsP', DATA_DIRECTORY / "train_transaction.csv")
-        download_file_from_google_drive('1AmfTRVsgT-0TbHW4cXDQsSV0FR2F2dsV', DATA_DIRECTORY / "train_identity.csv")
-        download_file_from_google_drive('1TXWWv5j6N6bC4AWo8tj26MS-biy3YOFx', DATA_DIRECTORY / "test_transaction.csv")
-        download_file_from_google_drive('15gl2M1eXwlqfgksBUnEYH9AootbWelm6', DATA_DIRECTORY / "test_identity.csv")
+    files_to_fetch = ["train_transaction.csv", "train_identity.csv", "test_transaction.csv", "test_identity.csv"]
+    for file_name in files_to_fetch:
+        fetch_from_ftp(DATA_URL.format(file_name), DATA_PATH / file_name)
 
 
 def read_set(_type, nrows=150):
     """Read both transactions and identity data."""
     fetch_dataset()
 
-    _df = pd.read_csv(os.path.join(DATA_DIRECTORY, f'{_type}_transaction.csv'),
-                      index_col=IDX_LABEL, dtype=DATA_TYPES_TRANSACTION, nrows=nrows)
+    _df = pd.read_csv(DATA_PATH / f'{_type}_transaction.csv', index_col=IDX_LABEL, dtype=DATA_TYPES_TRANSACTION, nrows=nrows)
+    _df = _df.join(pd.read_csv(DATA_PATH / f'{_type}_identity.csv', index_col=IDX_LABEL, dtype=DATA_TYPES_ID))
 
-    _df = _df.join(pd.read_csv(os.path.join(DATA_DIRECTORY, f'{_type}_identity.csv'),
-                               index_col=IDX_LABEL, dtype=DATA_TYPES_ID))
     return _df
 
 
