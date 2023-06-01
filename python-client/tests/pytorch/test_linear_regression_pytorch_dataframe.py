@@ -58,7 +58,7 @@ def make_train_step(model, loss_fn, optimizer):
 
 
 def test_linear_regression_pytorch_dataframe():
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     np.random.seed(42)
     x = np.random.rand(100, 1)
@@ -85,7 +85,7 @@ def test_linear_regression_pytorch_dataframe():
     output_dim = 1
     model = FeedforwardNeuralNetModel(input_dim, hidden_dim, output_dim)
 
-    loss_fn = nn.MSELoss(reduction='mean')
+    loss_fn = nn.MSELoss(reduction="mean")
     optimizer = optim.SGD(model.parameters(), lr=1e-1)
     train_step = make_train_step(model, loss_fn, optimizer)
 
@@ -118,18 +118,16 @@ def test_linear_regression_pytorch_dataframe():
         print(f"[{epoch + 1}] Training loss: {training_loss:.3f}\t Validation loss: {validation_loss:.3f}")
 
     df = pd.DataFrame({"x": np.squeeze(x), "y": np.squeeze(y)})
-    feature_names = ['x']
+    feature_names = ["x"]
 
-    my_model = PyTorchModel(name="my_linear_model",
-                            clf=model,
-                            feature_names=feature_names,
-                            model_type="regression")
+    my_model = PyTorchModel(name="my_linear_model", clf=model, feature_names=feature_names, model_type="regression")
 
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
@@ -141,7 +139,7 @@ def test_linear_regression_pytorch_dataframe():
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
         client = GiskardClient(url, token)
-        my_model.upload(client, 'test-project', my_test_dataset)
+        my_model.upload(client, "test-project", my_test_dataset)
 
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)

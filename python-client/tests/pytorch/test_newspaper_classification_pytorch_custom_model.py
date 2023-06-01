@@ -14,15 +14,12 @@ import tests.utils
 from giskard import PyTorchModel, Dataset
 from giskard.client.giskard_client import GiskardClient
 
-train_iter = AG_NEWS(split='train')
-test_iter = AG_NEWS(split='test')
-ag_news_label = {1: "World",
-                 2: "Sports",
-                 3: "Business",
-                 4: "Sci/Tec"}
+train_iter = AG_NEWS(split="train")
+test_iter = AG_NEWS(split="test")
+ag_news_label = {1: "World", 2: "Sports", 3: "Business", 4: "Sci/Tec"}
 num_class = len(ag_news_label.keys())
 
-tokenizer = get_tokenizer('basic_english')
+tokenizer = get_tokenizer("basic_english")
 
 
 def yield_tokens(data_iter):
@@ -33,14 +30,16 @@ def yield_tokens(data_iter):
 vocab = build_vocab_from_iterator(yield_tokens(train_iter), specials=["<unk>"])
 vocab.set_default_index(vocab["<unk>"])
 
-text_pipeline = lambda x: vocab(tokenizer(x))
+
+def text_pipeline(x):
+    return vocab(tokenizer(x))
+
 
 def softmax(x):
     return np.exp(x) / np.sum(np.exp(x), axis=0)
 
 
 class TextClassificationModel(nn.Module):
-
     def __init__(self, vocab_size, embed_dim, num_class):
         super(TextClassificationModel, self).__init__()
         self.embedding = nn.EmbeddingBag(vocab_size, embed_dim, sparse=True)
@@ -67,11 +66,13 @@ def test_newspaper_classification_pytorch_custom_model():
     model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
 
     test_dataset = to_map_style_dataset(test_iter)
-    raw_data = {"text": [value[1] for value in test_dataset],
-                "label": [ag_news_label[value[0]] for value in test_dataset]}
+    raw_data = {
+        "text": [value[1] for value in test_dataset],
+        "label": [ag_news_label[value[0]] for value in test_dataset],
+    }
     df = pd.DataFrame(raw_data, columns=["text", "label"])
 
-    feature_names = ['text']
+    feature_names = ["text"]
 
     class my_PyTorchModel(PyTorchModel):
         def clf_predict(self, df):
@@ -88,18 +89,21 @@ def test_newspaper_classification_pytorch_custom_model():
 
             return prediction_function(df)
 
-    my_model = my_PyTorchModel(name="my_custom_BertForSequenceClassification",
-                               clf=model,
-                               feature_names=feature_names,
-                               model_type="classification",
-                               classification_labels=list(ag_news_label.values()))
+    my_model = my_PyTorchModel(
+        name="my_custom_BertForSequenceClassification",
+        clf=model,
+        feature_names=feature_names,
+        model_type="classification",
+        classification_labels=list(ag_news_label.values()),
+    )
 
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
     my_model.predict(my_test_dataset)
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*")
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
 
@@ -111,7 +115,7 @@ def test_newspaper_classification_pytorch_custom_model():
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
         client = GiskardClient(url, token)
-        my_model.upload(client, 'test-project', my_test_dataset)
+        my_model.upload(client, "test-project", my_test_dataset)
 
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
