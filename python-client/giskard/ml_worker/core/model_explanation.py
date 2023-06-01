@@ -29,9 +29,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
     df = model.prepare_dataframe(dataset)
     feature_names = list(df.columns)
 
-    # Make sure column order is that column order is the same as in df
-    input_df = pd.DataFrame([input_data])
-    input_df = prepare_df(input_df)
+    input_df = prepare_df(pd.DataFrame([input_data]))
 
     def predict_array(array):
         return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
