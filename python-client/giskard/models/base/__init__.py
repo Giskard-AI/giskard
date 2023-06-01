@@ -310,8 +310,7 @@ class BaseModel(ABC):
         ...
 
     def _predict_from_cache(self, dataset: Dataset):
-        dataset_hash = dataset.dataset_hash()
-        cached_predictions = self.model_cache.read_from_cache(dataset_hash)
+        cached_predictions = self.model_cache.read_from_cache(dataset._row_hashes)
         missing = cached_predictions.isna()
         if len(missing.shape) > 1:
             missing = missing.any(axis=1)
@@ -320,7 +319,7 @@ class BaseModel(ABC):
 
         if len(df) > 0:
             raw_prediction = self.predict_df(df)
-            self.model_cache.set_cache(dataset_hash[missing], raw_prediction)
+            self.model_cache.set_cache(dataset._row_hashes[missing], raw_prediction)
             cached_predictions.loc[missing] = raw_prediction.tolist()
 
         # TODO: check if there is a better solution

@@ -3,6 +3,7 @@ import {defineStore} from "pinia";
 import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
 import {TYPE} from "vue-toastification";
+import {useRouter} from "vue-router/composables";
 
 interface State {
     projects: ProjectDTO[]
@@ -52,12 +53,12 @@ export const useProjectStore = defineStore('project', {
         async createProject(payload: ProjectPostDTO) {
             const mainStore = useMainStore();
             const loadingNotification = {content: 'Saving...', showProgress: true};
+            // @ts-ignore
+            const router = this.$router;
             try {
                 mainStore.addNotification(loadingNotification);
-                await api.createProject(payload);
-                mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Success', color: TYPE.SUCCESS});
-                await this.getProjects();
+                let response = await api.createProject(payload);
+                await router.push({name: 'project-home', params: {id: response.id.toString()}});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
