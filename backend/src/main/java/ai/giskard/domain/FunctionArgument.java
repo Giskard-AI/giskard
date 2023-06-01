@@ -1,7 +1,6 @@
 package ai.giskard.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -11,6 +10,9 @@ import javax.persistence.*;
     @UniqueConstraint(columnNames = {"function_uuid", "name"})
 })
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FunctionArgument extends BaseEntity {
 
     @ManyToOne

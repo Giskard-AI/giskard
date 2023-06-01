@@ -30,6 +30,7 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
     """
     func: SlicingFunctionType = None
     row_level: bool = True
+    cell_level: bool = False
     params = {}
     is_initialized = False
 
@@ -43,7 +44,7 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         """
         return 'slices'
 
-    def __init__(self, func: SlicingFunctionType, row_level=True):
+    def __init__(self, func: SlicingFunctionType, row_level=True, cell_level=False):
         """
         Initializes a new instance of the SlicingFunction class.
 
@@ -54,10 +55,13 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         """
         self.func = func
         self.row_level = row_level
+        self.cell_level = cell_level
+
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE'))
+            meta = tests_registry.register(
+                DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE', cell_level=self.cell_level))
         super().__init__(func, meta)
 
     def __call__(self, *args, **kwargs) -> 'SlicingFunction':
@@ -78,6 +82,9 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         :return: The sliced data.
         :rtype: Union[pd.Series, pd.DataFrame]
         """
+        if self.cell_level:
+            actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
+            return data.loc[data.apply(lambda row: self.func(row[self.params['column_name']], **actual_params), axis=1)]
         if self.row_level:
             return data.loc[data.apply(lambda row: self.func(row, **self.params), axis=1)]
         else:
@@ -119,7 +126,7 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         return DatasetProcessFunctionMeta
 
 
-def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None):
+def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
     """
     Decorator that registers a slicing function with the testing registry and returns a SlicingFunction instance.
 
@@ -129,17 +136,18 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
     :param tags: Optional list of tags to use when registering the function.
     :return: The wrapped function or a new instance of SlicingFunction.
     """
+
     def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
 
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
             DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
-                                       type='SLICE'))
+                                       type='SLICE', cell_level=cell_level))
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 
-        return _wrap_slicing_function(func, row_level)()
+        return _wrap_slicing_function(func, row_level, cell_level)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
@@ -147,10 +155,12 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         return inner
 
 
-def _wrap_slicing_function(original: Callable, row_level: bool):
-    slicing_fn = functools.wraps(original)(SlicingFunction(original, row_level))
+def _wrap_slicing_function(original: Callable, row_level: bool, cell_level: bool):
+    slicing_fn = functools.wraps(original)(SlicingFunction(original, row_level, cell_level))
 
-    validate_arg_type(slicing_fn, 0, pd.Series if row_level else pd.DataFrame)
+    if not cell_level:
+        validate_arg_type(slicing_fn, 0, pd.Series if row_level else pd.DataFrame)
+
     drop_arg(slicing_fn, 0)
 
     make_all_optional_or_suite_input(slicing_fn)

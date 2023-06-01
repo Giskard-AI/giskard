@@ -18,7 +18,7 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-TransformationFunctionType = Callable[..., pd.Series]
+TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
 default_tags = ['transformation']
 
@@ -26,6 +26,7 @@ default_tags = ['transformation']
 class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessFunctionMeta]):
     func: TransformationFunctionType = None
     row_level: bool = True
+    cell_level: bool = False
     params = {}
     is_initialized = False
 
@@ -33,13 +34,16 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
     def _get_name(cls) -> str:
         return 'transformations'
 
-    def __init__(self, func: TransformationFunctionType, row_level=True):
+    def __init__(self, func: TransformationFunctionType, row_level=True, cell_level=False):
         self.func = func
         self.row_level = row_level
+        self.cell_level = cell_level
+
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
-            meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION'))
+            meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
+                                                                      cell_level=self.cell_level))
         super().__init__(func, meta)
 
     def __call__(self, *args, **kwargs) -> 'TransformationFunction':
@@ -51,8 +55,17 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
 
         return self
 
-    def execute(self, data: Union[pd.Series, pd.DataFrame]):
-        if self.row_level:
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+
+        if self.cell_level:
+            actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
+
+            def apply(row: pd.Series) -> pd.Series:
+                row[self.params['column_name']] = self.func(row[self.params['column_name']], **actual_params)
+                return row
+
+            return data.apply(apply, axis=1)
+        elif self.row_level:
             return data.apply(lambda row: self.func(row, **self.params), axis=1)
         else:
             return self.func(data, **self.params)
@@ -93,23 +106,22 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         return DatasetProcessFunctionMeta
 
 
-def transformation_function(
-    _fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
-    row_level=True,
-    name=None,
-    tags: Optional[List[str]] = None,
-):
+def transformation_function(_fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
+                            row_level=True,
+                            cell_level=False,
+                            name=None,
+                            tags: Optional[List[str]] = None):
+
     def inner(func: Union[TransformationFunctionType, Type[TransformationFunction]]) -> TransformationFunction:
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            DatasetProcessFunctionMeta(
-                func, name=name, tags=default_tags if not tags else (default_tags + tags), type='TRANSFORMATION'
-            )
-        )
+            DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
+                                       type='TRANSFORMATION', cell_level=cell_level))
+
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
-        return _wrap_transformation_function(func, row_level)()
+        return _wrap_transformation_function(func, row_level, cell_level)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
@@ -117,10 +129,12 @@ def transformation_function(
         return inner
 
 
-def _wrap_transformation_function(original: Callable, row_level: bool):
-    transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level))
+def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool):
+    transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level, cell_level))
 
-    validate_arg_type(transformation_fn, 0, pd.Series if row_level else pd.DataFrame)
+    if not cell_level:
+        validate_arg_type(transformation_fn, 0, pd.Series if row_level else pd.DataFrame)
+
     drop_arg(transformation_fn, 0)
 
     make_all_optional_or_suite_input(transformation_fn)
