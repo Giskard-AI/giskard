@@ -1,7 +1,7 @@
-import sys
 import copy
-import pickle
 import inspect
+import pickle
+import sys
 from abc import abstractmethod, ABC
 from pathlib import Path
 from typing import Union, Callable, Optional, Type
@@ -55,7 +55,7 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _should_save_locally(self) -> bool:
-        return is_local_function(self.data.__module__)
+        return True
 
     def _should_upload(self) -> bool:
         return self.meta.version is None
