@@ -1,8 +1,8 @@
 import {UserDTO} from '@/generated-sources';
 import * as _ from "lodash";
-import {readUserProfile} from "@/store/main/getters";
 import {Role} from "@/enums";
 import * as crypto from "crypto-js";
+import {useUserStore} from "@/stores/user";
 
 export const getLocalToken = (): string | null => localStorage.getItem('token');
 
@@ -51,7 +51,8 @@ export function anonymize(obj: any) {
 }
 
 export function isAdmin(store) {
-    return readUserProfile(store)?.roles!.includes(Role.ADMIN)
+    const userStore = useUserStore();
+    return userStore.userProfile?.roles!.includes(Role.ADMIN)
 }
 
 function stringHash(str: string) {

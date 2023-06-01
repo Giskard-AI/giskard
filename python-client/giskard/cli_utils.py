@@ -7,11 +7,13 @@ import sys
 from time import sleep
 
 from daemon import DaemonContext
+from daemon.daemon import change_working_directory
 from daemon.runner import is_pidfile_stale
 from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
 from giskard.path_utils import run_dir
+from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,11 @@ def run_daemon(is_server, url, api_key):
     logger.info(f"Writing logs to {log_path}")
     pid_file = PIDLockFile(create_pid_file_path(is_server, url))
 
-    with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
+    with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")) as c:
+        workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
+        workdir.mkdir(exist_ok=True, parents=True)
+        change_working_directory(workdir)
+
         logger.info(f"Daemon PID: {os.getpid()}")
         asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key).start())
 
