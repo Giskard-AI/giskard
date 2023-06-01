@@ -10,7 +10,7 @@ Several factors can contribute to the occurrence of underconfident predictions i
 
 2. **Model Complexity**: Overly simple or shallow models may struggle to capture the complexity of the underlying data. This can result in uncertain predictions and underconfidence, as the model may not have enough capacity to learn intricate patterns and make accurate classifications.
 
-3. **Data Scarcity**: Limited amounts of training data can hinder the model's ability to learn effectively. When there is a scarcity of examples or a significant class imbalance, the model may struggle to estimate probabilities accurately, leading to underconfident predictions.
+3. **Imbalanced Classes:**: When there is a scarcity of examples or a significant class imbalance, the model may struggle to estimate probabilities accurately, leading to underconfident predictions.
 
 4. **Uncertain Data Characteristics**: In scenarios where the input data contains inherent noise, ambiguity, or overlapping feature distributions, the model may find it challenging to make confident predictions. Uncertainty in the data can propagate into the model's output, causing underconfidence.
 
