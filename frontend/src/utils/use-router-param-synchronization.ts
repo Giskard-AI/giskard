@@ -5,20 +5,21 @@ import {useRoute, useRouter} from 'vue-router/composables';
 export default function useRouterParamSynchronization<T>(
     routeName: string,
     param: string,
-    values: T[],
+    values: Ref<T[] | undefined>,
     selectedValue: Ref<T | null>,
     id: string
 ) {
     const route = useRoute();
     const router = useRouter();
 
-    watch(() => [route.name, route.params], () => onRouteUpdated());
+    watch(() => [route.name, route.params, values.value], () => onRouteUpdated());
     onMounted(() => onRouteUpdated());
 
     function onRouteUpdated() {
-        if (route.name === routeName) {
+        if (route.name === routeName && values.value !== undefined) {
             const executionId = Number(route.params[param]);
-            selectedValue.value = values?.find(execution => execution[id] === executionId) ?? null;
+
+            selectedValue.value = values.value.find(execution => execution[id] === executionId) ?? null;
         }
     }
 
