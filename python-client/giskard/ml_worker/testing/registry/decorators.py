@@ -3,8 +3,9 @@ import inspect
 import sys
 from typing import Callable, Optional, List, Union, Type, TypeVar
 
-from giskard.core.validation import configured_validate_arguments
 from giskard.core.core import TestFunctionMeta
+from giskard.core.validation import configured_validate_arguments
+from giskard.ml_worker.core.suite import SuiteInput
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 
@@ -51,7 +52,7 @@ def _make_all_optional(fn):
     sig = signature(fn)
     sig = sig.replace(
         parameters=[Parameter(name=par.name, kind=par.kind, default=None if inspect.Signature.empty else par.default,
-                              annotation=Optional[par.annotation])
+                              annotation=Optional[Union[SuiteInput, par.annotation]])
                     for par in sig.parameters.values()])
     fn.__signature__ = sig
 
