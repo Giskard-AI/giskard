@@ -11,7 +11,7 @@
           <v-col cols="3">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card class="grey lighten-5" v-for="m in                 models                 " :key="m.id" outlined tiled>
+      <v-card class="grey lighten-5" v-for="m in                  models                  " :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
           <v-col cols="3" class="font-weight-bold">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -32,7 +32,7 @@
           <v-col cols="3">
             <div>
               <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
-                <!-- <v-icon dense left>policy</v-icon> -->
+                <v-icon dense left>policy</v-icon>
                 Debug
               </v-btn>
               <v-tooltip bottom>
