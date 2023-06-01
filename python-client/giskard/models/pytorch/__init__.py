@@ -6,6 +6,8 @@ from pathlib import Path
 import yaml
 from typing import Union
 import pandas as pd
+import scipy
+import numpy as np
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model
@@ -28,14 +30,15 @@ class PyTorchModel(Model):
                  device='cpu',
                  name: str = None,
                  data_preprocessing_function=None,
+                 output_processing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None,
                  loader_module:str = 'giskard.models.pytorch',
                  loader_class:str = 'PyTorchModel') -> None:
 
-        super().__init__(clf, model_type, name, data_preprocessing_function, feature_names,
-                         classification_threshold, classification_labels, loader_module, loader_class)
+        super().__init__(clf, model_type, name, data_preprocessing_function, output_processing_function,
+                         feature_names, classification_threshold, classification_labels, loader_module, loader_class)
         self.device=device
 
     @classmethod
@@ -70,34 +73,27 @@ class PyTorchModel(Model):
     def _raw_predict(self, data):
         self.clf.to(self.device)
         self.clf.eval()
+        predictions=[]
 
         # Use isinstance to check if o is an instance of X or any subclass of X
         # Use is to check if the type of o is exactly X, excluding subclasses of X
-        with torch.no_grad():
-            if isinstance(data, tuple):
-                predictions = self.clf(*data)
-            elif isinstance(data, dict):
-                predictions = self.clf(**data)
-            elif isinstance(data, pd.DataFrame):
-                dataset = TorchMinimalDataset(data)
-                data_loader = DataLoader(dataset)
-                predictions=[]
-                for data_entry in data_loader:
-                    predictions.append(self.clf(data_entry).detach().numpy())
-            elif isinstance(data, torch_dataset):
-                data_loader = DataLoader(dataset)
-                predictions=[]
-                for data_entry in data_loader:
-                    predictions.append(self.clf(data_entry).detach().numpy())
-            else:
-                predictions = self.clf(data)
-
-        if self.is_classification:
+        if isinstance(data, pd.DataFrame):
+            data = TorchMinimalDataset(data)
+        elif not isinstance(data, torch_dataset) and not isinstance(data, DataLoader):
             with torch.no_grad():
-                predictions = torch.nn.functional.softmax(predictions, dim=-1)
+                predictions = self.clf(*data)
+                predictions = np.array(predictions.detach().numpy())
 
-        predictions = np.array(predictions)
-        return predictions
+        if not predictions:
+            with torch.no_grad():
+                for entry in data:
+                    predictions.append(self.clf(*entry).detach().numpy())
+            predictions = np.array(predictions)
+
+            if self.output_processing_function:
+                predictions = self.output_processing_function(predictions)
+
+        return predictions.squeeze()
 
 
 
