@@ -624,11 +624,7 @@ def test_drift_prediction_ks(
     """
     actual_slice.df.reset_index(drop=True, inplace=True)
     reference_slice.df.reset_index(drop=True, inplace=True)
-
-    assert (
-            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
-            or classification_label in model.meta.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
+    classification_label = str(classification_label)
 
     prediction_reference = (
         pd.Series(model.predict(reference_slice).all_predictions[classification_label].values)
@@ -711,6 +707,7 @@ def test_drift_prediction_earth_movers_distance(
     """
     actual_slice.df.reset_index(drop=True, inplace=True)
     reference_slice.df.reset_index(drop=True, inplace=True)
+    classification_label = str(classification_label)
 
     prediction_reference = (
         model.predict(reference_slice).all_predictions[classification_label].values
