@@ -10,11 +10,12 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float]
+suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
 
 
 class TestSuiteResult(tuple):

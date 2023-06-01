@@ -7,9 +7,10 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
 from giskard.datasets import wrap_dataset
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.decorators import test
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 from giskard.ml_worker.testing.tests.drift import test_drift_psi, test_drift_chi_square, test_drift_ks, \
@@ -101,7 +102,9 @@ __all__ = [
     'test_metamorphic_decreasing_wilcoxon',
     'test_metamorphic_invariance_wilcoxon',
     'slicing_function',
-    'transformation_function'
+    'transformation_function',
+    'SuiteInput',
+    'SlicingFunction'
 ]
 try:
     from giskard.models.catboost import CatboostModel
