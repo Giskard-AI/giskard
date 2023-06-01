@@ -28,21 +28,27 @@ def _prediction_ratio(prediction, perturbed_prediction):
 
 
 @timer("Perturb and predict data")
-def _perturb_and_predict(model: BaseModel, ds: Dataset, transformation_function: TransformationFunction,
-                         output_proba=True, classification_label=None):
-    results_df = pd.DataFrame()
-    results_df["prediction"] = _predict_numeric_result(model, ds, output_proba, classification_label)
+def _perturb_and_predict(
+    model: BaseModel,
+    ds: Dataset,
+    transformation_function: TransformationFunction,
+    output_proba=True,
+    classification_label=None,
+):
+    results_df = pd.DataFrame(
+        {
+            "prediction": _predict_numeric_result(model, ds, output_proba, classification_label),
+        },
+        index=ds.df.index,
+    )
 
     perturbed_ds = ds.transform(transformation_function)
-    results_df["perturbed_prediction"] = _predict_numeric_result(model, perturbed_ds, output_proba,
-                                                                 classification_label)
+    results_df["perturbed_prediction"] = _predict_numeric_result(
+        model, perturbed_ds, output_proba, classification_label
+    )
+    modified_idx = ds.df.compare(perturbed_ds.df).index
 
-    modified_rows = []
-    for idx, r in ds.df.iterrows():
-        if not r.equals(perturbed_ds.df.loc[idx]):
-            modified_rows.append(idx)
-
-    return results_df.iloc[modified_rows], len(modified_rows)
+    return results_df.loc[modified_idx], len(modified_idx)
 
 
 @timer("Compare and predict the data")
