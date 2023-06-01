@@ -15,6 +15,7 @@ from sklearn.metrics import (
 from giskard import test
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
@@ -110,12 +111,12 @@ class AucTest(GiskardTest):
     model: Model
     threshold: float
 
-    def __init__(self,
-                 actual_slice: Dataset = None,
-                 model: Model = None,
-                 threshold: float = None):
+    def __init__(self, ):
+        super().__init__()
+
+    def set_params(self, actual_slice: Dataset = None, model: Model = None, threshold: float = None):
         """
-        Init an AucTest instance, can be passed in Suite.add_test method
+        Set params of the AUC test, can be passed in Suite.add_test method
         :param actual_slice: Slice of the actual dataset
         :param model: Model used to compute the test
         :param threshold: Threshold value of AUC metrics
@@ -123,9 +124,11 @@ class AucTest(GiskardTest):
         self.actual_slice = actual_slice
         self.model = model
         self.threshold = threshold
+        return self
 
-    def execute(self) -> SingleTestResult:
-        """
+
+def execute(self) -> SingleTestResult:
+    """
 
         :return:
           actual_slices_size:
@@ -135,7 +138,7 @@ class AucTest(GiskardTest):
           passed:
             TRUE if AUC metrics >= threshold
         """
-        return test_auc(self.actual_slice, self.model, self.threshold)
+    return test_auc(self.actual_slice, self.model, self.threshold)
 
 
 @test(name='AUC', tags=['performance'])
