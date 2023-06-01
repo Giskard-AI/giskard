@@ -56,10 +56,10 @@
           <p class="mb-2">Choose the type of test you want to perform:</p>
           <v-btn-toggle v-model="toggleTestType" borderless mandatory color="primary">
             <v-btn value="scan" class="py-5 px-4">
-              <span>Scan</span>
+              <span>Automatic Scan</span>
             </v-btn>
             <v-btn value="manual" class="py-5 px-4">
-              <span>Manual</span>
+              <span>Manual Testing</span>
             </v-btn>
           </v-btn-toggle>
           <p class="mt-4 mb-2">Then, run the following Python code:</p>
