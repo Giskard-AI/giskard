@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 pool = ThreadPoolExecutor(thread_name_prefix="ml_worker_thread")
 
 
-class ErrorInterceptor(grpc.aio.ServerInterceptor):
+class MLWorkerRequestInterceptor(grpc.aio.ServerInterceptor):
     @staticmethod
     async def terminate_with_exception(error_code: StatusCode, e: Exception, context: ServicerContext):
         detail = any_pb2.Any()
@@ -51,10 +51,10 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
                     return res
                 except CodedError as e:
                     logger.exception(e)
-                    await ErrorInterceptor.terminate_with_exception(e.code, e, context)
+                    await MLWorkerRequestInterceptor.terminate_with_exception(e.code, e, context)
                 except Exception as e:
                     logger.exception(e)
-                    await ErrorInterceptor.terminate_with_exception(StatusCode.INTERNAL, e, context)
+                    await MLWorkerRequestInterceptor.terminate_with_exception(StatusCode.INTERNAL, e, context)
 
             return wrapper
 

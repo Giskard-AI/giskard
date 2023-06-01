@@ -58,8 +58,7 @@ class DataProcessor:
                       name=dataset.name,
                       target=dataset.target,
                       cat_columns=dataset.cat_columns,
-                      column_types=dataset.column_types,
-                      id=dataset.id)
+                      column_types=dataset.column_types)
 
         if len(self.pipeline):
             ret.data_processor = self
