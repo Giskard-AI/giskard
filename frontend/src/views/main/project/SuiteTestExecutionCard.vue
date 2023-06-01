@@ -75,7 +75,7 @@ const props = defineProps<{
     isPastExecution: boolean
 }>();
 
-const params = computed(() => props.isPastExecution
+const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
     : Object.values(props.suiteTest.functionInputs)
         .filter(input => !input.isAlias)

@@ -41,15 +41,6 @@ async function copyCode() {
 </template>
 
 <style scoped>
-@font-face {
-  font-family: 'Roboto Mono';
-  font-style: normal;
-  font-weight: 100 1000;
-  font-stretch: 0% 200%;
-  src: url('../assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
-
-}
-
 .pre-block {
   background-color: #F4F4F4;
   position: relative;
