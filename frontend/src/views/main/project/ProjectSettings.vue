@@ -71,7 +71,7 @@
 
     <v-divider class="my-6"></v-divider>
     <div class="mb-6 d-flex">
-      <h1 class="headline">Data Objects</h1>
+      <!-- <h1 class="headline">Data Objects</h1> -->
       <div class="d-flex justify-end align-center flex-grow-1">
         <v-btn tile small color="primaryLight" class="mx-2 primaryLighBtn" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
           Upload with API
@@ -84,8 +84,9 @@
 
     <v-row>
       <v-col cols="6">
-        <v-card height="100%">
-          <v-card-title>
+        <v-card height="100%" outlined>
+          <v-card-title class="font-weight-light secondary--text">
+            <v-icon left class="pb-1">stacked_bar_chart</v-icon>
             Datasets
           </v-card-title>
           <v-card-text>
@@ -95,8 +96,9 @@
       </v-col>
 
       <v-col cols="6">
-        <v-card height="100%">
-          <v-card-title>
+        <v-card height="100%" outlined>
+          <v-card-title class="font-weight-light secondary--text">
+            <v-icon left class="pb-1">settings_suggest</v-icon>
             Models
           </v-card-title>
           <v-card-text>

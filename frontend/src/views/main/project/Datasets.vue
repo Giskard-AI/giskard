@@ -1,7 +1,7 @@
 <template>
   <div class="vertical-container">
     <v-container v-if="files.length > 0">
-      <v-expansion-panels>
+      <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
           <v-col cols="1">Size</v-col>
@@ -11,7 +11,7 @@
           <v-col cols="2">Actions</v-col>
         </v-row>
         <v-expansion-panel v-for="f in files" :key="f.id">
-          <v-expansion-panel-header @click="peakDataFile(f.id)" class="py-1 pl-2">
+          <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold">
                 <InlineEditText :text="f.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameDataset(f.id, name)">
@@ -35,9 +35,9 @@
                 </span>
               </v-col>
             </v-row>
-
           </v-expansion-panel-header>
-          <v-expansion-panel-content>
+          <v-divider></v-divider>
+          <v-expansion-panel-content class="expansion-panel-content">
             <v-data-table :headers="filePreviewHeader" :items="filePreviewData" dense :hide-default-footer="true" v-if="filePreviewHeader.length > 0 && filePreviewData.length > 0">
             </v-data-table>
             <div class="caption" v-else>Could not properly load data</div>
@@ -152,5 +152,9 @@ div.v-input {
 .id-container {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.expansion-panel-content::v-deep .v-expansion-panel-content__wrap {
+  padding: 0 0 16px !important;
 }
 </style>
