@@ -41,5 +41,9 @@ class TensorFlowModel(MLFlowBasedModel):
             return self.clf.predict(data)
         else:
             predictions = self.clf.predict(data)
-            predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
+            predictions = np.squeeze(np.array(predictions))
+
+            if predictions.shape[1]==1:
+                predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
+
             return predictions
