@@ -58,6 +58,9 @@ def get_version(version=None):
     else:
         pattern = "^([0-9]+)\.([0-9]+)\.([0-9]+)$"
         assert re.match(pattern, version), f"Invalid version format, version should match {pattern}"
+        current_settings = _get_settings() or {}
+        current_settings['version'] = version
+        _write_settings(current_settings)
     return version
 
 
