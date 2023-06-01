@@ -5,7 +5,6 @@ from typing import Sequence, Optional
 
 from .text_transformations import TextTransformation
 from ..issues import Issue
-from ..llm.metrics import Rouge2
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..registry import Detector
@@ -98,11 +97,13 @@ class BaseTextPerturbationDetector(Detector):
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < self.output_sensitivity
             elif model.is_generative:
-                rouge2 = Rouge2()
-                rel_delta = rouge2(predictions=perturbed_pred.prediction, references=original_pred.prediction)
-                passed = np.abs(rel_delta) > self.output_sensitivity
+                import evaluate
+                scorer = evaluate.load("rouge")
+                score = scorer.compute(predictions=perturbed_pred.prediction, references=original_pred.prediction)
+                logger.debug(f"{self.__class__.__name__}: {transformation_fn.name} ROUGE: {score}")
+                passed = np.array(score["rougeL"]) > self.output_sensitivity
             else:
-                raise NotImplementedError("Only classification and regression models are supported.")
+                raise NotImplementedError("Only classification, regression, or generative models are supported.")
 
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
