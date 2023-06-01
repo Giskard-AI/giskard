@@ -8,8 +8,8 @@ import pandas as pd
 import shap
 from eli5.lime import TextExplainer
 
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.models.base import Model
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import timer
 
 logger = logging.getLogger(__name__)

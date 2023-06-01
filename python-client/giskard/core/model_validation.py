@@ -9,9 +9,9 @@ from pandas.core.dtypes.common import is_string_dtype
 from giskard.core.core import ModelMeta
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model import Model, WrapperModel
+from giskard.models.base import Model, WrapperModel
 from giskard.core.validation import validate_is_pandasdataframe, validate_target
-from giskard.ml_worker.core.dataset import Dataset
+from giskard.datasets.base import Dataset
 
 
 def validate_model(model: Model, validate_ds: Dataset):

@@ -11,8 +11,8 @@ from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
 from giskard.core.core import SupportedModelTypes
-from giskard.ml_worker.core.dataset import Dataset
-from giskard.core.model import Model
+from giskard.datasets.base import Dataset
+from giskard.models.base import Model
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult, TestMessage, TestMessageType
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
 
