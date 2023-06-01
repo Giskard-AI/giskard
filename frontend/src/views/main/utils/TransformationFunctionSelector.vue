@@ -53,7 +53,9 @@ function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
 }
 
 async function onInput(value) {
-    if (!value || transformationFunctionsByUuid.value[value].args.length === 0) {
+    if (!value || (!transformationFunctionsByUuid.value[value].args?.length
+        && !transformationFunctionsByUuid.value[value].cellLevel)) {
+        console.log(transformationFunctionsByUuid.value[value].cellLevel)
         emit('update:value', value);
         emit('update:args', []);
         emit('onChanged');
@@ -107,7 +109,8 @@ async function updateArgs() {
     });
 }
 
-const hasArguments = computed(() => props.value && transformationFunctionsByUuid.value[props.value].args.length > 0)
+const hasArguments = computed(() => props.value &&
+    (transformationFunctionsByUuid.value[props.value].args?.length || transformationFunctionsByUuid.value[props.value].cellLevel))
 
 </script>
 
