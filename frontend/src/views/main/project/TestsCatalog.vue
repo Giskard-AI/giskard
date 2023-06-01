@@ -76,11 +76,15 @@
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-pencil-box</v-icon>
                                     <span class="group-title">Inputs</span>
                                     <v-spacer></v-spacer>
+                                </div>
+                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
+                                <div class="d-flex">
+                                    <v-spacer></v-spacer>
                                     <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTest">
                                         Run
                                     </v-btn>
                                 </div>
-                                <SuiteInputListSelector :editing="true" :model-value="testArguments" :inputs="inputType" :project-id="props.projectId" />
+
                                 <TestExecutionResultBadge v-if="testResult" :result="testResult" />
                                 <!-- <v-row style="height: 150px" v-if="testResult">
                                     <v-col>
