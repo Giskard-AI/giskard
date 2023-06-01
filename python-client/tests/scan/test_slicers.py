@@ -3,10 +3,9 @@ import pandas as pd
 import numpy as np
 
 from giskard import wrap_dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.slicing.slice import QueryBasedSliceFunction
-from giskard.slicing.tree_slicer import DecisionTreeSlicer
 from giskard.slicing.slice import GreaterThan, LowerThan
+from giskard.slicing.tree_slicer import DecisionTreeSlicer
 
 
 def _make_demo_dataset():
@@ -41,13 +40,19 @@ def _get_slice_interval(slice_fn: QueryBasedSliceFunction, column: str):
     return low, high
 
 
-@pytest.mark.parametrize("slicer_cls", [DecisionTreeSlicer])
+@pytest.mark.parametrize(
+    "slicer_cls",
+    [DecisionTreeSlicer],
+)
 def test_slicer_on_numerical_feature(slicer_cls):
     dataset = _make_demo_dataset()
     slicer = slicer_cls(dataset)
     slices = slicer.find_slices(features=["feature1"], target="loss")
 
     assert len(slices) == 4
+    for s in slices:
+        assert isinstance(s, QueryBasedSliceFunction)
+
     intervals = [_get_slice_interval(s, "feature1") for s in slices]
     intervals = sorted(intervals, key=lambda x: (x[0] or -np.inf, x[1] or np.inf))
 
