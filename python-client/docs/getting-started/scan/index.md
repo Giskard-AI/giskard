@@ -392,9 +392,6 @@ wrapped_model = MyCustomModel(
 ### Model-specific [tutorials](../../guides/tutorials/index.md)
 :::::{tab-set}
 ::::{tab-item} Any function
-:::{important} 
-Check first our "Wrap any python function with Giskard" [guide](../../guides/custom-wrapper/index.md).
-:::
 - **<project:../../guides/tutorials/pytorch/custom_model.md>**
 - **<project:../../guides/tutorials/huggingface/BertForSequenceClassification_custom.md>**
 ::::
