@@ -1,6 +1,7 @@
 import mlflow
 from pathlib import Path
 import yaml
+import numpy as np
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model import Model
@@ -21,8 +22,18 @@ class TensorFlowModel(Model):
 
 
     def save_to_local_dir(self, local_path):
+        #import pydevd_pycharm
+        #pydevd_pycharm.settrace('localhost', port=11223, stdoutToServer=True, stderrToServer=True)
 
         info = self._new_mlflow_model_meta()
+
+        # mlflow.__version__ == 1.30.0
+        save_model_kwargs = dict(
+            tf_saved_model_dir=local_path,
+            tf_meta_graph_tags=[tag_constants.SERVING],
+            tf_signature_def_key="predict",
+        )
+
         mlflow.tensorflow.save_model(self.clf,
                                   path=local_path,
                                   mlflow_model=info)
@@ -45,4 +56,9 @@ class TensorFlowModel(Model):
         return info
 
     def _raw_predict(self, data):
-        pass
+        if self.is_regression:
+            return self.clf.predict(data)
+        else:
+            predictions = self.clf.predict(data)
+            predictions = np.insert(predictions, 1, 1 - predictions[:, 0], axis=1)
+            return predictions
