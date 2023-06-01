@@ -43,10 +43,10 @@ def test_right_label(
           TRUE if passed_ratio > threshold
     """
     actual_slice.df.reset_index(drop=True, inplace=True)
-    prediction_results = model.run_predict(actual_slice).prediction
+    prediction_results = model.predict(actual_slice).prediction
     assert (
-            classification_label in model.classification_labels
-    ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
+            classification_label in model.meta.classification_labels
+    ), f'"{classification_label}" is not part of model labels: {",".join(model.meta.classification_labels)}'
 
     passed_idx = actual_slice.df.loc[prediction_results == classification_label].index.values
 
@@ -110,19 +110,19 @@ def test_output_in_range(
     results_df = pd.DataFrame()
     actual_slice.df.reset_index(drop=True, inplace=True)
 
-    prediction_results = model.run_predict(actual_slice)
+    prediction_results = model.predict(actual_slice)
 
-    if model.model_type == "regression":
+    if model.meta.model_type == "regression":
         results_df["output"] = prediction_results.raw_prediction
 
-    elif model.model_type == "classification":
+    elif model.meta.model_type == "classification":
         assert (
                 classification_label in model.classification_labels
         ), f'"{classification_label}" is not part of model labels: {",".join(model.classification_labels)}'
         results_df["output"] = prediction_results.all_predictions[classification_label]
 
     else:
-        raise ValueError(f"Prediction task is not supported: {model.model_type}")
+        raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
 
     passed_idx = actual_slice.df.loc[
         (results_df["output"] <= max_range) & (results_df["output"] >= min_range)

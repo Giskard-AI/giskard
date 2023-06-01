@@ -5,6 +5,7 @@ import posixpath
 from pathlib import Path
 from typing import List
 from urllib.parse import urljoin
+from uuid import UUID
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
@@ -72,13 +73,14 @@ class BearerAuth(AuthBase):
 
 class GiskardClient:
     def __init__(self, url: str, token: str):
+        self.host_url = url
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(token)
         self.analytics = GiskardAnalyticsCollector()
         try:
-            server_settings = self._session.get("settings").json()
+            server_settings = self._session.get("settings/ml-worker-connect").json()
             self.analytics.init(server_settings)
         except Exception:
             logger.warning(f"Failed to fetch server settings", exc_info=True)
@@ -168,7 +170,7 @@ class GiskardClient:
     def save_model_meta(
             self,
             project_key: str,
-            model_id: str,
+            model_id: UUID,
             meta: ModelMeta,
             python_version: str,
             size: int
@@ -180,7 +182,7 @@ class GiskardClient:
             "threshold": meta.classification_threshold,
             "featureNames": meta.feature_names,
             "classificationLabels": meta.classification_labels,
-            "id": model_id,
+            "id": str(model_id),
             "project": project_key,
             "name": meta.name,
             "size": size
@@ -281,7 +283,7 @@ class GiskardClient:
         )
 
     def get_server_info(self):
-        return self._session.get("settings").json()
+        return self._session.get("settings/ml-worker-connect").json()
 
     def save_test_suite(self, dto: TestSuiteNewDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites-new", json=dto.dict()).json()
