@@ -2,18 +2,19 @@ import numpy as np
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 
-from .base import BaseSlicer
+from .tree_slicer import DecisionTreeSlicer
 from .slice import GreaterThan, LowerThan, Query, DataSlice, QueryBasedSliceFunction
 
 
-class MultiscaleSlicer(BaseSlicer):
+class MultiscaleSlicer(DecisionTreeSlicer):
     def find_slices(self, features, target=None):
         target = target or self.target
         data = self.dataset.df.dropna()
         min_leaf_size = 30
 
         # Adaptive binning via decision tree
-        dt = DecisionTreeRegressor(criterion="poisson", min_samples_leaf=min_leaf_size)
+        criterion = self._choose_tree_criterion(data.loc[:, target].values)
+        dt = DecisionTreeRegressor(criterion=criterion, min_samples_leaf=min_leaf_size)
         dt.fit(data.loc[:, features], data[target])
         tree = dt.tree_
 
