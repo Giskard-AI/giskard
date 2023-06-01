@@ -88,7 +88,6 @@ import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 
 const {
-  registry,
   models,
   datasets,
   inputs,
