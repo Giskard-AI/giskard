@@ -130,15 +130,15 @@ const openDialog = ref<boolean>(false);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(
-// language=Python
-    () =>
-  `from giskard import Model, GiskardClient
+  // language=Python
+  () =>
+    `from giskard import Model, GiskardClient
 from giskard.demo import titanic  # for demo purposes only 🛳️
 
 original_model, _ = titanic()  # Replace with your model creation
 
 # Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
+token = "${apiAccessToken.value?.id_token}"
 client = GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
