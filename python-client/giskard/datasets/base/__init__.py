@@ -390,7 +390,7 @@ class Dataset(ColumnMetadataMixin):
     @property
     def meta(self):
         return DatasetMeta(
-            name=self.name, target=self.target, column_types=self.column_types, column_dtypes=self.column_dtypes
+            name=self.name, target=self.target, column_types=self.column_types, column_dtypes=self.column_dtypes,
         )
 
     @staticmethod
@@ -441,9 +441,7 @@ class Dataset(ColumnMetadataMixin):
                     name=saved_meta["name"],
                     target=saved_meta["target"],
                     column_types=saved_meta["column_types"],
-                    column_dtypes=saved_meta["number_of_rows"],
-                    number_of_rows=saved_meta["column_dtypes"],
-                    category_features=saved_meta["category_features"]
+                    column_dtypes=saved_meta["number_of_rows"]
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
