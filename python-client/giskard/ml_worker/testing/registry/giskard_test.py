@@ -8,7 +8,7 @@ from typing import Union, Callable, Any
 import cloudpickle
 
 from giskard import test
-from giskard.core.core import TestFunctionMeta
+from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
 from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, generate_func_id
@@ -58,6 +58,10 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
     def _get_name(cls) -> str:
         return 'tests'
 
+    @classmethod
+    def _get_meta_class(cls) -> type(SMT):
+        return TestFunctionMeta
+
     def _get_uuid(self) -> str:
         return get_test_uuid(type(self))
 
@@ -69,13 +73,12 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
-        if meta.module is '__main__':
+        if not meta.module.startswith('__main__'):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             if not local_dir.exists():
                 return None
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
-                print(f)
                 func = pickle.load(f)
 
         if inspect.isclass(func):

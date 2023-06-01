@@ -8,7 +8,7 @@ from typing import Optional, Generic
 import cloudpickle
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.core import DT, SMT
+from giskard.core.core import DT, SMT, SavableMeta
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,10 @@ class Savable(Generic[DT, SMT]):
     def _get_name(cls) -> str:
         return f"{cls.__class__.__name__.lower()}s"
 
+    @classmethod
+    def _get_meta_class(cls) -> type(SMT):
+        return SavableMeta
+
     def _should_save_locally(self) -> bool:
         return True
 
@@ -42,7 +46,7 @@ class Savable(Generic[DT, SMT]):
 
     def _save_to_local_dir(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
-            cloudpickle.dump(type(self.data), f)
+            cloudpickle.dump(self.data, f)
 
     def _save(self, project_key: Optional[str] = None) -> Optional[Path]:
         if not self._should_save_locally():
@@ -79,7 +83,7 @@ class Savable(Generic[DT, SMT]):
 
     @classmethod
     def load(cls, uuid: str, client: GiskardClient, project_key: Optional[str]):
-        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), SMT)
+        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
 
         name = cls._get_name()
 
