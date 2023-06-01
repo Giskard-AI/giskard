@@ -131,7 +131,7 @@ class GiskardTestRegistry:
 
         if func_uuid not in self._tests:
             if inspect.isclass(func):
-                parameters = inspect.signature(func.set_params).parameters
+                parameters = inspect.signature(func.__init__).parameters
             else:
                 parameters = inspect.signature(func).parameters
             args_without_type = [

@@ -85,7 +85,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res[test_partial.test_identifier] = test_partial.giskard_test.set_params(**test_params).execute()
+            res[test_partial.test_identifier] = test_partial.giskard_test.get_builder()(**test_params).execute()
 
         result = single_binary_result(list(res.values()))
 
@@ -100,7 +100,7 @@ class Suite:
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
             available_params = inspect.signature(test_partial.giskard_test.data).parameters.items()
         else:
-            available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.items()
+            available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.items()
 
         test_params = {}
         for pname, p in available_params:
@@ -157,7 +157,7 @@ class Suite:
         elif isinstance(test_fn, GiskardTest):
             params = {
                 k: test_fn.__dict__[k] for k, v
-                in inspect.signature(test_fn.set_params).parameters.items()
+                in inspect.signature(test_fn.__init__).parameters.items()
                 if test_fn.__dict__[k] is not None
             }
         else:
@@ -181,7 +181,7 @@ class Suite:
             if isinstance(test_partial.giskard_test, GiskardTestMethod):
                 available_params = inspect.signature(test_partial.giskard_test.data).parameters.values()
             else:
-                available_params = inspect.signature(test_partial.giskard_test.set_params).parameters.values()
+                available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.values()
 
             for p in available_params:
                 if p.default == inspect.Signature.empty:
@@ -235,7 +235,7 @@ class Suite:
                          if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""]):
             return
 
-        self.add_test(GiskardTest.load(test_func.uuid, None, None).set_params(**suite_args))
+        self.add_test(GiskardTest.load(test_func.uuid, None, None).get_builder()(**suite_args))
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)

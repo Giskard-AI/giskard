@@ -31,9 +31,6 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(type(self), meta)
 
-    def set_params(self, params: ...):
-        return self
-
     def execute(self) -> Result:
         """
         Execute the test
@@ -85,6 +82,9 @@ class GiskardTest(Savable[Any, TestFunctionMeta]):
             assert f"Cannot find test function {uuid}"
         return meta
 
+    def get_builder(self):
+        return type(self)
+
 
 Function = Callable[..., Result]
 
@@ -94,7 +94,8 @@ Test = Union[GiskardTest, Function]
 class GiskardTestMethod(GiskardTest):
     params: ...
 
-    def __init__(self, test_function: Function):
+    def __init__(self, test_function: Function, **kwargs):
+        self.params = kwargs
         test_uuid = get_test_uuid(test_function)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
@@ -103,9 +104,8 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(test_function, meta)
 
-    def set_params(self, **kwargs):
-        self.params = kwargs
-        return self
-
     def execute(self) -> Result:
         return self.data(**self.params)
+
+    def get_builder(self):
+        return lambda **kwargs: GiskardTestMethod(self.data, **kwargs)
