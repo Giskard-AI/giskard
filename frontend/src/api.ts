@@ -308,6 +308,9 @@ export const api = {
     async getTestSuiteNewInputs(projectId: number, suiteId: number) {
         return apiV2.get<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/inputs`);
     },
+    async executeTestSuiteNew(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+        return apiV2.post<unknown, any>(`testing/project/${projectId}/suite-new/${suiteId}/execute`, inputs);
+    },
     async getInspection(inspectionId: number) {
         return apiV2.get<unknown, InspectionDTO>(`/inspection/${inspectionId}`);
     },

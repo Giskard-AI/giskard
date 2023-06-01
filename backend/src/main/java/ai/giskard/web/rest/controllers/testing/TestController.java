@@ -5,9 +5,11 @@ import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.*;
+import ai.giskard.repository.ml.TestExecutionRepository;
+import ai.giskard.repository.ml.TestRepository;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.CodeTestTemplateService;
-import ai.giskard.service.GRPCMapper;
+import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.TestService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
@@ -29,7 +31,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -45,10 +50,7 @@ public class TestController {
     private final CodeTestTemplateService codeTestTemplateService;
     private final MLWorkerService mlWorkerService;
     private final ProjectRepository projectRepository;
-    private final DatasetRepository datasetRepository;
-    private final ModelRepository modelRepository;
-    private final GRPCMapper grpcMapper;
-
+    private final TestArgumentService testArgumentService;
     private final GiskardMapper giskardMapper;
 
     @GetMapping("")
@@ -120,44 +122,15 @@ public class TestController {
         try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(request.getProjectId()).isUsingInternalWorker())) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = new HashMap<>();
-            response.getTestsMap().values().forEach((TestFunction fn) -> {
-                registry.put(fn.getId(), fn);
-            });
+            response.getTestsMap().values().forEach((TestFunction fn) -> registry.put(fn.getId(), fn));
+
             TestFunction test = registry.get(request.getTestId());
             Map<String, String> argumentTypes = Maps.transformValues(test.getArgumentsMap(), TestFunctionArgument::getType);
 
             RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder().setTestId(request.getTestId());
 
             for (Map.Entry<String, Object> entry : request.getInputs().entrySet()) {
-                String inputName = entry.getKey();
-                Object inputValue = entry.getValue();
-                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
-                argumentBuilder.setName(inputName);
-                switch (argumentTypes.get(inputName)) {
-                    case "Dataset" -> {
-                        String projectKey = datasetRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
-                        argumentBuilder.setDataset(
-                            ArtifactRef.newBuilder()
-                                .setProjectKey(projectKey)
-                                .setId((String) inputValue)
-                                .build()
-                        );
-                    }
-                    case "Model" -> {
-                        String projectKey = modelRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
-                        argumentBuilder.setModel(
-                            ArtifactRef.newBuilder()
-                                .setProjectKey(projectKey)
-                                .setId((String) inputValue)
-                                .build()
-                        );
-                    }
-                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
-                    case "string" -> argumentBuilder.setString((String) inputValue);
-                    default ->
-                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", argumentTypes.get(inputName)));
-                }
-                builder.addArguments(argumentBuilder.build());
+                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue()));
             }
 
             TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());

@@ -2,7 +2,7 @@
   <v-container fluid class="vc">
     <v-row>
       <v-col :align="'right'">
-        <RunTestSuiteModal :inputs="inputs" :project-id="projectId"/>
+        <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
       </v-col>
     </v-row>
     <v-row>
@@ -31,7 +31,7 @@
               <v-col cols="3">
                 <v-list three-line v-if="suite.tests">
                   <v-list-item-group v-model="selectedTest" color="primary" mandatory>
-                    <template v-for="(test, index) in suite.tests">
+                    <template v-for="(test) in suite.tests">
                       <v-divider/>
                       <v-list-item :value="test">
                         <v-list-item-content>

@@ -3,7 +3,10 @@ package ai.giskard.service;
 import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.*;
+import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -11,8 +14,13 @@ import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import ai.giskard.worker.RunTestSuiteRequest;
+import ai.giskard.worker.TestFunction;
+import ai.giskard.worker.TestRegistryResponse;
+import ai.giskard.worker.TestSuiteResultMessage;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.protobuf.Empty;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -21,6 +29,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 @Service
 @Transactional
@@ -36,7 +48,9 @@ public class TestSuiteService {
     private final CodeTestTemplateService testTemplateService;
     private final TestSuiteNewRepository testSuiteNewRepository;
     private final TestService testService;
-
+    private final MLWorkerService mlWorkerService;
+    private final ProjectRepository projectRepository;
+    private final TestArgumentService testArgumentService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -92,9 +106,7 @@ public class TestSuiteService {
         ProjectModel model = suite.getModel();
 
         if (model.getModelType() == ModelType.CLASSIFICATION) {
-            model.getClassificationLabels().stream().findFirst().ifPresent(label -> {
-                substitutions.putIfAbsent("CLASSIFICATION LABEL", label);
-            });
+            model.getClassificationLabels().stream().findFirst().ifPresent(label -> substitutions.putIfAbsent("CLASSIFICATION LABEL", label));
         }
         Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
         if (ds != null) {
@@ -148,5 +160,51 @@ public class TestSuiteService {
                 });
         });
         return res;
+    }
+
+
+    public Map<String, String> executeTestSuite(Long projectId, Long suiteId, Map<String, Object> inputs) {
+        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(projectId).isUsingInternalWorker())) {
+            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+            Map<String, TestFunction> registry = response.getTestsMap().values().stream()
+                .collect(Collectors.toMap(TestFunction::getId, Function.identity()));
+
+            TestSuiteNew testSuite = testSuiteNewRepository.findById(suiteId)
+                .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+
+            RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder()
+                .addAllTestId(testSuite.getTests().stream()
+                    .map(test -> String.valueOf(test.getTestId()))
+                    .toList());
+
+            Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
+
+            verifyAllInputProvided(inputs, testSuite, suiteInputs);
+
+            for (Map.Entry<String, Object> entry : inputs.entrySet()) {
+                builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(), entry.getValue()));
+            }
+
+            for (SuiteTest suiteTest : testSuite.getTests()) {
+                builder.addFixedArguments(testArgumentService.buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId())));
+            }
+
+            TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
+
+            // TODO
+            return null;
+        }
+    }
+
+    private static void verifyAllInputProvided(Map<String, Object> providedInputs,
+                                               TestSuiteNew testSuite,
+                                               Map<String, String> requiredInputs) {
+        List<String> missingInputs = requiredInputs.keySet().stream()
+            .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
+            .toList();
+        if (!missingInputs.isEmpty()) {
+            throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
+                .formatted(String.join(", ", missingInputs), testSuite.getName()));
+        }
     }
 }
