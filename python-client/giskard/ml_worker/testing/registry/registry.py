@@ -137,7 +137,9 @@ class GiskardTestRegistry:
             elif full_name.startswith('__main__'):
                 tags.append("pickle")
                 reference = cloudpickle.dumps(func)
+                print(reference)
                 full_name += hashlib.sha1(reference).hexdigest()
+                print(full_name)
             else:
                 tags.append("custom")
 
@@ -152,7 +154,7 @@ class GiskardTestRegistry:
             self._tests[func_uuid] = TestFunctionMeta(
                 uuid=func_uuid,
                 code=code,
-                name=name,
+                name=func.__name__,
                 display_name=name or func.__name__,
                 tags=tags,
                 module=func.__module__,
