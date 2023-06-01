@@ -7,6 +7,7 @@ from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
 
+
 class SKLearnModel(MLFlowBasedModel):
     @configured_validate_arguments
     def __init__(self,
