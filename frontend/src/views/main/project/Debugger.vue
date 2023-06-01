@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch } from "vue";
+import { computed, ref, onActivated, watch, onMounted } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRoute, useRouter } from 'vue-router/composables';
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
@@ -11,23 +12,24 @@ import ConfirmModal from './modals/ConfirmModal.vue';
 const route = useRoute();
 const router = useRouter();
 
+const debuggingSessionsStore = useDebuggingSessionsStore();
+
 interface Props {
   projectId: number;
 }
 
 const props = defineProps<Props>();
 const activeDebuggingSessionId = ref<number | null>(null);
-const debuggingSessions = ref<InspectionDTO[]>([]);
 const searchSession = ref("");
 const openInspectionWrapper = ref(false);
 
 const filteredSessions = computed(() => {
 
-  return orderByDate(debuggingSessions.value.filter((session) => {
+  return orderByDate(debuggingSessionsStore.debuggingSessions.filter((session) => {
     const dataset = session.dataset;
     const model = session.model;
-
     const search = searchSession.value.toLowerCase();
+
     return (
       session.id.toString().includes(search) ||
       session.name.toLowerCase().includes(search) ||
@@ -37,14 +39,10 @@ const filteredSessions = computed(() => {
       model.id.toString().includes(search)
     );
   }));
-
 })
 
-async function fetchDebuggingSessions() {
-  debuggingSessions.value = await api.getProjectInspections(props.projectId)
-}
-
 async function showPastSessions() {
+  debuggingSessionsStore.reload();
   resetSearchInput();
   activeDebuggingSessionId.value = null;
   openInspectionWrapper.value = false;
@@ -57,17 +55,18 @@ async function showPastSessions() {
 }
 
 async function createDebuggingSession(debuggingSession: InspectionDTO) {
+  debuggingSessionsStore.reload();
   activeDebuggingSessionId.value = debuggingSession.id;
   openInspectionWrapper.value = true;
   await openInspection(props.projectId.toString(), debuggingSession.id.toString());
 }
 
 async function renameSession(id: number, name: string) {
-  const currentSession = debuggingSessions.value.find(s => s.id === id);
+  const currentSession = debuggingSessionsStore.debuggingSessions.find(s => s.id === id);
   if (currentSession) {
     currentSession.name = name;
-    await api.updateInspectionName(id, {
-      name: name,
+    debuggingSessionsStore.updateDebuggingSessionName(id, {
+      name,
       datasetId: currentSession.dataset.id,
       modelId: currentSession.model.id
     });
@@ -94,7 +93,7 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
     on: {
       async confirm(close) {
         await api.deleteInspection(debuggingSession.id);
-        await fetchDebuggingSessions();
+        await debuggingSessionsStore.reload();
         close();
       }
     }
@@ -127,11 +126,14 @@ function handleRouteChanged() {
 
 watch(() => route.meta, () => handleRouteChanged());
 
+onMounted(() => {
+  debuggingSessionsStore.loadDebuggingSessions(props.projectId);
+})
+
 onActivated(async () => {
   if (activeDebuggingSessionId.value) {
     await openInspection(props.projectId.toString(), activeDebuggingSessionId.value.toString());
   }
-  fetchDebuggingSessions();
   handleRouteChanged();
 });
 
@@ -139,7 +141,7 @@ onActivated(async () => {
 
 <template>
   <div class="vertical-container">
-    <v-container fluid class="vc" v-if="debuggingSessions.length > 0">
+    <v-container fluid class="vc" v-if="debuggingSessionsStore.debuggingSessions.length > 0">
       <v-row>
         <v-col cols="4">
           <v-text-field v-show="!openInspectionWrapper" label="Search for a debugging session" append-icon="search" outlined v-model="searchSession"></v-text-field>
