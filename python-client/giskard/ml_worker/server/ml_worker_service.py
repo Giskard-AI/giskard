@@ -105,7 +105,7 @@ def map_dataset_process_function_meta(callable_type):
             ],
             cellLevel=test.cell_level,
             columnType=test.column_type,
-            processType=test.process_type
+            processType=test.process_type.name
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
