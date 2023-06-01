@@ -8,8 +8,7 @@ import java.util.List;
 @Data
 @UIModel
 public class SlicingResultDTO {
-
-    private int totalRow;
-    private int filteredRow;
-    private List<DatasetDescribeColumnDTO> describeColumns;
+    private String datasetId;
+    private int totalRows;
+    private List<Integer> filteredRows;
 }
