@@ -1,7 +1,7 @@
 from ..datasets import Dataset
 from ..models.base import BaseModel
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
-from .performance import GSK_LOSS_COLUMN
+from .common import GSK_LOSS_COLUMN
 
 from typing import Optional
 
