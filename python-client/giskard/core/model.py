@@ -43,12 +43,12 @@ class Model(ABC):
     id: uuid.UUID = None
 
     def __init__(
-        self,
-        model_type: Union[SupportedModelTypes, str],
-        name: str = None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
+            self,
+            model_type: Union[SupportedModelTypes, str],
+            name: str = None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
     ) -> None:
 
         if type(model_type) == str:
@@ -229,11 +229,27 @@ class Model(ABC):
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta = client.load_model_meta(project_key, model_id)
+            meta_response = client.load_model_meta(project_key, model_id)
+            # internal worker case, no token based http client
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
+            with open(Path(local_dir) / "giskard-model-meta.yaml") as f:
+                file_meta = yaml.load(f, Loader=yaml.Loader)
+                meta = ModelMeta(
+                    name=meta_response['name'],
+                    model_type=SupportedModelTypes[meta_response['modelType']],
+                    feature_names=meta_response['featureNames'],
+                    classification_labels=meta_response['classificationLabels'],
+                    classification_threshold=meta_response['threshold'],
+                    loader_module=file_meta['loader_module'],
+                    loader_class=file_meta['loader_class']
+                )
 
-        clazz = cls.determine_model_class(local_dir)
+        clazz = cls.determine_model_class(meta, local_dir)
 
-        return clazz.load(local_dir, **meta.__dict__)
+        constructor_params = meta.__dict__
+        del constructor_params['loader_module']
+        del constructor_params['loader_class']
+        return clazz.load(local_dir, **constructor_params)
 
     @classmethod
     def load(cls, local_dir, **kwargs):
