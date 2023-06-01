@@ -167,7 +167,6 @@ public interface GiskardMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
-    @Mapping(target = "testFunction", source = "testUuid")
     @Mapping(target = "executions", ignore = true)
     SuiteTest fromDTO(SuiteTestDTO dto);
 

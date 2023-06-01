@@ -146,10 +146,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runAdHocSlicing(
             self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.SlicingResultMessage:
-        sliceFunction = SliceFunction.load(request.slicingFunctionUuid, self.client, None)
+        slice_function = SliceFunction.load(request.slicingFunctionUuid, self.client, None)
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        result = dataset.slice(sliceFunction)
+        result = dataset.slice(slice_function)
         desc = result.df.describe()
 
         return ml_worker_pb2.SlicingResultMessage(
