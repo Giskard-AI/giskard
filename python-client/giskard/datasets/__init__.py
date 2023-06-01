@@ -23,7 +23,7 @@ def wrap_dataset(dataset: pd.DataFrame, name: Optional[str] = None, target: Opti
         name (Optional[str]):
             A string representing the name of the dataset (default None).
         target (Optional[str]):
-            the column name in df corresponding to the actual target variable (ground truth).
+            The column name in df corresponding to the actual target variable (ground truth).
         cat_columns (Optional[List[str]]):
             A list of strings representing the names of categorical columns (default None). If not provided,
             the categorical columns will be automatically inferred.
