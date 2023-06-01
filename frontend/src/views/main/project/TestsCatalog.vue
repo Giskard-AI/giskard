@@ -43,7 +43,7 @@
                     </v-col>
 
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="d-flex justify-space-between py-2 mb-4">
+                        <div class="d-flex justify-space-between py-2">
                             <span class="selected-test-name">{{ selected.displayName ?? selected.name }}</span>
                             <v-btn color="primaryLight" class="primaryLightBtn" @click="addToTestSuite">
                                 <v-icon left>mdi-plus</v-icon>
@@ -98,7 +98,7 @@
                             <div id="usage-group" class="py-4 mb-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-greater-than</v-icon>
-                                    <span class="group-title">How to use</span>
+                                    <span class="group-title">How to use with code</span>
                                 </div>
                                 <CodeSnippet class="mt-2" :codeContent="selectedTestUsage" :key="selected.name + '_usage'" :language="'python'"></CodeSnippet>
                             </div>
@@ -302,13 +302,7 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 }
 
 .selected-test-description {
-    font-family: 'Roboto Mono', monospace;
     white-space: break-spaces;
-    font-size: 0.925rem;
-    line-height: 1.5rem;
-    word-spacing: -0.125rem;
-    opacity: 0.875;
-    font-weight: 500;
 }
 
 .group-title {
