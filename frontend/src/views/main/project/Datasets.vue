@@ -199,7 +199,7 @@ onBeforeMount(async () => {
 });
 
 onMounted(async () => {
-  await generateApiAccessToken();
+  if (projectArtifactsStore.datasets.length === 0) await generateApiAccessToken();
 });
 </script>
 
