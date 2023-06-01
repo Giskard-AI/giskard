@@ -18,11 +18,12 @@ def validate_model(
 ):
     model_type = model.meta.model_type
 
-    loaded_model, loaded_data_prep_fn = validate_model_save_load(model)
+    loaded_model, loaded_data_prep_fn, loaded_model_postp_fn = validate_model_save_load(model)
     loader_class = getattr(importlib.import_module(model.meta.loader_module), model.meta.loader_class)
     model = loader_class(
         clf=loaded_model,
         data_preprocessing_function=loaded_data_prep_fn,
+        model_postprocessing_function=loaded_model_postp_fn,
         model_type=model.meta.model_type,
         feature_names=model.meta.feature_names,
         classification_labels=model.meta.classification_labels,
@@ -30,6 +31,9 @@ def validate_model(
     )
     if model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
+
+    if model.model_postprocessing_function is not None:
+        validate_model_postprocessing_function(model.model_postprocessing_function)
 
     validate_classification_labels(model.meta.classification_labels, model_type)
 
@@ -90,17 +94,25 @@ def validate_model_save_load(model: Model):
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save_to_local_dir(f)
             model.save_data_preprocessing_function(f)
+            model.save_model_postprocessing_function(f)
             loaded_model = loader_class.read_model_from_local_dir(f)
             loaded_data_prep_fn = loader_class.read_data_preprocessing_function_from_artifact(f)
-            return loaded_model, loaded_data_prep_fn
+            loaded_model_postp_fn = loader_class.read_model_postprocessing_function_from_artifact(f)
+            return loaded_model, loaded_data_prep_fn, loaded_model_postp_fn
     except Exception as e:
         raise ValueError("Failed to validate model saving and loading from local disk") from e
 
 
-def validate_data_preprocessing_function(prediction_function):
-    if not callable(prediction_function):
+def validate_data_preprocessing_function(f):
+    if not callable(f):
         raise ValueError(
-            f"Invalid prediction_function parameter: {prediction_function}. Please specify Python function."
+            f"Invalid data_preprocessing_function parameter: {f}. Please specify Python function."
+        )
+
+def validate_model_postprocessing_function(f):
+    if not callable(f):
+        raise ValueError(
+            f"Invalid model_postprocessing_function parameter: {f}. Please specify Python function."
         )
 
 

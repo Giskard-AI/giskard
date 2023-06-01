@@ -15,6 +15,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
 from torch import nn
+
+from giskard.core.model_validation import validate_model
+from giskard import PyTorchModel, Dataset
+
 class TextClassificationModel(nn.Module):
 
     def __init__(self, vocab_size, embed_dim, num_class):
@@ -153,11 +157,6 @@ def test_text_sentiment_ngrams_tutorial():
     accu_test = evaluate(test_dataloader)
     print('test accuracy {:8.3f}'.format(accu_test))
 
-    """httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
-
-    client = GiskardClient(gsk_url, token)
-    project = GiskardProject(client.session, "test-project", 1)"""
-
     ag_news_label = {1: "World",
                      2: "Sports",
                      3: "Business",
@@ -193,10 +192,7 @@ def test_text_sentiment_ngrams_tutorial():
     #TODO: It doesn't make sense to have 2 solutions for 2 notebooks.
 
 
-    #=== new implementation 
-
-    from giskard import PyTorchModel, Dataset
-
+    #=== new implementation
     feature_names = ['text']
     
     #--- one way of doing things (giskard.PyTorchModel wrapping)
@@ -223,17 +219,11 @@ def test_text_sentiment_ngrams_tutorial():
                             classification_labels = list(ag_news_label.values()))
 
     #--- Another way of doing things (taking clf and preprocessing_function)
-    """def preprocessing_function(df):
-        texts = list(df["text"])
-        modified_texts=[]
-        for text in texts:
-            modified_texts.append(torch.tensor(text_pipeline(text)))
-        return modified_texts"""
-
-    class CustomTorchDataset(torch_dataset):
+    class PandasToTorch(torch_dataset):
         def __init__(self, df: pd.DataFrame):
-            # try this instead:
+            # copy original df
             self.entries = df.copy()
+            # transformation step
             self.entries['text'] = df['text'].apply(text_pipeline)
 
         def __len__(self):
@@ -242,25 +232,26 @@ def test_text_sentiment_ngrams_tutorial():
         def __getitem__(self, idx):
             return torch.tensor(self.entries['text'].iloc[idx]), torch.tensor([0])
 
-    def preprocessing_function(df):
-        return CustomTorchDataset(df)
+    def my_softmax(x):
+        return special.softmax(x,axis=1)
 
     my_model = PyTorchModel(name="my_BertForSequenceClassification",
                             clf=model,
                             feature_names=feature_names,
                             model_type="classification",
                             classification_labels= list(ag_news_label.values()),
-                            data_preprocessing_function=preprocessing_function,
-                            output_processing_function=special.softmax)
+                            data_preprocessing_function=PandasToTorch,
+                            model_postprocessing_function=my_softmax)
 
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
     #print(my_model._raw_predict(preprocessing_function(df.head())))
-    #print(my_model.predict(my_test_dataset))
+    my_output = my_model.predict(my_test_dataset)
+    #print(my_wrapped_model.predict(my_test_dataset))
 
-    #validate_model(my_model, validate_ds=my_test_dataset)
-    #validate_model(my_model, validate_ds=my_test_dataset)"""
+    #validate_model(my_wrapped_model, validate_ds=my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)
 
 if __name__=="__main__":
     test_text_sentiment_ngrams_tutorial()

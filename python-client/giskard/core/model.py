@@ -38,13 +38,14 @@ class Model:
     meta: ModelMeta
     clf: PyFuncModel
     data_preprocessing_function: any
+    model_postprocessing_function: any
 
     def __init__(self,
                  clf,
                  model_type: Union[SupportedModelTypes, str],
                  name: str = None,
                  data_preprocessing_function=None,
-                 output_processing_function=None,
+                 model_postprocessing_function=None,
                  feature_names=None,
                  classification_threshold=0.5,
                  classification_labels=None,
@@ -52,7 +53,7 @@ class Model:
                  loader_class: str = 'Model') -> None:
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
-        self.output_processing_function = output_processing_function
+        self.model_postprocessing_function = model_postprocessing_function
 
         if type(model_type) == str:
             try:
@@ -87,6 +88,7 @@ class Model:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             info = self.save_to_local_dir(f)
             self.save_data_preprocessing_function(f)
+            self.save_model_postprocessing_function(f)
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
                 client.save_model_meta(project_key,
@@ -98,13 +100,26 @@ class Model:
 
     def save_data_preprocessing_function(self, path):
         if self.data_preprocessing_function:
-            with open(Path(path) / "giskard-data-prep.pkl", 'wb') as f:
+            with open(Path(path) / "giskard-data_preprocessing_function.pkl", 'wb') as f:
                 cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
+
+    def save_model_postprocessing_function(self, path):
+        if self.model_postprocessing_function:
+            with open(Path(path) / "giskard-model_postprocessing_function.pkl", 'wb') as f:
+                cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @staticmethod
     def read_data_preprocessing_function_from_artifact(local_path: str):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-prep.pkl"
+        file_path = local_path / "giskard-data_preprocessing_function.pkl"
+        if file_path.exists():
+            with open(file_path, 'rb') as f:
+                return cloudpickle.load(f)
+
+    @staticmethod
+    def read_model_postprocessing_function_from_artifact(local_path: str):
+        local_path = Path(local_path)
+        file_path = local_path / "giskard-model_postprocessing_function.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
@@ -191,6 +206,7 @@ class Model:
         return loader_class(
             clf=loader_class.read_model_from_local_dir(local_dir),
             data_preprocessing_function=loader_class.read_data_preprocessing_function_from_artifact(local_dir),
+            model_postprocessing_function=loader_class.read_model_postprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
 
@@ -200,10 +216,10 @@ class Model:
         return self._raw_predict(data)
 
     def _raw_predict(self, data):
-        if not self.output_processing_function:
+        if not self.model_postprocessing_function:
             return self.clf.predict(data)
         else:
-            return self.output_processing_function(self.clf.predict(data))
+            return self.model_postprocessing_function(self.clf.predict(data))
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:
         timer = Timer()
