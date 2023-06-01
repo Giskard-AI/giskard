@@ -41,13 +41,7 @@ def validate_column_types(ds: Dataset):
     column_types_set = set(ds.column_types.keys())
     column_types_set.discard(ds.target)
 
-    if column_types_set > df_columns_set:
-        unknown_columns = column_types_set - df_columns_set
-        raise ValueError(
-            f"The provided keys {list(unknown_columns)} in 'column_types' are not part of your dataset "
-            "'columns'. Please make sure that the column names in `column_types` refers to existing "
-            "columns in your dataset.")
-    elif column_types_set < df_columns_set:
+    if column_types_set < df_columns_set:
         missing_columns = df_columns_set - column_types_set
         raise ValueError(
             f"The following keys {list(missing_columns)} are missing from 'column_types'. "
