@@ -9,6 +9,7 @@ export interface TestSuiteExecutionDTO {
     executionDate: any /* TODO: Missing translation of java.util.Date */;
     id: number;
     inputs: {[key: string]: string};
+    logs?: string | null;
     message?: string | null;
     result?: TestResult | null;
     results?: SuiteTestExecutionDTO[] | null;
