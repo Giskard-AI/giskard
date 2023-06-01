@@ -19,7 +19,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
 ```
 
 :::
@@ -27,7 +27,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
 ```
 
 :::
@@ -85,7 +85,7 @@ the entire prediction process, starting from the **raw** `pandas.DataFrame` and 
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 
-👉 <b> How to <u>use</u> the [Model](../../reference/models/index.rst#giskard.Model) class? </b> (See [Using `Model`](#using-model))
+👉 <b> Option A: Use the default [Model](../../reference/models/index.rst#giskard.Model) class (See [Use `Model`](#use-model)) </b>
 
 The [Model](../../reference/models/index.rst#giskard.Model) class automatically infer the ML library of your `model` 
 object and provides suitable:
@@ -97,23 +97,23 @@ Our pre-defined serialization and prediction methods cover the `sklearn`, `catbo
 `tensorflow` and `huggingface` libraries. If none of these libraries are detected, `cloudpickle`
 is used as default for serialization, and you will be asked to provide your own prediction method.
 
-👉 <b> How to <u>extend</u> the [Model](../../reference/models/index.rst#giskard.Model) class? </b> (See [Extending `Model`](#using-model))
-  
-The user is invited to extend this class:
+👉 <b> Option B: Customize the [Model](../../reference/models/index.rst#giskard.Model) class (See [Customize `Model`](#customize-model)) </b>
+
+The user is invited to customise the [Model](../../reference/models/index.rst#giskard.Model) class:
 
 - You can choose to override only `model_predict` and take advantage of our internal serialization methods.
 
 - You can choose to also override `save_model` and `load_model` where you provide your own serialization
 of the `model` object.
 
-👉 <b> Check some tutorials </b>  (See [Model-specific tutorials](#model-specific-tutorials))
+👉 <b> Check some tutorials (See [Model-specific tutorials](#model-specific-tutorials)) </b>
 
 :::{important}
 - For model-specific usages, try our [tutorials](../../guides/tutorials/index.md).
 - For wrapping any python function in Giskard, try this [guide](../../guides/custom-wrapper/index.md).
 :::
 
-### Using [Model](../../reference/models/index.rst#giskard.Model)
+### Use [Model](../../reference/models/index.rst#giskard.Model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
@@ -184,9 +184,18 @@ wrapped_model = Model(
 ::::::
 :::::::
 
-### Extending [Model](../../reference/models/index.rst#giskard.Model)
+### Customize [Model](../../reference/models/index.rst#giskard.Model)
 In order to provide your own prediction function you can simply extend the [Model](../../reference/models/index.rst#giskard.Model) class
-as follows:
+by overriding the `model_predict` method.
+
+This method will take your pandas dataframe filtered according to the `feature_names` you provide, and outputs:
+
+- if classification: an array ($n\times m$) of probabilities corresponding to $n$ data entries (rows of pandas.DataFrame)
+    and $m$ classification_labels. In the case of binary classification, an array of ($n\times 1$) probabilities is also accepted.
+    Make sure that the probability provided is for the first label provided in classification_labels.
+- if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
+
+<b> Here's an example </b>:
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
