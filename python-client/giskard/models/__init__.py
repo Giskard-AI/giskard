@@ -30,8 +30,8 @@ def model(clf,
           classification_labels=None,
           **kwargs):
     for giskard_class, _base_libs in _libraries.items():
-        base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
         try:
+            base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
             if isinstance(clf, tuple(base_libs)):
                 return giskard_class(clf,
                                      model_type,
