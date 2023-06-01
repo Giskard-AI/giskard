@@ -109,6 +109,7 @@ const mainStore = useMainStore();
 
 async function submit(close) {
     const suiteTest: SuiteTestDTO = {
+        testFunction: test,
         testUuid: test.uuid,
         testInputs: chain(testInputs.value)
             .omitBy(({value}) => value === null
