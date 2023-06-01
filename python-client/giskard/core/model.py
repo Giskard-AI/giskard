@@ -110,11 +110,15 @@ class Model:
         else:
             raise ValueError('Unsupported model type')
 
-        info = self._new_mlflow_model_meta()
-        mlflow.sklearn.save_model(self.clf,
-                                  path=local_path,
-                                  pyfunc_predict_fn=pyfunc_predict_fn,
-                                  mlflow_model=info)
+        meta = self._new_mlflow_model_meta()
+        self._save_model_to_local_dir(local_path,
+                                      pyfunc_predict_fn=pyfunc_predict_fn,
+                                      mlflow_model=meta)
+        self._save_giskard_model_meta_to_local_dir(meta, local_path)
+
+        return meta
+
+    def _save_giskard_model_meta_to_local_dir(self, info, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
             yaml.dump(
                 {
@@ -129,7 +133,8 @@ class Model:
                     "size": get_size(local_path),
                 }, f, default_flow_style=False)
 
-        return info
+    def _save_model_to_local_dir(self, local_path, **kwargs):
+        return mlflow.sklearn.save_model(self.clf, path=local_path, **kwargs)
 
     @staticmethod
     def _new_mlflow_model_meta():
@@ -223,6 +228,10 @@ class Model:
             df = df[self.meta.feature_names]
             if column_types:
                 column_types = {k: v for k, v in column_types.items() if k in self.meta.feature_names}
+
+        for cname, ctype in column_types.items():
+            if cname not in df:
+                df[cname] = None
 
         if column_types:
             df = Dataset.cast_column_to_types(df, column_types)
