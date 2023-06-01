@@ -9,15 +9,15 @@ Prerequisites
 
 To scan your ML model for vulnerabilities, you need:
 
-- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, see [here](docs/guide/wrap_dataset/index.md).
+- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, see `here <../wrap_dataset/index>`_.
 - A **model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or even
-  any set of *Python* functions. To wrap your model, see [here](docs/guide/wrap_model/index.md).
+  any set of *Python* functions. To wrap your model, see `here <../wrap_model/index>`_.
 
 
 Scan your model to detect vulnerabilities
 ^^^^^^^^^
 
-After having wrapped your [model](docs/guide/wrap_model/index.md) & [dataset](docs/guide/wrap_dataset/index.md), ou can scan your model for vulnerabilities using:
+After having wrapped your `model <../wrap_model/index>`_ & `dataset <../wrap_dataset/index>`_, ou can scan your model for vulnerabilities using:
 
 .. code-block:: python
 
