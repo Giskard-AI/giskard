@@ -36,7 +36,7 @@ nearbykeys = {
 }
 
 
-@transformation_function(name="Keyboard typo")
+@transformation_function(name="Keyboard typo", tags=['text'])
 def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0.1) -> pd.Series:
     """
     Generate a random typo from words of the text of 'column_name'
@@ -61,7 +61,7 @@ def keyboard_typo_transformation(x: pd.Series, column_name: str, rate: float = 0
     return x
 
 
-@transformation_function(name="To uppercase")
+@transformation_function(name="To uppercase", tags=['text'])
 def uppercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
     """
     Transform the text of the column 'column_name' to uppercase
@@ -70,7 +70,7 @@ def uppercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
     return x
 
 
-@transformation_function(name="To lowercase")
+@transformation_function(name="To lowercase", tags=['text'])
 def lowercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
     """
     Transform the text of the column 'column_name' to lowercase
@@ -79,7 +79,7 @@ def lowercase_transformation(x: pd.Series, column_name: str) -> pd.Series:
     return x
 
 
-@transformation_function(name="Strip punctuation")
+@transformation_function(name="Strip punctuation", tags=['text'])
 def strip_punctuation(x: pd.Series, column_name: str):
     """
     Remove all punctuation symbols (e.g., ., !, ?) from the text of the column 'column_name'
@@ -88,7 +88,7 @@ def strip_punctuation(x: pd.Series, column_name: str):
     return x
 
 
-@transformation_function(name="Change writing style", row_level=False)
+@transformation_function(name="Change writing style", row_level=False, tags=['text'])
 def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: str,
                          OPENAI_API_KEY: str) -> pd.DataFrame:
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY

@@ -3,7 +3,7 @@ import pandas as pd
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 
 
-@slicing_function(name='Short comment')
+@slicing_function(name='Short comment', tags=["text"])
 def short_comment_slicing_fn(x: pd.Series, column_name: str, max_words: int = 5) -> bool:
     """
     Filter the rows where the specified 'column_name' contains a short comment, defined as one with at most 'max_words'.
@@ -11,7 +11,7 @@ def short_comment_slicing_fn(x: pd.Series, column_name: str, max_words: int = 5)
     return len(x[column_name].split()) <= max_words
 
 
-@slicing_function(name="Keyword lookup")
+@slicing_function(name="Keyword lookup", tags=["text"])
 def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keywords: list[str]) -> bool:
     """
     Filter the rows where the specified 'column_name' contains at least one of the specified 'keywords'.
@@ -19,7 +19,7 @@ def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keywords: list[str
     return any(word in x[column_name].lower() for word in keywords)
 
 
-@slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment"])
+@slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment", "text"])
 def positive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
     """
     Filter the rows where the specified 'column_name' has a positive sentiment, as determined by a pre-trained sentiment analysis model.
@@ -27,7 +27,7 @@ def positive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: fl
     return _sentiment_analysis(x, column_name, threshold, None, "POSITIVE")
 
 
-@slicing_function(name="Offensive sentiment", row_level=False, tags=["sentiment"])
+@slicing_function(name="Offensive sentiment", row_level=False, tags=["sentiment", "text"])
 def offensive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
     """
     Filter the rows where the specified 'column_name' has a offensive sentiment, as determined by a pre-trained sentiment analysis model.
@@ -35,7 +35,7 @@ def offensive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: f
     return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-offensive", "offensive")
 
 
-@slicing_function(name="Irony sentiment", row_level=False, tags=["sentiment"])
+@slicing_function(name="Irony sentiment", row_level=False, tags=["sentiment", "text"])
 def irony_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
     """
     Filter the rows where the specified 'column_name' has a ironic sentiment, as determined by a pre-trained sentiment analysis model.
@@ -43,7 +43,7 @@ def irony_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float
     return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-irony", "irony")
 
 
-@slicing_function(name="Hate sentiment", row_level=False, tags=["sentiment"])
+@slicing_function(name="Hate sentiment", row_level=False, tags=["sentiment", "text"])
 def hate_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
     """
     Filter the rows where the specified 'column_name' has a hateful sentiment, as determined by a pre-trained sentiment analysis model.
@@ -51,7 +51,7 @@ def hate_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float 
     return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-hate", "hate")
 
 
-@slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment"])
+@slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment", "text"])
 def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, threshold: float = 0.9) -> pd.DataFrame:
     """
     Filter the rows where the specified 'column_name' has an emotion matching 'emotion', as determined by a pre-trained sentiment analysis model.
@@ -69,7 +69,7 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
 
 
-@slicing_function(name='Outlier Filter')
+@slicing_function(name='Outlier Filter', tags=['number'])
 def outlier_filter(x: pd.Series, column_name: str, lower_bound: float, upper_bound: float) -> bool:
     """
     Filter rows where the specified column values fall outside the specified range.
