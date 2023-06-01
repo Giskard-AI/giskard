@@ -278,20 +278,20 @@ class BaseModel(ABC):
 
 class WrapperModel(BaseModel, ABC):
     """
-    A subclass of a BaseModel that wraps an existing model object (clf) and uses it to make inference
+    A subclass of a BaseModel that wraps an existing model object (model) and uses it to make inference
     This class introduces a `data_preprocessing_function` which can be used
     to preprocess incoming data before it's passed
     to the underlying model
     """
 
-    clf: Any
+    model: Any
     data_preprocessing_function: Callable[[pd.DataFrame], Any]
     model_postprocessing_function: Callable[[Any], Any]
 
     @configured_validate_arguments
     def __init__(
             self,
-            clf: Any,
+            model: Any,
             model_type: ModelType,
             data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
             model_postprocessing_function: Callable[[Any], Any] = None,
@@ -301,7 +301,7 @@ class WrapperModel(BaseModel, ABC):
             classification_labels: Optional[Iterable] = None,
     ) -> None:
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
-        self.clf = clf
+        self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
 
@@ -335,7 +335,7 @@ class WrapperModel(BaseModel, ABC):
         if self.data_preprocessing_function:
             df = self.data_preprocessing_function(df)
 
-        raw_prediction = self.clf_predict(df)
+        raw_prediction = self.model_predict(df)
         raw_prediction = self._postprocess(raw_prediction)
 
         return raw_prediction
@@ -354,7 +354,7 @@ class WrapperModel(BaseModel, ABC):
         # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
         if raw_predictions.ndim > 2:
             logger.warning(
-                f"\nThe output of your clf has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
+                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
                 "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
                 exc_info=True,
             )
@@ -363,7 +363,7 @@ class WrapperModel(BaseModel, ABC):
 
             if raw_predictions.ndim > 2:
                 raise ValueError(
-                    f"The output of your clf has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes)."
+                    f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes)."
                 )
 
         # E.g. for binary classification, prediction should be of the form `(p, 1 - p)`.
@@ -384,14 +384,14 @@ class WrapperModel(BaseModel, ABC):
         # For classification models, the last dimension must be equal to the number of classes
         if raw_predictions.shape[-1] != len(self.meta.classification_labels):
             raise ValueError(
-                f"The output of your clf has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
+                f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
                 f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
             )
 
         return raw_predictions
 
     @abstractmethod
-    def clf_predict(self, df):
+    def model_predict(self, df):
         ...
 
     def save(self, local_path: Union[str, Path]) -> None:
@@ -414,11 +414,11 @@ class WrapperModel(BaseModel, ABC):
     def load(cls, local_dir, **kwargs):
         kwargs["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         kwargs["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
-        return cls(clf=cls.load_clf(local_dir), **kwargs)
+        return cls(model=cls.load_model(local_dir), **kwargs)
 
     @classmethod
     @abstractmethod
-    def load_clf(cls, local_dir):
+    def load_model(cls, local_dir):
         ...
 
     @classmethod
