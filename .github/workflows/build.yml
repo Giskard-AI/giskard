@@ -109,7 +109,7 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build
-        run: ./gradlew build :python-client:package jacocoTestReport --info --parallel
+        run: ./gradlew build test integrationTest :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
