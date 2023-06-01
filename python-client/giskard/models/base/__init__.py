@@ -367,34 +367,23 @@ class BaseModel(ABC):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f, open(
-                    Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
-                saved_meta = yaml.load(f, Loader=yaml.Loader)
+            with open(Path(local_dir) / META_FILENAME) as f:
+                file_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
-                    name=saved_meta["name"],
-                    model_type=SupportedModelTypes[saved_meta["model_type"]],
-                    feature_names=saved_meta["feature_names"],
-                    classification_labels=saved_meta["classification_labels"],
-                    classification_threshold=saved_meta["threshold"],
-                    loader_module=saved_meta["loader_module"],
-                    loader_class=saved_meta["loader_class"],
+                    name=file_meta["name"],
+                    model_type=SupportedModelTypes[file_meta["model_type"]],
+                    feature_names=file_meta["feature_names"],
+                    classification_labels=file_meta["classification_labels"],
+                    classification_threshold=file_meta["threshold"],
+                    loader_module=file_meta["loader_module"],
+                    loader_class=file_meta["loader_class"],
                 )
-
-                try:
-                    prediction_cache = pd.read_csv(
-                        ZstdDecompressor().stream_reader(pred_f),
-                        keep_default_na=False,
-                        na_values=["_GSK_NA_"],
-                    )
-                except EmptyDataError:
-                    prediction_cache = None
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f, open(
-                    Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
+            with open(Path(local_dir) / META_FILENAME) as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(
                     name=meta_response["name"],
@@ -406,14 +395,15 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
-                try:
-                    prediction_cache = pd.read_csv(
-                        ZstdDecompressor().stream_reader(pred_f),
-                        keep_default_na=False,
-                        na_values=["_GSK_NA_"],
-                    )
-                except EmptyDataError:
-                    prediction_cache = None
+        with open(Path(local_dir) / CACHE_CSV_FILENAME, "rb") as pred_f:
+            try:
+                prediction_cache = pd.read_csv(
+                    ZstdDecompressor().stream_reader(pred_f),
+                    keep_default_na=False,
+                    na_values=["_GSK_NA_"],
+                )
+            except EmptyDataError:
+                prediction_cache = None
 
         clazz = cls.determine_model_class(meta, local_dir)
 
