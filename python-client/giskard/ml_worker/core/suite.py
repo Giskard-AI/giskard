@@ -8,7 +8,10 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from giskard.ml_worker.testing.newtestlib.decorated_funcs import GiskardTest
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod
+from giskard.ml_worker.testing.registry.registry import create_test_function_id
+from ml_worker_pb2 import SingleTestResult
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,7 @@ class Suite:
         self.name = name
 
     def run(self, **suite_run_args):
-        res = []
+        res: Dict[str, Union[bool, SingleTestResult]] = dict()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -61,9 +64,16 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(test_partial.giskard_test.set_params(**test_params).execute())
+            res[f'{test_partial.giskard_test.meta.module}.{test_partial.giskard_test.meta.name}'] = test_partial.giskard_test.set_params(**test_params).execute()
 
-        return single_binary_result(res), res
+        result = single_binary_result(list(res.values()))
+
+        logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
+        logger.info(f"result: {'success' if result else 'failed'}")
+        for (test_name, r) in res.items():
+            logger.info(f"{test_name}: {format_test_result(r)}")
+
+        return result, list(res.values())
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -148,3 +158,8 @@ class Suite:
         return res
 
 
+def format_test_result(result: Union[bool, SingleTestResult]) -> str:
+    if isinstance(result, SingleTestResult):
+        return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
+    else:
+        return 'passed' if result else 'failed'
