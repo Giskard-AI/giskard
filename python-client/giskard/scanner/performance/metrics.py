@@ -37,6 +37,14 @@ class Accuracy(ClassificationPerformanceMetric):
         return sklearn.metrics.accuracy_score(y_true, y_pred)
 
 
+class BalancedAccuracy(ClassificationPerformanceMetric):
+    name = "Balanced Accuracy"
+    greater_is_better = True
+
+    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+        return sklearn.metrics.balanced_accuracy_score(y_true, y_pred)
+
+
 class SklearnClassificationScoreMixin:
     _sklearn_metric: str
 
@@ -51,7 +59,7 @@ class SklearnClassificationScoreMixin:
                 average="binary",
             )
 
-        return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, average="macro")
+        return metric_fn(y_true, y_pred, labels=model.meta.classification_labels, average="micro")
 
 
 class F1Score(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
@@ -72,10 +80,20 @@ class Recall(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     _sklearn_metric = "recall_score"
 
 
-class AUC(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
-    name = "Recall"
+class AUC(PerformanceMetric):
+    name = "ROC AUC"
     greater_is_better = True
-    _sklearn_metric = "roc_auc_score"
+
+    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+        y_true = dataset.df[dataset.target]
+        y_score = model.predict(dataset).raw
+
+        return sklearn.metrics.roc_auc_score(
+            y_true,
+            y_score,
+            multi_class="ovo",
+            labels=model.meta.classification_labels,
+        )
 
 
 class RegressionPerformanceMetric(PerformanceMetric):
@@ -119,6 +137,7 @@ _metrics_register = {
     "precision": Precision,
     "recall": Recall,
     "auc": AUC,
+    "balanced_accuracy": BalancedAccuracy,
     "mse": MeanSquaredError,
     "mae": MeanAbsoluteError,
 }

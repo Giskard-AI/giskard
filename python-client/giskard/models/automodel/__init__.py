@@ -2,11 +2,14 @@ from abc import ABC
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
+import logging
 
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
+
+logger = logging.getLogger(__name__)
 
 
 class Model(CloudpickleBasedModel, ABC):
@@ -100,27 +103,26 @@ class Model(CloudpickleBasedModel, ABC):
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
             is_overriden = cls.__name__ != 'Model'  # TODO: Improve this
             if is_overriden:
+                if not giskard_cls:
+                    giskard_cls = CloudpickleBasedModel
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.save_model = giskard_cls.save_model
                 possibly_overriden_cls.load_model = giskard_cls.load_model
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
-                print("Your "+input_type+" is successfully wrapped by Giskard's '"
-                      + str(giskard_cls.__name__) + "' wrapper class.")
+                logger.info("Your " + input_type + " is successfully wrapped by Giskard's '"
+                            + str(giskard_cls.__name__) + "' wrapper class.")
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
                 raise NotImplementedError(
-                    'We could not infer your model library. You need to define a subclass of Model where you override'
+                    'We could not infer your model library. You have two options:'
+                    '\n- Pass a prediction_function to the Model class '
+                    '(we will try to serialize it with "cloudpickle").'
+                    '\n- Extend the Model class and override '
                     'the abstract "model_predict" method. Upon upload to the Giskard server, we will try to serialise'
                     'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
                     '"load_model" with your own serialization methods.'
-                    '\nWe currently only support callable functions OR model objects from:'
-                    '\n- sklearn'
-                    '\n- catboost'
-                    '\n- pytorch'
-                    '\n- tensorflow'
-                    '\n- huggingface'
                     '\nWe recommend that you follow our documentation page: '
                     'https://giskard.readthedocs.io/en/latest/getting-started/scan'
                 )

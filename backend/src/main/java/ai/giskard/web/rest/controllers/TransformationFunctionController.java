@@ -28,6 +28,7 @@ public class TransformationFunctionController {
     }
 
     @PutMapping("/transformations/{uuid}")
+    @Transactional
     public TransformationFunctionDTO updateTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid,
                                                                   @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
         return transformationFunctionService.save(transformationFunction);

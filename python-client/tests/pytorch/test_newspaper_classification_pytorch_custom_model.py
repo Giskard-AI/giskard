@@ -8,7 +8,8 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 import tests.utils
-from giskard import PyTorchModel, Dataset, Model
+from giskard import Dataset, Model
+from giskard.models.pytorch import PyTorchModel
 
 
 class MyPyTorchModel(PyTorchModel):
