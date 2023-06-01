@@ -1,4 +1,4 @@
-"""Heuristic tests"""
+"""Statistical tests"""
 from typing import Callable
 
 import numpy as np
@@ -7,10 +7,13 @@ import pandas as pd
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.utils import validate_classification_label
+
 from giskard.models.base import BaseModel
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
+@validate_classification_label
 def test_right_label(
         actual_slice: Dataset,
         model: BaseModel,
@@ -62,6 +65,7 @@ def test_right_label(
 
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
+@validate_classification_label
 def test_output_in_range(
     actual_slice: Dataset,
     model: BaseModel,
@@ -141,6 +145,7 @@ def test_output_in_range(
 
 
 # TODO: support type in the future
+@validate_classification_label
 def test_disparate_impact(
         gsk_dataset: Dataset,
         protected_slice: Callable[[pd.DataFrame], pd.DataFrame],

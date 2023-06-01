@@ -5,8 +5,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.utils import apply_perturbation_inplace
+from giskard.ml_worker.testing.utils import Direction, apply_perturbation_inplace, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 
@@ -125,9 +124,8 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
 
     return p_value
 
-
+@validate_classification_label
 def _test_metamorphic(
-
         direction: Direction,
         actual_slice: Dataset,
         model,
@@ -327,7 +325,7 @@ def test_metamorphic_decreasing(
         threshold=threshold,
     )
 
-
+@validate_classification_label
 def _test_metamorphic_t_test(
 
         direction: Direction,
@@ -516,7 +514,7 @@ def test_metamorphic_invariance_t_test(
         critical_quantile=critical_quantile,
     )
 
-
+@validate_classification_label
 def _test_metamorphic_wilcoxon(
         direction: Direction,
         actual_slice: Dataset,
