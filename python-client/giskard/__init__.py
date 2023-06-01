@@ -32,7 +32,6 @@ from giskard.models import wrap_model, model_from_catboost, model_from_huggingfa
     model_from_pytorch, model_from_sklearn
 from giskard.models.base import WrapperModel, CustomModel, MLFlowBasedModel, BaseModel, CloudpickleBasedModel
 from giskard.models.automodel import Model
-
 from .scanner import scan
 
 configure_logging()
@@ -59,6 +58,7 @@ __all__ = [
     'GiskardClient',
     'test',
     'wrap_model',
+    'Model',
     'model_from_catboost',
     'model_from_sklearn',
     'model_from_pytorch',
@@ -69,7 +69,6 @@ __all__ = [
     'MLFlowBasedModel',
     'CloudpickleBasedModel',
     'CustomModel',
-    'Model',
     'Suite',
     'test_drift_psi',
     'test_drift_chi_square',
