@@ -113,11 +113,18 @@ def _calculate_text_metadata(feature_data: pd.Series):
     return pd.DataFrame(
         {
             "text_length": feature_data.map(len),
-            "avg_word_length": feature_data.map(lambda x: np.mean([len(w) for w in x.split()])),
+            "avg_word_length": feature_data.map(_avg_word_length),
             "charset": pd.Categorical(feature_data.map(lambda x: chardet.detect(x.encode())["encoding"])),
         },
         index=feature_data.index,
     )
+
+
+def _avg_word_length(text):
+    words = text.split()
+    if len(words) == 0:
+        return 0.0
+    return np.mean([len(w) for w in words])
 
 
 _cache = {}
