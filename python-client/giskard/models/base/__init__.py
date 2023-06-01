@@ -14,6 +14,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
+import mlflow
 from pydantic import BaseModel
 
 from giskard.client.giskard_client import GiskardClient
@@ -23,11 +24,6 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
-
-try:
-    import mlflow
-except ImportError as e:
-    raise ImportError("Please install it via 'pip install mlflow-skinny'") from e
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 

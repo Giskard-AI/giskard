@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 import yaml
 
+import mlflow
 from giskard.core.core import ModelType
 from giskard.models.base import MLFlowBasedModel
 from ..utils import map_to_tuples
 
 try:
-    import mlflow
     import torch
     from torch.utils.data import DataLoader
     from torch.utils.data import Dataset as torch_dataset
