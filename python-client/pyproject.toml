@@ -136,6 +136,7 @@ dependencies = [
     "setuptools>=39.1.0,<68.0.0",
     "pycryptodome>=3.6.1",
     "pandas>=1.3.4,<2",
+    "docker>=6.0.0",
 ]
 
 [tool.black]
