@@ -108,9 +108,7 @@
       </v-col>
     </v-row>
 
-    <!-- <v-divider class="my-6"></v-divider> -->
     <div class="py-8 d-flex">
-      <!-- <h2 class="font-weight-light secondary--text py-1">Data Objects</h2> -->
       <div class="d-flex justify-end align-center flex-grow-1">
         <v-btn tile small color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
           Upload with API
