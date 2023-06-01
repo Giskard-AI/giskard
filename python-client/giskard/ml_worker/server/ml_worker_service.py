@@ -413,10 +413,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
-    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
-                        context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
-        # TODO: rename TestRegistryResponse to RegistryResponse, same for function, function argument, ...
-        return ml_worker_pb2.TestRegistryResponse(tests={
+    def getCatalog(self, request: google.protobuf.empty_pb2.Empty,
+                   context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
+        return ml_worker_pb2.CatalogResponse(tests={
             test.uuid: ml_worker_pb2.TestFunction(
                 uuid=test.uuid,
                 name=test.name,
@@ -434,9 +433,24 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         argOrder=a.argOrder
                     ) for a
                     in test.args.values()
-                ] if isinstance(test, TestFunctionMeta) else None
+                ] if isinstance(test, TestFunctionMeta) else None,
+                type=test.type
             )
             for test in tests_registry.get_all().values()
+            if test.type == 'TEST'
+        }, slices={
+            test.uuid: ml_worker_pb2.SliceFunction(
+                uuid=test.uuid,
+                name=test.name,
+                module=test.module,
+                doc=test.doc,
+                code=test.code,
+                moduleDoc=test.module_doc,
+                tags=test.tags,
+                type=test.type
+            )
+            for test in tests_registry.get_all().values()
+            if test.type == 'SLICE'
         })
 
     @staticmethod
