@@ -101,13 +101,17 @@ public interface GiskardMapper {
     @Mapping(source = "columnTypes", target = "columnTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
+
     UserDTO userToUserDTO(User user);
 
     default List<UserDTO> usersToUserDTOs(List<User> dtos) {
         return dtos.stream().filter(Objects::nonNull).map(this::userToUserDTO).toList();
     }
 
+
     InspectionDTO toDTO(Inspection inspection);
+
+    List<InspectionDTO> inspectionsToInspectionDTOs(List<Inspection> inspections);
 
     AdminUserDTO userToAdminUserDTO(User user);
 
