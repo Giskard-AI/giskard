@@ -13,7 +13,7 @@ import pandas as pd
 from dateutil import parser
 from scipy import special
 from transformers import BertTokenizer, BertForSequenceClassification
-from giskard import HuggingFaceModel, wrap_dataset
+from giskard import Model, wrap_dataset
 ```
 
 ## Wrap dataset
@@ -136,9 +136,7 @@ def preprocessing_func(test_dataset):
     X_test_tokenized = tokenizer(X_test, padding=True, truncation=True, max_length=512, return_tensors="pt")
     return X_test_tokenized
 
-class tiny_bert_HuggingFaceModel(HuggingFaceModel):
-    should_save_model_class = True
-
+class MyHuggingFaceModel(Model):
     def model_predict(self, data):
         with torch.no_grad():
             predictions = self.model(**data).logits
@@ -146,7 +144,7 @@ class tiny_bert_HuggingFaceModel(HuggingFaceModel):
 
 ```
 ```python
-wrapped_model = tiny_bert_HuggingFaceModel(name=model_name,
+wrapped_model = MyHuggingFaceModel(name=model_name,
                                            model=model,
                                            feature_names=['Content'],
                                            model_type="classification",

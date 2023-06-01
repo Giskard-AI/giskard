@@ -18,7 +18,7 @@ low_stat_threshold = 100
 
 @configured_validate_arguments
 def wrap_dataset(
-    dataset: pd.DataFrame,
+    df: pd.DataFrame,
     name: Optional[str] = None,
     target: Optional[str] = None,
     cat_columns: Optional[List[str]] = None,
@@ -28,7 +28,7 @@ def wrap_dataset(
     A function that wraps a Pandas DataFrame into a Giskard Dataset object, with optional validation of input arguments.
 
     Args:
-        dataset (pd.DataFrame):
+        df (pd.DataFrame):
             A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
             production data). Some important remarks:
 
@@ -61,4 +61,4 @@ def wrap_dataset(
     """
 
     print("Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.")
-    return Dataset(dataset, name, target, cat_columns, column_types)
+    return Dataset(df, name, target, cat_columns, column_types)
