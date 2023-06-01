@@ -40,6 +40,10 @@ body {
     display: none;
 }
 
+.nboutput {
+    display: none !important;
+}
+
 .nbinput > .input_area {
     border: none !important;
 }
