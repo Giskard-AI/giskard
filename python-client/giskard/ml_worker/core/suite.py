@@ -8,9 +8,9 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.registry import create_test_function_id
 
 logger = logging.getLogger(__name__)
