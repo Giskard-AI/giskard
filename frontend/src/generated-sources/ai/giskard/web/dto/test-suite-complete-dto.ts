@@ -1,4 +1,3 @@
-import type {CatalogDTO} from './catalog-dto';
 import type {DatasetDTO} from './ml/dataset-dto';
 import type {ModelDTO} from './ml/model-dto';
 import type {RequiredInputDTO} from './required-input-dto';
@@ -13,6 +12,5 @@ export interface TestSuiteCompleteDTO {
     executions: TestSuiteExecutionDTO[];
     inputs: {[key: string]: RequiredInputDTO};
     models: ModelDTO[];
-    registry: CatalogDTO;
     suite: TestSuiteDTO;
 }
