@@ -68,6 +68,11 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Run Python commands
+        run: |
+          python -m pip install virtualenv -U --upgrade pip
+          echo "Python ($(which python)) packages:\n $(python -m pip list)"
+
       - name: Cache SonarQube packages
         uses: actions/cache@v3
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -81,6 +86,13 @@ jobs:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
+
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        with:
+          path: $HOME/.giskard
+          key: giskard-test-resources
+          restore-keys: giskard-test-resources
 
       - name: Cache Python dependencies
         uses: actions/cache@v3
