@@ -30,6 +30,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.FeedbackMinimalDTO' : 'FeedbackMinimalDTO',
     'ai.giskard.web.dto.FeedbackReplyDTO' : 'FeedbackReplyDTO',
     'ai.giskard.web.dto.FilterDatasetDTO' : 'FilterDatasetDTO',
+    'ai.giskard.web.dto.GenerateTestSuiteDTO' : 'GenerateTestSuiteDTO',
+    'ai.giskard.web.dto.GenerateTestSuiteInputDTO' : 'GenerateTestSuiteInputDTO',
     'ai.giskard.web.dto.InspectionCreateDTO' : 'InspectionCreateDTO',
     'ai.giskard.web.dto.JobDTO' : 'JobDTO',
     'ai.giskard.web.dto.JWTToken' : 'JWTToken',
@@ -119,6 +121,8 @@ export * from './ai/giskard/web/dto/feedback-dto';
 export * from './ai/giskard/web/dto/feedback-minimal-dto';
 export * from './ai/giskard/web/dto/feedback-reply-dto';
 export * from './ai/giskard/web/dto/filter-dataset-dto';
+export * from './ai/giskard/web/dto/generate-test-suite-dto';
+export * from './ai/giskard/web/dto/generate-test-suite-input-dto';
 export * from './ai/giskard/web/dto/inspection-create-dto';
 export * from './ai/giskard/web/dto/job-dto';
 export * from './ai/giskard/web/dto/jwttoken';

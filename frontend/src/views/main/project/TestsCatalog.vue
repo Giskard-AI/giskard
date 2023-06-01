@@ -10,7 +10,7 @@
                   <v-divider/>
                   <v-list-item :value="test">
                     <v-list-item-content>
-                      <v-list-item-title v-text="test.displayName ?? test.name" class="test-title"></v-list-item-title>
+                      <v-list-item-title v-text="test.name" class="test-title"></v-list-item-title>
 
                       <v-list-item-subtitle v-if="test.tags">
                         <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
@@ -27,7 +27,7 @@
           <v-col cols="8" v-if="selected" class="vc fill-height">
             <div class="d-flex justify-space-between">
               <span class="text-h5">{{ selected.displayName ?? selected.name }}</span>
-              <v-btn small outlined tile class="primary" color="white">
+              <v-btn small outlined tile class="primary" color="white" @click="addToTestSuite">
                 <v-icon dense class="pr-2">mdi-plus</v-icon>
                 Add to test suite
               </v-btn>
@@ -133,6 +133,9 @@ import {
   TestFunctionArgumentDTO,
   TestFunctionDTO
 } from "@/generated-sources";
+import {TestCatalogDTO, TestDefinitionDTO, TestExecutionResultDTO, TestFunctionArgumentDTO} from "@/generated-sources";
+import {$vfm} from 'vue-final-modal';
+import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -212,6 +215,16 @@ onActivated(async () => {
     selected.value = testFunctions.value[0];
   }
 });
+
+function addToTestSuite() {
+  $vfm.show({
+    component: AddTestToSuite,
+    bind: {
+      projectId: props.projectId,
+      test: selected.value
+    }
+  });
+}
 
 </script>
 

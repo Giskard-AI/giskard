@@ -1,13 +1,13 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.TestFunction;
+import ai.giskard.worker.GeneratedTest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -26,7 +26,6 @@ public class SuiteTest {
 
     @ManyToOne
     @JoinColumn(name = "test_suite")
-    @NotNull
     private TestSuiteNew suite;
 
     @OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -35,4 +34,12 @@ public class SuiteTest {
     @OneToMany(mappedBy = "test", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
+
+    public SuiteTest(TestSuiteNew suite, GeneratedTest test) {
+        this.testUuid = test.getTestUuidd();
+        this.suite = suite;
+        this.testInputs.addAll(test.getInputsList().stream()
+            .map(testInput -> new TestInput(this, testInput))
+            .toList());
+    }
 }
