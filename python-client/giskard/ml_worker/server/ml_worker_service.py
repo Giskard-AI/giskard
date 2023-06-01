@@ -268,6 +268,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 name=test.name,
                 module=test.module,
                 doc=test.doc,
+                code=test.code,
                 module_doc=test.module_doc,
                 tags=test.tags,
                 arguments={

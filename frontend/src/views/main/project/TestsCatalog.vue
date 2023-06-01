@@ -84,9 +84,28 @@
                     </v-btn>
                   </v-col>
                 </v-row>
-                <v-row style="height: 150px">
-                  <v-col v-if="testResult">
+                <v-row style="height: 150px" v-if="testResult">
+                  <v-col>
                     <TestExecutionResultBadge :result="testResult"/>
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-expansion-panels flat @change="resizeEditor">
+                      <v-expansion-panel>
+                        <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
+                        <v-expansion-panel-content class="pa-0" >
+                          <MonacoEditor
+                              ref="editor"
+                              v-model='selected.code'
+                              class='editor'
+                              language='python'
+                              style="height: 300px; min-height: 300px"
+                              :options="monacoOptions"
+                          />
+                        </v-expansion-panel-content>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
                   </v-col>
                 </v-row>
               </div>
@@ -102,16 +121,21 @@
 <script setup lang="ts">
 import {api} from "@/api";
 import _ from "lodash";
-import {computed, onActivated, ref, watch} from "vue";
+import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
+import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
+import {editor} from "monaco-editor";
+import IEditorOptions = editor.IEditorOptions;
 
+const l = MonacoEditor;
 let props = defineProps<{
   projectId: number
 }>();
 
+const editor = ref(null)
 
 let registry = ref(null);
 let selected = ref(null);
@@ -121,10 +145,19 @@ let testResult = ref(null);
 
 let openFeedbackDetail = false
 
+const monacoOptions: IEditorOptions = inject('monacoOptions');
+monacoOptions.readOnly = true;
+
 async function runTest() {
   testResult.value = await api.runAdHocTest(props.projectId, selected.value.id, testArguments.value);
 }
 
+
+function resizeEditor() {
+  setTimeout(() => {
+    editor.value.editor.layout();
+  })
+}
 
 function castDefaultValueToType(arg) {
   switch (arg.type) {
@@ -183,6 +216,10 @@ onActivated(async () => {
   padding: 5px;
   margin: 5px;
   min-height: 0; /* new */
+}
+
+::v-deep .v-expansion-panel-content__wrap{
+  padding: 0;
 }
 
 .test-doc {

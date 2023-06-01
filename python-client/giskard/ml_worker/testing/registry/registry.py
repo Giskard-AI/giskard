@@ -89,6 +89,7 @@ class TestFunctionArgument:
 
 @dataclass
 class TestFunction:
+    code: str
     id: str
     name: str
     module: str
@@ -126,8 +127,15 @@ class GiskardTestRegistry:
             else:
                 tags.append("custom")
 
+            code = None
+            try:
+                code = inspect.getsource(func)
+            except Exception as e:
+                logger.debug(f"Failed to extract test function code {full_name}", e)
+
             self._tests[full_name] = TestFunction(
                 id=full_name,
+                code=code,
                 name=name or func.__name__,
                 tags=tags,
                 module=func.__module__,
