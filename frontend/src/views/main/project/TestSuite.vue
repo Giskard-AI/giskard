@@ -1,56 +1,76 @@
 <template>
-  <div class="vc mt-2 pb-0">
-    <div class="vc">
-      <v-container class="main-container vc">
-        <v-row>
-          <v-col :align="'right'">
-            <div class="d-flex">
-                <v-btn v-if="route.name === 'test-suite-overview'" text :to="{ name: 'test-suite-executions' }"
-                       color="secondary">
-                    <v-icon left>history</v-icon>
-                    Past executions
-                </v-btn>
-                <v-btn v-else text :to="{ name: 'test-suite-overview' }" color="secondary">
-                    <v-icon>arrow_left</v-icon>
-                    Overview
-                </v-btn>
-                <div class="flex-grow-1"/>
-                <v-btn tile class='mx-1' v-if="hasTest"
-                       :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
-                    <v-icon>add</v-icon>
-                    Add test
-                </v-btn>
-                <v-btn tile class='mx-1' v-if="hasTest && hasInput" @click='openRunTestSuite(true)' color="secondary">
-                    <v-icon>compare</v-icon>
-                    Compare
-                </v-btn>
-                <v-btn tile class='mx-1' v-if="hasTest" @click='openRunTestSuite(false)' color="primary">
-                    <v-icon>arrow_right</v-icon>
-                    Run test suite
-                </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-        <v-row class="vc">
-          <v-col class="vc" cols="12">
-            <router-view />
-          </v-col>
-        </v-row>
-      </v-container>
+    <div class="vc pb-0 parent-container">
+        <div class="vc">
+            <v-container class="main-container vc pt-0">
+                <div class="d-flex pl-3 pr-3">
+                    <h1 class="test-suite-name">{{ suite.name }}</h1>
+                    <div class="flex-grow-1"/>
+                    <v-btn text @click="() => openSettings()">
+                        Edit test suite
+                    </v-btn>
+                    <v-btn outlined class='mx-1' v-if="hasTest"
+                           :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                        Add test
+                    </v-btn>
+                </div>
+                <v-tabs class="pl-3 pr-3 mt-2">
+                    <v-tab :to="{ name: 'test-suite-overview' }">
+                        <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                        <span class="tab-item-text">Report</span>
+                    </v-tab>
+                    <v-tab :to="{ name: 'test-suite-executions' }">
+                        <v-icon class="mr-2">history</v-icon>
+                        <span class="tab-item-text">Past executions</span>
+                    </v-tab>
+                </v-tabs>
+                <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
+                    <v-col>
+                        <div class="d-flex align-center justify-center">
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
+                                      item-text="label"
+                                      variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
+                            </v-select>
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
+                                          outlined hide-details="auto"
+                                          class="max-w-250"
+                                          placeholder="Performance"
+                                          dense></v-text-field>
+                            <div class="flex-grow-1"/>
+                            <v-btn color="primary" large text disabled>Export</v-btn>
+                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress"
+                                   @click='openRunTestSuite(true)'
+                                   color="primary">
+                                Compare
+                            </v-btn>
+                            <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)'
+                                   color="primary" :loading="hasJobInProgress">
+                                Run test suite
+                            </v-btn>
+                        </div>
+                    </v-col>
+                </v-row>
+                <v-row class="vc overview-container pl-3 mt-0">
+                    <v-col class="vc pb-0" cols="12">
+                        <router-view/>
+                    </v-col>
+                </v-row>
+            </v-container>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 
-import {onActivated, watch} from "vue";
+import {computed, onActivated, watch} from "vue";
 import {useMainStore} from "@/stores/main";
-import {useTestSuiteStore} from '@/stores/test-suite';
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import {useCatalogStore} from "@/stores/catalog";
+import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
+import {api} from "@/api";
 
 const props = defineProps<{
     projectId: number,
@@ -58,7 +78,16 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
-const {inputs, executions, hasTest, hasInput} = storeToRefs(useTestSuiteStore())
+const {
+    suite,
+    inputs,
+    executions,
+    hasTest,
+    hasInput,
+    statusFilter,
+    searchFilter,
+    hasJobInProgress
+} = storeToRefs(useTestSuiteStore())
 
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
@@ -68,6 +97,8 @@ const {loadCatalog} = useCatalogStore();
 
 const router = useRouter();
 const route = useRoute();
+
+const hideHeader = computed(() => route.name === 'test-suite-configuration')
 
 async function loadData() {
     await loadTestSuites(props.projectId, props.suiteId);
@@ -91,13 +122,66 @@ async function openRunTestSuite(compareMode: boolean) {
     }
 }
 
+async function openSettings() {
+    const project = await api.getProject(props.projectId)
+    $vfm.show({
+        component: EditTestSuiteModal,
+        bind: {
+            projectKey: project.key,
+            projectId: project.id,
+            suite: suite.value
+        }
+    });
+}
 
 </script>
 
 
 <style scoped lang="scss">
 .main-container {
-  width: 100%;
-  max-width: 100%;
+    width: 100%;
+    max-width: 100%;
+    color: rgb(98, 98, 98);
+
+    b {
+        color: black;
+    }
+}
+
+.parent-container {
+    margin-left: -12px;
+    margin-right: -12px;
+}
+
+.overview-container {
+    background-color: #f5f5f5;
+}
+
+.test-suite-name {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+
+    color: #163A30;
+}
+
+.max-w-150 {
+    max-width: 150px;
+}
+
+.max-w-250 {
+    max-width: 250px;
+}
+
+.tab-item-text {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.875em;
+    line-height: 17px;
+    display: flex;
+    align-items: flex-end;
+    text-transform: uppercase;
+    font-feature-settings: 'case' on, 'cpsp' on;
 }
 </style>

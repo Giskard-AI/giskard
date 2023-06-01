@@ -2,13 +2,13 @@ import {defineStore} from 'pinia';
 
 interface State {
     currentExecution: number | null,
-    compareSelectedItems: Array<number> | null
+    compareSelectedItems: Array<number>
 }
 
 export const useTestSuiteCompareStore = defineStore('testSuiteCompare', {
     state: (): State => ({
         currentExecution: null,
-        compareSelectedItems: null
+        compareSelectedItems: []
     }),
     getters: {},
     actions: {
@@ -17,10 +17,7 @@ export const useTestSuiteCompareStore = defineStore('testSuiteCompare', {
         },
         reset() {
             this.currentExecution = null;
-            this.compareSelectedItems = null;
-        },
-        startComparing() {
-            this.compareSelectedItems = [this.currentExecution!];
-        },
+            this.compareSelectedItems = [];
+        }
     }
 });
