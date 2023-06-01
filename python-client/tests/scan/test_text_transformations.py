@@ -105,4 +105,3 @@ def test_punctuation_strip_transformation():
     assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
-
