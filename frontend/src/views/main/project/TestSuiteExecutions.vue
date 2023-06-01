@@ -43,6 +43,22 @@
               <v-list-item-subtitle> {{ formatInputValue(input, value) }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
+          <v-expansion-panels flat @change="resizeEditor">
+            <v-expansion-panel>
+              <v-expansion-panel-header class="pa-0 text-h6">Logs</v-expansion-panel-header>
+              <v-expansion-panel-content class="pa-0">
+                <MonacoEditor
+                    ref="editor"
+                    v-model='selectedExecution.logs'
+                    class='editor'
+                    language='logfile'
+                    :theme="'logTheme'"
+                    style="height: 300px; min-height: 300px"
+                    :options="monacoOptions"
+                />
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
           <p class="pt-4 text-h6">Results</p>
           <TestSuiteExecutionResults :execution="selectedExecution" :registry="props.registry"/>
         </div>
@@ -53,7 +69,7 @@
 
 <script setup lang="ts">
 
-import {computed, ref} from 'vue';
+import {computed, inject, ref} from 'vue';
 import {
   DatasetDTO,
   JobDTO,
@@ -67,6 +83,10 @@ import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionRe
 import moment from 'moment';
 import {Colors} from '@/utils/colors';
 import {Comparators} from '@/utils/comparators';
+import MonacoEditor from 'vue-monaco';
+import {editor} from 'monaco-editor';
+import {logLanguage, logTheme} from '@/views/main/utils/log-language';
+import IEditorOptions = editor.IEditorOptions;
 
 const props = defineProps<{
   projectId: number,
@@ -76,8 +96,15 @@ const props = defineProps<{
   datasets: { [key: string]: DatasetDTO },
   inputTypes: { [name: string]: string },
   executions?: TestSuiteExecutionDTO[],
-  trackedExecutions: { [uuid: string]: JobDTO}
+  trackedExecutions: { [uuid: string]: JobDTO }
 }>();
+
+const l = MonacoEditor;
+const editor = ref(null)
+const monacoOptions: IEditorOptions = {
+  ...inject('monacoOptions'),
+  readOnly: true
+};
 
 const selectedExecution = ref<TestSuiteExecutionDTO | null>(null);
 
@@ -187,5 +214,15 @@ const executionsAndJobs = computed<ExecutionTabItem[] | undefined>(() => {
       .sort(Comparators.comparing(e => e.date))
       .reverse();
 });
+
+function resizeEditor() {
+  setTimeout(() => {
+    editor.value.editor.layout();
+    editor.value.monaco.languages.register({id: 'logfile'})
+    editor.value.monaco.languages.setMonarchTokensProvider('logfile', logLanguage)
+    editor.value.monaco.editor.defineTheme('logview', logTheme)
+    editor.value.monaco.editor.setTheme('logview')
+  })
+}
 
 </script>
