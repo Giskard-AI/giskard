@@ -15,22 +15,29 @@
                 </v-col>
                 <v-col class="input-column">
                     <template v-if="!editing">
-            <span v-if="props.testInputs[input.name]?.isAlias">
-                    {{ props.testInputs[input.name].value }}
-                  </span>
+                      <span v-if="props.testInputs[input.name]?.isAlias">
+                        {{ props.testInputs[input.name].value }}
+                      </span>
                         <span v-else-if="input.name in props.testInputs && input.type === 'BaseModel'">
-                    {{
+                      {{
                             models[props.testInputs[input.name].value].name ?? models[props.testInputs[input.name].value].id
                             }}
-                  </span>
+                    </span>
                         <span v-else-if="input.name in props.testInputs && input.type === 'Dataset'">
-                    {{
+                      {{
                             datasets[props.testInputs[input.name].value].name ?? datasets[props.testInputs[input.name].value].id
                             }}
-                  </span>
+                          </span>
+                        <span v-else-if="input.name in props.testInputs && input.type === 'SliceFunction'">
+                      {{
+                            sliceFunctionsByUuid[props.testInputs[input.name].value].displayName
+                            ?? sliceFunctionsByUuid[props.testInputs[input.name].value].name
+                            }}
+                    </span>
                         <span v-else-if="input && input.name in props.testInputs">{{
                             props.testInputs[input.name].value
-                            }}</span>
+                            }}
+                        </span>
                     </template>
                     <template v-else-if="props.modelValue">
                         <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
@@ -39,6 +46,9 @@
                         <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
                                        v-else-if="input.type === 'BaseModel'"
                                        :value.sync="props.modelValue[input.name].value"/>
+                        <SliceFunctionSelector :project-id="projectId" :label="input.name" :return-object="false"
+                                               v-else-if="input.type === 'SliceFunction'"
+                                               :value.sync="props.modelValue[input.name].value"/>
                         <v-text-field
                                 :step='input.type === "float" ? 0.1 : 1'
                                 v-model="props.modelValue[input.name].value"
@@ -72,6 +82,8 @@ import {computed} from 'vue';
 import {TestFunctionDTO, TestInputDTO} from '@/generated-sources';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
+import SliceFunctionSelector from "@/views/main/utils/SliceFunctionSelector.vue";
+import {useCatalogStore} from "@/stores/catalog";
 
 const props = defineProps<{
     testInputs?: { [key: string]: TestInputDTO },
@@ -83,6 +95,7 @@ const props = defineProps<{
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
+const {sliceFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,

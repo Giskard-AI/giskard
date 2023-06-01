@@ -7,7 +7,7 @@
         :value="value"
         :items="sliceFunctions"
         :item-text="extractName"
-        item-value="id"
+        item-value="uuid"
         :return-object="returnObject"
         @input="onInput"
         dense
