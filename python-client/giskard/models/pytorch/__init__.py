@@ -2,7 +2,6 @@ from typing import Union
 from pathlib import Path
 import mlflow
 import yaml
-import numpy as np
 import pandas as pd
 import torch
 import collections
@@ -63,6 +62,7 @@ class PyTorchModel(MLFlowBasedModel):
         feature_names=None,
         classification_threshold=0.5,
         classification_labels=None,
+        iterate_dataset=True,
     ) -> None:
         super().__init__(
             clf=clf,
@@ -77,6 +77,7 @@ class PyTorchModel(MLFlowBasedModel):
 
         self.device = device
         self.torch_dtype = str(torch_dtype)
+        self.iterate_dataset = iterate_dataset
 
     @classmethod
     def load_clf(cls, local_dir):
@@ -87,7 +88,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _get_predictions(self, data: Iterator):
         with torch.no_grad():
-            return [self.clf(*entry).detach().squeeze(0).numpy() for entry in map_to_tuples(data)]
+            return [self.clf(*entry) for entry in map_to_tuples(data)]
 
     def clf_predict(self, data):
         self.clf.to(self.device)
@@ -111,13 +112,16 @@ class PyTorchModel(MLFlowBasedModel):
 
         # Get a list of model predictions
         try:
-            predictions = self._get_predictions(data_iter)
+            if self.iterate_dataset:
+                predictions = self._get_predictions(data_iter)
+            else:
+                predictions = self.clf(data)
         except ValueError as err:
             raise ValueError(
-                "Calling clf on one element of your dataset or your `data_preprocessing_function` output fails."
+                "Calling clf on your dataset after applying your `data_preprocessing_function` output fails."
             ) from err
 
-        return np.asarray(predictions)
+        return torch.cat(predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
@@ -125,6 +129,7 @@ class PyTorchModel(MLFlowBasedModel):
                 {
                     "device": self.device,
                     "torch_dtype": self.torch_dtype,
+                    "iterate_dataset": self.iterate_dataset,
                 },
                 f,
                 default_flow_style=False,
@@ -158,3 +163,7 @@ def _get_dataset_from_dataloader(dl: DataLoader):
                     The type we found was {dl.dataset} which we don't support. Please provide us \n \
                     with a different iterable as output of your data_preprocessing_function."
     )
+
+
+def _convert_to_numpy(self, predictions):
+    return torch.cat(predictions).detach().squeeze(0).numpy()
