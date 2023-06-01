@@ -35,6 +35,11 @@ body {
     width: 0.75rem;
 }
 
+.nbinput .prompt,
+.nboutput .prompt {
+    display: none;
+}
+
 /* toc */
 .toc-title {
     color: var(--color-toc-title);
