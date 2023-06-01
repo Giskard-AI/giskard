@@ -1,15 +1,15 @@
 import datetime
 import warnings
-from typing import Optional, Sequence
 from time import perf_counter
+from typing import Optional, Sequence
 
 from .logger import logger
-from ..models.base import BaseModel
-from ..datasets.base import Dataset
-from ..core.model_validation import validate_model
 from .registry import DetectorRegistry
 from .result import ScanResult
-
+from ..core.model_validation import validate_model
+from ..datasets.base import Dataset
+from ..models.base import BaseModel
+from ..utils.analytics_collector import analytics
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -24,6 +24,10 @@ class Scanner:
 
     def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
+        analytics.track("scan", {"model_class": model.__class__.__name__,
+                                 "model_id": str(model.id),
+                                 "model_type": model.meta.model_type.value,
+                                 "dataset_id": str(dataset.id)})
         validate_model(model=model, validate_ds=dataset)
 
         maybe_print("Running scan…", verbose=verbose)
