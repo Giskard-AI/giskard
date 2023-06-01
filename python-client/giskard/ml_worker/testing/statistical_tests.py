@@ -29,7 +29,7 @@ class StatisticalTests(AbstractTestCollection):
            actual_slice(Dataset):
               Slice of the  actual dataset
           model(BaseModel):
-              BaseModel used to compute the test
+              Model used to compute the test
           classification_label(str):
               Classification label you want to test
           threshold(float):
@@ -89,7 +89,7 @@ class StatisticalTests(AbstractTestCollection):
             actual_slice(Dataset):
                 Slice of the actual dataset
             model(BaseModel):
-                BaseModel used to compute the test
+                Model used to compute the test
             classification_label(str):
                 Optional. Classification label you want to test
             min_range(float):
@@ -178,7 +178,7 @@ class StatisticalTests(AbstractTestCollection):
               unprotected_slice(Callable):
                   Slice that defines the unprotected group from the full dataset given
               model(BaseModel):
-                  BaseModel used to compute the test
+                  Model used to compute the test
               positive_outcome(str or float):
                   The target value that is considered a positive outcome in the dataset
               min_threshold(float):
