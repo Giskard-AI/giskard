@@ -54,21 +54,17 @@ RUN npm run build
 
 # >>> ML-WORKER
 
-FROM python:3.7.13 as python-base
+FROM python:3.8-bullseye as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.2.2 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1 \
     PYSETUP_PATH="/opt/pysetup" \
     VENV_PATH="/opt/pysetup/.venv"
 
-ENV PATH="$VENV_PATH/bin:$POETRY_HOME/bin:$PATH"
+ENV PATH="$VENV_PATH/bin:$PATH"
 
 FROM python-base as builder-base
 
@@ -81,14 +77,16 @@ RUN apt-get update && \
 RUN pip install --upgrade pip && \
     pip install -U pip setuptools
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# RUN curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -
 
 WORKDIR $PYSETUP_PATH
 
-COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
+COPY ./python-client/pyproject.toml ./python-client/pdm.lock ./
 
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --only main ; fi"
+RUN pip install pdm
+RUN pdm lock
+RUN pdm install
 
 RUN pip install  \
     torch==1.12.0 \
@@ -99,7 +97,8 @@ FROM builder-base as proto-builder
 
 WORKDIR $PYSETUP_PATH
 
-RUN poetry install --only main,dev
+RUN pdm lock
+RUN pdm install
 COPY ./common/proto ./proto
 COPY ./python-client/giskard ./giskard
 COPY ./python-client/scripts ./scripts
@@ -138,7 +137,7 @@ ENV PYSETUP_PATH="/opt/pysetup" \
     SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/app \
     SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/app
 
-ENV PATH="$VENV_PATH/bin:$POETRY_HOME/bin:$PATH"
+ENV PATH="$VENV_PATH/bin:$PATH"
 
 WORKDIR /app
 
