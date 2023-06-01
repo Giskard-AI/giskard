@@ -1,18 +1,6 @@
 🔍 Scan your ML model
 ===============
 
-.. toctree::
-   :maxdepth: 1
-
-   performance_bias/index
-   robustness/index
-   overconfidence/index
-   underconfidence/index
-   ethics/index
-   data_leakage/index
-   stochasticity/index
-
-
 How to scan your Machine Learning model for vulnerabilities with Giskard?
 
 Prerequisites
@@ -71,9 +59,23 @@ You can then interactively debug the problems by uploading the generate test sui
     test_suite.run()
 
 
+Learn more about vulnerabilities
+^^^^^^^^^
+.. toctree::
+   :maxdepth: 1
+
+   performance_bias/index
+   robustness/index
+   overconfidence/index
+   underconfidence/index
+   ethics/index
+   data_leakage/index
+   stochasticity/index
 
 Troubleshooting
 ^^^^^^^^^
 
 If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ on our #support channel. Our community
 will help!
+
+
