@@ -36,6 +36,7 @@ from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.models.base import BaseModel
 from giskard.path_utils import model_path, dataset_path
 
@@ -418,12 +419,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
-            results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+            predictions_csv = get_file_name("predictions", "csv", request.dataset.sample)
+            results.to_csv(index=False, path_or_buf=dir / predictions_csv)
+            self.ml_worker.tunnel.client.log_artifact(dir / predictions_csv,
                                                       f"{request.project_key}/models/inspections/{request.inspectionId}")
 
-            calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+            calculated_csv = get_file_name("calculated", "csv", request.dataset.sample)
+            calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
+            self.ml_worker.tunnel.client.log_artifact(dir / calculated_csv,
                                                       f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 

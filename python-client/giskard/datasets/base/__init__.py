@@ -23,6 +23,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 )
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
 
 logger = logging.getLogger(__name__)
 
@@ -443,7 +444,7 @@ class Dataset(ColumnMetadataMixin):
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
-        df = cls.load(local_dir / ("data.sample.csv.zst" if sample else "data.csv.zst"))
+        df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)
         return cls(df=df, name=meta.name, target=meta.target, column_types=meta.column_types,
                    id=uuid.uuid4() if sample else uuid.UUID(dataset_id))

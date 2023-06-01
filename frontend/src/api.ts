@@ -330,8 +330,15 @@ export const api = {
     async peekDataFile(datasetId: string) {
         return this.getDatasetRows(datasetId, 0, 10);
     },
-    async getDatasetRows(datasetId: string, offset: number, size: number, filtered: RowFilterDTO = {}) {
-        return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {params: {offset, size}});
+    async getDatasetRows(datasetId: string, offset: number, size: number,
+                         filtered: RowFilterDTO = {}, sample: boolean = true) {
+        return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {
+            params: {
+                offset,
+                size,
+                sample
+            }
+        });
     },
     async editDatasetName(datasetId: string, name: string) {
         return apiV2.patch<unknown, DatasetDTO>(`/dataset/${datasetId}/name/${encodeURIComponent(name)}`, null)

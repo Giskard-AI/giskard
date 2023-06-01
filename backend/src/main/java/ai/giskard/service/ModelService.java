@@ -119,7 +119,7 @@ public class ModelService {
         return inspection;
     }
 
-    private void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
+    protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             RunModelRequest request = RunModelRequest.newBuilder()
                 .setModel(grpcMapper.createRef(model))
