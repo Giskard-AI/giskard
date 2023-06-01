@@ -8,10 +8,11 @@ from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
 from giskard.scanner.issues import Issue
 from giskard.scanner.logger import logger
+from ..registry import Detector
 
 
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
-class DataLeakageDetector:
+class DataLeakageDetector(Detector):
     def run(self, model: BaseModel, dataset: Dataset):
         logger.debug("DataLeakageDetector: Running")
 

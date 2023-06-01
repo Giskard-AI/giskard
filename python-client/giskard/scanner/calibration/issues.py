@@ -2,7 +2,8 @@ import pandas as pd
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-import numpy as np
+
+from ..common.examples import ExampleExtractor
 
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -73,56 +74,27 @@ class CalibrationIssue(Issue):
     def importance(self):
         return self.info.metric_rel_delta
 
+    @property
+    def features(self):
+        if isinstance(self.info.slice_fn, QueryBasedSliceFunction):
+            return self.info.slice_fn.query.columns()
+        if isinstance(self.info.slice_fn, MetadataSliceFunction):
+            return [self.info.slice_fn.feature]
+        return self.model.meta.feature_names or self.dataset.columns
+
     @lru_cache
     def examples(self, n=3):
-        ex_dataset = self.dataset.slice(self.info.slice_fn)
-        model_pred = self.model.predict(ex_dataset)
-        predictions = model_pred.prediction
-        bad_pred_mask = ex_dataset.df.index.isin(self.info.fail_idx)
-        examples = ex_dataset.df[bad_pred_mask].copy()
+        def filter_examples(issue, dataset):
+            bad_pred_mask = dataset.df.index.isin(self.info.fail_idx)
 
-        # Keep only interesting columns
-        features = self._features()
-        cols_to_show = features + [self.dataset.target]
-        examples = examples.loc[:, cols_to_show]
+            return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
 
-        # If metadata slice, add the metadata column
-        if isinstance(self.info.slice_fn, MetadataSliceFunction):
-            for col in features:
-                meta_cols = self.info.slice_fn.query.columns()
-                provider = self.info.slice_fn.provider
-                for meta_col in meta_cols:
-                    meta_vals = self.dataset.column_meta[col, provider].loc[examples.index, meta_col]
-                    examples.insert(
-                        loc=examples.columns.get_loc(col) + 1,
-                        column=f"{meta_col}({col})",
-                        value=meta_vals,
-                        allow_duplicates=True,
-                    )
-
-        # Add the model prediction
-        if model_pred.probabilities is not None:
-            num_labels_to_print = min(
-                len(self.model.meta.classification_labels), getattr(self, "_num_labels_display", 1)
-            )
-
-            pred_examples = []
-            for ps in model_pred.raw[bad_pred_mask]:
-                label_idx = np.argsort(-ps)[:num_labels_to_print]
-                pred_examples.append(
-                    "\n".join([f"{self.model.meta.classification_labels[i]} (p = {ps[i]:.2f})" for i in label_idx])
-                )
-        else:
-            pred_examples = predictions[bad_pred_mask]
-
-        examples[f"Predicted `{self.dataset.target}`"] = pred_examples
-
-        n = min(len(examples), n)
-        if n > 0:
-            idx = self.info.loss_values.loc[examples.index].nlargest(n).index
+        def sort_examples(issue, examples):
+            idx = self.info.loss_values.loc[examples.index].sort_values(ascending=False).index
             return examples.loc[idx]
 
-        return examples
+        extractor = ExampleExtractor(self, filter_examples, sort_examples)
+        return extractor.get_examples_dataframe(n, with_prediction=2)
 
     def generate_tests(self, with_names=False) -> list:
         return []

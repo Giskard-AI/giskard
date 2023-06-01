@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import lru_cache
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -31,8 +32,8 @@ class RobustnessIssue(Issue):
         super().__init__(model, dataset, level, info)
 
     @property
-    def is_major(self) -> bool:
-        return self.level == "major"
+    def features(self) -> List[str]:
+        return [self.info.feature]
 
     @property
     def domain(self) -> str:
@@ -79,6 +80,10 @@ class RobustnessIssue(Issue):
     @property
     def importance(self) -> float:
         return self.info.fail_ratio
+
+    @property
+    def transformation_fn(self):
+        return self.info.transformation_fn
 
     def generate_tests(self, with_names=False) -> list:
         from ...testing.tests.metamorphic import test_metamorphic_invariance
