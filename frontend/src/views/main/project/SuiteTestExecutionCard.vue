@@ -9,7 +9,8 @@
                 <span v-if="slicingFunction"> on {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
             <div class="d-flex flex-row gap-4">
-                <v-chip v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)" label>
+                <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
+                        label>
                     {{ tag }}
                 </v-chip>
             </div>
@@ -67,7 +68,8 @@ const {models, datasets} = storeToRefs(useTestSuiteStore())
 
 const props = defineProps<{
     suiteTest: SuiteTestDTO,
-    result?: SuiteTestExecutionDTO
+    result?: SuiteTestExecutionDTO,
+    compact: boolean
 }>();
 
 const params = computed(() => props.result?.inputs);
