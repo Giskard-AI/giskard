@@ -1,4 +1,3 @@
-import uuid
 from typing import Union
 import logging
 
@@ -56,12 +55,12 @@ class HuggingFaceModel(WrapperModel):
         huggingface_meta_file = Path(local_path) / 'giskard-model-huggingface-meta.yaml'
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
-                huggingface_meta_file = yaml.load(f, Loader=yaml.Loader)
+                huggingface_meta = yaml.load(f, Loader=yaml.Loader)
 
-        if huggingface_meta_file["pipeline_task"]:
-            return pipeline(huggingface_meta_file["pipeline_task"], local_path)
+        if huggingface_meta["pipeline_task"]:
+            return pipeline(huggingface_meta["pipeline_task"], local_path)
 
-        return huggingface_meta_file["huggingface_module"].from_pretrained(local_path)
+        return huggingface_meta["huggingface_module"].from_pretrained(local_path)
 
     def save_huggingface_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
@@ -73,9 +72,6 @@ class HuggingFaceModel(WrapperModel):
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
-
-        if not self.id:
-            self.id = uuid.uuid4()
         self.save_with_huggingface(local_path)
         self.save_huggingface_meta(local_path)
 
