@@ -27,7 +27,8 @@ def infer_giskard_cls(model: Any):
             if isinstance(model, tuple(base_libs)):
                 return giskard_cls
         except ImportError:
-            return None
+            pass
+    return None
 
 
 @configured_validate_arguments
