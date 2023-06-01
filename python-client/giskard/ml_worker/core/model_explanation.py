@@ -22,8 +22,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
             Dataset(
                 df=df,
                 target=dataset.target,
-                feature_types=dataset.feature_types,
-                column_types=dataset.column_types,
+                column_meanings=dataset.column_meanings,
             )
         )
 
@@ -37,7 +36,7 @@ def explain(model: Model, dataset: Dataset, input_data: Dict):
     def predict_array(array):
         return model.prepare_data_and_predict(prepare_df(pd.DataFrame(array, columns=list(df.columns))))
 
-    example = background_example(df, dataset.feature_types)
+    example = background_example(df, dataset.column_meanings)
     kernel = shap.KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df)
 
