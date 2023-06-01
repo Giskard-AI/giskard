@@ -9,4 +9,6 @@ Giskard documentation
     :name: mastertoc
     :maxdepth: 2
 
+    models/index
+    datasets/index
     tests/index
