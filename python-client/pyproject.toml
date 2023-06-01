@@ -8,7 +8,7 @@ giskard = "giskard.cli:cli"
 
 [tool.poetry]
 name = "giskard"
-version = "1.7.0"
+version = "1.8.0"
 description = "Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"
 readme = "README.md"
 authors = ["Giskard AI <hello@giskard.ai>"]
