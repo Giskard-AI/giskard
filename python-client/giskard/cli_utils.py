@@ -26,6 +26,9 @@ def check_pid(pid):
         os.kill(pid, 0)
     except OSError:
         return False
+    # TypeError can occur if not pid file was found
+    except TypeError:
+        return False
     else:
         return True
 
