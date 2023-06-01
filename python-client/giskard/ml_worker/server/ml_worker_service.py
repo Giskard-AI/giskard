@@ -80,6 +80,36 @@ def map_function_meta(callable_type):
     }
 
 
+def map_dataset_process_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.DatasetProcessFunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            displayName=test.display_name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+            cellLevel=test.cell_level,
+            columnType=test.column_type,
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None,
                  loop=asyncio.get_event_loop()) -> None:
@@ -173,40 +203,29 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
-    def runAdHocSlicing(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.SlicingResultMessage:
-        slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
+    def datasetProcessing(
+            self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        arguments = self.parse_function_arguments(request.arguments)
+        for function in request.functions:
+            arguments = self.parse_function_arguments(function.arguments)
+            if function.HasField("slicingFunction"):
+                dataset.add_slicing_function(
+                    SlicingFunction.load(function.slicingFunction.id, self.client, None)(**arguments))
+            else:
+                dataset.add_transformation_function(
+                    TransformationFunction.load(function.transformationFunction.id, self.client, None)(**arguments))
 
-        result = dataset.slice(slicing_function(**arguments))
+        result = dataset.process()
 
-        return ml_worker_pb2.SlicingResultMessage(
+        filtered_rows_idx = dataset.df.index.difference(result.df.index)
+        modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
             totalRows=len(dataset.df.index),
-            filteredRows=dataset.df.index.difference(result.df.index)
-        )
-
-    def runAdHocTransformation(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TransformationResultMessage:
-        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
-
-        selected_rows = dataset.slice(lambda df: df.iloc[request.rows], row_level=False) if len(
-            request.rows) > 0 else dataset
-
-        arguments = self.parse_function_arguments(request.arguments)
-
-        result = dataset.transform(transformation_function(**arguments))
-
-        modified_rows = result.df[selected_rows.df.ne(result.df)].dropna(how='all')
-
-        return ml_worker_pb2.TransformationResultMessage(
-            datasetId=request.dataset.id,
-            totalRows=len(dataset.df.index),
+            filteredRows=filtered_rows_idx,
             modifications=[
                 ml_worker_pb2.DatasetRowModificationResult(
                     rowId=row[0],
@@ -268,7 +287,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def parse_function_arguments(self, request_arguments):
         arguments = dict()
+
         for arg in request_arguments:
+            if arg.none:
+                continue
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
             elif arg.HasField("model"):
@@ -395,10 +417,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
             results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
 
             calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
@@ -498,8 +522,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta('TEST'),
-            slices=map_function_meta('SLICE'),
-            transformations=map_function_meta('TRANSFORMATION')
+            slices=map_dataset_process_function_meta('SLICE'),
+            transformations=map_dataset_process_function_meta('TRANSFORMATION')
         )
 
     @staticmethod

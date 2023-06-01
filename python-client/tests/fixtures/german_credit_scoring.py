@@ -55,7 +55,7 @@ def german_credit_data() -> Dataset:
 
 
 @pytest.fixture()
-def german_credit_catboost(german_credit_data) -> SKLearnModel:
+def german_credit_catboost_raw_model(german_credit_data):
     from catboost import CatBoostClassifier
     from sklearn import model_selection
 
@@ -77,11 +77,16 @@ def german_credit_catboost(german_credit_data) -> SKLearnModel:
     model_score = cb.score(X_test, Y_test)
     timer.stop(f"Trained model with score: {model_score}")
 
+    return cb
+
+
+@pytest.fixture()
+def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
     return CatboostModel(
-        model=cb,
+        model=german_credit_catboost_raw_model,
         model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
-        classification_labels=cb.classes_,
+        classification_labels=german_credit_catboost_raw_model.classes_,
     )
 
 
