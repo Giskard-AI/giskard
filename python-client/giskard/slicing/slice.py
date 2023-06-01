@@ -310,6 +310,7 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta = DatasetProcessFunctionMeta(type='SLICE', process_type=DatasetProcessFunctionType.CLAUSES)
         self.meta.uuid = get_object_uuid(query)
         self.meta.clauses = self.query.to_clauses()
+        self.meta.code = ""
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]

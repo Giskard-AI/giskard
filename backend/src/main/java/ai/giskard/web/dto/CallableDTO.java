@@ -41,7 +41,7 @@ public class CallableDTO {
     private String doc;
     @JsonAlias("module_doc")
     private String moduleDoc;
-    @NotBlank
+    @NotNull
     private String code;
     private List<@NotBlank String> tags;
     private boolean potentiallyUnavailable;
