@@ -13,6 +13,7 @@ import {chain} from 'lodash';
 import {trackJob} from '@/utils/job-utils';
 import {useMainStore} from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 
 interface State {
     projectId: number | null,
@@ -26,6 +27,7 @@ interface State {
 }
 
 const mainStore = useMainStore();
+const testSuiteCompareStore = useTestSuiteCompareStore();
 
 export const useTestSuiteStore = defineStore('testSuite', {
     state: (): State => ({
@@ -60,7 +62,8 @@ export const useTestSuiteStore = defineStore('testSuite', {
     actions: {
         async reload() {
             if (this.suiteId !== null && this.projectId !== null) {
-                await this.loadTestSuite(this.projectId, this.suiteId!)
+                await this.loadTestSuite(this.projectId, this.suiteId!);
+                testSuiteCompareStore.reset()
             }
         },
         async loadTestSuite(projectId: number, suiteId: number) {
@@ -73,6 +76,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
             this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
             this.executions = completeSuite.executions;
+            testSuiteCompareStore.reset()
         },
         async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
             mixpanel.track('Update test suite v2', {
