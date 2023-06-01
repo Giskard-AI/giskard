@@ -90,11 +90,12 @@ async function openFeedback(obj) {
   await router.push({ name: 'feedback-detail', params: { feedbackId: obj.id } })
 }
 
-function handleRouteChanged() {
+async function handleRouteChanged() {
   openFeedbackDetail.value = route.meta && route.meta.openFeedbackDetail
+  await fetchFeedbacks();
 }
 
-watch(() => route.meta, () => handleRouteChanged());
+watch(() => route.meta, async () => { await handleRouteChanged() });
 
 function handleFeedbackDetailDialogClosed(isOpen) {
   if (!isOpen && route.name !== 'project-feedbacks') {

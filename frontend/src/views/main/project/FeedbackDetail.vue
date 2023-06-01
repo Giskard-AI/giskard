@@ -73,9 +73,11 @@ import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 
 const router = useRouter();
 
-const props = defineProps({
-  id: { type: Number, required: true },
-});
+interface Props {
+  id: number,
+}
+
+const props = defineProps<Props>();
 
 const data = ref<FeedbackDTO | null>(null);
 const userData = ref<{ [key: string]: string } | null>(null);
@@ -120,7 +122,7 @@ function deleteFeedback(feedbackId: number) {
     on: {
       async confirm(close) {
         await api.deleteFeedback(feedbackId);
-        await router.push({ name: 'project-feedbacks' });
+        await router.push({ name: 'project-feedbacks', params: { id: data.value!.project.id.toString() } });
         close();
       }
     }
