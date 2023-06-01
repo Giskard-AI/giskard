@@ -4,9 +4,9 @@ import ai.giskard.domain.FeatureType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.jobs.JobType;
 import ai.giskard.repository.ml.*;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
@@ -18,7 +18,6 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.GenerateTestSuiteRequest;
 import ai.giskard.worker.GenerateTestSuiteResponse;
-import ai.giskard.worker.TestArgument;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +51,7 @@ public class TestSuiteService {
     private final JobService jobService;
     private final ProjectRepository projectRepository;
     private final MLWorkerService mlWorkerService;
+    private final TestArgumentService testArgumentService;
 
     public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
         TestSuite suite = testSuiteRepository.getById(dto.getId());
@@ -217,20 +217,11 @@ public class TestSuiteService {
             GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
                 .setProjectKey(projectKey);
 
-            // TODO: user feature/ai-test-v2-test-suite-execution generic method
-            for (GenerateTestSuiteInputDTO input : dto.getInputs()) {
-                TestArgument.Builder argumentBuilder = TestArgument.newBuilder();
-                argumentBuilder.setName(input.getName());
-                switch (input.getType()) {
-                    case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, input.getValue()));
-                    case "Model" -> argumentBuilder.setModel(buildArtifactRef(projectKey, input.getValue()));
-                    case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(input.getValue())));
-                    case "str" -> argumentBuilder.setString(input.getValue());
-                    default ->
-                        throw new IllegalArgumentException(String.format("Unknown test execution input type %s", input.getType()));
-                }
-                request.addArguments(argumentBuilder.build());
-            }
+            request.addAllArguments(dto.getInputs()
+                .stream()
+                .map(input -> testArgumentService
+                    .buildTestArgument(input.getName(), input.getValue(), projectKey, input.getType()))
+                .toList());
 
             GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
 

@@ -57,11 +57,13 @@ public class TestSuiteExecutionService {
                     .collect(Collectors.toList()));
 
             for (Map.Entry<String, String> entry : execution.getInputs().entrySet()) {
-                builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputs, entry.getKey(), entry.getValue()));
+                builder.addGlobalArguments(testArgumentService
+                    .buildTestArgument(suiteInputs, entry.getKey(), entry.getValue(), execution.getSuite().getProject().getKey()));
             }
 
             for (SuiteTest suiteTest : execution.getSuite().getTests()) {
-                builder.addFixedArguments(testArgumentService.buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId())));
+                builder.addFixedArguments(testArgumentService
+                    .buildFixedTestArgument(suiteTest, registry.get(suiteTest.getTestId()), execution.getSuite().getProject().getKey()));
             }
 
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
