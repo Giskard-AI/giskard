@@ -12,7 +12,18 @@
                     <v-list-item :value="test">
                         <v-list-item-content>
                             <v-list-item-title class="test-title">
-                                {{ test.name }} <span v-if="test.potentiallyUnavailable">Warning</span>
+                                <div class="d-flex align-center">
+                                    {{ test.name }}
+                                    <v-spacer class="flex-grow-1"/>
+                                    <v-tooltip bottom>
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <div v-bind="attrs" v-on="on">
+                                                <v-icon color="orange">warning</v-icon>
+                                            </div>
+                                        </template>
+                                        <span>Potentially unavailable. Start your external ML worker to display available tests.</span>
+                                    </v-tooltip>
+                                </div>
                             </v-list-item-title>
                             <v-list-item-subtitle v-if="test.tags">
                                 <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
@@ -177,16 +188,16 @@ function castDefaultValueToType(arg: TestFunctionArgumentDTO) {
 }
 
 watch(selected, (value) => {
-  testResult.value = null;
-  tryMode.value = false;
-  testArguments.value = {}
-  if (value === null) {
-    return;
-  }
+    testResult.value = null;
+    tryMode.value = false;
+    testArguments.value = {}
+    if (value === null || value === undefined) {
+        return;
+    }
 
-  for (const arg of value.args) {
-    testArguments.value[arg.name] = castDefaultValueToType(arg);
-  }
+    for (const arg of value.args) {
+        testArguments.value[arg.name] = castDefaultValueToType(arg);
+    }
 });
 
 
@@ -200,7 +211,7 @@ const testFunctions = computed(() => {
   return chain(registry.value)
       .groupBy(func => `${func.module}.${func.name}`)
       .mapValues(functions => chain(functions)
-          .maxBy('version')
+          .maxBy(func => func.version ?? 1)
           .value())
       .values()
       .sortBy('name')
