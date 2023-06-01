@@ -28,13 +28,13 @@ import {use} from 'echarts/core';
 import {LineChart} from 'echarts/charts';
 import {EChartsOption} from 'echarts';
 import {Colors} from '@/utils/colors';
-import moment from 'moment';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {Vue} from 'vue-property-decorator';
 import {CanvasRenderer} from 'echarts/renderers';
 import {GridComponent} from 'echarts/components';
 import ECharts from 'vue-echarts';
+import {formatDate} from '@/filters';
 
 use([CanvasRenderer, LineChart, GridComponent]);
 Vue.component("v-chart", ECharts);
@@ -63,7 +63,7 @@ const graphOptions = computed(() => {
 
   return {
     xAxis: {
-      data: results.map(result => moment(result.execution.executionDate).format('DD/MM/YYYY HH:mm'))
+      data: results.map(result => formatDate(result.execution.executionDate))
     },
     yAxis: {
       type: 'value'
