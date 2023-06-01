@@ -1,20 +1,10 @@
-import re
-
-import httpretty
 import pytest
 
-from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.suite import Suite, SuiteInput
 from giskard.ml_worker.testing.tests.performance import test_auc, test_f1, test_diff_f1, AucTest
-
-url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "application/json"
-model_name = "uploaded model"
-b_content_type = b"application/json"
+from tests.utils import MockedClient
 
 
 def _test_dataset_size(ds: Dataset, threshold):
@@ -118,19 +108,11 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Mo
     )
 
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
 def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
-    api_pattern = re.compile(r"http://giskard-host:12345/api/v2/.*")
-
-    httpretty.register_uri(httpretty.GET, api_pattern)
-    httpretty.register_uri(httpretty.POST, api_pattern)
-    httpretty.register_uri(httpretty.PUT, api_pattern)
-
-    client = GiskardClient(url, token)
-
-    Suite().add_test(test_auc, threshold=0.2, actual_slice=german_credit_data).add_test(
-        test_f1, threshold=0.2, actual_slice=german_credit_data
-    ).save(client, "test_project_key")
+    with MockedClient() as (client, mr):
+        Suite().add_test(test_auc, threshold=0.2, actual_slice=german_credit_data).add_test(
+            test_f1, threshold=0.2, actual_slice=german_credit_data
+        ).save(client, "test_project_key")
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
 #    client = GiskardClient("http://localhost:9000", "")
