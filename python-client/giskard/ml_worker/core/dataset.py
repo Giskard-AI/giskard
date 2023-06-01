@@ -115,6 +115,7 @@ class Dataset:
 
     @staticmethod
     def _cat_columns(meta):
+        #TODO: if meta.column_meanings:
         return [fname for (fname, ftype) in meta.column_meanings.items() if
                 ftype == SupportedColumnMeanings.CATEGORY]
 
