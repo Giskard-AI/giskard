@@ -54,7 +54,7 @@
     <div v-if="props.executions?.length > 0">
       <div class="d-flex justify-space-between align-center">
         <p class="text-h6">Results</p>
-        <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testId: props.test.uuid}}">
+        <v-btn text color="secondary" :to="{name: 'test-suite-new-compare-test', params: { testUuid: props.test.uuid}}">
           Compare executions
           <v-icon>compare</v-icon>
         </v-btn>
@@ -67,7 +67,7 @@
 
 <script lang="ts" setup>
 
-import {DatasetDTO, ModelDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestInputDTO} from "@/generated-sources";
+import {SuiteTestExecutionDTO, TestFunctionDTO, TestInputDTO} from "@/generated-sources";
 import _, {chain} from "lodash";
 import TestResultTimeline from '@/components/TestResultTimeline.vue';
 import {computed, ref, watch} from 'vue';
@@ -77,7 +77,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
 
 const props = defineProps<{
-  test: TestDefinitionDTO
+  test: TestFunctionDTO
   inputs: { [key: string]: TestInputDTO },
   executions?: SuiteTestExecutionDTO[]
 }>();
@@ -98,11 +98,12 @@ const sortedArguments = computed(() => {
 })
 
 function editInputs() {
-  editedInputs.value = Object.keys(props.test.args)
+  editedInputs.value = props.test.args
       .reduce((editedInputs, arg) => {
-        editedInputs[arg] = props.inputs[arg]?.value;
+        editedInputs[arg.name] = props.inputs[arg.name]?.value;
         return editedInputs;
       }, {});
+  console.log(props.test.args)
 }
 
 async function saveEditedInputs() {
@@ -110,7 +111,7 @@ async function saveEditedInputs() {
     return;
   }
 
-  await api.updateTestInputs(projectId.value!, suiteId.value!, props.test.id, editedInputs.value)
+  await api.updateTestInputs(projectId.value!, suiteId.value!, props.test.uuid, editedInputs.value)
   editedInputs.value = null;
 
   await reload();
