@@ -149,7 +149,7 @@ class Model:
         local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
         if client is None:
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = ModelMeta(

@@ -88,8 +88,8 @@ def validate_model_save_load(model: Model):
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save_to_local_dir(f)
             model.save_data_preprocessing_function(f)
-            loaded_model = Model.read_model_from_local_dir(f)
-            loaded_data_prep_fn = Model.read_data_preprocessing_function_from_artifact(f)
+            loaded_model = model.read_model_from_local_dir(f)
+            loaded_data_prep_fn = model.read_data_preprocessing_function_from_artifact(f)
             return loaded_model, loaded_data_prep_fn
     except Exception as e:
         raise ValueError("Failed to validate model saving and loading from local disk") from e
