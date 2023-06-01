@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
 import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
@@ -248,11 +249,8 @@ public class InspectionService {
         inspectionRepository.deleteById(inspectionId);
     }
 
-    public Inspection updateInspectionName(Long inspectionId, String name) throws EntityNotFoundException {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
-        if (inspection == null) {
-            throw new EntityNotFoundException(INSPECTION, inspectionId);
-        }
+    public Inspection updateInspectionName(long inspectionId, String name) {
+        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
         inspection.setName(name);
         return inspectionRepository.save(inspection);
     }
