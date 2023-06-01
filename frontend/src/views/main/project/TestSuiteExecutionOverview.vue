@@ -22,7 +22,7 @@
     <v-container v-else class="d-flex flex-column vc fill-height">
         <h1 class="pt-16">No tests has been added to the suite</h1>
         <v-btn tile class='mx-1'
-               :to="{name: 'project-catalog-tests', query: {suiteId: suite.id}}"
+               :to="{name: 'project-catalog-tests', query: {suiteId: suite?.id}}"
                color="primary">
             <v-icon>add</v-icon>
             Add test
@@ -40,17 +40,15 @@ import {chain} from 'lodash';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
-import {useCatalogStore} from "@/stores/catalog";
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const props = defineProps<{ execution?: TestSuiteExecutionDTO }>();
 
 const testSuiteStore = useTestSuiteStore();
-const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
+const {registry, models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
-    testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
+  testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
 })
 
 watch(() => props.execution,
@@ -74,13 +72,14 @@ const statusFilterOptions = [{
 const statusFilter = ref<string>(statusFilterOptions[0].label);
 const searchFilter = ref<string>("");
 
-const {testFunctionsByUuid} = storeToRefs(useCatalogStore());
+
+const registryByUuid = computed(() => chain(registry.value).keyBy('uuid').value());
 
 const filteredTest = computed(() => suite.value === null ? [] : chain(suite.value!.tests)
     .map(suiteTest => ({
-        suiteTest,
-        test: testFunctionsByUuid.value[suiteTest.testUuid],
-        result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
+      suiteTest,
+      test: registryByUuid.value[suiteTest.testUuid],
+      result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
     .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
     .filter(({test}) => {
