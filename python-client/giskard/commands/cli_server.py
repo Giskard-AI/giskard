@@ -66,12 +66,13 @@ def start(attached):
     if not _check_downloaded(version.replace('v', '')):
         _download_dockerfile(version)
 
-    container = client.containers.get("giskard-server")
-    if container is None:
+    try:
+        container = client.containers.get("giskard-server")
+    except:
         container = client.containers.create(f"giskardai/giskard:{version.replace('v', '')}",
                                              detach=not attached,
                                              name="giskard-server",
-                                             ports={19000: 19000, 9080: 9080})
+                                             ports={7860: 19000, 9080: 9080})
     container.start()
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:19000")
 
