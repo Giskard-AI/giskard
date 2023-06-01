@@ -30,11 +30,11 @@
 
 <script lang="ts" setup>
 
-import {api} from "@/api";
-import {onActivated} from "vue";
+import { api } from "@/api";
+import { onActivated } from "vue";
 import router from '@/router';
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {storeToRefs} from "pinia";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { storeToRefs } from "pinia";
 
 const props = defineProps<{
     projectId: number
@@ -50,7 +50,7 @@ async function createTestSuite() {
     const project = await api.getProject(props.projectId)
     const suite = await api.createTestSuite(project.key, {
         id: null,
-        name: 'Unnamed test suite',
+        name: `Unnamed test suite`,
         projectKey: project.key,
         functionInputs: [],
         tests: []
