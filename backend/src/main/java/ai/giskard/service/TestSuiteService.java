@@ -191,7 +191,7 @@ public class TestSuiteService {
                     case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, input.getValue()));
                     case "Model" -> argumentBuilder.setModel(buildArtifactRef(projectKey, input.getValue()));
                     case "float" -> argumentBuilder.setFloat(Float.parseFloat(String.valueOf(input.getValue())));
-                    case "string" -> argumentBuilder.setString(input.getValue());
+                    case "str" -> argumentBuilder.setString(input.getValue());
                     default ->
                         throw new IllegalArgumentException(String.format("Unknown test execution input type %s", input.getType()));
                 }
