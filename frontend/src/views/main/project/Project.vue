@@ -45,7 +45,7 @@
       </v-card>
     </v-dialog>
 
-    <v-container fluid id="container-project-tab" class="vertical-container overflow-hidden pb-0">
+    <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <v-tabs v-model="tab" optional>
         <v-tab :to="{ name: 'project-feedbacks' }" value="feedbacks">
           <v-icon left small>mdi-comment-multiple-outline</v-icon>
