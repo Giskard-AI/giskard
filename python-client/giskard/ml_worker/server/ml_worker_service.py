@@ -206,7 +206,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def datasetProcessing(
             self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
 
         for function in request.functions:
             arguments = self.parse_function_arguments(function.arguments)
@@ -292,7 +292,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.none:
                 continue
             if arg.HasField("dataset"):
-                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id)
+                arguments[arg.name] = Dataset.download(self.client, arg.dataset.project_key, arg.dataset.id,
+                                                       arg.dataset.sample)
             elif arg.HasField("model"):
                 arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
@@ -319,7 +320,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
         explanations = explain(model, dataset, request.columns)
 
         return ml_worker_pb2.ExplainResponse(
@@ -370,7 +371,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id,
+                                       sample=request.dataset.sample)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError(
