@@ -1,16 +1,12 @@
 from typing import Union, Optional, Iterable, Any, Callable
 import pandas as pd
 import logging
+import mlflow
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import validate_args
 from giskard.models.base import MLFlowBasedModel
 
 logger = logging.getLogger(__name__)
-
-try:
-    import mlflow
-except ImportError:
-    pass
 
 
 class TensorFlowModel(MLFlowBasedModel):
