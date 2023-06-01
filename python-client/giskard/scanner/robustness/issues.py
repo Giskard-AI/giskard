@@ -3,13 +3,13 @@ import numpy as np
 from dataclasses import dataclass
 
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
-from ..issues import Issue, IssueInfo
+from ..issues import Issue
 from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
 
 
 @dataclass
-class RobustnessIssueInfo(IssueInfo):
+class RobustnessIssueInfo:
     feature: str
     transformation_fn: TransformationFunction
     fail_ratio: float
