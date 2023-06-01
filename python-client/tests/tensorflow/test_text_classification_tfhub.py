@@ -51,6 +51,6 @@ def test_text_classification_tfhub():
                                classification_labels=[0, 1, 2, 3])
 
     # defining the giskard dataset
-    my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target", cat_columns=['Week_day', 'Month'])
+    my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target")
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
