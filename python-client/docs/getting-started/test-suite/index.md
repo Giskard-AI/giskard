@@ -282,7 +282,7 @@ client.create_project(project_name, "Project name", "Small description of the pr
 suite = Suite()
 .add_test(test_f1(dataset=wrapped_dataset))
 .add_test(DataQuality(dataset=wrapped_dataset, column_name='Month', category='August'))
-.save(client, project_name)
+.upload(client, project_name)
 ```
 
 #### Description
