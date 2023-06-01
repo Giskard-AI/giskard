@@ -16,6 +16,7 @@ from giskard.models import model, model_from_catboost, model_from_sklearn, \
 from giskard.models.base import Model
 from giskard.models.base import WrapperModel
 from giskard.models.base import MLFlowBasedModel
+from giskard.models.base import CustomModel
 from giskard.models.sklearn import SKLearnModel
 from giskard.models.catboost import CatboostModel
 from giskard.models.pytorch import PyTorchModel
@@ -55,6 +56,7 @@ __all__ = [
     'Model',
     'WrapperModel',
     'MLFlowBasedModel',
+    'CustomModel',
     'SKLearnModel',
     'CatboostModel',
     'PyTorchModel',
