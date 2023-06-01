@@ -10,6 +10,7 @@ from giskard.models.base import MLFlowBasedModel
 
 class SKLearnModel(MLFlowBasedModel):
     _feature_names_attr = "feature_names_in_"
+
     @configured_validate_arguments
     def __init__(self,
                  model,
