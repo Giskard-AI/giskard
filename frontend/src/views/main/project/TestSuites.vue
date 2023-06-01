@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="vc">
+  <v-container fluid class="vc" v-if="suites.length > 0">
     <div class="d-flex flex-row-reverse pb-4">
       <v-btn
           color="primary"
@@ -19,6 +19,15 @@
         <v-card-text>{{ suite.projectKey }}</v-card-text>
       </v-card>
     </v-row>
+  </v-container>
+  <v-container v-else class="d-flex flex-column vc fill-height">
+    <h1 class="pt-16">You haven't created any test suite for this project!</h1>
+    <v-btn tile class='mx-1'
+           @click="createTestSuite"
+           color="primary">
+      <v-icon>add</v-icon>
+      Create a new test suite
+    </v-btn>
   </v-container>
 </template>
 
