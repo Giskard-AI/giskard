@@ -156,9 +156,14 @@ class GiskardClient:
             target=res["target"],
             column_types=res["columnTypes"],
             column_dtypes=res["columnDtypes"],
+            number_of_rows=res["numberOfRows"],
+            category_features=res["categoryFeatures"]
         )
 
     def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
+        class_label_dtype = None if (not meta.classification_labels or not len(meta.classification_labels)) else type(
+            meta.classification_labels[0]).__name__
+
         self._session.post(
             f"project/{project_key}/models",
             json={
@@ -168,6 +173,7 @@ class GiskardClient:
                 "threshold": meta.classification_threshold,
                 "featureNames": meta.feature_names,
                 "classificationLabels": meta.classification_labels,
+                "classificationLabelsDtype": class_label_dtype,
                 "id": str(model_id),
                 "project": project_key,
                 "name": meta.name,
@@ -185,6 +191,7 @@ class GiskardClient:
                 "featureNames": anonymize(meta.feature_names),
                 "language": "PYTHON",
                 "classificationLabels": anonymize(meta.classification_labels),
+                "classificationLabelsDtype": class_label_dtype,
                 "loader_module": meta.loader_module,
                 "loader_class": meta.loader_class,
                 "size": size,
@@ -250,6 +257,8 @@ class GiskardClient:
                 "columnDtypes": meta.column_dtypes,
                 "originalSizeBytes": original_size_bytes,
                 "compressedSizeBytes": compressed_size_bytes,
+                "numberOfRows": meta.number_of_rows,
+                "categoryFeatures": meta.category_features
             },
         )
         analytics.track(
