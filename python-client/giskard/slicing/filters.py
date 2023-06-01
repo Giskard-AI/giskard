@@ -1,12 +1,44 @@
 import logging
 from scipy import stats
 
+from giskard.data.dataset import Dataset
+from giskard.ml_worker.testing.tests.performance import test_diff_f1
+
 
 class DataSliceFilter:
     """Selects slices based on their significance."""
 
     def filter(self, slices):
         raise NotImplementedError()
+
+
+class InternalTestFilter(DataSliceFilter):
+
+    def __init__(self, model, og_dataset, test=test_diff_f1, threshold=0.1):
+        self.dataset = og_dataset
+        self.model = model
+        self.test = test
+        self.threshold = threshold
+
+    def _diff_test(self, data_slice):
+        # Convert slice to Giskard Dataframe
+        g_dataset = Dataset(data_slice,
+                            target_col=self.dataset.target,
+                            class_labels=self.dataset.class_labels,
+                            column_types=self.dataset.column_types
+                            )
+        # Apply the test
+        test_res = self.test(
+            actual_slice=g_dataset,
+            reference_slice=self.dataset,
+            model=self.model,
+            threshold=self.threshold,
+        )
+
+        return not test_res.passed
+
+    def filter(self, slices):
+        return list(filter(self._diff_test, slices))
 
 
 class SignificanceFilter(DataSliceFilter):
@@ -50,7 +82,7 @@ class SignificanceFilter(DataSliceFilter):
 
         if slice_mean < 1.15 * bg_mean:
             return False
-        
+
         p_value = stats.brunnermunzel(
             data_slice.data[self.target],
             data_slice.data_complement[self.target],
