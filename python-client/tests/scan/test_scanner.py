@@ -10,7 +10,8 @@ from giskard.scanner.result import ScanResult
     [
         # ("german_credit_data", "german_credit_model"),
         # ("enron_data", "enron_model")
-        ("medical_transcript_data", "medical_transcript_model")
+        ("medical_transcript_data", "medical_transcript_model"),
+        ("breast_cancer_data", "breast_cancer_model")
     ],
 )
 def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):

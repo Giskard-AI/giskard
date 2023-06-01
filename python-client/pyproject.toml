@@ -36,6 +36,7 @@ dev = [
     "isort[colors]>=5.12.0",
     "pip>=23.1.2",
     "nltk>=3.8.1",
+    "xgboost>=1.7.5",
 ]
 proto = [
     "grpcio-tools>=1.46.3",
