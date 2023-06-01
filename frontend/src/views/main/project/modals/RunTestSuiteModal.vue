@@ -60,6 +60,7 @@ const props = defineProps<{
   suiteId: number,
   inputs: { [name: string]: string }
 }>();
+
 const mainStore = useMainStore();
 
 const emit = defineEmits(['uuid']);
