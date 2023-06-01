@@ -1,11 +1,9 @@
 package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
-
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
