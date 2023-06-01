@@ -72,7 +72,7 @@ def explain_text(model: Model, input_df: pd.DataFrame,
                 logger.warning(f"Failed to fit text explainer {i}")
 
         text_explainer.show_prediction(target_names=model.meta.classification_labels)
-        exp = text_explainer.explain_prediction(target_names=model.classification_labels)
+        exp = text_explainer.explain_prediction(target_names=model.meta.classification_labels)
         exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
         return get_list_words_weigths(exp)
     except Exception as e:
