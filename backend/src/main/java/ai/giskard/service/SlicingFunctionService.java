@@ -2,6 +2,7 @@ package ai.giskard.service;
 
 import ai.giskard.domain.SlicingFunction;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
+import ai.giskard.utils.UUID5;
 import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.ComparisonType;
 import ai.giskard.web.dto.DatasetProcessFunctionType;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static ai.giskard.utils.GiskardStringUtils.escapePythonVariable;
@@ -71,7 +71,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         String name = comparisonClauses.stream().map(this::clauseToString).collect(Collectors.joining(" & "));
 
         SlicingFunction slicingFunction = new SlicingFunction();
-        slicingFunction.setUuid(UUID.randomUUID());
+        slicingFunction.setUuid(UUID5.nameUUIDFromNamespaceAndString(UUID5.NAMESPACE_OID, name));
         slicingFunction.setArgs(Collections.emptyList());
         slicingFunction.setCode("");
         slicingFunction.setClauses(comparisonClauses.stream().map(this::toCode).collect(Collectors.toList()));
