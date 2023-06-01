@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {api} from '@/api';
-import {DatasetDTO, ModelDTO} from "@/generated-sources";
+import { api } from '@/api';
+import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import { computed, onActivated, ref } from "vue";
