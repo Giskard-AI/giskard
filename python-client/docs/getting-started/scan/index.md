@@ -55,7 +55,7 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
 from giskard import wrap_dataset
 
 wrapped_dataset = wrap_dataset(
-  dataset=iris_df, 
+  df=iris_df, 
   target="species", # Optional but a MUST if available
   cat_columns=["petal size"] # Optional but a MUST if available. Inferred automatically if not.
   # name="my_iris_dataset", # Optional
@@ -63,8 +63,9 @@ wrapped_dataset = wrap_dataset(
   )
 ```
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-  * `dataset`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
-     ground truth variable (target).
+  * `df`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual 
+     ground truth variable (target). `df` can contain more columns than the features of the model such as the sample_id, 
+     metadata, etc.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
   * `target`: The column name in `dataset` corresponding to the actual target variable (ground truth).
