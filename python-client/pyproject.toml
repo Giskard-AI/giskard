@@ -137,7 +137,7 @@ dependencies = [
 
 [project.optional-dependencies]
 scan = [
-    "optbinning>=0.17",
+    "optbinning>=0.17.0",
     "chardet",
     "altair>=4",
 ]
