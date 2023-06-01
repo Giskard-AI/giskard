@@ -89,7 +89,7 @@ the entire prediction process, starting from the **raw** `pandas.DataFrame` and 
 If your ML model contains preprocessing functions (categorical encoding, scaling, etc.), it should be either inside your
 `model` or inside the `data_preprocessing_function` of the Giskard model you create.
 
-### General usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
+### Usage of [wrap_model](../../reference/models/index.rst#giskard.wrap_model)
 :::::::{tab-set}
 ::::::{tab-item} Classification
 ```python
