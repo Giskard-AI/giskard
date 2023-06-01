@@ -24,8 +24,9 @@ export const useDebuggingSessionsStore = defineStore('debuggingSessions', {
       this.debuggingSessions = await api.getProjectInspections(this.projectId);
     },
     async createDebuggingSession(inspection: InspectionCreateDTO) {
-      await api.prepareInspection(inspection);
+      const newDebuggingSession = await api.prepareInspection(inspection);
       await this.reload();
+      return newDebuggingSession;
     },
     async deleteDebuggingSession(inspectionId: number) {
       await api.deleteInspection(inspectionId);
