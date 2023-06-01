@@ -446,24 +446,24 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
                         context: grpc.ServicerContext) -> ml_worker_pb2.TestRegistryResponse:
         return ml_worker_pb2.TestRegistryResponse(tests={
-            test.id: ml_worker_pb2.TestFunction(
-                id=test.id,
+            test.uuid: ml_worker_pb2.TestFunction(
+                uuid=test.uuid,
                 name=test.name,
                 module=test.module,
                 doc=test.doc,
                 code=test.code,
                 moduleDoc=test.module_doc,
                 tags=test.tags,
-                arguments={
-                    a.name: ml_worker_pb2.TestFunctionArgument(
+                args=[
+                    ml_worker_pb2.TestFunctionArgument(
                         name=a.name,
                         type=a.type,
                         optional=a.optional,
                         default=str(a.default),
                         argOrder=a.argOrder
                     ) for a
-                    in test.args.values()}
-
+                    in test.args.values()
+                ]
             )
             for test in tests_registry.get_all().values()
         })

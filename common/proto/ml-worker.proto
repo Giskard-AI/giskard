@@ -330,7 +330,7 @@ message TestFunction{
   string module = 5;
   string doc = 6;
   string moduleDoc = 7;
-  map<string, TestFunctionArgument> args = 8;
+  repeated TestFunctionArgument args = 8;
   repeated string tags = 9;
   string code = 10;
 }
