@@ -38,9 +38,9 @@ def _perturb_and_predict(model: BaseModel, ds: Dataset, transformation_function:
                                                                  classification_label)
 
     modified_rows = []
-    for idx, r in ds.df.iterrows():
+    for i, (idx, r) in enumerate(ds.df.iterrows()):
         if not r.equals(perturbed_ds.df.loc[idx]):
-            modified_rows.append(idx)
+            modified_rows.append(i)
 
     return results_df.iloc[modified_rows], len(modified_rows)
 
