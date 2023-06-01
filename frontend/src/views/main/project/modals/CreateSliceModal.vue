@@ -71,16 +71,25 @@ const CLAUSE_SYMBOLS: { [clause in NoCodeSlicingType]: string } = {
 
 const NO_VALUES = [NoCodeSlicingType.IS_EMPTY, NoCodeSlicingType.IS_NOT_EMPTY]
 
-function escapePython(val?: string | number | null): string {
+function escapePython(val?: string | number | null, column?: string): string {
+    if (column && val && typeof val === 'string') {
+        const type = props.dataset.columnDtypes[column];
+        if (type.startsWith('int')) {
+            return escapePython(parseInt(val, 10))
+        } else if (type.startsWith('float')) {
+            return escapePython(parseFloat(val))
+        }
+    }
+
     if (typeof val === 'string') {
         return `'${val.replace("'", "\\'")}'`
     } else {
-        return val ? val.toString() : 'None'
+        return val !== null && val !== undefined ? val.toString() : 'None'
     }
 }
 
 function clauseCode(clause: ColumnFilterDTO) {
-    return CLAUSE_BUILDERS[clause.slicingType](escapePython(clause.column), escapePython(clause.value))
+    return CLAUSE_BUILDERS[clause.slicingType](escapePython(clause.column), escapePython(clause.value, clause.column))
 }
 
 function clausesCode() {
@@ -88,7 +97,7 @@ function clausesCode() {
 }
 
 function clauseToString(clause: ColumnFilterDTO) {
-    return `${escapePython(clause.column)} ${CLAUSE_SYMBOLS[clause.slicingType]} ${NO_VALUES.includes(clause.slicingType) ? '' : escapePython(clause.value)}`
+    return `${escapePython(clause.column)} ${CLAUSE_SYMBOLS[clause.slicingType]} ${NO_VALUES.includes(clause.slicingType) ? '' : escapePython(clause.value, clause.column)}`
 }
 
 async function save(close) {

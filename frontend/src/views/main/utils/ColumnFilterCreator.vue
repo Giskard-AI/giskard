@@ -27,14 +27,19 @@
         <v-col cols="4">
             <v-text-field v-if="columnType === ColumnType.TEXT" type="text"
                           label="Value"
+                          :value="value"
+                          @input="handleValueInput"
                           :disabled="!slicingType || !SLICING_TYPE_WITH_VALUE.includes(slicingType)"/>
             <v-text-field v-else-if="columnType === ColumnType.NUMERIC"
                           label="Value"
+                          :value="value"
+                          @input="handleValueInput"
                           type="number" :disabled="!slicingType"/>
             <v-select
                 v-else
                 :items="dataset.categoryFeatures[columnName]"
                 :value="value"
+                @input="handleValueInput"
                 label="Value"
                 :disabled="!slicingType"
             />
@@ -113,6 +118,10 @@ function handleSlicingTypeInput(input) {
         emit('update:value', undefined);
         return;
     }
+}
+
+function handleValueInput(input) {
+    emit('update:value', input);
 }
 
 </script>
