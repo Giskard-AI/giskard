@@ -8,6 +8,7 @@ from ...ml_worker.testing.registry.transformation_function import Transformation
 from ...ml_worker.testing.registry.transformation_function import transformation_function
 from giskard.scanner.robustness.entity_swap import gender_switch_en, gender_switch_fr
 from .utils import TransformationLanguage
+from langdetect import detect_langs
 
 
 @transformation_function(row_level=False)
@@ -55,6 +56,7 @@ class TextTransformation(TransformationFunction):
 
     def make_perturbation(self, text: str) -> str:
         raise NotImplementedError()
+
 
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
@@ -109,10 +111,11 @@ class TextGenderTransformation(TextTransformation):
     name = "Switch gender"
 
     def make_perturbation(self, x):
+        language = detect_langs(x)[0].lang
         split_text = x.split()
         new_words = []
         for token in split_text:
-            new_word = self._switch(token)
+            new_word = self._switch(token, language)
             if new_word != token:
                 new_words.append(new_word)
 
@@ -121,10 +124,10 @@ class TextGenderTransformation(TextTransformation):
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
         return new_text
 
-    def _switch(self, word):
-        if word.lower() in gender_switch_en:
+    def _switch(self, word, language):
+        if (language == "en") and (word.lower() in gender_switch_en):
             return [word, gender_switch_en[word.lower()]]
-        elif word.lower() in gender_switch_fr:
+        elif (language == "fr") and (word.lower() in gender_switch_fr):
             return [word, gender_switch_fr[word.lower()]]
         else:
             return word
