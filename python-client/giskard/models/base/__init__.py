@@ -394,6 +394,7 @@ class BaseModel(ABC):
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
+        model.id = model_id
         model._cache = ModelCache(model.id)
         return model
 
