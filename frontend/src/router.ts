@@ -159,7 +159,10 @@ export default new Router({
                                     name: 'project-debugger',
                                     component: () => import('./views/main/project/Debugger.vue'),
                                     props: (route) => {
-                                        return { projectId: Number(route.params.id) }
+                                        return {
+                                            projectId: Number(route.params.id),
+                                            activeInspectionId: route.params.inspectionId
+                                        }
                                     }
                                 },
                                 {
