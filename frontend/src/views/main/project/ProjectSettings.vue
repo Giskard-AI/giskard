@@ -4,15 +4,19 @@
       <v-col cols="9">
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
-            Properties
+            Project Properties
           </v-card-title>
           <v-card-text class="container">
             <v-row>
               <v-col cols="6">
-                <v-simple-table class="properties-table-c1">
+                <v-simple-table class="properties-table project-properties-table-1">
+                  <tr>
+                    <td>Project Name:</td>
+                    <td>Project Name [EDIT BTN]</td>
+                  </tr>
                   <tr>
                     <td>Project Description:</td>
-                    <td>{{ project.description }}</td>
+                    <td>{{ project.description }} [EDIT BTN]</td>
                   </tr>
                   <tr>
                     <td>Project Unique Key:</td>
@@ -25,7 +29,7 @@
                 </v-simple-table>
               </v-col>
               <v-col cols="6">
-                <v-simple-table class="properties-table-c2">
+                <v-simple-table class="properties-table project-properties-table-2">
                   <tr>
                     <td>Created by:</td>
                     <td>{{ getUserFullDisplayName(project.owner) }}</td>
@@ -41,6 +45,24 @@
                 </v-simple-table>
               </v-col>
             </v-row>
+            <v-row>
+              <v-col cols="12">
+                <h3 class="font-weight-light secondary--text">Guest Users</h3>
+                <div>
+                  <table v-if="project.guests.length" class="px-2">
+                    <tr v-for="p in project.guests" :key="p.user_id">
+                      <td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
+                      <td v-if="isProjectOwnerOrAdmin">
+                        <v-btn icon small color="accent" @click="cancelUserInvitation(p)">
+                          <v-icon small>person_remove</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </table>
+                  <p v-else class="caption">None</p>
+                </div>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
@@ -48,22 +70,15 @@
       <v-col cols="3">
         <v-card height="100%">
           <v-card-title class="font-weight-light secondary--text">
-            Guest Users
+            Explanation Properties
           </v-card-title>
           <v-card-text>
-            <div class="px-2">
-              <table v-if="project.guests.length">
-                <tr v-for="p in project.guests" :key="p.user_id">
-                  <td class="caption pr-4">{{ getUserFullDisplayName(p) }}</td>
-                  <td v-if="isProjectOwnerOrAdmin">
-                    <v-btn icon small color="accent" @click="cancelUserInvitation(p)">
-                      <v-icon small>person_remove</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
-              </table>
-              <p v-else class="caption">None</p>
-            </div>
+            <v-simple-table class="properties-table">
+              <tr>
+                <td>Lime Number Samples:</td>
+                <td>500 [EDIT BTN]</td>
+              </tr>
+            </v-simple-table>
           </v-card-text>
         </v-card>
       </v-col>
@@ -120,7 +135,6 @@ import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from "mixpanel-browser";
 import { useProjectStore } from "@/stores/project";
 import { computed, ref } from 'vue';
-import { mode } from 'crypto-js';
 
 interface Props {
   projectId: number;
@@ -205,26 +219,26 @@ export default class ProjectSettings extends Vue {
 </script> -->
 
 <style scoped lang="scss">
-.properties-table-c1 {
+.properties-table {
   tr {
-    td:first-child {
-      width: 150px;
-    }
-
     td:nth-child(2) {
       font-weight: bold;
     }
   }
 }
 
-.properties-table-c2 {
+.project-properties-table-1 {
+  tr {
+    td:first-child {
+      width: 150px;
+    }
+  }
+}
+
+.project-properties-table-2 {
   tr {
     td:first-child {
       width: 100px;
-    }
-
-    td:nth-child(2) {
-      font-weight: bold;
     }
   }
 }
