@@ -10,12 +10,8 @@ from giskard.ml_worker.testing.utils import Direction
 def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit_model):
     perturbation = {}
 
-    results = metamorphic.test_metamorphic_invariance(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        threshold=0.1,
-    )
+    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+                                                      perturbation_dict=perturbation, threshold=0.1)
     assert results.actual_slices_size[0] == 1000
     assert results.passed
 
@@ -23,12 +19,8 @@ def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit
 def _test_metamorphic_invariance_male_female(german_credit_test_data, german_credit_model, threshold):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
 
-    results = metamorphic.test_metamorphic_invariance(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        threshold=threshold,
-    )
+    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+                                                      perturbation_dict=perturbation, threshold=threshold)
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert round(results.metric, 2) == 0.97
     return results.passed
@@ -45,12 +37,8 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
         "sex": lambda x: "female" if x.sex == "male" else "male",
     }
 
-    results = metamorphic.test_metamorphic_invariance(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        threshold=0.1,
-    )
+    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+                                                      perturbation_dict=perturbation, threshold=0.1)
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert round(results.metric, 2) == 0.86
 
@@ -58,12 +46,8 @@ def test_metamorphic_invariance_2_perturbations(german_credit_test_data, german_
 def test_metamorphic_invariance_some_rows(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else x.sex}
 
-    results = metamorphic.test_metamorphic_invariance(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        threshold=0.1,
-    )
+    results = metamorphic.test_metamorphic_invariance(dataset=german_credit_test_data, model=german_credit_model,
+                                                      perturbation_dict=perturbation, threshold=0.1)
 
     assert round(results.metric, 2) == 0.97
 
@@ -73,13 +57,9 @@ def test_metamorphic_invariance_regression(diabetes_dataset_with_target, linear_
     assert len(sex_values) == 2
     perturbation = {"sex": lambda x: sex_values[1] if x.sex == sex_values[0] else x.sex}
 
-    results = metamorphic.test_metamorphic_invariance(
-        df=diabetes_dataset_with_target,
-        model=linear_regression_diabetes,
-        perturbation_dict=perturbation,
-        output_sensitivity=0.1,
-        threshold=0.1,
-    )
+    results = metamorphic.test_metamorphic_invariance(dataset=diabetes_dataset_with_target,
+                                                      model=linear_regression_diabetes, perturbation_dict=perturbation,
+                                                      threshold=0.1, output_sensitivity=0.1)
     assert results.actual_slices_size[0] == len(diabetes_dataset_with_target)
     assert round(results.metric, 2) == 0.11
 
@@ -156,13 +136,9 @@ def test_metamorphic_compare_wilcoxon(
 def test_metamorphic_invariance_t_test(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
 
-    results = metamorphic.test_metamorphic_invariance_t_test(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        window_size=0.2,
-        critical_quantile=0.05,
-    )
+    results = metamorphic.test_metamorphic_invariance_t_test(dataset=german_credit_test_data, model=german_credit_model,
+                                                             perturbation_dict=perturbation, window_size=0.2,
+                                                             critical_quantile=0.05)
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
@@ -171,13 +147,9 @@ def test_metamorphic_invariance_t_test(german_credit_test_data, german_credit_mo
 def test_metamorphic_invariance_t_test_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
 
-    results = metamorphic.test_metamorphic_invariance_t_test(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        window_size=0.2,
-        critical_quantile=0.05,
-    )
+    results = metamorphic.test_metamorphic_invariance_t_test(dataset=german_credit_test_data, model=german_credit_model,
+                                                             perturbation_dict=perturbation, window_size=0.2,
+                                                             critical_quantile=0.05)
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
@@ -186,13 +158,10 @@ def test_metamorphic_invariance_t_test_nopert(german_credit_test_data, german_cr
 def test_metamorphic_invariance_wilcoxon(german_credit_test_data, german_credit_model):
     perturbation = {"sex": lambda x: "female" if x.sex == "male" else "male"}
 
-    results = metamorphic.test_metamorphic_invariance_wilcoxon(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        window_size=0.2,
-        critical_quantile=0.05,
-    )
+    results = metamorphic.test_metamorphic_invariance_wilcoxon(dataset=german_credit_test_data,
+                                                               model=german_credit_model,
+                                                               perturbation_dict=perturbation, window_size=0.2,
+                                                               critical_quantile=0.05)
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
@@ -201,13 +170,10 @@ def test_metamorphic_invariance_wilcoxon(german_credit_test_data, german_credit_
 def test_metamorphic_invariance_wilcoxon_nopert(german_credit_test_data, german_credit_model):
     perturbation = {}
 
-    results = metamorphic.test_metamorphic_invariance_wilcoxon(
-        df=german_credit_test_data,
-        model=german_credit_model,
-        perturbation_dict=perturbation,
-        window_size=0.2,
-        critical_quantile=0.05,
-    )
+    results = metamorphic.test_metamorphic_invariance_wilcoxon(dataset=german_credit_test_data,
+                                                               model=german_credit_model,
+                                                               perturbation_dict=perturbation, window_size=0.2,
+                                                               critical_quantile=0.05)
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"

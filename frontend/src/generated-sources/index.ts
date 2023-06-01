@@ -13,6 +13,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.jobs.JobState' : 'JobState',
     'ai.giskard.jobs.JobType' : 'JobType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
+    'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
+    'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.LicenseDTO' : 'LicenseDTO',
@@ -21,6 +23,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.CreateFeedbackDTO' : 'CreateFeedbackDTO',
     'ai.giskard.web.dto.CreateFeedbackReplyDTO' : 'CreateFeedbackReplyDTO',
     'ai.giskard.web.dto.DataUploadParamsDTO' : 'DataUploadParamsDTO',
+    'ai.giskard.web.dto.DatasetDescribeColumnDTO' : 'DatasetDescribeColumnDTO',
     'ai.giskard.web.dto.DatasetMetadataDTO' : 'DatasetMetadataDTO',
     'ai.giskard.web.dto.ExplainResponseDTO' : 'ExplainResponseDTO',
     'ai.giskard.web.dto.ExplainTextResponseDTO' : 'ExplainTextResponseDTO',
@@ -70,6 +73,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.SliceCreateDTO' : 'SliceCreateDTO',
     'ai.giskard.web.dto.SlicePutDTO' : 'SlicePutDTO',
     'ai.giskard.web.dto.SliceValidateDTO' : 'SliceValidateDTO',
+    'ai.giskard.web.dto.SlicingFunctionDTO' : 'SlicingFunctionDTO',
+    'ai.giskard.web.dto.SlicingResultDTO' : 'SlicingResultDTO',
     'ai.giskard.web.dto.SuiteTestDTO' : 'SuiteTestDTO',
     'ai.giskard.web.dto.TestFunctionArgumentDTO' : 'TestFunctionArgumentDTO',
     'ai.giskard.web.dto.TestFunctionDTO' : 'TestFunctionDTO',
@@ -101,12 +106,15 @@ export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/jobs/job-state';
 export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/service/ee/feature-flag';
+export * from './ai/giskard/web/dto/callable-dto';
+export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/license-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
 export * from './ai/giskard/web/dto/create-feedback-dto';
 export * from './ai/giskard/web/dto/create-feedback-reply-dto';
 export * from './ai/giskard/web/dto/data-upload-params-dto';
+export * from './ai/giskard/web/dto/dataset-describe-column-dto';
 export * from './ai/giskard/web/dto/dataset-metadata-dto';
 export * from './ai/giskard/web/dto/explain-response-dto';
 export * from './ai/giskard/web/dto/explain-text-response-dto';
@@ -154,6 +162,8 @@ export * from './ai/giskard/web/dto/setup-dto';
 export * from './ai/giskard/web/dto/slice-create-dto';
 export * from './ai/giskard/web/dto/slice-put-dto';
 export * from './ai/giskard/web/dto/slice-validate-dto';
+export * from './ai/giskard/web/dto/slicing-function-dto';
+export * from './ai/giskard/web/dto/slicing-result-dto';
 export * from './ai/giskard/web/dto/suite-test-dto';
 export * from './ai/giskard/web/dto/test-function-argument-dto';
 export * from './ai/giskard/web/dto/test-function-dto';

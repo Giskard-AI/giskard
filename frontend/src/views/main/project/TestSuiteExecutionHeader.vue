@@ -38,13 +38,7 @@
 
 <script setup lang="ts">
 
-import {
-    SuiteTestDTO,
-    SuiteTestExecutionDTO,
-    TestFunctionDTO,
-    TestResult,
-    TestSuiteExecutionDTO
-} from '@/generated-sources';
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed} from 'vue';
 import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
 import {api} from '@/api';
@@ -56,9 +50,8 @@ import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.v
 
 const props = defineProps<{
   tests: {
-    suiteTest: SuiteTestDTO,
-    test: TestFunctionDTO,
-    result?: SuiteTestExecutionDTO
+    suiteTest: SuiteTestDTO
+      result?: SuiteTestExecutionDTO
   }[],
   execution?: TestSuiteExecutionDTO,
   compact: boolean
