@@ -10,13 +10,12 @@ from urllib.parse import urlparse
 
 from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 
-from giskard.cli_utils import analytics
-from giskard.client.analytics_collector import anonymize
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.data_encryptor import DataEncryptor
 from giskard.ml_worker.bridge.error import ConnectionLost
 from giskard.ml_worker.bridge.service_messages import CREATE_CLIENT_CHANNEL, START_INNER_SERVER
 from giskard.ml_worker.utils.network import readable_hex
+from giskard.utils.analytics_collector import anonymize, analytics
 
 CHANNEL_ID_LENGTH = 8
 

@@ -8,9 +8,8 @@ from typing import Union, Callable, Optional, Type
 
 from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Savable
-from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
-from giskard.ml_worker.testing.registry.utils import is_local_function
+from giskard.ml_worker.testing.test_result import TestResult
 
 Result = Union[TestResult, bool]
 
@@ -62,13 +61,13 @@ class GiskardTest(Savable[Type, TestFunctionMeta], ABC):
 
     @classmethod
     def _read_from_local_dir(cls, local_dir: Path, meta: TestFunctionMeta):
-        if not is_local_function(meta.module):
-            func = getattr(sys.modules[meta.module], meta.name)
-        else:
-            if not local_dir.exists():
-                return None
+        if local_dir.exists():
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)
+        elif hasattr(sys.modules[meta.module], meta.name):
+            func = getattr(sys.modules[meta.module], meta.name)
+        else:
+            return None
 
         if inspect.isclass(func) or hasattr(func, 'meta'):
             giskard_test = func()

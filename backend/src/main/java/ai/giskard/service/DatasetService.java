@@ -4,6 +4,7 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.utils.StreamUtils;
 import ai.giskard.utils.FileUtils;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.RowFilterDTO;
@@ -19,9 +20,8 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,7 +96,7 @@ public class DatasetService {
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
-                .<Map<String, Object>>collect(HashMap::new, (m, column) -> m.put(column, row.getObject(column)), Map::putAll))
+                .collect(StreamUtils.toMapAllowNulls(Function.identity(), row::getObject)))
             .collect(Collectors.toList()));
     }
 

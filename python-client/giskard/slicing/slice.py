@@ -2,7 +2,7 @@
 import itertools
 import operator
 import re
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Callable, Sequence
 
@@ -18,7 +18,7 @@ def escape(value) -> str:
     return str(value) if type(value) is not str else "%s" % value
 
 
-class Clause:
+class Clause(ABC):
 
     @abstractmethod
     def mask(self, df: pd.DataFrame) -> pd.Series:
@@ -237,9 +237,6 @@ class QueryBasedSliceFunction(SlicingFunction):
 
     def __str__(self):
         return str(self.query)
-
-    def _should_save_locally(self) -> bool:
-        return True
 
 
 def _pretty_str(value):
