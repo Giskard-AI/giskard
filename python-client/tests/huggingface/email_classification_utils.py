@@ -4,6 +4,7 @@ import requests
 import tarfile
 from pathlib import Path
 
+
 def get_email_files():
     url = "http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz"
     response = requests.get(url, stream=True)

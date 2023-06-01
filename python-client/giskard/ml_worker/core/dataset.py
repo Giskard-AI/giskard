@@ -57,7 +57,7 @@ class Dataset:
                     "In this case, we assume that there's no categorical columns in your Dataset.")
 
     @staticmethod
-    def infer_feature_types(df, column_types, no_cat = False):
+    def infer_feature_types(df, column_types, no_cat=False):
         # TODO: improve this method
         nuniques = df.nunique()
         feature_types = {}
