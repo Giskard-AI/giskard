@@ -125,3 +125,8 @@ class TextMetadataSliceFunction(SliceFunction):
         data_filtered = self.query.run(data_with_meta)
 
         return data_filtered.loc[:, data.columns]
+
+    def __str__(self):
+        # @TODO: hard coded for now!
+        col = list(self.query.clauses.keys())[0].removeprefix("__gsk__meta__")
+        return self.query.to_pandas().replace(f"__gsk__meta__{col}", f"{col}({self.feature})")
