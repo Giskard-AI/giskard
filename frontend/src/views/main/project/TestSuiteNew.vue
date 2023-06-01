@@ -60,7 +60,7 @@
                         :datasets="allDatasets"
                         :inputs="selectedTest.testInputs"
                         :executions="testSuiteResults[selectedTest.testId]"
-                        @updateTestSuite="loadData" />
+                        @updateTestSuite="loadData"/>
                   </v-col>
                 </v-row>
               </v-col>
@@ -77,7 +77,7 @@
                                  :datasets="allDatasets"
                                  :inputTypes="inputs"
                                  :executions="executions"
-                                  :tracked-executions="trackedJobs"/>
+                                 :tracked-executions="trackedJobs"/>
           </v-tab-item>
           <v-tab-item :transition="false">
             <TestSuiteCompareExecutions
@@ -116,15 +116,16 @@ import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
 import useRouterTabsSynchronization from '@/utils/use-router-tabs-synchronization';
 import TestSuiteCompareExecutions from '@/views/main/project/TestSuiteCompareExecutions.vue';
 import TestSuiteCompareTest from '@/views/main/project/TestSuiteCompareTest.vue';
-import {commitAddNotification} from '@/store/main/mutations';
-import store from '@/store';
 import {useTrackJob} from '@/utils/use-track-job';
 import {chain} from 'lodash';
+import {useMainStore} from "@/stores/main";
 
 const props = defineProps<{
   projectId: number,
   suiteId: number
 }>();
+
+const mainStore = useMainStore();
 
 const suite = ref<TestSuiteNewDTO | null>(null);
 const registry = ref<TestCatalogDTO | null>(null);
@@ -202,12 +203,13 @@ const {
   trackedJobs,
   addJob
 } = useTrackJob();
+
 async function onExecutionScheduled(jobUuid: string) {
   const result = await addJob(jobUuid);
   if (result) {
-    commitAddNotification(store, {content: 'Test suite execution has been executed successfully', color: 'success'});
+    mainStore.addNotification({content: 'Test suite execution has been executed successfully', color: 'success'});
   } else {
-    commitAddNotification(store, {content: 'An error has happened during the test suite execution', color: 'error'});
+    mainStore.addNotification({content: 'An error has happened during the test suite execution', color: 'error'});
   }
   await loadData();
 }
