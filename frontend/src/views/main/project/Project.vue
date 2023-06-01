@@ -22,18 +22,6 @@
           </v-btn>
         </template>
         <v-list dense tile>
-          <v-list-item link @click="exportProject(project.id)">
-            <v-list-item-title>
-              <v-icon dense left color="primary">mdi-application-export</v-icon>
-              Export
-            </v-list-item-title>
-          </v-list-item>
-          <v-list-item link @click="openDeleteDialog = true">
-            <v-list-item-title class="accent--text">
-              <v-icon dense left color="accent">delete</v-icon>
-              Delete
-            </v-list-item-title>
-          </v-list-item>
           <v-list-item link :to="{ name: 'project-properties' }">
             <v-list-item-title>
               <v-icon dense left>mdi-tune</v-icon>
