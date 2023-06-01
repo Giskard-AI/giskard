@@ -4,8 +4,10 @@ import ai.giskard.domain.ColumnMeaning;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.*;
+import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
+import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
 import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import java.util.*;
 
 @Service
@@ -148,5 +151,20 @@ public class TestSuiteService {
                 });
         });
         return res;
+    }
+
+    public TestSuiteNewDTO addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
+        TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.TEST_SUITE, suiteId));
+
+        if (suite.getTests().stream().anyMatch(test -> test.getTestId().equals(suiteTestDTO.getTestId()))) {
+            throw new EntityExistsException("Test suite " + suiteId + " already contains test " + suiteTestDTO.getTestId());
+        }
+
+        SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
+        suiteTest.setSuite(suite);
+        suite.getTests().add(suiteTest);
+
+        return giskardMapper.toDTO(testSuiteNewRepository.save(suite));
     }
 }

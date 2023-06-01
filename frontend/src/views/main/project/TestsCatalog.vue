@@ -27,7 +27,7 @@
           <v-col cols="8" v-if="selected" class="vc fill-height">
             <div class="d-flex justify-space-between">
               <span class="text-h5">{{ selected.name }}</span>
-              <v-btn small outlined tile class="primary" color="white">
+              <v-btn small outlined tile class="primary" color="white" @click="addToTestSuite">
                 <v-icon dense class="pr-2">mdi-plus</v-icon>
                 Add to test suite
               </v-btn>
@@ -129,6 +129,8 @@ import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
 import {TestCatalogDTO, TestDefinitionDTO, TestExecutionResultDTO, TestFunctionArgumentDTO} from "@/generated-sources";
+import {$vfm} from 'vue-final-modal';
+import AddTestToSuite from '@/views/main/project/modals/AddTestToSuite.vue';
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -200,6 +202,16 @@ onActivated(async () => {
     selected.value = testFunctions[0];
   }
 });
+
+function addToTestSuite() {
+  $vfm.show({
+    component: AddTestToSuite,
+    bind: {
+      projectId: props.projectId,
+      test: selected.value
+    }
+  });
+}
 
 </script>
 
