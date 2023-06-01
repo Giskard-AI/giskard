@@ -3,16 +3,15 @@
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
       <v-toolbar-title>
         <router-link :to="{ name: 'project-properties', params: { id } }">
-          <span class="text-subtitle-1">
-            {{ project.name }}
-          </span>
+          <v-btn block color="primary" rounded="xl" text>
+            <v-icon left>mdi-file-cog-outline</v-icon>
+            <span class="text-subtitle-1 project-name">
+              {{ project.name }}
+            </span>
+          </v-btn>
         </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primaryLight" class="primaryLightBtn mr-2" :to="{ name: 'project-properties' }" @click="tab = null">
-        <v-icon dense left>mdi-file-cog-outline</v-icon>
-        Properties
-      </v-btn>
       <v-tooltip :disabled="mainStore.authAvailable" bottom>
         <template v-slot:activator="{ on, attrs }">
           <div v-on="on">
@@ -183,5 +182,10 @@ onMounted(async () => {
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
+}
+
+.project-name {
+  text-transform: none;
+  font-weight: 500;
 }
 </style>
