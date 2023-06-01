@@ -11,7 +11,7 @@ jobs:
     name: Build
     runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
-      - run: echo "$(du -sh $(ls -A ~) | sort -hr)"
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
 
       - name: Check if organization member
         id: is_organization_member
@@ -147,4 +147,4 @@ jobs:
           name: giskard-dev.whl
           path: python-client/dist/*whl
 
-      - run: echo "$(du -sh $(ls -A ~) | sort -hr)"
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
