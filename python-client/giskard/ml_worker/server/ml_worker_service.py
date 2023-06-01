@@ -6,6 +6,7 @@ import sys
 import time
 from io import StringIO
 
+import google.protobuf
 import grpc
 import numpy as np
 import pandas as pd
@@ -21,6 +22,8 @@ from giskard.ml_worker.core.model_explanation import (
     explain,
     explain_text,
 )
+from giskard.ml_worker.core.suite import Suite
+from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.core.test_function import TestFunction
 from giskard.ml_worker.core.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -43,7 +46,9 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     RunTestRequest,
     TestResultMessage,
     UploadStatus,
-    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, )
+    FileUploadMetadata, FileType, StatusCode, FilterDatasetResponse, RunAdHocTestRequest, NamedSingleTestResult,
+    RunTestSuiteRequest, TestSuiteResultMessage, SingleTestResult, TestMessage, TestMessageType,
+    Partial_unexpected_counts, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.utils.logging import Timer
@@ -138,7 +143,41 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def runAdHocTest(self, request: RunAdHocTestRequest,
                      context: grpc.ServicerContext) -> TestResultMessage:
 
-        test = TestFunction.load(self.client, request.testUuid)
+        test = tests_registry.get_test(request.testId)
+
+        arguments = self.parse_test_arguments(request.arguments)
+
+        logger.info(f"Executing {test.name}")
+        test_result = run_test(test.fn, arguments)
+
+        return TestResultMessage(results=[
+            NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
+        ])
+
+    def runTestSuite(self, request: RunTestSuiteRequest,
+                     context: grpc.ServicerContext) -> TestSuiteResultMessage:
+        tests = list(map(tests_registry.get_test, request.testId))
+
+        global_arguments = self.parse_test_arguments(request.globalArguments)
+
+        logger.info(f"Executing test suite: {list(map(lambda t: t.name, tests))}")
+
+        suite = Suite()
+        for test in tests:
+            fixed_arguments = self.parse_test_arguments(
+                next(x for x in request.fixedArguments if x.testId == test.id).arguments)
+            suite.add_test(test.fn, **fixed_arguments)
+
+        is_pass, results = suite.run(**global_arguments)
+
+        named_single_test_result = []
+        for i in range(len(tests)):
+            named_single_test_result.append(NamedSingleTestResult(name=tests[i].uuid,
+                                                                  result=map_result_to_single_test_result(results[i])))
+
+        return TestSuiteResultMessage(is_pass=is_pass, results=named_single_test_result)
+
+    def parse_test_arguments(self, request):
         arguments = {}
         for arg in request.arguments:
             if arg.HasField('dataset'):
@@ -152,11 +191,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             else:
                 raise IllegalArgumentError("Unknown argument type")
             arguments[arg.name] = value
-        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}' }")
-        test_result = test.func(**arguments)
-        return TestResultMessage(results=[
-            NamedSingleTestResult(name=test.meta.uuid, result=map_result_to_single_test_result(test_result))
-        ])
+        return arguments
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
@@ -325,31 +360,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield FilterDatasetResponse(code=StatusCode.Ok)
-
-    def getTestRegistry(self, request: google.protobuf.empty_pb2.Empty,
-                        context: grpc.ServicerContext) -> TestRegistryResponse:
-        globals()["echo_count"] += 1
-        return TestRegistryResponse(tests={
-            test.id: TestFunction(
-                id=test.id,
-                name=test.name,
-                module=test.module,
-                doc=test.doc,
-                code=test.code,
-                module_doc=test.module_doc,
-                tags=test.tags,
-                arguments={
-                    a.name: TestFunctionArgument(
-                        name=a.name,
-                        type=a.type,
-                        optional=a.optional,
-                        default=str(a.default)
-                    ) for a
-                    in test.args.values()}
-
-            )
-            for test in tests_registry.get_all().values()
-        })
 
     @staticmethod
     def pandas_df_to_proto_df(df):

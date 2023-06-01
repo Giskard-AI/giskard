@@ -8,6 +8,9 @@ from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.core.test_runner import run_test
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
+from giskard.ml_worker.testing.registry.registry import create_test_function_id
 from giskard.ml_worker.core.test_function import TestFunction
 
 logger = logging.getLogger(__name__)
@@ -61,7 +64,7 @@ class Suite:
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
-            res.append(test_partial.function_reference.func(**test_params))
+            res.append(run_test(test_partial.function_reference.func, test_params))
 
         return single_binary_result(res), res
 
@@ -98,8 +101,20 @@ class Suite:
         self.id = client.save_test_suite(TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests))
         return self
 
-    def add_test(self, test_fn: Union[TestFunction, Callable[[Any], Union[bool]]], **params):
+    def add_test(self, test_fn: Union[Callable[[Any], Union[bool]], TestFunction, GiskardTest], **params):
+        """
+        Add a test to the Suite
+        :param test_fn: A test method that will be executed or an instance of a GiskardTest class
+        :param params: default params to be passed to the test method,
+          will be ignored if test_fn is an instance of GiskardTest
+        :return: The current instance of the test Suite to allow chained call
+        """
+        # TODO fixme
         func_ref = test_fn
+        if isinstance(test_fn, GiskardTest):
+            params = {k: v for k, v in test_fn.__dict__.items() if v is not None}
+            test_fn = type(test_fn)
+
         if not isinstance(test_fn, TestFunction):
             func_ref = TestFunction.of(test_fn)
 
@@ -121,3 +136,4 @@ class Suite:
                                 f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
+
