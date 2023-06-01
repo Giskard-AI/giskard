@@ -100,9 +100,11 @@ def test_lang_detected_proportion():
     assert provider.supported_types() == ["text"]
 
     meta = provider.generate_metadata(vals)
+    language_counts = meta["language"].value_counts()
 
-    assert meta["language"].tolist().count("en") == 10
-    assert meta["language"].tolist().count("fr") == 10
-    assert meta["language"].tolist().count(pd.NA) == 8
+    assert language_counts["fr"] == 10
+    assert language_counts["en"] == 10
+    assert meta["language"].isnull().sum() == 8
+
 
 
