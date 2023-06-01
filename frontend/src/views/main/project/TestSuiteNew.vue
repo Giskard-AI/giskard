@@ -6,8 +6,6 @@
       </v-col>
     </v-row>
     <v-row>
-      <code>{{ props.projectId }}</code>
-      <code>{{ props.suiteId }}</code>
       <v-col cols="2">
         <v-tabs vertical v-model="tab">
           <v-tab>Inputs & parameters</v-tab>
@@ -26,8 +24,8 @@
               </v-list-item>
             </v-list>
           </v-tab-item>
-          <v-tab-item :transition="false" v-if="registry">
-            <v-row>
+          <v-tab-item :transition="false">
+            <v-row v-if="registry">
               <v-col cols="3">
                 <v-list three-line v-if="suite.tests">
                   <v-list-item-group v-model="selectedTest" color="primary" mandatory>
@@ -55,6 +53,12 @@
               </v-col>
             </v-row>
           </v-tab-item>
+          <v-tab-item :transition="false">
+
+          </v-tab-item>
+          <v-tab-item :transition="false">
+            <TestSuiteExecutions :project-id="props.projectId" :suite-id="props.suiteId"/>
+          </v-tab-item>
         </v-tabs-items>
       </v-col>
     </v-row>
@@ -68,6 +72,7 @@ import {onMounted, ref} from "vue";
 import {SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import TestSuiteExecutions from '@/views/main/project/TestSuiteExecutions.vue';
 
 const props = defineProps<{
   projectId: number,
