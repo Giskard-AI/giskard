@@ -154,8 +154,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             suite = Suite()
             for test in tests:
                 fixed_arguments = self.parse_test_arguments(
-                next(x for x in request.fixedArguments if x.testId == test.id).arguments
-            )
+                    next(x for x in request.fixedArguments if x.testId == test.id).arguments
+                )
                 suite.add_test(test.fn, **fixed_arguments)
 
             is_pass, results = suite.run(**global_arguments)
@@ -165,9 +165,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             named_single_test_result = []
             for i in range(len(tests)):
                 named_single_test_result.append(
-                ml_worker_pb2.NamedSingleTestResult(
-                    name=tests[i].id, result=map_result_to_single_test_result(result_list[i])
-                )
+                    ml_worker_pb2.NamedSingleTestResult(
+                        name=tests[i].id, result=map_result_to_single_test_result(result_list[i])
+                    )
                 )
 
             return ml_worker_pb2.TestSuiteResultMessage(
