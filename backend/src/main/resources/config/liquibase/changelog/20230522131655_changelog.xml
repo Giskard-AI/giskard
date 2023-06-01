@@ -4,7 +4,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet author="kevinmessiaen (generated)" id="1684754220710-4">
         <addColumn tableName="callable_functions">
-            <column name="process_type" type="VARCHAR" defaultValue="CODE"/>
+            <column name="process_type" type="int" defaultValueNumeric="0"/>
         </addColumn>
     </changeSet>
 
