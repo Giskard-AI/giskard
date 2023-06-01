@@ -34,7 +34,7 @@ jobs:
       - name: Login to Docker registry
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: giskardai
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
@@ -44,6 +44,7 @@ jobs:
         with:
           push: true
           set: |
+            *.attest=type=provenance,enabled=false
             *.platform=linux/amd64
             *.platform=linux/arm64
 

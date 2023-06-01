@@ -45,7 +45,7 @@ public class SliceService {
 
     public List<Integer> getSlicedRowsForDataset(Long sliceId, Dataset dataset) throws IOException {
         Slice slice = sliceRepository.getById(sliceId);
-        String hash = DigestUtils.md5Hex(slice.getCode());
+        String hash = DigestUtils.md5Hex(slice.getCode()); // NOSONAR: no security risk here
         Path cachedSliceFile = fileLocationService.resolvedSlicePath(slice.getProject().getKey(), dataset.getId(), hash);
         List<Integer> result;
 

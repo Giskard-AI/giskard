@@ -18,9 +18,12 @@ logger = logging.getLogger(__name__)
 @timer()
 def explain(model: Model, dataset: Dataset, input_data: Dict):
     def prepare_df(df):
-        prepared_df = model.prepare_dataframe(
-            Dataset(df=df, target=dataset.target, column_meanings=dataset.column_meanings))
-        columns_in_original_order = [c for c in dataset.df.columns if c in prepared_df.columns]
+        prepared_df = model.prepare_dataframe(GiskardDataset(df=df,
+                                                             target=dataset.target,
+                                                             column_meanings=dataset.column_meanings,
+                                                             column_types=dataset.column_types))
+        columns_in_original_order = model.feature_names if model.feature_names else \
+            [c for c in dataset.df.columns if c in prepared_df.columns]
         # Make sure column order is the same as in df
         return prepared_df[columns_in_original_order]
 
