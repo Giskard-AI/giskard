@@ -6,6 +6,7 @@ import posixpath
 from pathlib import Path
 from typing import List, Any
 from urllib.parse import urljoin
+from uuid import UUID
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
@@ -169,7 +170,7 @@ class GiskardClient:
     def save_model_meta(
             self,
             project_key: str,
-            model_id: str,
+            model_id: UUID,
             meta: ModelMeta,
             python_version: str,
             size: int
@@ -181,7 +182,7 @@ class GiskardClient:
             "threshold": meta.classification_threshold,
             "featureNames": meta.feature_names,
             "classificationLabels": meta.classification_labels,
-            "id": model_id,
+            "id": str(model_id),
             "project": project_key,
             "name": meta.name,
             "size": size

@@ -151,6 +151,17 @@ message FixedTestArgument {
   repeated TestArgument arguments = 2;
 }
 
+message RunTestSuiteRequest {
+  repeated string testId = 1;
+  repeated TestArgument globalArguments = 2;
+  repeated FixedTestArgument fixedArguments = 3;
+}
+
+message FixedTestArgument {
+  string testId = 1;
+  repeated TestArgument arguments = 2;
+}
+
 message TestArgument{
   string name = 1;
   oneof argument{
