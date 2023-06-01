@@ -11,34 +11,10 @@ from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.test_runner import run_test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import create_test_function_id, tests_registry, TestFunction
-from ml_worker_pb2 import ArtifactRef
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar('T', Model, Dataset)
-
-
-class InputRef(Generic[T]):
-    arg: T
-    ref: Optional[ArtifactRef]
-
-    def __init__(self, arg: T, ref: Optional[ArtifactRef] = None):
-        self.arg = arg
-        self.ref = ref
-
-    @staticmethod
-    def wrap(arg: Optional[Union[T, "InputRef"]]) -> Optional["InputRef"]:
-        if arg is None or isinstance(arg, InputRef):
-            return arg
-        else:
-            return InputRef[T](arg)
-
-    @staticmethod
-    def unwrap(arg: Optional[Union[T, "InputRef"]]) -> Optional[T]:
-        if isinstance(arg, InputRef):
-            return arg.arg
-        else:
-            return arg
 
 
 class SuiteInput:
@@ -115,15 +91,16 @@ class Suite:
         for t in self.tests:
             inputs = {}
             for pname, p in t.provided_inputs.items():
-                if issubclass(type(p), InputRef) and p.ref is not None:
-                    inputs[pname] = TestInputDTO(name=pname, value=p.ref.id)
-                elif issubclass(type(p), InputRef) or issubclass(type(p), Dataset) or issubclass(type(p), Model):
-                    saved_id = InputRef.unwrap(p).save(client, project_key)
+                if issubclass(type(p), Dataset):
+                    saved_id = p.save(client, project_key)
                     inputs[pname] = TestInputDTO(name=pname, value=saved_id)
+                if issubclass(type(p), Model):
+                    p.upload(client, project_key)
+                    inputs[pname] = TestInputDTO(name=pname, value=str(p.id))
                 elif isinstance(p, SuiteInput):
                     inputs[pname] = TestInputDTO(name=pname, value=p.name, is_alias=True)
                 else:
-                    inputs[pname] = TestInputDTO(name=pname, value=p)
+                    inputs[pname] = TestInputDTO(name=pname, value=str(p))
 
             suite_tests.append(SuiteTestDTO(
                 testId=create_test_function_id(t.test_func),
