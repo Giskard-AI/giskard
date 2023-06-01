@@ -8,7 +8,8 @@ from transformers import BertTokenizer, BertForSequenceClassification
 
 from tests.huggingface.email_classification_utils import get_email_files
 import tests.utils
-from giskard import HuggingFaceModel, Dataset
+from giskard import Dataset
+from giskard.models.huggingface import HuggingFaceModel
 
 idx_to_cat = {
     1: 'REGULATION',
