@@ -356,7 +356,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        # TODO: if result is cached, do not download
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         ds = Dataset(pd.DataFrame([r.columns for r in request.dataframe.rows]), target=None,
                      column_types=request.column_types)
