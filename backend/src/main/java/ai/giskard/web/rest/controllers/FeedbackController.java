@@ -64,10 +64,10 @@ public class FeedbackController {
     public FeedbackDTO getFeedback(@PathVariable("feedbackId") Long feedbackId) {
         Feedback feedback = feedbackRepository.findOneById(feedbackId);
 
-        Long currUserId = SecurityUtils.getCurrentAuthenticatedUserId();
+        String currUserLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
         if (SecurityUtils.isCurrentUserAdmin() ||
-            feedback.getProject().getOwner().getId().equals(currUserId) ||
-            feedback.getUser().getId().equals(currUserId)
+            feedback.getProject().getOwner().getLogin().equals(currUserLogin) ||
+            feedback.getUser().getLogin().equals(currUserLogin)
         ) {
             return feedbackMapper.feedbackToFeedbackDTO(feedback);
         } else {
@@ -79,14 +79,14 @@ public class FeedbackController {
     @PostMapping("/{projectId}")
     public ResponseEntity<Void> addFeedback(@PathVariable("projectId") Long projectId, @RequestBody CreateFeedbackDTO dto) {
         Project project = projectRepository.getById(projectId);
-        Long userId = SecurityUtils.getCurrentAuthenticatedUserId();
+        String currUserLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
         if (!SecurityUtils.isCurrentUserAdmin() &&
-            !project.getOwner().getId().equals(userId) &&
-            project.getGuests().stream().noneMatch(u -> u.getId().equals(userId))) {
+            !project.getOwner().getLogin().equals(currUserLogin) &&
+            project.getGuests().stream().noneMatch(u -> u.getLogin().equals(currUserLogin))) {
             throw new UnauthorizedException("Add feedback", Entity.FEEDBACK);
         }
 
-        User currentUser = userRepository.getById(userId);
+        User currentUser = userRepository.getOneByLogin(currUserLogin);
         Feedback feedback = feedbackMapper.createFeedbackDTOtoFeedback(dto);
         feedback.setUser(currentUser);
         feedbackRepository.save(feedback);
@@ -99,16 +99,16 @@ public class FeedbackController {
     @Transactional
     @PostMapping("/{feedbackId}/reply")
     public ResponseEntity<Void> addFeedbackReply(@PathVariable("feedbackId") Long feedbackId, @RequestBody CreateFeedbackReplyDTO dto) {
-        Long userId = SecurityUtils.getCurrentAuthenticatedUserId();
+        String userLogin = SecurityUtils.getCurrentAuthenticatedUserLogin();
         Feedback feedback = feedbackRepository.findOneById(feedbackId);
         Project project = feedback.getProject();
         if (!SecurityUtils.isCurrentUserAdmin() &&
-            !project.getOwner().getId().equals(userId) &&
-            project.getGuests().stream().noneMatch(u -> u.getId().equals(userId))) {
+            !project.getOwner().getLogin().equals(userLogin) &&
+            project.getGuests().stream().noneMatch(u -> u.getLogin().equals(userLogin))) {
             throw new UnauthorizedException("Add feedback reply", Entity.FEEDBACK);
         }
 
-        User currentUser = userRepository.getById(userId);
+        User currentUser = userRepository.getOneByLogin(userLogin);
         FeedbackReply reply = feedbackMapper.createFeedbackReplyDTOtoFeedbackReply(dto);
         reply.setFeedback(feedback);
         reply.setUser(currentUser);

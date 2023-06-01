@@ -3,7 +3,7 @@ package ai.giskard.domain.ml;
 import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.testing.Test;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +25,7 @@ public class TestSuite extends AbstractAuditingEntity {
 
     @ManyToOne
     @NotNull
+    @JsonBackReference
     private Project project;
 
     @ManyToOne
@@ -37,6 +38,5 @@ public class TestSuite extends AbstractAuditingEntity {
     private ProjectModel model;
 
     @OneToMany(mappedBy = "testSuite", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
     private Set<Test> tests = new HashSet<>();
 }

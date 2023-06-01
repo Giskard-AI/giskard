@@ -90,7 +90,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-dialog width="90vw" v-model="openFeedbackDetail" @click:outside="$router.push({name: 'project-feedbacks'})">
+    <v-dialog width="90vw" v-model="openFeedbackDetail" @input="handleFeedbackDetailDialogClosed">
       <router-view/>
     </v-dialog>
   </div>
@@ -107,9 +107,7 @@ import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 const route = useRoute();
 const router = useRouter();
 
-const props = defineProps({
-  projectId: {type: Number, required: true},
-});
+const { projectId } = defineProps<{ projectId: number }>();
 
 const feedbacks = ref<FeedbackMinimalDTO[]>([]);
 const search = ref<string>('');
@@ -125,7 +123,7 @@ onActivated(() => {
 });
 
 async function fetchFeedbacks() {
-  feedbacks.value = await api.getProjectFeedbacks(props.projectId);
+  feedbacks.value = await api.getProjectFeedbacks(projectId);
 }
 
 async function openFeedback(obj) {
@@ -137,6 +135,12 @@ function handleRouteChanged() {
 }
 
 watch(() => route.meta, () => handleRouteChanged());
+
+function handleFeedbackDetailDialogClosed(isOpen) {
+  if (!isOpen && route.name !== 'project-feedbacks') {
+    router.push({name: 'project-feedbacks'});
+  }
+}
 
 const tableHeaders = computed(() => [
   {
@@ -226,7 +230,6 @@ function deleteFeedback(feedback: FeedbackMinimalDTO) {
     }
   });
 }
-
 </script>
 
 <style scoped>
