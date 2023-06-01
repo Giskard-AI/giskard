@@ -2,7 +2,7 @@
   <div>
     <OverlayLoader :show="loading" absolute solid/>
     <v-container>
-      <p v-if="textFeatureNames.length == 0" class="text-center">None</p>
+      <p v-if="textFeatureNames.length === 0" class="text-center">None</p>
       <div v-else>
         <v-row>
           <v-col cols="5" v-if='textFeatureNames.length>1'>
@@ -18,12 +18,12 @@
             <p class="caption secondary--text text--lighten-2 my-1">
               Classification Label
             </p>
-            <v-select
+            <v-autocomplete
                 dense
                 solo
                 v-model="selectedLabel"
                 :items="classificationLabels"
-            ></v-select>
+            ></v-autocomplete>
           </v-col>
           <v-col cols="2" class="d-flex align-center">
             <v-btn
@@ -50,80 +50,72 @@
   </div>
 </template>
 
-<script lang="ts">
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-import OverlayLoader from '@/components/OverlayLoader.vue';
-import {api} from '@/api';
+<script lang="ts" setup>
+import {ref, watch} from "vue";
 import mixpanel from "mixpanel-browser";
+import {api} from "@/api";
+import OverlayLoader from "@/components/OverlayLoader.vue";
 
-@Component({
-  components: {OverlayLoader},
+interface Props {
+  modelId: number,
+  datasetId: number,
+  textFeatureNames: string[],
+  classificationLabels: string[]
+  inputData?: object,
+  classificationResult: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  inputData: () => ({})
+});
+
+const loading = ref<boolean>(false);
+const selectedFeature = ref<string>(props.textFeatureNames[0]);
+const selectedLabel = ref<string>(props.classificationResult || props.classificationLabels[0]);
+const errorMsg = ref<string>("");
+const result = ref<{ [key: string]: string }>({});
+const submitted = ref<boolean>(false);
+
+watch(() => props.classificationResult, (value) => {
+  if (value && props.classificationLabels.includes(value)) {
+    selectedLabel.value = value;
+  } else {
+    selectedLabel.value = props.classificationLabels[0];
+  }
+});
+
+watch([selectedFeature, props.inputData], () => {
+  submitted.value = false;
+  result.value = {};
+  errorMsg.value = "";
 })
-export default class TextExplanation extends Vue {
-  @Prop({required: true}) modelId!: number;
-  @Prop({required: true}) datasetId!: number;
-  @Prop({required: true}) textFeatureNames!: string[];
-  @Prop({required: true}) classificationLabels!: string[];
-  @Prop({default: {}}) inputData!: object;
-  @Prop() classificationResult!: string;
 
-  loading: boolean = false;
-  originalInputData = {}; // used for the watcher to trigger the explanation call
-  selectedFeature = "";
-  selectedLabel = this.classificationResult || this.classificationLabels[0];
-  errorMsg: string = "";
-  result: { [key: string]: string } = {};
-  submitted = false;
-
-  mounted() {
-    this.selectedFeature = this.textFeatureNames[0];
-  }
-
-  @Watch("classificationResult")
-  setSelectedLabel() {
-    if (this.classificationResult && this.classificationLabels.includes(this.classificationResult)) {
-      this.selectedLabel = this.classificationResult;
-    } else {
-      this.selectedLabel = this.classificationLabels[0];
+async function getExplanation() {
+  mixpanel.track('Run text explanation', {
+    modelId: props.modelId,
+    datasetId: props.datasetId
+  });
+  if (selectedFeature.value && props.inputData[selectedFeature.value].length) {
+    try {
+      loading.value = true;
+      errorMsg.value = "";
+      result.value = await api.explainText(
+          props.modelId,
+          props.datasetId,
+          props.inputData,
+          selectedFeature.value
+      );
+      submitted.value = true;
+    } catch (error) {
+      result.value = {};
+      errorMsg.value = error.response.data.detail;
+    } finally {
+      loading.value = false;
     }
-  }
-
-  public async getExplanation() {
-    mixpanel.track('Run text explanation', {
-      modelId: this.modelId,
-      datasetId: this.datasetId
-    });
-    if (this.selectedFeature && this.inputData[this.selectedFeature].length) {
-      try {
-        this.loading = true;
-        this.errorMsg = "";
-        const response = await api.explainText(
-            this.modelId,
-            this.datasetId,
-            this.inputData,
-            this.selectedFeature
-        );
-        this.result = response;
-        this.submitted = true;
-      } catch (error) {
-        this.result = {};
-        this.errorMsg = error.response.data.detail;
-      } finally {
-        this.loading = false;
-      }
-    } else {
-      // reset
-      this.errorMsg = "";
-      this.result = {};
-    }
-  }
-
-  @Watch("selectedFeature")
-  @Watch("inputData", {deep: true})
-  reset() {
-    this.submitted = false;
-    this.result = {};
-    this.errorMsg = "";
+  } else {
+    // reset
+    errorMsg.value = "";
+    result.value = {};
   }
 }
 </script>

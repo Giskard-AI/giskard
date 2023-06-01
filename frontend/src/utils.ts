@@ -17,10 +17,10 @@ export const getUserFullDisplayName = (user: UserDTO): string => {
 export const toSlug = (str: string): string => {
     return str.toLowerCase()
         .trim()
-        .replace(/[^\w-]+/g, '-')           // Replace spaces with -
+        .replace(/[^\w-]+/g, '_')           // Replace spaces with _
         .replace(/\s+/g, '')       // Remove all non-word chars
         .replace(/(^-|-$)+/g, '')       // Remove pipe
-        .replace(/(-{2,})+/g, '-');        // Replace multiple - with single -
+        .replace(/(_{2,})+/g, '_');        // Replace multiple _ with single _
 }
 
 function anonymizeString(str: string): string {

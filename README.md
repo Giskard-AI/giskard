@@ -1,7 +1,7 @@
 <p align="center">
   <img alt="giskardlogo" src="readme/correct_logo.png">
 </p>
-<h1 align="center" weight='300' >Quality Testing for AI models</h1>
+<h1 align="center" weight='300' >Quality Assurance for AI models</h1>
 <h3 align="center" weight='300' >Eliminate AI bias in production. Deliver ML products, better & faster</h3>
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
@@ -19,6 +19,7 @@
   <a href="https://gisk.ar/discord">
     <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
   </a>
+  <a rel="me" href="https://fosstodon.org/@Giskard"></a>
 </p>
 <h3 align="center">
    <a href="https://docs.giskard.ai/"><b>Documentation</b></a> &bull;
@@ -139,18 +140,6 @@ Follow our handy guides to get started on the basics as quickly as possible:
 3. <a href="https://docs.giskard.ai/start/guides/upload-your-model"><b>Upload your ML model & data</b></a>
 4. <a href="https://docs.giskard.ai/start/guides/review-your-model"><b>Evaluate your ML model</b></a>
 5. <a href="https://docs.giskard.ai/start/guides/create-tests-from-your-review"><b>Test your ML model</b></a>
-<br />
-
-# 🪄Become a Giskard Design Partner
-As our product is young, working in close collaboration with our first users is very important to identify what to improve, and how we can deliver value. It needs to be a Win-Win scenario!
-<p>
-  <img width='600' src="readme/design_partner.png">
-</p>
-
-If you are interested in joining our Design Partner program, drop us a line at hello@giskard.ai.
-
-❗️ The final entry date is September 2022 ❗️
-
 <br />
 
 # How to contribute
