@@ -24,6 +24,7 @@ interface State {
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
     executions: TestSuiteExecutionDTO[],
+    tryResult: TestSuiteExecutionDTO | null,
     trackedJobs: { [uuid: string]: JobDTO }
 }
 
@@ -39,6 +40,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
         datasets: {},
         models: {},
         executions: [],
+        tryResult: null,
         trackedJobs: {}
     }),
     getters: {
@@ -88,11 +90,13 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-            mainStore.addNotification({
-                content: 'Started test suite execution',
-                color: TYPE.INFO
-            })
-            return this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            return {
+                trackJob: this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
+            }
+        },
+        async tryTestSuite(input: Array<FunctionInputDTO>) {
+            this.tryResult = await api.tryTestSuite(this.projectId!, this.suiteId!, input);
+
         },
         async trackJob(uuid: string) {
             const result = await trackJob(uuid, (res) => this.trackedJobs = {
