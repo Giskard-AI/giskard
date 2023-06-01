@@ -15,6 +15,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
+    'ai.giskard.web.dto.ColumnFilterDTO' : 'ColumnFilterDTO',
     'ai.giskard.web.dto.config.AppConfigDTO$AppInfoDTO' : 'AppConfigDTO.AppInfoDTO',
     'ai.giskard.web.dto.config.AppConfigDTO' : 'AppConfigDTO',
     'ai.giskard.web.dto.config.LicenseDTO' : 'LicenseDTO',
@@ -60,6 +61,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.ml.write.TestSuitePostDTO' : 'TestSuitePostDTO',
     'ai.giskard.web.dto.ModelMetadataDTO' : 'ModelMetadataDTO',
     'ai.giskard.web.dto.ModelUploadParamsDTO' : 'ModelUploadParamsDTO',
+    'ai.giskard.web.dto.NoCodeSlicingType' : 'NoCodeSlicingType',
     'ai.giskard.web.dto.ParameterizedCallableDTO' : 'ParameterizedCallableDTO',
     'ai.giskard.web.dto.PasswordResetRequest' : 'PasswordResetRequest',
     'ai.giskard.web.dto.PostImportProjectDTO' : 'PostImportProjectDTO',
@@ -108,6 +110,7 @@ export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/service/ee/feature-flag';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
+export * from './ai/giskard/web/dto/column-filter-dto';
 export * from './ai/giskard/web/dto/config/app-config-dto';
 export * from './ai/giskard/web/dto/config/license-dto';
 export * from './ai/giskard/web/dto/config/mlworker-info-dto';
@@ -151,6 +154,7 @@ export * from './ai/giskard/web/dto/ml/write/model-post-dto';
 export * from './ai/giskard/web/dto/ml/write/test-suite-post-dto';
 export * from './ai/giskard/web/dto/model-metadata-dto';
 export * from './ai/giskard/web/dto/model-upload-params-dto';
+export * from './ai/giskard/web/dto/no-code-slicing-type';
 export * from './ai/giskard/web/dto/parameterized-callable-dto';
 export * from './ai/giskard/web/dto/password-reset-request';
 export * from './ai/giskard/web/dto/post-import-project-dto';
