@@ -66,6 +66,7 @@ doc = [
     "sphinx-rtd-theme>=1.2.0",
     "sphinx-tabs>=3.4.1",
     "sphinx-design>=0.4.1",
+    "sphinx-copybutton>=0.5.2",
 ]
 
 [tool.setuptools.packages.find]
