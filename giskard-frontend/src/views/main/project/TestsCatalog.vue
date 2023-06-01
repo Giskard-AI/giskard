@@ -32,7 +32,7 @@
                 Add to test suite
               </v-btn>
             </div>
-            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>
+<!--            <AddTestToTestSuiteModal style="border: 1px solid lightgrey"></AddTestToTestSuiteModal>-->
             <div class="vc overflow-x-hidden pr-5">
 
               <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
