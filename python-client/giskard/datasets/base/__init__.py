@@ -10,6 +10,7 @@ from typing import Dict, Optional, List, Union
 import numpy as np
 import pandas
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import yaml
 from pandas.api.types import is_list_like
 from xxhash import xxh3_128_hexdigest
@@ -71,10 +72,11 @@ class DataProcessor:
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
         ds = dataset.copy()
+        is_slicing_only = True
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
-
+            is_slicing_only = is_slicing_only and isinstance(step, SlicingFunction)
             df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
             ds = Dataset(
                 df=df,
@@ -90,6 +92,10 @@ class DataProcessor:
 
         if len(self.pipeline):
             ds.data_processor = self
+
+        # If dataset had metadata, copy it to the new dataset
+        if is_slicing_only and hasattr(dataset, "column_meta"):
+            ds.load_metadata_from_instance(dataset.column_meta)
 
         return ds
 
@@ -174,7 +180,7 @@ class Dataset(ColumnMetadataMixin):
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        self.column_types = self._infer_column_types(column_types, cat_columns)
+        self.column_types = self._infer_column_types(column_types, cat_columns, validation)
         if validation:
             from giskard.core.dataset_validation import validate_column_types
 
@@ -311,7 +317,8 @@ class Dataset(ColumnMetadataMixin):
         """
         return self.data_processor.apply(self)
 
-    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
+    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]],
+                            validation: bool = True):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -365,6 +372,12 @@ class Dataset(ColumnMetadataMixin):
             try:
                 pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
+                if not is_numeric_dtype(self.df[col]) and validation:
+                    warning(
+                        f"The column {col} is declared as numeric but has '{str(self.df[col].dtype)}' as data type. "
+                        "To avoid potential future issues, make sure to cast this column to the correct data type."
+                    )
+
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
 
@@ -563,7 +576,17 @@ class Dataset(ColumnMetadataMixin):
         )
 
     def copy(self):
-        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
+        dataset = Dataset(
+            df=self.df.copy(),
+            target=self.target,
+            column_types=self.column_types.copy(),
+            validation=False,
+        )
+
+        if hasattr(self, "column_meta"):
+            dataset.load_metadata_from_instance(self.column_meta)
+
+        return dataset
 
 
 def _cast_to_list_like(object):

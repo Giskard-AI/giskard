@@ -1,13 +1,9 @@
 <template>
     <LoadingFullscreen v-if="suite === null" name="suite"/>
     <v-container class="main-container vc" v-else-if="hasTest">
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false" :try-mode="tryMode"/>
-        <div class="d-flex mt-4 mb-4">
-            <v-select v-model="statusFilter" label="Status" :items="statusFilterOptions" item-text="label"
-                      variant="underlined" hide-details="auto" dense class="mr-4">
-            </v-select>
-            <v-text-field v-model="searchFilter" append-icon="search" label="Search" type="text" dense></v-text-field>
+        <div class="d-flex">
         </div>
+        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
         <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
@@ -24,9 +20,9 @@
 <script setup lang="ts">
 
 import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
 import {TestSuiteExecutionDTO} from '@/generated-sources';
-import {computed, onMounted, ref, watch} from 'vue';
+import {computed, onMounted, watch} from 'vue';
 import {chain} from 'lodash';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
@@ -41,7 +37,7 @@ const props = withDefaults(defineProps<{
 });
 
 const testSuiteStore = useTestSuiteStore();
-const {models, datasets, inputs, suite, projectId, hasTest} = storeToRefs(testSuiteStore);
+const {models, datasets, inputs, suite, projectId, hasTest, statusFilter, searchFilter} = storeToRefs(testSuiteStore);
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
@@ -52,22 +48,6 @@ watch(() => props.execution,
     () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
     { deep: true });
 
-const statusFilterOptions = [{
-    label: 'All',
-    filter: (_) => true
-}, {
-    label: 'Passed',
-    filter: (result) => result !== undefined && result.passed
-}, {
-    label: 'Failed',
-    filter: (result) => result !== undefined && !result.passed
-}, {
-    label: 'Not executed',
-    filter: (result) => result === undefined
-}];
-
-const statusFilter = ref<string>(statusFilterOptions[0].label);
-const searchFilter = ref<string>("");
 
 
 const filteredTest = computed(() => suite.value === null ? [] : chain(suite.value!.tests)
