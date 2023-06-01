@@ -1,12 +1,13 @@
-from typing import Optional
+from typing import Optional, Sequence
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from giskard.scanner.unit_perturbation import TransformationGenerator
 from giskard.ml_worker.testing.tests.metamorphic import test_metamorphic_invariance
 from .result import ScanResult
+from .robustness.issues import RobustnessIssue, RobustnessIssueInfo
 
 
-class RobustnessScan:
+class ModelRobustnessDetector:
     def __init__(self, model: Optional[BaseModel] = None, dataset: Optional[Dataset] = None):
         self.model = model
         self.dataset = dataset
@@ -23,7 +24,19 @@ class RobustnessScan:
         if dataset is None:
             raise ValueError("You need to provide an evaluation dataset.")
 
-        test_results = []
+        # Check if we have enough data to run the scan
+        # if len(dataset) < 100:
+        #     warning("Skipping model bias scan: the dataset is too small.")
+        #     return []
+
+        # Create issues from the slices
+        issues = self._detect_issues(model=model,
+                                dataset=dataset)
+        return issues
+
+    def _detect_issues(self, model: BaseModel, dataset: Dataset) -> Sequence[RobustnessIssue]:
+        # Now we calculate the metric on each slice and compare it to the reference
+        issues = []
         transformation = TransformationGenerator(model=model, dataset=dataset)
         for feature, feature_type in dataset.column_types.items():
             if feature_type == "numeric":
@@ -33,41 +46,33 @@ class RobustnessScan:
                     model=model,
                     dataset=dataset,
                     transformation_function=transformation_function,
-                    threshold=0.8
+                    threshold=0.999
                 ).execute()
 
-                if not test_result.passed:
-                    test_results.append(("passed", feature, test_result.metric))
-                else:
-                    test_results.append(("failed", feature, test_result.metric))
-
-            if feature_type == "text":
+            elif feature_type == "text":
                 transformation_function = transformation.text_transformation(feature)
                 test_result = test_metamorphic_invariance(
                     model=model,
                     dataset=dataset,
                     transformation_function=transformation_function,
-                    threshold=0.8
+                    threshold=0.999
                 ).execute()
 
-                if not test_result.passed:
-                    test_results.append(("passed", feature, test_result.metric))
-                else:
-                    test_results.append(("failed", feature, test_result.metric))
+            else:
+                continue
 
-        # @TODO: Return issues
-        return test_results
+            issue_info = RobustnessIssueInfo(
+                actual_slices_size=test_result.actual_slices_size,
+                metric=test_result.metric,
+                passed=test_result.passed,
+                messages=test_result.messages)
 
+            issue = RobustnessIssue(
+                model=model,
+                dataset=dataset,
+                level="??",
+                info=issue_info
+            )
+            issues.append(issue)
 
-class RobustnessScanResult(ScanResult):
-    def __init__(self, issues):
-        self.issues = issues
-
-    def has_issues(self):
-        return len(self.issues) > 0
-
-    def __repr__(self):
-        if not self.has_issues():
-            return "<RobustnessScanResult (no issues)>"
-
-        return f"<RobustnessScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
+        return issues
