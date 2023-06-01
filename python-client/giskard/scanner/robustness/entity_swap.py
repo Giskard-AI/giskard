@@ -862,24 +862,24 @@ gender_switch_en = {
 # Modifying the religion_dict using the list of religions from the ethnicity_dict
 religion_dict_en = [
     ['buddhism', 'christianity', 'hinduism', 'islam', 'judaism'],
-    ['siddhartha gautama', 'jesus christ', None, 'muhammad', 'abraham'],
+    ['siddhartha gautama', 'jesus christ', 'muhammad', 'abraham'],
     ['buddhist', 'christian', 'hindu', 'muslim', 'jew'],
-    [None, 'god', None, 'allah', 'god'],
+    ['allah', 'god'],
     ['temple', 'church', 'temple', 'mosque', 'synagogue'],
     ['bodh gaya', "vatican", "kumbh mela", "mecca", "jerusalem"],
     ["tripitaka", "bible", "veda", "quran", "talmud"],
-    ['dalai lama', 'pope', None, "imam", "rabbi"],
+    ['dalai lama', 'pope', "imam", "rabbi"],
 ]
 
 religion_dict_fr = [
     ['bouddhisme', 'christianisme', 'hindouisme', 'islam', 'judaïsme'],
-    ['siddhartha gautama', 'jésus christ', None, 'muhammad', 'abraham'],
+    ['siddhartha gautama', 'jésus christ', 'muhammad', 'abraham'],
     ['bouddhiste', 'chrétien', 'hindou', 'musulman', 'juif'],
-    [None, 'dieu', None, 'allah', 'dieu'],
+    ['dieu', 'allah'],
     ['temple', 'église', 'temple', 'mosquée', 'synagogue'],
     ['bodh gaya', "vatican", "kumbh mela", "la mecque", "jérusalem"],
     ["tripitaka", "bible", "veda", "coran", "talmud"],
-    ['dalai lama', 'pape', None, "imam", "rabbin"],
+    ['dalai lama', 'pape', "imam", "rabbin"],
 ]
 
 
