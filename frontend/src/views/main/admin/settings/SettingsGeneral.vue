@@ -179,7 +179,7 @@
                 <v-container v-show="!mlWorkerSettingsLoading" class="pa-0">
                   <div v-show="!externalWorkerSelected">
                     <p>Not available. Check that internal ML Worker is running or start it with</p>
-                    <p><code class="text-body-1">docker-compose up -d ml-worker</code></p>
+                    <p><code class="text-body-1">giskard server restart worker</code></p>
                   </div>
                   <div v-show="externalWorkerSelected">
                     <v-alert
