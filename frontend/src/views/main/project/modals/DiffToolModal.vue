@@ -14,16 +14,16 @@
                 <v-row>
                     <v-col cols=6>
                         <p>
-                            <span v-for="(diff, i) in removed" :key="i" :class="{removed: diff.removed}">
-                                {{ diff.value }}
-                            </span>
+                            <span v-for="(diff, i) in removed" :key="i" :class="{removed: diff.removed}">{{
+                                    diff.value
+                                }}</span>
                         </p>
                     </v-col>
                     <v-col cols=6>
                         <p>
-                            <span v-for="(diff, i) in added" :key="i" :class="{added: diff.added}">
-                                {{ diff.value }}
-                            </span>
+                            <span v-for="(diff, i) in added" :key="i" :class="{added: diff.added}">{{
+                                    diff.value
+                                }}</span>
                         </p>
                     </v-col>
                 </v-row>
@@ -90,11 +90,13 @@ onMounted(() => {
 }
 
 .added {
-    background: #2ea769;
+    color: #155724;
+    background: #d4edda;
 }
 
 .removed {
-    background: #ff5631;
+    color: #721c24;
+    background: #f8d7da;
 }
 
 .modal-card {
