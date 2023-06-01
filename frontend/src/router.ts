@@ -167,8 +167,19 @@ export default new Router({
                                     children: [
                                         {
                                             path: 'tests',
-                                            name: 'project-catalog-test',
+                                            name: 'project-catalog-tests',
                                             component: () => import('./views/main/project/TestsCatalog.vue'),
+                                            props: (route) => {
+                                                return {
+                                                    projectId: Number(route.params.id),
+                                                    suiteId: route.query.suiteId ? Number(route.query.suiteId) : undefined,
+                                                }
+                                            },
+                                        },
+                                        {
+                                            path: 'filters',
+                                            name: 'project-catalog-filters',
+                                            component: () => import('./views/main/project/FiltersCatalog.vue'),
                                             props: (route) => {
                                                 return {
                                                     projectId: Number(route.params.id),

@@ -1,8 +1,11 @@
 <template>
     <div class="vc mt-2 pb-0" v-if="catalog">
         <v-tabs>
-            <v-tab :to="{name: 'project-catalog-test'}">
+            <v-tab :to="{name: 'project-catalog-tests'}">
                 Tests
+            </v-tab>
+            <v-tab :to="{name: 'project-catalog-filters'}">
+                Filters
             </v-tab>
         </v-tabs>
         <router-view/>
