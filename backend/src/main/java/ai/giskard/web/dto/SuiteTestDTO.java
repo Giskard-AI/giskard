@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 public class SuiteTestDTO {
-    @JsonAlias("test_id")
-    private String testId;
     private Map<String, TestInputDTO> testInputs;
+    private TestFunctionDTO testFunction;
+
 }

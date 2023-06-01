@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-5">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-5">
         <createTable tableName="test_function_arguments">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_function_argumentsPK"/>
@@ -18,7 +18,7 @@
             <column name="test_function_uuid" type="UUID"/>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-6">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-6">
         <createTable tableName="test_functions">
             <column name="uuid" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="test_functionsPK"/>
@@ -41,32 +41,26 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-7">
-        <createTable tableName="test_functions_args">
-            <column name="test_functions_uuid" type="UUID">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-7">
+        <addColumn tableName="suite_test">
+            <column name="test_function_uuid" type="uuid">
                 <constraints nullable="false"/>
             </column>
-            <column name="args_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
+        </addColumn>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-9">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-9">
         <addUniqueConstraint columnNames="test_function_uuid, name" constraintName="UK3dq1q3xxhetk289a1rsyvmel6" tableName="test_function_arguments"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-10">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-10">
         <addUniqueConstraint columnNames="name, module, version" constraintName="UK3vm4b9ix9990e0p05jjc7tu43" tableName="test_functions"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-11">
-        <addUniqueConstraint columnNames="args_id" constraintName="UK_poo2k45ko0ug9qudrun4jhsfr" tableName="test_functions_args"/>
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-11">
+        <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="suite_test" constraintName="FKm2ciegbp0qa646t3tr3velwna" deferrable="false" initiallyDeferred="false" referencedColumnNames="uuid" referencedTableName="test_functions" validate="true"/>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-12">
-        <addForeignKeyConstraint baseColumnNames="args_id" baseTableName="test_functions_args" constraintName="FKfugdnmdy275ef5bkhaiiyw3od" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_function_arguments" validate="true"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-13">
-        <addForeignKeyConstraint baseColumnNames="test_functions_uuid" baseTableName="test_functions_args" constraintName="FKguxollr2k73p2q537mafp7nmw" deferrable="false" initiallyDeferred="false" referencedColumnNames="uuid" referencedTableName="test_functions" validate="true"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1675778477672-14">
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-12">
         <addForeignKeyConstraint baseColumnNames="test_function_uuid" baseTableName="test_function_arguments" constraintName="FKsdla96ceod1qatvl2sik5to35" deferrable="false" initiallyDeferred="false" referencedColumnNames="uuid" referencedTableName="test_functions" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1675940605238-13">
+        <dropColumn columnName="TEST_ID" tableName="SUITE_TEST"/>
     </changeSet>
 </databaseChangeLog>

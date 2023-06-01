@@ -1,10 +1,10 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.ColumnMeaning;
+import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.repository.ml.*;
-import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteDTO;
@@ -122,12 +122,11 @@ public class TestSuiteService {
 
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
-        TestCatalogDTO catalog = testService.listTestsFromRegistry(projectId);
 
         Map<String, String> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            Collection<TestFunctionArgumentDTO> signatureArgs = catalog.getTests().get(test.getTestId()).getArguments().values();
+            Collection<TestFunctionArgument> signatureArgs = test.getTestFunction().getArgs();
             ImmutableMap<String, TestInput> providedInputs = Maps.uniqueIndex(test.getTestInputs(), TestInput::getName);
 
             signatureArgs.stream()

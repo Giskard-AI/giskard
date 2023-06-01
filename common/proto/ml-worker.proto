@@ -19,7 +19,6 @@ service MLWorker {
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
-  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -92,7 +91,6 @@ message ExplainResponse{
   map<string, Explanation> explanations = 1;
 }
 
-
 message ExplainTextResponse{
     message WeightsPerFeature{
         repeated float weights = 1;
@@ -107,9 +105,11 @@ message RunModelForDataFrameResponse{
   repeated float probabilities = 3;
   repeated float raw_prediction = 4;
 }
+
 message DataRow{
   map<string, string> columns = 1;
 }
+
 message DataFrame{
   repeated DataRow rows = 1;
 }
@@ -120,8 +120,8 @@ message RunModelForDataFrameRequest{
   string target = 3;
   map<string, string> column_meanings = 4;
   map<string, string> column_types = 5;
-
 }
+
 message RunModelRequest{
   ArtifactRef model = 1;
   ArtifactRef dataset = 2;
@@ -133,7 +133,7 @@ message RunModelResponse{
 }
 
 message RunAdHocTestRequest {
-  string testId = 1;
+  string testUuid = 1;
   repeated TestArgument arguments = 2;
 }
 
@@ -212,6 +212,7 @@ message ArtifactRef{
 message Chunk {
   bytes content = 1;
 }
+
 enum UploadStatusCode {
   Unknown = 0;
   Ok = 1;
@@ -220,30 +221,6 @@ enum UploadStatusCode {
 }
 message UploadStatus {
   UploadStatusCode code = 1;
-}
-
-
-message TestFunctionArgument{
-  string name = 1;
-  string type = 2;
-  bool optional = 3;
-  string default = 4;
-}
-
-
-message TestFunction{
-  string id = 1;
-  string name = 2;
-  string module = 3;
-  string doc = 4;
-  string module_doc = 5;
-  map<string, TestFunctionArgument> arguments = 6;
-  repeated string tags = 7;
-  string code = 8;
-}
-
-message TestRegistryResponse{
-  map<string, TestFunction> tests = 1;
 }
 
 message MLWorkerErrorInfo{

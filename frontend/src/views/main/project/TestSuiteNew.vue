@@ -60,7 +60,7 @@
 
 import {api} from "@/api";
 import {onMounted, ref} from "vue";
-import {SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
+import {SuiteTestDTO, TestCatalogDTO, TestFunctionDTO, TestSuiteNewDTO} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
 
 const props = defineProps<{
@@ -69,13 +69,14 @@ const props = defineProps<{
 }>();
 
 let suite = ref<TestSuiteNewDTO | null>(null);
-let registry = ref<TestCatalogDTO | null>(null);
+let registry = ref<TestFunctionDTO[]>([]);
 let tab = ref<any>(null);
 let selectedTest = ref<SuiteTestDTO | null>(null);
 let inputs = ref<{}>([]);
+
 onMounted(async () => {
   inputs.value = await api.getTestSuiteNewInputs(props.projectId, props.suiteId);
   suite.value = await api.getTestSuiteNew(props.projectId, props.suiteId);
-  registry.value = await api.getTestsCatalog(props.projectId);
+  registry.value = await api.getTestFunctions();
 })
 </script>

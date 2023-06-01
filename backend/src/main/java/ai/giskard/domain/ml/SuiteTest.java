@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import ai.giskard.domain.TestFunction;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,7 +20,8 @@ public class SuiteTest {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    private String testId;
+    @ManyToOne(optional = false)
+    private TestFunction testFunction;
 
     @ManyToOne
     @JoinColumn(name = "test_suite")

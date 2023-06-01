@@ -7,20 +7,16 @@ import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
 import ai.giskard.ml.MLWorkerClient;
-import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestExecutionRepository;
 import ai.giskard.repository.ml.TestRepository;
 import ai.giskard.service.ml.MLWorkerService;
-import ai.giskard.web.dto.TestCatalogDTO;
 import ai.giskard.web.dto.ml.TestDTO;
 import ai.giskard.web.dto.ml.TestExecutionResultDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.RunTestRequest;
-import ai.giskard.worker.TestRegistryResponse;
 import ai.giskard.worker.TestResultMessage;
 import com.google.common.collect.Lists;
-import com.google.protobuf.Empty;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
@@ -30,8 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @Service
 @Transactional
@@ -45,8 +39,6 @@ public class TestService {
     private final TestExecutionRepository testExecutionRepository;
 
     private final TestRepository testRepository;
-    private final ProjectRepository projectRepository;
-
     private final GRPCMapper grpcMapper;
 
     public Optional<TestDTO> saveTest(TestDTO dto) {
@@ -143,10 +135,4 @@ public class TestService {
         return result;
     }
 
-    public TestCatalogDTO listTestsFromRegistry(Long projectId) {
-        try (MLWorkerClient client = mlWorkerService.createClient(projectRepository.getById(projectId).isUsingInternalWorker())) {
-            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
-            return convertGRPCObject(response, TestCatalogDTO.class);
-        }
-    }
 }

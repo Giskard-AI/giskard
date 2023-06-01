@@ -7,6 +7,7 @@ public enum Entity {
     DATASET("Dataset"),
     PROJECT_MODEL("Model"),
     TEST_SUITE("Test suite"),
+    TEST_FUNCTION("Test function"),
     TEST("Test"),
     USER("User"),
     ROLE("Role"),

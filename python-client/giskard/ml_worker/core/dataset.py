@@ -43,7 +43,7 @@ class Dataset:
         dataset_id = str(uuid.uuid4())
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self._save_to_local_dir(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join("project", project_key, "datasets", dataset_id))
+            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
             client.save_dataset_meta(project_key,
                                      dataset_id,
                                      self.meta,
@@ -94,7 +94,7 @@ class Dataset:
                     column_types=saved_meta["column_types"],
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join("project", project_key, "datasets", dataset_id))
+            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
         df = cls._read_dataset_from_local_dir(local_dir / "data.csv.zst")

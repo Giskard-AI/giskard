@@ -10,7 +10,7 @@
                   <v-divider/>
                   <v-list-item :value="test">
                     <v-list-item-content>
-                      <v-list-item-title v-text="test.name" class="test-title"></v-list-item-title>
+                      <v-list-item-title v-text="test.displayName ?? test.name" class="test-title"></v-list-item-title>
 
                       <v-list-item-subtitle v-if="test.tags">
                         <v-chip class="mr-2" v-for="tag in sorted(test.tags)" x-small :color="pasterColor(tag)">
@@ -26,7 +26,7 @@
           </v-col>
           <v-col cols="8" v-if="selected" class="vc fill-height">
             <div class="d-flex justify-space-between">
-              <span class="text-h5">{{ selected.name }}</span>
+              <span class="text-h5">{{ selected.displayName ?? selected.name }}</span>
               <v-btn small outlined tile class="primary" color="white">
                 <v-icon dense class="pr-2">mdi-plus</v-icon>
                 Add to test suite
@@ -45,7 +45,7 @@
                   </v-btn>
                 </div>
                 <v-list>
-                  <v-list-item v-for="a in selected.arguments" class="pl-0 pr-0">
+                  <v-list-item v-for="a in selected.args" class="pl-0 pr-0">
                     <v-row>
                       <v-col>
                         <v-list-item-content>
@@ -128,7 +128,11 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import MonacoEditor from 'vue-monaco';
 import TestExecutionResultBadge from "@/views/main/project/TestExecutionResultBadge.vue";
 import {editor} from "monaco-editor";
-import {TestCatalogDTO, TestDefinitionDTO, TestExecutionResultDTO, TestFunctionArgumentDTO} from "@/generated-sources";
+import {
+  TestExecutionResultDTO,
+  TestFunctionArgumentDTO,
+  TestFunctionDTO
+} from "@/generated-sources";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -138,8 +142,8 @@ let props = defineProps<{
 
 const editor = ref(null)
 
-let registry = ref<TestCatalogDTO | null>(null);
-let selected = ref<TestDefinitionDTO | null>(null);
+let registry = ref<TestFunctionDTO[]>([]);
+let selected = ref<TestFunctionDTO | null>(null);
 let tryMode = ref(true)
 let testArguments = ref({})
 let testResult = ref<TestExecutionResultDTO | null>(null);
@@ -150,7 +154,7 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
 async function runTest() {
-  testResult.value = await api.runAdHocTest(props.projectId, selected.value!.id, testArguments.value);
+  testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, testArguments.value);
 }
 
 
@@ -175,8 +179,12 @@ watch(selected, (value) => {
   testResult.value = null;
   tryMode.value = false;
   testArguments.value = {}
-  for (const [argName, arg] of Object.entries(value.arguments)) {
-    testArguments.value[argName] = castDefaultValueToType(arg);
+  if (value === null) {
+    return;
+  }
+
+  for (const arg of value.args) {
+    testArguments.value[arg.name] = castDefaultValueToType(arg);
   }
 });
 
@@ -188,16 +196,15 @@ function sorted(arr: any[]) {
 }
 
 const testFunctions = computed(() => {
-  if (!registry.value) {
-    return [];
-  }
-  return _.sortBy(_.values(registry.value?.tests), 'name');
+  return _.chain(registry.value)
+      .sortBy('name')
+      .value();
 })
 
 onActivated(async () => {
-  registry.value = await api.getTestsCatalog(props.projectId);
-  if (testFunctions) {
-    selected.value = testFunctions[0];
+  registry.value = await api.getTestFunctions();
+  if (testFunctions.value.length > 0) {
+    selected.value = testFunctions.value[0];
   }
 });
 

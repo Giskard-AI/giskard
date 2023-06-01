@@ -61,7 +61,7 @@ def test_function_meta_to_json(meta: TestFunctionMeta):
         "name": meta.name,
         "display_name": meta.display_name,
         "module": meta.module,
-        "doc": meta.code,
+        "doc": meta.doc,
         "module_doc": meta.module_doc,
         "code": meta.code,
         "tags": meta.tags,

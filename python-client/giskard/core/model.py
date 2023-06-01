@@ -81,7 +81,7 @@ class Model:
             info = self.save_to_local_dir(f)
             self.save_data_preprocessing_function(f)
             if client is not None:
-                client.log_artifacts(f, posixpath.join("project", project_key, "models", info.model_uuid))
+                client.log_artifacts(f, posixpath.join(project_key, "models", info.model_uuid))
                 client.save_model_meta(project_key,
                                        info.model_uuid,
                                        self.meta,
@@ -160,7 +160,7 @@ class Model:
                     classification_threshold=saved_meta['threshold'],
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join("project", project_key, "models", model_id))
+            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta = client.load_model_meta(project_key, model_id)
         return cls(
             clf=cls.read_model_from_local_dir(local_dir),

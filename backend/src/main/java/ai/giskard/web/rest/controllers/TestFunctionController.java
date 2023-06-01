@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +25,11 @@ public class TestFunctionController {
     private final TestFunctionRepository testFunctionRepository;
     private final TestFunctionService testFunctionService;
 
+    @GetMapping("/test-functions")
+    @Transactional(readOnly = true)
+    public List<TestFunctionDTO> findAll() {
+        return testFunctionService.findAll();
+    }
     @GetMapping("/test-functions/{testId}")
     @Transactional(readOnly = true)
     public TestFunctionDTO getTestFunction(@PathVariable("testId") @NotNull UUID modelId) {
