@@ -1,5 +1,8 @@
 package ai.giskard.ml.tunnel;
 
+import ai.giskard.config.SpringContext;
+import ai.giskard.service.ml.MLWorkerDataEncryptor;
+import ai.giskard.service.ml.MLWorkerSecurityService;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.bootstrap.ServerBootstrap;
@@ -16,10 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
 
+import javax.crypto.SecretKey;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Optional;
 
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
@@ -27,32 +31,37 @@ import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
 @ChannelHandler.Sharable
 public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
     private final Logger log = LoggerFactory.getLogger(OuterChannelHandler.class);
-    private final Set<ChannelId> serviceChannelsIds = new HashSet<>();
-    private Optional<InnerServerStartResponse> innerServerData = Optional.empty();
-    private final Map<ChannelId, String> innerChannelIdByOuterChannel = new HashMap<>();
-    private final Map<String, Channel> innerChannelById = new HashMap<>();
 
-    private final Map<String, SettableFuture<Channel>> outerChannelByInnerChannelId = new HashMap<>();
+    private Optional<InnerServerStartResponse> innerServerData = Optional.empty();
+
+    private final MLWorkerSecurityService mlWorkerSecurityService = SpringContext.getBean(MLWorkerSecurityService.class);
+
+    private final ChannelRegistry channelRegistry = new ChannelRegistry();
 
     @Getter
     private EventBus eventBus = new EventBus();
 
 
-    private void initInnerServer(SocketChannel outerChannel) {
-        this.innerServerData = Optional.of(startInnerServer(outerChannel));
+    private void initInnerServer(SocketChannel outerChannel, String keyId) {
+        this.innerServerData = Optional.of(startInnerServer(outerChannel, keyId));
         eventBus.post(this.innerServerData);
     }
 
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.debug("Outer channel inactive {}", ctx.channel().id());
-        if (serviceChannelsIds.contains(ctx.channel().id())) {
-            log.info("Shutting down inner server for outer channel {}", ctx.channel().id());
-            innerServerData.ifPresent(innerServerStartResponse -> innerServerStartResponse.group.shutdownGracefully());
-            serviceChannelsIds.remove(ctx.channel().id());
-            innerServerData = Optional.empty();
-            eventBus.post(innerServerData);
+        ChannelId channelId = ctx.channel().id();
+        log.debug("Outer channel inactive {}", channelId);
+
+        if (!channelRegistry.isServiceChannel(channelId)) {
+            channelRegistry.getInnerChannelByOuterChannelId(channelId).ifPresent(innerChannel -> {
+                try {
+                    innerChannel.close().sync();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Interrupted while stopping inner channel {}", innerChannel.id());
+                }
+            });
         }
     }
 
@@ -62,74 +71,69 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
         Channel outerChannel = ctx.channel();
         ctx.close().addListener(future -> log.info("Service channel connection is lost: {}", outerChannel.id()));
 
-        if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
-            Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
-            if (innerChannel != null) {
-                innerChannel.close().addListener(future ->
-                    log.info("Closed inner channel {} linked to closed outer channel {}", outerChannel.id(), innerChannel.id()));
-            }
-        }
+        channelRegistry.getInnerChannelByOuterChannelId(outerChannel.id()).ifPresent(innerChannel ->
+            innerChannel.close().addListener(
+                future -> log.info("Closed inner channel {} linked to closed outer channel {}", outerChannel.id(), innerChannel.id()))
+        );
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         SocketChannel outerChannel = (SocketChannel) ctx.channel();
         ByteBuf in = (ByteBuf) msg;
-        while (in.readableBytes() > 0) {
-            log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
-            if (innerChannelIdByOuterChannel.containsKey(outerChannel.id())) {
-                passDataDirectly(in, outerChannel);
-            } else {
-                handleServiceChannelInput(ctx, outerChannel, in);
-            }
+        log.debug("Outer: Writing {} bytes from {}", in.readableBytes(), outerChannel.id());
+        if (channelRegistry.isDataChannel(outerChannel.id())) {
+            passDataDirectly(in, outerChannel);
+        } else {
+            handleServiceChannelInput(ctx, outerChannel, in);
         }
-
     }
 
     private void handleServiceChannelInput(ChannelHandlerContext ctx, SocketChannel outerChannel, ByteBuf in) {
-        // Giskard service messages have the following structure:
-        // <message length = 4B><message type = 1B><optional payload = [message length - 1]B>
-        if (in.readableBytes() < 5) {
-            return;
-        }
-        int payloadLength = in.readInt() - 1;
+        DecryptionResult decrypted = mlWorkerSecurityService.decryptWithKeyHeader(in);
+        in = decrypted.getData();
+
         byte messageType = in.readByte();
         ByteBuf payload = null;
-        if (payloadLength > 0 && in.readableBytes() >= payloadLength) {
-            payload = in.readBytes(payloadLength);
+        if (in.readableBytes() > 0) {
+            payload = in.readBytes(in.readableBytes());
         }
 
-        handleServiceCommand(outerChannel, messageType, payload);
+        handleServiceCommand(outerChannel, messageType, payload, decrypted.getKeyId());
     }
 
-    private void handleServiceCommand(SocketChannel outerChannel, byte messageType, ByteBuf payload) {
+    private void handleServiceCommand(SocketChannel outerChannel, byte messageType, ByteBuf payload, String keyId) {
         switch (messageType) {
             case START_INNER_SERVER -> {
-                serviceChannelsIds.add(outerChannel.id());
-                initInnerServer(outerChannel);
+                channelRegistry.addServiceChannelId(outerChannel.id());
+
+                initInnerServer(outerChannel, keyId);
+
+                mlWorkerSecurityService.findKey(keyId).setUsed(true);
             }
             case REGISTER_CLIENT_CHANNEL -> {
                 assert payload != null;
                 String innerChannelId = payload.toString(StandardCharsets.UTF_8);
-                outerChannelByInnerChannelId.get(innerChannelId).set(outerChannel);
-                innerChannelIdByOuterChannel.put(outerChannel.id(), innerChannelId);
+                channelRegistry.linkOuterAndInnerChannels(outerChannel, innerChannelId, mlWorkerSecurityService.findKey(keyId));
                 log.info("Linked outer channel {} with inner channel {}", outerChannel.id(), innerChannelId);
             }
             default -> throw new IllegalArgumentException("Unknown command");
         }
     }
 
+
     private void passDataDirectly(ByteBuf in, SocketChannel outerChannel) {
-        ByteBuf data = in.readBytes(in.readableBytes());
-        Channel innerChannel = innerChannelById.get(innerChannelIdByOuterChannel.get(outerChannel.id()));
-        if (innerChannel != null) {
+        channelRegistry.getInnerChannelByOuterChannelId(outerChannel.id()).ifPresent(innerChannel -> {
             log.debug("Outer->Inner: Writing {} bytes from {} to {}", in.readableBytes(), outerChannel.id(), innerChannel.id());
-            innerChannel.writeAndFlush(data);
-        }
+            SecretKey key = channelRegistry.getOuterChannelKey(outerChannel.id()).getKey();
+            innerChannel.writeAndFlush(
+                new MLWorkerDataEncryptor(key).decryptPayload(in)
+            );
+        });
     }
 
 
-    private InnerServerStartResponse startInnerServer(SocketChannel serviceOuterChannel) {
+    private InnerServerStartResponse startInnerServer(SocketChannel serviceOuterChannel, String keyId) {
         final SettableFuture<Channel> innerChannelFuture = SettableFuture.create();
         int innerPort = SocketUtils.findAvailableTcpPort();
 
@@ -146,10 +150,9 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                         new LoggingHandler("Inner channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
                         new InnerChannelHandler(
                             serviceOuterChannel,
-                            outerChannelByInnerChannelId,
-                            innerChannelIdByOuterChannel,
-                            innerChannelById,
-                            innerChannelFuture
+                            channelRegistry,
+                            innerChannelFuture,
+                            keyId
                         ));
                 }
             })
@@ -161,7 +164,15 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
                 log.info("Started inner server {} for incoming service channel {}", address, serviceOuterChannel.id());
             }
         });
+        serviceOuterChannel.closeFuture().addListener(future -> {
+            log.info("Shutting down inner server for outer channel {}", serviceOuterChannel.id());
+            group.shutdownGracefully();
+            mlWorkerSecurityService.removeKey(keyId);
+            channelRegistry.removeServiceChannel(serviceOuterChannel.id());
+            innerServerData = Optional.empty();
+            eventBus.post(innerServerData);
 
+        });
         return new InnerServerStartResponse(innerPort, innerChannelFuture, group);
     }
 

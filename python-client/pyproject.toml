@@ -69,6 +69,7 @@ scipy = ">=1.7.2,<1.8"
 shap = "^0.41.0"
 ipython = "^7.0.0"
 mlflow-skinny = "1.30.0"
+pycryptodome = "^3.16.0"
 
 [tool.poetry.group.dev.dependencies]
 typing-extensions = "^4.1.0"

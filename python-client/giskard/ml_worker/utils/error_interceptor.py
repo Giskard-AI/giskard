@@ -1,6 +1,8 @@
+import asyncio
 import functools
 import logging
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from typing import Callable, Iterable, Union, Awaitable
 
 import grpc
@@ -18,8 +20,11 @@ MESSAGE_TYPE = Union[Message, Iterable[Message]]
 
 logger = logging.getLogger(__name__)
 
+pool = ThreadPoolExecutor()
+
 
 class ErrorInterceptor(grpc.aio.ServerInterceptor):
+
     @staticmethod
     async def terminate_with_exception(error_code: StatusCode, e: Exception, context: ServicerContext):
         detail = any_pb2.Any()
@@ -34,13 +39,14 @@ class ErrorInterceptor(grpc.aio.ServerInterceptor):
         await context.abort_with_status(rpc_status.to_status(rich_status))
 
     async def intercept_service(self, continuation: Callable[[grpc.HandlerCallDetails],
-                                                             Awaitable[grpc.RpcMethodHandler]],
+    Awaitable[grpc.RpcMethodHandler]],
                                 handler_call_details: grpc.HandlerCallDetails) -> grpc.RpcMethodHandler:
         def _wrapper(behavior):
             @functools.wraps(behavior)
             async def wrapper(request, context: aio.ServicerContext):
                 try:
-                    res = behavior(request, context)
+                    loop = asyncio.get_running_loop()
+                    res = await loop.run_in_executor(pool, behavior, request, context)
                     return res
                 except CodedError as e:
                     logger.exception(e)
