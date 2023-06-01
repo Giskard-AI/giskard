@@ -5,7 +5,7 @@
         class="slice-function-selector"
         :label="label"
         :value="value"
-        :items="sliceFunctions"
+        :items="slicingFunctions"
         :item-text="extractName"
         item-value="uuid"
         :return-object="returnObject"
@@ -31,10 +31,10 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:value']);
 
-const {sliceFunctions} = storeToRefs(useCatalogStore())
+const {slicingFunctions: slicingFunctions} = storeToRefs(useCatalogStore())
 
-function extractName(sliceFunctionDTO: SlicingFunctionDTO) {
-    return sliceFunctionDTO.displayName ?? sliceFunctionDTO.name
+function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
+    return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
 }
 
 function onInput(value) {

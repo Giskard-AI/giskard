@@ -26,7 +26,7 @@ import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
-public class SliceFunctionController {
+public class SlicingFunctionController {
 
     private final GiskardMapper giskardMapper;
     private final SlicingFunctionRepository slicingFunctionRepository;
@@ -65,8 +65,8 @@ public class SliceFunctionController {
     @PutMapping("/slices/{uuid}")
     @Transactional
     public SlicingFunctionDTO updateTestFunction(@PathVariable("uuid") @NotNull UUID uuid,
-                                                 @Valid @RequestBody SlicingFunctionDTO sliceFunction) {
-        return slicingFunctionService.save(sliceFunction);
+                                                 @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
+        return slicingFunctionService.save(slicingFunction);
     }
 
 }
