@@ -12,10 +12,10 @@ import java.util.List;
 public interface TestSuiteRepository extends JpaRepository<TestSuite, Long> {
     List<TestSuite> findAllByProjectId(long projectId);
 
-    List<TestSuite> findAllByModelId(long modelId);
+    List<TestSuite> findAllByModelId(String modelId);
 
     @Query("FROM TestSuite where actualDataset.id = :id or referenceDataset.id = :id")
-    List<TestSuite> findByDatasetId(@Param("id") long datasetId);
+    List<TestSuite> findByDatasetId(@Param("id") String datasetId);
 
-    List<TestSuite> findByModelId(long modelId);
+    List<TestSuite> findByModelId(String modelId);
 }

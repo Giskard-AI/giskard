@@ -12,7 +12,9 @@ import psutil
 import tqdm
 
 import giskard
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard.client.giskard_client import GiskardClient
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.core.model_explanation import (
     explain,
     parse_text_explainer_response,
@@ -40,7 +42,6 @@ from giskard.ml_worker.generated.ml_worker_pb2 import (
     UploadStatus,
     UploadStatusCode, FileUploadMetadata, FileType, )
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
-from giskard.ml_worker.utils.grpc_mapper import deserialize_dataset, deserialize_model
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import model_path, dataset_path
 
@@ -60,10 +61,11 @@ def file_already_exists(meta: FileUploadMetadata):
 
 
 class MLWorkerServiceImpl(MLWorkerServicer):
-    def __init__(self, port=None, remote=None) -> None:
+    def __init__(self, client: GiskardClient, port=None, remote=None) -> None:
         super().__init__()
         self.port = port
         self.remote = remote
+        self.client = client
 
     def echo(self, request, context):
         globals()["echo_count"] += 1
@@ -132,15 +134,16 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runTest(self, request: RunTestRequest, context: grpc.ServicerContext) -> TestResultMessage:
         from giskard.ml_worker.testing.functions import GiskardTestFunctions
-
-        model = deserialize_model(request.model)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
 
         tests = GiskardTestFunctions()
         _globals = {"model": model, "tests": tests}
-        if request.reference_ds.file_name:
-            _globals["reference_ds"] = deserialize_dataset(request.reference_ds)
-        if request.actual_ds.file_name:
-            _globals["actual_ds"] = deserialize_dataset(request.actual_ds)
+        if request.reference_ds.id:
+            _globals["reference_ds"] = \
+                Dataset.load(self.client, request.reference_ds.project_key, request.reference_ds.id)
+        if request.actual_ds.id:
+            _globals["actual_ds"] = \
+                Dataset.load(self.client, request.actual_ds.project_key, request.actual_ds.id)
         try:
             timer = Timer()
             exec(request.code, _globals)
@@ -156,8 +159,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return TestResultMessage(results=tests.tests_results)
 
     def explain(self, request: ExplainRequest, context) -> ExplainResponse:
-        model = deserialize_model(request.model)
-        dataset = deserialize_dataset(request.dataset)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
+        dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         explanations = explain(model, dataset, request.columns)
 
         return ExplainResponse(
@@ -169,7 +172,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explainText(self, request: ExplainTextRequest, context) -> ExplainTextResponse:
         n_samples = 500 if request.n_samples <= 0 else request.n_samples
-        model = deserialize_model(request.model)
+        model = Model.load(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.feature_types[text_column] != "text":
@@ -183,15 +186,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ExplainTextResponse(explanations=parse_text_explainer_response(html_response))
 
     def runModelForDataFrame(self, request: RunModelForDataFrameRequest, context):
-        model = deserialize_model(request.model)
-        ds = GiskardDataset(
+        model = Model.load(self.client, request.model.project_key, request.model.id)
+        ds = Dataset(
             pd.DataFrame([r.columns for r in request.dataframe.rows]),
             target=request.target,
             feature_types=request.feature_types,
             column_types=request.column_types,
         )
-        predictions = model.run_predict(ds)
-        if model.model_type == "classification":
+        predictions = model.predict(ds)
+        if model.is_classification:
             return RunModelForDataFrameResponse(
                 all_predictions=self.pandas_df_to_proto_df(predictions.all_predictions),
                 prediction=predictions.prediction.astype(str),
@@ -203,8 +206,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: RunModelRequest, context) -> RunModelResponse:
         try:
-            model = deserialize_model(request.model)
-            dataset = deserialize_dataset(request.dataset)
+            model = Model.load(self.client, request.model.project_key, request.model.id)
+            dataset = Dataset.load(self.client, request.dataset.project_key, request.dataset.id)
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError('Unable to unpickle object, '
@@ -216,13 +219,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             raise GiskardException(f"Failed to import '{e.name}'. "
                                    f"Make sure it's installed in the ML Worker environment."
                                    "To install it, refer to https://docs.giskard.ai/start/guides/configuration") from e
-        prediction_results = model.run_predict(dataset)
+        prediction_results = model.predict(dataset)
 
-        if model.model_type == "classification":
+        if model.is_classification:
             results = prediction_results.all_predictions
-            labels = {k: v for k, v in enumerate(model.classification_labels)}
+            labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
             label_serie = dataset.df[dataset.target] if dataset.target else None
-            if len(model.classification_labels) > 2 or model.classification_threshold is None:
+            if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                 sorted_predictions = np.sort(prediction_results.all_predictions.values)
                 abs_diff = pd.Series(
@@ -230,7 +233,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
             else:
                 diff = (
-                        prediction_results.all_predictions.iloc[:, 1] - model.classification_threshold
+                        prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
                 )
                 preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")

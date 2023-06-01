@@ -12,8 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateFeedbackDTO {
     private Long projectId;
-    private Long modelId;
-    private Long datasetId;
+    private String modelId;
+    private String datasetId;
     @UINullable
     private String targetFeature;
     private String feedbackType;

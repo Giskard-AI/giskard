@@ -30,7 +30,7 @@ export default class DatasetSelector extends Vue {
   projectDatasets: Array<DatasetDTO> = [];
 
   extractDatasetName(dataset: DatasetDTO) {
-    return dataset.name || dataset.fileName;
+    return dataset.name || dataset.id;
   }
 
   onInput(value) {

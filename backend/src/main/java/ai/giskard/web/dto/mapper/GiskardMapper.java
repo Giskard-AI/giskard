@@ -148,6 +148,21 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     TestSuite fromDTO(TestSuiteCreateDTO dto);
 
+    @Mapping(source = "projectId", target = "project")
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    ProjectModel fromDTO(ModelDTO dto);
+
+    @Mapping(source = "featureTypes", target = "featureTypes")
+    @Mapping(target = "inspections", ignore = true)
+    @Mapping(target = "project", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    Dataset fromDTO(DatasetDTO dto);
 
     @Mapping(target = "message", source = "feedbackMessage")
     @Mapping(target = "projectId", source = "project.id")

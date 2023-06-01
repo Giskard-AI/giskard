@@ -19,8 +19,8 @@ public class UpdateTestSuiteDTO {
     @NotNull
     private String name;
     @UINullable
-    private Long referenceDatasetId;
+    private String referenceDatasetId;
     @UINullable
-    private Long actualDatasetId;
-    private Long modelId;
+    private String actualDatasetId;
+    private String modelId;
 }

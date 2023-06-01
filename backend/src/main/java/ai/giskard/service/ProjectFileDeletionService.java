@@ -33,7 +33,7 @@ public class ProjectFileDeletionService {
     final PermissionEvaluator permissionEvaluator;
 
     @Transactional
-    public void deleteDataset(Long datasetId) {
+    public void deleteDataset(String datasetId) {
         Dataset dataset = datasetRepository.getById(datasetId);
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
 
@@ -52,17 +52,17 @@ public class ProjectFileDeletionService {
 
         try {
             datasetRepository.flush();
-            Path datasetPath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
-            log.info("Removing dataset file: {}", datasetPath.getFileName());
-            Files.deleteIfExists(datasetPath);
+            //Path datasetPath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
+            //log.info("Removing dataset file: {}", datasetPath.getFileName());
+            //Files.deleteIfExists(datasetPath);
         } catch (Exception e) {
-            throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
+            //throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
         }
 
     }
 
     @Transactional
-    public void deleteModel(Long modelId) {
+    public void deleteModel(String modelId) {
         ProjectModel model = modelRepository.getById(modelId);
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 
@@ -79,16 +79,16 @@ public class ProjectFileDeletionService {
         modelRepository.delete(model);
 
 
-        try {
+        //try {
             modelRepository.flush();
             Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
-            log.info("Removing model file: {}", model.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
+            //log.info("Removing model file: {}", model.getFileName());
+            //Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
             log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
-        } catch (IOException e) {
-            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
-        }
+            //Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
+        //} catch (IOException e) {
+            //throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
+        //}
 
     }
 

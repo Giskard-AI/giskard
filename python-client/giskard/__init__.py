@@ -3,13 +3,15 @@
 
 import sys
 
+from ml_worker_pb2 import SingleTestResult
+from giskard.client.project import Project
+from giskard.core.model import Model
+from giskard.core.model import Dataset
 from giskard.client.giskard_client import GiskardClient
-from giskard.ml_worker.utils.logging import configure_logging
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.abstract_test_collection import AbstractTestCollection
+from giskard.ml_worker.utils.logging import configure_logging
 
 configure_logging()
-
 if sys.version_info >= (3, 8):
     from importlib import metadata as importlib_metadata
 else:

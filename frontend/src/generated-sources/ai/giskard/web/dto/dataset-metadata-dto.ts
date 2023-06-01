@@ -6,6 +6,6 @@ import type {FeatureType} from './../../domain/feature-type';
 export interface DatasetMetadataDTO {
     columnTypes?: {[key: string]: string} | null;
     featureTypes: {[key: string]: FeatureType};
-    id: number;
+    id: string;
     target?: string | null;
 }
