@@ -45,8 +45,9 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      No files uploaded yet.
+    <v-container v-else>
+      <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
+      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
     </v-container>
   </div>
 </template>
@@ -55,10 +56,11 @@
 import { api } from '@/api';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import { onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const projectArtifactsStore = useProjectArtifactsStore();
 
@@ -66,6 +68,7 @@ const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
 const props = withDefaults(defineProps<{
   projectId: number,
+  projectKey: string,
   isProjectOwnerOrAdmin: boolean
 }>(), {
   isProjectOwnerOrAdmin: false
@@ -74,6 +77,32 @@ const props = withDefaults(defineProps<{
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+
+const codeContent = computed(() =>
+  `# Create a Giskard client
+from giskard import GiskardClient
+url = "http://localhost:19000" # URL of your Giskard instance
+token = "my_API_Access_Token" # Your API Access Token (generate one in Settings > API Access Token > Generate)
+client = GiskardClient(url, token)
+
+# Load your data
+import pandas as pd
+my_df = pd.read_csv("my_data.csv") # Load your data
+my_column_types = {"categorical_column": "category",
+                   "text_column": "text",
+                   "numeric_column": "numeric"} # Declare the type of each column in your data (example: category, numeric, text)
+
+# Create a Giskard Dataset
+from giskard import Dataset
+my_dataset = Dataset(df=my_df, 
+                     target="numeric_column",
+                     column_types=my_column_types)
+
+# Upload your dataset on Giskard
+project_key = "${props.projectKey}" # Current project key
+my_dataset.upload(client, project_key)`
+)
+
 
 async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', { id });
