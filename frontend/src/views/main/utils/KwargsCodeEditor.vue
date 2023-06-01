@@ -1,5 +1,5 @@
 <template>
-    <div class="mt-1 custom-editor">
+    <div class="mt-1 editor-container">
         <MonacoEditor ref="editor" :value="props.value" @change="onInput" class='editor' language='python' style="height: 300px" :options="monacoOptions" />
     </div>
 </template>
@@ -45,18 +45,18 @@ function onInput(value: string) {
 </script>
 
 <style scoped lang="scss">
-.custom-editor {
+.editor-container {
     border: 1px solid rgba(0, 0, 0, 0.4);
     border-radius: 5px;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
 }
 
-.custom-editor:hover {
+.editor-container:hover {
     border: 1px solid rgba(0, 0, 0, 0.8);
 }
 
-.custom-editor:focus-within {
+.editor-container:focus-within {
     border: 2px solid #087038;
     padding-right: 1rem;
 }
