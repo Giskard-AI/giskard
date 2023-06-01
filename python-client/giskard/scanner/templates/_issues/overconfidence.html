@@ -38,7 +38,7 @@
         </div>
         <h4 class="font-bold mt-4 text-sm">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.examples(3).to_html(justify="left", notebook=True) | safe }}
+            {{ issue.examples(3).to_html(justify="left", notebook=True) | replace("\\n", "<br>") | safe }}
         </div>
     </td>
 </tr>
