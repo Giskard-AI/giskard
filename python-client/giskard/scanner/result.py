@@ -1,3 +1,4 @@
+from collections import defaultdict
 import pandas as pd
 
 
@@ -29,10 +30,20 @@ class ScanResult:
             autoescape=select_autoescape(),
         )
         tpl = env.get_template("scan_results.html")
+
+        issues_by_group = defaultdict(list)
+        for issue in self.issues:
+            issues_by_group[issue.group].append(issue)
+
         html = tpl.render(
             issues=self.issues,
-            num_major_issues=len([i for i in self.issues if i.is_major]),
-            num_medium_issues=len([i for i in self.issues if not i.is_major]),
+            issues_by_group=issues_by_group,
+            num_major_issues={
+                group: len([i for i in issues if i.is_major]) for group, issues in issues_by_group.items()
+            },
+            num_medium_issues={
+                group: len([i for i in issues if not i.is_major]) for group, issues in issues_by_group.items()
+            },
         )
 
         escaped = escape(html)
