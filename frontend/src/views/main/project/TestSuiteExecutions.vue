@@ -27,9 +27,12 @@
                       <div class="d-flex justify-space-between">
                         <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
                         <template v-if="!e.disabled">
-                          <TestResultHeatmap v-if="compareSelectedExecution === null"
+                          <TestResultHeatmap v-if="compareSelectedItems === null"
                                              :results="executionResults(e.execution)"/>
-                          <v-checkbox v-else/>
+                          <v-checkbox v-else
+                                      v-model="compareSelectedItems"
+                                      :value="e.execution.id"
+                          />
                         </template>
                       </div>
                     </v-list-item-title>
@@ -49,7 +52,7 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted} from 'vue';
 import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import TestResultHeatmap from '@/components/TestResultHeatmap.vue';
 import {Colors} from '@/utils/colors';
@@ -57,6 +60,7 @@ import {Comparators} from '@/utils/comparators';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {useRoute, useRouter} from 'vue-router/composables';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 
 const {registry, models, datasets, inputs, executions, trackedJobs} = storeToRefs(useTestSuiteStore());
 
@@ -99,7 +103,7 @@ function jobStatusColor(job: JobDTO): string {
 
 const route = useRoute();
 
-const compareSelectedExecution = ref<number[] | null>(null);
+const {compareSelectedItems} = storeToRefs(useTestSuiteCompareStore());
 
 function executionResults(execution: TestSuiteExecutionDTO): boolean[] {
   return execution.results ? execution.results.map(result => result.passed) : [];

@@ -20,7 +20,7 @@
               </v-btn>
               <div class="flex-grow-1"/>
               <v-btn tile class='mx-1'
-                     v-if="Object.entries(inputs).length > 0"
+                     v-if="currentExecution !== null"
                      @click='compare'
                      color="secondary">
                 <v-icon>compare</v-icon>
@@ -51,9 +51,10 @@ import {onMounted, watch} from "vue";
 import {useMainStore} from "@/stores/main";
 import {useTestSuiteStore} from '@/stores/test-suite';
 import {storeToRefs} from 'pinia';
-import {useRoute} from 'vue-router/composables';
+import {useRoute, useRouter} from 'vue-router/composables';
 import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 
 const props = defineProps<{
   projectId: number,
@@ -68,6 +69,7 @@ watch(() => props.suiteId, () => loadData());
 
 const {loadTestSuite} = useTestSuiteStore();
 
+const router = useRouter();
 const route = useRoute();
 
 async function loadData() {
@@ -87,9 +89,20 @@ async function openRunTestSuite(compareMode: boolean) {
   });
 }
 
+let testSuiteCompareStore = useTestSuiteCompareStore();
+const {currentExecution, compareSelectedItems} = storeToRefs(testSuiteCompareStore);
+
 async function compare() {
   if (route.name === 'test-suite-overview') {
     await openRunTestSuite(true);
+  } else if (compareSelectedItems.value === null) {
+    testSuiteCompareStore.startComparing();
+  } else {
+    await router.push({
+      name: 'test-suite-compare-executions',
+      query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
+    })
+    testSuiteCompareStore.reset();
   }
 }
 </script>

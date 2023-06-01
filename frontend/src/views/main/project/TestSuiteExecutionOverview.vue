@@ -72,11 +72,11 @@ const {registry, models, datasets, inputs, suite, projectId} = storeToRefs(testS
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
-  testSuiteCompareStore.setCurrentExecution(props.execution?.id ?? null);
+  testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
 })
 
 watch(() => props.execution,
-    () => testSuiteCompareStore.setCurrentExecution(props.execution?.id ?? null),
+    () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
     {deep: true});
 
 const statusFilterOptions = [{
