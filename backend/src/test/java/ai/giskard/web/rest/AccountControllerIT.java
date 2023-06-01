@@ -5,7 +5,7 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
-import ai.giskard.security.jwt.TokenProvider;
+import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.UserService;
 import ai.giskard.utils.TestUtil;
 import ai.giskard.utils.TestUtilService;

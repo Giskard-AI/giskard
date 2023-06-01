@@ -1,5 +1,6 @@
 import type {AdminUserDTO} from './../user/admin-user-dto';
 import type {GeneralSettings} from './../../../domain/general-settings';
+import type {LicenseDTO} from './license-dto';
 import type {RoleDTO} from './../user/role-dto';
 
 /**
@@ -7,6 +8,7 @@ import type {RoleDTO} from './../user/role-dto';
  */
 export interface AppConfigDTO {
     app: AppConfigDTO.AppInfoDTO;
+    license: LicenseDTO;
     user: AdminUserDTO;
 }
 
