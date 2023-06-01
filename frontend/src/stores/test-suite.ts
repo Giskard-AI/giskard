@@ -58,32 +58,19 @@ export const useTestSuiteStore = defineStore('testSuite', {
     actions: {
         async reload() {
             if (this.suiteId !== null && this.projectId !== null) {
-                await this.loadTestSuite(this.projectId, this.suiteId)
+                await this.loadTestSuite(this.projectId, this.suiteId!)
             }
         },
         async loadTestSuite(projectId: number, suiteId: number) {
-            const [
-                inputs,
-                suite,
-                registry,
-                datasets,
-                models,
-                executions
-            ] = await Promise.all([
-                api.getTestSuiteNewInputs(projectId, suiteId),
-                api.getTestSuiteNew(projectId, suiteId),
-                api.getTestsCatalog(projectId),
-                api.getProjectDatasets(projectId),
-                api.getProjectModels(projectId),
-                api.listTestSuiteExecutions(projectId, suiteId)
-            ]);
+            const completeSuite = await api.getTestSuiteComplete(projectId, suiteId);
+
             this.projectId = projectId;
-            this.inputs = inputs;
-            this.suite = suite;
-            this.registry = registry;
-            this.datasets = Object.fromEntries(datasets.map(x => [x.id, x]));
-            this.models = Object.fromEntries(models.map(x => [x.id, x]));
-            this.executions = executions;
+            this.inputs = completeSuite.inputs;
+            this.suite = completeSuite.suite;
+            this.registry = completeSuite.registry;
+            this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
+            this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
+            this.executions = completeSuite.executions;
         },
         async trackJob(uuid: string) {
             console.log(uuid);
