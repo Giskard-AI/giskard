@@ -10,6 +10,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.suite import Suite
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 from giskard.ml_worker.testing.registry.decorators import test
+from giskard.ml_worker.testing.registry.slice_function import slicing_function
 from giskard.ml_worker.testing.tests.drift import test_drift_psi, test_drift_chi_square, test_drift_ks, \
     test_drift_earth_movers_distance, test_drift_prediction_psi, test_drift_prediction_chi_square, \
     test_drift_prediction_ks, test_drift_prediction_earth_movers_distance
@@ -97,7 +98,8 @@ __all__ = [
     'test_metamorphic_invariance_t_test',
     'test_metamorphic_increasing_wilcoxon',
     'test_metamorphic_decreasing_wilcoxon',
-    'test_metamorphic_invariance_wilcoxon'
+    'test_metamorphic_invariance_wilcoxon',
+    'slicing_function'
 ]
 try:
     from giskard.models.catboost import CatboostModel
