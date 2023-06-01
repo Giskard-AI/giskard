@@ -16,11 +16,11 @@ from ...models.base import BaseModel
 @detector(name="text_perturbation", tags=["text_perturbation", "robustness", "nlp", "classification", "regression"])
 class TextPerturbationDetector(Detector):
     def __init__(
-            self,
-            transformations: Optional[Sequence[TextTransformation]] = None,
-            threshold: float = 0.05,
-            output_sensitivity=0.05,
-            num_samples: int = 1_000,
+        self,
+        transformations: Optional[Sequence[TextTransformation]] = None,
+        threshold: float = 0.05,
+        output_sensitivity=0.05,
+        num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -55,7 +55,7 @@ class TextPerturbationDetector(Detector):
             TextPunctuationRemovalTransformation,
             TextGenderTransformation,
             TextReligionTransformation,
-            TextNationalityTransformation
+            TextNationalityTransformation,
         )
 
         return [
@@ -66,15 +66,15 @@ class TextPerturbationDetector(Detector):
             TextPunctuationRemovalTransformation,
             TextGenderTransformation,
             TextReligionTransformation,
-            TextNationalityTransformation
+            TextNationalityTransformation,
         ]
 
     def _detect_issues(
-            self,
-            model: BaseModel,
-            dataset: Dataset,
-            transformation: TextTransformation,
-            features: Sequence[str],
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation: TextTransformation,
+        features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
