@@ -50,16 +50,14 @@ catalogs/index
 ```
 
 <p align="center" style="margin-top: 2rem;">
-  <img class="sidebar-logo only-light" style="margin: 0 0;" src="../_static/logo_black.png" alt="Light Logo"/>
-  <img class="sidebar-logo only-dark" style="margin: 0 0;" src="../_static/logo_white.png" alt="Dark Logo"/>
+  <img class="sidebar-logo only-light" style="margin: 0 0;" src="_static/logo_black.png" alt="Light Logo"/>
+  <img class="sidebar-logo only-dark" style="margin: 0 0;" src="_static/logo_white.png" alt="Dark Logo"/>
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated for  ML models, from tabular to LLM</h1>
 <p align="center">
-   <a href="https://docs.giskard.ai/"><b>Documentation</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
-  <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
-  <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
+  <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </p>
 <br />
 
