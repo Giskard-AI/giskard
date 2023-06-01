@@ -8,5 +8,6 @@ Getting started
    wrap/index
    test-suite/index
    create-slices/index
+   troubleshooting/index
    test-catalog/index
 
