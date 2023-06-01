@@ -80,6 +80,36 @@ def map_function_meta(callable_type):
     }
 
 
+def map_dataset_process_function_meta(callable_type):
+    return {
+        test.uuid: ml_worker_pb2.DatasetProcessFunctionMeta(
+            uuid=test.uuid,
+            name=test.name,
+            displayName=test.display_name,
+            module=test.module,
+            doc=test.doc,
+            code=test.code,
+            moduleDoc=test.module_doc,
+            tags=test.tags,
+            type=test.type,
+            args=[
+                ml_worker_pb2.TestFunctionArgument(
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder
+                ) for a
+                in test.args.values()
+            ],
+            cellLevel=test.cell_level,
+            columnType=test.column_type,
+        )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None,
                  loop=asyncio.get_event_loop()) -> None:
@@ -384,10 +414,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
             results.to_csv(index=False, path_or_buf=dir / "predictions.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "predictions.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
 
             calculated.to_csv(index=False, path_or_buf=dir / "calculated.csv")
-            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv", f"{request.project_key}/models/inspections/{request.inspectionId}")
+            self.ml_worker.tunnel.client.log_artifact(dir / "calculated.csv",
+                                                      f"{request.project_key}/models/inspections/{request.inspectionId}")
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
@@ -487,8 +519,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                    context: grpc.ServicerContext) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta('TEST'),
-            slices=map_function_meta('SLICE'),
-            transformations=map_function_meta('TRANSFORMATION')
+            slices=map_dataset_process_function_meta('SLICE'),
+            transformations=map_dataset_process_function_meta('TRANSFORMATION')
         )
 
     @staticmethod

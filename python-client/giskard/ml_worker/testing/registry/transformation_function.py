@@ -39,7 +39,7 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             from inspect import signature
-            column_type = list(signature(func).parameters.values())[0].annotation
+            column_type = list(signature(func).parameters.values())[0].annotation if self.cell_level else None
             meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
                                                                       cell_level=self.cell_level,
                                                                       column_type=column_type))
@@ -57,7 +57,7 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
 
         if self.cell_level:
-            actual_params = {k: v for k, v in self.params.items() if k is not 'column_name'}
+            actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
 
             def apply(row: pd.Series) -> pd.Series:
                 row[self.params['column_name']] = self.func(row[self.params['column_name']], **actual_params)
@@ -116,7 +116,8 @@ def transformation_function(_fn: Union[TransformationFunctionType, Type[Transfor
 
         tests_registry.register(
             DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
-                                       type='TRANSFORMATION'))
+                                       type='TRANSFORMATION', cell_level=cell_level))
+
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
         return _wrap_transformation_function(func, row_level, cell_level)()
