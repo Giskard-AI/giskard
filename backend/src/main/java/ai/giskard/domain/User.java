@@ -29,7 +29,7 @@ import java.util.Set;
 @NotNull
 public class User extends AbstractAuditingEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)

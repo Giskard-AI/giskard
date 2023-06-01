@@ -28,7 +28,7 @@ import java.util.Set;
 public class Project extends AbstractAuditingEntity {
     @Id
     @Getter
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
 
     @Converter

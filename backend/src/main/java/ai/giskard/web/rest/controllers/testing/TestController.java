@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
@@ -143,7 +140,7 @@ public class TestController {
                 argumentBuilder.setName(inputName);
                 switch (argumentTypes.get(inputName)) {
                     case "Dataset" -> {
-                        String projectKey = datasetRepository.getById((String) inputValue).getProject().getKey();
+                        String projectKey = datasetRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
                         argumentBuilder.setDataset(
                             ArtifactRef.newBuilder()
                                 .setProjectKey(projectKey)
@@ -152,7 +149,7 @@ public class TestController {
                         );
                     }
                     case "Model" -> {
-                        String projectKey = modelRepository.getById((String) inputValue).getProject().getKey();
+                        String projectKey = modelRepository.getById(UUID.fromString((String) inputValue)).getProject().getKey();
                         argumentBuilder.setModel(
                             ArtifactRef.newBuilder()
                                 .setProjectKey(projectKey)
