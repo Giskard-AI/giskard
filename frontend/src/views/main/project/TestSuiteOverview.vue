@@ -1,5 +1,5 @@
 <template>
-  <TestSuiteExecutionOverview :execution="latestExecution" :is-past-execution="false"/>
+  <TestSuiteExecutionOverview :execution="displayTry ? tryResult : latestExecution" :try-mode="displayTry" :is-past-execution="false" />
 </template>
 
 <script setup lang="ts">

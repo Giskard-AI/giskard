@@ -29,10 +29,13 @@ import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     execution?: TestSuiteExecutionDTO,
-    isPastExecution: boolean
-}>();
+    isPastExecution: boolean,
+    tryMode?: boolean
+}>(), {
+    tryMode: false
+});
 
 const testSuiteStore = useTestSuiteStore();
 const {models, datasets, inputs, suite, projectId, hasTest, statusFilter, searchFilter} = storeToRefs(testSuiteStore);
