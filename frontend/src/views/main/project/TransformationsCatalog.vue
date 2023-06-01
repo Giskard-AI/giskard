@@ -17,7 +17,7 @@
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search filter" append-icon="search" outlined
                                       v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="transformationFunction in filteredTestFunctions">
                                     <v-divider/>
@@ -96,6 +96,25 @@
                                             </v-col>
                                         </v-row>
                                     </v-list-item>
+                                    <v-list-item class="pl-0 pr-0">
+                                        <v-row v-if="selected.cellLevel">
+                                            <v-col>
+                                                <v-list-item-content>
+                                                    <v-list-item-title>Column</v-list-item-title>
+                                                    <v-list-item-subtitle class="text-caption">
+                                                        str
+                                                    </v-list-item-subtitle>
+                                                </v-list-item-content>
+                                            </v-col>
+                                            <v-col>
+                                                <DatasetColumnSelector v-if="tryMode"
+                                                                       :project-id="projectId"
+                                                                       :dataset="selectedDataset"
+                                                                       :column-type="selected.columnType"
+                                                                       :value.sync="selectedColumn"/>
+                                            </v-col>
+                                        </v-row>
+                                    </v-list-item>
                                 </v-list>
                                 <SuiteInputListSelector
                                     :editing="tryMode"
@@ -164,7 +183,7 @@ import {computed, inject, onActivated, ref, watch} from "vue";
 import {pasterColor} from "@/utils";
 import MonacoEditor from 'vue-monaco';
 import {editor} from "monaco-editor";
-import {TestInputDTO, TransformationFunctionDTO, TransformationResultDTO} from "@/generated-sources";
+import {FunctionInputDTO, TransformationFunctionDTO} from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import {storeToRefs} from "pinia";
 import {useCatalogStore} from "@/stores/catalog";
@@ -172,6 +191,7 @@ import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
 import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -185,10 +205,11 @@ const editor = ref(null)
 const searchFilter = ref<string>("");
 let {transformationFunctions} = storeToRefs(useCatalogStore());
 const selected = ref<TransformationFunctionDTO | null>(null);
-const transformationResult = ref<TransformationResultDTO | null>(null);
+const transformationResult = ref<FunctionInputDTO | null>(null);
 const tryMode = ref<boolean>(false);
 const selectedDataset = ref<string | null>(null);
-let transformationArguments = ref<{ [name: string]: TestInputDTO }>({})
+const selectedColumn = ref<string | null>(null);
+let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
@@ -233,9 +254,22 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    transformationResult.value = await api.runAdHocTransformationFunction(selected.value.uuid, selectedDataset.value, chain(transformationArguments.value)
-        .mapValues('value')
-        .value());
+    const params = Object.values(transformationArguments.value);
+    if (selected.value!.cellLevel) {
+        params.push({
+            isAlias: false,
+            name: 'column_name',
+            params: [],
+            type: 'str',
+            value: selectedColumn.value
+        })
+    }
+
+    transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+        uuid: selected.value!.uuid,
+        params,
+        type: 'TRANSFORMATION'
+    }]);
 }
 
 watch(() => selected.value, () => {

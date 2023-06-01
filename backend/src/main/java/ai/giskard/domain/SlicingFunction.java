@@ -11,6 +11,6 @@ import java.io.Serializable;
 @Entity
 @DiscriminatorValue("SLICING")
 @Setter
-public class SlicingFunction extends Callable implements Serializable {
+public class SlicingFunction extends DatasetProcessFunction implements Serializable {
 
 }
