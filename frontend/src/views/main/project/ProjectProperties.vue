@@ -110,7 +110,7 @@
       <v-col cols="12">
         <v-card height="100%" outlined>
           <v-card-title class="justify-space-between">
-            <h3 class="flex-1 font-weight-light secondary--text">Giskard Objects</h3>
+            <h3 class="flex-1 font-weight-light secondary--text">Project Artifacts</h3>
             <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
               <v-btn value="datasets" class="py-5 px-4">
                 <span>Datasets</span>
