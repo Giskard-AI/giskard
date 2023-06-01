@@ -15,12 +15,13 @@ reference/index
 2. **<project:/guides/test-suite/index.md>**
 3. **<project:/guides/slicing-and-transformation-functions/index.rst>**
 
-**Additional useful information can also be found here:**
-
-- **<project:/guides/installation/index.md>**
+**Pick one of our catalogs to explore:**
 - **<project:/guides/test-catalog/index.rst>**
 - **<project:/guides/slicing-function-catalog/index.rst>**
 - **<project:/guides/transformation-function-catalog/index.rst>**
+
+**Additional useful information can also be found here:**
+- **<project:/guides/installation/index.md>**
 - **<project:/guides/tutorials/index.md>**
 
 ## <project:/reference/index.rst>
