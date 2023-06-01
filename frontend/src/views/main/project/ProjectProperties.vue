@@ -12,11 +12,17 @@
                 <v-simple-table class="properties-table project-properties-table-1">
                   <tr>
                     <td>Project Name:</td>
-                    <td>Project Name [EDIT BTN]</td>
+                    <td>
+                      <InlineEditText :text="project.name" @save="renameProjectName">
+                      </InlineEditText>
+                    </td>
                   </tr>
                   <tr>
                     <td>Project Description:</td>
-                    <td>{{ project.description }} [EDIT BTN]</td>
+                    <td>
+                      <InlineEditText :text="project.description" @save="renameProjectDescription">
+                      </InlineEditText>
+                    </td>
                   </tr>
                   <tr>
                     <td>Project Unique Key:</td>
@@ -135,6 +141,9 @@ import { useProjectStore } from "@/stores/project";
 import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import InlineEditText from '@/components/InlineEditText.vue';
+import { InspectionSettings, ProjectPostDTO } from '@/generated-sources';
+
 
 interface Props {
   projectId: number;
@@ -149,7 +158,7 @@ const datasetsComponentRef = ref<any>(null);
 const modelsComponentRef = ref<any>(null);
 
 const project = computed(() => useProjectStore().project(props.projectId))
-
+const projectStore = useProjectStore();
 
 function reloadDataObjects() {
   datasetsComponentRef.value.loadDatasets();
@@ -177,6 +186,38 @@ async function cancelUserInvitation(user: IUserProfileMinimal) {
       }
     }
   });
+}
+
+async function renameProjectName(newName) {
+  if (!newName) return;
+
+  const proj: ProjectPostDTO = {
+    name: newName,
+    description: project.value!.description,
+    inspectionSettings: project.value!.inspectionSettings
+  }
+
+  await editProject(proj);
+}
+
+async function renameProjectDescription(newDescription) {
+  if (!newDescription) return;
+
+  const proj: ProjectPostDTO = {
+    name: project.value!.name,
+    description: newDescription,
+    inspectionSettings: project.value!.inspectionSettings
+  }
+
+  await editProject(proj);
+}
+
+async function editProject(data: ProjectPostDTO) {
+  try {
+    await projectStore.editProject({ id: project.value!.id, data })
+  } catch (e) {
+    console.error(e.message);
+  }
 }
 </script>
 
