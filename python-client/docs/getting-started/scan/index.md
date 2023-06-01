@@ -41,9 +41,8 @@ See [Wrap your model](#wrap-your-model)) for evaluation.
 
 The `pandas.DataFrame` you provide should contain the raw data before prepocessing (categorical encoding, scaling,
 etc.). The preprocessing steps should be wrapped in a function that gets assigned to `data_preprocessing_function` of
-the [wrap_model](../../reference/models/index.rst#giskard.wrap_model) method.
+the [Model](../../reference/models/index.rst#giskard.Model) method.
 
-### Usage of [wrap_dataset](../../reference/datasets/index.rst#giskard.wrap_dataset)
 ```python
 import pandas as pd
 
@@ -52,9 +51,9 @@ iris_df = pd.DataFrame({"sepal length": [5.1],
                         "petal size": ["medium"],
                         "species": ["Setosa"]})
 
-from giskard import wrap_dataset
+from giskard import Dataset
 
-wrapped_dataset = wrap_dataset(
+wrapped_dataset = Dataset(
   df=iris_df, 
   target="species", # Optional but a MUST if available
   cat_columns=["petal size"] # Optional but a MUST if available. Inferred automatically if not.
@@ -104,7 +103,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from giskard import wrap_model
+from giskard import Model
 
 scaler = StandardScaler()
 clf = LogisticRegression()
@@ -117,7 +116,7 @@ def prediction_function(df: pd.DataFrame) -> np.ndarray:
   return clf.predict_proba(df)
 
 
-wrapped_model = wrap_model(
+wrapped_model = Model(
   prediction_function,
   model_type="classification",
   classification_labels=['Setosa', 'Versicolor', 'Virginica'],
@@ -153,7 +152,7 @@ Prediction function is any Python function that takes as input the <b>raw</b> pa
 ```python
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from giskard import wrap_model
+from giskard import Model
 
 reg = LinearRegression()
 
@@ -161,7 +160,7 @@ def prediction_function(df: pd.DataFrame) -> np.ndarray:
   df['x'] = df['x']*2
   return reg.predict(df)
 
-wrapped_model = wrap_model(
+wrapped_model = Model(
   prediction_function,
   model_type="regression",
   feature_names=['x', 'y'], # Default: all columns of your dataset
@@ -182,7 +181,7 @@ wrapped_model = wrap_model(
 :::::
 ::::::
 ::::::{tab-item} Wrap a model object
-Providing the model object to `wrap_model` allows us to automatically infer the ML library of your `model`
+Providing the model object to `Model` allows us to automatically infer the ML library of your `model`
 object and provide suitable:
 
 1. serialization methods (provided by `save_model` and `load_model` methods).
@@ -198,7 +197,7 @@ is used as default for serialization, and you will be asked to provide your own 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from giskard import wrap_model
+from giskard import Model
 
 scaler = StandardScaler()
 clf = LogisticRegression()
@@ -210,7 +209,7 @@ def preprocessing_function(df: pd.DataFrame) -> pd.DataFrame:
 
   return df
 
-wrapped_model = wrap_model(
+wrapped_model = Model(
   data_preprocessing_function=preprocessing_function, # Optional
   model=clf,
   model_type="classification",
@@ -249,7 +248,7 @@ wrapped_model = wrap_model(
 ```python
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from giskard import wrap_model
+from giskard import Model
 
 reg = LinearRegression()
 
@@ -257,7 +256,7 @@ def preprocessing_function(df: pd.DataFrame) -> pd.DataFrame:
   df['x'] = df['x']*2
   return df
 
-wrapped_model = wrap_model(
+wrapped_model = Model(
   data_preprocessing_function=preprocessing_function, # Optional
   model=reg,
   model_type="regression",
