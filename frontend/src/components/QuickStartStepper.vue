@@ -40,25 +40,34 @@
         <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
       </v-stepper-content>
 
-      <v-stepper-content step="3">
-        <div class="mb-6">
-          <p class="mb-2">Choose the type of artifact you want to create:</p>
-          <v-btn-toggle v-model="toggleArtifactType" borderless mandatory color="primary">
-            <v-btn value="dataset" class="py-5 px-4">
-              <span>Dataset</span>
-            </v-btn>
-            <v-btn value="model" class="py-5 px-4">
-              <span>Model</span>
-            </v-btn>
-          </v-btn-toggle>
-          <p class="mt-4 mb-2">Then, create the artifact with the following Python code:</p>
-          <CodeSnippet v-show="toggleArtifactType === 'dataset'" :codeContent="datasetCodeContent"></CodeSnippet>
-          <CodeSnippet v-show="toggleArtifactType === 'model'" :codeContent="modelCodeContent"></CodeSnippet>
-        </div>
-        <v-btn color="primary" @click="step = 4">Continue</v-btn>
+      <v-stepper-content step="3" class="pl-0">
+        <p class="mb-2 ml-6">You can wrap your artifacts in two ways:</p>
+        <v-stepper vertical flat v-model="artifactsStep">
+          <v-stepper-step :complete="artifactsStep > 1" step="1" color="secondary">
+            Upload a dataset
+          </v-stepper-step>
+          <v-stepper-content step="1">
+            <CodeSnippet :codeContent="datasetCodeContent"></CodeSnippet>
+          </v-stepper-content>
+
+          <v-stepper-step :complete="artifactsStep > 2" step="2" color="secondary">
+            Upload a model
+          </v-stepper-step>
+          <v-stepper-content step="2">
+            <CodeSnippet :codeContent="modelCodeContent"></CodeSnippet>
+          </v-stepper-content>
+        </v-stepper>
+
+        <v-btn color="primary" class="ml-6" @click="() => {
+          if (artifactsStep === 1) {
+            artifactsStep = 2
+          } else {
+            step = 4
+            artifactsStep = 1
+          }
+        }">Continue</v-btn>
         <v-btn class="ml-2" @click="close" flat>Cancel</v-btn>
       </v-stepper-content>
-
       <v-stepper-content step="4">
         <div class="mb-6">
           <p class="mb-2">Choose the type of test you want to perform:</p>
@@ -80,7 +89,7 @@
           </div>
         </div>
         <v-btn color="primary" @click="close">Close</v-btn>
-        <v-btn class="ml-2" @click="step = 1" flat>Restart</v-btn>
+        <v-btn class="ml-2" @click="step = 1; artifactsStep = 1" flat>Restart</v-btn>
       </v-stepper-content>
     </v-stepper-items>
   </v-stepper>
@@ -101,6 +110,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const step = ref<number>(1);
+const artifactsStep = ref<number>(1);
 const toggleArtifactType = ref<string>("dataset");
 const toggleTestType = ref<string>("scan");
 const apiAccessToken = ref<JWTToken | null>(null);
