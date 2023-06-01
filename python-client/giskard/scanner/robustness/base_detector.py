@@ -99,7 +99,7 @@ class BaseTextPerturbationDetector(Detector):
             elif model.is_generative:
                 import evaluate
                 scorer = evaluate.load("rouge")
-                score = scorer.compute(predictions=perturbed_pred.prediction, references=original_pred.prediction)
+                score = scorer.compute(predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False)
                 logger.debug(f"{self.__class__.__name__}: {transformation_fn.name} ROUGE: {score}")
                 passed = np.array(score["rougeL"]) > self.output_sensitivity
             else:
