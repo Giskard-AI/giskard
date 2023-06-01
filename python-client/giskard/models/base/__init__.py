@@ -75,12 +75,12 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
+            self,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -215,6 +215,8 @@ class BaseModel(ABC):
                 df.drop(target, axis=1, inplace=True)
             if column_dtypes and target in column_dtypes:
                 del column_dtypes[target]
+            if target in self.meta.feature_names:
+                self.meta.feature_names.remove(target)
 
         if self.meta.feature_names:
             if set(self.meta.feature_names) > set(df.columns):
@@ -442,15 +444,15 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model: Any,
-        model_type: ModelType,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
+            self,
+            model: Any,
+            model_type: ModelType,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
