@@ -17,7 +17,7 @@
                     <v-col cols="4" class="vc fill-height">
                         <v-text-field label="Search filter" append-icon="search" outlined
                                       v-model="searchFilter"></v-text-field>
-                        <v-list three-line>
+                        <v-list three-line class="vc fill-height">
                             <v-list-item-group v-model="selected" color="primary" mandatory>
                                 <template v-for="transformationFunction in filteredTestFunctions">
                                     <v-divider/>
