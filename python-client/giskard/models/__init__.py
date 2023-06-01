@@ -34,14 +34,14 @@ def model(clf,
             giskard_class = get_class(*_giskard_class)
             base_libs = [get_class(*_base_lib) for _base_lib in _base_libs]
             if isinstance(clf, tuple(base_libs)):
-                return giskard_class(clf,
-                                     model_type,
-                                     data_preprocessing_function,
-                                     model_postprocessing_function,
-                                     name,
-                                     feature_names,
-                                     classification_threshold,
-                                     classification_labels,
+                return giskard_class(clf=clf,
+                                     model_type=model_type,
+                                     data_preprocessing_function=data_preprocessing_function,
+                                     model_postprocessing_function=model_postprocessing_function,
+                                     name=name,
+                                     feature_names=feature_names,
+                                     classification_threshold=classification_threshold,
+                                     classification_labels=classification_labels,
                                      **kwargs)
         except ImportError:
             pass
