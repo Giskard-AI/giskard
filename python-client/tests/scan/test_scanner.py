@@ -30,7 +30,7 @@ def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request
     result = scanner.analyze(model, dataset)
 
     assert isinstance(result, ScanResult)
-    # assert result.to_html()
+    assert result.to_html()
 
     # Do not do below tests for the diabetes regression model.
     if model_name not in _EXCEPTION_MODELS:
