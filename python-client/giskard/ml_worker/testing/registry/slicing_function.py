@@ -64,10 +64,8 @@ class SlicingFunction(Savable[SlicingFunctionType, DatasetProcessFunctionMeta]):
         self.is_initialized = True
         self.params = kwargs
 
-        from inspect import signature
-        sig = list(signature(self.func).parameters.values())
         for idx, arg in enumerate(args):
-            self.params[sig[idx].name] = arg
+            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
 
         return self
 
@@ -141,7 +139,7 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 
-        return _wrap_slicing_function(func, row_level)
+        return _wrap_slicing_function(func, row_level)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
