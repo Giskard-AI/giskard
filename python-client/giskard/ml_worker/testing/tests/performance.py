@@ -42,7 +42,7 @@ def _test_classification_score(
         metric = score_fn(actual_target, prediction, average="macro")
 
     return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
+        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
     )
 
 
@@ -55,7 +55,7 @@ def _test_accuracy_score(gsk_dataset: Dataset, model: Model, threshold: float = 
     metric = accuracy_score(actual_target, prediction)
 
     return TestResult(
-        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=metric >= threshold
+        actual_slices_size=[len(gsk_dataset)], metric=metric, passed=bool(metric >= threshold)
     )
 
 
@@ -74,7 +74,7 @@ def _test_regression_score(
     return TestResult(
         actual_slices_size=[len(giskard_ds)],
         metric=metric,
-        passed=metric >= threshold if r2 else metric <= threshold,
+        passed=bool(metric >= threshold if r2 else metric <= threshold),
     )
 
 
@@ -95,7 +95,7 @@ def _test_diff_prediction(
         actual_slices_size=[len(actual_slice)],
         reference_slices_size=[len(reference_slice)],
         metric=change_pct,
-        passed=change_pct < threshold,
+        passed=bool(change_pct < threshold),
     )
 
 
@@ -182,7 +182,7 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
         )
 
     return TestResult(
-        actual_slices_size=[len(actual_slice)], metric=metric, passed=metric >= threshold
+        actual_slices_size=[len(actual_slice)], metric=metric, passed=bool(metric >= threshold)
     )
 
 
