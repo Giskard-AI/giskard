@@ -3,7 +3,7 @@
     <div>
       <span class="subtitle-2">{{ isCurrentUser ? 'me' : (author.displayName || author.user_id) }}</span>
       <span class="caption font-weight-light mx-2">{{ createdOn | date }}</span>
-      <v-btn icon small color="accent" v-if="isCurrentUser && replies.length == 0" @click="deleteReply(replyId)">
+      <v-btn icon small color="accent" v-if="isCurrentUser" @click="deleteReply(replyId)">
         <v-icon small>mdi-delete</v-icon>
       </v-btn>
     </div>
