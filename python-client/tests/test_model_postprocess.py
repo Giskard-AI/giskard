@@ -6,6 +6,7 @@ from giskard import WrapperModel
 from giskard.core.core import ModelMeta
 from functools import partial
 
+
 def _make_model_mock(labels=["First", "Second", "Third"]):
     model = Mock(WrapperModel)
     meta = Mock(ModelMeta)
@@ -19,7 +20,7 @@ def _make_model_mock(labels=["First", "Second", "Third"]):
 
 
 def test_postprocess():
-    model =_make_model_mock(["one", "two"])
+    model = _make_model_mock(["one", "two"])
 
     data_prepocessing_function_output = np.array(0.6)
     result = WrapperModel._postprocess(model, data_prepocessing_function_output)
@@ -48,7 +49,7 @@ def test_postprocess_fixes_dummy_dimensions_by_squeezing():
 
     data = np.random.normal(size=(10, 1, 1, 1, 1, 1, 1, 1, 3))
     result = WrapperModel._postprocess(model, data)
-    
+
     assert result.ndim == 2
     assert result.shape == (10, 3)
 
@@ -60,7 +61,7 @@ def test_postprocess_fixes_dummy_dimensions_by_squeezing():
 
 def test_postprocess_fixes_missing_binary_class():
     model = _make_model_mock(["one", "two"])
- 
+
     # Should handle 1d data and convert it to (n_entries, 2)
     data = np.random.uniform(size=10)
     result = WrapperModel._postprocess(model, data)
@@ -68,7 +69,6 @@ def test_postprocess_fixes_missing_binary_class():
     assert result.shape == (10, 2)
     assert (result[:, 0] == data).all()
     assert np.allclose(result[:, 1], 1 - data)
-
 
     # Same for 2d data with a single class
     data = np.random.uniform(size=(10, 1))
@@ -98,13 +98,8 @@ def test_raises_error_if_classifier_shape_is_not_right():
     with pytest.raises(ValueError):
         result = WrapperModel._postprocess(model, data)
 
+
 def test_should_convert_to_numpy():
     model = _make_model_mock(["one", "two"])
     result = WrapperModel._postprocess(model, [1, 2, 3, 4])
     assert isinstance(result, np.ndarray)
-
-
-
-
-
-
