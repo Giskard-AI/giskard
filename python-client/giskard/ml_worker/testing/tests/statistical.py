@@ -223,10 +223,8 @@ def test_disparate_impact(
         )
     ]
 
-    return self.save_results(
-        TestResult(
-            metric=disparate_impact_score,
-            passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
-            messages=messages,
-        )
+    return TestResult(
+        metric=disparate_impact_score,
+        passed=bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold)),
+        messages=messages,
     )
