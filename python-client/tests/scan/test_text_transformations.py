@@ -11,7 +11,7 @@ def test_gender_transformation():
         {
             "text": [
                 "We just got this and my daughter loves it. She has played it several times.",
-                "It did not work",
+                "It did not work.",
                 "“They pushed the feature just 1 minute before the user test”",
                 "He hates doing user tests!",
             ]
