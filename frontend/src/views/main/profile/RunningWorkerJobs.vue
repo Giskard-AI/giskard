@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {WorkerJobDTO} from '@/generated-sources';
 import {api} from '@/api';
 
@@ -37,7 +37,7 @@ async function loadRunningJobs() {
 
 onMounted(() => loadRunningJobs());
 
-const tableHeaders = computed(() => [
+const tableHeaders = [
   {
     text: "Execution date",
     sortable: true,
@@ -50,6 +50,6 @@ const tableHeaders = computed(() => [
     value: "mlWorkerType",
     align: "left",
   },
-]);
+];
 
 </script>
