@@ -110,7 +110,9 @@ function resetSearchInput() {
   searchSession.value = "";
 }
 
-onActivated(() => loadDebuggingSessions());
+onActivated(() => {
+  loadDebuggingSessions();
+});
 </script>
 
 <template>
