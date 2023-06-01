@@ -199,6 +199,30 @@ def test_diff_f1(data, model, threshold, expected_metric, request):
     assert round(result.metric, 2) == expected_metric
     assert result.passed
 
+    # Test one-sided with positive threshold (should fail)
+    result = performance.test_diff_f1(
+        actual_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "female"], row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "male"], row_level=False)),
+        model=request.getfixturevalue(model),
+        threshold=threshold,
+        absolute=False,
+    ).execute()
+
+    assert round(result.metric, 2) == -expected_metric
+    assert not result.passed
+
+    # Test one-sided with negative threshold (should pass)
+    result = performance.test_diff_f1(
+        actual_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "female"], row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df[df.sex == "male"], row_level=False)),
+        model=request.getfixturevalue(model),
+        threshold=-threshold,
+        absolute=False,
+    ).execute()
+
+    assert round(result.metric, 2) == -expected_metric
+    assert result.passed
+
 
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric",
@@ -285,7 +309,7 @@ def test_diff_precision(data, model, threshold, expected_metric, request):
 
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric,actual_slices_size",
-    [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, 0.08, 207)],
+    [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, -0.08, 207)],
 )
 def test_diff_rmse(data, model, threshold, expected_metric, actual_slices_size, request):
     data = request.getfixturevalue(data)
@@ -321,7 +345,7 @@ def test_diff_reference_actual_f1(data, model, threshold, expected_metric, reque
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric",
     [
-        ("german_credit_data", "german_credit_model", 0.1, 0.03),
+        ("german_credit_data", "german_credit_model", 0.1, -0.03),
         ("enron_data", "enron_model", 0.5, 0.00),
     ],
 )
@@ -339,7 +363,7 @@ def test_diff_reference_actual_accuracy(data, model, threshold, expected_metric,
 
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric",
-    [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, 0.02)],
+    [("diabetes_dataset_with_target", "linear_regression_diabetes", 0.1, -0.02)],
 )
 def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, request):
     data = request.getfixturevalue(data)
@@ -350,3 +374,13 @@ def test_diff_reference_actual_rmse(data, model, threshold, expected_metric, req
         threshold=threshold).execute()
     assert round(result.metric, 2) == expected_metric
     assert result.passed
+
+    # If we swap the slices we should get the negative metric
+    result = performance.test_diff_reference_actual_rmse(
+        actual_dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
+        reference_dataset=data.slice(SlicingFunction(lambda df: df.tail(len(df) // 2), row_level=False)),
+        model=request.getfixturevalue(model),
+        threshold=threshold).execute()
+    assert round(result.metric, 2) == -expected_metric
+    assert result.passed
+
