@@ -173,40 +173,29 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                                                 result=map_result_to_single_test_result(test_result))
         ])
 
-    def runAdHocSlicing(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.SlicingResultMessage:
-        slicing_function = SlicingFunction.load(request.slicingFunctionUuid, self.client, None)
+    def datasetProcessing(
+            self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+    ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
 
-        arguments = self.parse_function_arguments(request.arguments)
+        for function in request.functions:
+            arguments = self.parse_function_arguments(function.arguments)
+            if function.HasField("slicingFunction"):
+                dataset.add_slicing_function(
+                    SlicingFunction.load(function.slicingFunction.id, self.client, None)(**arguments))
+            else:
+                dataset.add_transformation_function(
+                    TransformationFunction.load(function.transformationFunction.id, self.client, None)(**arguments))
 
-        result = dataset.slice(slicing_function(**arguments))
+        result = dataset.process()
 
-        return ml_worker_pb2.SlicingResultMessage(
+        filtered_rows_idx = dataset.df.index.difference(result.df.index)
+        modified_rows = dataset.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how='all')
+
+        return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
             totalRows=len(dataset.df.index),
-            filteredRows=dataset.df.index.difference(result.df.index)
-        )
-
-    def runAdHocTransformation(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.TransformationResultMessage:
-        transformation_function = TransformationFunction.load(request.transformationFunctionUuid, self.client, None)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
-
-        selected_rows = dataset.slice(lambda df: df.iloc[list(request.rows)], row_level=False) if len(
-            request.rows) > 0 else dataset
-
-        arguments = self.parse_function_arguments(request.arguments)
-
-        result = dataset.transform(transformation_function(**arguments))
-
-        modified_rows = result.df[selected_rows.df.ne(result.df)].dropna(how='all')
-
-        return ml_worker_pb2.TransformationResultMessage(
-            datasetId=request.dataset.id,
-            totalRows=len(dataset.df.index),
+            filteredRows=filtered_rows_idx,
             modifications=[
                 ml_worker_pb2.DatasetRowModificationResult(
                     rowId=row[0],
