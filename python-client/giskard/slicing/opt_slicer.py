@@ -1,10 +1,10 @@
 import pandas as pd
+from typing import List
 
 from .filters import SignificanceFilter
 from .slice import DataSlice, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 from .base import BaseSlicer
-
 
 class OptSlicer(BaseSlicer):
     def find_slices(self, features, target=None):
@@ -41,7 +41,7 @@ class OptSlicer(BaseSlicer):
         return slice_candidates
 
 
-def make_slices_from_splits(data: pd.DataFrame, splits: list[float], feature_names: str):
+def make_slices_from_splits(data: pd.DataFrame, splits: List[float], feature_names: str):
     """Builds data slices from a list of split values."""
     slices = []
     splits = list(splits)
