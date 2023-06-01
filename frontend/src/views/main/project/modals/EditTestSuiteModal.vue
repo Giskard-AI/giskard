@@ -62,7 +62,7 @@
 <script setup lang="ts">
 
 import {computed, onMounted, ref} from 'vue';
-import {TestInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {FunctionInputDTO, TestSuiteDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
@@ -86,9 +86,9 @@ const showAdvancedSettings = ref<boolean>(false);
 const router = useRouter();
 const {updateTestSuite, inputs} = useTestSuiteStore();
 
-const editedInputs = ref<{ [input: string]: TestInputDTO }>({});
+const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 const invalidInputs = ref(false);
-const result = ref<{ [input: string]: TestInputDTO }>({});
+const result = ref<{ [input: string]: FunctionInputDTO }>({});
 const testSuitesStore = useTestSuitesStore();
 
 const inputTypes = computed(() => Object.entries(inputs)
