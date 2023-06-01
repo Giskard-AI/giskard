@@ -13,6 +13,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -36,6 +37,8 @@ public class DatasetDTO {
     private int originalSizeBytes;
     @JsonAlias("compressed_size_bytes")
     private int compressedSizeBytes;
+    private long numberOfRows;
+    private Map<String, Set<String>> categoryFeatures;
 
     @JsonAlias("created_date")
     private Instant createdDate;

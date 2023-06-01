@@ -9,10 +9,16 @@
             </column>
         </addColumn>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1683214373146-1">
-        <dropDefaultValue columnDataType="boolean" columnName="cell_level" tableName="callable_functions"/>
+    <changeSet author="kevinmessiaen (generated)" id="1683214373146-4">
+        <addColumn tableName="datasets">
+            <column name="category_features" type="VARCHAR"/>
+        </addColumn>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1683214373146-2">
-        <dropDefaultValue columnDataType="varchar(50)" columnName="created_by" tableName="inspections"/>
+    <changeSet author="kevinmessiaen (generated)" id="1683214373146-5">
+        <addColumn tableName="datasets">
+            <column name="number_of_rows" type="int8">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
     </changeSet>
 </databaseChangeLog>

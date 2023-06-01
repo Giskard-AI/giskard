@@ -128,6 +128,11 @@ public class DatasetService {
 
         Table data = readTableByDatasetId(datasetId, false);
 
+        Set<String> categoryFeatures = dataset.getColumnTypes().entrySet().stream()
+            .filter(entry -> entry.getValue() == ColumnType.CATEGORY)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
+
         return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
             String featureName = featureAndType.getKey();
             ColumnType type = featureAndType.getValue();
@@ -135,11 +140,13 @@ public class DatasetService {
             meta.setType(type);
             meta.setName(featureName);
             if (type == ColumnType.CATEGORY) {
+                categoryFeatures.add(featureName);
                 meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
             }
             return meta;
 
         }).toList();
+
     }
 
     public Dataset renameDataset(UUID datasetId, String name) {
