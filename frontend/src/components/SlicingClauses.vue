@@ -1,0 +1,84 @@
+<script setup lang="ts">
+import {computed, ref} from "vue";
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
+import {copyToClipboard} from "@/global-keys";
+
+
+interface Props {
+    clauses: string;
+}
+
+const props = defineProps<Props>();
+
+const clauses = computed(() => {
+    documents = props.yaml.split('---')
+    document = documents[documents.legth - 1]
+})
+
+const highlightedCode = hljs.highlight(props.language, props.codeContent).value;
+
+const copied = ref<boolean>(false);
+
+async function copyCode() {
+    await copyToClipboard(props.codeContent);
+    copied.value = true;
+    setTimeout(() => {
+        copied.value = false;
+    }, 2000);
+}
+</script>
+
+<template>
+    <!-- //NOSONAR -->
+    <pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"/>
+        <v-btn class="copy-button" small icon @click="copyCode">
+            <v-icon small>mdi-content-copy</v-icon>
+          <span v-show="copied" class="copied-message">Copied</span>
+        </v-btn>
+    </pre>
+</template>
+
+<style scoped>
+@font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 100 1000;
+    font-stretch: 0% 200%;
+    src: url('../assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
+
+}
+
+.pre-block {
+    background-color: #F4F4F4;
+    position: relative;
+}
+
+.code-block {
+    background-color: #F4F4F4 !important;
+    font-family: 'Roboto Mono', monospace;
+    padding-left: 0;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    font-size: 0.8rem;
+}
+
+.copy-button {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.copied-message {
+    position: absolute;
+    right: 2rem;
+    top: 0.1rem;
+    background-color: #176F38;
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+}
+</style>
