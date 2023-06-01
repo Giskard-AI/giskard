@@ -31,6 +31,17 @@
       </v-chip>
     </h2>
     <v-row>
+      <v-col cols="4">
+        <v-card>
+          <v-card-text>
+            <p class="text-h6 text--primary">
+              Global result
+            </p>
+            <p>Test results: {{ latestExecution.results.filter(r => r.passed).length }} /
+              {{ latestExecution.results.length }}</p>
+          </v-card-text>
+        </v-card>
+      </v-col>
       <v-col cols="4" v-for="summary in testGroupSummaries">
         <v-card>
           <v-card-text>
