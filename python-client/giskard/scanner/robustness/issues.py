@@ -1,12 +1,13 @@
-import pandas as pd
-import numpy as np
-from functools import lru_cache
 from dataclasses import dataclass
+from functools import lru_cache
 
-from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+import numpy as np
+import pandas as pd
+
 from ..issues import Issue
-from ...models.base import BaseModel, ModelPredictionResults
 from ...datasets.base import Dataset
+from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...models.base import BaseModel, ModelPredictionResults
 
 
 @dataclass
