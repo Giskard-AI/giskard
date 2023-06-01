@@ -92,64 +92,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <div class="pt-8 pb-4 d-flex">
-      <div class="d-flex justify-end align-center flex-grow-1">
-        <v-btn @click="reloadProjectArtifacts()" class="pa-2 text--secondary">
-          Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-        <v-btn color="primary" class="mx-2" href="https://docs.giskard.ai/start/guides/upload-your-model" target="_blank">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
-        </v-btn>
-      </div>
-    </div>
-
-    <v-row class="mb-8">
-      <v-col cols="12">
-        <v-card height="100%" outlined>
-          <v-card-title class="justify-space-between">
-            <h3 class="flex-1 font-weight-light secondary--text">Project Artifacts</h3>
-            <v-btn-toggle v-model="toggleObject" borderless mandatory color="primary">
-              <v-btn value="datasets" class="py-5 px-4">
-                <span>Datasets</span>
-                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'datasets' ? 'primary' : ''">
-                  stacked_bar_chart
-                </v-icon>
-              </v-btn>
-              <v-btn value="models" class="py-5 px-4">
-                <span>Models</span>
-                <v-icon end class="pb-1 pl-1" :color="toggleObject === 'models' ? 'primary' : ''">
-                  settings_suggest
-                </v-icon>
-              </v-btn>
-            </v-btn-toggle>
-            <div class="flex-1"></div>
-          </v-card-title>
-          <v-card-text>
-            <Datasets v-show="toggleObject === 'datasets'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Datasets>
-            <Models v-show="toggleObject === 'models'" :projectId="projectId" :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></Models>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-dialog persistent max-width="340" v-model="openDeleteDialog">
-      <v-card>
-        <v-card-title>
-          Are you sure you want to delete project?
-        </v-card-title>
-        <v-card-text class="accent--text">
-          All data and files will be lost!
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="secondary" text @click="openDeleteDialog = false">Cancel</v-btn>
-          <v-btn color="accent" text @click="deleteProject();">Ok</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
