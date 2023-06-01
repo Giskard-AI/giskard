@@ -3,6 +3,7 @@ import inspect
 import sys
 from typing import Callable, Optional, List, Union, Type, TypeVar
 
+from giskard.core.core import TestFunctionMeta
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 

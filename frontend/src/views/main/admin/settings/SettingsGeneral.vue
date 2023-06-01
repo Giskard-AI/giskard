@@ -190,28 +190,7 @@
                         icon="info"
                     >No external ML Worker is connected
                     </v-alert>
-                    <p>To connect a worker, install giskard library in any code environment of your choice with</p>
-                    <p><code class="text-body-1">pip install giskard</code></p>
-                    <p>then run</p>
-                    <code class="text-body-1">
-                      giskard worker start -h
-                      <v-tooltip right>
-                        <template v-slot:activator="{ on, attrs }">
-                          <span v-bind="attrs"
-                                v-on="on" class="giskard-address">{{ giskardAddress }}</span>
-                        </template>
-                        <p>IP address, hostname or DNS name of Giskard server can be used.</p>
-                        <p>Make sure that port {{ appSettings.externalMlWorkerEntrypointPort }} is accessible</p>
-                      </v-tooltip>
-                      <span
-                          v-if="appSettings.externalMlWorkerEntrypointPort !== 40051"> -p {{
-                          appSettings.externalMlWorkerEntrypointPort
-                        }}</span>
-                    </code>
-                    <v-btn class="ml-1" x-small icon @click="copyMLWorkerCommand">
-                      <v-icon>mdi-content-copy</v-icon>
-                    </v-btn>
-                    <p class="mt-4 mb-0">to connect to Giskard</p>
+                    <StartWorkerInstructions/>
                   </div>
                 </v-container>
               </v-card-text>
@@ -237,13 +216,12 @@ import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
 import moment from "moment/moment";
-import {copyToClipboard} from "@/global-keys";
 import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
 const mainStore = useMainStore();
-
 
 const appSettings = computed(() => mainStore.appSettings);
 const currentWorker = ref<MLWorkerInfoDTO | null>(null);
@@ -251,7 +229,6 @@ const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const selectedWorkerTab = ref<number>(0);
 const mlWorkerSettingsLoading = ref<boolean>(false);
 const installedPackagesData = ref<{ name: string, version: string }[]>([]);
-const giskardAddress = computed(() => window.location.hostname);
 const installedPackagesSearch = ref<string>("");
 
 const upgradeModal = ref<boolean>(false);
@@ -304,11 +281,6 @@ async function initMLWorkerInfo() {
   } finally {
     mlWorkerSettingsLoading.value = false;
   }
-}
-
-async function copyMLWorkerCommand() {
-  await copyToClipboard('giskard worker start -h ' + giskardAddress.value);
-  mainStore.addNotification({content: 'Copied', color: '#262a2d'});
 }
 
 function epochToDate(epoch: number) {

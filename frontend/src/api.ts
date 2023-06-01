@@ -354,6 +354,9 @@ export const api = {
     async createTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
         return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites`, testSuite);
     },
+    async deleteSuite(projectKey: string, testSuiteId: number) {
+        return apiV2.delete<unknown, void>(`testing/project/${projectKey}/suite/${testSuiteId}`);
+    },
     async generateTestSuite(projectKey: string, generateTestSuite: GenerateTestSuiteDTO) {
         return apiV2.post<unknown, number>(`testing/project/${projectKey}/suites/generate`, generateTestSuite);
     },
@@ -458,8 +461,12 @@ export const api = {
             inputs
         });
     },
-    async getTestFunctions() {
-        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`);
+    async getTestFunctions(projectId: number) {
+        return apiV2.get<unknown, TestFunctionDTO[]>(`/tests`, {
+            params: {
+                projectId
+            }
+        });
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {
@@ -473,5 +480,5 @@ export const api = {
             allowAnalytics: allowAnalytics,
             license: license
         });
-    }
+    },
 };

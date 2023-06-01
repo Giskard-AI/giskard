@@ -1,6 +1,37 @@
+import inspect
+import logging
+import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Dict, List, Union, Literal, TypeVar
+from pathlib import Path
+from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
+
+logger = logging.getLogger(__name__)
+
+
+def _get_plugin_method_full_name(func):
+    from giskard.ml_worker.testing.registry.registry import plugins_root
+
+    path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
+    path_parts.insert(0, "giskard_plugins")
+    if "__init__" in path_parts:
+        path_parts.remove("__init__")
+    path_parts.append(func.__name__)
+    return ".".join(path_parts)
+
+
+def create_test_function_id(func):
+    try:
+        from giskard.ml_worker.testing.registry.registry import plugins_root
+        # is_relative_to is only available from python 3.9
+        is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
+    except ValueError:
+        is_relative = False
+    if is_relative:
+        full_name = _get_plugin_method_full_name(func)
+    else:
+        full_name = f"{func.__module__}.{func.__name__}"
+    return full_name
 
 
 class SupportedModelTypes(Enum):
@@ -23,7 +54,7 @@ ColumnType = Union[SupportedColumnTypes, Literal["numeric", "category", "text"]]
 class SavableMeta:
     uuid: Optional[str]
 
-    def __init__(self, uuid: Optional[str]):
+    def __init__(self, uuid: Optional[str] = None):
         self.uuid = uuid
 
     def to_json(self):
@@ -33,7 +64,12 @@ class SavableMeta:
 
     @classmethod
     def from_json(cls, json):
-        return cls(uuid=json["uuid"])
+        obj = cls()
+        obj.init_from_json(json)
+        return obj
+
+    def init_from_json(self, json: Dict[str, Any]):
+        self.uuid = json["uuid"]
 
 
 @dataclass
@@ -64,38 +100,72 @@ class TestFunctionArgument:
     argOrder: int
 
 
-class TestFunctionMeta(SavableMeta):
+class CallableMeta(SavableMeta):
     code: str
     name: str
     display_name: str
     module: str
     doc: str
     module_doc: str
-    args: Dict[str, TestFunctionArgument]
     tags: List[str]
     version: Optional[int]
+    full_name: str
 
     def __init__(self,
-                 uuid: str,
-                 code: str,
-                 name: str,
-                 display_name: str,
-                 module: str,
-                 doc: str,
-                 module_doc: str,
-                 args: Dict[str, TestFunctionArgument],
-                 tags: List[str],
-                 version: Optional[int]):
-        super(TestFunctionMeta, self).__init__(uuid)
-        self.code = code
-        self.name = name
-        self.display_name = display_name
-        self.module = module
-        self.doc = doc
-        self.module_doc = module_doc
-        self.args = args
-        self.tags = tags
-        self.version = version
+                 callable_obj: Union[Callable, Type] = None,
+                 name: str = None,
+                 tags: List[str] = None,
+                 version: Optional[int] = None
+                 ):
+        if callable_obj:
+            from giskard.ml_worker.testing.registry.registry import get_object_uuid
+
+            self.full_name = create_test_function_id(callable_obj)
+            func_uuid = get_object_uuid(callable_obj)
+            super(CallableMeta, self).__init__(func_uuid)
+
+            callable_obj.__module__.rpartition(".")
+            func_doc = self.extract_doc(callable_obj)
+
+            self.code = self.extract_code(callable_obj)
+            self.name = callable_obj.__name__
+            self.display_name = name or callable_obj.__name__
+            self.module = callable_obj.__module__
+            self.doc = func_doc
+            self.module_doc = self.extract_module_doc(func_doc)
+            self.tags = self.populate_tags(tags)
+            self.version = version
+
+    @staticmethod
+    def extract_module_doc(func_doc):
+        return inspect.getmodule(func_doc).__doc__.strip() if inspect.getmodule(func_doc).__doc__ else None
+
+    def populate_tags(self, tags=None):
+        tags = [] if not tags else tags
+        if self.full_name.partition(".")[0] == "giskard":
+            tags.append("giskard")
+        elif self.full_name.startswith('__main__'):
+            tags.append("pickle")
+        else:
+            tags.append("custom")
+        return tags
+
+    def extract_code(self, callable_obj):
+        code = None
+        try:
+            code = inspect.getsource(callable_obj)
+        except Exception as e:
+            logger.info(f"Failed to extract test function code {self.full_name}", e)
+        return code
+
+    @staticmethod
+    def extract_doc(func):
+        if func.__doc__:
+            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
+            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
+        else:
+            func_doc = None
+        return func_doc
 
     def to_json(self):
         return {
@@ -107,44 +177,87 @@ class TestFunctionMeta(SavableMeta):
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,
-            "args":
-                [
-                    {
-                        "name": arg.name,
-                        "type": arg.type,
-                        "default": arg.default,
-                        "optional": arg.optional,
-                        "argOrder": arg.argOrder,
-                    } for arg in self.args.values()
-                ]
         }
 
-    @classmethod
-    def from_json(cls, json):
-        return cls(
-            uuid=json["uuid"],
-            name=json["name"],
-            display_name=json["displayName"],
-            module=json["module"],
-            doc=json["doc"],
-            module_doc=json["moduleDoc"],
-            code=json["code"],
-            tags=json["tags"],
-            version=json["version"],
-            args={
-                arg["name"]: TestFunctionArgument(
-                    name=arg["name"],
-                    type=arg["type"],
-                    default=arg["defaultValue"],
-                    optional=arg["optional"],
-                    argOrder=arg["argOrder"]
-                ) for arg in json["args"]
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.name = json["name"]
+        self.display_name = json["displayName"]
+        self.module = json["module"]
+        self.doc = json["doc"]
+        self.module_doc = json["moduleDoc"]
+        self.code = json["code"]
+        self.tags = json["tags"]
+        self.version = json["version"]
+
+
+def __repr__(self) -> str:
+    return f"CallableMeta: {self.module}.{self.name}"
+
+
+class TestFunctionMeta(CallableMeta):
+    args: Dict[str, TestFunctionArgument]
+
+    def __init__(self,
+                 callable_obj: Union[Callable, Type] = None,
+                 name: str = None,
+                 tags: List[str] = None,
+                 version: Optional[int] = None):
+        if callable_obj:
+            super().__init__(callable_obj, name, tags, version)
+            parameters = self.extract_parameters(callable_obj)
+
+            self.args = {
+                parameter.name: TestFunctionArgument(
+                    name=parameter.name,
+                    type=parameter.annotation.__qualname__,
+                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                    default=None if parameter.default == inspect.Parameter.empty
+                    else parameter.default,
+                    argOrder=idx
+                )
+                for idx, parameter in enumerate(parameters.values())
+                if name != 'self'
             }
 
-        )
+    @staticmethod
+    def extract_parameters(callable_obj):
+        if inspect.isclass(callable_obj):
+            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+        else:
+            parameters = list(inspect.signature(callable_obj).parameters.values())
+        args_without_type = [p.name for p in parameters if p.annotation == inspect.Parameter.empty]
+        if len(args_without_type):
+            msg = f'Test function definition "{callable_obj.__module__}.{callable_obj.__name__}" ' \
+                  f'is missing argument type: {", ".join(args_without_type)}'
+            logger.warning(msg)
+            raise ValueError(msg)
+        return {p.name: p for p in parameters}
 
-    def __repr__(self) -> str:
-        return f"TestFunctionMeta: {self.module}.{self.name}"
+    def to_json(self):
+        obj = super().to_json()
+        obj["args"] = [
+            {
+                "name": arg.name,
+                "type": arg.type,
+                "default": arg.default,
+                "optional": arg.optional,
+                "argOrder": arg.argOrder,
+            } for arg in self.args.values()
+        ]
+        return obj
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.args = {
+            arg["name"]: TestFunctionArgument(
+                name=arg["name"],
+                type=arg["type"],
+                default=arg["defaultValue"],
+                optional=arg["optional"],
+                argOrder=arg["argOrder"]
+            ) for arg in json["args"]
+        }
 
 
 DT = TypeVar('DT')
