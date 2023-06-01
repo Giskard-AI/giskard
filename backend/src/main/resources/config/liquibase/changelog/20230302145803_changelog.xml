@@ -1,0 +1,56 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-6">
+        <addForeignKeyConstraint baseColumnNames="suite_id" baseTableName="test_suite_execution" constraintName="FK7xgbcx2dwf7drbhbti2mka3xb" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-7">
+        <addForeignKeyConstraint baseColumnNames="test_suite" baseTableName="suite_test" constraintName="FKmbqkdmuw56y7rlf2os5330ous" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="test_suite" validate="true"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-8">
+        <dropForeignKeyConstraint baseTableName="TEST_EXECUTION" constraintName="FK1D9G3PQKL379JC19KD3XCXF99"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-9">
+        <dropForeignKeyConstraint baseTableName="SUITE_TEST" constraintName="FKAQHNJ6JTPE2WECKWSNVG2HUY4"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-10">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE_EXECUTION" constraintName="FKDE5RSS3IFE5AIOBXVGIIKJQ7W"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-11">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKEEY8LX8JKYDL6RRJJE22GLV45"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-12">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE_NEW" constraintName="FKH0GSRNK26AWF8IP6AW9FTNPXO"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-13">
+        <dropForeignKeyConstraint baseTableName="TEST" constraintName="FKM67RMF2X1WA80068ISIB8PM8E"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-14">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKNWIQW82VBN8CXVXYRTRLVEABN"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-15">
+        <dropForeignKeyConstraint baseTableName="TEST_SUITE" constraintName="FKPDNYW2EU2HGUNI9M08CLWSTFO"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-16">
+        <dropTable tableName="TEST"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-17">
+        <dropTable tableName="TEST_EXECUTION"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-18">
+        <dropTable tableName="TEST_SUITE_NEW"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-19">
+        <dropColumn columnName="ACTUAL_DATASET_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-20">
+        <dropColumn columnName="MODEL_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-21">
+        <dropColumn columnName="REFERENCE_DATASET_ID" tableName="TEST_SUITE"/>
+    </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1677765487169-1">
+        <dropNotNullConstraint columnDataType="varchar(255)" columnName="name" tableName="test_suite"/>
+    </changeSet>
+</databaseChangeLog>

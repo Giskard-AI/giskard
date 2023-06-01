@@ -5,30 +5,29 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.domain.ml.testing.Test;
+import ai.giskard.domain.ml.SuiteTest;
+import ai.giskard.domain.ml.TestInput;
+import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.ProjectRepository;
-import ai.giskard.repository.ml.*;
+import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.TestSuiteDTO;
-import ai.giskard.web.dto.ml.UpdateTestSuiteDTO;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.text.StringSubstitutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ai.giskard.web.rest.errors.Entity.TEST;
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
 
@@ -36,15 +35,8 @@ import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 @Transactional
 @RequiredArgsConstructor
 public class TestSuiteService {
-    private final Logger log = LoggerFactory.getLogger(TestSuiteService.class);
-
-    private final TestSuiteRepository testSuiteRepository;
-    private final TestRepository testRepository;
-    private final DatasetRepository datasetRepository;
-    private final ModelRepository modelRepository;
     private final GiskardMapper giskardMapper;
-    private final CodeTestTemplateService testTemplateService;
-    private final TestSuiteNewRepository testSuiteNewRepository;
+    private final TestSuiteRepository testSuiteRepository;
     private final TestService testService;
     private final TestSuiteExecutionService testSuiteExecutionService;
     private final JobService jobService;
@@ -52,88 +44,8 @@ public class TestSuiteService {
     private final MLWorkerService mlWorkerService;
     private final TestFunctionRepository testFunctionRepository;
 
-    public TestSuite updateTestSuite(UpdateTestSuiteDTO dto) {
-        TestSuite suite = testSuiteRepository.getById(dto.getId());
-        if (dto.getActualDatasetId() != null && !suite.getProject().equals(datasetRepository.getById(dto.getActualDatasetId()).getProject())) {
-            throw new IllegalArgumentException("Actual dataset is not part of the test project");
-        }
-        if (dto.getReferenceDatasetId() != null && !suite.getProject().equals(datasetRepository.getById(dto.getReferenceDatasetId()).getProject())) {
-            throw new IllegalArgumentException("Reference dataset is not part of the test project");
-        }
-        if (dto.getModelId() != null && !suite.getProject().equals(modelRepository.getById(dto.getModelId()).getProject())) {
-            throw new IllegalArgumentException("Model is not part of the test project");
-        }
-
-        TestSuite testSuite = testSuiteRepository.findById(dto.getId()).orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, dto.getId()));
-        giskardMapper.updateTestSuiteFromDTO(dto, testSuite);
-        return testSuite;
-    }
-
-    public void deleteSuite(Long suiteId) {
-        testRepository.deleteAllByTestSuiteId(suiteId);
-        testSuiteRepository.deleteById(suiteId);
-    }
-
-    public TestSuiteDTO createTestSuite(TestSuite testSuite, boolean shouldGenerateTests) {
-        TestSuite ts = testSuiteRepository.save(testSuite);
-        if (shouldGenerateTests) {
-            generateTests(ts);
-        }
-        return giskardMapper.testSuiteToTestSuiteDTO(ts);
-    }
-
-    private void generateTests(TestSuite suite) {
-        List<Test> generatedTests = new ArrayList<>();
-        for (CodeTestTemplate template : testTemplateService.getAllTemplates()) {
-            if (!testTemplateService.doesTestTemplateSuiteTestSuite(suite, template)) {
-                continue;
-            }
-            Test test = Test.builder()
-                .testSuite(suite)
-                .name(template.title)
-                .code(replacePlaceholders(template.code, suite))
-                .build();
-            generatedTests.add(test);
-            suite.getTests().add(test);
-        }
-        log.info("Generated {} tests for test suite {}", generatedTests.size(), suite.getId());
-        testRepository.saveAll(generatedTests);
-    }
-
-    private String replacePlaceholders(String code, TestSuite suite) {
-        Map<String, String> substitutions = new HashMap<>();
-
-        ProjectModel model = suite.getModel();
-
-        if (model.getModelType() == ModelType.CLASSIFICATION) {
-            model.getClassificationLabels().stream().findFirst().ifPresent(label -> substitutions.putIfAbsent("CLASSIFICATION LABEL", label));
-        }
-        Dataset ds = suite.getReferenceDataset() != null ? suite.getReferenceDataset() : suite.getActualDataset();
-        if (ds != null) {
-            ds.getFeatureTypes().forEach((fName, fType) -> {
-                if (fName.equals(ds.getTarget())) {
-                    substitutions.putIfAbsent("TARGET NAME", fName);
-                } else {
-                    substitutions.putIfAbsent("FEATURE NAME", fName);
-                    if (fType == FeatureType.CATEGORY) {
-                        substitutions.putIfAbsent("CATEGORICAL FEATURE NAME", fName);
-                    }
-                    if (fType == FeatureType.NUMERIC) {
-                        substitutions.putIfAbsent("NUMERIC FEATURE NAME", fName);
-                    }
-                    if (fType == FeatureType.TEXT) {
-                        substitutions.putIfAbsent("TEXTUAL FEATURE NAME", fName);
-                    }
-                }
-            });
-        }
-
-        StringSubstitutor sub = new StringSubstitutor(substitutions, "{{", "}}");
-        return sub.replace(code);
-    }
-
     public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
-        TestSuiteNew suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
+        TestSuite suite = testSuiteNewRepository.findOneByProjectIdAndId(projectId, suiteId);
 
         Map<String, String> res = new HashMap<>();
 
@@ -163,7 +75,7 @@ public class TestSuiteService {
 
     @Transactional
     public UUID scheduleTestSuiteExecution(Long projectId, Long suiteId, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.entrySet().stream()
@@ -179,7 +91,7 @@ public class TestSuiteService {
     }
 
     private static void verifyAllInputProvided(Map<String, String> providedInputs,
-                                               TestSuiteNew testSuite,
+                                               TestSuite testSuite,
                                                Map<String, String> requiredInputs) {
         List<String> missingInputs = requiredInputs.keySet().stream()
             .filter(requiredInput -> !providedInputs.containsKey(requiredInput))
@@ -190,22 +102,22 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNewDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
-        TestSuiteNew testSuite = testSuiteNewRepository.getById(suiteId);
+    public TestSuiteDTO updateTestInputs(long suiteId, String testUuid, Map<String, String> inputs) {
+        TestSuite testSuite = testSuiteRepository.getById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
             .filter(t -> testUuid.equals(t.getTestFunction().getUuid().toString()))
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST, testUuid));
+            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testUuid));
 
         verifyAllInputExists(inputs, test);
 
         test.getTestInputs().clear();
         test.getTestInputs().addAll(inputs.entrySet().stream()
-                .filter(entry -> entry.getValue() != null)
+            .filter(entry -> entry.getValue() != null)
             .map(entry -> new TestInput(entry.getKey(), entry.getValue(), test))
             .toList());
 
-        return giskardMapper.toDTO(testSuiteNewRepository.save(testSuite));
+        return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
     private void verifyAllInputExists(Map<String, String> providedInputs,
@@ -225,15 +137,19 @@ public class TestSuiteService {
         }
     }
 
-    public TestSuiteNew addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
-        TestSuiteNew suite = testSuiteNewRepository.findById(suiteId)
+    public Path resolvedMetadataPath(Path temporaryMetadataDir, String entityName) {
+        return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
+    }
+
+    public TestSuite addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
+        TestSuite suite = testSuiteRepository.findById(suiteId)
             .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
         suite.getTests().add(suiteTest);
 
-        return testSuiteNewRepository.save(suite);
+        return testSuiteRepository.save(suite);
     }
 
     @Transactional
@@ -251,14 +167,14 @@ public class TestSuiteService {
 
             GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
 
-            TestSuiteNew suite = new TestSuiteNew();
+            TestSuite suite = new TestSuite();
             suite.setProject(project);
             suite.setName(dto.getName());
             suite.getTests().addAll(response.getTestsList().stream()
                 .map(test -> new SuiteTest(suite, test, testFunctionRepository.getById(UUID.fromString(test.getTestUuid()))))
                 .toList());
 
-            return testSuiteNewRepository.save(suite).getId();
+            return testSuiteRepository.save(suite).getId();
         }
     }
 

@@ -80,8 +80,6 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
-    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
-
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
@@ -102,19 +100,6 @@ public interface GiskardMapper {
 
     @Mapping(source = "featureTypes", target = "featureTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
-
-    List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
-
-    @Mapping(source = "actualDatasetId", target = "actualDataset")
-    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
-    @Mapping(source = "modelId", target = "model")
-    @Mapping(target = "project", ignore = true)
-    @Mapping(target = "tests", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    void updateTestSuiteFromDTO(UpdateTestSuiteDTO dto, @MappingTarget TestSuite entity);
 
     UserDTO userToUserDTO(User user);
 
@@ -140,18 +125,6 @@ public interface GiskardMapper {
     @Mapping(source = "classificationLabels", target = "classificationLabels")
     @Mapping(source = "featureNames", target = "featureNames")
     ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
-
-    @Mapping(source = "modelId", target = "model")
-    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
-    @Mapping(source = "actualDatasetId", target = "actualDataset")
-    @Mapping(source = "projectId", target = "project")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "tests", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    TestSuite fromDTO(TestSuiteCreateDTO dto);
 
     @Mapping(source = "projectId", target = "project")
     @Mapping(target = "createdBy", ignore = true)
@@ -181,13 +154,7 @@ public interface GiskardMapper {
     @Mapping(target = "projectId", source = "project.id")
     PrepareDeleteDTO.LightFeedback toDTO(Feedback obj);
 
-    @Mapping(target = "projectId", source = "project.id")
-    PrepareDeleteDTO.LightTestSuite toDTO(TestSuite obj);
-
     List<PrepareDeleteDTO.LightFeedback> toLightFeedbacks(List<Feedback> obj);
-
-    List<PrepareDeleteDTO.LightTestSuite> toLightTestSuites(List<TestSuite> obj);
-
 
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
@@ -196,7 +163,7 @@ public interface GiskardMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "project", source = "projectKey")
     @Mapping(target = "executions", ignore = true)
-    TestSuiteNew fromDTO(TestSuiteNewDTO dto);
+    TestSuite fromDTO(TestSuiteDTO dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "suite", ignore = true)
@@ -205,7 +172,7 @@ public interface GiskardMapper {
     SuiteTest fromDTO(SuiteTestDTO dto);
 
     @AfterMapping
-    default void afterMapping(@MappingTarget TestSuiteNew suite) {
+    default void afterMapping(@MappingTarget TestSuite suite) {
         suite.getTests().forEach(e -> e.setSuite(suite));
     }
 
@@ -221,10 +188,10 @@ public interface GiskardMapper {
     TestInputDTO toDTO(TestInput obj);
 
 
-    List<TestSuiteNewDTO> toDTO(List<TestSuiteNew> suites);
+    List<TestSuiteDTO> toDTO(List<TestSuite> suites);
 
     @Mapping(target = "projectKey", source = "project.key")
-    TestSuiteNewDTO toDTO(TestSuiteNew suite);
+    TestSuiteDTO toDTO(TestSuite suite);
 
     @Mapping(target = "testUuid", source = "testFunction.uuid")
     SuiteTestDTO toDTO(SuiteTest dto);

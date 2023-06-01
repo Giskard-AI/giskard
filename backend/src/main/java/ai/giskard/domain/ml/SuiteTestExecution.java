@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 public class SuiteTestExecution extends BaseEntity {
 
     @ManyToOne(optional = false)
+    @JsonIgnore
     private SuiteTest test;
 
     @ManyToOne

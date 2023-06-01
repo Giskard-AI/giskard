@@ -1,101 +1,65 @@
 <template>
-  <v-container fluid v-if="testSuite" class="vertical-container">
-    <v-row>
-      <v-col>
-        <span>Test suite: </span>
-        <router-link class="text-h6 text-decoration-none" :to="{name: 'suite-details', params: {
-          suiteId: this.suiteId
-         } }">
-          {{ testSuite.name }}
-        </router-link>
-      </v-col>
-      <v-col :align="'right'" v-show="$router.currentRoute.name === 'suite-test-list'">
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="openSettings()"
-        >
-          <v-icon>settings</v-icon>
-        </v-btn>
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="remove()"
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-    <router-view class="vertical-container"></router-view>
-  </v-container>
+  <div class="vc mt-2 pb-0">
+    <div class="vc">
+      <v-container class="main-container vc">
+        <v-row>
+          <v-col :align="'right'">
+            <div class="d-flex flex-row-reverse">
+              <RunTestSuiteModal :inputs="inputs" :suite-id="suiteId" :project-id="projectId"/>
+              <v-btn text @click="loadData()" color="secondary">Reload
+                <v-icon right>refresh</v-icon>
+              </v-btn>
+            </div>
+          </v-col>
+        </v-row>
+        <v-row class="vc">
+          <v-col cols="2">
+            <v-tabs vertical>
+              <v-tab :to="{name:'test-suite-inputs'}">Inputs & parameters</v-tab>
+              <v-tab :to="{name:'test-suite-tests'}">Tests</v-tab>
+              <v-tab :to="{name:'test-suite-configuration'}">Configuration</v-tab>
+              <v-tab :to="{name:'test-suite-executions'}">Execution</v-tab>
+            </v-tabs>
+          </v-col>
+          <v-col cols="10" class="vc">
+            <router-view/>
+          </v-col>
+        </v-row>
+      </v-container>
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import {Prop} from "vue-property-decorator";
-import {api} from "@/api";
-import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import * as _ from "lodash";
-import Tests from "@/views/main/project/Tests.vue";
-import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
-import {TestSuiteDTO} from '@/generated-sources';
+<script lang="ts" setup>
 
+import {onMounted, watch} from "vue";
+import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import {useMainStore} from "@/stores/main";
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
 
-@Component({
-  components:
-      {
-        DatasetSelector, ModelSelector,
-        Tests, TestSuiteSettings
-      }
-})
-export default class TestSuite extends Vue {
-  @Prop({required: true}) projectId?: number;
-  @Prop({required: true}) suiteId!: number;
-  testSuite: TestSuiteDTO | null = null;
-  savedTestSuite: TestSuiteDTO | null = null;
+const props = defineProps<{
+  projectId: number,
+  suiteId: number
+}>();
 
-  async activated() {
-    await this.init();
-  }
+const mainStore = useMainStore();
+const {inputs} = storeToRefs(useTestSuiteStore())
 
-  async mounted() {
-    await this.init();
-  }
+onMounted(() => loadData());
+watch(() => props.suiteId, () => loadData());
 
+const {loadTestSuite} = useTestSuiteStore();
 
-  private async init() {
-    this.savedTestSuite = await api.getTestSuite(this.suiteId);
-    this.testSuite = _.cloneDeep(this.savedTestSuite);
-  }
-
-  async remove() {
-    if (await this.$dialog.confirm({
-      text: `Would you like to delete test suite "${this.testSuite?.name}"?`,
-      title: 'Delete test suite',
-      showClose: false,
-      actions: {
-        false: 'Cancel',
-        true: 'Delete'
-      }
-    })) {
-      await api.deleteTestSuite(this.testSuite!.id);
-      await this.$router.push({name: 'project-test-suites', params: {projectId: this.projectId!.toString()}})
-    }
-  }
-
-  async openSettings() {
-    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {scrollable: true, width: 800, testSuite: this.testSuite});
-    if (modifiedSuite) {
-      this.testSuite = modifiedSuite;
-    }
-  }
+async function loadData() {
+  await loadTestSuite(props.projectId, props.suiteId);
 }
 </script>
+
+
+<style scoped lang="scss">
+.main-container {
+  width: 100%;
+  max-width: 100%;
+}
+</style>

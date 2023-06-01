@@ -4,7 +4,7 @@ import {
     ModelDTO,
     TestFunctionDTO,
     TestSuiteExecutionDTO,
-    TestSuiteNewDTO
+    TestSuiteDTO
 } from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
@@ -15,7 +15,7 @@ import {useMainStore} from '@/stores/main';
 interface State {
     projectId: number | null,
     inputs: { [name: string]: string },
-    suite: TestSuiteNewDTO | null,
+    suite: TestSuiteDTO | null,
     registry: TestFunctionDTO[],
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },

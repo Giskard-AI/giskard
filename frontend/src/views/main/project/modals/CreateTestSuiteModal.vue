@@ -134,7 +134,7 @@ async function submit(close) {
       .finally(() => isLoading.value = false);
 
   dialog.value = false;
-  await router.push({name: 'test-suite-new', params: {suiteId: createdTestSuiteId.toString()}});
+  await router.push({name: 'test-suite', params: {suiteId: createdTestSuiteId.toString()}});
 
   close();
 }

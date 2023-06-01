@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional
 
-from giskard.client.dtos import TestSuiteNewDTO, SuiteTestDTO, TestInputDTO
+from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.core.model import Model
@@ -148,7 +148,7 @@ class Suite:
                 testInputs=inputs
             ))
 
-        return TestSuiteNewDTO(name=self.name, project_key=project_key, tests=suite_tests)
+        return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
     def add_test(self, test_fn: Test,
                  test_identifier: Optional[Union[int, str]] = None, **params):
