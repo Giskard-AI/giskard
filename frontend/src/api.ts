@@ -1,6 +1,6 @@
-import axios, { AxiosError } from 'axios';
-import { apiURL } from '@/env';
-import { getLocalToken, removeLocalToken } from '@/utils';
+import axios, {AxiosError} from 'axios';
+import {apiURL} from '@/env';
+import {getLocalToken, removeLocalToken} from '@/utils';
 import Vue from "vue";
 
 import {
@@ -16,6 +16,7 @@ import {
     FeatureMetadataDTO,
     FeedbackDTO,
     FeedbackMinimalDTO,
+    FunctionInputDTO,
     GeneralSettings,
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
@@ -38,7 +39,6 @@ import {
     SliceDTO,
     SlicingResultDTO,
     SuiteTestDTO,
-    TestInputDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
     TestSuiteExecutionDTO,
@@ -48,13 +48,14 @@ import {
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import { PostImportProjectDTO } from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
-import { TYPE } from "vue-toastification";
+import {PostImportProjectDTO} from './generated-sources/ai/giskard/web/dto/post-import-project-dto';
+import {TYPE} from "vue-toastification";
 import ErrorToast from "@/views/main/utils/ErrorToast.vue";
 import router from "@/router";
 import mixpanel from "mixpanel-browser";
-import { useUserStore } from "@/stores/user";
-import { SetupDTO } from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import {useUserStore} from "@/stores/user";
+import {SetupDTO} from "@/generated-sources/ai/giskard/web/dto/setup-dto";
+import {TestInputDTO} from "@/generated-sources/ai/giskard/web/dto/test-input-dto";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 function jwtRequestInterceptor(config) {
@@ -382,10 +383,10 @@ export const api = {
     async getProjectSlices(id: number) {
         return axiosProject.get<unknown, SliceDTO[]>(`/${id}/slices`);
     },
-    async executeTestSuite(projectId: number, suiteId: number, inputs: { [key: string]: string }) {
+    async executeTestSuite(projectId: number, suiteId: number, inputs: Array<FunctionInputDTO>) {
         return apiV2.post<unknown, any>(`testing/project/${projectId}/suite/${suiteId}/schedule-execution`, inputs);
     },
-    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: TestInputDTO[]) {
+    async updateTestInputs(projectId: number, suiteId: number, testId: number, inputs: FunctionInputDTO[]) {
         return apiV2.put<unknown, TestSuiteExecutionDTO[]>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/test/${testId}/inputs`, inputs);
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
@@ -472,7 +473,7 @@ export const api = {
             code: code
         });
     },
-    async runAdHocTest(projectId: number, testUuid: string, inputs: { [key: string]: string }) {
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<TestInputDTO>) {
         return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
             projectId,
             testUuid,

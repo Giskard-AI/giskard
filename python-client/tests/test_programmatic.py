@@ -115,7 +115,7 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     with MockedClient() as (client, mr):
         Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
             test_f1(threshold=0.2, dataset=german_credit_data)
-        ).save(client, "test_project_key")
+        ).upload(client, "test_project_key")
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #    client = GiskardClient("http://localhost:9000", "")

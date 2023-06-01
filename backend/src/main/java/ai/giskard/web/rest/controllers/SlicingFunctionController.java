@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -43,16 +44,15 @@ public class SlicingFunctionController {
     @GetMapping("/slices/{uuid}")
     @Transactional(readOnly = true)
     public SlicingFunctionDTO getSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid) {
-        return giskardMapper.toDTO(slicingFunctionRepository.getById(uuid));
+        return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
 
     @PostMapping("/slices/{sliceFnUuid}/dataset/{datasetUuid}")
-    @Transactional(readOnly = true)
     public SlicingResultDTO runAdHocFunction(@PathVariable("sliceFnUuid") @NotNull UUID sliceFnUuid,
                                              @PathVariable("datasetUuid") @NotNull UUID datasetUuid,
                                              @RequestBody Map<String, String> inputs) {
-        SlicingFunction slicingFunction = slicingFunctionRepository.getById(sliceFnUuid);
-        Dataset dataset = datasetRepository.getById(datasetUuid);
+        SlicingFunction slicingFunction = slicingFunctionService.getInitialized(sliceFnUuid);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetUuid);
         Project project = dataset.getProject();
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
@@ -67,7 +67,8 @@ public class SlicingFunctionController {
                     .build());
 
             for (Map.Entry<String, String> entry : inputs.entrySet()) {
-                builder.addArguments(testArgumentService.buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey()));
+                builder.addArguments(testArgumentService
+                    .buildTestArgument(argumentTypes, entry.getKey(), entry.getValue(), project.getKey(), Collections.emptyList()));
             }
 
             SlicingResultMessage slicingResultMessage = client.getBlockingStub().runAdHocSlicing(builder.build());
@@ -77,7 +78,6 @@ public class SlicingFunctionController {
     }
 
     @PutMapping("/slices/{uuid}")
-    @Transactional
     public SlicingFunctionDTO updateSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         return slicingFunctionService.save(slicingFunction);

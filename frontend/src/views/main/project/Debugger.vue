@@ -1,26 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, onActivated } from "vue";
+import { computed, ref, onActivated, watch } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
+import { useRoute, useRouter } from 'vue-router/composables';
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
-import InspectorWrapper from './InspectorWrapper.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 
+const route = useRoute();
+const router = useRouter();
+
 interface Props {
   projectId: number;
-  activeSessionId: number | null;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  activeSessionId: null
-});
-
+const props = defineProps<Props>();
+const activeDebuggingSessionId = ref<number | null>(null);
 const debuggingSessions = ref<InspectionDTO[]>([]);
 const searchSession = ref("");
-
-const displayComponents = computed(() => props.activeSessionId === null);
+const openInspectionWrapper = ref(false);
 
 const filteredSessions = computed(() => {
 
@@ -41,30 +40,27 @@ const filteredSessions = computed(() => {
 
 })
 
-async function loadDebuggingSessions() {
+async function fetchDebuggingSessions() {
   debuggingSessions.value = await api.getProjectInspections(props.projectId)
 }
 
-
-function toggleActiveSession(newActiveSessionId: Props["activeSessionId"]) {
-  if (props.activeSessionId === newActiveSessionId) {
-    props.activeSessionId = null;
-  } else {
-    props.activeSessionId = newActiveSessionId;
-  }
-}
-
-function showPastSessions() {
+async function showPastSessions() {
   resetSearchInput();
-  toggleActiveSession(null);
+  activeDebuggingSessionId.value = null;
+  openInspectionWrapper.value = false;
+  await router.push({
+    name: 'project-debugger',
+    params: {
+      projectId: props.projectId.toString()
+    }
+  });
 }
 
-function createDebuggingSession(debuggingSession: InspectionDTO) {
-  debuggingSessions.value.push(debuggingSession);
-  toggleActiveSession(null);
-  setTimeout(() => {
-    toggleActiveSession(debuggingSession.id);
-  });
+async function createDebuggingSession(debuggingSession: InspectionDTO) {
+  await fetchDebuggingSessions();
+  activeDebuggingSessionId.value = debuggingSession.id;
+  openInspectionWrapper.value = true;
+  await openInspection(props.projectId.toString(), debuggingSession.id.toString());
 }
 
 async function renameSession(id: number, name: string) {
@@ -99,18 +95,47 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
     on: {
       async confirm(close) {
         await api.deleteInspection(debuggingSession.id);
-        await loadDebuggingSessions();
+        await fetchDebuggingSessions();
         close();
       }
     }
   });
 }
 
+async function openDebuggingSession(debuggingSessionId: number, projectId: number) {
+  activeDebuggingSessionId.value = debuggingSessionId;
+  openInspectionWrapper.value = true;
+  await openInspection(projectId.toString(), debuggingSessionId.toString());
+}
+
 function resetSearchInput() {
   searchSession.value = "";
 }
 
-onActivated(() => loadDebuggingSessions());
+async function openInspection(projectId: string, inspectionId: string) {
+  await router.push({
+    name: 'inspection',
+    params: {
+      projectId,
+      inspectionId
+    }
+  });
+}
+
+function handleRouteChanged() {
+  openInspectionWrapper.value = route.meta && route.meta.openInspectionWrapper
+}
+
+watch(() => route.meta, () => handleRouteChanged());
+
+onActivated(async () => {
+  if (activeDebuggingSessionId.value) {
+    await openInspection(props.projectId.toString(), activeDebuggingSessionId.value.toString());
+  }
+  fetchDebuggingSessions();
+  handleRouteChanged();
+});
+
 </script>
 
 <template>
@@ -118,11 +143,11 @@ onActivated(() => loadDebuggingSessions());
     <v-container fluid class="vc" v-if="debuggingSessions.length > 0">
       <v-row>
         <v-col cols="4">
-          <v-text-field v-show="displayComponents" label="Search for a debugging session" append-icon="search" outlined v-model="searchSession"></v-text-field>
+          <v-text-field v-show="!openInspectionWrapper" label="Search for a debugging session" append-icon="search" outlined v-model="searchSession"></v-text-field>
         </v-col>
         <v-col cols="8">
           <div class="d-flex justify-end">
-            <v-btn v-if="!displayComponents" @click="showPastSessions" class="mr-4 pa-2 text--secondary">
+            <v-btn v-if="openInspectionWrapper" @click="showPastSessions" class="mr-4 pa-2 text--secondary">
               <v-icon left>history</v-icon>Past sessions
             </v-btn>
             <AddDebuggingSessionModal v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
@@ -131,7 +156,7 @@ onActivated(() => loadDebuggingSessions());
       </v-row>
 
       <v-expansion-panels>
-        <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2" v-if="displayComponents">
+        <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2" v-if="!openInspectionWrapper">
           <v-col cols="3">Session name</v-col>
           <v-col cols="1">Session ID</v-col>
           <v-col cols="2">Created at</v-col>
@@ -142,7 +167,7 @@ onActivated(() => loadDebuggingSessions());
           <v-col cols="1"></v-col>
         </v-row>
 
-        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="displayComponents" @click.stop="toggleActiveSession(session.id)" class="expansion-panel">
+        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" v-show="!openInspectionWrapper" @click.stop="openDebuggingSession(session.id, projectId)" class="expansion-panel">
           <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
               <v-col cols="3">
@@ -166,12 +191,14 @@ onActivated(() => loadDebuggingSessions());
           </v-expansion-panel-header>
         </v-expansion-panel>
       </v-expansion-panels>
-      <InspectorWrapper v-if="!displayComponents" :projectId="projectId" :inspectionId="activeSessionId"></InspectorWrapper>
+      <div v-if="openInspectionWrapper">
+        <router-view />
+      </div>
     </v-container>
 
-    <v-container v-else class="vc mt-12">
+    <v-container v-else class="vc mt-6">
       <v-alert class="text-center">
-        <p class="create-session-message headline blue-grey--text">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
+        <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
       <AddDebuggingSessionModal v-bind:project-id="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
       <div class="d-flex justify-center mb-6">
@@ -182,10 +209,6 @@ onActivated(() => loadDebuggingSessions());
 </template>
 
 <style scoped>
-.create-session-message {
-  font-size: 1.125rem;
-}
-
 .debugger-logo {
   max-width: 30%;
   margin-top: 2rem;

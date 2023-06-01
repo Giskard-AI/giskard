@@ -43,4 +43,4 @@ def _wrap_test_method(original):
     make_all_optional_or_suite_input(giskard_test_method)
     set_return_type(giskard_test_method, GiskardTestMethod)
 
-    return configured_validate_arguments(giskard_test_method)
+    return configured_validate_arguments(giskard_test_method)()
