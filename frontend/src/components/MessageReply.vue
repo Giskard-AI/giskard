@@ -3,14 +3,14 @@
     <div>
       <span class="subtitle-2">{{ isCurrentUser ? 'me' : (author.displayName || author.user_id) }}</span>
       <span class="caption font-weight-light mx-2">{{ createdOn | date }}</span>
-      <v-btn icon small color="accent" v-if="isCurrentUser">
+      <v-btn icon small color="accent" v-if="isCurrentUser && replies.length == 0" @click="deleteReply(replyId, type)">
         <v-icon small>mdi-delete</v-icon>
       </v-btn>
     </div>
     <div style="white-space: break-spaces">{{ content }}</div>
-    <div v-if="replies">
+    <div v-if="replies && type == 'reply'">
       <div v-for="r in replies" :key="r.id" class="indented my-1">
-        <message-reply :author="r.user" :createdOn="r.createdOn" :content="r.content"></message-reply>
+        <message-reply :replyId="r.id" :author="r.user" :createdOn="r.createdOn" :content="r.content" :type="'reply'" :repliable="false" :replies="[]" @delete="deleteReply(r.id, 'reply')"></message-reply>
       </div>
     </div>
     <div v-if="repliable" class="my-1" :class="{ 'indented': replies && replies.length }">
@@ -35,6 +35,8 @@ import { useUserStore } from "@/stores/user";
 const userStore = useUserStore();
 
 interface Props {
+  replyId: number,
+  type: string,
   author: any,
   createdOn: string,
   content: string,
@@ -44,7 +46,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["reply"])
+const emit = defineEmits(["reply", "delete"])
 
 const replyBoxToggle = ref<boolean>(false);
 const reply = ref<string>("");
@@ -61,6 +63,10 @@ function emitSendReply() {
   emit('reply', reply.value);
   reply.value = '';
   replyBoxToggle.value = false;
+}
+
+function deleteReply(id: number, type: string) {
+  emit('delete', { id, type });
 }
 </script>
 

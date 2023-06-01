@@ -450,7 +450,7 @@ export const api = {
         return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
     },
     async deleteFeedbackReply(id: number) {
-        return apiV2.delete<unknown, void>(`/feedback-replies/${id}`);
+        return apiV2.delete<unknown, void>(`/feedbacks/feedback-replies/${id}`);
     },
     async createSlice(projectId: number, name: string, code: string) {
         return apiV2.post<unknown, SliceDTO>(`/slices`, {
