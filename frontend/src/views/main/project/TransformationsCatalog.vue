@@ -68,7 +68,7 @@
                                 <pre></pre>
                                 <StartWorkerInstructions/>
                             </v-alert>
-                            <pre class="test-doc caption pt-5">{{ selected.doc }}</pre>
+                            <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
                             <div class="pt-5">
                                 <div class="d-flex justify-space-between">
                                     <span class="text-h6">Inputs</span>
@@ -121,6 +121,7 @@
                                     :model-value="transformationArguments"
                                     :inputs="inputType"
                                     :project-id="props.projectId"
+                                    :doc="doc"
                                 />
                                 <v-row v-show="tryMode">
                                     <v-col :align="'right'">
@@ -192,6 +193,7 @@ import {api} from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -296,6 +298,8 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
     .mapValues('type')
     .value()
 );
+
+const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 </script>
 

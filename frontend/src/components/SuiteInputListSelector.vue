@@ -4,7 +4,15 @@
             <v-row>
                 <v-col>
                     <v-list-item-content>
-                        <v-list-item-title>{{ input.name }}</v-list-item-title>
+                        <v-list-item-title>
+                            {{ input.name }}
+                            <v-tooltip bottom v-if="doc && doc.args.hasOwnProperty(input.name)">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-icon v-bind="attrs" v-on="on">info</v-icon>
+                                </template>
+                                <span>{{ doc.args[input.name] }}</span>
+                            </v-tooltip>
+                        </v-list-item-title>
                         <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
                         <v-list-item-action-text
                                 v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
@@ -94,6 +102,7 @@ import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.
 import {useCatalogStore} from "@/stores/catalog";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
+import {ParsedDocstring} from "@/utils/python-doc.utils";
 
 const props = defineProps<{
     functionInputs?: { [key: string]: FunctionInputDTO },
@@ -101,7 +110,8 @@ const props = defineProps<{
     projectId: number,
     inputs: { [name: string]: string },
     modelValue?: { [name: string]: FunctionInputDTO },
-    editing: boolean
+    editing: boolean,
+    doc?: ParsedDocstring,
 }>();
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
