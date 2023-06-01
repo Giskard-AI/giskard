@@ -15,6 +15,7 @@ from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
+from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -23,7 +24,6 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from giskard.client.python_utils import warning
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
@@ -347,7 +347,7 @@ class Dataset(ColumnMetadataMixin):
         """
         if not column_types:
             column_types = {}
-        df_columns = set(self.columns.drop(self.target)) if self.target else set(self.columns)
+        df_columns = set([col for col in self.columns if col != self.target]) if self.target else set(self.columns)
 
         # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
