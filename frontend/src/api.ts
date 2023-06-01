@@ -7,6 +7,7 @@ import {
   AdminUserDTO,
   AppConfigDTO,
   CatalogDTO,
+    ComparisonClauseDTO,
   CreateFeedbackDTO,
   CreateFeedbackReplyDTO,
   DatasetDTO,
@@ -40,6 +41,7 @@ import {
   RoleDTO,
   RowFilterDTO,
   SetupDTO,
+    SlicingFunctionDTO,
   SuiteTestDTO,
   TestSuiteCompleteDTO,
   TestSuiteDTO,
@@ -463,6 +465,9 @@ export const api = {
       },
     });
   },
+    async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
+        return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses)
+    },
   async uploadLicense(form: FormData) {
     return apiV2.post<unknown, unknown>(`/ee/license`, form, {
       headers: {
@@ -476,9 +481,9 @@ export const api = {
       license: license,
     });
   },
-  async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>) {
+    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
     return apiV2.post<unknown, DatasetProcessingResultDTO>(
-      `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process`,
+      `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process?sample=${sample}`,
       functions
     );
   },
