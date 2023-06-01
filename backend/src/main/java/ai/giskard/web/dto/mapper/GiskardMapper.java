@@ -206,8 +206,10 @@ public interface GiskardMapper {
         return value.values().stream().map(this::fromDTO).toList();
     }
 
+    TestFunctionArgumentDTO toDTO(TestFunctionArgument testFunctionArgument);
+    @Mapping(target = "testFunction", ignore = true)
+    TestFunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
     TestFunctionDTO toDTO(TestFunction testFunction);
     TestFunction fromDTO(TestFunctionDTO testFunction);
-
 
 }

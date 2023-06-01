@@ -42,6 +42,7 @@ class TestFunction:
             # equivalent to adding @test decorator
             test(func)
             meta = tests_registry.get_test(func_uuid)
+            print(meta)
 
         return cls(func, meta)
 
@@ -49,7 +50,7 @@ class TestFunction:
         if self.meta.version is not None:
             return self.meta.uuid
 
-        if self.meta.module is None:
+        if self.meta.module is '__main__':
             local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / self.meta.uuid
 
             if not local_dir.exists():
@@ -73,7 +74,7 @@ class TestFunction:
 
         meta = client.load_test_function_meta(project_key, func_uuid)
 
-        if meta.module is not None:
+        if meta.module is '__main__':
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             local_dir = settings.home_dir / settings.cache_dir / project_key / "tests" / func_uuid
@@ -90,11 +91,6 @@ class TestFunction:
         meta.fn = func
 
         return cls(func, meta)
-
-    @classmethod
-    def _read_function_from_local_dir(cls, local_path: str):
-        with open(local_path, 'rb') as ds_stream:
-            return
 
 
 def test_reg():
