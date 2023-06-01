@@ -103,12 +103,12 @@ def _test_diff_prediction(
 class AucTest(GiskardTest):
     actual_slice: Dataset
     model: Model
-    threshold: float = 1.0
+    threshold: float
 
     def __init__(self,
-                 actual_slice: Dataset,
-                 model: Model,
-                 threshold: float = 0.5):
+                 actual_slice: Dataset = None,
+                 model: Model = None,
+                 threshold: float = None):
         self.actual_slice = actual_slice
         self.model = model
         self.threshold = threshold
