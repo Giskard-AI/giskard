@@ -976,3 +976,5 @@ typos = {
     'y': ['t', 'g', 'h', 'u'],
     'z': ['a', 's', 'x'],
 }
+
+gender_switch_fr = {}
