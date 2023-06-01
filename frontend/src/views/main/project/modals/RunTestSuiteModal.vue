@@ -88,7 +88,8 @@ const props = defineProps<{
   projectId: number,
   suiteId: number,
   inputs: { [name: string]: RequiredInputDTO },
-  compareMode: boolean
+  compareMode: boolean,
+  previousParams: { [name: string]: string }
 }>();
 
 const mainStore = useMainStore();
@@ -131,7 +132,7 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
           isAlias: false,
           name,
           type,
-          value: ''
+          value: props.previousParams[name] ?? ''
         }
         return result;
       }, {});
