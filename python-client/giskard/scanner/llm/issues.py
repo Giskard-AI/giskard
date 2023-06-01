@@ -12,14 +12,14 @@ from ...models.base import BaseModel, ModelPredictionResults
 
 @dataclass
 class LlmIssueInfo:
+    feature: str
     transformation_fn: DanTransformation
     fail_ratio: float
     perturbed_data_slice: Dataset
     perturbed_data_slice_predictions: ModelPredictionResults
     fail_data_idx: list
-    output_sensitivity = float
     threshold: float
-
+    output_sensitivity: float
 
 
 class LlmIssue(Issue):
@@ -33,6 +33,10 @@ class LlmIssue(Issue):
     @property
     def is_major(self) -> bool:
         return self.level == "major"
+
+    @property
+    def domain(self) -> str:
+        return f"Feature `{self.info.feature}`"
 
     @property
     def metric(self) -> str:
@@ -75,3 +79,22 @@ class LlmIssue(Issue):
     @property
     def importance(self) -> float:
         return self.info.fail_ratio
+
+    def generate_tests(self, with_names=False) -> list:
+        from ...testing.tests.metamorphic import test_metamorphic_invariance
+
+        tests = [
+            test_metamorphic_invariance(
+                self.model,
+                self.dataset,
+                self.info.transformation_fn,
+                threshold=1 - self.info.threshold,
+                output_sensitivity=self.info.output_sensitivity,
+            )
+        ]
+
+        if with_names:
+            names = [f"Invariance to “{self.info.transformation_fn.name}”"]
+            return list(zip(tests, names))
+
+        return tests

@@ -24,8 +24,6 @@ def _get_default_dan(model: BaseModel) -> str:
 
 class LlmDanDetector:
     _issue_cls = LlmIssue
-    MIN_DATASET_LENGTH = 100  # ??
-    MAX_DATASET_SIZE = 100  # ??
 
     def __init__(
             self,
@@ -103,11 +101,11 @@ class LlmDanDetector:
             original_pred = model.predict(original_data)
             perturbed_pred = model.predict(perturbed_data)
 
-            if model.is_llm:
-                passed = metric(perturbed_pred.prediction, original_pred.prediction)
-                passed = np.array(passed) < self.output_sensitivity
-            else:
-                raise NotImplementedError("You didn't provide an LLM model")
+            #if model.is_llm:
+            passed = metric(perturbed_pred.prediction, original_pred.prediction)
+            passed = np.array(passed) < self.output_sensitivity
+            #else:
+            #    raise NotImplementedError("You didn't provide an LLM model")
 
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
@@ -119,13 +117,14 @@ class LlmDanDetector:
 
             if fail_ratio >= self.threshold:
                 info = LlmIssueInfo(
+                    feature=feature,
                     fail_ratio=fail_ratio,
                     transformation_fn=transformation_fn,
                     perturbed_data_slice=perturbed_data,
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
                     threshold=self.threshold,
-                    output_sensitivity=self.output_sensitivity,
+                    output_sensitivity=self.output_sensitivity
                 )
                 issue = self._issue_cls(
                     model,
