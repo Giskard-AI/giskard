@@ -1,7 +1,7 @@
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from .scanner import Scanner
-
+from .logger import logger
 
 _default_detectors = [
     ".performance.model_bias_detector",
@@ -35,4 +35,4 @@ def scan(model: BaseModel, dataset: Dataset, params=None, only=None):
     return scanner.analyze(model, dataset)
 
 
-__all__ = ["scan", "Scanner"]
+__all__ = ["scan", "Scanner", "logger"]

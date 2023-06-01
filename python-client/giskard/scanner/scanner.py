@@ -1,7 +1,7 @@
-import logging
 import warnings
 from typing import Optional, Sequence
 
+from .logger import logger
 from ..models.base import BaseModel
 from ..datasets.base import Dataset
 from ..core.model_validation import validate_model
@@ -27,7 +27,7 @@ class Scanner:
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
-        logging.debug(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+        logger.debug(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
 
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
