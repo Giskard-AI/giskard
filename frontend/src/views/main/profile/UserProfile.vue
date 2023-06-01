@@ -307,9 +307,9 @@
           <v-skeleton-loader v-else type="card"></v-skeleton-loader>
         </v-col>
       </v-row>
-      <v-row>
+      <v-row v-if="isAdmin">
         <v-col>
-          <RunningWorkerJobs v-if="isAdmin"/>
+          <RunningWorkerJobs/>
         </v-col>
       </v-row>
     </v-container>

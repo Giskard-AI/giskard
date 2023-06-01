@@ -36,5 +36,4 @@ public class MLWorkerInfoDTO {
     private boolean isRemote;
     private int pid;
     private long processStartTime;
-
 }
