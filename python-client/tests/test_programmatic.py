@@ -2,7 +2,6 @@ import re
 
 import httpretty
 import pytest
-
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.model import Model
 from giskard.ml_worker.core.dataset import Dataset
@@ -108,11 +107,10 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: Model):
         .save(client, 'test_project_key')
 
 
-# def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
-#
-#     client = GiskardClient("http://localhost:9000", "")
-#
-#     Suite(name="Test Suite 1") \
-#         .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
-#         .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
-#         .save(client, 'credit')
+def test_save_suite_real(german_credit_data: Dataset, german_credit_model: Model):
+    client = GiskardClient("http://localhost:9000",
+                           "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOIiwiaWQiOjYsInRva2VuX3R5cGUiOiJVSSIsImV4cCI6MTY3MzYxMDYwN30.K6VsvNdS5KJBrybp5WK8iLPioQP4ckMJ7Y_1-HEMLyY")
+    Suite(name="Test Suite 1") \
+        .add_test(test_auc, threshold=0.2, actual_slice=german_credit_data) \
+        .add_test(test_f1, threshold=0.2, actual_slice=german_credit_data) \
+        .save(client, 'credit')

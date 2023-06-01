@@ -1,6 +1,11 @@
 <template>
   <v-container fluid class="vc">
     <v-row>
+      <v-col :align="'right'">
+        <RunTestSuiteModal :inputs="inputs" :project-id="projectId"/>
+      </v-col>
+    </v-row>
+    <v-row>
       <code>{{ props.projectId }}</code>
       <code>{{ props.suiteId }}</code>
       <v-col cols="2">
@@ -62,6 +67,7 @@ import {api} from "@/api";
 import {onMounted, ref} from "vue";
 import {SuiteTestDTO, TestCatalogDTO, TestSuiteNewDTO} from "@/generated-sources";
 import TestSuiteTestDetails from "@/views/main/project/TestSuiteTestDetails.vue";
+import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 
 const props = defineProps<{
   projectId: number,
@@ -72,10 +78,14 @@ let suite = ref<TestSuiteNewDTO | null>(null);
 let registry = ref<TestCatalogDTO | null>(null);
 let tab = ref<any>(null);
 let selectedTest = ref<SuiteTestDTO | null>(null);
-let inputs = ref<{}>([]);
+let inputs = ref<{
+  [name: string]: string
+}>({});
+
 onMounted(async () => {
   inputs.value = await api.getTestSuiteNewInputs(props.projectId, props.suiteId);
   suite.value = await api.getTestSuiteNew(props.projectId, props.suiteId);
   registry.value = await api.getTestsCatalog(props.projectId);
 })
+
 </script>
