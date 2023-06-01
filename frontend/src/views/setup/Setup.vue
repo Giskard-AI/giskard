@@ -209,6 +209,7 @@ async function finalizeSetup() {
   }
 
   await api.finalizeSetup(analyticsAgree.value, licenseContents);
+  await mainStore.fetchLicense();
   await router.push("/main/dashboard");
 }
 
