@@ -3,9 +3,8 @@
     <v-card-title class="font-weight-light secondary--text">API Access Token</v-card-title>
     <v-card-text>
       <div class="mb-2">
-        <v-btn small tile color="primary" @click="generateToken">Generate</v-btn>
-        <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2"
-               @click="copyToken">
+        <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateToken">Generate</v-btn>
+        <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2" @click="copyToken">
           Copy
           <v-icon right dark>mdi-content-copy</v-icon>
         </v-btn>
@@ -27,30 +26,30 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
-import {JWTToken} from "@/generated-sources";
-import {api} from "@/api";
-import {copyToClipboard} from "@/global-keys";
-import {useMainStore} from "@/stores/main";
+import { ref } from "vue";
+import { JWTToken } from "@/generated-sources";
+import { api } from "@/api";
+import { copyToClipboard } from "@/global-keys";
+import { useMainStore } from "@/stores/main";
 
 const mainStore = useMainStore();
 
 const apiAccessToken = ref<JWTToken | null>(null);
 
 async function generateToken() {
-  const loadingNotification = {content: 'Generating...', showProgress: true};
+  const loadingNotification = { content: 'Generating...', showProgress: true };
   try {
     mainStore.addNotification(loadingNotification);
     mainStore.removeNotification(loadingNotification);
     apiAccessToken.value = await api.getApiAccessToken();
   } catch (error) {
     mainStore.removeNotification(loadingNotification);
-    mainStore.addNotification({content: 'Could not reach server', color: 'error'});
+    mainStore.addNotification({ content: 'Could not reach server', color: 'error' });
   }
 }
 
 async function copyToken() {
   await copyToClipboard(apiAccessToken.value?.id_token);
-  mainStore.addNotification({content: "Copied to clipboard", color: "success"});
+  mainStore.addNotification({ content: "Copied to clipboard", color: "success" });
 }
 </script>

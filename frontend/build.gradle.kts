@@ -40,4 +40,7 @@ tasks {
     register("start") {
         dependsOn("npm_run_serve")
     }
+    register("package") {
+        dependsOn("npm_run_build")
+    }
 }
