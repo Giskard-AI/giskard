@@ -7,7 +7,7 @@ from giskard.ml_worker.core.dataset import Dataset
 from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
 
 
-@test(name="Right Label", tags=["heuristic"])
+@test(name="Right Label", tags=["heuristic", "classification"])
 def test_right_label(
         actual_slice: Dataset,
         model: Model,
@@ -58,7 +58,7 @@ def test_right_label(
     )
 
 
-@test(name="Output in range", tags=["heuristic"])
+@test(name="Output in range", tags=["heuristic", "classification", "regression"])
 def test_output_in_range(
         actual_slice: Dataset,
         model: Model,

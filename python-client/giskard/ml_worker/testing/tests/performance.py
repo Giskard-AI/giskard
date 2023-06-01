@@ -1,11 +1,6 @@
 """Performance tests"""
 import numpy as np
 import pandas as pd
-from giskard import test
-from giskard.core.model import Model
-from giskard.ml_worker.core.dataset import Dataset
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -16,6 +11,12 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+
+from giskard import test
+from giskard.core.model import Model
+from giskard.ml_worker.core.dataset import Dataset
+from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 
 
 def _verify_target_availability(dataset):
@@ -98,7 +99,7 @@ def _test_diff_prediction(
     )
 
 
-@test(name="AUC test class", tags=["performance"])
+@test(name="AUC test class", tags=['performance', 'classification', 'ground_truth'])
 class AucTest(GiskardTest):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
@@ -137,7 +138,7 @@ class AucTest(GiskardTest):
         return test_auc(self.actual_slice, self.model, self.threshold)
 
 
-@test(name='AUC', tags=['performance'])
+@test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
@@ -184,7 +185,7 @@ def test_auc(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     )
 
 
-@test(name='F1', tags=['performance', 'classification'])
+@test(name='F1', tags=['performance', 'classification', 'ground_truth'])
 def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
@@ -211,7 +212,7 @@ def test_f1(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_classification_score(f1_score, actual_slice, model, threshold)
 
 
-@test(name='Accuracy', tags=['performance'])
+@test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
 def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
@@ -238,7 +239,7 @@ def test_accuracy(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_accuracy_score(actual_slice, model, threshold)
 
 
-@test(name='Precision', tags=['performance'])
+@test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
 def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -264,7 +265,7 @@ def test_precision(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_classification_score(precision_score, actual_slice, model, threshold)
 
 
-@test(name='Recall', tags=['performance'])
+@test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
 def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Recall is higher than a threshold for a given slice
@@ -290,7 +291,7 @@ def test_recall(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_classification_score(recall_score, actual_slice, model, threshold)
 
 
-@test(name='RMSE', tags=['performance'])
+@test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
 def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model RMSE is lower than a threshold
@@ -316,7 +317,7 @@ def test_rmse(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_regression_score(_get_rmse, actual_slice, model, threshold)
 
 
-@test(name='MAE', tags=['performance'])
+@test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
 def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model Mean Absolute Error is lower than a threshold
@@ -345,7 +346,7 @@ def test_mae(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_regression_score(mean_absolute_error, actual_slice, model, threshold)
 
 
-@test(name='R2', tags=['performance'])
+@test(name='R2', tags=['performance', 'regression', 'ground_truth'])
 def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     """
     Test if the model R-Squared is higher than a threshold
@@ -372,7 +373,7 @@ def test_r2(actual_slice: Dataset, model: Model, threshold: float = 1.0):
     return _test_regression_score(r2_score, actual_slice, model, threshold, r2=True)
 
 
-@test(name='Accuracy difference', tags=['performance'])
+@test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                        threshold: float = 0.1):
     """
@@ -414,7 +415,7 @@ def test_diff_accuracy(actual_slice: Dataset, reference_slice: Dataset, model: M
     )
 
 
-@test(name='F1 difference', tags=['performance'])
+@test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                  threshold: float = 0.1):
     """
@@ -451,7 +452,7 @@ def test_diff_f1(actual_slice: Dataset, reference_slice: Dataset, model: Model,
     )
 
 
-@test(name='Precision difference', tags=['performance'])
+@test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                         threshold: float = 0.1):
     """
@@ -492,7 +493,7 @@ def test_diff_precision(actual_slice: Dataset, reference_slice: Dataset, model: 
     )
 
 
-@test(name='Recall difference', tags=['performance'])
+@test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                      threshold: float = 0.1):
     """
@@ -528,7 +529,7 @@ def test_diff_recall(actual_slice: Dataset, reference_slice: Dataset, model: Mod
     )
 
 
-@test(name='F1 Reference Actual difference', tags=['performance'])
+@test(name='F1 Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Dataset, model: Model,
                                   threshold: float = 0.1):
     """
@@ -565,7 +566,7 @@ def test_diff_reference_actual_f1(reference_slice: Dataset, actual_slice: Datase
     )
 
 
-@test(name='Accuracy Reference Actual difference', tags=['performance'])
+@test(name='Accuracy Reference Actual difference', tags=['performance', 'classification', 'ground_truth'])
 def test_diff_reference_actual_accuracy(
         reference_slice: Dataset, actual_slice: Dataset, model: Model, threshold: float = 0.1
 ):
@@ -608,7 +609,7 @@ def test_diff_reference_actual_accuracy(
     )
 
 
-@test(name='Accuracy Reference Actual difference', tags=['performance'])
+@test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model,
                    threshold: float = 0.1):
     """
@@ -645,7 +646,7 @@ def test_diff_rmse(actual_slice: Dataset, reference_slice: Dataset, model: Model
     )
 
 
-@test(name='RMSE Reference Actual difference', tags=['performance'])
+@test(name='RMSE Reference Actual difference', tags=['performance', 'regression', 'ground_truth'])
 def test_diff_reference_actual_rmse(reference_slice: Dataset, actual_slice: Dataset, model: Model,
                                     threshold: float = 0.1):
     """
