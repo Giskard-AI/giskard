@@ -7,7 +7,7 @@ class SupportedModelTypes(Enum):
     REGRESSION = "regression"
 
 
-class SupportedColumnMeanings(Enum):
+class SupportedFeatureTypes(Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"
@@ -28,5 +28,5 @@ class ModelMeta:
 class DatasetMeta:
     name: Optional[str]
     target: str
-    column_meanings: Dict[str, str]
+    feature_types: Dict[str, str]
     column_types: Dict[str, str]
