@@ -1,9 +1,12 @@
 import re
+from pathlib import Path
 
 import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
+
+resource_dir: Path = Path.home() / '.giskard'
 
 headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
 
