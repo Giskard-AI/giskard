@@ -6,7 +6,7 @@ import type {InspectionSettings} from './../../../domain/inspection-settings';
 export interface ProjectPostDTO {
     description: string;
     id?: number | null;
-    inspectionSettings: InspectionSettings;
+    inspectionSettings?: InspectionSettings | null;
     key?: string | null;
     name: string;
 }

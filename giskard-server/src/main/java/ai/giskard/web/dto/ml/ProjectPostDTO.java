@@ -22,6 +22,7 @@ public class ProjectPostDTO {
     private String name;
 
     @NotNull
+    @UINullable
     private InspectionSettings inspectionSettings = new InspectionSettings();
 
     @NotNull
