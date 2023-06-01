@@ -38,6 +38,7 @@ dev = [
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
+    "imbalanced-learn>=0.10.1",
 ]
 proto = [
     "grpcio-tools>=1.46.3",

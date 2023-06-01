@@ -604,6 +604,18 @@ requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 summary = "Getting image size from png/jpeg/jpeg2000/gif file"
 
 [[package]]
+name = "imbalanced-learn"
+version = "0.10.1"
+summary = "Toolbox for imbalanced dataset in machine learning."
+dependencies = [
+    "joblib>=1.1.1",
+    "numpy>=1.17.3",
+    "scikit-learn>=1.0.2",
+    "scipy>=1.3.2",
+    "threadpoolctl>=2.0.0",
+]
+
+[[package]]
 name = "importlib-metadata"
 version = "6.6.0"
 requires_python = ">=3.7"
@@ -2517,7 +2529,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "proto", "test"]
-content_hash = "sha256:c5c9a4550ec763ebf8b33738c264bea0a5b6cccb8de24ea96252f5bdca2834e7"
+content_hash = "sha256:4485b9d17004fb3d04f3135cfafe312df0523d70be45c55a6325e549fd3e21cf"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -3236,6 +3248,10 @@ content_hash = "sha256:c5c9a4550ec763ebf8b33738c264bea0a5b6cccb8de24ea96252f5bdc
 "imagesize 1.4.1" = [
     {url = "https://files.pythonhosted.org/packages/a7/84/62473fb57d61e31fef6e36d64a179c8781605429fd927b5dd608c997be31/imagesize-1.4.1.tar.gz", hash = "sha256:69150444affb9cb0d5cc5a92b3676f0b2fb7cd9ae39e947a5e11a36b4497cd4a"},
     {url = "https://files.pythonhosted.org/packages/ff/62/85c4c919272577931d407be5ba5d71c20f0b616d31a0befe0ae45bb79abd/imagesize-1.4.1-py2.py3-none-any.whl", hash = "sha256:0d8d18d08f840c19d0ee7ca1fd82490fdc3729b7ac93f49870406ddde8ef8d8b"},
+]
+"imbalanced-learn 0.10.1" = [
+    {url = "https://files.pythonhosted.org/packages/11/80/911e581a4fc973179e3a48c1272435aa09cce21c12af122c3886d3d35cb5/imbalanced_learn-0.10.1-py3-none-any.whl", hash = "sha256:7b630516696c09b2b5a5398df8db19d73db0c13fa065d2f1407a6d2037794bc6"},
+    {url = "https://files.pythonhosted.org/packages/be/91/2af86542b2de8fee503612d193903186514c1e248579b42056473d0eb358/imbalanced-learn-0.10.1.tar.gz", hash = "sha256:bc7609619ec3c38c442292928239ad3d10b5deb0af8a29c83822b7b57b319f8b"},
 ]
 "importlib-metadata 6.6.0" = [
     {url = "https://files.pythonhosted.org/packages/0b/1f/9de392c2b939384e08812ef93adf37684ec170b5b6e7ea302d9f163c2ea0/importlib_metadata-6.6.0.tar.gz", hash = "sha256:92501cdf9cc66ebd3e612f1b4f0c0765dfa42f0fa38ffb319b6bd84dd675d705"},
