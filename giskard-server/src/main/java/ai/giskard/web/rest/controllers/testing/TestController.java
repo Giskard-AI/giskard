@@ -120,14 +120,16 @@ public class TestController {
 
     @GetMapping("/test-templates")
     public Object getTestTemplates() throws InvalidProtocolBufferException {
-        TestRegistryResponse response = mlWorkerService.createClient().getBlockingStub().getTestRegistry(Empty.newBuilder().build());
+        try (MLWorkerClient client = mlWorkerService.createClient()) {
+            TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
 
-        return JsonFormat.printer().print(response);
+            return JsonFormat.printer().print(response);
+        }
     }
 
     @PostMapping("/run-test")
     @Transactional
-    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) throws IOException {
+    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = new HashMap<>();
