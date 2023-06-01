@@ -16,7 +16,7 @@
             <p class="text-center">
 
                 <code class="text-body-1">
-                    giskard worker start -u {{ giskardAddress }}
+                    giskard worker start -u {{ apiURL }}
                 </code>
                 <v-btn class="ml-1" x-small icon @click="copyMLWorkerCommand">
                     <v-icon>mdi-content-copy</v-icon>
@@ -36,15 +36,15 @@ import {computed} from "vue";
 import {useMainStore} from "@/stores/main";
 import {copyToClipboard} from "@/global-keys";
 import {useRoute} from "vue-router/composables";
+import {apiURL} from "@/env";
 
 const appSettings = computed(() => mainStore.appSettings);
 
 const mainStore = useMainStore();
 const route = useRoute();
-const giskardAddress = computed(() => window.location.origin);
 
 async function copyMLWorkerCommand() {
-    await copyToClipboard(`giskard worker start -u ${giskardAddress.value}`);
+    await copyToClipboard(`giskard worker start -u ${apiURL}`);
     mainStore.addNotification({content: 'Copied', color: '#262a2d'});
 }
 </script>
