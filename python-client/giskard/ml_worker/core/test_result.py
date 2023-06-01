@@ -23,6 +23,13 @@ class PartialUnexpectedCounts:
 
 @dataclass
 class TestResult:
+    """
+    Dataclass representing the result of a test
+
+    :param passed: A boolean indicating whether the test passed or not
+    :param messages: A list of TestMessage objects containing information about the test execution
+    :param metric: A float representing the test metric
+    """
     passed: bool = False
     messages: List[TestMessage] = field(default_factory=list, repr=False)
     props: Dict[str, str] = field(default_factory=dict, repr=False)
