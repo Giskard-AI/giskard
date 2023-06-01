@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 class MLWorker:
     socket_file_location: str
-    tunnel: MLWorkerBridge
+    tunnel: MLWorkerBridge = None
     grpc_server: Server
 
     def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None) -> None:
-        client = GiskardClient(backend_url, api_key) if api_key != 'INTERNAL_ML_WORKER' else None
+        client = None if is_server else GiskardClient(backend_url, api_key)
 
         server, address = self._create_grpc_server(client, is_server)
         if not is_server:
@@ -62,7 +62,8 @@ class MLWorker:
     async def start(self):
         load_plugins()
         await self.grpc_server.start()
-        await self.tunnel.start()
+        if self.tunnel:
+            await self.tunnel.start()
         await self.grpc_server.wait_for_termination()
 
         for t in asyncio.all_tasks():
@@ -71,4 +72,5 @@ class MLWorker:
 
     async def stop(self):
         await self.grpc_server.stop(5)
-        self.tunnel.stop()
+        if self.tunnel:
+            self.tunnel.stop()

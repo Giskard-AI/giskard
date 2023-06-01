@@ -64,13 +64,13 @@ def start_stop_options(fn):
     )(fn)
     return fn
 
+
 @worker.command("start")
 @start_stop_options
 @click.option(
     "--key",
     "-k",
     "api_key",
-    prompt="Enter Giskard server API key",
     envvar='GSK_API_KEY',
     help="Giskard server API key",
 )
@@ -93,11 +93,19 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
     - client: ML Worker acts as a client and should connect to a running Giskard instance
         by specifying this instance's host and port.
     """
+    api_key = initialize_api_key(api_key, is_server)
+    _start_command(is_server, url, api_key, is_daemon)
 
+
+def initialize_api_key(api_key, is_server):
+    if is_server:
+        return None
+    if not api_key:
+        api_key = click.prompt("Enter Giskard server API key", type=str)
     if 'GSK_API_KEY' in os.environ:
         # delete API key environment variable so that it doesn't get leaked when the test code is executed
         del os.environ['GSK_API_KEY']
-    _start_command(is_server, url, api_key, is_daemon)
+    return api_key
 
 
 def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
@@ -173,10 +181,11 @@ def stop_command(is_server, url, stop_all):
     "--api-key",
     "-k",
     "api_key",
-    prompt="Enter Giskard server API key",
     help="Giskard server API key"
 )
 def restart_command(is_server, url, api_key):
+    api_key = initialize_api_key(api_key, is_server)
+
     _find_and_stop(is_server, url)
     _start_command(is_server, url, api_key, is_daemon=True)
 
