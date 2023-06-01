@@ -16,16 +16,18 @@
     </v-tab>
     <v-tabs-items v-model="tab">
       <v-tab-item v-for="execution in executions" :transition="false">
-        <div class="pt-5">
-          <span class="text-h6">Inputs</span>
+        <div class="pl-4">
+          <div class="pt-5">
+            <span class="text-h6">Inputs</span>
+          </div>
+          <p v-for="[input, value] in Object.entries(execution.inputs)">
+            {{ input }} -> {{ value }}
+          </p>
+          <div class="pt-5">
+            <span class="text-h6">Results</span>
+          </div>
+          <TestSuiteExecutionResults :execution="execution" :registry="props.registry"/>
         </div>
-        <p v-for="[input, value] in Object.entries(execution.inputs)">
-          {{ input }} -> {{ value }}
-        </p>
-        <div class="pt-5">
-          <span class="text-h6">Results</span>
-        </div>
-        <TestSuiteExecutionResults :execution="execution"/>
       </v-tab-item>
     </v-tabs-items>
   </v-tabs>
@@ -34,13 +36,14 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from 'vue';
-import {TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {TestCatalogDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
 import {api} from '@/api';
 import TestSuiteExecutionResults from '@/views/main/project/TestSuiteExecutionResults.vue';
 
 const props = defineProps<{
   projectId: number,
-  suiteId: number
+  suiteId: number,
+  registry: TestCatalogDTO
 }>();
 
 const tab = ref<any>(null);
