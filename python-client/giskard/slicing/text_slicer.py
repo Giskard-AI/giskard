@@ -6,7 +6,10 @@ import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slice_function import SliceFunction
+from giskard.slicing.bruteforce_slicer import BruteForceSlicer
 from giskard.slicing.category_slicer import CategorySlicer
+from giskard.slicing.tree_slicer import DecisionTreeSlicer
+from giskard.slicing.multiscale_slicer import MultiscaleSlicer
 
 from .base import BaseSlicer
 from .opt_slicer import OptSlicer
@@ -50,7 +53,9 @@ class TextSlicer(BaseSlicer):
         dataset_with_meta = Dataset(data, target=self.dataset.target, column_types=column_types)
 
         # Run a slicer for numeric
-        slicer = OptSlicer(dataset_with_meta, target=target)
+        # slicer = OptSlicer(dataset_with_meta, target=target)
+        # slicer = BruteForceSlicer(dataset_with_meta, target=target)
+        slicer = MultiscaleSlicer(dataset_with_meta, target=target)
         for col in filter(lambda x: column_types[x] == "numeric", meta.columns):
             slices.extend(slicer.find_slices([col]))
 
@@ -109,6 +114,9 @@ def _calculate_text_metadata(feature_data: pd.Series):
     )
 
 
+_cache = {}
+
+
 # @TODO: this is a temporary hack, will be removed once we have a proper way to handle metadata
 class TextMetadataSliceFunction(SliceFunction):
     row_level = False
@@ -119,7 +127,10 @@ class TextMetadataSliceFunction(SliceFunction):
 
     def __call__(self, data: pd.DataFrame):
         # @TODO: this is the slowest part, should disappear once we support metadata
-        meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
+        meta = _cache.get(id(data))
+        if meta is None:
+            meta = _calculate_text_metadata(data[self.feature]).add_prefix("__gsk__meta__")
+            _cache[id(data)] = meta
 
         data_with_meta = data.join(meta)
         data_filtered = self.query.run(data_with_meta)
