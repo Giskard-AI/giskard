@@ -1,3 +1,4 @@
+from functools import cache
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
@@ -22,7 +23,6 @@ class RobustnessIssueInfo:
 
 class RobustnessIssue(Issue):
     group = "Robustness"
-    group_message = "Your model seems to be sensitive to input perturbation. Check the issues below to make sure that they do not affect your use case."
 
     info: RobustnessIssueInfo
 
@@ -49,6 +49,7 @@ class RobustnessIssue(Issue):
     def description(self) -> str:
         return ""
 
+    @cache
     def examples(self, n=3) -> pd.DataFrame:
         rng = np.random.default_rng(142)
         idx = rng.choice(self.info.fail_data_idx, min(len(self.info.fail_data_idx), n), replace=False)
