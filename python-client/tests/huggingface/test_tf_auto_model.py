@@ -1,21 +1,22 @@
 from transformers import AutoTokenizer, TFAutoModel # This is old code
 #from transformers import AutoTokenizer, TFBertModel # This is updated code
-import tensorflow as tf
-import numpy as np
-from sklearn.utils import shuffle
-import pandas as pd
-from os.path import join
 
-from .classify import get_inputs
+from os.path import join, dirname
+import pandas as pd
+import tensorflow as tf
+
+import sys
+
+import numpy as np
 
 import logging
 
 logging.basicConfig(level=logging.INFO)
-    
+
 def load_transformer_models(bert, special_tokens):
 	"""
 	Objective: load the tokenizer we'll use and also the transfomer model
-	
+
 	Inputs:
 		- bert, str: the name of models look at https://huggingface.co/models for all models
 		- special_tokens, list: list of str, where they are tokens to be considered as one token
@@ -31,7 +32,7 @@ def load_transformer_models(bert, special_tokens):
 
 	transformer_model = TFAutoModel.from_pretrained(bert) # This is old code
 	#transformer_model = TFBertModel.from_pretrained(bert) # This is updated code
-	
+
 	return tokenizer, transformer_model
 
 
@@ -39,7 +40,7 @@ def load_transformer_models(bert, special_tokens):
 def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model=False, PATH_MODELS=False):
 	"""
 	Get a model from scratch or if we have weights load it to the model.
-	
+
 	Inputs:
 		- max_length, int: the input shape of the data
 		- transformer_model, transformers.modeling_tf_distilbert.TFDistilBertModel: the transformer model that
@@ -48,23 +49,22 @@ def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model=Fa
 		- num_labels, int: the number of intents
 		- name_model (optional), str: look for an already existing model should be the entire path
 	Outputs:
-		- model, tensorflow.python.keras.engine.functional.Functional: the final model we'll train 
+		- model, tensorflow.python.keras.engine.functional.Functional: the final model we'll train
 	"""
 
 	logging.info('Creating architecture...')
 
 	input_ids_in = tf.keras.layers.Input(shape=(max_length,), name='input_token', dtype='int32')
-	input_masks_in = tf.keras.layers.Input(shape=(max_length,), name='masked_token', dtype='int32') 
+	input_masks_in = tf.keras.layers.Input(shape=(max_length,), name='masked_token', dtype='int32')
 
 	embedding_layer = transformer_model(input_ids_in, attention_mask=input_masks_in)[0][:,0,:] # This is old code
 	#embedding_layer = transformer_model.bert(input_ids_in, attention_mask=input_masks_in)[0][:,0,:] # This is updated code
 	output_layer = tf.keras.layers.Dropout(rate=rate, name='embedding_do_layer')(embedding_layer)
 	transf_out = tf.keras.layers.Flatten()(output_layer)
-	
+
 	output = tf.keras.layers.Dense(num_labels, activation='sigmoid')(transf_out)
 
 	model = tf.keras.Model(inputs=[input_ids_in, input_masks_in], outputs = output)
-	#model.summary()
 
 	if name_model:
 		try:
@@ -80,7 +80,7 @@ def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model=Fa
 def get_inputs(tokenizer, sentences, max_length):
     """
     Objective: tokenize the sentences to get the inputs
-    
+
     Inputs:
         - tokenizer, transformers.tokenization_distilbert.DistilBertTokenizer: the tokenizer of the model
         - sentences, np.array: the sentences pre-processed to classify the intents
@@ -88,7 +88,7 @@ def get_inputs(tokenizer, sentences, max_length):
     Outputs:
         - inputs, list: list of ids and masks from the tokenizer
     """
-    inputs = tokenizer.batch_encode_plus(list(sentences), add_special_tokens=True, max_length=max_length, 
+    inputs = tokenizer.batch_encode_plus(list(sentences), add_special_tokens=True, max_length=max_length,
                                     padding='max_length',  return_attention_mask=True,
                                     return_token_type_ids=True, truncation=True)
 
@@ -96,45 +96,13 @@ def get_inputs(tokenizer, sentences, max_length):
     masks = np.asarray(inputs['attention_mask'], dtype='int32')
 
     inputs = [ids, masks]
-    
+
     return inputs
 
-"""### Imports"""
-
-from giskard.giskard_client import GiskardClient
-from os import getcwd
-from os.path import join, dirname
-import pandas as pd
-import tensorflow as tf
-
-
-PATH_REPO = '/content/drive/MyDrive/complaint_debias'
-
-import sys
-sys.path.append(PATH_REPO)
-
-import numpy as np
-
-import keras.backend as K
-import itertools
 
 pd.set_option('display.max_colwidth', None)
 
 def test_tf_auto_model():
-
-    """### Load test set"""
-
-    data = pd.read_csv(join(PATH_REPO, 'data', 'complaint_test_tr.csv'))
-    data.loc[:, 'text'] = data.loc[:, 'text_pp'].values
-    data = data[['label', 'text']]
-    data.loc[:, 'label'] = data.loc[:, 'label'].astype(str)
-    data.loc[:, 'label'] = np.where(data.loc[:, 'label'] == 'Complaint', 1, 0)
-    data.head()
-
-    """### Load test examples"""
-
-    # fairness
-
     data_dict = {
         "I’m not buying from this online shop ever again": 1,
         "I haven’t seen anything good made by this company": 1,
@@ -159,14 +127,12 @@ def test_tf_auto_model():
     """### 🎗️ If we add the model creation part inside the predict function, a new model is created everytime the function runs as  'comp_debiased_101.h5'  is not available in the giskard path. So we have extracted the model creation part out of the predict function"""
 
     models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
-    data_path = {'complaints': join(PATH_REPO, 'data')}
     special_tokens = []
     max_length = {'complaints': 64}
     intent = 'complaints'
     tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
     model = get_model(max_length.get(intent), transformer_model, num_labels=1,
-                  name_model=models.get(intent),
-                  PATH_MODELS=join(data_path.get(intent)))
+                  name_model=models.get(intent))
 
     """### Wrapper function (See Giskard model upload docs)
     
@@ -174,36 +140,24 @@ def test_tf_auto_model():
     """
 
     def predict_proba(data):
-      # models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
-      # data_path = {'complaints': join(PATH_REPO, 'data')}
-      # special_tokens = []
-      # max_length = {'complaints': 64}
-      # intent = 'complaints'
-      # tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
-      # model = get_model(max_length.get(intent), transformer_model, num_labels=1,
-      #                 name_model=models.get(intent),
-      #                 PATH_MODELS=join(data_path.get(intent)))
-      sentences = data.loc[:, f'text'].astype(str).values
-      inputs = get_inputs(tokenizer, list(sentences), max_length.get(intent))
-      y = model.predict(inputs)
-      return np.column_stack((y,1-y))
+         #models = {'complaints': 'comp_debiased_10'} #model_complaints_mbert_20220317
+         #data_path = {'complaints': join(PATH_REPO, 'data')}
+         #special_tokens = []
+         #max_length = {'complaints': 64}
+         #intent = 'complaints'
+         #tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
+         #model = get_model(max_length.get(intent), transformer_model, num_labels=1,
+         #                name_model=models.get(intent),
+         #                PATH_MODELS=join(data_path.get(intent)))
 
-    """### Access Giskard API 
-    
-    - URL found in EC2 instance. Port 19000 
-    - Generate token from Giskard admin interface
-    """
+        sentences = data.loc[:, f'text'].astype(str).values
+        inputs = get_inputs(tokenizer, list(sentences), max_length.get(intent))
+        y = model.predict(inputs)
+        return np.column_stack((y,1-y))
 
-    url = "https://dev.giskard.ai"
-    token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJBUEkiLCJhdXRoIjoiUk9MRV9BRE1JTiIsImV4cCI6MTY3MDkzOTc1N30.rAAgn5Ji5QyaEkcf6CQzwbA-Mf97ibY8PNVoCajtbwU"
-    client = GiskardClient(url, token)
+    print(predict_proba(data))
 
-    Complaints = client.create_project("complaints", "Comlpaints", "This project is dedicated to the inspection of the debiased version of the Complaints classifier.")
-    #Complaints = client.get_project("complaints")
-
-    """### Uploading model & dataset"""
-
-    Complaints.upload_model_and_df(
+    """Complaints.upload_model_and_df(
         prediction_function=predict_proba,
         model_type='classification',
         df=data,
@@ -218,8 +172,6 @@ def test_tf_auto_model():
         dataset_name="translation"
         )
 
-    """## 🎗️ A small test to ensure that the model is deterministic"""
-
     def run_prediction(data, function):
         feature_names = ['text']
         test_df = data[feature_names][:5]
@@ -232,7 +184,7 @@ def test_tf_auto_model():
       iter2 = run_prediction(data, predict_proba)
       assert np.array_equal(iter1, iter2), "Model is stochastic and not deterministic"
 
-    test_deterministic_model()
+    test_deterministic_model()"""
 
 if __name__=="__main__":
     test_tf_auto_model()
