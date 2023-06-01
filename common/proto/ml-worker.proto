@@ -261,6 +261,7 @@ message TestSuiteResultMessage {
 message ArtifactRef{
   string project_key = 1;
   string id = 2;
+  optional bool sample = 3;
 }
 
 message Chunk {

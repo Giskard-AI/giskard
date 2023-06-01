@@ -17,6 +17,7 @@ public class InspectionDTO {
     private DatasetDTO dataset;
     private ModelDTO model;
     private String name;
+    private boolean sample;
 
     @JsonAlias("created_date")
     private Instant createdDate;

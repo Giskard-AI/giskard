@@ -15,4 +15,5 @@ public class InspectionCreateDTO {
     private String name;
     private UUID modelId;
     private UUID datasetId;
+    private boolean sample;
 }
