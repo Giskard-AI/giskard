@@ -1,6 +1,6 @@
 <template>
   <div class="vertical-container">
-    <v-container v-if="files.length > 0" fluid class="vc">
+    <v-container v-if="projectArtifactsStore.getDatasets.length > 0" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4">Name</v-col>
@@ -10,7 +10,7 @@
           <v-col cols="1">Id</v-col>
           <v-col cols="2">Actions</v-col>
         </v-row>
-        <v-expansion-panel v-for="f in files" :key="f.id">
+        <v-expansion-panel v-for="f in projectArtifactsStore.getDatasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold">
@@ -53,12 +53,14 @@
 
 <script setup lang="ts">
 import { api } from '@/api';
-import { DatasetDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import { onActivated, ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useMainStore } from "@/stores/main";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+
+const projectArtifactsStore = useProjectArtifactsStore();
 
 const GISKARD_INDEX_COLUMN_NAME = '_GISKARD_INDEX_';
 
@@ -69,22 +71,16 @@ const props = withDefaults(defineProps<{
   isProjectOwnerOrAdmin: false
 });
 
-const files = ref<DatasetDTO[]>([]);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
-
-const loadDatasets = async () => {
-  files.value = await api.getProjectDatasets(props.projectId)
-  files.value.sort((a, b) => new Date(a.createdDate) < new Date(b.createdDate) ? 1 : -1);
-}
 
 async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', { id });
 
   let messageDTO = await api.deleteDatasetFile(id);
   useMainStore().addNotification({ content: messageDTO.message });
-  await loadDatasets();
+  await projectArtifactsStore.loadDatasets();
 }
 
 function downloadDataFile(id: string) {
@@ -120,15 +116,11 @@ async function peakDataFile(id: string) {
 async function renameDataset(id: string, name: string) {
   mixpanel.track('Update dataset name', { id });
   const savedDataset = await api.editDatasetName(id, name);
-  const idx = files.value.findIndex(f => f.id === id);
-  files.value[idx] = savedDataset;
-  files.value = [...files.value];
+  projectArtifactsStore.updateDataset(savedDataset);
 }
 
-onActivated(() => loadDatasets());
-
-defineExpose({
-  loadDatasets
+onBeforeMount(async () => {
+  await projectArtifactsStore.setProjectId(props.projectId);
 })
 </script>
 
