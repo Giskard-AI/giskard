@@ -59,11 +59,29 @@
 
             <v-card-actions>
                 <v-spacer></v-spacer>
+
+                <v-tooltip bottom v-if="testSuiteInputs.length === 1 && !running">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn
+                            color="secondary"
+                            text
+                            @click="tryTestSuite(close)"
+                            v-bind="attrs" v-on="on"
+                            :disabled="!isAllParamsSet()"
+                        >
+                            <v-icon>science</v-icon>
+                            Try test suite
+                        </v-btn>
+                    </template>
+                    <span>Try out the test suite on a dataset sample.<br/>The execution result won't be saved!</span>
+                </v-tooltip>
                 <v-btn
-                        color="primary"
-                        text
-                        @click="executeTestSuite(close)"
-                        :disabled="!isAllParamsSet() || running"
+                    color="primary"
+                    text
+                    @click="executeTestSuite(close)"
+                    :disabled="!isAllParamsSet()"
+                    :loading="running"
+
                 >
                     <v-icon>arrow_right</v-icon>
                     Run test suite
@@ -186,6 +204,23 @@ async function executeTestSuite(close) {
       running.value = false;
       close();
   }
+}
+
+async function tryTestSuite(close) {
+    mixpanel.track('Try test suite', {suiteId: props.suiteId});
+    running.value = true;
+
+    try {
+        const input = testSuiteInputs.value[0];
+        await testSuiteStore.tryTestSuite([
+            ...Object.values(input.globalInput),
+            ...Object.values(input.sharedInputs)
+        ]);
+    } finally {
+        running.value = false;
+        await router.push({name: 'test-suite-overview'})
+        close();
+    }
 }
 </script>
 

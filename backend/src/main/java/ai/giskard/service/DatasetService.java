@@ -4,11 +4,9 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.web.dto.DatasetMetadataDTO;
+import ai.giskard.utils.FileUtils;
 import ai.giskard.web.dto.DatasetPageDTO;
-import ai.giskard.web.dto.FeatureMetadataDTO;
 import ai.giskard.web.dto.RowFilterDTO;
-import ai.giskard.web.dto.ml.DatasetDetailsDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
@@ -22,7 +20,6 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,14 +37,16 @@ public class DatasetService {
      * Read table from file
      *
      * @param datasetId id of the dataset
+     * @param sample    whenever only reading the sample file or not
      * @return the table
      */
-    public Table readTableByDatasetId(@NotNull UUID datasetId) {
+    public Table readTableByDatasetId(@NotNull UUID datasetId, boolean sample) {
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
-        Path filePath = locationService.datasetsDirectory(dataset.getProject().getKey())
-            .resolve(dataset.getId().toString()).resolve("data.csv.zst");
+
+        Path filePath = getDataFile(dataset, sample);
+
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
         try {
@@ -65,28 +64,10 @@ public class DatasetService {
         return table;
     }
 
-    /**
-     * Get details of dataset
-     *
-     * @param id dataset's id
-     * @return details dto of the dataset
-     */
-    public DatasetDetailsDTO getDetails(@NotNull UUID id) {
-        Table table = readTableByDatasetId(id);
-        DatasetDetailsDTO details = new DatasetDetailsDTO();
-        details.setNumberOfRows(table.rowCount());
-        details.setColumns(table.columnNames());
-        return details;
-    }
-
-    public DatasetMetadataDTO getMetadata(@NotNull UUID id) {
-        Dataset dataset = this.datasetRepository.getMandatoryById(id);
-        DatasetMetadataDTO metadata = new DatasetMetadataDTO();
-        metadata.setId(id);
-        metadata.setColumnDtypes(dataset.getColumnDtypes());
-        metadata.setTarget(dataset.getTarget());
-        metadata.setColumnTypes(dataset.getColumnTypes());
-        return metadata;
+    private Path getDataFile(@NotNull Dataset dataset, boolean sample) {
+        return locationService.datasetsDirectory(dataset.getProject().getKey())
+            .resolve(dataset.getId().toString())
+            .resolve(FileUtils.getFileName("data", "csv.zst", sample));
     }
 
     /**
@@ -97,8 +78,9 @@ public class DatasetService {
      * @param rangeMax max range of the dataset
      * @return filtered table
      */
-    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax, RowFilterDTO rowFilter) throws IOException {
-        Table table = readTableByDatasetId(id);
+    public DatasetPageDTO getRows(@NotNull UUID id, @NotNull int rangeMin, @NotNull int rangeMax,
+                                  RowFilterDTO rowFilter, boolean sample) throws IOException {
+        Table table = readTableByDatasetId(id, sample);
         table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
 
         if (rowFilter.getFilter() != null) {
@@ -116,28 +98,8 @@ public class DatasetService {
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()
             .map(row -> row.columnNames().stream()
-                .collect(Collectors.toMap(Function.identity(), row::getObject)))
+                .<Map<String, Object>>collect(HashMap::new, (m, column) -> m.put(column, row.getObject(column)), Map::putAll))
             .toList());
-    }
-
-    public List<FeatureMetadataDTO> getFeaturesWithDistinctValues(UUID datasetId) {
-        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        permissionEvaluator.validateCanReadProject(dataset.getProject().getId());
-
-        Table data = readTableByDatasetId(datasetId);
-
-        return dataset.getColumnTypes().entrySet().stream().map(featureAndType -> {
-            String featureName = featureAndType.getKey();
-            ColumnType type = featureAndType.getValue();
-            FeatureMetadataDTO meta = new FeatureMetadataDTO();
-            meta.setType(type);
-            meta.setName(featureName);
-            if (type == ColumnType.CATEGORY) {
-                meta.setValues(data.column(featureName).unique().asStringColumn().asSet());
-            }
-            return meta;
-
-        }).toList();
     }
 
     public Dataset renameDataset(UUID datasetId, String name) {

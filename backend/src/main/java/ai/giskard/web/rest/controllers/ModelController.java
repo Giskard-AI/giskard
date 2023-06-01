@@ -121,7 +121,8 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/predict")
-    public PredictionDTO predict(@PathVariable @NotNull UUID modelId, @RequestBody @NotNull PredictionInputDTO data) {
+    public PredictionDTO predict(@PathVariable @NotNull UUID modelId,
+                                 @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
