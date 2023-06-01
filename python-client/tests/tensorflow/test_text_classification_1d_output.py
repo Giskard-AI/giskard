@@ -5,7 +5,8 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import tests.utils
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
+from giskard.models.tensorflow import TensorFlowModel
 
 dataset = tf.keras.utils.get_file("aclImdb",
                                   "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",

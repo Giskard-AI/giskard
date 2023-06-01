@@ -1,8 +1,9 @@
 import tensorflow as tf
 from tensorflow import keras
 import pytest
-from giskard import TensorFlowModel, Dataset
+from giskard import Dataset
 import tests.utils
+from giskard.models.tensorflow import TensorFlowModel
 
 
 # Define a simple sequential model

@@ -24,6 +24,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.path_utils import get_size
 from giskard.settings import settings
+from ..utils import np_types_to_native
 
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
@@ -111,7 +112,7 @@ class BaseModel(ABC):
             name=name if name is not None else self.__class__.__name__,
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
-            classification_labels=classification_labels,
+            classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
             classification_threshold=classification_threshold,

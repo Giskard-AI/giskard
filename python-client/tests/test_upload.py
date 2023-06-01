@@ -3,7 +3,7 @@ import re
 import pytest
 
 from giskard import Dataset
-from giskard import SKLearnModel
+from giskard.models.sklearn import SKLearnModel
 from tests.utils import MockedClient, match_model_id, match_url_patterns
 
 model_name = "uploaded model"
