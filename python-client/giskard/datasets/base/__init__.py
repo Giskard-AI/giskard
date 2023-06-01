@@ -351,7 +351,8 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             dict: A dictionary where the keys are the column names and the values are the corresponding data types as strings.
         """
-        return df.dtypes.apply(lambda x: x.name).to_dict()
+        return {key: value for key, value in df.dtypes.apply(lambda x: x.name).to_dict().items() if
+                not key.startswith(GISKARD_COLUMN_PREFIX)}
 
     def upload(self, client: GiskardClient, project_key: str):
         """
@@ -377,7 +378,7 @@ class Dataset(ColumnMetadataMixin):
                 compressed_size_bytes=compressed_size_bytes,
                 number_of_rows=len(self.df.index),
                 category_features={
-                    column: list(self.df[column].dropna().unique())
+                    column: list(self.df[column].dropna().unique().apply(lambda x: str(x)))
                     for column, column_type in self.meta.column_types.items()
                     if column_type == 'category'
                 }
@@ -438,7 +439,9 @@ class Dataset(ColumnMetadataMixin):
                     name=saved_meta["name"],
                     target=saved_meta["target"],
                     column_types=saved_meta["column_types"],
-                    column_dtypes=saved_meta["column_dtypes"],
+                    column_dtypes=saved_meta["number_of_rows"],
+                    number_of_rows=saved_meta["column_dtypes"],
+                    category_features=saved_meta["category_features"]
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
