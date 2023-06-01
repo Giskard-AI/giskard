@@ -1,7 +1,3 @@
----
-description: Easily install Giskard in GCP
----
-
 # Installation in GCP
 
 Installing Giskard in GCP enables you to inspect & test models that you created in the GCP environment (Workbench, Vertex AI, etc.). Here are the 3 steps to install Giskard in a new VM instance in GCP:
