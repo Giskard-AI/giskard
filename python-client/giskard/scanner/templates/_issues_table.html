@@ -6,8 +6,10 @@
                 {% include "_issues/performance.html" %}
             {% elif issue.__class__.__name__ == 'RobustnessIssue' %}
                 {% include "_issues/robustness.html" %}
-            {% elif issue.__class__.__name__ == 'OverconfidenceIssue' or issue.__class__.__name__ == 'UnderconfidenceIssue' %}
-                {% include "_issues/calibration.html" %}
+            {% elif issue.__class__.__name__ == 'OverconfidenceIssue' %}
+                {% include "_issues/overconfidence.html" %}
+            {% elif issue.__class__.__name__ == 'UnderconfidenceIssue' %}
+                {% include "_issues/underconfidence.html" %}
             {% else %}
                 {% include "_issues/default.html" %}
             {% endif %}

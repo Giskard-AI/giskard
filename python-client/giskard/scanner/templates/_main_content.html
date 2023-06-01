@@ -49,6 +49,17 @@
                     class</li>
             </ul>
             </p>
+            {% elif issues[0].__class__.__name__ == "UnderconfidenceIssue" %}
+            <p>
+                We found some data slices in your dataset containing significant number of underconfident predictions.
+                Underconfident predictions are raws with low confidence: the predicted label has a probability that is
+                very close to the probability of the next highest probability label. This happens when:
+            <ul class="list-disc ml-4 my-1">
+                <li>Not enough examples in the underconfident data slice in the training set</li>
+                <li>The model is too simple and struggles to capture the complexity of the underlying data</li>
+                <li>The underconfident data slice contains inherent noise or overlapping feature distributions</li>
+            </ul>
+            </p>
             {% else %}
             <p>Found issues for {{ issues[0].group }}</p>
             {% endif %}
