@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="inspection" fluid>
+  <v-container v-if="inspection" fluid class="vc">
     <v-row
         align="center"
         no-gutters
