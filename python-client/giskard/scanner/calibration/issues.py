@@ -60,7 +60,7 @@ class CalibrationIssue(Issue):
 
     @property
     def description(self):
-        return f"{self.info.slice_size} samples ({self.info.slice_size / len(self.dataset) * 100:.2f}%)"
+        return f"{len(self.info.fail_idx)} out of {self.info.slice_size} samples"
 
     def _features(self):
         if isinstance(self.info.slice_fn, QueryBasedSliceFunction):
