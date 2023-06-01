@@ -291,7 +291,7 @@ respectively.
   ::::
   :::::
 
-## Upload your model in the Giskard server
+## Upload your model to the Giskard server
 
 Uploading the model to the Giskard server enables you to:
 * Compare your model with others using a test suite.
