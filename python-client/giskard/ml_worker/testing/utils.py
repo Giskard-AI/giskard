@@ -1,6 +1,8 @@
 from enum import Enum
 from functools import wraps
+from typing import Optional
 
+from giskard.datasets.base import Dataset
 from giskard.core.core import SupportedModelTypes
 
 
@@ -30,3 +32,11 @@ def validate_classification_label(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def check_slice_not_empty(sliced_dataset: Dataset,
+                          dataset_name: Optional[str] = "",
+                          test_name: Optional[str] = ""):
+    if sliced_dataset.df.empty:
+        test_name = " in " + test_name
+        raise ValueError("The sliced " + dataset_name + test_name + " is empty.")
