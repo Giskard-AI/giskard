@@ -1,5 +1,7 @@
 package ai.giskard.web.rest.controllers.testing;
 
+import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestResult;
 import ai.giskard.domain.ml.testing.Test;
 import ai.giskard.domain.ml.testing.TestExecution;
@@ -129,7 +131,7 @@ public class TestController {
 
     @PostMapping("/run-test")
     @Transactional
-    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) {
+    public TestTemplateExecutionResultDTO runAdHocTest(@RequestBody RunAdhocTestRequest request) throws IOException {
         try (MLWorkerClient client = mlWorkerService.createClient()) {
             TestRegistryResponse response = client.getBlockingStub().getTestRegistry(Empty.newBuilder().build());
             Map<String, TestFunction> registry = new HashMap<>();
@@ -149,10 +151,14 @@ public class TestController {
                 argumentBuilder.setName(inputName);
                 switch (argumentTypes.get(inputName)) {
                     case "GiskardDataset":
-                        argumentBuilder.setDataset(grpcMapper.serialize(datasetRepository.getById(((Integer) inputValue).longValue())));
+                        Dataset dataset = datasetRepository.getById(((Integer) inputValue).longValue());
+                        mlWorkerService.upload(client, dataset);
+                        argumentBuilder.setDataset(grpcMapper.serialize(dataset));
                         break;
                     case "GiskardModel":
-                        argumentBuilder.setModel(grpcMapper.serialize(modelRepository.getById(((Integer) inputValue).longValue())));
+                        ProjectModel model = modelRepository.getById(((Integer) inputValue).longValue());
+                        mlWorkerService.upload(client, model);
+                        argumentBuilder.setModel(grpcMapper.serialize(model));
                         break;
                     case "float":
                         argumentBuilder.setFloat(Float.parseFloat(String.valueOf(inputValue)));
