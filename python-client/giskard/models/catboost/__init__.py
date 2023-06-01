@@ -10,8 +10,8 @@ class CatboostModel(Model):
 
         if classification_labels is None and hasattr(clf, 'classes_'):
             classification_labels = list(getattr(clf, 'classes_'))
-        if feature_names is None and hasattr(clf, 'feature_names_in_'):
-            feature_names = list(getattr(clf, 'feature_names_in_'))
+        if feature_names is None and hasattr(clf, 'feature_names_'):
+            feature_names = list(getattr(clf, 'feature_names_'))
 
         super().__init__(clf, model_type, name, data_preparation_function, feature_names,
                          classification_threshold, classification_labels)
