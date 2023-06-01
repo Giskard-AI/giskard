@@ -21,7 +21,7 @@
   <v-container v-else class="d-flex flex-column vc fill-height">
     <h1 class="pt-16">No tests has been added to the suite</h1>
     <v-btn tile class='mx-1'
-           :to="{name: 'project-tests-catalog', query: {suiteId: suite.id}}"
+           :to="{name: 'project-catalog', query: {suiteId: suite.id}}"
            color="primary">
       <v-icon>add</v-icon>
       Add test
