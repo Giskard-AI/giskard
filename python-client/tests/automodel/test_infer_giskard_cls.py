@@ -1,10 +1,10 @@
 from giskard.models import infer_giskard_cls
-from giskard.models.function import PredictionFunctionModel
-from giskard.models.sklearn import SKLearnModel
 from giskard.models.catboost import CatboostModel
-from giskard.models.pytorch import PyTorchModel
-from giskard.models.tensorflow import TensorFlowModel
+from giskard.models.function import PredictionFunctionModel
 from giskard.models.huggingface import HuggingFaceModel
+from giskard.models.pytorch import PyTorchModel
+from giskard.models.sklearn import SKLearnModel
+from giskard.models.tensorflow import TensorFlowModel
 
 
 def pytorch_model():
@@ -24,7 +24,6 @@ def tensorflow_model():
         keras.layers.Dropout(0.2),
         keras.layers.Dense(10, activation='softmax')
     ])
-    return model
 
 
 def huggingface_model():
