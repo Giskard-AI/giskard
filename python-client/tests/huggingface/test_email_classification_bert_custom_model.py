@@ -116,15 +116,15 @@ def test_email_classification_bert_custom_model():
     class tiny_bert_HuggingFaceModel(HuggingFaceModel):
         should_save_model_class = True
 
-        def clf_predict(self, data):
+        def model_predict(self, data):
             with torch.no_grad():
-                predictions = self.clf(**data).logits
+                predictions = self.model(**data).logits
             return predictions.detach().cpu().numpy()
 
     # ---------------------------------------------------------------------------------------
 
     my_model = tiny_bert_HuggingFaceModel(name=model_name,
-                                          clf=model,
+                                          model=model,
                                           feature_names=['Content'],
                                           model_type="classification",
                                           classification_labels=list(classification_labels_mapping.keys()),

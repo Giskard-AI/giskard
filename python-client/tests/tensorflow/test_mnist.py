@@ -35,7 +35,7 @@ def test_mnist():
     model.fit(train_images, train_labels, epochs=1)
 
     my_model = TensorFlowModel(name="TensorFlow_MNIST",
-                               clf=model,
+                               model=model,
                                model_type="classification",
                                classification_labels=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
 
