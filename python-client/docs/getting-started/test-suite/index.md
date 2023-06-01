@@ -13,7 +13,7 @@ In order to test your model, you'll need to install the `giskard` library with `
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client" --user
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
 ```
 
 :::
@@ -21,7 +21,7 @@ pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@featu
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@feature/ai-test-v2-merged#subdirectory=python-client"
+pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
 ```
 
 :::
@@ -38,11 +38,11 @@ You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/i
 :::{tab-item} Drift tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_drift_prediction_ks
+from giskard import Model, Dataset, test_drift_prediction_ks
 
-wrapped_model = wrap_model(...)
-train_df = wrap_dataset(...)
-test_df = wrap_dataset(...)
+wrapped_model = Model(...)
+train_df = Dataset(...)
+test_df = Dataset(...)
 
 result = test_drift_prediction_ks(model=wrapped_model, actual_dataset=test_df, reference_dataset=train_df,
                                   classification_label='CALIFORNIA CRISIS', threshold=0.5).execute()
@@ -62,10 +62,10 @@ one. Then you need to initialize the test and execute it, it will return a **Tes
 :::{tab-item} Performance tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1
+from giskard import Model, Dataset, test_f1
 
-wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_model = Model(...)
+wrapped_dataset = Dataset(...)
 
 result = test_f1(dataset=wrapped_dataset, model=wrapped_model).execute()
 
@@ -77,10 +77,10 @@ print(f"result: {result.passed} with metric {result.metric}")
 :::{tab-item} Metamorphic tets
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_metamorphic_invariance, transformation_function
+from giskard import Model, Dataset, test_metamorphic_invariance, transformation_function
 
-wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_model = Model(...)
+wrapped_dataset = Dataset(...)
 
 
 @transformation_function
@@ -101,10 +101,10 @@ to see how to create custom transformations
 :::{tab-item} Statistic tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_right_label
+from giskard import Model, Dataset, test_right_label
 
-wrapped_model = wrap_model(...)
-wrapped_dataset = wrap_dataset(...)
+wrapped_model = Model(...)
+wrapped_dataset = Dataset(...)
 
 result = test_right_label(wrapped_model, wrapped_dataset, 'SUCCESS').execute()
 print(f"result: {result.passed} with metric {result.metric}")
@@ -115,32 +115,35 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ## 3. Create & Execute a test suite
 
+A test suite is a collection of tests that can be parameterized to accommodate various scenarios. Each test within the
+suite may have some parameters left unspecified. When executing the test suite, you can provide the missing parameters
+through the run method. This allows for flexible and customizable test execution based on your specific needs.
 ::::{tab-set}
 
 :::{tab-item} Model as input
 Example using a two performance tests
 
 ```python
-from giskard import wrap_model, wrap_dataset, test_f1, test_accuracy, Suite
+from giskard import Model, Dataset, test_f1, test_accuracy, Suite
 
 # Define our Giskard Model
-wrapped_dataset = wrap_dataset(...)
+wrapped_dataset = Dataset(...)
 
 # Create a suite and add a F1 test and an accuracy test
-# Note that all the parameters are specified excect dataset
+# Note that all the parameters are specified except dataset
 # Which means that we will need to specify dataset everytime we run the suite
 suite = Suite()
 .add_test(test_f1(dataset=wrapped_dataset))
 .add_test(test_accuracy(dataset=wrapped_dataset))
 
 # Create our first model
-my_first_model = wrap_model(...)
+my_first_model = Model(...)
 
 # Run the suite by specifying our model and display the results
 passed, results = suite.run(model=my_first_model)
 
 # Create an improved version of our model
-my_improved_model = wrap_model(...)
+my_improved_model = Model(...)
 
 # Run the suite with our new version and check if the results improved
 suite.run(model=my_improved_model)

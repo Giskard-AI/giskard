@@ -1,6 +1,7 @@
 from typing import Dict, Optional, List
 
 import pandas as pd
+import logging
 
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset
@@ -15,20 +16,22 @@ MetadataProviderRegistry.register(TextMetadataProvider())
 # - validate_column_categorization
 low_stat_threshold = 100
 
+logger = logging.getLogger(__name__)
+
 
 @configured_validate_arguments
 def wrap_dataset(
-    dataset: pd.DataFrame,
-    name: Optional[str] = None,
-    target: Optional[str] = None,
-    cat_columns: Optional[List[str]] = None,
-    column_types: Optional[Dict[str, str]] = None,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[str] = None,
+        cat_columns: Optional[List[str]] = None,
+        column_types: Optional[Dict[str, str]] = None,
 ):
     """
     A function that wraps a Pandas DataFrame into a Giskard Dataset object, with optional validation of input arguments.
 
     Args:
-        dataset (pd.DataFrame):
+        df (pd.DataFrame):
             A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
             production data). Some important remarks:
 
@@ -60,5 +63,5 @@ def wrap_dataset(
         - If none of the above arguments are provided, the column types are inferred automatically.
     """
 
-    print("Your 'pandas.DataFrame' dataset is successfully wrapped by Giskard's 'Dataset' wrapper class.")
-    return Dataset(dataset, name, target, cat_columns, column_types)
+    logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+    return Dataset(df, name, target, cat_columns, column_types)

@@ -7,6 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
+from giskard.ml_worker.testing.registry.utils import is_local_function
+
 logger = logging.getLogger(__name__)
 
 
@@ -124,6 +126,17 @@ class CallableMeta(SavableMeta, ABC):
                  tags: List[str] = None,
                  version: Optional[int] = None,
                  type: str = None):
+        self.version = version
+        self.type = type
+        self.name = name
+        self.tags = tags
+        self.code = None
+        self.display_name = None
+        self.module = None
+        self.doc = None
+        self.module_doc = None
+        self.full_name = None
+        self.args = None
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
@@ -141,8 +154,6 @@ class CallableMeta(SavableMeta, ABC):
             self.doc = func_doc
             self.module_doc = self.extract_module_doc(func_doc)
             self.tags = self.populate_tags(tags)
-            self.version = version
-            self.type = type
 
             parameters = self.extract_parameters(callable_obj)
 
@@ -150,7 +161,7 @@ class CallableMeta(SavableMeta, ABC):
                 parameter.name: FunctionArgument(
                     name=parameter.name,
                     type=parameter.annotation.__qualname__,
-                    optional=parameter.default != inspect.Parameter.empty and parameter.default is not None,
+                    optional=parameter.default != inspect.Parameter.empty,
                     default=None if parameter.default == inspect.Parameter.empty
                     else parameter.default,
                     argOrder=idx
@@ -175,7 +186,7 @@ class CallableMeta(SavableMeta, ABC):
         tags = [] if not tags else tags.copy()
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
-        elif self.full_name.startswith('__main__'):
+        elif is_local_function(self.full_name):
             tags.append("pickle")
         else:
             tags.append("custom")
@@ -216,8 +227,7 @@ class CallableMeta(SavableMeta, ABC):
                     "default": arg.default,
                     "optional": arg.optional,
                     "argOrder": arg.argOrder,
-                } for arg in self.args.values()
-            ]
+                } for arg in self.args.values()] if self.args else None
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -239,7 +249,7 @@ class CallableMeta(SavableMeta, ABC):
                 optional=arg["optional"],
                 argOrder=arg["argOrder"]
             ) for arg in json["args"]
-        }
+        } if json["args"] else None
 
 
 def __repr__(self) -> str:
@@ -254,10 +264,45 @@ class TestFunctionMeta(CallableMeta):
 
 
 class DatasetProcessFunctionMeta(CallableMeta):
+    cell_level: bool
+    column_type: Optional[str]
+
+    def __init__(self,
+                 callable_obj: Union[Callable, Type] = None,
+                 name: Optional[str] = None,
+                 tags: List[str] = None,
+                 version: Optional[int] = None,
+                 type: str = None,
+                 cell_level: bool = False):
+        super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
+        self.cell_level = cell_level
+
+        if cell_level:
+            if inspect.isclass(callable_obj):
+                parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
+            else:
+                parameters = list(inspect.signature(callable_obj).parameters.values())
+            self.column_type = parameters[0].annotation.__qualname__
+        else:
+            self.column_type = None
+
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
 
         return {p.name: p for p in parameters}
+
+    def to_json(self):
+        json = super().to_json()
+        return {
+            **json,
+            'cellLevel': self.cell_level,
+            'columnType': self.column_type
+        }
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.cell_level = json["cellLevel"]
+        self.column_type = json["columnType"]
 
 
 DT = TypeVar('DT')

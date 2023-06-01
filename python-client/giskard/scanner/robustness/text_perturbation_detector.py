@@ -1,15 +1,14 @@
-import logging
 import numpy as np
 from typing import Sequence, Optional
 
 from .text_transformations import TextTransformation
-
 from ..issues import Issue
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..registry import Detector
 from .issues import RobustnessIssue, RobustnessIssueInfo
 from ..decorators import detector
+from ..logger import logger
 
 
 @detector(name="text_perturbation", tags=["text_perturbation", "robustness", "nlp", "classification", "regression"])
@@ -17,9 +16,9 @@ class TextPerturbationDetector(Detector):
     def __init__(
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
-        threshold: float = 0.90,
-        output_sensitivity=0.1,
-        num_samples: int = 200,
+        threshold: float = 0.05,
+        output_sensitivity=0.05,
+        num_samples: int = 1_000,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -27,10 +26,13 @@ class TextPerturbationDetector(Detector):
         self.output_sensitivity = output_sensitivity
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logging.debug("Running TextPerturbationDetector")
-
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [col for col, col_type in dataset.column_types.items() if col_type == "text"]
+
+        logger.debug(
+            f"TextPerturbationDetector: Running with transformations={[t.name for t in transformations]} "
+            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
+        )
 
         issues = []
         for transformation in transformations:
@@ -45,6 +47,7 @@ class TextPerturbationDetector(Detector):
             text_titlecase,
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
+            TextGenderTransformation,
         )
 
         return [
@@ -53,6 +56,7 @@ class TextPerturbationDetector(Detector):
             text_titlecase,
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
+            TextGenderTransformation,
         ]
 
     def _detect_issues(
@@ -63,9 +67,8 @@ class TextPerturbationDetector(Detector):
         features: Sequence[str],
     ) -> Sequence[Issue]:
         issues = []
+        # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
-            logging.debug(f"Running '{transformation.name}'")
-
             transformation_fn = transformation(column=feature)
             transformed = dataset.transform(transformation_fn)
 
@@ -92,7 +95,7 @@ class TextPerturbationDetector(Detector):
             perturbed_pred = model.predict(perturbed_data)
 
             if model.is_classification:
-                passed = np.isclose(original_pred.raw_prediction, perturbed_pred.raw_prediction)
+                passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < self.output_sensitivity
@@ -102,16 +105,25 @@ class TextPerturbationDetector(Detector):
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
 
-            logging.debug(f"Text perturbation '{transformation.name}' fail ratio: {fail_ratio:.2f}")
+            logger.debug(
+                f"TextPerturbationDetector: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
+            )
 
-            if pass_ratio < self.threshold:
+            if fail_ratio >= self.threshold:
                 info = RobustnessIssueInfo(
-                    feature=feature, fail_ratio=fail_ratio, perturbation_name=getattr(transformation, "name")
+                    feature=feature,
+                    fail_ratio=fail_ratio,
+                    transformation_fn=transformation_fn,
+                    perturbed_data_slice=perturbed_data,
+                    perturbed_data_slice_predictions=perturbed_pred,
+                    fail_data_idx=original_data.df[~passed].index.values,
+                    threshold=self.threshold,
+                    output_sensitivity=self.output_sensitivity,
                 )
                 issue = RobustnessIssue(
                     model,
                     dataset,
-                    level="major" if pass_ratio < 0.5 * self.threshold else "medium",
+                    level="major" if fail_ratio >= 2 * self.threshold else "medium",
                     info=info,
                 )
                 issues.append(issue)

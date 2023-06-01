@@ -4,7 +4,6 @@ from typing import List, Iterable, Union, Callable, Any, Optional
 import numpy as np
 import pandas as pd
 import yaml
-from pandas.core.dtypes.common import is_string_dtype
 
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType
@@ -55,16 +54,25 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
 @configured_validate_arguments
 def validate_model_execution(model: BaseModel, dataset: Dataset) -> None:
+    # testing multiple entries
     validation_size = min(len(dataset), 10)
-    validation_ds = dataset.slice(SlicingFunction(lambda x: x.head(validation_size), row_level=False))
+    validation_ds = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
+    error_message = "Invalid model.predict() input.\nPlease make sure that model.predict(dataset) does not return an " \
+                    "error message before uploading to Giskard."
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
+        raise ValueError(error_message) from e
+
+    # testing one entry
+    validation_size = min(len(dataset), 1)
+    validation_ds_1 = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
+    try:
+        model.predict(validation_ds_1)
+    except Exception as e:
         raise ValueError(
-            "Invalid model.predict() input.\n"
-            "Please make sure that model.predict(dataset) does not return an error "
-            "message before uploading in Giskard"
-        ) from e
+            error_message + " Hint: Make sure that you are not fitting any preprocessor inside your model or prediction"
+                            " function.") from e
 
     validate_deterministic_model(model, validation_ds, prediction)
     validate_prediction_output(validation_ds, model.meta.model_type, prediction.raw)
@@ -201,13 +209,6 @@ def validate_classification_threshold_label(classification_labels: Union[np.ndar
 def validate_label_with_target(model_name: str, classification_labels: Union[np.ndarray, List, None],
                                target_values: Union[np.ndarray, List, None] = None, target_name: str = None):
     if target_values is not None:
-        if not is_string_dtype(target_values):
-            print(
-                'Hint: "Your target variable values are numeric. '
-                "It is recommended to have Human readable string as your target values "
-                'to make results more understandable in Giskard."'
-            )
-
         to_append = " of the model: " + model_name if model_name else ""
         target_values = list(target_values)
         if not set(target_values).issubset(set(classification_labels)):

@@ -12,7 +12,7 @@ class MetadataIndexer:
     The metadata are generated on first access and cached for subsequent requests.
 
     Example:
-        dataset = wrap_dataset(...)
+        dataset = Dataset(...)
         text_metadata_for_my_column = dataset.column_meta["my_column", "text"]
 
     """
@@ -22,7 +22,7 @@ class MetadataIndexer:
 
     def __init__(self, dataset):
         self._dataset = dataset
-        self._metadata = defaultdict(pd.DataFrame)
+        self._metadata = defaultdict(lambda: pd.DataFrame(index=dataset.df.index))
 
     def __getitem__(self, key: tuple):
         try:

@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 from typing import Union
 
-from giskard import BaseModel, SKLearnModel
+from giskard.models.base import BaseModel
+from giskard.models.sklearn import SKLearnModel
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import MODEL_CLASS_PKL, WrapperModel
 from tests.utils import MockedClient
@@ -13,6 +14,9 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
         class MyModel(WrapperModel):
             @classmethod
             def load_model(cls, local_dir):
+                pass
+
+            def save_model(self, local_path: Union[str, Path]) -> None:
                 pass
 
             def model_predict(self, df):

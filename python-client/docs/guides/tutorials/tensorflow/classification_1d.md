@@ -7,7 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import layers
 import tests.utils
-from giskard import wrap_model, wrap_dataset
+from giskard import Model, Dataset
 ```
 
 ## Wrap dataset
@@ -28,7 +28,7 @@ for text_batch, label_batch in raw_test_ds.take(782):
     test_df = pd.DataFrame.from_dict(test_dataset)
 ```
 ```python
-wrapped_dataset = wrap_dataset(test_df.head(), 
+wrapped_dataset = Dataset(test_df.head(), 
                                name="test dataset", 
                                target="Label")
 ```
@@ -87,7 +87,7 @@ def FromPandastoTFModelInput(test_df):
     return test_dataset
 ```
 ```python
-wrapped_model = wrap_model(name="Tensorflow_text_classification",
+wrapped_model = Model(name="Tensorflow_text_classification",
                            model=export_model,
                            feature_names=['Review'],
                            model_type="classification",
