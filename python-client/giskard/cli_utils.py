@@ -48,7 +48,7 @@ def run_daemon(is_server, url, api_key):
     logger.info(f"Writing logs to {log_path}")
     pid_file = PIDLockFile(create_pid_file_path(is_server, url))
 
-    with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")) as c:
+    with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
         workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
         workdir.mkdir(exist_ok=True, parents=True)
         change_working_directory(workdir)
