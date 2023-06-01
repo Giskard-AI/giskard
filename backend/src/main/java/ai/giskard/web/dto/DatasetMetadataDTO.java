@@ -1,6 +1,6 @@
 package ai.giskard.web.dto;
 
-import ai.giskard.domain.ColumnMeaning;
+import ai.giskard.domain.FeatureType;
 import com.dataiku.j2ts.annotations.UIModel;
 import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -22,8 +22,8 @@ public class DatasetMetadataDTO {
     private UUID id;
     @UINullable
     private String target;
-    @JsonAlias("column_meanings")
-    private Map<String, ColumnMeaning> columnMeanings;
+    @JsonAlias("feature_types")
+    private Map<String, FeatureType> featureTypes;
     @UINullable
     @JsonAlias("column_types")
     private Map<String, String> columnTypes;
