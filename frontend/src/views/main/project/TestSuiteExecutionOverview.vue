@@ -13,10 +13,10 @@
         <h4
             v-if="props.execution.result === TestResult.ERROR">An error arose during the execution</h4>
         <h4 v-else-if="filteredTest.length === 0">No test match the current filter</h4>
-        <h4 v-else>Success ratio {{ filteredTest.filter(({result}) => result !== undefined && result.passed).length }} /
-          {{
-            filteredTest.filter(({result}) => result !== undefined).length
-          }}</h4>
+        <h4 v-else-if="executedTests.length > 0" :style="{
+          color: successColor
+        } ">Success ratio: {{ successRatio.passed }} /
+          {{ successRatio.executed }}</h4>
       </div>
       <div class="flex-grow-1"/>
       <v-btn icon @click="openSettings" color="secondary">
@@ -108,7 +108,7 @@ import {
   TestResult,
   TestSuiteExecutionDTO
 } from '@/generated-sources';
-import {Colors} from '@/utils/colors';
+import {Colors, pickHexLinear, rgbToHex, SUCCESS_GRADIENT} from '@/utils/colors';
 import {computed, ref} from 'vue';
 import {chain} from 'lodash';
 import {$vfm} from 'vue-final-modal';
@@ -243,6 +243,17 @@ async function openSettings() {
     }
   });
 }
+
+const executedTests = computed(() => props.execution.result === TestResult.ERROR ? []
+    : filteredTest.value.filter(({result}) => result !== undefined));
+
+const successRatio = computed(() => ({
+  passed: executedTests.value.filter(({result}) => result!.passed).length,
+  executed: executedTests.value.length
+}))
+
+const successColor = computed(() => successRatio.value.executed === 0 ? Colors.PASS :
+    rgbToHex(pickHexLinear(SUCCESS_GRADIENT, successRatio.value.passed / successRatio.value.executed)));
 </script>
 
 <style scoped lang="scss">
