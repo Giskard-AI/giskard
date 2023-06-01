@@ -8,6 +8,8 @@ import ai.giskard.service.TestService;
 import ai.giskard.service.TestSuiteExecutionService;
 import ai.giskard.service.TestSuiteService;
 import ai.giskard.web.dto.TestSuiteCompleteDTO;
+import ai.giskard.web.dto.GenerateTestSuiteDTO;
+import ai.giskard.web.dto.SuiteTestDTO;
 import ai.giskard.web.dto.TestSuiteCreateDTO;
 import ai.giskard.web.dto.TestSuiteNewDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -77,9 +79,19 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suites-new")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     @Transactional
-    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteNewDTO dto) {
+    public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
+                              @Valid @RequestBody TestSuiteNewDTO dto) {
         TestSuiteNew savedSuite = testSuiteNewRepository.save(giskardMapper.fromDTO(dto));
+
         return savedSuite.getId();
+    }
+
+    @PostMapping("project/{projectKey}/suites-new/generate")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
+    public Long generateTestSuite(@PathVariable("projectKey") @NotNull String projectKey,
+                              @Valid @RequestBody GenerateTestSuiteDTO dto) {
+        return testSuiteService.generateTestSuite(projectKey, dto);
     }
 
     @GetMapping("project/{projectId}/suites-new")
@@ -110,6 +122,15 @@ public class TestSuiteController {
             testSuiteExecutionService.listAllExecution(suiteId),
             testSuiteService.getSuiteInputs(projectId, suiteId)
         );
+    }
+
+    @PostMapping("project/{projectId}/suite-new/{suiteId}/test")
+    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @Transactional
+    public TestSuiteNewDTO addTestToSuite(@PathVariable("projectId") long projectId,
+                                          @PathVariable("suiteId") long suiteId,
+                                          @Valid @RequestBody SuiteTestDTO suiteTest) {
+        return giskardMapper.toDTO(testSuiteService.addTestToSuite(suiteId, suiteTest));
     }
 
     @PostMapping("project/{projectId}/suite-new/{suiteId}/schedule-execution")
