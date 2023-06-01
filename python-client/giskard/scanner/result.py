@@ -56,10 +56,10 @@ class ScanResult:
         df = pd.DataFrame(
             [
                 {
-                    "slice": str(issue.slice_fn),
-                    "metric": issue.metric.name,
-                    "metric_value": f"{issue.metric_delta * 100:.2f}% than global",
-                    "size": f"{len(issue.slice_size)} samples ({100 * (issue.slice_size / issue.dataset_size):.2f}%)",
+                    "domain": issue.domain,
+                    "metric": issue.metric,
+                    "deviation": issue.deviation,
+                    "description": issue.description,
                 }
                 for issue in self.issues
             ]
