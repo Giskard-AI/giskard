@@ -13,8 +13,8 @@
         <v-alert class="text-center">
             <p class="headline font-weight-medium grey--text text--darken-2">No tests have been added to the suite.</p>
         </v-alert>
-        <v-btn tile color="primary" class="grey--text text--darken-4" :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">
-            <v-icon>add</v-icon>
+        <v-btn tile color="primaryLight" class="primaryLightBtn" :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">
+            <v-icon left>add</v-icon>
             Add test
         </v-btn>
     </v-container>
