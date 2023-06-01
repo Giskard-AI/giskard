@@ -15,35 +15,33 @@ def keyword_lookup_slicing_fn(x: pd.Series, column_name: str, keyword: str) -> b
 
 @slicing_function(name="Positive sentiment", row_level=False, tags=["sentiment"])
 def positive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
-    from transformers import pipeline
-    sentiment_pipeline = pipeline("sentiment-analysis")
-
-    # Limit text to 512 characters
-    sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
-
-    return x.iloc[list(
-        map(lambda s: s['label'] == 'POSITIVE' and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+    return _sentiment_analysis(x, column_name, threshold, None, "POSITIVE")
 
 
 @slicing_function(name="Offensive sentiment", row_level=False, tags=["sentiment"])
 def offensive_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
-    from transformers import pipeline
-    sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-offensive")
-
-    # Limit text to 512 characters
-    sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
-
-    return x.iloc[list(
-        map(lambda s: s['label'] == 'offensive' and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+    return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-offensive", "offensive")
 
 
 @slicing_function(name="Irony sentiment", row_level=False, tags=["sentiment"])
 def irony_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
-    from transformers import pipeline
-    sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-irony")
+    return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-irony", "irony")
 
+
+@slicing_function(name="Hate sentiment", row_level=False, tags=["sentiment"])
+def hate_sentiment_analysis(x: pd.DataFrame, column_name: str, threshold: float = 0.9) -> pd.DataFrame:
+    return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-hate", "hate")
+
+
+@slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment"])
+def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, threshold: float = 0.9) -> pd.DataFrame:
+    return _sentiment_analysis(x, column_name, threshold, "cardiffnlp/twitter-roberta-base-emotion", emotion)
+
+
+def _sentiment_analysis(x, column_name, threshold, model, emotion):
+    from transformers import pipeline
+    sentiment_pipeline = pipeline("sentiment-analysis", model=model)
     # Limit text to 512 characters
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
-
     return x.iloc[list(
-        map(lambda s: s['label'] == 'irony' and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+        map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
