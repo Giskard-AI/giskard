@@ -1,6 +1,7 @@
-from abc import ABC
+import pandas as pd
 from typing import Optional
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from ..datasets import Dataset
 from ..models.base import BaseModel
@@ -13,11 +14,6 @@ class IssueInfo(ABC):
 
 class Issue:
     group: str = "Other"
-
-    domain: str
-    metric: str
-    deviation: str
-    description: str
 
     def __init__(
         self,
@@ -35,5 +31,34 @@ class Issue:
         return f"<Issue level='{self.level}'>"
 
     @property
-    def is_major(self):
+    def is_major(self) -> bool:
         return self.level == "major"
+
+    @property
+    @abstractmethod
+    def domain(self) -> str:
+        ...
+
+    @property
+    @abstractmethod
+    def metric(self) -> str:
+        ...
+
+    @property
+    @abstractmethod
+    def deviation(self) -> str:
+        ...
+
+    @property
+    @abstractmethod
+    def description(self) -> str:
+        ...
+
+    @abstractmethod
+    def examples(self, n=3) -> pd.DataFrame:
+        ...
+
+    @property
+    @abstractmethod
+    def importance(self) -> float:
+        ...
