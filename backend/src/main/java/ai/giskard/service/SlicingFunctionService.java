@@ -4,6 +4,7 @@ import ai.giskard.domain.SlicingFunction;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.ComparisonType;
+import ai.giskard.web.dto.DatasetProcessFunctionType;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         slicingFunction.setVersion(slicingFunctionRepository.countByNameAndModule(slicingFunction.getName(), slicingFunction.getModule()) + 1);
         slicingFunction.setCellLevel(false);
         slicingFunction.setColumnType("");
-        slicingFunction.setNoCode(true);
+        slicingFunction.setProcessType(DatasetProcessFunctionType.CLAUSES);
 
         return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunction));
     }

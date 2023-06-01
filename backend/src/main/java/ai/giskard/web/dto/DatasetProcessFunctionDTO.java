@@ -14,5 +14,5 @@ public class DatasetProcessFunctionDTO extends CallableDTO {
     private boolean cellLevel;
     @UINullable
     private String columnType;
-    private boolean noCode;
+    private DatasetProcessFunctionType processType;
 }

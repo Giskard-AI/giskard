@@ -1,5 +1,6 @@
 package ai.giskard.domain;
 
+import ai.giskard.web.dto.DatasetProcessFunctionType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,6 @@ public abstract class DatasetProcessFunction extends Callable {
     @Column
     private String columnType;
     @Column()
-    private boolean noCode;
+    private DatasetProcessFunctionType processType;
 
 }
