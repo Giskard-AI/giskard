@@ -76,7 +76,7 @@ class Model(ABC):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
     @classmethod
-    def determine_model_class(cls, local_dir):
+    def determine_model_class(cls, meta, local_dir):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
             with open(class_file, 'rb') as f:
@@ -85,7 +85,7 @@ class Model(ABC):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
                 return clazz
         else:
-            return cls
+            return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
         with open(Path(local_path) / 'giskard-model-meta.yaml', 'w') as f:
@@ -97,6 +97,8 @@ class Model(ABC):
                     "threshold": self.meta.classification_threshold,
                     "feature_names": self.meta.feature_names,
                     "classification_labels": self.meta.classification_labels,
+                    "loader_module": self.meta.loader_module,
+                    "loader_class": self.meta.loader_class,
                     "id": self.id,
                     "name": self.meta.name,
                     "size": get_size(local_path),
@@ -210,7 +212,10 @@ class WrapperModel(Model, ABC):
                  model_postprocessing_function=None,
                  name: str = None, feature_names=None,
                  classification_threshold=0.5, classification_labels=None) -> None:
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
+
+        super().__init__(model_type=model_type, name=name, feature_names=feature_names,
+                         classification_threshold=classification_threshold,
+                         classification_labels=classification_labels)
         self.clf = clf
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
@@ -258,28 +263,31 @@ class WrapperModel(Model, ABC):
                     feature_names=saved_meta['feature_names'],
                     classification_labels=saved_meta['classification_labels'],
                     classification_threshold=saved_meta['threshold'],
+                    loader_module=saved_meta['loader_module'],
+                    loader_class=saved_meta['loader_class']
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta = client.load_model_meta(project_key, model_id)
-        clazz = cls.determine_model_class(local_dir)
+            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id}"
+            with open(Path(local_dir) / 'giskard-model-meta.yaml') as f:
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+            res = client.load_model_meta(project_key, model_id)
+            meta = ModelMeta(
+                name=res['name'],
+                feature_names=res['featureNames'],
+                model_type=SupportedModelTypes[res['modelType']],
+                classification_labels=res['classificationLabels'],
+                classification_threshold=res['threshold'],
+                loader_module=saved_meta['loader_module'],
+                loader_class=saved_meta['loader_class']
+            )
+        clazz = cls.determine_model_class(meta, local_dir)
         return clazz(
             clf=clazz.read_model_from_local_dir(local_dir),
             data_preprocessing_function=clazz.load_data_preprocessing_function(local_dir),
+            model_postprocessing_function=clazz.read_model_postprocessing_function_from_artifact(local_dir),
             **meta.__dict__
         )
-
-    @classmethod
-    def determine_model_class(cls, meta, local_dir):
-        class_file = Path(local_dir) / MODEL_CLASS_PKL
-        if class_file.exists():
-            with open(class_file, 'rb') as f:
-                clazz = cloudpickle.load(f)
-                if issubclass(clazz, Model):
-                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'Model' class")
-                return clazz
-        else:
-            return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
@@ -300,7 +308,15 @@ class WrapperModel(Model, ABC):
     @staticmethod
     def load_data_preprocessing_function(local_path: Union[str, Path]):
         local_path = Path(local_path)
-        file_path = local_path / "giskard-data-prep.pkl"
+        file_path = local_path / "giskard-data-preprocessing-function.pkl"
+        if file_path.exists():
+            with open(file_path, 'rb') as f:
+                return cloudpickle.load(f)
+
+    @staticmethod
+    def read_model_postprocessing_function_from_artifact(local_path: str):
+        local_path = Path(local_path)
+        file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, 'rb') as f:
                 return cloudpickle.load(f)
