@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 
-from giskard.cli import analytics
+from giskard.cli_utils import analytics
 from giskard.client.analytics_collector import anonymize
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.data_encryptor import DataEncryptor
