@@ -34,7 +34,7 @@ import {$vfm} from 'vue-final-modal';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {plurialize} from "../../../utils/string.utils";
+import {plurialize} from "@/utils/string.utils";
 import {Colors} from "@/utils/colors";
 import {timeSince} from "@/utils/time.utils";
 
