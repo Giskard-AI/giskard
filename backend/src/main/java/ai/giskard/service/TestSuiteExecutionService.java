@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.TestSuiteExecutionRepository;
@@ -39,9 +40,17 @@ public class TestSuiteExecutionService {
                                           Map<String, String> suiteInputTypes) {
         TestSuite suite = execution.getSuite();
 
+        Map<String, FunctionArgument> arguments = suiteInputTypes.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> {
+                FunctionArgument a = new FunctionArgument();
+                a.setType(e.getValue());
+                a.setOptional(false);
+                return a;
+            }));
+
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
         for (FunctionInput input : execution.getInputs()) {
-            builder.addGlobalArguments(testArgumentService.buildTestArgument(suiteInputTypes, input.getName(),
+            builder.addGlobalArguments(testArgumentService.buildTestArgument(arguments, input.getName(),
                 input.getValue(), suite.getProject().getKey(), input.getParams()));
         }
 
@@ -53,6 +62,7 @@ public class TestSuiteExecutionService {
         for (SuiteTest suiteTest : suite.getTests()) {
             builder.addTests(testArgumentService.buildFixedTestArgument(suiteInputsAndShared, suiteTest, suite.getProject().getKey()));
         }
+
         Map<Long, SuiteTest> tests = suite.getTests().stream()
             .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 

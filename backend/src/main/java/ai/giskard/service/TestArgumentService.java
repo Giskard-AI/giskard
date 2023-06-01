@@ -8,10 +8,12 @@ import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,16 +26,16 @@ public class TestArgumentService {
             .setTestUuid(testFunction.getUuid().toString())
             .setId(test.getId());
 
-        Map<String, String> argumentTypes = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(FunctionArgument::getName, FunctionArgument::getType));
+        Map<String, FunctionArgument> arguments = testFunction.getArgs().stream()
+            .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
 
 
         for (FunctionInput input : test.getFunctionInputs()) {
             if (input.isAlias()) {
                 FunctionInput shared = globalArguments.get(input.getValue());
-                builder.addArguments(buildTestArgument(argumentTypes, shared.getName(), shared.getValue(), projectKey, shared.getParams()));
+                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams()));
             } else {
-                builder.addArguments(buildTestArgument(argumentTypes, input.getName(), input.getValue(), projectKey, input.getParams()));
+                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams()));
             }
 
         }
@@ -41,12 +43,17 @@ public class TestArgumentService {
         return builder.build();
     }
 
-    public FuncArgument buildTestArgument(Map<String, String> testInputTypes,
+    public FuncArgument buildTestArgument(Map<String, FunctionArgument> arguments,
                                           String inputName,
                                           String inputValue,
                                           String projectKey,
                                           List<FunctionInput> params) {
-        return buildTestArgument(inputName, inputValue, projectKey, testInputTypes.get(inputName), params);
+        FunctionArgument argument = arguments.get(inputName);
+        if (Strings.isBlank(inputValue) && !argument.isOptional()) {
+            throw new IllegalArgumentException("The required argument for " + inputName + " was not provided");
+        }
+        return buildTestArgument(inputName, Strings.isBlank(inputValue) ? argument.getDefaultValue() : inputValue,
+            projectKey, argument.getType(), params);
     }
 
 
