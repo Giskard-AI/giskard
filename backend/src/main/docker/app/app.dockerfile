@@ -28,5 +28,12 @@ RUN bash -c " \
     fi"
 
 FROM eclipse-temurin:17-jre
+WORKDIR /giskard
+
+RUN groupadd giskard && \
+    useradd -r -g giskard giskard && \
+    chown giskard:giskard /giskard
+USER giskard
+
 COPY --from=build /workspace/backend/build/libs/backend.jar /giskard/lib/backend.jar
 ENTRYPOINT ["java","-jar","/giskard/lib/backend.jar"]
