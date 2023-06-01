@@ -134,6 +134,9 @@ class TestFunctionMeta(SavableMeta):
 
         )
 
+    def __repr__(self) -> str:
+        return f"TestFunctionMeta: {self.module}.{self.name}"
+
 
 DT = TypeVar('DT')
 SMT = TypeVar('SMT', bound=SavableMeta)
