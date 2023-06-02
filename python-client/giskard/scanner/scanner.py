@@ -10,6 +10,7 @@ from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from ..utils.analytics_collector import analytics
+from giskard.client.python_utils import warning
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -29,6 +30,13 @@ class Scanner:
                                  "model_type": model.meta.model_type.value,
                                  "dataset_id": str(dataset.id)})
         validate_model(model=model, validate_ds=dataset)
+
+        if not dataset.df.index.is_unique:
+            warning("PerformanceBiasDetector: Resetting dataframe indexes because values are not unique")
+            dataset = Dataset(df=dataset.df.reset_index(drop=True),
+                              name=dataset.name,
+                              target=dataset.target,
+                              column_types=dataset.column_types)
 
         maybe_print("Running scan…", verbose=verbose)
         time_start = perf_counter()
