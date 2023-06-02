@@ -109,7 +109,7 @@ wrapped_model.upload(client, project_name)
 ```
 
 :::
-:::{tab-item} Dataset upload
+:::{tab-item} Dataset
 Uploading your dataset to the Giskard server enables you to:
 * Inspect and debug your dataset
 * Use your dataset as the input for your tests (unit datasets)
@@ -173,7 +173,7 @@ slice_sex.upload(client, project_name)
   ![](/_static/catalog_slice.png)
 :::
 
-:::{tab-item} Slicing function
+:::{tab-item} Transformation function
 
 Saving your transformation function in the Giskard server will enable you to:
 * Use your transformations for testing purposes: your transformations can be used as fixtures of your test suite
