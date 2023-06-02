@@ -71,8 +71,9 @@ import { storeToRefs } from 'pinia';
 import { useTestSuiteStore } from '@/stores/test-suite';
 import { api } from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { $vfm } from "vue-final-modal";
+import {useCatalogStore} from "@/stores/catalog";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
+import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 
