@@ -91,6 +91,7 @@ def test_punctuation_strip_transformation():
                 "My UPPERCASE TEXT with greek letters α, β, γ, Γ",
                 "Another @TEXT with → $UNICODE$ ← characters 😀",
                 "“And… PUNCTUATION! all SHOULD be fine — I HOPE!?”",
+                "This.., is my site.. http://www.example.com/, and ., it .,.,. http://stackoverflow.com rules!..",
             ]
         }
     )
@@ -106,6 +107,7 @@ def test_punctuation_strip_transformation():
     assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
+    assert transformed_text[4] == "This is my site http://www.example.com/ and  it  http://stackoverflow.com rules"
 
 
 def test_religion_based_transformation():
@@ -131,21 +133,21 @@ def test_religion_based_transformation():
     transformed_text = transformed.df.text.values
 
     assert (
-        transformed_text[0] == "Les hindous de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le "
-        "mois de ramadan."
+            transformed_text[0] == "Les hindous de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le "
+                                   "mois de ramadan."
     )
     assert (
-        transformed_text[1] == "Une partie des chrétiens commémorent ce vendredi 5 mai la naissance, l’éveil et la "
-        "mort de muhammad, dit « le Bouddha »"
+            transformed_text[1] == "Une partie des chrétiens commémorent ce vendredi 5 mai la naissance, l’éveil et la "
+                                   "mort de muhammad, dit « le Bouddha »"
     )
     assert (
-        transformed_text[2] == "Signs have also been placed in the direction of kumbh mela along one of the Peak "
-        "District’s most popular hiking routes, Cave Dale, to help christians combine prayer "
-        "with enjoying the outdoors."
+            transformed_text[2] == "Signs have also been placed in the direction of kumbh mela along one of the Peak "
+                                   "District’s most popular hiking routes, Cave Dale, to help christians combine prayer "
+                                   "with enjoying the outdoors."
     )
     assert (
-        transformed_text[3] == "The vatican is said to be the largest gathering in the world and is a blend of "
-        "religion spirituality, mythology and culture"
+            transformed_text[3] == "The vatican is said to be the largest gathering in the world and is a blend of "
+                                   "religion spirituality, mythology and culture"
     )
 
 
@@ -172,16 +174,16 @@ def test_country_based_transformation():
     transformed_text = transformed.df.text.values
 
     assert (
-        transformed_text[0] == "Les musulmans de Eswatini fêtent vendredi 21 avril la fin du "
-        "jeûne pratiqué durant le mois de ramadan."
+            transformed_text[0] == "Les musulmans de Eswatini fêtent vendredi 21 avril la fin du "
+                                   "jeûne pratiqué durant le mois de ramadan."
     )
     assert transformed_text[1] == "Des incendies ravagent l'Congo depuis la fin août 2019."
     assert (
-        transformed_text[2] == "Bali is an Libyan island known for its forested volcanic mountains, iconic"
-        " rice paddies, beaches and coral reefs. The island is home to religious sites "
-        "such as cliffside Uluwatu Temple"
+            transformed_text[2] == "Bali is an Libyan island known for its forested volcanic mountains, iconic"
+                                   " rice paddies, beaches and coral reefs. The island is home to religious sites "
+                                   "such as cliffside Uluwatu Temple"
     )
     assert (
-        transformed_text[3]
-        == "President Joe Biden visited U.S.'s capital for the first time since Nigeria invaded the country"
+            transformed_text[3]
+            == "President Joe Biden visited U.S.'s capital for the first time since Nigeria invaded the country"
     )
