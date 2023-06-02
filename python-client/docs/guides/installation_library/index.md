@@ -6,7 +6,7 @@ In order to scan your model for vulnerabilities, you'll need to install the `gis
 :::{tab-item} Windows
 
 ```sh
-pip install giskard[scan] --user
+pip install giskard --user
 ```
 
 :::
@@ -14,7 +14,7 @@ pip install giskard[scan] --user
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard[scan]
+pip install giskard
 ```
 
 :::
@@ -69,5 +69,5 @@ For instance, if you have dependency conflicts with `pandas`, please do:
 ```sh
 pip uninstall giskard
 pip uninstall pandas
-pip install giskard[scan]
+pip install giskard
 ```
