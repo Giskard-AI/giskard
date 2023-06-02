@@ -160,11 +160,11 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ### Create and execute your own test
 
-If the test you want to create is not in the Giskard catalog, you can easily write them so that you can easily integrate it inside a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure the Python function you're decorating:
-* Has typed inputs: types could be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
+If the test you want to create is not in the Giskard catalog, you can easily write it and add it to a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure that the Python function you're decorating:
+* Has typed inputs: types can be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
 * Returns a `TestResult` object containing all the resulting information of the test: 
-    * This object must at least has the `passed` argument: a boolean that is `true` if the test passed, `false` otherwise
-    * You recommend to also provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
+    * This object must have the `passed` argument: a boolean that is `true` if the test passes, `false` otherwise
+    * Provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
 
 ```python
 from giskard import demo, test, Dataset, TestResult, testing
@@ -197,15 +197,11 @@ uniqueness_test_function(dataset=wrapped_dataset,
 
 ## 3. Create & Execute a suite
 
-:::{hint}
-You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
-:::
-
 Test suite is a key feature of Giskard. Executing test suite can be useful for:
-* **Comparing different models**: This can be important:
+* **Comparing different models**: In that case, you should define your **model as input** of your test suite. Comparing different models is important:
     *  At production time: If you want to **automate the retraining process** of your model to know if the model you just created is better than the one in production
     *  At development time: If you want to compare different candidate models. For example test suite can be used to find the right hyperparameters of your model during your **cross-validation**
-* **Comparing different datasets**. This can be important:
+* **Comparing different datasets**. In that case, you should define your **dataset as input** of your test suite. Comparing different datasets important:
     * To detect drift between 2 datasets (i.e. training, testing, production, golden datasets)
     * To monitor your model at production time using different batches of datasets
 
@@ -248,13 +244,13 @@ suite.run(model=my_improved_model)
 
 #### Description
 
-In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters expect
+In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters except
 the dataset to "expose" it as a run input. We can see that the way to set parameters differ whenever we are dealing with
 a test class or a test function.
 
 :::
 
-:::{tab-item} Dataset as input
+:::{tab-item} Dataset as suite input
 ```python
 import pandas as pd
 from giskard import demo, Model, Dataset, testing, Suite, transformation_function, slicing_function
@@ -300,7 +296,11 @@ suite.run(dataset=my_updated_dataset)
 
 :::{tab-item} Shared test input
 
-For advanced cases, you may need to define some test inputs that are shared between different test inside your suite. In that case, you should use the `SuiteInput` object that takes as parameter the name of the test input (a string) and the type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. In the example below, the data slice `female` is shared between two performance tests:
+For advanced cases, you may need to define some test inputs that are shared between different tests inside your suite. In that case, you should use the `SuiteInput` object that takes as parameter:
+* the name of the test input (a string)
+* the type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. 
+
+In the example below, the data slice `female` is shared between two performance tests:
 
 ```python
 from giskard import demo, Model, Dataset, testing, Suite, SuiteInput, slicing_function, SlicingFunction
