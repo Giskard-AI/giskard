@@ -161,7 +161,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 ### Create and execute your own test
 
 If the test you want to create is not in the Giskard catalog, you can easily write them so that you can easily integrate it inside a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure the Python function you're decorating:
-* Has typed inputs: types could be Giskard `Model`, `Dataset`, decorated slicing & transformation functions or any primitive
+* Has typed inputs: types could be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
 * Returns a `TestResult` object containing all the resulting information of the test: 
     * This object must at least has the `passed` argument: a boolean that is `true` if the test passed, `false` otherwise
     * You recommend to also provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
@@ -204,21 +204,19 @@ You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/i
 Test suite is a key feature of Giskard. Executing test suite can be useful for:
 * **Comparing different models**: This can be important:
     *  At production time: If you want to **automate the retraining process** of your model to know if the model you just created is better than the one in production
-    *  At development time: If you want to compare different candidate models. For example test suite can be used to find the right hyperparameter of your model during your cross-validation
+    *  At development time: If you want to compare different candidate models. For example test suite can be used to find the right hyperparameters of your model during your **cross-validation**
 * **Comparing different datasets**. This can be important:
     * To detect drift between 2 datasets (i.e. training, testing, production, golden datasets)
     * To monitor your model at production time using different batches of datasets
 
 :::{hint}
-When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
+* When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
+* You can also choose to share some input of your test. This is useful if some tests are sharing the same inputs (ex: the same slicing function). In that case you'll need 
 :::
 
-* Each test within the
-suite may have some parameters left unspecified. When executing the test suite, you can provide the missing parameters
-through the run method. This allows for flexible and customizable test execution based on your specific needs.
 ::::{tab-set}
 
-:::{tab-item} Model as input
+:::{tab-item} Comparing models
 Example using a two performance tests
 
 ```python
@@ -301,8 +299,11 @@ suite.run(dataset=my_updated_dataset)
 :::
 
 :::{tab-item} Shared test input
+
+For advanced cases, you may need to define some test inputs that are shared between different test inside your suite. In that case, you should use the `SuiteInput` object that takes as parameter the name of the test input (a string) and the type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. In the example below, the data slice `female` is shared between two performance tests:
+
 ```python
-from giskard import demo, Model, Dataset, testing, Suite, SuiteInput, slicing_function
+from giskard import demo, Model, Dataset, testing, Suite, SuiteInput, slicing_function, SlicingFunction
 import pandas as pd
 
 model, df = demo.titanic()
@@ -310,20 +311,18 @@ model, df = demo.titanic()
 wrapped_model = Model(model=model, model_type="classification")
 wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
-@slicing_function(row_level=False, name='female')
-def slice_female(df: pd.DataFrame) -> pd.DataFrame:
-    return df[df.Sex == 'female']
+@slicing_function()
+def slice_female(row: pd.Series):
+    return row["Sex"] == "female"
 
-sliced_dataset = wrapped_dataset.slice(slice_female)
-
-shared_input = SuiteInput("dataset", Dataset)
+shared_input_female = SuiteInput("female_slice", SlicingFunction)
 
 suite = Suite() \
-    .add_test(testing.test_auc(dataset=shared_input, threshold=0.2)) \
-    .add_test(testing.test_f1(dataset=shared_input, threshold=0.2)) \
-    .add_test(testing.test_diff_f1(threshold=0.2, actual_dataset=shared_input))
+    .add_test(testing.test_auc(slicing_function=shared_input_female, threshold=0.7)) \
+    .add_test(testing.test_f1(slicing_function=shared_input_female, threshold=0.8))
 
-suite.run(model=wrapped_model, dataset=wrapped_dataset, reference_dataset=sliced_dataset)
+
+suite.run(model=wrapped_model, dataset=wrapped_dataset, female_slice=slice_female)
 ```
 :::
 ::::

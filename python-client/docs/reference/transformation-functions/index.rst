@@ -5,6 +5,8 @@ Transformation functions
 
 .. autoclass:: giskard.ml_worker.testing.registry.transformation_function.TransformationFunction
    .. automethod:: execute
+   .. automethod:: upload
+   .. automethod:: download
 
 Textual transformation functions
 -------
