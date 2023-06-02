@@ -219,7 +219,7 @@ class BaseModel(ABC):
                 df.drop(target, axis=1, inplace=True)
             if column_dtypes and target in column_dtypes:
                 del column_dtypes[target]
-            if target in self.meta.feature_names:
+            if target and self.meta.feature_names and target in self.meta.feature_names:
                 self.meta.feature_names.remove(target)
 
         if self.meta.feature_names:
