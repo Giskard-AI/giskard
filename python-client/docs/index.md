@@ -6,6 +6,7 @@
 
 getting-started/index
 getting-started/quickstart
+getting-started/key_vulnerabilities/index
 ```
 
 ```{toctree}
