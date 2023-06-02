@@ -6,23 +6,34 @@
 :maxdepth: 2
 :hidden:
 
-sklearn/index
-catboost/index
-pytorch/index
-tensorflow/index
-huggingface/index
+libraries/scikit-learn/index
+libraries/xgboost/index
+libraries/lightgbm/index
+libraries/tensorflow/index
+libraries/pytorch/index
+libraries/huggingface/index
+libraries/langchain/index
+libraries/api/index
 ```
 
 :::{hint}
-You can find our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
+You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
 :::
 
-## [Sklearn](<project:sklearn/index.md>)
+## Libraries
 
-## [Catboost](<project:catboost/index.md>)
+### [Scikit-learn](<project:libraries/scikit-learn/index.md>)
 
-## [Pytorch](<project:pytorch/index.md>)
+### [XGBoost](<project:libraries/xgboost/index.md>)
 
-## [Tensorflow](<project:tensorflow/index.md>)
+### [LightGBM](<project:libraries/lightgbm/index.md>)
 
-## [HuggingFace](<project:huggingface/index.md>)
+### [Tensorflow](<project:libraries/tensorflow/index.md>)
+
+### [PyTorch](<project:libraries/pytorch/index.md>)
+
+### [HuggingFace](<project:libraries/huggingface/index.md>)
+
+### [Langchain](<project:libraries/langchain/index.md>)
+
+### [API](<project:libraries/api/index.md>)
