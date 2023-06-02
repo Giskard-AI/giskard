@@ -112,7 +112,7 @@ class RegistryArtifact(Artifact[SMT], ABC):
             cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
-    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[DatasetProcessFunctionMeta]:
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:
         meta = tests_registry.get_test(uuid)
 
         if meta is not None:
