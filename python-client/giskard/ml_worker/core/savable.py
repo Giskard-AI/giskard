@@ -20,7 +20,6 @@ class Artifact(Generic[SMT], ABC):
     def __init__(self, meta: SMT):
         self.meta = meta
 
-    @abstractmethod
     def save(self, local_dir: Path):
         self._save_locally(local_dir)
         self._save_meta_locally(local_dir)
