@@ -5,7 +5,7 @@
                 <div class="d-flex pl-3 pr-3">
                     <h1 class="test-suite-name">{{ suite.name }}</h1>
                     <div class="flex-grow-1"></div>
-                    <v-btn text @click.stop="reditectToTesting">
+                    <v-btn text @click.stop="redirectToTesting">
                         <v-icon class="mr-2">mdi-arrow-left</v-icon>
                         Back to all suites
                     </v-btn>
@@ -62,17 +62,16 @@
 
 <script lang="ts" setup>
 
-import { computed, onActivated, watch } from "vue";
-import { useMainStore } from "@/stores/main";
-import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { $vfm } from 'vue-final-modal';
+import {computed, onActivated, watch} from "vue";
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import { useCatalogStore } from "@/stores/catalog";
+import {useCatalogStore} from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
-import { api } from "@/api";
-import { useTestSuitesStore } from "@/stores/test-suites";
+import {api} from "@/api";
+import {useTestSuitesStore} from "@/stores/test-suites";
 import ExportTestModalVue from "./modals/ExportTestModal.vue";
 
 const testSuitesStore = useTestSuitesStore();
@@ -139,9 +138,9 @@ async function openSettings() {
     });
 }
 
-async function reditectToTesting() {
+async function redirectToTesting() {
     testSuitesStore.setCurrentTestSuiteId(null);
-    await router.push({ name: 'project-testing' });
+    await router.push({name: 'project-testing'});
 }
 
 function openExportDialog() {
