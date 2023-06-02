@@ -1,5 +1,5 @@
 <template>
-  <TestSuiteExecutionOverview v-if="selectedExecution" :execution="selectedExecution"/>
+  <TestSuiteExecutionOverview v-if="selectedExecution" :execution="selectedExecution" :is-past-execution="true"/>
   <div v-else/>
 </template>
 

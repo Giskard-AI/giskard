@@ -3,11 +3,11 @@
     <v-container class="main-container vc">
       <v-progress-linear indeterminate v-if="executionsAndJobs === undefined" color="primary" class="mt-2"></v-progress-linear>
       <v-container v-else-if="executionsAndJobs.length === 0 && hasTest" class="d-flex flex-column vc fill-height">
-        <h1 class="pt-16">No execution has been performed yet!</h1>
-        <v-btn tile class='mx-1' @click='openRunTestSuite(false)' color="primary">
-          <v-icon>arrow_right</v-icon>
-          Run test suite
-        </v-btn>
+          <h1 class="pt-16">No execution has been performed yet!</h1>
+          <v-btn tile class='mx-1' @click='openRunTestSuite(false)' color="primary" :loading="hasJobInProgress">
+              <v-icon>arrow_right</v-icon>
+              Run test suite
+          </v-btn>
       </v-container>
       <v-container v-else-if="executionsAndJobs.length === 0" class="d-flex flex-column vc fill-height">
         <h1 class="pt-16">No tests has been added to the suite</h1>
@@ -90,14 +90,15 @@ import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue
 import { chain } from "lodash";
 
 const {
-  models,
-  datasets,
-  inputs,
-  executions,
-  trackedJobs,
-  projectId,
-  suite,
-  hasTest
+    models,
+    datasets,
+    inputs,
+    executions,
+    trackedJobs,
+    projectId,
+    suite,
+    hasTest,
+    hasJobInProgress
 } = storeToRefs(useTestSuiteStore());
 
 
