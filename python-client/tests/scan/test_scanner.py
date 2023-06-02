@@ -1,7 +1,12 @@
 import pytest
-from giskard.core.suite import Suite
+import pandas as pd
+from unittest import mock
+from giskard import Model, Dataset
 from giskard.scanner import Scanner
+from giskard.core.suite import Suite
 from giskard.scanner.result import ScanResult
+from langchain import LLMChain, PromptTemplate
+from langchain.llms.fake import FakeListLLM
 
 
 def test_scanner_returns_non_empty_scan_result(german_credit_data, german_credit_model):
@@ -31,41 +36,31 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
         scanner.analyze(german_credit_model, german_credit_data)
 
 
-def test_classification_model_no_dataset(german_credit_model):
+def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
     scanner = Scanner()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as info:
         scanner.analyze(german_credit_model)
+    assert "Dataset must be provided " in str(info.value)
 
 
-def test_generative_model_no_dataset():
-    from langchain import LLMChain, PromptTemplate
-    from langchain.chat_models import ChatOpenAI
-    from giskard import Model
-    from unittest.mock import patch
-
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
-    prompt = PromptTemplate(template="{input}", input_variables=["input"])
-    chain = LLMChain(prompt=prompt, llm=llm)
-
-    model = Model(chain, model_type='generative')
+def test_default_dataset_is_used_with_generative_model():
+    model = mock.MagicMock()
+    model.is_generative = True
     scanner = Scanner()
 
-
-    with patch('Scanner().analyze(Model()).load_default_dataset()'):
-        scanner.analyze(model)
+    with mock.patch('giskard.scanner.llm.utils.load_default_dataset') as load_default_dataset:
+        try:
+            scanner.analyze(model)
+        except:  # noqa
+            pass
+        load_default_dataset.assert_called_once()
 
 
 def test_generative_model_dataset():
-    from langchain import LLMChain, PromptTemplate
-    from langchain.chat_models import ChatOpenAI
-    from giskard import Model, Dataset
-    import pandas as pd
-
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
-    prompt = PromptTemplate(template="{input}", input_variables=["input"])
-    chain = LLMChain(prompt=prompt, llm=llm)
-
-    model = Model(chain, model_type='generative')
+    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
+    prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
+    chain = LLMChain(llm=llm, prompt=prompt)
+    model = Model(chain, model_type="generative")
     dataset = Dataset(
         pd.DataFrame(
             {
@@ -77,4 +72,5 @@ def test_generative_model_dataset():
     )
 
     scanner = Scanner()
-    assert scanner.analyze(model, dataset)
+    result = scanner.analyze(model, dataset)
+    assert result.has_issues()

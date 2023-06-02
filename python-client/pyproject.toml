@@ -157,6 +157,8 @@ llm = [
     "torch",
     "langchain",
     "datasets",
+    "evaluate",
+    "rouge_score",
 ]
 
 [tool.black]
