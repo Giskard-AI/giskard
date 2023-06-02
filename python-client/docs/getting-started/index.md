@@ -5,7 +5,7 @@ Giskard is an **open-source testing framework** dedicated to ML models, ranging 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
 
 <p align="center">
-**Where to start testing? Which tests to implement? What issues to cover? How to implement the tests?**
+<strong>Where to start testing? Which tests to implement? What issues to cover? How to implement the tests?</strong>
 </p>
 
 <p align="center">
