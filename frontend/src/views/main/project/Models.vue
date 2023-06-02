@@ -73,26 +73,26 @@
     <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import {api} from '@/api';
-import {apiURL} from "@/env";
-import {Role} from "@/enums";
-import {$vfm} from 'vue-final-modal';
+import { api } from '@/api';
+import { apiURL } from "@/env";
+import { Role } from "@/enums";
+import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
-import {JWTToken, ModelDTO} from '@/generated-sources';
+import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import {computed, onBeforeMount, onMounted, ref} from 'vue';
+import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {useMainStore} from "@/stores/main";
-import {useProjectArtifactsStore} from "@/stores/project-artifacts";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { useMainStore } from "@/stores/main";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
@@ -102,7 +102,7 @@ const projectStore = useProjectStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 interface Props {
-    projectId: number,
+  projectId: number,
 }
 
 const props = defineProps<Props>();
@@ -184,12 +184,12 @@ async function renameModel(id: string, name: string) {
 }
 
 async function reloadModels() {
-    isLoading.value = true;
-    try {
-        await projectArtifactsStore.loadModels();
-    } finally {
-        isLoading.value = false;
-    }
+  isLoading.value = true;
+  try {
+    await projectArtifactsStore.loadModels();
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const generateApiAccessToken = async () => {
