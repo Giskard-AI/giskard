@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from typing import Sequence, Optional
 
+from ..llm.utils import LLMImportError
+
 from .text_transformations import TextTransformation
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -100,7 +102,10 @@ class BaseTextPerturbationDetector(Detector):
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < output_sensitivity
             elif model.is_generative:
-                import evaluate
+                try:
+                    import evaluate
+                except ImportError as err:
+                    raise LLMImportError() from err
 
                 scorer = evaluate.load("rouge")
                 score = scorer.compute(
