@@ -3,6 +3,8 @@ from jinja2 import nodes
 from jinja2.ext import Extension
 from markupsafe import Markup
 
+from ...utils.display import format_number
+
 
 class IncludeRawExtension(Extension):
     tags = {"include_raw"}
@@ -24,13 +26,4 @@ def pluralize(count, singular="", plural="s"):
 
 
 def format_metric(value, n=3):
-    if isinstance(value, float):
-        if value > 1e6 or value < 1e-3:
-            return f"{value:.{n}e}"
-        else:
-            return f"{value:.{3}f}"
-
-    if isinstance(value, int) and abs(value) > 1e4:
-        return f"{value:.{n}e}"
-
-    return value
+    return format_number(value, n)
