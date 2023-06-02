@@ -153,4 +153,4 @@ To upload your transformation function to the Giskard server, go to [Upload obje
 
 <br>
 
-  ![](/_static/catalog_example.png)
+  ![](../../_static/catalog_example.png)
