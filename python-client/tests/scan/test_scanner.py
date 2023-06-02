@@ -1,4 +1,6 @@
 import pytest
+
+from giskard import Dataset
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.result import ScanResult
@@ -29,3 +31,29 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
     with pytest.raises(RuntimeError):
         scanner.analyze(german_credit_model, german_credit_data)
+
+
+def test_warning_duplicate_index(german_credit_model, german_credit_data):
+    df = german_credit_data.df.copy()
+    new_row = df.loc[1]
+    df = df.append(new_row)
+
+    dataset = Dataset(
+        df=df,
+        target=german_credit_data.target,
+        cat_columns=german_credit_data.cat_columns
+    )
+
+    scanner = Scanner()
+
+    with pytest.warns(match="You dataframe has duplicate indexes, which is currently not supported. "
+                            "We have to reset the dataframe index to avoid issues."):
+        scanner.analyze(german_credit_model, dataset)
+
+
+def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
+    scanner = Scanner()
+
+    suite = scanner.analyze(titanic_model, titanic_dataset).generate_test_suite()
+    created_tests = len(suite.tests)
+    assert created_tests, "Titanic scan doesn't produce tests"

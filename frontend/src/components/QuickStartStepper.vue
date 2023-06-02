@@ -5,49 +5,49 @@
       <v-divider></v-divider>
       <v-stepper-step :complete="step > 2" step="2">Upload your dataset and model</v-stepper-step>
       <v-divider></v-divider>
-        <v-stepper-step step="3">Test your model</v-stepper-step>
+      <v-stepper-step step="3">Test your model</v-stepper-step>
     </v-stepper-header>
 
     <v-stepper-items>
-      <v-stepper-content step="1">
+      <v-stepper-content step="1" class="stepper-content">
         <div class="mb-6" v-if="externalWorker !== null">
           <p>ML Worker is already running!</p>
           <p>You can skip this step.</p>
         </div>
-          <div class="mb-6" v-else>
-              <StartWorkerInstructions></StartWorkerInstructions>
-          </div>
-          <div class="d-flex">
-              <v-btn color="primary" @click="step++">Continue</v-btn>
-              <v-spacer></v-spacer>
-              <v-btn @click="close" text>Cancel</v-btn>
-          </div>
+        <div class="mb-6" v-else>
+          <StartWorkerInstructions></StartWorkerInstructions>
+        </div>
+        <div class="d-flex">
+          <v-btn color="primary" @click="step++">Continue</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="close" text>Cancel</v-btn>
+        </div>
       </v-stepper-content>
-        <v-stepper-content step="2">
-            <div class="mb-6">
-                <div v-if="apiAccessToken && apiAccessToken.id_token">
-                    <CodeSnippet :codeContent='uploadSnippet'></CodeSnippet>
-                </div>
-            </div>
-            <div class="d-flex">
-                <v-btn color="primary" @click="step++">Continue</v-btn>
-                <v-btn color="ml-2" @click="step--">Back</v-btn>
-                <v-spacer></v-spacer>
-                <v-btn @click="close" text>Cancel</v-btn>
-            </div>
-        </v-stepper-content>
+      <v-stepper-content step="2" class="stepper-content">
+        <div class="mb-6">
+          <div v-if="apiAccessToken && apiAccessToken.id_token">
+            <CodeSnippet :codeContent='uploadSnippet'></CodeSnippet>
+          </div>
+        </div>
+        <div class="d-flex">
+          <v-btn color="primary" @click="step++">Continue</v-btn>
+          <v-btn color="ml-2" @click="step--">Back</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="close" text>Cancel</v-btn>
+        </div>
+      </v-stepper-content>
 
-        <v-stepper-content step="3">
-            <div class="mb-6">
-                <p class="mb-2">Choose the type of test you want to perform:</p>
-                <v-btn-toggle v-model="toggleTestType" borderless mandatory color="primary">
-                    <v-btn value="scan" class="py-5 px-4">
-                        <span>Automatic Scan</span>
-                    </v-btn>
-                    <v-btn value="manual" class="py-5 px-4">
-                        <span>Manual Testing</span>
-                    </v-btn>
-                </v-btn-toggle>
+      <v-stepper-content step="3" class="stepper-content">
+        <div class="mb-6">
+          <p class="mb-2">Choose the type of test you want to perform:</p>
+          <v-btn-toggle v-model="toggleTestType" borderless mandatory color="primary">
+            <v-btn value="scan" class="py-5 px-4">
+              <span>Automatic Scan</span>
+            </v-btn>
+            <v-btn value="manual" class="py-5 px-4">
+              <span>Manual Testing</span>
+            </v-btn>
+          </v-btn-toggle>
           <div v-show="toggleTestType === 'scan'">
             <p class="mt-4 mb-2">To scan your model, run the following Python code:</p>
             <CodeSnippet :codeContent="scanCodeContent"></CodeSnippet>
@@ -69,15 +69,15 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from "vue";
-import {api} from "@/api";
-import {apiURL} from "@/env";
-import {JWTToken, MLWorkerInfoDTO, ProjectDTO} from "@/generated-sources";
+import { computed, onMounted, ref } from "vue";
+import { api } from "@/api";
+import { apiURL } from "@/env";
+import { JWTToken, MLWorkerInfoDTO, ProjectDTO } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import StartWorkerInstructions from "./StartWorkerInstructions.vue";
 
 interface Props {
-    project: ProjectDTO;
+  project: ProjectDTO;
 }
 
 const props = defineProps<Props>();
@@ -90,7 +90,7 @@ const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
 const clientCodeContent = computed(() => {
-    return `from giskard import GiskardClient
+  return `from giskard import GiskardClient
 
 url = "${apiURL}" # URL of your Giskard instance
 client = GiskardClient(url, token)`
@@ -98,8 +98,8 @@ client = GiskardClient(url, token)`
 
 
 const uploadSnippet = computed(() => {
-    // language=Python
-    return `from giskard import Dataset, Model, GiskardClient
+  // language=Python
+  return `from giskard import Dataset, Model, GiskardClient
 from giskard.demo import titanic  # for demo purposes only 🛳️
 
 original_model, original_df = titanic()  # Replace with your dataframe creation
@@ -121,7 +121,7 @@ giskard_model.upload(client, "${props.project.key}")`
 });
 
 const datasetCodeContent = computed(() => {
-    return `import pandas as pd
+  return `import pandas as pd
 
 iris_df = pd.DataFrame({"sepal length": [5.1],
                         "sepal width": [3.5],
@@ -142,8 +142,8 @@ dataset_id = wrapped_dataset.upload(client, "${props.project.key}")`
 })
 
 const modelCodeContent = computed(() => {
-    // language=Python
-    return `import pandas as pd
+  // language=Python
+  return `import pandas as pd
     import numpy as np
     from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import LogisticRegression
@@ -185,7 +185,7 @@ results.generate_test_suite("Test suite created by scan").upload(client, "${prop
 
 const manualTestCodeContent = computed(() => {
   // language=Python
-    return `from giskard import Suite
+  return `from giskard import Suite
 from giskard.testing.tests.performance import test_f1
 
 suite = Suite() \\
