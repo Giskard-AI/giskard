@@ -17,9 +17,6 @@ wrapped_dataset = Dataset(
 )
 ```
 
-:::{note}
-You can easily convert back your Giskard into a pandas DataFrame. To do so, use the `.df` method. For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
-:::
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `df`: A `pandas.DataFrame` that contains the raw data (before all the preprocessing steps) and the actual
@@ -37,6 +34,10 @@ You can easily convert back your Giskard into a pandas DataFrame. To do so, use 
         * `column_types`: A dictionary of column names and their types (numeric, category or text) for all columns
           of `dataset`.
           If not provided, the types will be automatically inferred.
+
+:::{note}
+You can easily convert back your Giskard into a pandas DataFrame. To do so, use the `.df` method. For more information about the methods of Dataset, see the [API Reference](../../reference/datasets/index).
+:::
 
 ## Upload your Dataset in the Giskard server
 
