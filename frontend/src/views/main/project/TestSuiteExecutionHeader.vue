@@ -20,7 +20,7 @@
                         <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
                         Executed
-                        <string>{{ timeSince(execution.executionDate) }}</string>
+                        <span>{{ timeSince(execution.executionDate) }}</span>
                         .
                         Check the <strong @click="openLogs" class="clickable">execution logs.</strong>
                     </h4>
