@@ -1,4 +1,4 @@
-# Upload an object to the Giskard server
+# ⬆️ Upload an object to the Giskard server
 
 You can easily upload to the Giskard server objects, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
 
