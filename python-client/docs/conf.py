@@ -81,6 +81,7 @@ html_theme_options = {
         "color-brand-content": "#91F6C0",
         "color-api-background": "#242424",
         "color-sidebar-current-text": "#56D793",
+        "color-toc-title": "#C4C4C4",
         "color-toc-item-text--active": "#56D793",
         "color-sidebar-link-text--top-level": "#FcFcFc",
         "color-content-foreground": "#FFFFFF",
