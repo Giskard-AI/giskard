@@ -264,3 +264,21 @@ a {
     display: flex;
     align-items: center;
 }
+
+/* Cards ! */
+
+.sd-card {
+    border-radius: 5px;
+    margin-bottom: 1.5em;
+    transition: box-shadow 0.2s ease-in;
+    box-shadow: 0 var(--sd-color-shadow),
+    1px 1px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.sd-card-body {
+    min-height: 150px;
+}
+
+.sd-card-title {
+    font-size: 16px;
+}
