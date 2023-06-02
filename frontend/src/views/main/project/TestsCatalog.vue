@@ -135,8 +135,9 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import { storeToRefs } from "pinia";
 import { useCatalogStore } from "@/stores/catalog";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
-import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
-import {alphabeticallySorted} from "@/utils/comparators";
+import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
+import { alphabeticallySorted } from "@/utils/comparators";
+import CodeSnippet from "@/components/CodeSnippet.vue";
 
 let props = defineProps<{
     projectId: number,

@@ -4,7 +4,7 @@
         <div class="d-flex">
         </div>
         <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
-        <SuiteTestExecutionList :tests="filteredTest" :compact="false"/>
+        <SuiteTestExecutionList :tests="filteredTest" :compact="false" :is-past-execution="isPastExecution"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
         <v-alert class="text-center">
@@ -30,7 +30,8 @@ import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHea
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const props = withDefaults(defineProps<{
-    execution?: TestSuiteExecutionDTO
+    execution?: TestSuiteExecutionDTO,
+    isPastExecution: boolean,
     tryMode?: boolean
 }>(), {
     tryMode: false
