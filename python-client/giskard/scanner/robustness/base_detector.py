@@ -37,6 +37,10 @@ class BaseTextPerturbationDetector(Detector):
             if col_type == "text" and pd.api.types.is_string_dtype(dataset.df[col].dtype)
         ]
 
+        # Only analyze the model features
+        if model.meta.feature_names:
+            features = [f for f in features if f in model.meta.feature_names]
+
         logger.debug(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
             f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
