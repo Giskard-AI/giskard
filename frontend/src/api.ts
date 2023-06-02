@@ -211,7 +211,7 @@ export const api = {
     });
   },
   async checkIfMLWorkerIsRunning(workerType: MLWorkerType) {
-    return apiV2.get<unknown, MLWorkerInfoDTO>(`/ml-workers/availabity/${workerType}`);
+    return apiV2.get<unknown, MLWorkerInfoDTO>(`/ml-workers/availability/${workerType}`);
   },
   async getRunningWorkerJobs() {
     return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
