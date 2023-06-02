@@ -23,6 +23,11 @@
                     page
                 </p>
             </div>
+            <v-card-actions>
+                <div class="d-flex align-center">
+                    <v-btn color="primary" @click="checkForExternalWorker">Reload</v-btn>
+                </div>
+            </v-card-actions>
         </v-card-text>
     </v-card>
 </template>
@@ -30,15 +35,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "@/stores/main";
+import { useMLWorkerStore } from "@/stores/ml-worker";
 import { useRoute } from "vue-router/composables";
 import { apiURL } from "@/env";
 import { JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import { api } from "@/api";
+import { TYPE } from "vue-toastification";
 
 const appSettings = computed(() => mainStore.appSettings);
 
 const mainStore = useMainStore();
+const mlWorkerStore = useMLWorkerStore();
 const route = useRoute();
 
 
@@ -53,6 +61,21 @@ const generateApiAccessToken = async () => {
         apiAccessToken.value = await api.getApiAccessToken();
     } catch (error) {
         console.log(error);
+    }
+}
+
+function checkForExternalWorker() {
+    mlWorkerStore.checkExternalWorkerConnection();
+    if (mlWorkerStore.isExternalWorkerConnected) {
+        useMainStore().addNotification({
+            content: 'External worker connection found!',
+            color: TYPE.SUCCESS,
+        });
+    } else {
+        useMainStore().addNotification({
+            content: 'No external worker connection found',
+            color: TYPE.ERROR,
+        });
     }
 }
 
