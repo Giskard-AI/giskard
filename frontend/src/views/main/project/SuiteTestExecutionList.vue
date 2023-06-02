@@ -2,7 +2,7 @@
     <div class="d-flex flex-column gap-16">
         <v-alert v-if="props.tests.length === 0" type="info" text>No test match the current filter</v-alert>
         <SuiteTestExecutionCard v-for="({result, suiteTest}) in props.tests" :suite-test="suiteTest"
-                                :result="result" :compact="compact"/>
+                                :result="result" :compact="compact" :is-past-execution="isPastExecution"/>
     </div>
 </template>
 
@@ -18,9 +18,11 @@ const props = withDefaults(defineProps<{
         suiteTest: SuiteTestDTO,
         result?: SuiteTestExecutionDTO
     }[],
-    compact: boolean
+    compact: boolean,
+    isPastExecution: boolean
 }>(), {
-    compact: false
+    compact: false,
+    isPastExecution: false
 });
 
 const testSuiteStore = useTestSuiteStore();
