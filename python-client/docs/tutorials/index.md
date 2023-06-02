@@ -17,6 +17,8 @@ libraries/api/index
 tasks/classification/index
 tasks/regression/index
 tasks/text-generation/index
+data-types/tabular/index
+data-types/text/index
 ```
 
 :::{hint}
@@ -41,10 +43,17 @@ You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-
 
 ### [API](<project:libraries/api/index.md>)
 
-## ML Tasks
+## ML tasks
 
 ### [Classification](<project:libraries/classification/index.md>)
 
 ### [Regression](<project:libraries/regression/index.md>)
 
 ### [Text generation](<project:libraries/text-generation/index.md>)
+
+## Data types
+
+### [Tabular](<project:data-types/tabular/index.md>)
+
+### [Text](<project:data-types/text/index.md>)
+
