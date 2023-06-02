@@ -32,7 +32,7 @@
                   </tr>
                   <tr>
                     <td colspan="2">
-                      <v-divider class="divider"/>
+                      <v-divider class="divider" />
                     </td>
                   </tr>
                   <tr>
@@ -56,11 +56,8 @@
           <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               <span>Usage reporting</span>
-              <v-spacer/>
-              <v-switch
-                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
-                  @change="saveGeneralSettings(appSettings.generalSettings)"
-              ></v-switch>
+              <v-spacer />
+              <v-switch v-model="appSettings.generalSettings.isAnalyticsEnabled" @change="saveGeneralSettings(appSettings.generalSettings)"></v-switch>
             </v-card-title>
             <v-card-text>
               <div class="mb-2">
@@ -74,46 +71,36 @@
       </v-row>
       <v-row v-if="!mainStore.authAvailable">
         <v-col>
-          <ApiTokenCard/>
+          <ApiTokenCard />
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-        <v-card>
+          <v-card>
             <v-card-title class="font-weight-light secondary--text d-flex">
               <span>ML Worker</span>
-              <v-spacer/>
+              <v-spacer />
               <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
-                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                      <span>external</span>
-                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
-                              :color="isWorkerAvailable(false) ? 'green': 'red'">mdi-circle
-                      </v-icon>
-                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                  </v-tab>
-                  <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
-                      <span>internal</span>
-                      <v-icon v-show="!mlWorkerSettingsLoading" size="10"
-                              :color="isWorkerAvailable(true) ? 'green': 'red'">
-                          mdi-circle
-                      </v-icon>
-                      <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading"/>
-                  </v-tab>
+                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                  <span>external</span>
+                  <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(false) ? 'green' : 'red'">mdi-circle
+                  </v-icon>
+                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" />
+                </v-tab>
+                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                  <span>internal</span>
+                  <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(true) ? 'green' : 'red'">
+                    mdi-circle
+                  </v-icon>
+                  <v-progress-circular size="20" indeterminate v-show="mlWorkerSettingsLoading" />
+                </v-tab>
               </v-tabs>
-                <v-btn icon @click="initMLWorkerInfo">
-                    <v-icon>refresh</v-icon>
-                </v-btn>
+              <v-btn icon @click="initMLWorkerInfo">
+                <v-icon>refresh</v-icon>
+              </v-btn>
             </v-card-title>
             <v-card-text>
-              <v-alert
-                  v-show="!externalWorkerSelected"
-                  color="primary"
-                  border="left"
-                  outlined
-                  colored-border
-                  icon="warning"
-              >Internal ML Worker is only used in demo projects. For other projects use an <span
-                  class="font-weight-bold">External ML Worker</span>.
+              <v-alert v-show="!externalWorkerSelected" color="primary" border="left" outlined colored-border icon="warning">Internal ML Worker is only used in demo projects. For other projects use an <span class="font-weight-bold">External ML Worker</span>.
               </v-alert>
               <v-simple-table v-if="currentWorker">
                 <table class="w100">
@@ -144,8 +131,8 @@
                     <td>{{ epochToDate(currentWorker.processStartTime) }}</td>
                   </tr>
                   <tr>
-                  <td>Internal ML Worker address</td>
-                  <td>{{ currentWorker.internalGrpcAddress }}</td>
+                    <td>Internal ML Worker address</td>
+                    <td>{{ currentWorker.internalGrpcAddress }}</td>
                   </tr>
                   <tr>
                     <td>Architecture</td>
@@ -154,23 +141,8 @@
                   <tr>
                     <td>Installed packages</td>
                     <td class="overflow-hidden">
-                      <v-text-field
-                          class="pt-5"
-                          dense
-                          v-model="installedPackagesSearch"
-                          append-icon="mdi-magnify"
-                          label="Search"
-                          single-line
-                          hide-details
-                          clearable
-                      ></v-text-field>
-                      <v-data-table
-                          dense
-                          :sort-by="['name']"
-                          :headers="installedPackagesHeaders"
-                          :items="installedPackagesData"
-                          :search="installedPackagesSearch"
-                      ></v-data-table>
+                      <v-text-field class="pt-5" dense v-model="installedPackagesSearch" append-icon="mdi-magnify" label="Search" single-line hide-details clearable></v-text-field>
+                      <v-data-table dense :sort-by="['name']" :headers="installedPackagesHeaders" :items="installedPackagesData" :search="installedPackagesSearch"></v-data-table>
                     </td>
                   </tr>
                 </table>
@@ -180,47 +152,42 @@
                 <v-container v-show="!mlWorkerSettingsLoading" class="pa-0">
                   <div v-show="!externalWorkerSelected">
                     <p>Not available. Check that internal ML Worker is running or start it with</p>
-                    <p><code class="text-body-1">giskard server restart worker</code></p>
+                    <CodeSnippet language="bash" :codeContent="`giskard server restart worker`" />
                   </div>
                   <div v-show="externalWorkerSelected">
-                    <v-alert
-                        color="warning"
-                        border="left"
-                        outlined
-                        colored-border
-                        icon="info"
-                    >No external ML Worker is connected
+                    <v-alert color="warning" border="left" outlined colored-border icon="info">No external ML Worker is connected
                     </v-alert>
-                    <StartWorkerInstructions/>
+                    <StartWorkerInstructions />
                   </div>
                 </v-container>
               </v-card-text>
             </v-card-text>
-          <v-card-actions v-if="currentWorker">
-            <v-col class="text-right">
-              <v-btn @click="stopMLWorker()">Stop ML Worker</v-btn>
-            </v-col>
-          </v-card-actions>
+            <v-card-actions v-if="currentWorker">
+              <v-col class="text-right">
+                <v-btn @click="stopMLWorker()">Stop ML Worker</v-btn>
+              </v-col>
+            </v-card-actions>
           </v-card>
         </v-col>
       </v-row>
     </v-container>
     <v-dialog v-model="upgradeModal" width="700">
-      <PlanUpgradeCard @done="upgradeModal = false"/>
+      <PlanUpgradeCard @done="upgradeModal = false" />
     </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeMount, ref, watch} from "vue";
-import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
+import { computed, onBeforeMount, ref, watch } from "vue";
+import { GeneralSettings, MLWorkerInfoDTO } from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
-import {api} from "@/api";
+import { api } from "@/api";
 import moment from "moment/moment";
-import {useMainStore} from "@/stores/main";
+import { useMainStore } from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import CodeSnippet from "@/components/CodeSnippet.vue";
 
 const mainStore = useMainStore();
 
@@ -234,29 +201,29 @@ const installedPackagesSearch = ref<string>("");
 
 const upgradeModal = ref<boolean>(false);
 
-const installedPackagesHeaders = [{text: 'Name', value: 'name', width: '70%'}, {
-    text: 'Version',
-    value: 'version',
-    width: '30%'
+const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' }, {
+  text: 'Version',
+  value: 'version',
+  width: '30%'
 }];
 
 
 onBeforeMount(async () => {
-    await initMLWorkerInfo();
+  await initMLWorkerInfo();
 })
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
-    if (allMLWorkerSettings.value.length) {
-        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-        installedPackagesData.value = currentWorker.value !== null ?
-            Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
-                name: key,
-                version: value
-            })) : [];
-    }
-}, {deep: true})
+  if (allMLWorkerSettings.value.length) {
+    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+    installedPackagesData.value = currentWorker.value !== null ?
+      Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
+        name: key,
+        version: value
+      })) : [];
+  }
+}, { deep: true })
 
 function isWorkerAvailable(isInternal: boolean): boolean {
   return allMLWorkerSettings.value.find(value => value.isRemote === !isInternal) !== undefined;
@@ -272,15 +239,15 @@ async function saveGeneralSettings(settings: GeneralSettings) {
 }
 
 async function initMLWorkerInfo() {
-    try {
-        currentWorker.value = null;
-        mlWorkerSettingsLoading.value = true;
-        allMLWorkerSettings.value = await api.getMLWorkerSettings();
-        currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-    } catch (error) {
-    } finally {
-        mlWorkerSettingsLoading.value = false;
-    }
+  try {
+    currentWorker.value = null;
+    mlWorkerSettingsLoading.value = true;
+    allMLWorkerSettings.value = await api.getMLWorkerSettings();
+    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+  } catch (error) {
+  } finally {
+    mlWorkerSettingsLoading.value = false;
+  }
 }
 
 function epochToDate(epoch: number) {
