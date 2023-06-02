@@ -212,7 +212,7 @@ class BaseModel(ABC):
         if column_dtypes:
             for cname, ctype in column_dtypes.items():
                 if cname not in df:
-                    df[cname] = None
+                    df[cname] = np.nan
 
         if target:
             if target in df.columns:
@@ -234,7 +234,7 @@ class BaseModel(ABC):
 
         for cname, ctype in column_dtypes.items():
             if cname not in df:
-                df[cname] = None
+                df[cname] = np.nan
 
         if column_dtypes:
             df = Dataset.cast_column_to_dtypes(df, column_dtypes)
