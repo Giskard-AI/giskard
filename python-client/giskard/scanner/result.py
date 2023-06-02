@@ -1,5 +1,8 @@
 from collections import defaultdict
+
 import pandas as pd
+
+from giskard.utils.analytics_collector import analytics, anonymize
 
 
 class ScanResult:
@@ -99,4 +102,26 @@ class ScanResult:
         for test, test_name in self.generate_tests(with_names=True):
             suite.add_test(test, test_name)
 
+        self._track_suite(suite, name)
         return suite
+
+    def _track_suite(self, suite, name):
+        tests_cnt = {}
+        if suite.tests:
+            for t in suite.tests:
+                try:
+                    name = t.giskard_test.meta.full_name
+                    if name not in tests_cnt:
+                        tests_cnt[name] = 1
+                    else:
+                        tests_cnt[name] += 1
+                except:  # noqa
+                    pass
+        analytics.track(
+            "scan:generate_test_suite",
+            {
+                "suite_name": anonymize(name),
+                "tests_cnt": len(suite.tests),
+                **tests_cnt
+            },
+        )

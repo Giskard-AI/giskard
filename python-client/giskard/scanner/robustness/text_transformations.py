@@ -9,6 +9,7 @@ from ...datasets import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...ml_worker.testing.functions.transformation import gruber
 
 
 class TextTransformation(TransformationFunction):
@@ -90,14 +91,14 @@ class TextTypoTransformation(TextTransformation):
                 return word
             elif perturbation_type == 'delete':
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
+                word = word[:idx] + word[idx + 1:]
                 return word
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in self._typos:
                     replacement = random.choice(self._typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
+                    text_modified = word[:j] + replacement + word[j + 1:]
                     return text_modified
         return word
 
@@ -115,7 +116,15 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return " ".join(new_text)
 
     def _remove_punc(self, text):
-        return text.translate(str.maketrans('', '', self._punctuation))
+        split_urls_from_text = gruber.split(text)
+
+        # The non-URLs are always even-numbered entries in the list and the URLs are odd-numbered.
+        for i in range(0, len(split_urls_from_text), 2):
+            split_urls_from_text[i] = split_urls_from_text[i].translate(str.maketrans('', '', self._punctuation))
+
+        stripped_text = "".join(split_urls_from_text)
+
+        return stripped_text
 
 
 class TextLanguageBasedTransformation(TextTransformation):

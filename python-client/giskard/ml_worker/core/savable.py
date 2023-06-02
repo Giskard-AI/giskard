@@ -1,12 +1,19 @@
+import inspect
 import logging
 import os
+import pickle
 import posixpath
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Generic
 
+import cloudpickle
+import yaml
+
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -18,8 +25,12 @@ class Artifact(Generic[SMT], ABC):
     def __init__(self, meta: SMT):
         self.meta = meta
 
+    def save(self, local_dir: Path):
+        self._save_locally(local_dir)
+        self._save_meta_locally(local_dir)
+
     @abstractmethod
-    def save(self, local_dit: Path):
+    def _save_locally(self, local_dit: Path):
         ...
 
     @classmethod
@@ -43,8 +54,7 @@ class Artifact(Generic[SMT], ABC):
             return posixpath.join("project", project_key, cls._get_name(), uuid)
 
     def _save_meta_locally(self, local_dir):
-        with open(Path(local_dir) / 'meta.yaml', 'wb') as f:
-            import yaml
+        with open(Path(local_dir) / 'meta.yaml', 'w') as f:
             yaml.dump(self.meta, f)
 
     @classmethod
@@ -54,8 +64,6 @@ class Artifact(Generic[SMT], ABC):
             return None
 
         with open(file, 'r') as f:
-            import yaml
-
             return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
@@ -95,3 +103,42 @@ class Artifact(Generic[SMT], ABC):
             data = cls.load(local_dir, uuid, meta)
 
         return data
+
+
+class RegistryArtifact(Artifact[SMT], ABC):
+
+    def _save_locally(self, local_dir: Path):
+        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+            cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
+
+    @classmethod
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:
+        meta = tests_registry.get_test(uuid)
+
+        if meta is not None:
+            return meta
+
+        return super()._load_meta_locally(local_dir, uuid)
+
+    @classmethod
+    def load(cls, local_dir: Path, uuid: str, meta: SMT):
+        _function: Optional['RegistryArtifact']
+
+        if local_dir.exists():
+            with open(local_dir / 'data.pkl', 'rb') as f:
+                _function = cloudpickle.load(f)
+        else:
+            try:
+                func = getattr(sys.modules[meta.module], meta.name)
+
+                if inspect.isclass(func) or hasattr(func, 'meta'):
+                    _function = func()
+                else:
+                    _function = cls(func)
+                    _function.meta = meta
+            except Exception:
+                return None
+
+        tests_registry.register(_function.meta)
+
+        return _function
