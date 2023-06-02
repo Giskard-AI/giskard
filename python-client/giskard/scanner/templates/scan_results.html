@@ -8,7 +8,7 @@
     <div id="gsk-scan" class="dark:text-white dark:bg-zinc-800 rounded border border-gray-500">
         {% include "_tab_header.html" %}
         {% include "_main_content.html" %}
-        {% if issues|length > 0 %}
+        {% if issues|length > 0 and not issues[0].model.is_generative %}
         {% include "_code_snippet.html" %}
         {% endif %}
     </div>
