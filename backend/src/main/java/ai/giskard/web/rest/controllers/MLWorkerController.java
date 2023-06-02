@@ -34,16 +34,19 @@ public class MLWorkerController {
     private final MLWorkerService mlWorkerService;
 
     @GetMapping()
-    public List<MLWorkerInfoDTO> getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
+    public List<MLWorkerInfoDTO> getMLWorkerInfo()
+            throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
         try (MLWorkerClient internalClient = mlWorkerService.createClientNoError(true);
-             MLWorkerClient externalClient = mlWorkerService.createClientNoError(false)) {
+                MLWorkerClient externalClient = mlWorkerService.createClientNoError(false)) {
             List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
 
             if (internalClient != null) {
-                awaitableResults.add(internalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
+                awaitableResults.add(internalClient.getFutureStub()
+                        .getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
             }
             if (externalClient != null) {
-                awaitableResults.add(externalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
+                awaitableResults.add(externalClient.getFutureStub()
+                        .getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
             }
 
             List<MLWorkerInfo> mlWorkerInfos = Futures.successfulAsList(awaitableResults).get();
@@ -71,4 +74,8 @@ public class MLWorkerController {
         }
     }
 
+    @GetMapping("/external/connected")
+    public boolean isExternalWorkerConnected() {
+        return mlWorkerService.isExternalWorkerConnected();
+    }
 }

@@ -7,7 +7,7 @@ import {
   AdminUserDTO,
   AppConfigDTO,
   CatalogDTO,
-    ComparisonClauseDTO,
+  ComparisonClauseDTO,
   CreateFeedbackDTO,
   CreateFeedbackReplyDTO,
   DatasetDTO,
@@ -41,7 +41,7 @@ import {
   RoleDTO,
   RowFilterDTO,
   SetupDTO,
-    SlicingFunctionDTO,
+  SlicingFunctionDTO,
   SuiteTestDTO,
   TestSuiteCompleteDTO,
   TestSuiteDTO,
@@ -209,6 +209,9 @@ export const api = {
       },
     });
   },
+  async isExternalMLWorkerConnected() {
+    return apiV2.get<unknown, boolean>(`/ml-workers/external/connected`);
+  },
   async getRunningWorkerJobs() {
     return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
   },
@@ -328,15 +331,21 @@ export const api = {
   async peekDataFile(datasetId: string) {
     return this.getDatasetRows(datasetId, 0, 10);
   },
-  async getDatasetRows(datasetId: string, offset: number, size: number,
-                       filtered: RowFilterDTO = {}, sample: boolean = true, shuffle: boolean = false) {
+  async getDatasetRows(
+    datasetId: string,
+    offset: number,
+    size: number,
+    filtered: RowFilterDTO = {},
+    sample: boolean = true,
+    shuffle: boolean = false
+  ) {
     return apiV2.post<unknown, DatasetPageDTO>(`/dataset/${datasetId}/rows`, filtered, {
       params: {
         offset,
         size,
         sample,
-        shuffle
-      }
+        shuffle,
+      },
     });
   },
   async editDatasetName(datasetId: string, name: string) {
@@ -465,9 +474,9 @@ export const api = {
       },
     });
   },
-    async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
-        return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses)
-    },
+  async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
+    return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses);
+  },
   async uploadLicense(form: FormData) {
     return apiV2.post<unknown, unknown>(`/ee/license`, form, {
       headers: {
@@ -481,7 +490,7 @@ export const api = {
       license: license,
     });
   },
-    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
+  async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
     return apiV2.post<unknown, DatasetProcessingResultDTO>(
       `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process?sample=${sample}`,
       functions
