@@ -1,5 +1,6 @@
 import hashlib
 import os
+import platform
 import uuid
 from functools import wraps
 from typing import Dict, Optional
@@ -58,8 +59,7 @@ class GiskardAnalyticsCollector:
 
         return Mixpanel(
             GiskardAnalyticsCollector.dev_mp_project_key if is_dev_mode else
-            GiskardAnalyticsCollector.prod_mp_project_key,
-            consumer=Consumer(api_host="pxl.giskard.ai"),
+            GiskardAnalyticsCollector.prod_mp_project_key
         )
 
     @analytics_method
@@ -78,7 +78,10 @@ class GiskardAnalyticsCollector:
             import giskard
             self.giskard_version = giskard.get_version()
         if self.is_enabled or force:
-            merged_props = {"giskard_version": self.giskard_version}
+            merged_props = {
+                "giskard_version": self.giskard_version,
+                "python_version": platform.python_version()
+            }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
             if self.server_info is not None:
