@@ -130,8 +130,7 @@ data_preprocessor, clf = demo.titanic_pipeline()
 
 class MyCustomModel(Model):
     def model_predict(self, df: pd.DataFrame):
-        preprocessed_df = data_preprocessor(
-        df)
+        preprocessed_df = data_preprocessor(df)
         return self.model.predict_proba(preprocessed_df)
 
 
