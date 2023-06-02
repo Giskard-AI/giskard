@@ -1,4 +1,4 @@
-🪄 Transformation Function Catalog
+🪄 Transformation function catalog
 ============
 
 - **Text transformation function**
