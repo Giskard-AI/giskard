@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 from giskard import Dataset
 
@@ -105,3 +106,82 @@ def test_punctuation_strip_transformation():
     assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
+
+
+def test_religion_based_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan.",
+                "Une partie des bouddhistes commémorent ce vendredi 5 mai la naissance, l’éveil et la mort de "
+                "Siddhartha gautama, dit « le Bouddha »",
+                "Signs have also been placed in the direction of Mecca along one of the Peak District’s most popular "
+                "hiking routes, Cave Dale, to help Muslims combine prayer with enjoying the outdoors.",
+                "The Kumbh Mela is said to be the largest gathering in the world and is a blend of religion "
+                "spirituality, mythology and culture",
+            ]
+        }
+    )
+    from giskard.scanner.robustness.text_transformations import TextReligionTransformation
+
+    t = TextReligionTransformation(column="text")
+
+    random.seed(0)
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert (
+        transformed_text[0] == "Les hindous de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le "
+        "mois de ramadan."
+    )
+    assert (
+        transformed_text[1] == "Une partie des chrétiens commémorent ce vendredi 5 mai la naissance, l’éveil et la "
+        "mort de muhammad, dit « le Bouddha »"
+    )
+    assert (
+        transformed_text[2] == "Signs have also been placed in the direction of kumbh mela along one of the Peak "
+        "District’s most popular hiking routes, Cave Dale, to help christians combine prayer "
+        "with enjoying the outdoors."
+    )
+    assert (
+        transformed_text[3] == "The vatican is said to be the largest gathering in the world and is a blend of "
+        "religion spirituality, mythology and culture"
+    )
+
+
+def test_country_based_transformation():
+    import random
+
+    random.seed(10)
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "Les musulmans de France fêtent vendredi 21 avril la fin du jeûne pratiqué durant le mois de ramadan.",
+                "Des incendies ravagent l'Australie depuis la fin août 2019.",
+                "Bali is an Indonesian island known for its forested volcanic mountains, iconic rice paddies, "
+                "beaches and coral reefs. The island is home to religious sites such as cliffside Uluwatu Temple",
+                "President Joe Biden visited Ukraine's capital for the first time since Russia invaded the country",
+            ]
+        }
+    )
+    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+
+    t = TextNationalityTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert (
+        transformed_text[0] == "Les musulmans de Eswatini fêtent vendredi 21 avril la fin du "
+        "jeûne pratiqué durant le mois de ramadan."
+    )
+    assert transformed_text[1] == "Des incendies ravagent l'Congo depuis la fin août 2019."
+    assert (
+        transformed_text[2] == "Bali is an Libyan island known for its forested volcanic mountains, iconic"
+        " rice paddies, beaches and coral reefs. The island is home to religious sites "
+        "such as cliffside Uluwatu Temple"
+    )
+    assert (
+        transformed_text[3]
+        == "President Joe Biden visited U.S.'s capital for the first time since Nigeria invaded the country"
+    )
