@@ -47,7 +47,7 @@
         </v-row>
       </v-card>
       <v-hover v-slot="{ hover }" v-for="p in projects" :key="p.id">
-        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="() => { updateCurrentProject(p.id) }" link>
+        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="updateCurrentProject(p.id)" link>
           <v-row class="pa-2">
             <v-col cols=2>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -182,6 +182,7 @@ import { useProjectStore } from "@/stores/project";
 import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
 import { useTestSuitesStore } from "@/stores/test-suites";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
 const route = useRoute();
 const router = useRouter();
@@ -189,6 +190,7 @@ const router = useRouter();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const openPrepareDialog = ref<boolean>(false);
@@ -343,7 +345,9 @@ watch(() => newProjectName.value, (value) => {
 })
 
 async function updateCurrentProject(projectId: number) {
+  projectStore.setCurrentProjectId(projectId);
   await testSuitesStore.loadTestSuites(projectId);
+  await debuggingSessionsStore.loadDebuggingSessions(projectId);
   await router.push({ name: defaultRoute, params: { id: projectId } });
 }
 </script>
