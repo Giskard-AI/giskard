@@ -26,7 +26,7 @@ def get_class(_lib, _class):
 
 
 def infer_giskard_cls(model: Any):
-    if inspect.isfunction(model):
+    if inspect.isfunction(model) or inspect.ismethod(model):
         return PredictionFunctionModel
     else:
         for _giskard_class, _base_libs in ml_libraries.items():
