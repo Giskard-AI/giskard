@@ -77,18 +77,8 @@ public class MLWorkerController {
         }
     }
 
-    @GetMapping("/availability/{workerType}")
-    public boolean isWorkerRunning(@PathVariable @NotNull MLWorkerType workerType) {
-        boolean isInternal = "internal".equalsIgnoreCase(String.valueOf(workerType));
-        if (isInternal) {
-            try {
-                List<MLWorkerInfoDTO> mlWorkerInfo = getMLWorkerInfo();
-                return mlWorkerInfo.stream().anyMatch(info -> !info.isRemote());
-            } catch (Exception e) {
-                return false;
-            }
-        } else {
-            return mlWorkerService.isExternalWorkerConnected();
-        }
+    @GetMapping("/external/connected")
+    public boolean isExternalWorkerConnected() {
+        return mlWorkerService.isExternalWorkerConnected();
     }
 }
