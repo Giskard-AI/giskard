@@ -124,7 +124,7 @@ async function createTestSuite() {
     const project = await api.getProject(props.projectId)
     const suite = await api.createTestSuite(project.key, {
         id: null,
-        name: 'Unnamed test suite',
+        name: `Unnamed test suite`,
         projectKey: project.key,
         functionInputs: [],
         tests: []
