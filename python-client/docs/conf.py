@@ -84,6 +84,8 @@ html_theme_options = {
         "color-toc-title": "#C4C4C4",
         "color-toc-item-text--active": "#56D793",
         "color-sidebar-link-text--top-level": "#FcFcFc",
+        "color-sidebar-search-foreground": "#a4a4a4",
+        "color-sidebar-search-border": "#a4a4a4",
         "color-content-foreground": "#FFFFFF",
         "social-button-background": "#000000",
         "social-button-text": "#000000",
