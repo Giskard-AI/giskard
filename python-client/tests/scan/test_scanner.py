@@ -1,15 +1,16 @@
-import pytest
-import pandas as pd
 from unittest import mock
-from giskard import Model, Dataset
 
-from giskard import Dataset
-from giskard.scanner import Scanner
-from giskard.core.suite import Suite
-from giskard.scanner.result import ScanResult
+import pandas as pd
+import pytest
 from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
+
+from giskard import Dataset
 from giskard import GiskardClient
+from giskard import Model
+from giskard.core.suite import Suite
+from giskard.scanner import Scanner
+from giskard.scanner.result import ScanResult
 
 
 @pytest.mark.parametrize(
