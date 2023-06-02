@@ -14,6 +14,7 @@ from ..datasets.base import Dataset
 from ..models.base import BaseModel, WrapperModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, anonymize, analytics_method
+from giskard.client.python_utils import warning
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -32,6 +33,18 @@ class Scanner:
         time_start = perf_counter()
         validate_model(model=model, validate_ds=dataset)
         model_validation_time = perf_counter() - time_start
+
+        if not dataset.df.index.is_unique:
+            warning(
+                "You dataframe has duplicate indexes, which is currently not supported. "
+                "We have to reset the dataframe index to avoid issues."
+            )
+            dataset = Dataset(
+                df=dataset.df.reset_index(drop=True),
+                name=dataset.name,
+                target=dataset.target,
+                column_types=dataset.column_types,
+            )
 
         maybe_print("Running scan…", verbose=verbose)
         time_start = perf_counter()
