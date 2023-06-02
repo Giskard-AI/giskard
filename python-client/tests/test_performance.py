@@ -27,7 +27,7 @@ def test_f1(model, data, threshold, expected_metric, actual_slices_size, request
 @pytest.mark.parametrize(
     "model,data,threshold,expected_metric,actual_slices_size",
     [
-        ("german_credit_model", "german_credit_data", 0.5, 0.71, 1000),
+        ("german_credit_model", "german_credit_data", 0.5, 0.83, 1000),
         ("enron_model", "enron_data", 0.5, 0.94, 50),
     ],
 )
