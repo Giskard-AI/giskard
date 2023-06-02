@@ -36,7 +36,7 @@ export default class ErrorToast extends Vue {
   max-height: 300px;
   width: 100%;
   overflow: auto;
-  font-size: 12px
+  font-size: 0.75em;
 }
 
 .detail {

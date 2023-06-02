@@ -5,6 +5,15 @@
         <v-card height="100%" outlined>
           <v-card-title class="font-weight-light secondary--text py-1 mt-2">
             Project Settings
+            <v-spacer></v-spacer>
+            <v-btn text @click="exportProject(project.id)">
+              <v-icon left color="primary">mdi-application-export</v-icon>
+              Export
+            </v-btn>
+            <v-btn class="ml-2" color="accent" text @click="openDeleteDialog = true" v-if="isProjectOwnerOrAdmin">
+              <v-icon left>delete</v-icon>
+              Delete
+            </v-btn>
           </v-card-title>
           <v-card-text class="container pb-0">
             <v-row>
@@ -163,6 +172,11 @@ async function cancelUserInvitation(user: IUserProfileMinimal) {
       }
     }
   });
+}
+
+function exportProject(id: number) {
+  mixpanel.track('Export project', { id });
+  projectStore.exportProject(id);
 }
 
 async function renameProjectName(newName: string) {
