@@ -212,7 +212,7 @@ onActivated(async () => {
   </div>
   <v-container v-else class="d-flex flex-column vc fill-height">
     <h1 class="pt-16">ML Worker is not connected</h1>
-    <StartWorkerInstructions :mlWorkerType="project?.mlWorkerType" />
+    <StartWorkerInstructions></StartWorkerInstructions>
   </v-container>
 </template>
 
