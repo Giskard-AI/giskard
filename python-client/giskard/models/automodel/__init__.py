@@ -31,7 +31,7 @@ class Model(CloudpickleBasedModel, ABC):
         - :code:`prediction_function(df[feature_names])` does not return an error message.
 
     - Wrap a model object in addition to a data preprocessing function. This is recommended if your model is not
-    serializable by cloudpickle (e.g. TensorFlow models).
+      serializable by cloudpickle (e.g. TensorFlow models).
     This requires:
         - Mandatory: Overriding the model_predict method which should take as input the raw pandas dataframe and
           returns the probabilities for each classification labels (classification) or predictions (regression).
