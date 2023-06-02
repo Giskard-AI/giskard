@@ -76,6 +76,22 @@ def test_generative_model_dataset():
     assert result.has_issues()
 
 
+def test_warning_duplicate_index(german_credit_model, german_credit_data):
+    df = german_credit_data.df.copy()
+    new_row = df.loc[1]
+    df = df.append(new_row)
+
+    dataset = Dataset(df=df, target=german_credit_data.target, cat_columns=german_credit_data.cat_columns)
+
+    scanner = Scanner()
+
+    with pytest.warns(
+        match="You dataframe has duplicate indexes, which is currently not supported. "
+        "We have to reset the dataframe index to avoid issues."
+    ):
+        scanner.analyze(german_credit_model, dataset)
+
+
 def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
     scanner = Scanner()
 
