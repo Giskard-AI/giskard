@@ -33,6 +33,7 @@ guides/upload/index
 :hidden:
 
 tutorials/libraries/index
+tutorials/tasks/index
 ```
 
 ```{toctree}

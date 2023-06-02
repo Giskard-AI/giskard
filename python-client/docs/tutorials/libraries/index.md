@@ -17,7 +17,7 @@ api/index
 ```
 
 :::{hint}
-You can find our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
+You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
 :::
 
 ## [Scikit-learn](<project:scikit-learn/index.md>)
