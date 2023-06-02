@@ -71,7 +71,7 @@ ipython = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
 typing-extensions = "^4.1.0"
-black = "^22.8.0"
+black = ">=22.8,<24.0"
 bandit = "^1.7.4"
 darglint = "^1.8.1"
 flake8 = "^3.9.2"
