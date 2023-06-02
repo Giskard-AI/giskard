@@ -74,3 +74,11 @@ def test_generative_model_dataset():
     scanner = Scanner()
     result = scanner.analyze(model, dataset)
     assert result.has_issues()
+
+
+def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
+    scanner = Scanner()
+
+    suite = scanner.analyze(titanic_model, titanic_dataset).generate_test_suite()
+    created_tests = len(suite.tests)
+    assert created_tests, "Titanic scan doesn't produce tests"
