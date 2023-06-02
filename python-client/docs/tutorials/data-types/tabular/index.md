@@ -1,3 +1,3 @@
 # Tabular
 
-Coming soon...
+* [Titanic](../../../reference/notebooks/example_notebook.ipynb)
