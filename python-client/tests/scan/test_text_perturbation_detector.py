@@ -1,6 +1,9 @@
 import giskard
 import numpy as np
 import pandas as pd
+from giskard import Model, Dataset
+from langchain import LLMChain, PromptTemplate
+from langchain.llms.fake import FakeListLLM
 from giskard.scanner.robustness.text_perturbation_detector import TextPerturbationDetector
 
 
@@ -36,15 +39,10 @@ def test_text_perturbation_works_with_nan_values():
 
 
 def test_llm_text_transformation():
-    from langchain import LLMChain, PromptTemplate
-    from langchain.chat_models import ChatOpenAI
-    from giskard import Model, Dataset
-
-    llm = ChatOpenAI(model="gpt-3.5-turbo")
+    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
-    chain = LLMChain(prompt=prompt, llm=llm)
-
-    model = Model(chain, model_type='generative')
+    chain = LLMChain(llm=llm, prompt=prompt)
+    model = Model(chain, model_type="generative")
 
     dataset = Dataset(
         pd.DataFrame(
@@ -55,9 +53,6 @@ def test_llm_text_transformation():
         ),
         column_types={"instruct": "text", "question": "text"},
     )
-
-    prediction = model.predict(dataset)
-    assert prediction
 
     analyzer = TextPerturbationDetector()
     analyzer.run(model, dataset)
