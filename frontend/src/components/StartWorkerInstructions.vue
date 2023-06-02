@@ -64,8 +64,8 @@ const generateApiAccessToken = async () => {
     }
 }
 
-function checkForExternalWorker() {
-    mlWorkerStore.checkExternalWorkerConnection();
+async function checkForExternalWorker() {
+    await mlWorkerStore.checkExternalWorkerConnection();
     if (mlWorkerStore.isExternalWorkerConnected) {
         useMainStore().addNotification({
             content: 'External worker connection found!',
