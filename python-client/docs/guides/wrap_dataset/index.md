@@ -10,7 +10,7 @@ from giskard import demo, Dataset
 
 wrapped_dataset = Dataset(
     df=demo.titanic_df(),
-    target="Survived",  # Optional but a MUST if available
+    target="Survived",  # Ground truth variable
     cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional but a MUST if available. Inferred automatically if not.
     # name="titanic_dataset", # Optional
     # column_types=None # # Optional: if not provided, it is inferred automatically
