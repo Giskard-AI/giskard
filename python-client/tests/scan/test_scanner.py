@@ -1,20 +1,45 @@
 import pytest
 
 from giskard import Dataset
-from giskard.core.suite import Suite
 from giskard.scanner import Scanner
+from giskard.core.suite import Suite
 from giskard.scanner.result import ScanResult
+from giskard import GiskardClient
 
 
-def test_scanner_returns_non_empty_scan_result(german_credit_data, german_credit_model):
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+        ("german_credit_data", "german_credit_model"),
+        ("enron_data_full", "enron_model"),
+        ("medical_transcript_data", "medical_transcript_model"),
+        ("breast_cancer_data", "breast_cancer_model"),
+        ("fraud_detection_data", "fraud_detection_model"),
+        ("drug_classification_data", "drug_classification_model"),
+        ("amazon_review_data", "amazon_review_model"),
+        ("diabetes_dataset_with_target", "linear_regression_diabetes"),
+        ("hotel_text_data", "hotel_text_model"),
+    ],
+)
+def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
+    _EXCEPTION_MODELS = ["linear_regression_diabetes"]
+
     scanner = Scanner()
-    result = scanner.analyze(german_credit_model, german_credit_data)
+
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+
+    result = scanner.analyze(model, dataset)
 
     assert isinstance(result, ScanResult)
-    assert result.has_issues()
+    assert result.to_html()
 
-    test_suite = result.generate_test_suite()
-    assert isinstance(test_suite, Suite)
+    # Do not do below tests for the diabetes regression model.
+    if model_name not in _EXCEPTION_MODELS:
+        assert result.has_issues()
+
+        test_suite = result.generate_test_suite()
+        assert isinstance(test_suite, Suite)
 
 
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
@@ -31,6 +56,48 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
     with pytest.raises(RuntimeError):
         scanner.analyze(german_credit_model, german_credit_data)
+
+
+@pytest.mark.skip(reason="For active testing of the UI")
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+        ("german_credit_data", "german_credit_model"),
+        ("enron_data_full", "enron_model"),
+        ("medical_transcript_data", "medical_transcript_model"),
+        ("breast_cancer_data", "breast_cancer_model"),
+        ("fraud_detection_data", "fraud_detection_model"),
+        ("drug_classification_data", "drug_classification_model"),
+        ("amazon_review_data", "amazon_review_model"),
+        ("diabetes_dataset_with_target", "linear_regression_diabetes"),
+        ("hotel_text_data", "hotel_text_model"),
+    ],
+)
+def test_scanner_on_the_UI(dataset_name, model_name, request):
+    _EXCEPTION_MODELS = ["linear_regression_diabetes"]
+
+    scanner = Scanner()
+
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+
+    result = scanner.analyze(model, dataset)
+
+    # Do not do below tests for the diabetes regression model.
+    if model_name not in _EXCEPTION_MODELS:
+        test_suite = result.generate_test_suite()
+
+        client = GiskardClient(
+            url="http://localhost:19000",  # URL of your Giskard instance
+            token="API_TOKEN"
+        )
+
+        try:
+            client.create_project("testing_UI", "testing_UI", "testing_UI")
+        except ValueError:
+            pass
+
+        test_suite.upload(client, "testing_UI")
 
 
 def test_warning_duplicate_index(german_credit_model, german_credit_data):
