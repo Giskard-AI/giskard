@@ -123,11 +123,12 @@ test_suite.run()[1]
 
 ## Upload your slicing function to the Giskard server
 
-Saving your slincing function in the Giskard server will enable you to:
-
-* Use your slices for testing purposes: your slices can be used as *fixtures* of your test suite
+Saving your slicing function to the Giskard server will enable you to:
+* Use your slicing functions for testing purposes: your slices can be used as fixtures of your test suite
 * Further debug the examples inside your data slice using explanation
+* Apply the saved slicing functions to other datasets (new production data, etc.)
 
 To upload your slicing function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+
 <br>
   ![](/_static/catalog_slice.png)
