@@ -226,68 +226,10 @@ wrapped_model = MyCustomModel(
 
 ### Model-specific [tutorials](../../tutorials/index.md)
 
-:::::{tab-set}
-::::{tab-item} Any function
-
-- **<project:../../tutorials/pytorch/custom_model.md>**
-- **<project:../../tutorials/huggingface/BertForSequenceClassification_custom.md>**
-  ::::
-
-::::{tab-item} sklearn
-
-:::{hint}
-Most classes in sklearn and catboost
-have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-as attributes. In these two cases, if you don't
-provide us with `classification_labels and feature_names, we will try to infer them
-from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-respectively.
-:::
-
-- **<project:../../tutorials/sklearn/credit_scoring.md>**
-  ::::
-
-::::{tab-item} catboost
-
-:::{hint}
-Most classes in sklearn and catboost
-have [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-as attributes. In these two cases, if you don't
-provide us with `classification_labels and feature_names, we will try to infer them
-from [classes_](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html#sklearn.feature_selection.RFE.classes_)
-and [feature_names_in_](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.feature_names_in_)
-respectively.
-:::
-
-- **<project:../../tutorials/catboost/credit_scoring.md>**
-  ::::
-
-::::{tab-item} pytorch
-
-- **<project:../../tutorials/pytorch/linear_regression.md>**
-- **<project:../../tutorials/pytorch/sst2_iterable.md>**
-- **<project:../../tutorials/pytorch/torch_dataset.md>**
-- **<project:../../tutorials/pytorch/custom_model.md>**
-  ::::
-
-::::{tab-item} tensorflow
-
-- **<project:../../tutorials/tensorflow/classification_1d.md>**
-- **<project:../../tutorials/tensorflow/classification_tfhub.md>**
-  ::::
-
-::::{tab-item} huggingface
-
-- **<project:../../tutorials/huggingface/BertForSequenceClassification.md>**
-- **<project:../../tutorials/huggingface/BertForSequenceClassification_custom.md>**
-- **<project:../../tutorials/huggingface/pytorch.md>**
-- **<project:../../tutorials/huggingface/pytorch_pipeline.md>**
-- **<project:../../tutorials/huggingface/tensorflow.md>**
-  ::::
-  :::::
+To check some **examples** of model wrapping, have a look at our tutorial section. We present there some **notebooks** based on:
+* [**ML libraries**](../../tutorials/libraries/index.md): HuggingFace, Langchain, API REST, PyTorch, Scikit-learn, LightGBM, Tensorflow
+* [**ML task**](../../tutorials/tasks/index.md): Classification, Regression and Text generation
+* [**Data types](../../tutorials/data-types/index.md)**: Tabular, Text and Text generataion
 
 ## Upload your model to the Giskard server
 
