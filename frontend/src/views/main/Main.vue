@@ -3,7 +3,9 @@
     <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
-          <v-list-item to="/">
+          <v-list-item to="/" @click.stop="() => {
+            projectStore.setCurrentProjectId(null);
+          }">
             <v-list-item-content>
               <div class="align-center text-center">
                 <img src="@/assets/logo_v2.png" alt="Giskard icon" width="45px" />
@@ -12,7 +14,7 @@
           </v-list-item>
           <v-divider />
 
-          <v-tooltip v-if="!showProjectTabs" :disabled="showProjectTabs" right>
+          <v-tooltip v-if="projectStore.currentProjectId === null" :disabled="projectStore.currentProjectId !== null" right>
             <template v-slot:activator="{ on, attrs }">
               <div v-on="on">
                 <v-list-item :disabled="true">
@@ -49,28 +51,58 @@
           </v-tooltip>
 
           <div v-else>
-            <v-list-item :to="{ name: 'project-catalog' }" value="catalog">
+            <v-list-item :to="{
+              name: 'project-catalog',
+              params: {
+                id: projectStore.currentProjectId,
+              }
+            }" value="catalog">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
                 <div class="caption">Catalog</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-testing' }" value="testing">
+            <v-list-item :to="{ 
+              name: 'project-testing',
+              params: {
+                id: projectStore.currentProjectId
+              }
+            }" value="testing">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-debugger' }" value="debugger">
+            <v-list-item v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" :to="{
+              name: 'inspection',
+              params: {
+                id: projectStore.currentProjectId,
+                inspectionId: debuggingSessionsStore.currentDebuggingSessionId,
+              }
+            }" value="debugger">
+              <v-list-item-content>
+                <v-icon>mdi-shield-search</v-icon>
+                <div class="caption">Debugger</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item v-else :to="{
+              name: 'project-debugger', params: {
+                id: projectStore.currentProjectId,
+              }
+            }" value="debugger">
               <v-list-item-content>
                 <v-icon>mdi-shield-search</v-icon>
                 <div class="caption">Debugger</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-feedbacks' }" value="feedbacks">
+            <v-list-item :to="{
+              name: 'project-feedbacks', params: {
+                id: projectStore.currentProjectId,
+              }
+            }" value="feedbacks">
               <v-list-item-content>
                 <v-icon>mdi-comment-multiple-outline</v-icon>
                 <div class="caption">Feedback</div>
@@ -126,14 +158,17 @@
 <script lang="ts" setup>
 import { useUserStore } from "@/stores/user";
 import { useMainStore } from "@/stores/main";
-import { computed, ref } from "vue";
+import { useProjectStore } from "@/stores/project";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { computed, ref, watch } from "vue";
 import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
 const mainStore = useMainStore();
 const userStore = useUserStore();
-
+const projectStore = useProjectStore();
+const debuggingSessionsStore = useDebuggingSessionsStore();
 
 let warningMessage = ref<string>()
 
@@ -165,9 +200,12 @@ const userId = computed(() => {
   }
 });
 
-const showProjectTabs = computed(() => {
-  return route.params.id !== undefined;
-});
+
+watch(() => route.name, async (name) => {
+  if (name === 'projects-home') {
+    projectStore.setCurrentProjectId(null);
+  }
+})
 
 async function logout() {
   await userStore.userLogout();

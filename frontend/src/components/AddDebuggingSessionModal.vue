@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { api } from '@/api';
+import { TYPE } from "vue-toastification";
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import { computed, onActivated, ref } from "vue";
+import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useProjectStore } from '@/stores/project';
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
+const projectStore = useProjectStore();
 
 interface Props {
   projectId: number;
@@ -24,6 +28,10 @@ const sessionName = ref("");
 const selectedDataset = ref<DatasetDTO | null>(null);
 const selectedModel = ref<ModelDTO | null>(null);
 
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
 const missingValues = computed(() => {
   if (selectedDataset.value === null || selectedModel.value === null) {
     return true;
@@ -34,20 +42,39 @@ const missingValues = computed(() => {
 const emit = defineEmits(['createDebuggingSession'])
 
 async function createNewDebuggingSession() {
-    loading.value = true;
-    try {
-        const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
-            datasetId: selectedDataset.value!.id,
-            modelId: selectedModel.value!.id,
-            name: sessionName.value,
-            sample: true
-        });
-
-        closeDialog();
-        emit('createDebuggingSession', newDebuggingSession);
-    } finally {
-        loading.value = false;
+  const mlWorkers = await api.getMLWorkerSettings();
+  const isWorkerAvailable = mlWorkers.find(
+    value => {
+      if (project.value?.mlWorkerType === 'EXTERNAL') {
+        return value.isRemote === true;
+      } else {
+        return value.isRemote === false;
+      }
     }
+  )
+
+  if (!isWorkerAvailable) {
+    useMainStore().addNotification({
+      content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
+      color: TYPE.ERROR,
+    });
+    return;
+  }
+
+  loading.value = true;
+  try {
+      const newDebuggingSession = await debuggingSessionsStore.createDebuggingSession({
+          datasetId: selectedDataset.value!.id,
+          modelId: selectedModel.value!.id,
+          name: sessionName.value,
+          sample: true
+      });
+
+      closeDialog();
+      emit('createDebuggingSession', newDebuggingSession);
+  } finally {
+      loading.value = false;
+  }
 }
 
 function closeDialog() {
@@ -70,9 +97,10 @@ async function loadModels() {
   models.value = await api.getProjectModels(props.projectId);
 }
 
-onActivated(() => {
-  loadDatasets();
-  loadModels();
+onActivated(async () => {
+  await projectStore.getProject({ id: props.projectId });
+  await loadDatasets();
+  await loadModels();
 });
 </script>
 
