@@ -443,7 +443,7 @@ class Dataset(ColumnMetadataMixin):
         logger.info(f"Casting dataframe columns from {current_types} to {column_dtypes}")
         if column_dtypes:
             try:
-                df = df.astype(column_dtypes)
+                df = df.astype(column_dtypes, errors='ignore')
             except Exception as e:
                 raise ValueError("Failed to apply column types to dataset") from e
         return df
