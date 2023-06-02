@@ -150,7 +150,7 @@ export default class CustomInspectionFilter extends Vue {
 <style scoped lang="scss">
 .main {
   width: 100%;
-  font-size: 14px;
+  font-size: 0.875em;
 }
 
 ::v-deep .v-select__selections {
