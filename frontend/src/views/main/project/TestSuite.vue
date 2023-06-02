@@ -4,12 +4,15 @@
             <v-container class="main-container vc pt-0">
                 <div class="d-flex pl-3 pr-3">
                     <h1 class="test-suite-name">{{ suite.name }}</h1>
-                    <div class="flex-grow-1"/>
+                    <div class="flex-grow-1"></div>
+                    <v-btn text @click.stop="reditectToTesting">
+                        <v-icon class="mr-2">mdi-arrow-left</v-icon>
+                        Back to all suites
+                    </v-btn>
                     <v-btn text @click="() => openSettings()">
                         Edit test suite
                     </v-btn>
-                    <v-btn outlined class='mx-1' v-if="hasTest"
-                           :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                    <v-btn outlined class='mx-1' v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
                         Add test
                     </v-btn>
                 </div>
@@ -26,24 +29,22 @@
                 <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
                     <v-col>
                         <div class="d-flex align-center justify-center">
-                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
-                                      item-text="label"
-                                      variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
                             </v-select>
-                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
-                                          outlined hide-details="auto"
-                                          class="max-w-250"
-                                          placeholder="Performance"
-                                          dense></v-text-field>
-                            <div class="flex-grow-1"/>
-                            <v-btn color="primary" large text disabled>Export</v-btn>
-                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress"
-                                   @click='openRunTestSuite(true)'
-                                   color="primary">
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text" outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense></v-text-field>
+                            <div class="flex-grow-1"></div>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <div v-on="on">
+                                        <v-btn color="primary" large text @click="openExportDialog" disabled>Export</v-btn>
+                                    </div>
+                                </template>
+                                <span>Coming soon</span>
+                            </v-tooltip>
+                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress" @click='openRunTestSuite(true)' color="primary">
                                 Compare
                             </v-btn>
-                            <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)'
-                                   color="primary" :loading="hasJobInProgress">
+                            <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary" :loading="hasJobInProgress">
                                 Run test suite
                             </v-btn>
                         </div>
@@ -51,33 +52,37 @@
                 </v-row>
                 <v-row class="vc overview-container pl-3 mt-0">
                     <v-col class="vc pb-0" cols="12">
-                        <router-view/>
+                        <router-view />
                     </v-col>
                 </v-row>
             </v-container>
+        </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts" setup>
 
-import {computed, onActivated, watch} from "vue";
-import {useMainStore} from "@/stores/main";
-import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
-import {storeToRefs} from 'pinia';
-import {useRoute, useRouter} from 'vue-router/composables';
-import {$vfm} from 'vue-final-modal';
+import { computed, onActivated, watch } from "vue";
+import { useMainStore } from "@/stores/main";
+import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {useCatalogStore} from "@/stores/catalog";
+import { useCatalogStore } from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
-import {api} from "@/api";
+import { api } from "@/api";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import ExportTestModalVue from "./modals/ExportTestModal.vue";
+
+const testSuitesStore = useTestSuitesStore();
+
 
 const props = defineProps<{
     projectId: number,
     suiteId: number
 }>();
 
-const mainStore = useMainStore();
 const {
     suite,
     inputs,
@@ -92,8 +97,8 @@ const {
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
 
-const {loadTestSuites, runTestSuite} = useTestSuiteStore();
-const {loadCatalog} = useCatalogStore();
+const { loadTestSuites, runTestSuite } = useTestSuiteStore();
+const { loadCatalog } = useCatalogStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -131,6 +136,17 @@ async function openSettings() {
             projectId: project.id,
             suite: suite.value
         }
+    });
+}
+
+async function reditectToTesting() {
+    testSuitesStore.setCurrentTestSuiteId(null);
+    await router.push({ name: 'project-testing' });
+}
+
+function openExportDialog() {
+    $vfm.show({
+        component: ExportTestModalVue,
     });
 }
 

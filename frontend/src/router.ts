@@ -2,9 +2,9 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import RouterComponent from './components/RouterComponent.vue';
-import {useUserStore} from '@/stores/user';
-import {useMainStore} from '@/stores/main';
-import {exponentialRetry} from '@/utils/job-utils';
+import { useUserStore } from '@/stores/user';
+import { useMainStore } from '@/stores/main';
+import { exponentialRetry } from '@/utils/job-utils';
 
 async function routeGuard(to, from, next) {
   const userStore = useUserStore();
@@ -232,8 +232,8 @@ export default new Router({
                   ],
                 },
                 {
-                  path: 'test-suites',
-                  name: 'project-test-suites',
+                  path: 'testing',
+                  name: 'project-testing',
                   component: () => import('./views/main/project/TestSuites.vue'),
                   props: route => {
                     return { projectId: Number(route.params.id) };
@@ -241,7 +241,7 @@ export default new Router({
                   children: [],
                 },
                 {
-                  path: 'test-suite/:suiteId',
+                  path: 'testing/:suiteId',
                   name: 'test-suite',
                   component: () => import('./views/main/project/TestSuite.vue'),
                   props: route => {
@@ -299,7 +299,7 @@ export default new Router({
                           },
                         },
                       ],
-                    }
+                    },
                   ],
                 },
               ],
