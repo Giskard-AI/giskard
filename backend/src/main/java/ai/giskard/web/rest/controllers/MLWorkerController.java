@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.MLWorkerType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -76,9 +77,9 @@ public class MLWorkerController {
         }
     }
 
-    @GetMapping("/availability/{workerType}") // workerType = 'INTERNAL' | 'EXTERNAL'
-    public boolean isWorkerRunning(@PathVariable @NotNull String workerType) {
-        boolean isInternal = "internal".equalsIgnoreCase(workerType);
+    @GetMapping("/availability/{workerType}")
+    public boolean isWorkerRunning(@PathVariable @NotNull MLWorkerType workerType) {
+        boolean isInternal = "internal".equalsIgnoreCase(String.valueOf(workerType));
         if (isInternal) {
             try {
                 List<MLWorkerInfoDTO> mlWorkerInfo = getMLWorkerInfo();
