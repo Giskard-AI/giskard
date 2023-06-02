@@ -14,35 +14,43 @@ logger = logging.getLogger(__name__)
 
 class Model(CloudpickleBasedModel, ABC):
     """
-    A class that automatically infer the ML library of the :code:`model` object from the user and provides suitable:
-
-    1. serialization methods (provided by :code:`save_model` and :code:`load_model` methods).
-
-    2. prediction methods (provided by the :code:`model_predict` method).
+    A wrapper class that automatically infer the ML library of the :code:`model` object from the user and provides
+    suitable serialization methods (provided by :code:`save_model` and :code:`load_model` methods).
 
     Our pre-defined serialization and prediction methods cover the :code:`sklearn`, :code:`catboost`, :code:`pytorch`,
     :code:`tensorflow` and :code:`huggingface` libraries. If none of these libraries are detected, :code:`cloudpickle`
     is used as default for serialization, and you will be asked to provide your own prediction method.
 
-    The user is invited to extend this class:
+    You can wrap your model in 2 different ways:
 
-    - You can choose to override only :code:`model_predict` and take advantage of our internal serialization methods.
+    - Wrap a prediction function that contains all your data preprocessing steps. it takes as input the raw pandas
+    dataframe and returns the probabilities for each classification labels or predictions for your regression task.
+    Make sure that:
+        - :code:`prediction_function` encapsulates all the data preprocessing steps (categorical encoding, numerical
+          scaling, etc.).
+        - :code:`prediction_function(df[feature_names])` does not return an error message.
 
-    - You can choose to also override :code:`save_model` and :code:`load_model` where you provide your own serialization
-    of the :code:`model` object.
+    - Wrap a model object in addition to a data preprocessing function. This is recommended if your model is not
+    serializable by cloudpickle (e.g. TensorFlow models).
+    This requires:
+        - Mandatory: Overriding the model_predict method which should take as input the raw pandas dataframe and
+          returns the probabilities for each classification labels (classification) or predictions (regression).
+        - Optional: If none of our pre-defined serialization applies, :code:`cloudpickle` is used as default for
+          serialization. If this fails, we will ask you to also override the save_model and load_model methods where
+          you provide your own serialization of the model object.
 
     Args:
         model (Union[BaseEstimator, PreTrainedModel, CatBoost, Module]):
-            Could be any ML model. The standard model output required for Giskard is:
+            Could be any function or ML model. The standard model output required for Giskard is:
 
             * if classification: an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
                 and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is also accepted.
-                Make sure that the probability provided is for the first label provided in classification_labels.
+                Make sure that the probability provided is for the second label provided in classification_labels.
             * if regression: an array of predictions corresponding to data entries (rows of pandas.DataFrame) and outputs.
         name (Optional[str]):
              the name of the model.
         model_type (ModelType):
-            The type of the model, either regression or classification.
+            The type of the model: regression, classification or generative.
         data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
             A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
             that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
@@ -79,8 +87,8 @@ class Model(CloudpickleBasedModel, ABC):
                 ):
         """
         Used for dynamical inheritance and returns one of the following class instances:
-        :code:`SKLearnModel`, :code:`CatboostModel`, :code:`HuggingFaceModel`, :code:`PyTorchModel`,
-        :code:`TensorFlowModel`, depending on the ML library detected in the :code:`model` object.
+        :code:`PredictionFunctionModel`, :code:`SKLearnModel`, :code:`CatboostModel`, :code:`HuggingFaceModel`,
+        :code:`PyTorchModel`, :code:`TensorFlowModel`, depending on the ML library detected in the :code:`model` object.
         If the :code:`model` object provided does not belong to one of these libraries, an instance of
         :code:`CloudpickleBasedModel` is returned in which case:
 
