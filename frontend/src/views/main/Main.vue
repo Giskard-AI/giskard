@@ -63,11 +63,12 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{
-              name: 'project-test-suites', params: {
-                id: projectStore.currentProjectId,
+            <v-list-item :to="{ 
+              name: 'project-testing',
+              params: {
+                id: projectStore.currentProjectId
               }
-            }" value="test-suites">
+            }" value="testing">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
