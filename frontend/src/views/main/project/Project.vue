@@ -15,21 +15,6 @@
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn small tile color="primary" class="mr-2" :to="{ name: 'project-properties' }">
-        <v-icon dense left>mdi-tune</v-icon>
-        Properties
-      </v-btn>
-      <v-tooltip :disabled="mainStore.authAvailable" bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <div v-on="on">
-            <v-btn small tile color="primary" v-if="isProjectOwnerOrAdmin" @click="openShareDialog = true" :disabled="!mainStore.authAvailable">
-              <v-icon dense left>people</v-icon>
-              Invite
-            </v-btn>
-          </div>
-        </template>
-        <span>Inviting users is only available in Giskard Starter or above.</span>
-      </v-tooltip>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
           <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
@@ -37,18 +22,26 @@
           </v-btn>
         </template>
         <v-list dense tile>
-          <v-list-item link @click="exportProject(project.id)">
+          <v-list-item link :to="{ name: 'project-properties' }">
             <v-list-item-title>
-              <v-icon dense left color="primary">mdi-application-export</v-icon>
-              Export
+              <v-icon dense left>mdi-tune</v-icon>
+              Properties
             </v-list-item-title>
           </v-list-item>
-          <v-list-item link @click="openDeleteDialog = true">
-            <v-list-item-title class="accent--text">
-              <v-icon dense left color="accent">delete</v-icon>
-              Delete
-            </v-list-item-title>
-          </v-list-item>
+
+          <v-tooltip :disabled="mainStore.authAvailable" bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-on="on">
+                <v-list-item v-if="isProjectOwnerOrAdmin" @click="openShareDialog = true" :disabled="!mainStore.authAvailable" link>
+                  <v-list-item-title>
+                    <v-icon dense left>people</v-icon>
+                    Invite
+                  </v-list-item-title>
+                </v-list-item>
+              </div>
+            </template>
+            <span>Inviting users is only available in Giskard Starter or above.</span>
+          </v-tooltip>
         </v-list>
       </v-menu>
     </v-toolbar>
@@ -90,12 +83,12 @@
     </v-dialog>
 
     <!-- Quick start dialog -->
-    <v-dialog v-model="openQuickStart" max-width="70vw">
+    <v-dialog v-model="openQuickStart" width="80vw">
       <v-card flat>
         <v-card-title flat>
           Quick start guide
           <v-spacer></v-spacer>
-          <v-btn text href="https://docs.giskard.ai/start/" target="_blank">
+          <v-btn text href="https://docs.giskard.ai/en/latest/" target="_blank">
             <span>Documentation</span>
             <v-icon right>mdi-open-in-new</v-icon>
           </v-btn>
@@ -146,21 +139,12 @@ const openDeleteDialog = ref<boolean>(false);
 const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
-const tabsMap = new Map([
-  ["properties", "Properties"],
-  ["catalog", "Catalog"],
-  ["test-suites", "Test"],
-  ["test-suite", "Test"],
-  ["debugger", "Debugger"],
-  ["feedbacks", "Feedback"],
-]);
-
-const currentTabString = computed(() => {
-  return currentTab.value ? tabsMap.get(currentTab.value) : null;
-});
-
 const userProfile = computed(() => {
   return userStore.userProfile;
+})
+
+const currentTabString = computed(() => {
+  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
 })
 
 
@@ -223,6 +207,7 @@ watch(() => route.fullPath, async () => {
 
 onMounted(async () => {
   await projectStore.getProject({ id: props.id });
+  projectStore.setCurrentProjectId(props.id);
   await mainStore.getCoworkers();
   updateCurrentTab();
   await projectArtifactsStore.setProjectId(props.id, false);

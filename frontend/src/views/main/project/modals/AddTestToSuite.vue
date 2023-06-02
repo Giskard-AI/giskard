@@ -10,8 +10,24 @@
           <v-card-text>
             <v-row>
               <v-col cols=12>
-                <ValidationProvider name="Tes suite" mode="eager" rules="required" v-slot="{ errors }">
-                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details></v-select>
+                <ValidationProvider name="Test suite" mode="eager" rules="required" v-slot="{ errors }">
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details>
+                    <template v-slot:append-item>
+                      <v-divider></v-divider>
+                      <v-list-item link @click="createTestSuite" class="pt-1">
+                        <v-list-item-avatar color="grey lighten-4" class="my-1 mr-2" style="height: 25px;min-width: 25px;width: 25px;">
+                          <v-icon small>
+                            mdi-plus
+                          </v-icon>
+                        </v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            Add new test suite
+                          </v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                 </ValidationProvider>
                 <p class="text-h6 pt-4">Fixed inputs</p>
                 <p>Specify inputs that will be constant during each execution of the test.<br />
@@ -41,8 +57,9 @@ import { computed, onMounted, ref } from 'vue';
 import { api } from '@/api';
 import { FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO } from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import {chain} from 'lodash';
-import {useMainStore} from "@/stores/main";
+import { chain } from 'lodash';
+import { useMainStore } from "@/stores/main";
+import { TYPE } from 'vue-toastification';
 import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
@@ -102,9 +119,24 @@ async function submit(close) {
   await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
   await mainStore.addNotification({
     content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
-    color: 'success'
+    color: TYPE.SUCCESS
   });
   close();
+}
+
+async function createTestSuite() {
+  const project = await api.getProject(projectId);
+  const suite = await api.createTestSuite(project.key, {
+    id: null,
+    name: 'Unnamed test suite',
+    projectKey: project.key,
+    testInputs: [],
+    tests: []
+  });
+
+  await loadData();
+
+  selectedSuite.value = suite;
 }
 
 </script>
