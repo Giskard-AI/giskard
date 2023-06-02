@@ -29,11 +29,12 @@ guides/upload/index
 ```{toctree}
 :caption: Tutorials
 :name: mastertoc
-:maxdepth: 2
+:maxdepth: 1
 :hidden:
 
 tutorials/libraries/index
 tutorials/tasks/index
+tutorials/data-types/index
 ```
 
 ```{toctree}
