@@ -1,4 +1,4 @@
-# Tensorflow
+# TensorFlow
 
 ```{toctree}
 :caption: Table of Contents
