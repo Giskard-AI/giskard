@@ -318,12 +318,12 @@ class BaseModel(ABC):
         missing = cached_predictions.isna()
 
         missing_slice = dataset.slice(lambda x: dataset.df[missing], row_level=False)
-        df = self.prepare_dataframe(
+        unpredicted_df = self.prepare_dataframe(
             missing_slice.df, column_dtypes=missing_slice.column_dtypes, target=missing_slice.target
         )
 
-        if len(df) > 0:
-            raw_prediction = self.predict_df(df)
+        if len(unpredicted_df) > 0:
+            raw_prediction = self.predict_df(unpredicted_df)
             self._cache.set_cache(dataset.row_hashes[missing], raw_prediction)
             cached_predictions.loc[missing] = raw_prediction.tolist()
 
