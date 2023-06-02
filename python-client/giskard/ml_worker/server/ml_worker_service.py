@@ -193,7 +193,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
 
-        test: GiskardTest = GiskardTest.load(request.testUuid, self.client, None)
+        test: GiskardTest = GiskardTest.download(request.testUuid, self.client, None)
 
         arguments = self.parse_function_arguments(request.arguments)
 
@@ -214,10 +214,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             arguments = self.parse_function_arguments(function.arguments)
             if function.HasField("slicingFunction"):
                 dataset.add_slicing_function(
-                    SlicingFunction.load(function.slicingFunction.id, self.client, None)(**arguments))
+                    SlicingFunction.download(function.slicingFunction.id, self.client, None)(**arguments))
             else:
                 dataset.add_transformation_function(
-                    TransformationFunction.load(function.transformationFunction.id, self.client, None)(**arguments))
+                    TransformationFunction.download(function.transformationFunction.id, self.client, None)(**arguments))
 
         result = dataset.process()
 
@@ -244,7 +244,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         log_listener = LogListener()
         try:
             tests = [{
-                'test': GiskardTest.load(t.testUuid, self.client, None),
+                'test': GiskardTest.download(t.testUuid, self.client, None),
                 'arguments': self.parse_function_arguments(t.arguments),
                 'id': t.id
             } for t in request.tests]
@@ -299,10 +299,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             elif arg.HasField("model"):
                 arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
-                arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+                arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args))
             elif arg.HasField("transformationFunction"):
-                arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+                arguments[arg.name] = TransformationFunction.download(arg.transformationFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args))
             elif arg.HasField("float"):
                 arguments[arg.name] = float(arg.float)
