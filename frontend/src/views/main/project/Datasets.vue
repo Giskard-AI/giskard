@@ -62,7 +62,7 @@
     <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">full documentation</a> for more information.</p>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
