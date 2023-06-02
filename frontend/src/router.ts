@@ -162,7 +162,6 @@ export default new Router({
                           projectId: Number(route.params.id),
                         };
                       },
-                      meta: { openInspectionWrapper: true },
                     },
                   ],
                 },
