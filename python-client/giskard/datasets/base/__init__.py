@@ -108,7 +108,7 @@ class Dataset(ColumnMetadataMixin):
     A class for constructing and processing datasets.
 
     Attributes:
-        dataset (pandas.DataFrame):
+        df (pandas.DataFrame):
             A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
             production data). Some important remarks:
 
