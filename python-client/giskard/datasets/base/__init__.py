@@ -10,9 +10,9 @@ from typing import Dict, Optional, List, Union
 import numpy as np
 import pandas
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 import yaml
 from pandas.api.types import is_list_like
+from pandas.api.types import is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
@@ -264,7 +264,9 @@ class Dataset(ColumnMetadataMixin):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
 
         if slicing_function.cell_level and column_name is not None:
-            slicing_function = slicing_function(column_name=column_name, **slicing_function.params)
+            slicing_function = slicing_function(column_name=column_name,
+                                                **{key: value for key, value in slicing_function.params.items() if
+                                                   key != 'column_name'})
 
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
@@ -301,7 +303,10 @@ class Dataset(ColumnMetadataMixin):
             )
 
         if transformation_function.cell_level and column_name is not None:
-            transformation_function = transformation_function(column_name=column_name, **transformation_function.params)
+            transformation_function = transformation_function(column_name=column_name,
+                                                              **{key: value for key, value in
+                                                                 transformation_function.params.items() if
+                                                                 key != 'column_name'})
 
         assert (
             not transformation_function.cell_level or 'column_name' in transformation_function.params
