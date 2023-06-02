@@ -32,12 +32,12 @@ async function copyCode() {
 
 <template>
   <!-- //NOSONAR -->
-  <pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"/>
-        <v-btn class="copy-button" small icon @click="copyCode">
-            <v-icon small>mdi-content-copy</v-icon>
-          <span v-show="copied" class="copied-message">Copied</span>
-        </v-btn>
-    </pre>
+  <div class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block" />
+    <v-btn class="copy-button" small icon @click="copyCode">
+      <v-icon small>mdi-content-copy</v-icon>
+      <span v-show="copied" class="copied-message">Copied</span>
+    </v-btn>
+  </div>
 </template>
 
 <style scoped>
