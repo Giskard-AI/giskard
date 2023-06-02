@@ -37,9 +37,9 @@ logger = logging.getLogger(__name__)
 
 
 class ModelPredictionResults(pydantic.BaseModel):
-    raw: Any
-    prediction: Any
-    raw_prediction: Any
+    raw: Any = []
+    prediction: Any = []
+    raw_prediction: Any = []
     probabilities: Optional[Any]
     all_predictions: Optional[Any]
 
@@ -264,6 +264,8 @@ class BaseModel(ABC):
               The `probabilities` field will contain the predicted probabilities for the predicted class label.
               The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
         """
+        if not len(dataset.df):
+            return ModelPredictionResults()
         timer = Timer()
 
         if get_cache_enabled():
