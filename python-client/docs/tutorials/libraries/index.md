@@ -13,7 +13,6 @@ tensorflow/index
 pytorch/index
 huggingface/index
 langchain/index
-api/index
 ```
 
 :::{hint}
@@ -33,5 +32,3 @@ You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-
 ## [HuggingFace](<project:huggingface/index.md>)
 
 ## [Langchain](<project:langchain/index.md>)
-
-## [API](<project:api/index.md>)
