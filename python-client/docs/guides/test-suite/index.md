@@ -160,37 +160,60 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ### Create and execute your own test
 
-If the test you want to create is not in the Giskard catalog, you can easily write them so that you can easily integrate it inside a test suite. To do so, you can either decorate a test function or crete an object that extends the `GiskardTest` class:
-
-Decorating a test function is an easy way to turn basic Python test into Giskard test. 
-
-Make sure this Python function:
+If the test you want to create is not in the Giskard catalog, you can easily write them so that you can easily integrate it inside a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure the Python function you're decorating:
 * Has typed inputs: types could be Giskard `Model`, `Dataset`, decorated slicing & transformation functions or any primitive
 * Returns a `TestResult` object containing all the resulting information of the test: 
     * This object must at least has the `passed` argument: a boolean that is `true` if the test passed, `false` otherwise
     * You recommend to also provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
 
 ```python
-from giskard import test, Dataset, TestResult
+from giskard import demo, test, Dataset, TestResult, testing
 
+#Creating a data quality test checking if the frequency of a category is under a threshold
 @test(name="My Example", tags=["quality", "custom"])
 def uniqueness_test_function(dataset: Dataset,
-                             column_name: str = None,
-                             category: str = None,
-                             threshold: float = 0.5):
+                             category: str,
+                             column_name: str,
+                             threshold: float = 0.5): #you can put default value to the test
     freq_of_cat = dataset.df[column_name].value_counts()[category] / (len(dataset.df))
     passed = freq_of_cat < threshold
 
     return TestResult(passed=passed, metric=freq_of_cat)
+    
+#Now let's run this test to check if the frequency of "female" is under 70% 
+_, df = demo.titanic()
+
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
+uniqueness_test_function(dataset=wrapped_dataset, 
+                         column_name = "Sex", 
+                         category="female", 
+                         threshold =0.7
+                        ).execute()
 ```
 
-## 3. Create & Execute a test suite
+## 3. Create & Execute a suite
 
 :::{hint}
 You can see all our tests in the [📖 Test Catalog](../../guides/test-catalog/index.rst)
 :::
 
-A test suite is a collection of tests that can be parameterized to accommodate various scenarios. Each test within the
+Test suite is a key feature of Giskard. Executing test suite can be useful for:
+* **Comparing different models**: This can be important:
+    *  At production time: If you want to **automate the retraining process** of your model to know if the model you just created is better than the one in production
+    *  At development time: If you want to compare different candidate models. For example test suite can be used to find the right hyperparameter of your model during your cross-validation
+* **Comparing different datasets**. This can be important:
+    * To detect drift between 2 datasets (i.e. training, testing, production, golden datasets)
+    * To monitor your model at production time using different batches of datasets
+
+:::{hint}
+When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
+:::
+
+* Each test within the
 suite may have some parameters left unspecified. When executing the test suite, you can provide the missing parameters
 through the run method. This allows for flexible and customizable test execution based on your specific needs.
 ::::{tab-set}
