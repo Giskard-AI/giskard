@@ -9,6 +9,7 @@ from typing import Callable, Sequence, List, Dict
 import numpy as np
 import pandas as pd
 
+from ..utils.display import format_number
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -324,8 +325,8 @@ class QueryBasedSliceFunction(SlicingFunction):
 
 
 def _pretty_str(value):
-    if isinstance(value, float):
-        return f"{value:.3f}"
+    if isinstance(value, (float, int)):
+        return format_number(value, 3)
 
     if isinstance(value, str):
         return f'"{value}"'
