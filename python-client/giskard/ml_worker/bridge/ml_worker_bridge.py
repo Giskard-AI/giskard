@@ -81,12 +81,13 @@ class MLWorkerBridge:
 
     def fetch_connection_details(self):
         info = self.client.get_server_info()
-        self.remote_host = info.get("externalMlWorkerEntrypointHost") or environ.get(
-            "GSK_EXTERNAL_ML_WORKER_HOST", urlparse(self.client.host_url).hostname
-        )
-        self.remote_port = info.get("externalMlWorkerEntrypointPort") or environ.get(
-            "GSK_EXTERNAL_ML_WORKER_PORT", 40051
-        )
+        self.remote_host = environ.get("GSK_EXTERNAL_ML_WORKER_HOST") \
+                           or info.get("externalMlWorkerEntrypointHost") \
+                           or urlparse(self.client.host_url).hostname
+
+        self.remote_port = environ.get("GSK_EXTERNAL_ML_WORKER_PORT") \
+                           or info.get("externalMlWorkerEntrypointPort") \
+                           or 40051
 
         encryption_key = base64.b64decode(info["encryptionKey"])
 

@@ -169,6 +169,46 @@ def _get_home_volume():
     return home_volume
 
 
+def _expose(token):
+    if token is None:
+        print("Error: No token provided. Please provide a token using the --token argument.")
+        print(
+            "You can find your token by clicking on this URL: https://dashboard.ngrok.com/get-started/your-authtoken.")
+        raise click.Abort()
+
+    container = get_container()
+    if container:
+        if container.status != 'running':
+            print("Error: Giskard server is not running. Please start it using `giskard server start`")
+            raise click.Abort()
+    else:
+        raise click.Abort()
+    print("Exposing Giskard Server to the internet...")
+    from pyngrok import ngrok
+    ngrok.set_auth_token(token)
+    http_tunnel = ngrok.connect(19000, "http")
+    tcp_tunnel = ngrok.connect(40051, "tcp")
+
+    # Only split the last ':' in case the URL contains a port
+    tcp_url, tcp_port = tcp_tunnel.public_url.rsplit(':', 1)
+    print("Giskard Server is now exposed to the internet.")
+    print(f"You can now create a Giskard Client in your notebook using the following code: \n")
+    print(f"client = giskard.GiskardClient(url = \"{http_tunnel.public_url}\", token = token) \n")
+
+    print(f"You can now connect a ML Worker using the following notebook snippet: \n")
+    print(f"%env GSK_EXTERNAL_ML_WORKER_HOST={tcp_url}")
+    print(f"%env GSK_EXTERNAL_ML_WORKER_PORT={tcp_port}")
+    print(f"!giskard worker start -u {http_tunnel.public_url}");
+
+    ngrok_process = ngrok.get_ngrok_process()
+    try:
+        # Block until CTRL-C or some other terminating event
+        ngrok_process.proc.wait()
+    except KeyboardInterrupt:
+        print("Shutting down expose.")
+        ngrok.kill()
+
+
 @server.command("start")
 @click.option(
     "--attach",
@@ -384,3 +424,16 @@ def clean(delete_data):
             logger.info("User data has been deleted in 'giskard-home' volume")
         except NotFound:
             logger.info("Volume 'giskard-home' does not exist")
+
+
+@server.command("expose")
+@click.option("--token", "token", required=False,
+              help="Exposes your local Giskard Server and gives you a snippet to access it from outside your local network")
+@common_options
+def expose(token):
+    """\b
+    Expose your local Giskard Server to the outside world using ngrok to use in notebooks like Google Colab
+
+    You will need a ngrok Authtoken, which you can get on their website (https://dashboard.ngrok.com/get-started/your-authtoken)
+    """
+    _expose(token)
