@@ -2,10 +2,10 @@ import pytest
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
-from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
+from giskard.core.core import SupportedModelTypes
+from giskard.ml_worker.utils.logging import Timer
 
 
 @pytest.fixture()
@@ -41,23 +41,28 @@ def linear_regression_diabetes_raw():
 @pytest.fixture()
 def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
     diabetes = datasets.load_diabetes()
-    return SKLearnModel(
-        model=linear_regression_diabetes_raw,
-        model_type=SupportedModelTypes.REGRESSION,
-        feature_names=diabetes["feature_names"],
-    )
+    return SKLearnModel(linear_regression_diabetes_raw,
+                        model_type=SupportedModelTypes.REGRESSION,
+                        feature_names=diabetes["feature_names"])
 
 
 @pytest.fixture()
-def diabetes_dataset():
+def diabetes_dataset() -> Dataset:
     diabetes = datasets.load_diabetes()
-    return Dataset(df=datasets.load_diabetes(as_frame=True)["data"],
-                   column_types={feature: "numeric" for feature in diabetes["feature_names"]})
+    raw_data = datasets.load_diabetes(as_frame=True)["data"]
+    column_types = {feature: "numeric" for feature in diabetes["feature_names"]}
+
+    wrapped_data = Dataset(raw_data, column_types=column_types)
+    return wrapped_data
 
 
 @pytest.fixture()
-def diabetes_dataset_with_target():
+def diabetes_dataset_with_target() -> Dataset:
     loaded = datasets.load_diabetes(as_frame=True)
-    data = loaded["data"]
-    data["target"] = loaded["target"]
-    return Dataset(df=data, target="target", column_types={feature: "numeric" for feature in list(data.columns)})
+
+    raw_data = loaded["data"]
+    raw_data["target"] = loaded["target"]
+    column_types = {feature: "numeric" for feature in list(raw_data.columns)}
+
+    wrapped_data = Dataset(raw_data, target="target", column_types=column_types)
+    return wrapped_data
