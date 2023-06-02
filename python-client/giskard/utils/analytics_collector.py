@@ -5,7 +5,7 @@ import uuid
 from functools import wraps
 from typing import Dict, Optional
 
-from mixpanel import Consumer, Mixpanel
+from mixpanel import Mixpanel
 
 from giskard.settings import settings
 from giskard.utils import threaded

@@ -3,7 +3,7 @@
     <div>
       <v-card>
         <v-card-title>
-          {{ title }}
+          Export Test Suite
           <v-spacer></v-spacer>
           <v-btn text href="https://docs.giskard.ai/en/latest/" target="_blank">
             <span>Documentation</span>
@@ -11,7 +11,7 @@
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+          <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -22,15 +22,10 @@
   </vue-final-modal>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import CodeSnippet from '@/components/CodeSnippet.vue';
 
-interface Props {
-  title: string,
-  codeContent: string
-}
-
-const props = defineProps<Props>();
+const codeContent = `import giskard`;
 </script>
 
 <style scoped>
