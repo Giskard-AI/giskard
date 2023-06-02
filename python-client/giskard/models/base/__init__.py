@@ -26,10 +26,8 @@ from giskard.ml_worker.utils.logging import Timer
 from giskard.models.cache import ModelCache
 from giskard.path_utils import get_size
 from giskard.settings import settings
-
-from ..utils import np_types_to_native, warn_once
 from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
+from ..utils import np_types_to_native, warn_once
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -116,6 +114,12 @@ class BaseModel(ABC):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
         self._cache = ModelCache(model_type)
+
+        # sklearn and catboost will fill classification_labels before this check
+        if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
+            raise ValueError(
+                "The parameter 'classification_labels' is required if 'model_type' is 'classification'."
+            )
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,

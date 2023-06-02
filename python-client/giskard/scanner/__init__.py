@@ -6,6 +6,11 @@ from .logger import logger
 _default_detectors = [
     ".performance.performance_bias_detector",
     ".robustness.text_perturbation_detector",
+    ".robustness.ethical_bias_detector",
+    ".data_leakage.data_leakage_detector",
+    ".stochasticity.stochasticity_detector",
+    ".calibration.overconfidence_detector",
+    ".calibration.underconfidence_detector",
 ]
 
 

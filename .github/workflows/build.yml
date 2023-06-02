@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Check if organization member
         id: is_organization_member
@@ -52,6 +52,13 @@ jobs:
       #        with:
       #          ref: ${{ github.event.pull_request.head.sha }}
 
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -68,6 +75,11 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Run Python commands
+        run: |
+          python -m pip install virtualenv -U --upgrade pip
+          echo "Python ($(which python)) packages:\n $(python -m pip list)"
+
       - name: Cache SonarQube packages
         uses: actions/cache@v3
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -81,6 +93,13 @@ jobs:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
+
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        with:
+          path: ~/.giskard
+          key: giskard-test-resources
+          restore-keys: giskard-test-resources
 
       - name: Cache Python dependencies
         uses: actions/cache@v3
@@ -113,6 +132,8 @@ jobs:
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build
+        env:
+          GSK_DISABLE_ANALYTICS: True
         run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar

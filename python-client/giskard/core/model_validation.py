@@ -51,6 +51,9 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
+        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+            validate_order_classifcation_labels(model, validate_ds)
+
     print("Your model is successfully validated.")
 
 
@@ -173,6 +176,7 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
                 f"Invalid classification_labels parameter: {classification_labels}. "
                 f"Please specify valid list of strings."
             )
+
     if (model_type == SupportedModelTypes.REGRESSION or model_type == SupportedModelTypes.GENERATIVE) \
             and classification_labels is not None:
         warning("'classification_labels' parameter is ignored for regression model")
@@ -187,7 +191,7 @@ def validate_features(feature_names: Optional[List[str]] = None, validate_df: Op
     ):
         missing_feature_names = set(feature_names) - set(validate_df.columns)
         raise ValueError(
-            f"Value mentioned in  feature_names is  not available in validate_df: {missing_feature_names} "
+            f"Value mentioned in feature_names is not available in validate_df: {missing_feature_names} "
         )
 
 
@@ -257,3 +261,19 @@ def validate_classification_prediction(classification_labels: Union[np.ndarray, 
         )
     if prediction.shape[1] != len(classification_labels):
         raise ValueError("Prediction output label shape and classification_labels shape do not match")
+
+
+def validate_order_classifcation_labels(model, dataset):
+    from sklearn.metrics import balanced_accuracy_score
+
+    y_true = dataset.df[dataset.target]
+    y_pred = model.predict(dataset).prediction
+    balanced_accuracy = balanced_accuracy_score(y_true, y_pred)
+    num_classes = len(model.meta.classification_labels)
+
+    if balanced_accuracy <= 1 / num_classes:
+        warning(
+            f"The balanced accuracy of your model is very low ({round(balanced_accuracy, 2)}). "
+            "Make sure you have not inverted the order of the 'classification_labels' when you created "
+            "the Giskard Model."
+        )
