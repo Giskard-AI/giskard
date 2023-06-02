@@ -28,7 +28,6 @@ import {
   ManagedUserVM,
   MessageDTO,
   MLWorkerInfoDTO,
-  MLWorkerType,
   ModelDTO,
   ParameterizedCallableDTO,
   PasswordResetRequest,
