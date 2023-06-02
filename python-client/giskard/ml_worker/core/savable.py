@@ -54,7 +54,7 @@ class Artifact(Generic[SMT], ABC):
             return posixpath.join("project", project_key, cls._get_name(), uuid)
 
     def _save_meta_locally(self, local_dir):
-        with open(Path(local_dir) / 'meta.yaml', 'wb') as f:
+        with open(Path(local_dir) / 'meta.yaml', 'w') as f:
             yaml.dump(self.meta, f)
 
     @classmethod
