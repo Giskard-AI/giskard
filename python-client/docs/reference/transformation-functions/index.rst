@@ -3,6 +3,8 @@ Transformation functions
 
 .. autofunction:: giskard.transformation_function
 
+.. autoclass:: giskard.ml_worker.testing.registry.transformation_function.TransformationFunction
+
 Textual transformation functions
 -------
 
