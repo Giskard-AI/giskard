@@ -9,7 +9,7 @@ Testing Machine Learning applications can be tedious. Since ML models depend on 
   <img class="sidebar-logo only-dark" style="margin: 0 0;" src="../_static/logo_white.png" alt="Dark Logo"/>
 </p>
 
-At Giskard, we believe that Machine Learning needs its own testing framework. Practitioners should be able to easily create test suites that contain business-specific fixtures (data slicers & transformers, evaluators) that cover the various risks encountered by AI. Created by ML engineers for ML engineers, Giskard enables you to:
+At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
 
 - **Scan your model and find hundreds of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfident or underconfident spots in your data.
 - **Instantaneously generate domain-specific tests**: Giskard automatically generates the right tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slices and transformers as fixtures of your test suites.
