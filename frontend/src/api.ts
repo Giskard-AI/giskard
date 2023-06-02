@@ -210,8 +210,8 @@ export const api = {
       },
     });
   },
-  async checkIfMLWorkerIsRunning(workerType: MLWorkerType) {
-    return apiV2.get<unknown, MLWorkerInfoDTO>(`/ml-workers/availability/${workerType}`);
+  async isExternalMLWorkerConnected() {
+    return apiV2.get<unknown, boolean>(`/ml-workers/external/connected`);
   },
   async getRunningWorkerJobs() {
     return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
