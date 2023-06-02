@@ -47,7 +47,7 @@
         </v-row>
       </v-card>
       <v-hover v-slot="{ hover }" v-for="p in projects" :key="p.id">
-        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" :to="{ name: defaultRoute, params: { id: p.id } }" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="() => { updateCurrentProject(p.id) }">
+        <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="updateCurrentProject(p.id)" link>
           <v-row class="pa-2">
             <v-col cols=2>
               <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
@@ -342,9 +342,10 @@ watch(() => newProjectName.value, (value) => {
   newProjectKey.value = toSlug(value);
 })
 
-function updateCurrentProject(projectId: number) {
+async function updateCurrentProject(projectId: number) {
   projectStore.setCurrentProjectId(projectId);
-  debuggingSessionsStore.loadDebuggingSessions(projectId);
+  await debuggingSessionsStore.loadDebuggingSessions(projectId);
+  await router.push({name: defaultRoute, params: { id: projectId }})
 }
 
 </script>
