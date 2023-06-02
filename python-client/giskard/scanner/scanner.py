@@ -38,7 +38,7 @@ class Scanner:
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
-        logger.debug(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
 
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
