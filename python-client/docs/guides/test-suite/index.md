@@ -1,7 +1,7 @@
 # 🧪 Test your ML model
 
-Because ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. Giskard provides all the necessary tools that enable you to:
-* Start wrtiting tests by detecting the vulnerabilities of your model (see the [Scan](../scan/index.rst) feature)
+Because ML models depend on data, testing scenarios depend on domain specificities and are often infinite. Giskard provides all the necessary tools that enable you to:
+* Start writing tests by detecting the vulnerabilities of your model (see the [Scan](../scan/index.rst) feature)
 * Create reproducible test suites with fixtures that integrate the domain knowledge of your model
 * Load the best tests from the Giskard open-source catalog
 
@@ -40,14 +40,17 @@ test_df = Dataset(df=df.tail(400), target="Survived", cat_columns=['Pclass', 'Se
 # Create a slicing function on females to create more domain specific tests
 @slicing_function(name="females")
 def female_slice(row: pd.Series):
-    return row['Sex'] == "female"
+    return row["Sex"] == "female"
 
-result = testing.test_drift_prediction_ks(model=wrapped_model, 
-                                          actual_dataset=test_df, 
-                                          reference_dataset=train_df,
-                                          classification_label='yes',
-                                          slicing_function=female_slice,
-                                          threshold=0.5).execute()
+
+result = testing.test_drift_prediction_ks(
+    model=wrapped_model,
+    actual_dataset=test_df,
+    reference_dataset=train_df,
+    classification_label="yes",
+    slicing_function=female_slice,
+    threshold=0.5,
+).execute()
 
 print("Result for 'Classification Probability drift (Kolmogorov-Smirnov):")
 print(f"Passed: {result.passed}")
@@ -67,17 +70,22 @@ import pandas as pd
 model, df = demo.titanic()
 
 wrapped_model = Model(model=model, model_type="classification")
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
 
 # Create a slicing function on females to create more domain specific tests
 @slicing_function(name="females")
 def female_slice(row: pd.Series):
-    return row['Sex'] == "female"
+    return row["Sex"] == "female"
 
-result = testing.test_f1(dataset=wrapped_dataset, 
-                         model=wrapped_model,
-                         slicing_function=female_slice,).execute()
-
+result = testing.test_f1(
+    dataset=wrapped_dataset,
+    model=wrapped_model,
+    slicing_function=female_slice,
+).execute()
 
 print(f"result: {result.passed} with metric {result.metric}")
 ```
@@ -97,28 +105,32 @@ import pandas as pd
 model, df = demo.titanic()
 
 wrapped_model = Model(model=model, model_type="classification")
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
 
-#Increase the age by 10% to check if the prediction is not varying
+# Increase the age by 10% to check if we have more "survived" probability
 @transformation_function(name="increase age")
 def increase_age(row):
-    row['Age'] = row['Age'] * 0.1
+    row["Age"] = row["Age"] * 0.1
     return row
 
-result = testing.test_metamorphic_invariance(model=wrapped_model,
-                                             dataset=wrapped_dataset,
-                                             transformation_function=increase_age
-                                             ).execute()
+result = testing.test_metamorphic_invariance(
+    model=wrapped_model, 
+    dataset=wrapped_dataset, 
+    transformation_function=increase_age
+).execute()
 
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
-See [🔪 Create slices and transformations function / Transformation](../../guides/slice/index.md)
-to see how to create custom transformations
-
 :::
 
 :::{tab-item} Statistic tests
+
+Statistic tests enables to write some heuristics on the behavior of the model. For instance, checking that the predicted probability is inside a specific range for a given data slice or checking if an example has a specific classification label. Writing these tests are important to make sure the model has not learned noise or spurious relations.
 
 ```python
 from giskard import demo, Model, Dataset, testing
@@ -126,9 +138,20 @@ from giskard import demo, Model, Dataset, testing
 model, df = demo.titanic()
 
 wrapped_model = Model(model=model, model_type="classification")
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
 
-result = testing.test_right_label(wrapped_model, wrapped_dataset, 'yes').execute()
+# Let's check if the ratio of examples labeled as "yes" is over 0.7
+result = testing.test_right_label(
+    model=wrapped_model,
+    dataset=wrapped_dataset,
+    classification_label="yes",
+    threshold=0.7,
+).execute()
+
 print(f"result: {result.passed} with metric {result.metric}")
 ```
 
@@ -137,8 +160,15 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 ### Create and execute your own test
 
-::::{tab-set}
-:::{tab-item} Using function
+If the test you want to create is not in the Giskard catalog, you can easily write them so that you can easily integrate it inside a test suite. To do so, you can either decorate a test function or crete an object that extends the `GiskardTest` class:
+
+Decorating a test function is an easy way to turn basic Python test into Giskard test. 
+
+Make sure this Python function:
+* Has typed inputs: types could be Giskard `Model`, `Dataset`, decorated slicing & transformation functions or any primitive
+* Returns a `TestResult` object containing all the resulting information of the test: 
+    * This object must at least has the `passed` argument: a boolean that is `true` if the test passed, `false` otherwise
+    * You recommend to also provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
 
 ```python
 from giskard import test, Dataset, TestResult
@@ -153,83 +183,6 @@ def uniqueness_test_function(dataset: Dataset,
 
     return TestResult(passed=passed, metric=freq_of_cat)
 ```
-
-#### Description
-
-In order to define your own test function, you just need to declare a method with its parameters and return a result.
-It's pretty simple, however, it does not allow autocompletion during the test suite creation, contrary to the
-class-based method.
-
-#### Usage \[Reference]
-
-* <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
-  allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
-    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
-    * `int/float/bool/str`  Any primitive type can be used
-* <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
-    * `bool` Either `True` if the test passed or `False` if it failed
-    * `TestResult` An object containing more details:
-
-        * `passed` A required bool to know if the test passed
-        * `metric` A float value with the score of the test
-
-#### Set metadata to your test
-
-In order to **set metadata** to your test, you need to use the `@test` decorator before your method or your class
-
-* <mark style="color:red;">**`name`**</mark> : A custom name that will be visible in the application
-* <mark style="color:red;">**`tags`**</mark> : A list of tags that allow you to quickly identify your tests
-  :::
-
-:::{tab-item} Using test class
-
-```python
-from giskard import GiskardTest, Dataset, TestResult
-
-
-class DataQuality(GiskardTest):
-
-    def __init__(self,
-                 dataset: Dataset = None,
-                 threshold: float = 0.5,
-                 column_name: str = None,
-                 category: str = None):
-        self.dataset = dataset
-        self.threshold = threshold
-        self.column_name = column_name
-        self.category = category
-        super().__init__()
-
-    def execute(self) -> TestResult:
-        freq_of_cat = self.dataset.df[self.column_name].value_counts()[self.category] / (len(self.dataset.df))
-        passed = freq_of_cat < self.threshold
-
-        return TestResult(passed=passed, metric=freq_of_cat)
-```
-
-#### Description
-
-In order to define your own test class, you need to extends `GiskardTest` and implement the `execute` method
-
-#### Main methods \[Reference]
-
-* <mark style="color:red;">**`__init__`**</mark> : The initialisation method must be implemented in order to specify the
-  required parameters of your test. **It is also required to call the parent initialization method**
-  calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
-  **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
-    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
-    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
-    * `int/float/bool/str`  Any primitive type can be used
-* <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
-  to access all the parameters set by the initialization method. Your method can return two type of results:
-    * `bool` Either `True` if the test passed or `False` if it failed
-    * `TestResult` An object containing more details:
-        * `passed` A required bool to know if the test passed
-        * `metric` A float value with the score of the test
-
-:::
-::::
 
 ## 3. Create & Execute a test suite
 
