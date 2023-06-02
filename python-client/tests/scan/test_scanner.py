@@ -97,3 +97,11 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
             pass
 
         test_suite.upload(client, "testing_UI")
+
+        
+def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
+    scanner = Scanner()
+
+    suite = scanner.analyze(titanic_model, titanic_dataset).generate_test_suite()
+    created_tests = len(suite.tests)
+    assert created_tests, "Titanic scan doesn't produce tests"
