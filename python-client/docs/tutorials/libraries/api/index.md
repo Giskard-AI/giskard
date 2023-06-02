@@ -1,3 +1,3 @@
 # API
 
-Coming soon...
+* [Titanic](../../../reference/notebooks/api_model.ipynb)
