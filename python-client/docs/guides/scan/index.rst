@@ -98,7 +98,7 @@ You can then upload the test suite to Giskard server. This will enable you to:
     
 For more information about uploading to the Giskard server, go to the [Upload an object to the Giskard server](../upload/index) page.
 
-.. hint:: Uploading the test suite
+.. hint:: Note
 
    Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard UI server.
 
