@@ -150,3 +150,7 @@ Saving your transformation function in the Giskard server will enable you to:
 * Use the saved transformations to augment your dataset
 
 To upload your transformation function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
+
+<br>
+
+  ![](/_static/catalog_example.png)
