@@ -15,8 +15,6 @@
           <v-divider />
 
           <v-tooltip v-if="projectStore.currentProjectId === null" :disabled="projectStore.currentProjectId !== null" right>
-
-            <!-- <v-tooltip v-if="!showProjectTabs" :disabled="showProjectTabs" right> -->
             <template v-slot:activator="{ on, attrs }">
               <div v-on="on">
                 <v-list-item :disabled="true">
