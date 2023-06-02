@@ -86,7 +86,10 @@ class AUC(PerformanceMetric):
 
     def __call__(self, model: BaseModel, dataset: Dataset) -> float:
         y_true = dataset.df[dataset.target]
-        y_score = model.predict(dataset).raw
+        if model.is_binary_classification:
+            y_score = model.predict(dataset).raw[:, 1]
+        else:
+            y_score = model.predict(dataset).all_predictions
 
         return sklearn.metrics.roc_auc_score(
             y_true,
