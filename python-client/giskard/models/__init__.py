@@ -26,14 +26,7 @@ def get_class(_lib, _class):
 
 
 def infer_giskard_cls(model: Any):
-    # bound-methods case (like model.predict_proba)
-    if hasattr(model, '__self__'):
-        # wrap bound-method with a function
-        def prediction_function(df): return model(df)
-
-        model = prediction_function
-
-    if inspect.isfunction(model):
+    if inspect.isfunction(model) or inspect.ismethod(model):
         return PredictionFunctionModel
     else:
         for _giskard_class, _base_libs in ml_libraries.items():
