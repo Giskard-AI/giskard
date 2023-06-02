@@ -97,7 +97,7 @@ class IssueFinder:
         self.threshold = threshold
 
     def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
-        logger.debug(f"PerformanceBiasDetector: Testing {len(slices)} slices for performance issues.")
+        logger.info(f"PerformanceBiasDetector: Testing {len(slices)} slices for performance issues.")
 
         # Prepare metrics
         metrics = self._get_default_metrics(model, dataset) if self.metrics is None else self.metrics
@@ -143,7 +143,7 @@ class IssueFinder:
             else:
                 is_issue = relative_delta > self.threshold
 
-            logger.debug(
+            logger.info(
                 f"PerformanceBiasDetector: Testing slice {slice_fn}\t{metric.name} = {metric_val:.3f} (global {ref_metric_val:.3f}) Δm = {relative_delta:.3f}\tis_issue = {is_issue}"
             )
 
