@@ -1,33 +1,15 @@
 # 🧪 Test your ML model
 
-:::{warning}
-First you'll need to create a Model and a dataset (And scan your model),
-see [🔬 Scan your ML model](../scan/index.rst)
-:::
+Since ML models depend on data, testing scenarios depend on domain specificities and are often infinite. Giskard provides all the necessary tools that enable you to:
+* Start wrtiting tests by detecting the vulnerabilities of your model (see the [Scan](../scan/index.rst) feature)
+* Produce reproducible test suites with fixtures that integrate the domain knowledge of your model
+* Load the best tests from the open-source Giskard catalog
 
-## 1. Install the Giskard library
+## 1. Execute a Giskard test
 
-In order to test your model, you'll need to install the `giskard` library with `pip`:
+To create and execute a Giskard test, you have 2 possibilities. You can either load a test from the Giskard catalog or create your own test by decorating a Python function.
 
-::::{tab-set}
-:::{tab-item} Windows
-
-```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client" --user
-```
-
-:::
-
-:::{tab-item} Mac and Linux
-
-```sh
-pip install "giskard[scan] @ git+https://github.com/Giskard-AI/giskard.git@task/GSK-1000-robustness-numerical#subdirectory=python-client"
-```
-
-:::
-::::
-
-## 2. Execute a Giskard test
+## Load and execute a test from the Giskard catalog
 
 :::{hint}
 You can see all our tests in the [📖 Test Catalog](../../catalogs/test-catalog/index.rst)
@@ -119,6 +101,102 @@ wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex'
 result = testing.test_right_label(wrapped_model, wrapped_dataset, 'yes').execute()
 print(f"result: {result.passed} with metric {result.metric}")
 ```
+
+:::
+::::
+
+### Create and execute your own test
+
+::::{tab-set}
+:::{tab-item} Using function
+
+```python
+from giskard import test, Dataset, TestResult
+
+@test(name="My Example", tags=["quality", "custom"])
+def uniqueness_test_function(dataset: Dataset,
+                             column_name: str = None,
+                             category: str = None,
+                             threshold: float = 0.5):
+    freq_of_cat = dataset.df[column_name].value_counts()[category] / (len(dataset.df))
+    passed = freq_of_cat < threshold
+
+    return TestResult(passed=passed, metric=freq_of_cat)
+```
+
+#### Description
+
+In order to define your own test function, you just need to declare a method with its parameters and return a result.
+It's pretty simple, however, it does not allow autocompletion during the test suite creation, contrary to the
+class-based method.
+
+#### Usage \[Reference]
+
+* <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
+  allowed as your test parameters:
+    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
+    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
+    * `int/float/bool/str`  Any primitive type can be used
+* <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
+    * `bool` Either `True` if the test passed or `False` if it failed
+    * `TestResult` An object containing more details:
+
+        * `passed` A required bool to know if the test passed
+        * `metric` A float value with the score of the test
+
+#### Set metadata to your test
+
+In order to **set metadata** to your test, you need to use the `@test` decorator before your method or your class
+
+* <mark style="color:red;">**`name`**</mark> : A custom name that will be visible in the application
+* <mark style="color:red;">**`tags`**</mark> : A list of tags that allow you to quickly identify your tests
+  :::
+
+:::{tab-item} Using test class
+
+```python
+from giskard import GiskardTest, Dataset, TestResult
+
+
+class DataQuality(GiskardTest):
+
+    def __init__(self,
+                 dataset: Dataset = None,
+                 threshold: float = 0.5,
+                 column_name: str = None,
+                 category: str = None):
+        self.dataset = dataset
+        self.threshold = threshold
+        self.column_name = column_name
+        self.category = category
+        super().__init__()
+
+    def execute(self) -> TestResult:
+        freq_of_cat = self.dataset.df[self.column_name].value_counts()[self.category] / (len(self.dataset.df))
+        passed = freq_of_cat < self.threshold
+
+        return TestResult(passed=passed, metric=freq_of_cat)
+```
+
+#### Description
+
+In order to define your own test class, you need to extends `GiskardTest` and implement the `execute` method
+
+#### Main methods \[Reference]
+
+* <mark style="color:red;">**`__init__`**</mark> : The initialisation method must be implemented in order to specify the
+  required parameters of your test. **It is also required to call the parent initialization method**
+  calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
+  **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
+    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
+    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
+    * `int/float/bool/str`  Any primitive type can be used
+* <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
+  to access all the parameters set by the initialization method. Your method can return two type of results:
+    * `bool` Either `True` if the test passed or `False` if it failed
+    * `TestResult` An object containing more details:
+        * `passed` A required bool to know if the test passed
+        * `metric` A float value with the score of the test
 
 :::
 ::::
@@ -244,101 +322,7 @@ suite.run(model=wrapped_model, dataset=wrapped_dataset, reference_dataset=sliced
 :::
 ::::
 
-## 4. Create your own test
 
-::::{tab-set}
-:::{tab-item} Using function
-
-```python
-from giskard import test, Dataset, TestResult
-
-@test(name="My Example", tags=["quality", "custom"])
-def uniqueness_test_function(dataset: Dataset,
-                             column_name: str = None,
-                             category: str = None,
-                             threshold: float = 0.5):
-    freq_of_cat = dataset.df[column_name].value_counts()[category] / (len(dataset.df))
-    passed = freq_of_cat < threshold
-
-    return TestResult(passed=passed, metric=freq_of_cat)
-```
-
-#### Description
-
-In order to define your own test function, you just need to declare a method with its parameters and return a result.
-It's pretty simple, however, it does not allow autocompletion during the test suite creation, contrary to the
-class-based method.
-
-#### Usage \[Reference]
-
-* <mark style="color:red;">**`parameters`**</mark> : **Your parameters need to have a type defined.** Here is the type
-  allowed as your test parameters:
-    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
-    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
-    * `int/float/bool/str`  Any primitive type can be used
-* <mark style="color:red;">**`return`**</mark> The result of your test must be either a bool or a TestResult:
-    * `bool` Either `True` if the test passed or `False` if it failed
-    * `TestResult` An object containing more details:
-
-        * `passed` A required bool to know if the test passed
-        * `metric` A float value with the score of the test
-
-#### Set metadata to your test
-
-In order to **set metadata** to your test, you need to use the `@test` decorator before your method or your class
-
-* <mark style="color:red;">**`name`**</mark> : A custom name that will be visible in the application
-* <mark style="color:red;">**`tags`**</mark> : A list of tags that allow you to quickly identify your tests
-  :::
-
-:::{tab-item} Using test class
-
-```python
-from giskard import GiskardTest, Dataset, TestResult
-
-
-class DataQuality(GiskardTest):
-
-    def __init__(self,
-                 dataset: Dataset = None,
-                 threshold: float = 0.5,
-                 column_name: str = None,
-                 category: str = None):
-        self.dataset = dataset
-        self.threshold = threshold
-        self.column_name = column_name
-        self.category = category
-        super().__init__()
-
-    def execute(self) -> TestResult:
-        freq_of_cat = self.dataset.df[self.column_name].value_counts()[self.category] / (len(self.dataset.df))
-        passed = freq_of_cat < self.threshold
-
-        return TestResult(passed=passed, metric=freq_of_cat)
-```
-
-#### Description
-
-In order to define your own test class, you need to extends `GiskardTest` and implement the `execute` method
-
-#### Main methods \[Reference]
-
-* <mark style="color:red;">**`__init__`**</mark> : The initialisation method must be implemented in order to specify the
-  required parameters of your test. **It is also required to call the parent initialization method**
-  calling `super().__init__()`. **Your parameters need to have a type and default value specified.** You can should use
-  **None** as a default value if you require a parameter to be specified. Here is the type allowed in the init method:
-    * `Dataset` A giskard dataset, [wrap your dataset](../wrap_dataset/index.md)
-    * `BaseModel` A giskard model, [wrap your model](../wrap_model/index.md)
-    * `int/float/bool/str`  Any primitive type can be used
-* <mark style="color:red;">**`execute`**</mark> The execute method will be called to perform the test, you will be able
-  to access all the parameters set by the initialization method. Your method can return two type of results:
-    * `bool` Either `True` if the test passed or `False` if it failed
-    * `TestResult` An object containing more details:
-        * `passed` A required bool to know if the test passed
-        * `metric` A float value with the score of the test
-
-:::
-::::
 
 :::{hint}
 To upload your test suite to the Giskard server, go to [Upload objects](../../guides/upload/index.md) to the Giskard server.
