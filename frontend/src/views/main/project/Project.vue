@@ -139,21 +139,12 @@ const openDeleteDialog = ref<boolean>(false);
 const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
-const tabsMap = new Map([
-  ["properties", "Properties"],
-  ["catalog", "Catalog"],
-  ["test-suites", "Test"],
-  ["test-suite", "Test"],
-  ["debugger", "Debugger"],
-  ["feedbacks", "Feedback"],
-]);
-
-const currentTabString = computed(() => {
-  return currentTab.value ? tabsMap.get(currentTab.value) : null;
-});
-
 const userProfile = computed(() => {
   return userStore.userProfile;
+})
+
+const currentTabString = computed(() => {
+  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
 })
 
 

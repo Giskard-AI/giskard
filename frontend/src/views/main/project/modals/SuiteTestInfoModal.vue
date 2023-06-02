@@ -64,37 +64,30 @@
 
 <script setup lang="ts">
 
-import {FunctionInputDTO, SuiteTestDTO} from '@/generated-sources';
-import {computed, inject, onMounted, ref} from 'vue';
-import _, {chain} from 'lodash';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import MonacoEditor from 'vue-monaco';
-import {api} from '@/api';
-import {editor} from 'monaco-editor';
+import { FunctionInputDTO, SuiteTestDTO } from '@/generated-sources';
+import { computed, inject, onMounted, ref } from 'vue';
+import _, { chain } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { api } from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
 import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import IEditorOptions = editor.IEditorOptions;
-
-const l = MonacoEditor;
-const monacoOptions: IEditorOptions = inject('monacoOptions');
-monacoOptions.readOnly = true;
+import CodeSnippet from '@/components/CodeSnippet.vue';
 
 const props = defineProps<{
     suiteTest: SuiteTestDTO
 }>();
 
-const {models, datasets, projectId, suite, inputs} = storeToRefs(useTestSuiteStore());
-const {reload} = useTestSuiteStore();
+const { models, datasets, projectId, suite, inputs } = storeToRefs(useTestSuiteStore());
+const { reload } = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 const result = ref<{ [input: string]: FunctionInputDTO }>({});
-const editor = ref(null)
 
-const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
+const { testFunctionsByUuid } = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
     return _.sortBy(_.values(props.suiteTest.test.args), value => {
@@ -106,12 +99,6 @@ const doc = computed(() => extractArgumentDocumentation(props.suiteTest.test))
 
 
 const invalid = ref(false);
-
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
 
 onMounted(() => {
     editedInputs.value = Object.values(props.suiteTest.functionInputs)
@@ -184,5 +171,4 @@ async function removeTest(close) {
     flex-grow: 1;
     overflow: auto;
 }
-
 </style>

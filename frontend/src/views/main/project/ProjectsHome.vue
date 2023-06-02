@@ -181,6 +181,7 @@ import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
+import { useTestSuitesStore } from "@/stores/test-suites";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
 const route = useRoute();
@@ -188,6 +189,7 @@ const router = useRouter();
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
+const testSuitesStore = useTestSuitesStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
@@ -344,10 +346,10 @@ watch(() => newProjectName.value, (value) => {
 
 async function updateCurrentProject(projectId: number) {
   projectStore.setCurrentProjectId(projectId);
+  await testSuitesStore.loadTestSuites(projectId);
   await debuggingSessionsStore.loadDebuggingSessions(projectId);
-  await router.push({name: defaultRoute, params: { id: projectId }})
+  await router.push({ name: defaultRoute, params: { id: projectId } });
 }
-
 </script>
 
 <style>
