@@ -29,20 +29,20 @@
 
 <script setup lang="ts">
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref } from "vue";
 import { api } from "@/api";
 import { TYPE } from "vue-toastification";
 import mixpanel from "mixpanel-browser";
 import { useRouter } from "vue-router/composables";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import { useMainStore } from "@/stores/main";
-import { useProjectStore } from '@/stores/project';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useMLWorkerStore } from '@/stores/ml-worker';
 
 const router = useRouter();
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
-const projectStore = useProjectStore();
+const mlWorkerStore = useMLWorkerStore();
 
 interface Props {
   projectId: number,
@@ -59,12 +59,8 @@ const datasetSelected = ref<DatasetDTO | null>(null);
 const datasetFeatures = ref<string[]>([]);
 const creatingInspection = ref<boolean>(false);
 
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
 
 onMounted(async () => {
-  await projectStore.getProject({ id: props.projectId });
   await loadDatasets();
 })
 
@@ -89,25 +85,23 @@ async function launchInspector() {
   try {
     creatingInspection.value = true;
 
-    const mlWorkers = await api.getMLWorkerSettings();
-    const isWorkerAvailable = mlWorkers.find(
-      value => {
-        if (project.value?.mlWorkerType === 'EXTERNAL') {
-          return value.isRemote === true;
-        } else {
-          return value.isRemote === false;
-        }
-      }
-    )
+    await mlWorkerStore.checkExternalWorkerConnection();
 
-    if (!isWorkerAvailable) {
+    if (!mlWorkerStore.isExternalWorkerConnected) {
       useMainStore().addNotification({
         content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
         color: TYPE.ERROR,
       });
       throw new Error('ML Worker is not connected. Please start the ML Worker first and try again.');
     }
-    const inspection = await api.prepareInspection({ datasetId: datasetSelected.value!.id, modelId: props.model.id, name: "" });
+
+    const inspection = await api.prepareInspection(
+      {
+        datasetId: datasetSelected.value!.id,
+        modelId: props.model.id,
+        name: "",
+        sample: false
+      });
     debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);
     await router.push({
       name: 'project-debugger',
@@ -117,7 +111,6 @@ async function launchInspector() {
     creatingInspection.value = false;
   }
 }
-
 </script>
 
 <style scoped>
