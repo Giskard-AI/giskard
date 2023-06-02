@@ -63,35 +63,14 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ 
-              name: 'project-testing',
-              params: {
-                id: projectStore.currentProjectId
-              }
-            }" value="testing">
+            <v-list-item value="testing" @click="redirectToTesting" link>
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" :to="{
-              name: 'inspection',
-              params: {
-                id: projectStore.currentProjectId,
-                inspectionId: debuggingSessionsStore.currentDebuggingSessionId,
-              }
-            }" value="debugger">
-              <v-list-item-content>
-                <v-icon>mdi-shield-search</v-icon>
-                <div class="caption">Debugger</div>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-else :to="{
-              name: 'project-debugger', params: {
-                id: projectStore.currentProjectId,
-              }
-            }" value="debugger">
+            <v-list-item value="debugger" @click="redirectToDebugger" link>
               <v-list-item-content>
                 <v-icon>mdi-shield-search</v-icon>
                 <div class="caption">Debugger</div>
@@ -160,15 +139,18 @@ import { useUserStore } from "@/stores/user";
 import { useMainStore } from "@/stores/main";
 import { useProjectStore } from "@/stores/project";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
 import { computed, ref, watch } from "vue";
-import { useRoute } from 'vue-router/composables';
+import { useRoute, useRouter } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
+const router = useRouter();
 const mainStore = useMainStore();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
+const testSuitesStore = useTestSuitesStore();
 
 let warningMessage = ref<string>()
 
@@ -209,6 +191,32 @@ watch(() => route.name, async (name) => {
 
 async function logout() {
   await userStore.userLogout();
+}
+
+async function redirectToDebugger() {
+  if (projectStore.currentProjectId === null) {
+    return;
+  }
+  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  await router.push({
+    name: 'project-debugger',
+    params: {
+      projectId: projectStore.currentProjectId.toString()
+    }
+  });
+}
+
+async function redirectToTesting() {
+  if (projectStore.currentProjectId === null) {
+    return;
+  }
+  testSuitesStore.setCurrentTestSuiteId(null);
+  await router.push({
+    name: 'project-testing',
+    params: {
+      projectId: projectStore.currentProjectId.toString()
+    }
+  });
 }
 </script>
 
