@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from typing import Sequence, Optional
 
+from ..llm.utils import LLMImportError
+
 from .text_transformations import TextTransformation
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -19,8 +21,8 @@ class BaseTextPerturbationDetector(Detector):
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
         threshold: float = 0.05,
-        output_sensitivity=0.05,
-        num_samples: int = 1_000,
+        output_sensitivity=None,
+        num_samples: Optional[int] = None,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -34,6 +36,10 @@ class BaseTextPerturbationDetector(Detector):
             for col, col_type in dataset.column_types.items()
             if col_type == "text" and pd.api.types.is_string_dtype(dataset.df[col].dtype)
         ]
+
+        # Only analyze the model features
+        if model.meta.feature_names:
+            features = [f for f in features if f in model.meta.feature_names]
 
         logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
@@ -57,6 +63,9 @@ class BaseTextPerturbationDetector(Detector):
         transformation: TextTransformation,
         features: Sequence[str],
     ) -> Sequence[Issue]:
+        num_samples = self.num_samples or _get_default_num_samples(model)
+        output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
+
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
@@ -70,9 +79,9 @@ class BaseTextPerturbationDetector(Detector):
                 continue
 
             # Select a random subset of the changed records
-            if len(changed_idx) > self.num_samples:
+            if len(changed_idx) > num_samples:
                 rng = np.random.default_rng(747)
-                changed_idx = changed_idx[rng.choice(len(changed_idx), self.num_samples)]
+                changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples)]
 
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
@@ -95,9 +104,20 @@ class BaseTextPerturbationDetector(Detector):
                 passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
-                passed = np.abs(rel_delta) < self.output_sensitivity
+                passed = np.abs(rel_delta) < output_sensitivity
+            elif model.is_generative:
+                try:
+                    import evaluate
+                except ImportError as err:
+                    raise LLMImportError() from err
+
+                scorer = evaluate.load("rouge")
+                score = scorer.compute(
+                    predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False
+                )
+                passed = np.array(score["rougeL"]) > output_sensitivity
             else:
-                raise NotImplementedError("Only classification and regression models are supported.")
+                raise NotImplementedError("Only classification, regression, or generative models are supported.")
 
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
@@ -115,7 +135,7 @@ class BaseTextPerturbationDetector(Detector):
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
                     threshold=self.threshold,
-                    output_sensitivity=self.output_sensitivity,
+                    output_sensitivity=output_sensitivity,
                 )
                 issue = self._issue_cls(
                     model,
@@ -130,3 +150,17 @@ class BaseTextPerturbationDetector(Detector):
 
 def _relative_delta(actual, reference):
     return (actual - reference) / reference
+
+
+def _get_default_num_samples(model) -> int:
+    if model.is_generative:
+        return 10
+
+    return 1_000
+
+
+def _get_default_output_sensitivity(model) -> float:
+    if model.is_generative:
+        return 0.1
+
+    return 0.05

@@ -1,10 +1,16 @@
+from unittest import mock
+
+import pandas as pd
 import pytest
+from langchain import LLMChain, PromptTemplate
+from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset
-from giskard.scanner import Scanner
-from giskard.core.suite import Suite
-from giskard.scanner.result import ScanResult
 from giskard import GiskardClient
+from giskard import Model
+from giskard.core.suite import Suite
+from giskard.scanner import Scanner
+from giskard.scanner.result import ScanResult
 
 
 @pytest.mark.parametrize(
@@ -58,6 +64,46 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
         scanner.analyze(german_credit_model, german_credit_data)
 
 
+def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
+    scanner = Scanner()
+    with pytest.raises(ValueError) as info:
+        scanner.analyze(german_credit_model)
+    assert "Dataset must be provided " in str(info.value)
+
+
+def test_default_dataset_is_used_with_generative_model():
+    model = mock.MagicMock()
+    model.is_generative = True
+    scanner = Scanner()
+
+    with mock.patch('giskard.scanner.llm.utils.load_default_dataset') as load_default_dataset:
+        try:
+            scanner.analyze(model)
+        except:  # noqa
+            pass
+        load_default_dataset.assert_called_once()
+
+
+def test_generative_model_dataset():
+    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
+    prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
+    chain = LLMChain(llm=llm, prompt=prompt)
+    model = Model(chain, model_type="generative")
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "instruct": ["Paraphrase this", "Answer this question"],
+                "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"],
+            }
+        ),
+        column_types={"instruct": "text", "question": "text"},
+    )
+
+    scanner = Scanner()
+    result = scanner.analyze(model, dataset)
+    assert result.has_issues()
+
+
 @pytest.mark.skip(reason="For active testing of the UI")
 @pytest.mark.parametrize(
     "dataset_name,model_name",
@@ -105,16 +151,14 @@ def test_warning_duplicate_index(german_credit_model, german_credit_data):
     new_row = df.loc[1]
     df = df.append(new_row)
 
-    dataset = Dataset(
-        df=df,
-        target=german_credit_data.target,
-        cat_columns=german_credit_data.cat_columns
-    )
+    dataset = Dataset(df=df, target=german_credit_data.target, cat_columns=german_credit_data.cat_columns)
 
     scanner = Scanner()
 
-    with pytest.warns(match="You dataframe has duplicate indexes, which is currently not supported. "
-                            "We have to reset the dataframe index to avoid issues."):
+    with pytest.warns(
+        match="You dataframe has duplicate indexes, which is currently not supported. "
+        "We have to reset the dataframe index to avoid issues."
+    ):
         scanner.analyze(german_credit_model, dataset)
 
 

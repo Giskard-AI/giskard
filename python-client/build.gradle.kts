@@ -23,7 +23,7 @@ tasks {
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
-        var cmd = "install"
+        var cmd = "install -G:all"
         if (project.hasProperty("prod")) {
             cmd += " --prod"
         }
