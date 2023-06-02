@@ -1,4 +1,4 @@
-# 📥 Install the Python Giskard library
+# 📥 Install the Giskard Python Library
 
 In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
 
@@ -24,7 +24,7 @@ pip install giskard[scan]
 
 Giskard works with Python `3.8`, `3.9` and `3.10`.
 
-Below is the list of dependencies to make Giskard work:
+Below is the list of dependencies needed to make Giskard work:
 
 ```sh
 dependencies = [
@@ -63,7 +63,7 @@ dependencies = [
 
 ## What should I do if I have dependency issues?
 
-While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies for Giskard), please change the version of the conflicting libraries. 
+While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies above), please change the version of the conflicting libraries. 
 
 For instance, if you have dependency conflicts with `pandas`, please do:
 ```sh
