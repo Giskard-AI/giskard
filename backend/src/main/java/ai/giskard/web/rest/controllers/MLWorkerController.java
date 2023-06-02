@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.MLWorkerType;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
@@ -19,12 +18,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
