@@ -60,11 +60,16 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
             cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
-    def load(cls, local_dir: Path, uuid: str, meta: Optional[TestFunctionMeta]):
-        if meta is None:
-            meta = tests_registry.get_test(uuid)
-            assert meta is not None, f"Cannot find test function {uuid}"
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[TestFunctionMeta]:
+        meta = tests_registry.get_test(uuid)
 
+        if meta is not None:
+            return meta
+
+        return super()._load_meta_locally(local_dir, uuid)
+
+    @classmethod
+    def load(cls, local_dir: Path, uuid: str, meta: TestFunctionMeta):
         if local_dir.exists():
             with open(Path(local_dir) / 'data.pkl', 'rb') as f:
                 func = pickle.load(f)

@@ -98,11 +98,16 @@ class SlicingFunction(Artifact[DatasetProcessFunctionMeta]):
             cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
-    def load(cls, local_dir: Path, uuid: str, meta: Optional[DatasetProcessFunctionMeta]):
-        if meta is None:
-            meta = tests_registry.get_test(uuid)
-            assert meta is not None, f"Cannot find slicing function {uuid}"
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[DatasetProcessFunctionMeta]:
+        meta = tests_registry.get_test(uuid)
 
+        if meta is not None:
+            return meta
+
+        return super()._load_meta_locally(local_dir, uuid)
+
+    @classmethod
+    def load(cls, local_dir: Path, uuid: str, meta: DatasetProcessFunctionMeta):
         if meta.process_type == DatasetProcessFunctionType.CODE:
             _slicing_function: Optional[SlicingFunction]
             if local_dir.exists():

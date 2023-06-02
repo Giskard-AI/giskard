@@ -24,7 +24,7 @@ class Artifact(Generic[SMT], ABC):
 
     @classmethod
     @abstractmethod
-    def load(cls, local_dir: Path, uuid: str, meta: Optional[SMT]) -> 'Artifact':
+    def load(cls, local_dir: Path, uuid: str, meta: SMT) -> 'Artifact':
         ...
 
     @classmethod
@@ -41,6 +41,22 @@ class Artifact(Generic[SMT], ABC):
             return posixpath.join(cls._get_name(), uuid)
         else:
             return posixpath.join("project", project_key, cls._get_name(), uuid)
+
+    def _save_meta_locally(self, local_dir):
+        with open(Path(local_dir) / 'meta.yaml', 'wb') as f:
+            import yaml
+            yaml.dump(self.meta, f)
+
+    @classmethod
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:
+        file = Path(local_dir) / 'meta.yaml'
+        if not file.exists():
+            return None
+
+        with open(file, 'r') as f:
+            import yaml
+
+            return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
         name = self._get_name()
@@ -59,14 +75,16 @@ class Artifact(Generic[SMT], ABC):
 
     @classmethod
     def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> 'Artifact':
-        if client is None:
-            meta = None
-        else:
-            meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
-
         name = cls._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / uuid
+
+        if client is None:
+            meta = cls._load_meta_locally(local_dir, uuid)
+        else:
+            meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
+
+        assert meta is not None, "Could not retrieve test meta"
 
         # check cache first
         data = cls.load(local_dir, uuid, meta)
