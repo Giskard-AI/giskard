@@ -17,24 +17,24 @@
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
-          <v-col cols="4">Name</v-col>
-          <v-col cols="1">Size</v-col>
-          <v-col cols="2">Uploaded on</v-col>
-          <v-col cols="2">Target</v-col>
-          <v-col cols="1">Id</v-col>
-          <v-col cols="2">Actions</v-col>
+          <v-col cols="4" class="col-container">Name</v-col>
+          <v-col cols="1" class="col-container">Size</v-col>
+          <v-col cols="2" class="col-container">Uploaded on</v-col>
+          <v-col cols="2" class="col-container">Target</v-col>
+          <v-col cols="1" class="col-container">Id</v-col>
+          <v-col cols="2" class="col-container">Actions</v-col>
         </v-row>
         <v-expansion-panel v-for="f in projectArtifactsStore.datasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
-              <v-col cols="4" class="font-weight-bold">
-                <InlineEditText :text="f.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameDataset(f.id, name)">
+              <v-col cols="4" class="font-weight-bold" :title="f.name ? f.name : f.id">
+                <InlineEditText :text="f.name ? f.name : 'Unnamed dataset'" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
               </v-col>
-              <v-col cols="1">{{ f.originalSizeBytes | fileSize }}</v-col>
-              <v-col cols="2">{{ f.createdDate | date }}</v-col>
-              <v-col cols="2">{{ f.target }}</v-col>
-              <v-col cols="1" class="id-container" :title="f.id"> {{ f.id }}</v-col>
+              <v-col cols="1" class="col-container" :title="f.originalSizeBytes | fileSize">{{ f.originalSizeBytes | fileSize }}</v-col>
+              <v-col cols="2" class="col-container" :title="f.createdDate | date">{{ f.createdDate | date }}</v-col>
+              <v-col cols="2" class="col-container" :title="f.target">{{ f.target }}</v-col>
+              <v-col cols="1" class="col-container" :title="f.id"> {{ f.id }}</v-col>
               <v-col cols="2">
                 <span>
                   <v-tooltip bottom dense>
@@ -239,7 +239,8 @@ div.v-input {
   width: 400px;
 }
 
-.id-container {
+.col-container {
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

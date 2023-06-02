@@ -74,6 +74,7 @@ import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
 import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import IEditorOptions = editor.IEditorOptions;
