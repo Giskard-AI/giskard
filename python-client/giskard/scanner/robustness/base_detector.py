@@ -19,7 +19,7 @@ class BaseTextPerturbationDetector(Detector):
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
         threshold: float = 0.05,
-        output_sensitivity=0.05,
+        output_sensitivity=None,
         num_samples: Optional[int] = None,
     ):
         self.transformations = transformations
@@ -95,8 +95,9 @@ class BaseTextPerturbationDetector(Detector):
             if model.is_classification:
                 passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
+                output_sensitivity = self.output_sensitivity or 0.05
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
-                passed = np.abs(rel_delta) < self.output_sensitivity
+                passed = np.abs(rel_delta) < output_sensitivity
             elif model.is_generative:
                 import evaluate
 
@@ -105,6 +106,7 @@ class BaseTextPerturbationDetector(Detector):
                     predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False
                 )
                 logger.debug(f"{self.__class__.__name__}: {transformation_fn.name} ROUGE: {score}")
+                output_sensitivity = self.output_sensitivity or 0.20
                 passed = np.array(score["rougeL"]) > self.output_sensitivity
             else:
                 raise NotImplementedError("Only classification, regression, or generative models are supported.")
