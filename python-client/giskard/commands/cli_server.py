@@ -192,10 +192,10 @@ def _expose(token):
     # Only split the last ':' in case the URL contains a port
     tcp_url, tcp_port = tcp_tunnel.public_url.rsplit(':', 1)
     print("Giskard Server is now exposed to the internet.")
-    print(f"You can now create a Giskard Client in your notebook using the following code: \n")
+    print(f"You can now upload objects to the Giskard Server using the following client: \n")
     print(f"client = giskard.GiskardClient(url = \"{http_tunnel.public_url}\", token = token) \n")
 
-    print(f"You can now connect a ML Worker using the following notebook snippet: \n")
+    print(f"To run your model with the Giskard Server, execute these three lines on Google Colab: \n")
     print(f"%env GSK_EXTERNAL_ML_WORKER_HOST={tcp_url}")
     print(f"%env GSK_EXTERNAL_ML_WORKER_PORT={tcp_port}")
     print(f"!giskard worker start -u {http_tunnel.public_url}");
