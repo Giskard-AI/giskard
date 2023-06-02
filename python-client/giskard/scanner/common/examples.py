@@ -45,7 +45,6 @@ class ExampleExtractor:
 
             if model_pred.probabilities is not None:
                 num_labels_to_print = min(len(issue.model.meta.classification_labels), int(with_prediction))
-                print(num_labels_to_print)
                 pred_examples = []
                 for ps in model_pred.raw:
                     label_idx = np.argsort(-ps)[:num_labels_to_print]
