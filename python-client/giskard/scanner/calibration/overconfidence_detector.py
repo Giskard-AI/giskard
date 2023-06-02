@@ -59,7 +59,7 @@ class OverconfidenceDetector(LossBasedDetector):
         dataset_with_meta.load_metadata_from_instance(dataset.column_meta)
 
         p_threshold = self.p_threshold or _default_overconfidence_threshold(model)
-        logger.debug(f"{self.__class__.__name__}: Using overconfidence threshold = {p_threshold}")
+        logger.info(f"{self.__class__.__name__}: Using overconfidence threshold = {p_threshold}")
 
         reference_rate = (dataset_with_meta.df[self.LOSS_COLUMN_NAME].dropna() > p_threshold).mean()
 
