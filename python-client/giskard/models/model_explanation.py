@@ -102,7 +102,7 @@ def get_list_words_weights(exp):
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
     example = df.mode(dropna=False).head(1)  # si plusieurs modes, on prend le premier
-    example.fillna("", inplace=True)
+    # example.fillna("", inplace=True)
     median = df.median()
     num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
     for column in num_columns:
