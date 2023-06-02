@@ -29,3 +29,11 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
     with pytest.raises(RuntimeError):
         scanner.analyze(german_credit_model, german_credit_data)
+
+
+def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
+    scanner = Scanner()
+
+    suite = scanner.analyze(titanic_model, titanic_dataset).generate_test_suite()
+    created_tests = len(suite.tests)
+    assert created_tests, "Titanic scan doesn't produce tests"
