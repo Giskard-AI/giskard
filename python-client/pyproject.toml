@@ -91,7 +91,7 @@ deptry = "^0.5.13"
 httpretty = "^1.1.4"
 
 [tool.poetry.group.test.dependencies]
-pytest-cov = "^3.0.0"
+pytest-cov = ">=3,<5"
 pytest = "^7.1.2"
 catboost = "^1.1"
 
