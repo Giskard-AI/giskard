@@ -183,8 +183,10 @@ onActivated(async () => {
           <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
               <v-col cols="3" class="font-weight-bold" :title="session.name">
-                <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
-                </InlineEditText>
+                <div class="pr-4">
+                  <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
+                  </InlineEditText>
+                </div>
               </v-col>
               <v-col cols="1" class="col-container" :title="session.id">{{ session.id }}</v-col>
               <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
