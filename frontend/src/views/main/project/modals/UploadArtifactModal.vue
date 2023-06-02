@@ -5,7 +5,7 @@
         <v-card-title>
           {{ title }}
           <v-spacer></v-spacer>
-          <v-btn text href="https://docs.giskard.ai/start/" target="_blank">
+          <v-btn text href="https://docs.giskard.ai/en/latest/" target="_blank">
             <span>Documentation</span>
             <v-icon right>mdi-open-in-new</v-icon>
           </v-btn>
