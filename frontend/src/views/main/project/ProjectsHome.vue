@@ -348,7 +348,7 @@ async function updateCurrentProject(projectId: number) {
   projectStore.setCurrentProjectId(projectId);
   await testSuitesStore.loadTestSuites(projectId);
   await debuggingSessionsStore.loadDebuggingSessions(projectId);
-  await router.push({ name: defaultRoute, params: { id: projectId } });
+  await router.push({ name: defaultRoute, params: { id: projectId.toString() } });
 }
 </script>
 

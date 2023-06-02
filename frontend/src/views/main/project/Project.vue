@@ -207,6 +207,7 @@ watch(() => route.fullPath, async () => {
 
 onMounted(async () => {
   await projectStore.getProject({ id: props.id });
+  projectStore.setCurrentProjectId(props.id);
   await mainStore.getCoworkers();
   updateCurrentTab();
   await projectArtifactsStore.setProjectId(props.id, false);
