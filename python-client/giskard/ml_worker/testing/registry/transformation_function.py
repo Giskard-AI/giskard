@@ -1,5 +1,6 @@
 import functools
 import inspect
+import pickle
 import sys
 from pathlib import Path
 from typing import Optional, List, Union, Type, Callable
@@ -9,7 +10,7 @@ import pandas as pd
 
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Savable
+from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.decorators_utils import (
     validate_arg_type,
     drop_arg,
@@ -23,7 +24,7 @@ TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 default_tags = ['transformation']
 
 
-class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessFunctionMeta]):
+class TransformationFunction(Artifact[DatasetProcessFunctionMeta]):
     func: TransformationFunctionType = None
     row_level: bool = True
     cell_level: bool = False
@@ -44,7 +45,7 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
         if meta is None and func is not None:
             meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
                                                                       cell_level=self.cell_level))
-        super().__init__(self, meta)
+        super().__init__(meta)
 
     def __call__(self, *args, **kwargs) -> 'TransformationFunction':
         self.is_initialized = True
@@ -73,33 +74,40 @@ class TransformationFunction(Savable[TransformationFunctionType, DatasetProcessF
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
+    def save(self, local_dir: Path):
+        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+            cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
+
     @classmethod
-    def _read_from_local_dir(cls, local_dir: Path, meta: DatasetProcessFunctionMeta):
-        _slicing_function: Optional[TransformationFunction]
+    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[DatasetProcessFunctionMeta]:
+        meta = tests_registry.get_test(uuid)
+
+        if meta is not None:
+            return meta
+
+        return super()._load_meta_locally(local_dir, uuid)
+
+    @classmethod
+    def load(cls, local_dir: Path, uuid: str, meta: DatasetProcessFunctionMeta):
+        _transformation_function: Optional[TransformationFunction]
         if local_dir.exists():
             with open(local_dir / 'data.pkl', 'rb') as f:
-                _slicing_function = cloudpickle.load(f)
+                _transformation_function = cloudpickle.load(f)
         else:
             try:
                 func = getattr(sys.modules[meta.module], meta.name)
 
                 if inspect.isclass(func) or hasattr(func, 'meta'):
-                    _slicing_function = func()
+                    _transformation_function = func()
                 else:
-                    _slicing_function = cls(func)
-                    _slicing_function.meta = meta
+                    _transformation_function = cls(func)
+                    _transformation_function.meta = meta
             except Exception:
                 return None
 
-        tests_registry.register(_slicing_function.meta)
+        tests_registry.register(_transformation_function.meta)
 
-        return _slicing_function
-
-    @classmethod
-    def _read_meta_from_loca_dir(cls, uuid: str, project_key: Optional[str]) -> DatasetProcessFunctionMeta:
-        meta = tests_registry.get_test(uuid)
-        assert meta is not None, f"Cannot find transformation function {uuid}"
-        return meta
+        return _transformation_function
 
     @classmethod
     def _get_meta_class(cls):
