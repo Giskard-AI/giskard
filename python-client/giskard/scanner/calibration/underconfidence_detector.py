@@ -70,7 +70,7 @@ class UnderconfidenceDetector(LossBasedDetector):
 
             relative_delta = (slice_rate - reference_rate) / reference_rate
 
-            logger.debug(
+            logger.info(
                 f"{self.__class__.__name__}: Testing slice {slice_fn}\tUnderconfidence rate (slice) = {slice_rate:.3f} (global {reference_rate:.3f}) Δm = {relative_delta:.3f}"
             )
 
