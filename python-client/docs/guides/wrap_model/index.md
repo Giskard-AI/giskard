@@ -229,7 +229,7 @@ wrapped_model = MyCustomModel(
 To check some **examples** of model wrapping, have a look at our tutorial section. We present there some **notebooks** based on:
 * [**ML libraries**](../../tutorials/libraries/index.md): HuggingFace, Langchain, API REST, PyTorch, Scikit-learn, LightGBM, Tensorflow
 * [**ML task**](../../tutorials/tasks/index.md): Classification, Regression and Text generation
-* [**Data types](../../tutorials/data-types/index.md)**: Tabular, Text and Text generataion
+* [**Data types**](../../tutorials/data-types/index.md)**: Tabular, Text and Text generataion
 
 ## Upload your model to the Giskard server
 
