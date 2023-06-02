@@ -1,4 +1,4 @@
-# Libraries
+# ML libraries
 
 ```{toctree}
 :caption: Table of Contents
