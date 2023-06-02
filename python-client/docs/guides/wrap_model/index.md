@@ -30,8 +30,7 @@ data_preprocessor, clf = demo.titanic_pipeline()
 
 def prediction_function(df: pd.DataFrame) -> np.ndarray:
     # The preprocessor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-  preprocessed_df = data_preprocessor(df)
-
+    preprocessed_df = data_preprocessor(df)
     return clf.predict_proba(preprocessed_df)
 
 wrapped_model = Model(
