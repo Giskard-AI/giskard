@@ -13,7 +13,6 @@ libraries/tensorflow/index
 libraries/pytorch/index
 libraries/huggingface/index
 libraries/langchain/index
-libraries/api/index
 tasks/classification/index
 tasks/regression/index
 tasks/text-generation/index
@@ -40,8 +39,6 @@ You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-
 ### [HuggingFace](<project:libraries/huggingface/index.md>)
 
 ### [Langchain](<project:libraries/langchain/index.md>)
-
-### [API](<project:libraries/api/index.md>)
 
 ## ML tasks
 
