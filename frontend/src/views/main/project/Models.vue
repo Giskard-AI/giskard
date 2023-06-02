@@ -13,33 +13,34 @@
         </v-btn>
       </div>
     </div>
-    <v-container v-if="projectArtifactsStore.models.length > 0" fluid class="vc">
+    <LoadingFullscreen v-if="isLoading" name="models" />
+    <v-container v-if="projectArtifactsStore.models.length > 0 && !isLoading" fluid class="vc">
       <v-card flat>
         <v-row class="px-2 py-1 caption secondary--text text--lighten-3">
-          <v-col cols="3">Name</v-col>
-          <v-col cols="2">Python</v-col>
-          <v-col cols="1">Size</v-col>
-          <v-col cols="2">Uploaded on</v-col>
-          <v-col cols="1">Id</v-col>
-          <v-col cols="3">Actions</v-col>
+          <v-col cols="3" class="col-container">Name</v-col>
+          <v-col cols="2" class="col-container">Python</v-col>
+          <v-col cols="1" class="col-container">Size</v-col>
+          <v-col cols="2" class="col-container">Uploaded on</v-col>
+          <v-col cols="1" class="col-container">Id</v-col>
+          <v-col cols="3" class="col-container">Actions</v-col>
         </v-row>
       </v-card>
       <v-card class="grey lighten-5" v-for="m in        projectArtifactsStore.models      " :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
-          <v-col cols="3" class="font-weight-bold">
+          <v-col cols="3" class="font-weight-bold" :title="m.name">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
             </InlineEditText>
           </v-col>
-          <v-col cols="2">
-            <div>{{ m.languageVersion }}</div>
+          <v-col cols="2" class="col-container" :title="m.languageVersion">
+            {{ m.languageVersion }}
           </v-col>
-          <v-col cols="1">
-            <div>{{ m.size | fileSize }}</div>
+          <v-col cols="1" class="col-container" :title="m.size | fileSize">
+            {{ m.size | fileSize }}
           </v-col>
-          <v-col cols="2">
-            <div>{{ m.createdDate | date }}</div>
+          <v-col cols="2" class="col-container" :title="m.createdDate | date">
+            {{ m.createdDate | date }}
           </v-col>
-          <v-col cols="1" class="id-container" :title="m.id">
+          <v-col cols="1" class="col-container" :title="m.id">
             {{ m.id }}
           </v-col>
           <v-col cols="3">
@@ -69,10 +70,10 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token">
+    <v-container v-if="projectArtifactsStore.models.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/start/~/changes/QkDrbY9gX75RDMmAWKjX/guides/upload-your-model#2.-create-a-giskard-model" target="_blank">full documentation</a> for more information.</p>
+      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
     </v-container>
   </div>
 </template>
@@ -85,7 +86,7 @@ import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { onBeforeMount, onMounted, ref, computed } from 'vue';
+import { computed, onBeforeMount, onMounted, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useUserStore } from "@/stores/user";
@@ -94,6 +95,7 @@ import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -105,6 +107,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 const apiAccessToken = ref<JWTToken | null>(null);
@@ -181,7 +184,12 @@ async function renameModel(id: string, name: string) {
 }
 
 async function reloadModels() {
-  await projectArtifactsStore.loadModelsWithNotification();
+  isLoading.value = true;
+  try {
+    await projectArtifactsStore.loadModels();
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const generateApiAccessToken = async () => {
@@ -206,7 +214,7 @@ div.v-dialog {
   overflow-y: hidden;
 }
 
-.id-container {
+.col-container {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
