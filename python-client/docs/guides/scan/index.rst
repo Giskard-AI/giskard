@@ -1,33 +1,37 @@
 🔍 Scan your ML model
-===============
+====================
 
-Before testing Machine Learning models, it's crucial to have a comprehensive understanding of the critical vulnerabilities that can impact your model. The Giskard scan is designed to automatically detect a variety of significant risks associated with your ML model. Learn more about different vulnerabilities here:
+The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model. The Giskard scan is currently able to detect the following types of issues:
 
 .. toctree::
    :maxdepth: 1
 
-   performance_bias/index
-   robustness/index
-   overconfidence/index
-   underconfidence/index
-   ethics/index
-   data_leakage/index
-   stochasticity/index
+   ../../getting-started/key_vulnerabilities/performance_bias/index
+   ../../getting-started/key_vulnerabilities/robustness/index
+   ../../getting-started/key_vulnerabilities/overconfidence/index
+   ../../getting-started/key_vulnerabilities/underconfidence/index
+   ../../getting-started/key_vulnerabilities/ethics/index
+   ../../getting-started/key_vulnerabilities/data_leakage/index
+   ../../getting-started/key_vulnerabilities/stochasticity/index
 
-By conducting a Giskard scan, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
+
+With the automatic scan, you can proactively identify and address key vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
 
 Prerequisites
-^^^^^^^^^
+^^^^^^^^^^^^^
 
 To scan your ML model for vulnerabilities, you need:
 
-- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, see `here <../wrap_dataset/index.md>`_.
-- A **Model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or any set of *Python* functions. To wrap your model, see `here <../wrap_model/index.md>`_.
+- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, `check the instructions here <../wrap_dataset/index.md>`_.
+- A **Model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or any set of *Python* functions. To wrap your model, see `the docs here <../wrap_model/index.md>`_.
 
 
 Scan your model to detect vulnerabilities
-^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. hint::
+
+    If you want to try this interactively, you can find a ready-to-use `notebook here <https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb>`_.
 
 After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_, you can scan your model for vulnerabilities using:
 
@@ -42,28 +46,33 @@ After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_
 
     scan_results = scan(wrapped_model, wrapped_dataset)
 
-    display(scan_results)  # in your notebook
-
-This will produce a dashboard directly in your notebook that allows you to explore the detected issues:
-
-.. image:: ../../assets/scan_results.png
-
-You can also get a table of the scan results as a `pandas.DataFrame`. This is useful if you want to save the results of
-the scan to a CSV or HTML file.
+Once the scan completes, you can display the results directly in your notebook:
 
 .. code-block:: python
 
-    results_df = scan_results.to_dataframe()
-    results_df.to_csv("scan_results_my_model.csv")
+    display(scan_results)  # in your notebook
+
+If you are not working in a notebook or want to keep the results for later, you can save them to an HTML file like this:
+
+.. code-block:: python
+
+    scan_results.to_html("model_scan_results.html")
+
+In both cases, this will produce a dashboard that allows you to explore the detected issues, similar to this one:
+
+.. raw:: html
+    :file: ../../assets/scan_widget.html
 
 
 Automatically generate a test suite based on the scan results
-^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If the scan found potential issues in your model, you can automatically generate a test suite.
 
 Generating a test suite from your scan results will enable you to:
 
 * Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
-* Diagnose your vulnerabilties and debug the issues you found in the scan
+* Diagnose your vulnerabilities and debug the issues you found in the scan
 
 .. code-block:: python
 
@@ -72,8 +81,9 @@ Generating a test suite from your scan results will enable you to:
     # You can run the test suite locally to verify that it reproduces the issues
     test_suite.run()
 
+
 Upload your test suite to the Giskard server
-^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can then upload the test suite to the local Giskard server. This will enable you to:
 
@@ -104,7 +114,7 @@ For more information on uploading to your local Giskard server, go to the [Uploa
 
 
 Troubleshooting
-^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and navigate to the #support channel. Our community
 will gladly help!
