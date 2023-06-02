@@ -195,15 +195,15 @@ uniqueness_test_function(dataset=wrapped_dataset,
                         ).execute()
 ```
 
-## 3. Create & Execute a suite
+## 2. Create & Execute a suite
 
 Test suite is a key feature of Giskard. Executing test suite can be useful for:
 * **Comparing different models**: In that case, you should define your **model as input** of your test suite. Comparing different models is important:
     *  At production time: If you want to **automate the retraining process** of your model to know if the model you just created is better than the one in production
     *  At development time: If you want to compare different candidate models. For example test suite can be used to find the right hyperparameters of your model during your **cross-validation**
 * **Comparing different datasets**. In that case, you should define your **dataset as input** of your test suite. Comparing different datasets important:
-    * To detect drift between 2 datasets (i.e. training, testing, production, golden datasets)
-    * To monitor your model at production time using different batches of datasets
+    * To detect **drift** between 2 datasets (i.e. training, testing, production, golden datasets)
+    * To **monitor** your model at production time using different batches of datasets
 
 :::{hint}
 * When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
@@ -212,41 +212,56 @@ Test suite is a key feature of Giskard. Executing test suite can be useful for:
 
 ::::{tab-set}
 
-:::{tab-item} Comparing models
-Example using a two performance tests
+:::{tab-item} Model as suite input
+
+Having the model as suite input enables you to compare models at development time (ex: to fine tune your model) or at production time (ex: to automate retraining process). In the example below, we create a suite with two simple performance tests. As you see below, we specify all the test parameters except the dataset to **"expose" it as a the suite input**:
 
 ```python
 from giskard import demo, Model, Dataset, testing, Suite
 
 model, df = demo.titanic()
 
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
 
-# Create a suite and add a F1 test and an accuracy test
+
+@slicing_function()
+def slice_sex(row: pd.Series, category: str):
+    return row["Sex"] == category
+
+
+# Create a suite and add a F1 test and an accuracy test for the same slice
 # Note that all the parameters are specified except model
 # Which means that we will need to specify model everytime we run the suite
-suite = Suite() \
-    .add_test(testing.test_f1(dataset=wrapped_dataset)) \
-    .add_test(testing.test_accuracy(dataset=wrapped_dataset))
+suite = (
+    Suite()
+    .add_test(
+        testing.test_f1(
+            dataset=wrapped_dataset, slicing_function=slice_sex(category="male")
+        )
+    )
+    .add_test(
+        testing.test_accuracy(
+            dataset=wrapped_dataset, slicing_function=slice_sex(category="female")
+        )
+    )
+)
 
 # Create our first model
 my_first_model = Model(model=model, model_type="classification")
 
 # Run the suite by specifying our model and display the results
-passed, results = suite.run(model=my_first_model)
+passed_first, results_first = suite.run(model=my_first_model)
 
 # Create an improved version of our model
 my_improved_model = Model(model=model, model_type="classification")
 
 # Run the suite with our new version and check if the results improved
-suite.run(model=my_improved_model)
+passed_first, results_first = suite.run(model=my_improved_model)
 ```
-
-#### Description
-
-In this example we create a Suite with two tests, `test_f1` and `test_accuracy`. We specified all the parameters except
-the dataset to "expose" it as a run input. We can see that the way to set parameters differ whenever we are dealing with
-a test class or a test function.
 
 :::
 
@@ -264,11 +279,11 @@ def transform(df: pd.Series) -> pd.Series:
     df['Age'] = df['Age'] + 10
     return df
 
-@slicing_function(row_level=False, name='female')
+@slicing_function(row_level=False, name='females')
 def slice_female(df: pd.DataFrame) -> pd.DataFrame:
     return df[df.Sex == 'female']
 
-@slicing_function(row_level=False, name='male')
+@slicing_function(row_level=False, name='males')
 def slice_male(df: pd.DataFrame) -> pd.DataFrame:
     return df[df.Sex == 'male']
 
@@ -303,23 +318,40 @@ For advanced cases, you may need to define some test inputs that are shared betw
 In the example below, the data slice `female` is shared between two performance tests:
 
 ```python
-from giskard import demo, Model, Dataset, testing, Suite, SuiteInput, slicing_function, SlicingFunction
+from giskard import (
+    demo,
+    Model,
+    Dataset,
+    testing,
+    Suite,
+    SuiteInput,
+    slicing_function,
+    SlicingFunction,
+)
 import pandas as pd
 
 model, df = demo.titanic()
 
 wrapped_model = Model(model=model, model_type="classification")
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+wrapped_dataset = Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
+
 
 @slicing_function()
 def slice_female(row: pd.Series):
     return row["Sex"] == "female"
 
+
 shared_input_female = SuiteInput("female_slice", SlicingFunction)
 
-suite = Suite() \
-    .add_test(testing.test_auc(slicing_function=shared_input_female, threshold=0.7)) \
+suite = (
+    Suite()
+    .add_test(testing.test_auc(slicing_function=shared_input_female, threshold=0.7))
     .add_test(testing.test_f1(slicing_function=shared_input_female, threshold=0.8))
+)
 
 
 suite.run(model=wrapped_model, dataset=wrapped_dataset, female_slice=slice_female)
