@@ -30,8 +30,10 @@
                         <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
                             <v-row class="px-2 py-1 align-center">
                                 <v-col cols="3" class="font-weight-bold">
-                                    <InlineEditText :text="suite.name" @save="(name) => renameSuite(suite.id, name)">
-                                    </InlineEditText>
+                                    <div class="pr-4">
+                                        <InlineEditText :text="suite.name" @save="(name) => renameSuite(suite.id, name)">
+                                        </InlineEditText>
+                                    </div>
                                 </v-col>
                                 <v-col cols="2">
                                     <span v-if="latestExecutions[index]?.executionDate">{{ latestExecutions[index]?.executionDate | date }}</span>
