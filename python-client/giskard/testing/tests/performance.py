@@ -143,7 +143,7 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
 
     _verify_target_availability(dataset)
     if len(model.meta.classification_labels) == 2:
-        metric = roc_auc_score(dataset.df[dataset.target], model.predict(dataset).raw_prediction)
+        metric = roc_auc_score(dataset.df[dataset.target], model.predict(dataset).raw[:, 1])
     else:
         predictions = model.predict(dataset).all_predictions
         non_declared_categories = set(predictions.columns) - set(dataset.df[dataset.target].unique())
