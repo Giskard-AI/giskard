@@ -389,3 +389,6 @@ Upload your suite to the Giskard server to:
 
 To upload your test suite to the Giskard server, go to the [Upload object](../../guides/upload/index.md) page.
 
+<br>
+
+  ![](../../_static/test_suite_example.png)
