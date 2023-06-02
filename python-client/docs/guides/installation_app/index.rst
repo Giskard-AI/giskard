@@ -1,17 +1,15 @@
 Run the Giskard Server
 ===============
+.. hint:: Note
 
+   To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
+   
 .. toctree::
    :maxdepth: 1
 
    install_aws/index
    install_gcp/index
    install_azure/index
-
-
-.. hint:: Cloud installation
-
-   To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
 
 Requirements
 ^^^^^^^^^
