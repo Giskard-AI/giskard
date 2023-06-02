@@ -3,8 +3,10 @@ import os
 import platform
 import uuid
 from functools import wraps
+from threading import Lock
 from typing import Dict, Optional
 
+import requests
 from mixpanel import Mixpanel
 
 from giskard.settings import settings
@@ -39,6 +41,8 @@ def anonymize(message):
 
 
 class GiskardAnalyticsCollector:
+    lock = Lock()
+    ip: Optional[str]
     dev_mp_project_key = "4cca5fabca54f6df41ea500e33076c99"
     prod_mp_project_key = "2c3efacc6c26ffb991a782b476b8c620"
     server_info: Dict = None
@@ -48,6 +52,7 @@ class GiskardAnalyticsCollector:
     def __init__(self) -> None:
         self.is_enabled = not settings.disable_analytics
         self.giskard_version = None
+        self.ip = None
         if self.is_enabled:
             self.mp = self.configure_mixpanel()
             self.distinct_user_id = GiskardAnalyticsCollector.machine_based_user_id()
@@ -77,10 +82,16 @@ class GiskardAnalyticsCollector:
         if not self.giskard_version:
             import giskard
             self.giskard_version = giskard.get_version()
+        if not self.ip:
+            self.initialize_ip()
         if self.is_enabled or force:
             merged_props = {
                 "giskard_version": self.giskard_version,
-                "python_version": platform.python_version()
+                "python_version": platform.python_version(),
+                "ip": self.ip,
+                "arch": platform.machine(),
+                "$os": platform.system(),
+                "os-full": platform.platform(aliased=True)
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
@@ -102,5 +113,13 @@ class GiskardAnalyticsCollector:
             # https://bugs.python.org/issue40821
             return "unknown"
 
+    def initialize_ip(self):
+        with GiskardAnalyticsCollector.lock:
+            if self.ip:
+                return
+            try:
+                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')
+            except:  # noqa
+                self.ip = "unknown"
 
 analytics = GiskardAnalyticsCollector()
