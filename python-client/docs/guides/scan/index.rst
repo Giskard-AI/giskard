@@ -1,7 +1,7 @@
 🔍 Scan your ML model
 ===============
 
-Before embarking on testing Machine Learning models, it is crucial to have a comprehensive understanding of the critical vulnerabilities that can impact your model. The Giskard scan is designed to automatically detect various significant risks associated with your ML model. Learn more about vulnerabilities
+Before testing Machine Learning models, it's crucial to have a comprehensive understanding of the critical vulnerabilities that can impact your model. The Giskard scan is designed to automatically detect a variety of significant risks associated with your ML model. Learn more about different vulnerabilities here:
 
 .. toctree::
    :maxdepth: 1
@@ -14,7 +14,7 @@ Before embarking on testing Machine Learning models, it is crucial to have a com
    data_leakage/index
    stochasticity/index
 
-By conducting a Giskard scan, you can proactively identify and address these vulnerabilities, ensuring the reliability, fairness, and robustness of your Machine Learning models.
+By conducting a Giskard scan, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
 
 Prerequisites
@@ -22,15 +22,14 @@ Prerequisites
 
 To scan your ML model for vulnerabilities, you need:
 
-- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, see `here <../wrap_dataset/index.html>`_.
-- A **Model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or even
-  any set of *Python* functions. To wrap your model, see `here <../wrap_model/index>`_.
+- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, see `here <../wrap_dataset/index.md>`_.
+- A **Model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or any set of *Python* functions. To wrap your model, see `here <../wrap_model/index.md>`_.
 
 
 Scan your model to detect vulnerabilities
 ^^^^^^^^^
 
-After having wrapped your `model <../wrap_model/index>`_ & `dataset <../wrap_dataset/index>`_, ou can scan your model for vulnerabilities using:
+After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_, you can scan your model for vulnerabilities using:
 
 .. code-block:: python
 
@@ -45,7 +44,7 @@ After having wrapped your `model <../wrap_model/index>`_ & `dataset <../wrap_dat
 
     display(scan_results)  # in your notebook
 
-In the notebook, this will produce a widget that allows you to explore the detected issues:
+This will produce a dashboard directly in your notebook that allows you to explore the detected issues:
 
 .. image:: ../../assets/scan_results.png
 
@@ -61,8 +60,10 @@ the scan to a CSV or HTML file.
 Automatically generate a test suite based on the scan results
 ^^^^^^^^^
 
-If the automatic scan with `giskard.scan` found some issues with your model, you can automatically generate a set of
-tests (a test suite) that will reproduce those issues.
+Generating a test suite from your scan results will enable you to:
+
+* Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
+* Diagnose your vulnerabilties and debug the issues you found in the scan
 
 .. code-block:: python
 
@@ -71,20 +72,20 @@ tests (a test suite) that will reproduce those issues.
     # You can run the test suite locally to verify that it reproduces the issues
     test_suite.run()
 
-Upload your test suite in the Giskard server
+Upload your test suite to the Giskard server
 ^^^^^^^^^
 
-You can then upload the test suite to Giskard server. This will enable you to:
+You can then upload the test suite to the local Giskard server. This will enable you to:
 
-* Compare models to decide which model to promote
-* Debug your tests to diagnose the issues
-* Create more domain-specific tests that are integrating business feedback
-* Share your results
+* Compare the quality of different models to decide which one to promote
+* Debug your tests to diagnose the identified issues
+* Create more domain-specific tests relevant to your use case
+* Share results, and collaborate with your team to integrate business feedback
 
 .. code-block:: python
 
-    #Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard UI server
-    # Create a Giskard client aftern having install the Giskard server (see documentation)
+    # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers. 
+    # Create a Giskard client after having installed the Giskard server (see documentation)
     token = "API_TOKEN"  # Find it in Settings in the Giskard server
     client = GiskardClient(
         url="http://localhost:19000",  # URL of your Giskard instance
@@ -96,17 +97,16 @@ You can then upload the test suite to Giskard server. This will enable you to:
     # Upload to the current project ✉️
     test_suite.upload(client, "my_project")
     
-For more information about uploading to the Giskard server, go to the [Upload an object to the Giskard server](../upload/index) page.
+For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](../upload/index.md) page.
 
-.. hint:: Note
-
-   Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard UI server.
+.. note::
+   Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
 
 
 Troubleshooting
 ^^^^^^^^^
 
-If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ on our #support channel. Our community
-will help!
+If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and navigate to the #support channel. Our community
+will gladly help!
 
 
