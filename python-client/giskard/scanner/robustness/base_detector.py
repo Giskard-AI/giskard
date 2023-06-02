@@ -39,7 +39,7 @@ class BaseTextPerturbationDetector(Detector):
         if model.meta.feature_names:
             features = [f for f in features if f in model.meta.feature_names]
 
-        logger.debug(
+        logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
             f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
         )
@@ -106,7 +106,7 @@ class BaseTextPerturbationDetector(Detector):
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
 
-            logger.debug(
+            logger.info(
                 f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
             )
 
