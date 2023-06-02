@@ -93,7 +93,7 @@ class SlicingFunction(Artifact[DatasetProcessFunctionMeta]):
         else:
             return self.func(data, **self.params)
 
-    def save(self, local_dir: Path):
+    def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
             cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
 

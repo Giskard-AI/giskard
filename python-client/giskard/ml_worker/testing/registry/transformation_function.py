@@ -74,7 +74,7 @@ class TransformationFunction(Artifact[DatasetProcessFunctionMeta]):
     def _should_upload(self) -> bool:
         return self.meta.version is None
 
-    def save(self, local_dir: Path):
+    def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
             cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
 
