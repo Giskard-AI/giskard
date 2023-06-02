@@ -3,16 +3,14 @@
 
 The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model. The Giskard scan is currently able to detect the following types of issues:
 
-.. toctree::
-   :maxdepth: 1
 
-   ../../getting-started/key_vulnerabilities/performance_bias/index
-   ../../getting-started/key_vulnerabilities/robustness/index
-   ../../getting-started/key_vulnerabilities/overconfidence/index
-   ../../getting-started/key_vulnerabilities/underconfidence/index
-   ../../getting-started/key_vulnerabilities/ethics/index
-   ../../getting-started/key_vulnerabilities/data_leakage/index
-   ../../getting-started/key_vulnerabilities/stochasticity/index
+- `Performance bias <../../getting-started/key_vulnerabilities/performance_bias/index.md>`_
+- `Unrobustness <../../getting-started/key_vulnerabilities/robustness/index.md>`_
+- `Overconfidence <../../getting-started/key_vulnerabilities/overconfidence/index.md>`_
+- `Underconfidence <../../getting-started/key_vulnerabilities/underconfidence/index.md>`_
+- `Ethical bias <../../getting-started/key_vulnerabilities/ethics/index.md>`_
+- `Data leakage <../../getting-started/key_vulnerabilities/data_leakage/index.md>`_
+- `Stochasticity <../../getting-started/key_vulnerabilities/stochasticity/index.md>`_
 
 
 With the automatic scan, you can proactively identify and address key vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
