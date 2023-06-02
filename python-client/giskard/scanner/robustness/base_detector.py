@@ -154,7 +154,7 @@ def _relative_delta(actual, reference):
 
 def _get_default_num_samples(model) -> int:
     if model.is_generative:
-        return 20
+        return 10
 
     return 1_000
 
