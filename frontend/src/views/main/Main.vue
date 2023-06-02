@@ -63,12 +63,7 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{
-              name: 'project-testing',
-              params: {
-                id: projectStore.currentProjectId
-              }
-            }" value="testing">
+            <v-list-item value="testing" @click="redirectToTesting" link>
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
@@ -144,6 +139,7 @@ import { useUserStore } from "@/stores/user";
 import { useMainStore } from "@/stores/main";
 import { useProjectStore } from "@/stores/project";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router/composables';
 import moment from "moment/moment";
@@ -154,6 +150,7 @@ const mainStore = useMainStore();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
+const testSuitesStore = useTestSuitesStore();
 
 let warningMessage = ref<string>()
 
@@ -203,6 +200,19 @@ async function redirectToDebugger() {
   debuggingSessionsStore.setCurrentDebuggingSessionId(null);
   await router.push({
     name: 'project-debugger',
+    params: {
+      projectId: projectStore.currentProjectId.toString()
+    }
+  });
+}
+
+async function redirectToTesting() {
+  if (projectStore.currentProjectId === null) {
+    return;
+  }
+  testSuitesStore.setCurrentTestSuiteId(null);
+  await router.push({
+    name: 'project-testing',
     params: {
       projectId: projectStore.currentProjectId.toString()
     }
