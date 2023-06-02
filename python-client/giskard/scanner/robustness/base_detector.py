@@ -58,6 +58,8 @@ class BaseTextPerturbationDetector(Detector):
         features: Sequence[str],
     ) -> Sequence[Issue]:
         num_samples = self.num_samples or _get_default_num_samples(model)
+        output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
+
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
@@ -95,7 +97,6 @@ class BaseTextPerturbationDetector(Detector):
             if model.is_classification:
                 passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
-                output_sensitivity = self.output_sensitivity or 0.05
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < output_sensitivity
             elif model.is_generative:
@@ -105,8 +106,7 @@ class BaseTextPerturbationDetector(Detector):
                 score = scorer.compute(
                     predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False
                 )
-                output_sensitivity = self.output_sensitivity or 0.20
-                passed = np.array(score["rougeL"]) > self.output_sensitivity
+                passed = np.array(score["rougeL"]) > output_sensitivity
             else:
                 raise NotImplementedError("Only classification, regression, or generative models are supported.")
 
@@ -126,7 +126,7 @@ class BaseTextPerturbationDetector(Detector):
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
                     threshold=self.threshold,
-                    output_sensitivity=self.output_sensitivity,
+                    output_sensitivity=output_sensitivity,
                 )
                 issue = self._issue_cls(
                     model,
@@ -148,3 +148,10 @@ def _get_default_num_samples(model) -> int:
         return 20
 
     return 1_000
+
+
+def _get_default_output_sensitivity(model) -> float:
+    if model.is_generative:
+        return 0.1
+
+    return 0.05
