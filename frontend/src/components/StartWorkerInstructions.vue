@@ -32,7 +32,7 @@ import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useRoute } from "vue-router/composables";
 import { apiURL } from "@/env";
-import { JWTToken, MLWorkerType } from "@/generated-sources";
+import { JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import { api } from "@/api";
 
@@ -41,25 +41,11 @@ const appSettings = computed(() => mainStore.appSettings);
 const mainStore = useMainStore();
 const route = useRoute();
 
-interface Props {
-    mlWorkerType: MLWorkerType;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-    mlWorkerType: MLWorkerType.EXTERNAL
-});
 
 const apiAccessToken = ref<JWTToken | null>(null);
 
-
-const isExternalWorker = computed(() => props.mlWorkerType === MLWorkerType.EXTERNAL);
-
 const codeContent = computed(() => {
-    if (isExternalWorker.value) {
-        return `giskard worker start -u ${apiURL}`;
-    } else {
-        return `giskard worker start -s -u ${apiURL} # for internal worker`;
-    }
+    return `giskard worker start -u ${apiURL}`;
 })
 
 const generateApiAccessToken = async () => {
