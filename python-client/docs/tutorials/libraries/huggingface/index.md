@@ -1,4 +1,4 @@
-## HuggingFace
+## HuggingFace / PyTorch
 
 ```{toctree}
 :caption: Table of Contents
