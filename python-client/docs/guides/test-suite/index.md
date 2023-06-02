@@ -5,7 +5,7 @@ Because ML models depend on data, testing scenarios depend on domain specificiti
 * Create reproducible test suites with fixtures that integrate the domain knowledge of your model
 * Load the best tests from the Giskard open-source catalog
 
-## 1. Execute a Giskard test
+## Execute a Giskard test
 
 To create and execute a Giskard test, you have 2 possibilities. You can either load a test from the Giskard [catalog](../../catalogs/test-catalog/index.rst) or create your own test by decorating a Python function.
 
@@ -185,7 +185,7 @@ uniqueness_test_function(dataset=wrapped_dataset,
                         ).execute()
 ```
 
-## 2. Create & Execute a suite
+## Create & Execute a suite
 
 Test suite is a key feature of Giskard. Executing test suite can be useful for:
 * **Comparing different models**: In that case, you should define your **model as input** of your test suite. Comparing different models is important:
@@ -380,8 +380,12 @@ suite.run(model=wrapped_model, dataset=wrapped_dataset, female_slice=slice_femal
 :::
 ::::
 
+## Upload the suite to the Giskard server
+Upload your suite to the Giskard server to:
+* Compare models to decide which model to promote
+* Debug your tests to diagnose the issues
+* Create more domain-specific tests that are integrating business feedback
+* Share your results
 
+To upload your test suite to the Giskard server, go to the [Upload object](../../guides/upload/index.md) page.
 
-:::{hint}
-To upload your test suite to the Giskard server, go to [Upload objects](../../guides/upload/index.md) to the Giskard server.
-:::
