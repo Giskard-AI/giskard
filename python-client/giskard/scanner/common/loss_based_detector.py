@@ -22,7 +22,7 @@ class LossBasedDetector(Detector):
     LOSS_COLUMN_NAME = "__gsk__loss"
 
     def run(self, model: BaseModel, dataset: Dataset):
-        logger.debug(f"{self.__class__.__name__}: Running")
+        logger.info(f"{self.__class__.__name__}: Running")
 
         # Check if we have enough data to run the scan
         if len(dataset) < self.MIN_DATASET_LENGTH:
@@ -35,32 +35,32 @@ class LossBasedDetector(Detector):
         # If the dataset is very large, limit to a subsample
         max_data_size = self.MAX_DATASET_SIZE // len(model.meta.feature_names or dataset.columns)
         if len(dataset) > max_data_size:
-            logger.debug(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
+            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
             dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
         # Calculate loss
-        logger.debug(f"{self.__class__.__name__}: Calculating loss")
+        logger.info(f"{self.__class__.__name__}: Calculating loss")
         start = perf_counter()
         meta = self._calculate_loss(model, dataset)
         elapsed = perf_counter() - start
-        logger.debug(f"{self.__class__.__name__}: Loss calculated (took {datetime.timedelta(seconds=elapsed)})")
+        logger.info(f"{self.__class__.__name__}: Loss calculated (took {datetime.timedelta(seconds=elapsed)})")
 
         # Find slices
-        logger.debug(f"{self.__class__.__name__}: Finding data slices")
+        logger.info(f"{self.__class__.__name__}: Finding data slices")
         start = perf_counter()
         dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
         slices = self._find_slices(dataset_to_slice, meta)
         elapsed = perf_counter() - start
-        logger.debug(
+        logger.info(
             f"{self.__class__.__name__}: {len(slices)} slices found (took {datetime.timedelta(seconds=elapsed)})"
         )
 
         # Create issues from the slices
-        logger.debug(f"{self.__class__.__name__}: Analyzing issues")
+        logger.info(f"{self.__class__.__name__}: Analyzing issues")
         start = perf_counter()
         issues = self._find_issues(slices, model, dataset, meta)
         elapsed = perf_counter() - start
-        logger.debug(
+        logger.info(
             f"{self.__class__.__name__}: {len(issues)} issues found (took {datetime.timedelta(seconds=elapsed)})"
         )
 
