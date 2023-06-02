@@ -1,4 +1,4 @@
-# Catboost
+# LangChain
 
 ```{toctree}
 :caption: Table of Contents
@@ -6,7 +6,6 @@
 :maxdepth: 2
 :hidden:
 
-credit_scoring
 ```
 
-- **<project:credit_scoring.md>**
+Coming soon...

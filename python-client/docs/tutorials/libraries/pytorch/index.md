@@ -1,4 +1,4 @@
-# Pytorch 
+# PyTorch 
 
 ```{toctree}
 :caption: Table of Contents

@@ -29,14 +29,11 @@ guides/upload/index
 ```{toctree}
 :caption: Tutorials
 :name: mastertoc
-:maxdepth: 1
+:maxdepth: 2
 :hidden:
 
-tutorials/sklearn/index
-tutorials/catboost/index
-tutorials/pytorch/index
-tutorials/tensorflow/index
-tutorials/huggingface/index
+tutorials/libraries/index
+tutorials/tasks/index
 ```
 
 ```{toctree}
