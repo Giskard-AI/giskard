@@ -1,9 +1,11 @@
-import random
+import itertools
 import re
-
+import json
+import random
 import pandas as pd
+from pathlib import Path
 
-from .entity_swap import typos, gender_switch_en
+from ...datasets import Dataset
 from ...core.core import DatasetProcessFunctionMeta
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -62,6 +64,12 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
+    def __init__(self, column):
+        super().__init__(column)
+        from .entity_swap import typos
+
+        self._typos = typos
+
     def make_perturbation(self, x):
         split_text = x.split(" ")
         new_text = []
@@ -87,8 +95,8 @@ class TextTypoTransformation(TextTransformation):
             elif perturbation_type == 'replace':
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
-                if c in typos:
-                    replacement = random.choice(typos[c])
+                if c in self._typos:
+                    replacement = random.choice(self._typos[c])
                     text_modified = word[:j] + replacement + word[j + 1 :]
                     return text_modified
         return word
@@ -110,24 +118,137 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return text.translate(str.maketrans('', '', self._punctuation))
 
 
-class TextGenderTransformation(TextTransformation):
-    name = "Switch gender"
+class TextLanguageBasedTransformation(TextTransformation):
+    needs_dataset = True
 
-    def make_perturbation(self, x):
-        split_text = x.split()
-        new_words = []
-        for token in split_text:
-            new_word = self._switch(token)
-            if new_word != token:
-                new_words.append(new_word)
+    def __init__(self, column):
+        super().__init__(column)
+        self._lang_dictionary = dict()
+        self._load_dictionaries()
 
-        new_text = x
-        for original_word, switched_word in new_words:
+    def _load_dictionaries(self):
+        raise NotImplementedError()
+
+    def execute(self, dataset: Dataset) -> pd.DataFrame:
+        feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
+        meta_dataframe = dataset.column_meta[self.column, "text"].add_suffix('__gsk__meta')
+        feature_data = feature_data.join(meta_dataframe)
+        dataset.df.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation, axis=1)
+        return dataset.df
+
+    def make_perturbation(self, row):
+        raise NotImplementedError()
+
+    def _switch(self, word, language):
+        raise NotImplementedError()
+
+    def _select_dict(self, language):
+        try:
+            return self._lang_dictionary[language]
+        except KeyError:
+            return None
+
+
+class TextGenderTransformation(TextLanguageBasedTransformation):
+    name = "Switch Gender"
+
+    def _load_dictionaries(self):
+        from .entity_swap import gender_switch_en, gender_switch_fr
+
+        self._lang_dictionary = {"en": gender_switch_en, "fr": gender_switch_fr}
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+
+        if language not in self._lang_dictionary:
+            return text
+
+        replacements = [self._switch(token, language) for token in text.split()]
+        replacements = [r for r in replacements if r is not None]
+
+        new_text = text
+        for original_word, switched_word in replacements:
             new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+
         return new_text
 
-    def _switch(self, word):
-        if word.lower() in gender_switch_en:
-            return [word, gender_switch_en[word.lower()]]
-        else:
-            return word
+    def _switch(self, word, language):
+        try:
+            return (word, self._lang_dictionary[language][word.lower()])
+        except KeyError:
+            return None
+
+
+class TextReligionTransformation(TextLanguageBasedTransformation):
+    name = "Switch Religion"
+
+    def _load_dictionaries(self):
+        from .entity_swap import religion_dict_en, religion_dict_fr
+
+        self._lang_dictionary = {"en": religion_dict_en, "fr": religion_dict_fr}
+
+    def make_perturbation(self, row):
+        # Get text
+        text = row[self.column]
+
+        # Get language and corresponding dictionary
+        language = row["language__gsk__meta"]
+        religion_dict = self._select_dict(language)
+
+        # Check if we support this language
+        if religion_dict is None:
+            return text
+
+        # Mask entities and prepare replacements
+        replacements = []
+        for n_list, term_list in enumerate(religion_dict):
+            for n_term, term in enumerate(term_list):
+                mask_value = f"__GSK__ENT__RELIGION__{n_list}__{n_term}__"
+                text, num_rep = re.subn(rf"\b{term}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
+                if num_rep > 0:
+                    i = (n_term + 1 + random.randrange(len(term_list) - 1)) % len(term_list)
+                    replacement = term_list[i]
+                    replacements.append((mask_value, replacement))
+
+        # Replace masks
+        for mask, replacement in replacements:
+            text = text.replace(mask, replacement)
+
+        return text
+
+
+class TextNationalityTransformation(TextLanguageBasedTransformation):
+    name = "Switch countries from high- to low-income and vice versa"
+
+    def _load_dictionaries(self):
+        with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
+            nationalities_dict = json.load(f)
+        self._lang_dictionary = {"en": nationalities_dict["en"], "fr": nationalities_dict["fr"]}
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+        nationalities_word_dict = self._select_dict(language)
+
+        if nationalities_word_dict is None:
+            return text
+
+        ent_types = list(itertools.product(["country", "nationality"], ["high-income", "low-income"]))
+
+        # Mask entities and prepare replacements
+        replacements = []
+        for entity_type, income_type in ent_types:
+            for n, entity_word in enumerate(nationalities_word_dict[entity_type][income_type]):
+                mask_value = f"__GSK__ENT__{entity_type}__{income_type}__{n}__"
+                text, num_rep = re.subn(fr"\b{entity_word}\b", mask_value, text, flags=re.IGNORECASE)
+                if num_rep > 0:
+                    r_income_type = "low-income" if income_type == "high-income" else "high-income"
+                    replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])
+                    replacements.append((mask_value, replacement))
+
+        # Replace masks
+        for mask, replacement in replacements:
+            text = text.replace(mask, replacement)
+
+        return text

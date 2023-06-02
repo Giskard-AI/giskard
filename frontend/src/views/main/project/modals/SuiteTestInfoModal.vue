@@ -12,7 +12,7 @@
                 {{ suiteTest.test.displayName ?? suiteTest.test.name }}
             </v-card-title>
             <v-card-text class="card-content">
-                <pre class="test-doc caption pt-5">{{ suiteTest.test.doc }}</pre>
+                <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
                 <div class="d-flex align-center">
                     <p class="text-h6 pt-4">Inputs</p>
                 </div>
@@ -21,9 +21,10 @@
                                        :test="testFunctionsByUuid[suiteTest.testUuid]"
                                        :model-value="editedInputs"
                                        :project-id="projectId"
-                                     :inputs="inputType"
-                                     @invalid="i => invalid = i"
-                                     @result="v => result = v"
+                                       :inputs="inputType"
+                                       :doc="doc"
+                                       @invalid="i => invalid = i"
+                                       @result="v => result = v"
               />
               <v-row>
                   <v-col>
@@ -47,9 +48,9 @@
         </v-card-text>
           <v-card-actions>
               <v-spacer/>
-              <v-btn color="green" @click="close" disabled>
-                  <v-icon>mdi-bug</v-icon>
-                  Debug
+              <v-btn color="error" text @click="() => removeTest(close)" class="pr-2">
+                  <v-icon>delete</v-icon>
+                  Remove test
               </v-btn>
               <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
                   <v-icon>save</v-icon>
@@ -73,6 +74,8 @@ import {api} from '@/api';
 import {editor} from 'monaco-editor';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import {$vfm} from "vue-final-modal";
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import IEditorOptions = editor.IEditorOptions;
 
 const l = MonacoEditor;
@@ -97,6 +100,8 @@ const sortedArguments = computed(() => {
         return !_.isUndefined(props.suiteTest.functionInputs[value.name]);
     }, 'name');
 })
+
+const doc = computed(() => extractArgumentDocumentation(props.suiteTest.test))
 
 
 const invalid = ref(false);
@@ -131,6 +136,24 @@ const inputType = computed(() => chain(sortedArguments.value)
     .value()
 );
 
+async function removeTest(close) {
+    await $vfm.show({
+        component: ConfirmModal,
+        bind: {
+            title: 'Remove test',
+            text: `Are you sure that you want to remove this test from the test suite?`,
+            isWarning: true
+        },
+        on: {
+            async confirm(closeConfirm) {
+                await api.removeTest(suite.value!.projectKey!, suite.value!.id!, props.suiteTest.id!);
+                await useTestSuiteStore().reload();
+                closeConfirm();
+                close();
+            }
+        }
+    });
+}
 </script>
 
 <style scoped>

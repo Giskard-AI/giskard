@@ -31,7 +31,8 @@ async function copyCode() {
 </script>
 
 <template>
-    <!-- //NOSONAR --><pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"/>
+  <!-- //NOSONAR -->
+  <pre class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block"/>
         <v-btn class="copy-button" small icon @click="copyCode">
             <v-icon small>mdi-content-copy</v-icon>
           <span v-show="copied" class="copied-message">Copied</span>
@@ -40,15 +41,6 @@ async function copyCode() {
 </template>
 
 <style scoped>
-@font-face {
-  font-family: 'Roboto Mono';
-  font-style: normal;
-  font-weight: 100 1000;
-  font-stretch: 0% 200%;
-  src: url('../assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
-
-}
-
 .pre-block {
   background-color: #F4F4F4;
   position: relative;
@@ -60,6 +52,7 @@ async function copyCode() {
   padding-left: 0;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  font-size: 0.8rem;
 }
 
 .copy-button {

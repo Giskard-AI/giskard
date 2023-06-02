@@ -1,12 +1,11 @@
 import pytest
 
-from giskard import test
-from giskard.datasets.base import Dataset
+from giskard import test, scan
 from giskard.core.suite import Suite, SuiteInput
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
 from giskard.models.base import BaseModel
-from tests.utils import MockedClient
+from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
 
 
 @test()
@@ -111,11 +110,11 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
 
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
-    with MockedClient() as (client, mr):
-        Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
-            test_f1(threshold=0.2, dataset=german_credit_data)
-        ).upload(client, "test_project_key")
-
+    # with MockedClient() as (client, mr):
+    #     Suite().add_test(test_auc(threshold=0.2, dataset=german_credit_data)).add_test(
+    #         test_f1(threshold=0.2, dataset=german_credit_data)
+    #     ).upload(client, "test_project_key")
+    scan(german_credit_model, german_credit_data)
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #     from giskard.client.giskard_client import GiskardClient

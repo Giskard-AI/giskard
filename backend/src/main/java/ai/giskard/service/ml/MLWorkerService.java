@@ -55,6 +55,7 @@ public class MLWorkerService {
             log.info("Creating MLWorkerClient for {}", address);
 
             ManagedChannel channel = NettyChannelBuilder.forAddress(address).intercept(clientInterceptor).channelType(isInternal ? NioSocketChannel.class : LocalChannel.class)
+                .maxInboundMessageSize(Integer.MAX_VALUE)
                 .eventLoopGroup(isInternal ? new NioEventLoopGroup() : mlWorkerTunnelService.getInnerServerDetails().get().group())
                 .usePlaintext().build();
 

@@ -3,13 +3,17 @@ import logging
 import posixpath
 import tempfile
 import uuid
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, Optional, List, Union
 
 import numpy as np
+import pandas
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import yaml
 from pandas.api.types import is_list_like
+from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
@@ -24,6 +28,9 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 )
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
+
+SAMPLE_SIZE = 1000
 
 logger = logging.getLogger(__name__)
 
@@ -65,10 +72,11 @@ class DataProcessor:
 
     def apply(self, dataset: "Dataset", apply_only_last=False):
         ds = dataset.copy()
+        is_slicing_only = True
 
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
-
+            is_slicing_only = is_slicing_only and isinstance(step, SlicingFunction)
             df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
             ds = Dataset(
                 df=df,
@@ -84,6 +92,10 @@ class DataProcessor:
 
         if len(self.pipeline):
             ds.data_processor = self
+
+        # If dataset had metadata, copy it to the new dataset
+        if is_slicing_only and hasattr(dataset, "column_meta"):
+            ds.load_metadata_from_instance(dataset.column_meta)
 
         return ds
 
@@ -168,7 +180,7 @@ class Dataset(ColumnMetadataMixin):
 
         # used in the inference of category columns
         self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        self.column_types = self._infer_column_types(column_types, cat_columns)
+        self.column_types = self._infer_column_types(column_types, cat_columns, validation)
         if validation:
             from giskard.core.dataset_validation import validate_column_types
 
@@ -180,9 +192,16 @@ class Dataset(ColumnMetadataMixin):
             validate_column_categorization(self)
             validate_numeric_columns(self)
 
-        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+        self.number_of_rows = len(self.df.index)
+        self.category_features = {
+            column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
+            for column, column_type in self.column_types.items()
+            if column_type == 'category'
+        }
 
         self.data_processor = DataProcessor()
+
+        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -203,6 +222,16 @@ class Dataset(ColumnMetadataMixin):
         """
         self.data_processor.add_step(transformation_function)
         return self
+
+    @cached_property
+    def row_hashes(self):
+        return pandas.Series(
+            map(
+                lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
+                self.df.values,
+            ),
+            index=self.df.index,
+        )
 
     @configured_validate_arguments
     def slice(
@@ -288,7 +317,8 @@ class Dataset(ColumnMetadataMixin):
         """
         return self.data_processor.apply(self)
 
-    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]]):
+    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]],
+                            validation: bool = True):
         """
         Infer column types of a given DataFrame based on the number of unique values and column data types.
 
@@ -302,7 +332,7 @@ class Dataset(ColumnMetadataMixin):
         """
         if not column_types:
             column_types = {}
-        df_columns = set(self.df.columns.drop(self.target)) if self.target else set(self.df.columns)
+        df_columns = set([col for col in self.columns if col != self.target]) if self.target else set(self.columns)
 
         # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
@@ -342,6 +372,12 @@ class Dataset(ColumnMetadataMixin):
             try:
                 pd.to_numeric(self.df[col])
                 column_types[col] = SupportedColumnTypes.NUMERIC.value
+                if not is_numeric_dtype(self.df[col]) and validation:
+                    warning(
+                        f"The column {col} is declared as numeric but has '{str(self.df[col].dtype)}' as data type. "
+                        "To avoid potential future issues, make sure to cast this column to the correct data type."
+                    )
+
             except ValueError:
                 column_types[col] = SupportedColumnTypes.TEXT.value
 
@@ -388,7 +424,12 @@ class Dataset(ColumnMetadataMixin):
     @property
     def meta(self):
         return DatasetMeta(
-            name=self.name, target=self.target, column_types=self.column_types, column_dtypes=self.column_dtypes
+            name=self.name,
+            target=self.target,
+            column_types=self.column_types,
+            column_dtypes=self.column_dtypes,
+            number_of_rows=self.number_of_rows,
+            category_features=self.category_features,
         )
 
     @staticmethod
@@ -412,7 +453,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, dataset_id):
+    def download(cls, client: GiskardClient, project_key, dataset_id, sample: bool = False):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
@@ -423,6 +464,7 @@ class Dataset(ColumnMetadataMixin):
                 If None, the function looks for the dataset locally.
             project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.
+            sample (bool): Only open a sample of 1000 rows if True
 
         Returns:
             Dataset: A Dataset object that represents the downloaded dataset.
@@ -439,14 +481,22 @@ class Dataset(ColumnMetadataMixin):
                     target=saved_meta["target"],
                     column_types=saved_meta["column_types"],
                     column_dtypes=saved_meta["column_dtypes"],
+                    number_of_rows=saved_meta["number_of_rows"],
+                    category_features=saved_meta["category_features"],
                 )
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
-        df = cls.load(local_dir / "data.csv.zst")
+        df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)
-        return cls(df=df, name=meta.name, target=meta.target, column_types=meta.column_types, id=uuid.UUID(dataset_id))
+        return cls(
+            df=df,
+            name=meta.name,
+            target=meta.target,
+            column_types=meta.column_types,
+            id=uuid.uuid4() if sample else uuid.UUID(dataset_id),
+        )
 
     @staticmethod
     def _cat_columns(meta):
@@ -461,11 +511,15 @@ class Dataset(ColumnMetadataMixin):
         return self._cat_columns(self.meta)
 
     def save(self, local_path: Path, dataset_id):
-        with open(local_path / "data.csv.zst", "wb") as f:
+        with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
+
+            uncompressed_bytes = save_df(self.df.sample(min(SAMPLE_SIZE, len(self.df.index))))
+            compressed_bytes = compress(uncompressed_bytes)
+            f_sample.write(compressed_bytes)
 
             with open(Path(local_path) / "giskard-dataset-meta.yaml", "w") as meta_f:
                 yaml.dump(
@@ -477,6 +531,8 @@ class Dataset(ColumnMetadataMixin):
                         "column_dtypes": self.meta.column_dtypes,
                         "original_size_bytes": original_size_bytes,
                         "compressed_size_bytes": compressed_size_bytes,
+                        "number_of_rows": self.meta.number_of_rows,
+                        "category_features": self.meta.category_features,
                     },
                     meta_f,
                     default_flow_style=False,
@@ -520,7 +576,17 @@ class Dataset(ColumnMetadataMixin):
         )
 
     def copy(self):
-        return Dataset(df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False)
+        dataset = Dataset(
+            df=self.df.copy(),
+            target=self.target,
+            column_types=self.column_types.copy(),
+            validation=False,
+        )
+
+        if hasattr(self, "column_meta"):
+            dataset.load_metadata_from_instance(self.column_meta)
+
+        return dataset
 
 
 def _cast_to_list_like(object):

@@ -15,7 +15,8 @@
                     {{ props.text }}
                 </v-card-text>
                 <v-card-actions>
-                    <v-btn color="primary" @click="close">{{ props.cancelMessage }}</v-btn>
+                    <div class="flex-grow-1"/>
+                    <v-btn text color="primary" @click="close">{{ props.cancelMessage }}</v-btn>
                     <v-btn :color=buttonColor @click="emit('confirm', close)">{{ props.confirmMessage }}</v-btn>
                 </v-card-actions>
             </v-card>
@@ -42,7 +43,7 @@ const props = withDefaults((defineProps<{
 const emit = defineEmits(['input']);
 
 const buttonColor = computed<string>(() => {
-    return props.isWarning ? 'accent' : 'primary';
+    return props.isWarning ? 'accent' : 'primaryLight';
 });
 
 </script>
