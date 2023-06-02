@@ -37,6 +37,10 @@ dev = [
     "isort[colors]>=5.12.0",
     "pip>=23.1.2",
     "langchain>=0.0.187",
+    "nltk>=3.8.1",
+    "xgboost>=1.7.5",
+    "lightgbm>=3.3.5",
+    "imbalanced-learn>=0.10.1",
     "pytest-xdist>=3.3.1",
 ]
 proto = [
@@ -145,7 +149,7 @@ dependencies = [
     "pycryptodome>=3.6.1",
     "pandas>=1.3.4,<2",
     "docker>=6.0.0",
-    "xxhash>=2.0.0",
+    "xxhash>=3.2.0",
     "langdetect>=1.0.9",
     "chardet",  # text metadata
     "jinja2>=3",  # scan template (temporary)
