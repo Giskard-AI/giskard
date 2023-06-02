@@ -1,4 +1,4 @@
-Run the Giskard Server
+🌐 Run the Giskard Server
 ===============
 .. hint:: Note
 
