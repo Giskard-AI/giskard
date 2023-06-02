@@ -161,7 +161,7 @@ function submit() {
 .token-area {
   user-select: all;
   word-break: break-all;
-  font-size: 12px;
+  font-size: 0.75em;
   font-family: monospace;
 }
 
