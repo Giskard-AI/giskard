@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional, Generic
 
+import yaml
+
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
 from giskard.settings import settings
@@ -19,7 +21,12 @@ class Artifact(Generic[SMT], ABC):
         self.meta = meta
 
     @abstractmethod
-    def save(self, local_dit: Path):
+    def save(self, local_dir: Path):
+        self._save_locally(local_dir)
+        self._save_meta_locally(local_dir)
+
+    @abstractmethod
+    def _save_locally(self, local_dit: Path):
         ...
 
     @classmethod
@@ -44,7 +51,6 @@ class Artifact(Generic[SMT], ABC):
 
     def _save_meta_locally(self, local_dir):
         with open(Path(local_dir) / 'meta.yaml', 'wb') as f:
-            import yaml
             yaml.dump(self.meta, f)
 
     @classmethod
@@ -54,8 +60,6 @@ class Artifact(Generic[SMT], ABC):
             return None
 
         with open(file, 'r') as f:
-            import yaml
-
             return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:

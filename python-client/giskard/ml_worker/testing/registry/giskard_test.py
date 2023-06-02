@@ -55,7 +55,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
     def _get_uuid(self) -> str:
         return get_object_uuid(type(self))
 
-    def save(self, local_dir: Path):
+    def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
             cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
 
@@ -142,6 +142,6 @@ class GiskardTestMethod(GiskardTest):
     def get_builder(self):
         return GiskardTestMethod(self.test_fn)
 
-    def save(self, local_dir: Path):
+    def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / 'data.pkl', 'wb') as f:
             cloudpickle.dump(self.test_fn, f, protocol=pickle.DEFAULT_PROTOCOL)
