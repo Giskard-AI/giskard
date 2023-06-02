@@ -1,5 +1,4 @@
 from typing import Iterable, Optional, Callable, Any
-
 import mlflow
 import pandas as pd
 
@@ -9,17 +8,18 @@ from giskard.models.base import MLFlowBasedModel
 
 
 class LangchainModel(MLFlowBasedModel):
-
     @configured_validate_arguments
-    def __init__(self,
-                 model,
-                 model_type: ModelType,
-                 name: Optional[str] = None,
-                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                 model_postprocessing_function: Callable[[Any], Any] = None,
-                 feature_names: Optional[Iterable] = None,
-                 classification_threshold: Optional[float] = 0.5,
-                 classification_labels: Optional[Iterable] = None) -> None:
+    def __init__(
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+    ) -> None:
         assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
 
         super().__init__(
@@ -34,9 +34,7 @@ class LangchainModel(MLFlowBasedModel):
         )
 
     def save_model(self, local_path, mlflow_meta):
-        mlflow.langchain.save_model(
-            self.model, path=local_path, mlflow_model=mlflow_meta
-        )
+        mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     @classmethod
     def load_model(cls, local_dir):
@@ -44,3 +42,25 @@ class LangchainModel(MLFlowBasedModel):
 
     def model_predict(self, df):
         return [self.model.predict(**data) for data in df.to_dict('records')]
+
+    def rewrite_prompt(self, template, input_variables=None, **kwargs):
+        from langchain import LLMChain
+
+        update = dict(template=template)
+        if input_variables is not None:
+            update['input_variables'] = input_variables
+
+        new_prompt = self.model.prompt.copy(update=update)
+        chain = LLMChain(llm=self.model.llm, prompt=new_prompt)
+
+        model_kwargs = dict(
+            model_type=self.meta.model_type,
+            data_preprocessing_function=self.data_preprocessing_function,
+            model_postprocessing_function=self.model_postprocessing_function,
+            feature_names=self.meta.feature_names,
+            classification_threshold=self.meta.classification_threshold,
+            classification_labels=self.meta.classification_labels,
+        )
+        model_kwargs.update(kwargs)
+
+        return self.__class__(chain, **model_kwargs)
