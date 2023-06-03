@@ -109,12 +109,9 @@ class Dataset(ColumnMetadataMixin):
 
     Attributes:
         df (pandas.DataFrame):
-            A Pandas dataframe that contains some data examples that might interest you to inspect (test set, train set,
-            production data). Some important remarks:
-
-            - df should be the raw data that comes before all the preprocessing steps
-            - df can contain more columns than the features of the model such as the actual ground truth variable,
-            sample_id, metadata, etc.
+            A `pandas.DataFrame` that contains the raw data (before all the pre-processing steps) and the actual
+            ground truth variable (target). `df` can contain more columns than the features of the model, such as the sample_id,
+            metadata, etc.
         name (Optional[str]):
             A string representing the name of the dataset (default None).
         target (Optional[str]):
@@ -205,7 +202,7 @@ class Dataset(ColumnMetadataMixin):
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
-        Adds a slicing function to the data processor.
+        Adds a slicing function to the data processor's list of steps.
 
         Args:
             slicing_function (SlicingFunction): A slicing function to add to the data processor.
@@ -247,11 +244,13 @@ class Dataset(ColumnMetadataMixin):
         Args:
             slicing_function (Union[SlicingFunction, SlicingFunctionType]): A slicing function to apply.
                 If `slicing_function` is a callable, it will be wrapped in a `SlicingFunction` object
-                with `row_level` as its `row_level` argument. The `SlicingFunction` object will be
+                with `row_level` and `cell_level` as its arguments. The `SlicingFunction` object will be
                 used to slice the DataFrame. If `slicing_function` is a `SlicingFunction` object, it
                 will be used directly to slice the DataFrame.
             row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
+            cell_level (bool): Whether the `slicing_function` should be applied to the cells (True) or
+                the whole dataframe (False). Defaults to False.
 
         Returns:
             Dataset:
@@ -284,11 +283,13 @@ class Dataset(ColumnMetadataMixin):
         Args:
             transformation_function (Union[TransformationFunction, TransformationFunctionType]):
                 A transformation function to apply. If `transformation_function` is a callable, it will
-                be wrapped in a `TransformationFunction` object with `row_level` as its `row_level`
-                argument. If `transformation_function` is a `TransformationFunction` object, it will be used
+                be wrapped in a `TransformationFunction` object with `row_level` and `cell_level` as its
+                arguments. If `transformation_function` is a `TransformationFunction` object, it will be used
                 directly to transform the DataFrame.
             row_level (bool): Whether the `transformation_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
+            cell_level (bool): Whether the `slicing_function` should be applied to the cells (True) or
+                the whole dataframe (False). Defaults to False.
 
         Returns:
             Dataset: A new Dataset object containing the transformed data.
@@ -325,15 +326,28 @@ class Dataset(ColumnMetadataMixin):
     def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]],
                             validation: bool = True):
         """
-        Infer column types of a given DataFrame based on the number of unique values and column data types.
+       This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
 
-        Args:
-            df (pandas.DataFrame): The DataFrame to infer column types for.
-            column_dtypes (dict): A dictionary that maps column names to their expected data types.
-            no_cat (bool, optional): If True, do not infer categories and treat them as text instead.
+       Here's a summary of the function's logic:
 
-        Returns:
-            dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
+       1. If no column types are provided, initialize an empty dictionary.
+       2. Determine the columns in the DataFrame, excluding the target column if it exists.
+       3. If categorical columns are specified, prioritize them over the provided column types and mark them as 'category'.
+       4. Check for any unknown columns in the provided column types and remove them from the dictionary.
+       5. If there are no missing columns, remove the target column (if present) from the column types dictionary.
+       6. Calculate the number of unique values in each missing column.
+       7. For each missing column:
+
+          - If the number of unique values is less than or equal to the category threshold, categorize it as 'category'.
+          - Otherwise, attempt to convert the column to numeric using `pd.to_numeric` and categorize it as 'numeric'.
+          - If the column does not have the expected numeric data type and validation is enabled, issue a warning message.
+          - If conversion to numeric raises a ValueError, categorize the column as 'text'.
+       8. Return the column types dictionary.
+
+       The logarithmic rule is used to calculate the category threshold. The formula is: `category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2`. This means that if the length of the DataFrame is greater than or equal to 100, the category threshold is set to the rounded value of the base-10 logarithm of the DataFrame length. Otherwise, the category threshold is set to 2. The logarithmic rule helps in dynamically adjusting the category threshold based on the size of the DataFrame.
+
+       Returns:
+          dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
         if not column_types:
             column_types = {}
