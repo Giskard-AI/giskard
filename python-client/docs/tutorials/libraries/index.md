@@ -16,22 +16,55 @@ langchain/index
 api/index
 ```
 
-:::{hint}
-You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+:::{card} <h3><center>🤖 Scikit-learn</center></h3>
+:link: scikit-learn/index.html
 :::
+:::::
 
-## [Scikit-learn](<project:scikit-learn/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🏆 XGBoost</center></h3>
+:link: xgboost/index.html
+:::
+:::::
 
-## [XGBoost](<project:xgboost/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🌟 LightGBM</center></h3>
+:link: lightgbm/index.html
+:::
+:::::
 
-## [LightGBM](<project:lightgbm/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>📙 TensorFlow</center></h3>
+:link: tensorflow/index.html
+:::
+:::::
 
-## [Tensorflow](<project:tensorflow/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🔥 PyTorch</center></h3>
+:link: pytorch/index.html
+:::
+:::::
 
-## [PyTorch](<project:pytorch/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🤗 HuggingFace</center></h3>
+:link: huggingface/index.html
+:::
+:::::
 
-## [HuggingFace](<project:huggingface/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🦜 LangChain</center></h3>
+:link: langchain/index.html
+:::
+:::::
 
-## [Langchain](<project:langchain/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🌐 API</center></h3>
+:link: api/index.html
+:::
+:::::
 
-## [API](<project:api/index.md>)
+
