@@ -11,8 +11,23 @@ regression/index
 text-generation/index
 ```
 
-## [Classification](<project:classification/index.md>)
+::::::{grid} 1 1 2 2
+:gutter: 1
 
-## [Regression](<project:regression/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🏷️ Classification</center></h3>
+:link: classification/index.html
+:::
+:::::
 
-## [Text generation](<project:text-generation/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>📈 Regression</center></h3>
+:link: regression/index.html
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>🦜 Text generation</center></h3>
+:link: text-generation/index.html
+:::
+:::::
