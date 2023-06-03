@@ -7,7 +7,14 @@ Test suite
    .. automethod:: run
    .. automethod:: save
    .. automethod:: add_test
-   .. automethod:: create_test_params
    .. automethod:: upload
-   .. automethod:: find_required_params
-   .. automethod:: generate_tests
+
+.. autoclass:: giskard.core.suite.SuiteInput
+
+.. autoclass:: giskard.core.suite.DatasetInput
+
+.. autoclass:: giskard.core.suite.ModelInput
+
+.. autoclass:: giskard.core.suite.TestSuiteResult
+
+.. autoclass:: giskard.ml_worker.testing.test_result.TestResult
