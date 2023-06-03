@@ -1,4 +1,4 @@
-# `SST2-XLMR_BASE_ENCODER`
+# SST-2 Binary text classification with XLM-ROBERTA
 
 ## Libraries import
 ```python
