@@ -1,4 +1,4 @@
-# Newspaper classification with a custom Giskard wrapper
+# Newspaper classification with `torchtext`
 
 ## Libraries import
 ```python
