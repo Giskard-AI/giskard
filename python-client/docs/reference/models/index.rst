@@ -6,7 +6,6 @@ We provide a :class:`~.giskard.Model` class that automatically wraps your ML mod
 .. autoclass:: giskard.Model
 
    .. automethod:: __new__
-   .. automethod:: __init__
    .. automethod:: is_classification
    .. automethod:: is_binary_classification
    .. automethod:: is_regression
@@ -17,3 +16,5 @@ We provide a :class:`~.giskard.Model` class that automatically wraps your ML mod
    .. automethod:: load_model
    .. automethod:: upload
    .. automethod:: download
+
+.. autoclass:: giskard.models.base.ModelPredictionResults
