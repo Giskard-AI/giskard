@@ -50,3 +50,9 @@
 :link: ../../../reference/notebooks/enron_email_classification_sklearn.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center>🏦 Credit scoring</center></h3>
+:link: ../../../tutorials/libraries/scikit-learn/credit_scoring.md
+:::
+:::::
