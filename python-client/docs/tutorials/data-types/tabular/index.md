@@ -1,3 +1,28 @@
 # Tabular
 
-* [Titanic](../../../reference/notebooks/example_notebook.ipynb)
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+:::{card} <h3><center>🛳️ Titanic classification</center></h3>
+:link: ../../../reference/notebooks/example_notebook.ipynb
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>💊 Drug classification</center></h3>
+:link: ../../../reference/notebooks/drug_classification_sklearn.ipynb
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>🥷 Fraud detection</center></h3>
+:link: ../../../reference/notebooks/ieee_fraud_detection_adversarial_validation.ipynb
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>🏥 Breast cancer detection</center></h3>
+:link: ../../../reference/notebooks/cancer_detection_xgboost.ipynb
+:::
+:::::
