@@ -68,7 +68,7 @@ public class MLWorkerService {
         }
     }
 
-    private boolean isExternalWorkerConnected() {
+    public boolean isExternalWorkerConnected() {
         return mlWorkerTunnelService.getInnerServerDetails().isPresent();
     }
 

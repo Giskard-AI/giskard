@@ -28,6 +28,7 @@ def analytics_method(f):
                 analytics.track('tracking error', {'error': str(e)})
             except BaseException:  # NOSONAR
                 pass
+
     return inner_function
 
 
@@ -121,5 +122,6 @@ class GiskardAnalyticsCollector:
                 self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')
             except:  # noqa
                 self.ip = "unknown"
+
 
 analytics = GiskardAnalyticsCollector()
