@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar flat v-show="projects.length > 0">
       <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">Projects</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
@@ -71,8 +71,13 @@
         </v-card>
       </v-hover>
     </div>
-    <v-container v-else class="font-weight-light font-italic secondary--text">
-      <div v-if="isAdmin || isCreator">None created, none invited</div>
+    <v-container v-else class="text-center welcome">
+      <div v-if="isAdmin || isCreator">
+        <p class="text-h2 pb-10">Welcome to Giskard</p>
+        <v-btn color="primaryLight" class="primaryLightBtn " @click="openCreateDialog = true" x-large>
+          Create your first project to start
+        </v-btn>
+      </div>
       <div v-else>You have not been invited to any projects yet</div>
     </v-container>
 
@@ -170,19 +175,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { ValidationObserver } from "vee-validate";
-import { Role } from "@/enums";
-import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
-import { toSlug } from "@/utils";
-import { useRoute, useRouter } from "vue-router/composables";
+import {computed, onMounted, ref, watch} from "vue";
+import {ValidationObserver} from "vee-validate";
+import {Role} from "@/enums";
+import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
+import {toSlug} from "@/utils";
+import {useRoute, useRouter} from "vue-router/composables";
 import moment from "moment";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { api } from "@/api";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {api} from "@/api";
 import mixpanel from "mixpanel-browser";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import {useTestSuitesStore} from "@/stores/test-suites";
+import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 
 const route = useRoute();
 const router = useRouter();
@@ -359,5 +364,12 @@ async function updateCurrentProject(projectId: number) {
 
 #create .v-btn--floating {
   position: relative;
+}
+
+.welcome {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

@@ -80,6 +80,11 @@
                 Your model seems to present some stochastic behaviour. The model provides different results at each
                 execution. This may happen when some stochastic training process is included in the prediction pipeline.
             </p>
+            {% elif issues[0].__class__.__name__ == "LLMToxicityIssue" %}
+            <p>
+                Your model seems to exhibit offensive behaviour when we use adversarial “Do Anything Now” (DAN)
+                prompts.
+            </p>
             {% else %}
             <p>Found issues for {{ issues[0].group }}</p>
             {% endif %}

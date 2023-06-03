@@ -27,8 +27,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -51,6 +53,8 @@ import static java.util.Arrays.stream;
 @Service
 @RequiredArgsConstructor
 public class InitService {
+    @Autowired
+    Environment env;
 
     private static final Map<String, ColumnType> germanCreditColumnTypes = new HashMap<>();
     private static final Map<String, String> germanCreditColumnDtypes = new HashMap<>();
@@ -153,7 +157,10 @@ public class InitService {
         generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
         initUsers();
-        initProjects();
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+        if (!profiles.contains("prod") && !profiles.contains("dev")) {
+            initProjects();
+        }
     }
 
     /**
