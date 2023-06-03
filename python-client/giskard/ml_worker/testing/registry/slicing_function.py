@@ -21,10 +21,12 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
     """
     A slicing function used to subset data.
 
-    :param func: The function used to slice the data.
-    :type func: SlicingFunctionType
-    :param row_level: Whether the slicing function should operate on rows or columns. Defaults to True.
-    :type row_level: bool
+    Attributes:
+        func (SlicingFunctionType): The function used to slice the data.
+        row_level (bool): Whether the slicing function should operate on rows or columns.
+        cell_level (bool): Whether the slicing function should operate at the cell level.
+        params (Dict): Additional parameters for the slicing function.
+        is_initialized (bool): Indicates if the slicing function has been initialized.
     """
     func: SlicingFunctionType
     row_level: bool
@@ -77,10 +79,11 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         """
         Slices the data using the slicing function.
 
-        :param data: The data to slice.
-        :type data: Union[pd.Series, pd.DataFrame]
-        :return: The sliced data.
-        :rtype: Union[pd.Series, pd.DataFrame]
+        Args:
+            data (Union[pd.Series, pd.DataFrame]): The data to slice.
+
+        Returns:
+            Union[pd.Series, pd.DataFrame]: The sliced data.
         """
         if self.cell_level:
             actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}

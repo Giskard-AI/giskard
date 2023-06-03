@@ -65,12 +65,11 @@ client = GiskardClient(url, token)
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
 
-suite = suite(
-    Suite()
-    .add_test(testing, test_f1(model=wrapped_model))
-    .add_test(testing.test_accuracy(model=wrapped_model))
+suite = Suite() \
+    .add_test(testing.test_f1(model=wrapped_model)) \
+    .add_test(testing.test_accuracy(model=wrapped_model)) \
     .upload(client, project_name)
-)
+
 ```
 
 Then the suite that you uploaded will appear in the test tab of the Giskard server.

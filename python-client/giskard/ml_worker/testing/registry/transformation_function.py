@@ -53,7 +53,15 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         return self
 
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms the data using the transformation function.
 
+        Args:
+            data (Union[pd.Series, pd.DataFrame]): The data to transform.
+
+        Returns:
+            Union[pd.Series, pd.DataFrame]: The transformed data.
+        """
         if self.cell_level:
             actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
 
