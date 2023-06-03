@@ -1,8 +1,17 @@
 ## HuggingFace
 
-- [Tripadvisor reviews sentiment classification](../../../reference/notebooks/tripadvisor_sentiment_classification.ipynb)
-- <project:BertForSequenceClassification.md>
-- <project:BertForSequenceClassification_custom.md>
-- <project:pytorch.md>
-- <project:pytorch_pipeline.md>
-- <project:tensorflow.md>
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+:::{card} <h3><center>⭐️ Tripadvisor sentiment classification</center></h3>
+:link: ../../../reference/notebooks/tripadvisor_sentiment_classification.ipynb
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>🤗 Auto Model for Sequence Classification</center></h3>
+:link: ./pytorch.md
+:::
+:::::
+
