@@ -22,13 +22,11 @@ Prediction function is any Python function that takes  input as <b>raw</b> panda
 2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 
 ```python
-import numpy as np
-import pandas as pd
 from giskard import demo, Model
 
 data_preprocessor, clf = demo.titanic_pipeline()
 
-def prediction_function(df: pd.DataFrame) -> np.ndarray:
+def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     preprocessed_df = data_preprocessor(df)
     return clf.predict_proba(preprocessed_df)
@@ -49,7 +47,7 @@ wrapped_model = Model(
       to $n$ data entries (rows of `pandas.DataFrame`) and $m$ `classification_labels`. In the case of binary
       classification, an array  
       ($n\times 1$) of probabilities is also accepted.
-    * `model_type`: The type of model, either `regression` or `classification`.
+    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
     * `classification_labels`: The list of unique categories contained in your dataset target variable.
       If `classification_labels`
       is a list of $m$ elements, make sure that:
@@ -95,7 +93,52 @@ wrapped_model = Model(
     * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
       corresponding
       to $n$ data entries (rows of `pandas.DataFrame`).
-    * `model_type`: The type of model, either `regression` or `classification`.
+    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+    * `name`: Name of the wrapped model.
+    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your
+      dataset.
+      Make sure these features are in the same order as they are in your training dataset.
+
+::::
+::::{tab-item} Generative
+Prediction function is any Python function that takes the input as <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your generative task.
+
+<b><u>Make sure that:</b></u>
+
+1. `prediction_function` encapsulates all the <b>data pre-processing steps</b> (categorical encoding, numerical scaling,
+   etc.).
+2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
+
+```python
+from langchain.chains import LLMChain
+from langchain.llms.fake import FakeListLLM
+from langchain.prompts import PromptTemplate
+from giskard import Model
+
+responses = [
+    "\n\nHueFoots.", "\n\nEcoDrive Motors.", 
+    "\n\nRainbow Socks.", "\n\nNoOil Motors."]
+
+llm = FakeListLLM(responses=responses)
+prompt = PromptTemplate(
+    input_variables=["product"],
+    template="What is a good name for a company that makes {product}?",
+)
+chain = LLMChain(llm=llm, prompt=prompt)
+
+def prediction_function(df):
+    return [chain.predict(**data) for data in df.to_dict('records')]
+
+wrapped_model = Model(prediction_function, model_type='generative')
+```
+
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+    * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
+      corresponding
+      to $n$ data entries (rows of `pandas.DataFrame`).
+    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
@@ -113,9 +156,9 @@ object and provide a suitable serialization method (provided by `save_model` and
 This requires:
 
 - <b><u>Mandatory</u></b>: Overriding the `model_predict` method which should take the input as <b>raw</b> pandas dataframe
-  and return the <b>probabilities</b> for each classification labels (classification) or predictions (regression).
+  and return the <b>probabilities</b> for each classification labels (classification) or predictions (regression or generative).
 - <b><u>Optional</u></b>: Our pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
-  `tensorflow` and `huggingface` libraries. If none of these libraries are detected, `cloudpickle`
+  `tensorflow`, `huggingface` and `langchain` libraries. If none of these libraries are detected, `cloudpickle`
   is used as the default for serialization. If this fails, we will ask you to also override the `save_model` and `load_model`
   methods where you provide your own serialization of the `model` object.
 
@@ -123,16 +166,14 @@ This requires:
 ::::{tab-item} Classification
 
 ```python
-import pandas as pd
 from giskard import demo, Model
 
 data_preprocessor, clf = demo.titanic_pipeline()
 
 class MyCustomModel(Model):
-    def model_predict(self, df: pd.DataFrame):
+    def model_predict(self, df):
         preprocessed_df = data_preprocessor(df)
         return self.model.predict_proba(preprocessed_df)
-
 
 wrapped_model = MyCustomModel(
     model=clf,
@@ -140,7 +181,7 @@ wrapped_model = MyCustomModel(
     classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
                  'Embarked', 'Survived'],  # Default: all columns of your dataset
-  # name="titanic_model", # Optional
+    # name="titanic_model", # Optional
     # classification_threshold=0.5, # Default: 0.5
     # model_postprocessing_function=None, # Optional
     # **kwargs # Additional model-specific arguments
@@ -148,11 +189,11 @@ wrapped_model = MyCustomModel(
 ```
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` (check
       the [tutorials](../../tutorials/index.md)). If none of these
       libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
-    * `model_type`: The type of the model, either `regression` or `classification`.
+    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
     * `classification_labels`: The list of unique categories contained in your dataset target variable.
       If `classification_labels`
       is a list of $m$ elements, make sure that:
@@ -177,17 +218,12 @@ wrapped_model = MyCustomModel(
 
 ```python
 import numpy as np
-import pandas as pd
 from giskard import demo, Model
 
 data_preprocessor, reg = demo.linear_pipeline()
 
-def prediction_function(df):
-  preprocessed_df = data_preprocessor(df)
-  return np.squeeze(reg.predict(preprocessed_df))
-
 class MyCustomModel(Model):
-    def model_predict(self, df: pd.DataFrame):
+    def model_predict(self, df):
         preprocessed_df = data_preprocessor(df)
         return np.squeeze(self.model.predict(preprocessed_df))
 
@@ -202,11 +238,56 @@ wrapped_model = MyCustomModel(
 ```
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
-    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow` or `huggingface` (check
+    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` (check
       the [tutorials](../../tutorials/index.md)). If none of these
       libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
-    * `model_type`: The type of the model, either `regression` or `classification`.
+    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
+
+* <mark style="color:red;">**`Optional parameters`**</mark>
+    * `name`: Name of the wrapped model.
+    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your
+      dataset.
+      Make sure these features are in the same order as your training dataset.
+    * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies pre-processing and
+      returns any object that could be directly fed to `model`.
+    * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
+      an object of the same type and shape as the `model` output.
+    * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+
+::::
+::::{tab-item} Generative
+
+```python
+from langchain.chains import LLMChain
+from langchain.llms.fake import FakeListLLM
+from langchain.prompts import PromptTemplate
+from giskard import Model
+
+responses = [
+    "\n\nHueFoots.", "\n\nEcoDrive Motors.", 
+    "\n\nRainbow Socks.", "\n\nNoOil Motors."]
+
+llm = FakeListLLM(responses=responses)
+prompt = PromptTemplate(
+    input_variables=["product"],
+    template="What is a good name for a company that makes {product}?",
+)
+chain = LLMChain(llm=llm, prompt=prompt)
+
+class MyCustomModel(Model):
+    def model_predict(self, df):
+        return [self.model.predict(**data) for data in df.to_dict('records')]
+
+wrapped_model = MyCustomModel(chain, model_type='generative')
+```
+
+* <mark style="color:red;">**`Mandatory parameters`**</mark>
+    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` (check
+      the [tutorials](../../tutorials/index.md)). If none of these
+      libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
+      ask you to provide us with your own serialization method.
+    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
