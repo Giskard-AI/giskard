@@ -3,18 +3,18 @@
 In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
-:::{tab-item} Windows
-
-```sh
-pip install giskard --user
-```
-
-:::
-
 :::{tab-item} Mac and Linux
 
 ```sh
 pip install giskard
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install giskard --user
 ```
 
 :::
