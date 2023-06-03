@@ -10,8 +10,7 @@ from giskard import Dataset, Model
 ```
 ## Wrap dataset
 ```python
-data_filtered = pd.read_csv('https://raw.githubusercontent.com/Giskard-AI/giskard/feature/ai-test-v2-merged/\
-python-client/tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
+data_filtered = pd.read_csv('https://raw.githubusercontent.com/Giskard-AI/giskard/python-client/tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
 
 classification_labels_mapping = {'REGULATION': 0, 'INTERNAL': 1, 'CALIFORNIA CRISIS': 2, 'INFLUENCE': 3}
 
