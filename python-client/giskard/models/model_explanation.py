@@ -1,10 +1,13 @@
 import logging
+import warnings
 from itertools import groupby
 from typing import Callable, Dict, List, Any
 
 import eli5
 import numpy as np
 import pandas as pd
+
+warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap
 from eli5.lime import TextExplainer
 
