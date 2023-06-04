@@ -1,10 +1,13 @@
 import logging
+import warnings
 from itertools import groupby
 from typing import Callable, Dict, List, Any
 
 import eli5
 import numpy as np
 import pandas as pd
+
+warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap
 from eli5.lime import TextExplainer
 
@@ -23,9 +26,9 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
             prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
         else:
             prepared_ds = Dataset(df=df, column_types=dataset.column_types)
-        prepared_df = model.prepare_dataframe(prepared_ds.df,
-                                              column_dtypes=prepared_ds.column_dtypes,
-                                              target=prepared_ds.target)
+        prepared_df = model.prepare_dataframe(
+            prepared_ds.df, column_dtypes=prepared_ds.column_dtypes, target=prepared_ds.target
+        )
         columns_in_original_order = (
             model.meta.feature_names
             if model.meta.feature_names
@@ -111,13 +114,13 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
 
 
 def summary_shap_classification(
-        shap_values: List[np.ndarray],
-        feature_names: List[str],
-        class_names: List[str],
-        max_display: int = 5,
+    shap_values: List[np.ndarray],
+    feature_names: List[str],
+    class_names: List[str],
+    max_display: int = 5,
 ) -> Dict[str, Dict[str, Dict[str, float]]]:
     feature_order = np.argsort(np.sum(np.mean(np.abs(shap_values), axis=1), axis=0))
-    feature_order = feature_order[-min(max_display, len(feature_order)):]
+    feature_order = feature_order[-min(max_display, len(feature_order)) :]
     feature_inds = feature_order[:max_display]
     chart_data: Dict[str, Dict[Any, Any]] = {"explanations": {}}
     for i in range(len(shap_values)):
@@ -129,7 +132,7 @@ def summary_shap_classification(
 
 
 def summary_shap_regression(
-        shap_values: np.ndarray, feature_names: List[str], max_display: int = 5
+    shap_values: np.ndarray, feature_names: List[str], max_display: int = 5
 ) -> Dict[str, Dict[str, Dict[str, float]]]:
     max_display = min(max_display, shap_values.shape[1])
     feature_order = np.argsort(np.mean(np.abs(shap_values), axis=0))
@@ -146,7 +149,7 @@ def summary_shap_regression(
 
 
 def text_explanation_prediction_wrapper(
-        prediction_function: Callable, input_example: pd.DataFrame, text_column: str
+    prediction_function: Callable, input_example: pd.DataFrame, text_column: str
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)

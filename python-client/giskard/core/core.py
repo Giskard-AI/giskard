@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 

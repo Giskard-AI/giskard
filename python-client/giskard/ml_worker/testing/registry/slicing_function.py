@@ -93,7 +93,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: DatasetProcessFunctionMeta):
         if meta.process_type == DatasetProcessFunctionType.CODE:
-            super().load(local_dir, uuid, meta)
+            return super().load(local_dir, uuid, meta)
         else:
             return cls._load_no_code(meta)
 

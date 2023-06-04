@@ -16,16 +16,34 @@ from giskard.models.base import MLFlowBasedModel
 from ..utils import map_to_tuples
 
 TorchDType = Literal[
-    "float32", "float", "float64", "double", "complex64", "cfloat", "float16",
-    "half", "bfloat16", "uint8", "int8", "int16", "short", "int32", "int", "int64", "long", "bool"]
+    "float32",
+    "float",
+    "float64",
+    "double",
+    "complex64",
+    "cfloat",
+    "float16",
+    "half",
+    "bfloat16",
+    "uint8",
+    "int8",
+    "int16",
+    "short",
+    "int32",
+    "int",
+    "int64",
+    "long",
+    "bool",
+]
 
 
 def string_to_torch_dtype(torch_dtype_string: TorchDType):
     try:
         return getattr(importlib.import_module("torch"), torch_dtype_string)
     except AttributeError:
-        raise ValueError(f"Incorrect torch dtype specified: {torch_dtype_string}, "
-                         f"available values are: {get_args(TorchDType)}")
+        raise ValueError(
+            f"Incorrect torch dtype specified: {torch_dtype_string}, " f"available values are: {get_args(TorchDType)}"
+        )
 
 
 class TorchMinimalDataset(torch_dataset):
@@ -52,18 +70,19 @@ class PyTorchModel(MLFlowBasedModel):
     """
 
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            torch_dtype: TorchDType = "float32",
-            device="cpu",
-            name: Optional[str] = None,
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
-            iterate_dataset=True,
+        self,
+        model,
+        model_type: ModelType,
+        torch_dtype: TorchDType = "float32",
+        device="cpu",
+        name: Optional[str] = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+        iterate_dataset=True,
+        **kwargs,
     ) -> None:
         super().__init__(
             model=model,
@@ -74,6 +93,7 @@ class PyTorchModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            **kwargs,
         )
 
         self.device = device
@@ -81,7 +101,7 @@ class PyTorchModel(MLFlowBasedModel):
         self.iterate_dataset = iterate_dataset
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_wrapped_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):

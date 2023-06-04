@@ -3,15 +3,16 @@ import pandas as pd
 from giskard import test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
+from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.testing.utils import Direction, validate_classification_label
+from giskard.ml_worker.testing.utils import check_slice_not_empty
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
-from giskard.ml_worker.testing.utils import check_slice_not_empty
+from giskard.models.utils import fix_seed
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -29,12 +30,14 @@ def _prediction_ratio(prediction, perturbed_prediction):
 
 @timer("Perturb and predict data")
 def _perturb_and_predict(
-    model: BaseModel,
-    ds: Dataset,
-    transformation_function: TransformationFunction,
-    output_proba=True,
-    classification_label=None,
+        model: BaseModel,
+        ds: Dataset,
+        transformation_function: TransformationFunction,
+        output_proba=True,
+        classification_label=None,
 ):
+    fix_seed()
+
     results_df = pd.DataFrame(
         {
             "prediction": _predict_numeric_result(model, ds, output_proba, classification_label),
