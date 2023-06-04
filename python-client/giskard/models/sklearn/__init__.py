@@ -1,8 +1,8 @@
 from typing import Callable, Iterable, Any, Optional
 
+import mlflow
 import pandas as pd
 
-import mlflow
 from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowBasedModel
@@ -18,18 +18,22 @@ class SKLearnModel(MLFlowBasedModel):
         _feature_names_attr (str):
             A private attribute that holds the name of the scikit-learn model's attribute that stores the feature names.
     """
+
     _feature_names_attr = "feature_names_in_"
 
     @configured_validate_arguments
-    def __init__(self,
-                 model,
-                 model_type: ModelType,
-                 name: Optional[str] = None,
-                 data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                 model_postprocessing_function: Callable[[Any], Any] = None,
-                 feature_names: Optional[Iterable] = None,
-                 classification_threshold: Optional[float] = 0.5,
-                 classification_labels: Optional[Iterable] = None) -> None:
+    def __init__(
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
+    ) -> None:
         """
         Constructs an instance of the SKLearnModel class with the provided arguments.
 
@@ -67,6 +71,7 @@ class SKLearnModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            **kwargs,
         )
 
     def save_model(self, local_path, mlflow_meta):
@@ -82,7 +87,7 @@ class SKLearnModel(MLFlowBasedModel):
         )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_wrapped_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):
