@@ -84,12 +84,12 @@ class GiskardAnalyticsCollector:
             import giskard
             self.giskard_version = giskard.get_version()
         if not self.ip:
-            self.initialize_ip()
+            self.initialize_geo()
         if self.is_enabled or force:
             merged_props = {
                 "giskard_version": self.giskard_version,
                 "python_version": platform.python_version(),
-                "ip": self.ip,
+                "ip": self.ip,  # only for aggregated stats: city, country, region. IP itself isn't stored
                 "arch": platform.machine(),
                 "$os": platform.system(),
                 "os-full": platform.platform(aliased=True)
@@ -114,7 +114,14 @@ class GiskardAnalyticsCollector:
             # https://bugs.python.org/issue40821
             return "unknown"
 
-    def initialize_ip(self):
+    def initialize_geo(self):
+        """
+        Query a user's IP address to convert it to an aggregated telemetry:
+            - city
+            - region
+            - country
+        IP address itself **isn't stored** by in the telemetry data
+        """
         with GiskardAnalyticsCollector.lock:
             if self.ip:
                 return
