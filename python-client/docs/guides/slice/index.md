@@ -131,4 +131,5 @@ Saving your slicing function to the Giskard server will enable you to:
 To upload your slicing function to the Giskard server, go to [Upload objects](docs/guide/upload/index.md) to the Giskard server.
 
 <br>
+
   ![](../../_static/catalog_slice.png)
