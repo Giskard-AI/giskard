@@ -68,7 +68,7 @@ class BaseModel(ABC):
     """
 
     should_save_model_class = False
-    id: uuid.UUID = None
+    id: uuid.UUID
     _cache: ModelCache
 
     @configured_validate_arguments
@@ -79,6 +79,7 @@ class BaseModel(ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -99,6 +100,7 @@ class BaseModel(ABC):
             The initialized object contains the following attributes:
                 - meta: a ModelMeta object containing metadata about the model.
         """
+        self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         if type(model_type) == str:
             try:
                 model_type = SupportedModelTypes(model_type)
@@ -113,13 +115,11 @@ class BaseModel(ABC):
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
-        self._cache = ModelCache(model_type)
+        self._cache = ModelCache(model_type, str(self.id), cache_dir=kwargs.get("prediction_cache_dir"))
 
         # sklearn and catboost will fill classification_labels before this check
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
-            raise ValueError(
-                "The parameter 'classification_labels' is required if 'model_type' is 'classification'."
-            )
+            raise ValueError("The parameter 'classification_labels' is required if 'model_type' is 'classification'.")
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
@@ -180,9 +180,6 @@ class BaseModel(ABC):
             )
 
     def save(self, local_path: Union[str, Path]) -> None:
-        if self.id is None:
-            self.id = uuid.uuid4()
-            self._cache.set_id(str(self.id))
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
@@ -372,19 +369,9 @@ class BaseModel(ABC):
         """
         local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
         if client is None:
-            # internal worker case, no token based http client
+            # internal worker case, no token based http client [deprecated, to be removed]
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f:
-                file_meta = yaml.load(f, Loader=yaml.Loader)
-                meta = ModelMeta(
-                    name=file_meta["name"],
-                    model_type=SupportedModelTypes[file_meta["model_type"]],
-                    feature_names=file_meta["feature_names"],
-                    classification_labels=file_meta["classification_labels"],
-                    classification_threshold=file_meta["threshold"],
-                    loader_module=file_meta["loader_module"],
-                    loader_class=file_meta["loader_class"],
-                )
+            _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
@@ -406,13 +393,29 @@ class BaseModel(ABC):
         clazz = cls.determine_model_class(meta, local_dir)
 
         constructor_params = meta.__dict__
+        constructor_params["id"] = model_id
+
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
         model = clazz.load(local_dir, **constructor_params)
-        model.id = model_id
-        model._cache = ModelCache(meta.model_type, model.id)
         return model
+
+    @classmethod
+    def read_meta_from_local_dir(cls, local_dir):
+        with open(Path(local_dir) / META_FILENAME) as f:
+            file_meta = yaml.load(f, Loader=yaml.Loader)
+            meta = ModelMeta(
+                name=file_meta["name"],
+                model_type=SupportedModelTypes[file_meta["model_type"]],
+                feature_names=file_meta["feature_names"],
+                classification_labels=file_meta["classification_labels"],
+                classification_threshold=file_meta["threshold"],
+                loader_module=file_meta["loader_module"],
+                loader_class=file_meta["loader_class"],
+            )
+        # dirty implementation to return id like this, to be decided if meta properties can just be BaseModel properties
+        return file_meta["id"], meta
 
     @classmethod
     def cast_labels(cls, meta_response):
@@ -426,10 +429,17 @@ class BaseModel(ABC):
     @classmethod
     def load(cls, local_dir, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
+        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+
+        constructor_params = meta.__dict__
+        constructor_params["id"] = model_id
+        del constructor_params["loader_module"]
+        del constructor_params["loader_class"]
+
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                return clazz(**kwargs)
+                return clazz(**(constructor_params | kwargs))
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
@@ -459,6 +469,7 @@ class WrapperModel(BaseModel, ABC):
             feature_names: Optional[Iterable] = None,
             classification_threshold: Optional[float] = 0.5,
             classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -477,7 +488,7 @@ class WrapperModel(BaseModel, ABC):
             ValueError: If `data_preprocessing_function` takes more than one argument.
             ValueError: If `model_postprocessing_function` takes more than one argument.
         """
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels)
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, **kwargs)
         self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
@@ -530,10 +541,11 @@ class WrapperModel(BaseModel, ABC):
 
         # Fix possible extra dimensions (e.g. batch dimension which was not squeezed)
         if raw_predictions.ndim > 2:
-            warn_once(logger,
-                      f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
-                      "We will attempt to automatically reshape the output to match this format, please check that the results are consistent."
-                      )
+            warn_once(
+                logger,
+                f"\nThe output of your model has shape {raw_predictions.shape}, but we expect a shape (n_entries, n_classes). \n"
+                "We will attempt to automatically reshape the output to match this format, please check that the results are consistent.",
+            )
 
             raw_predictions = raw_predictions.squeeze(tuple(range(1, raw_predictions.ndim - 1)))
 
@@ -546,10 +558,11 @@ class WrapperModel(BaseModel, ABC):
         # If a binary classifier returns a single prediction `p`, we try to infer the second class
         # prediction as `1 - p`.
         if self.is_binary_classification and raw_predictions.shape[-1] == 1:
-            warn_once(logger,
-                      "Please make sure that your model's output corresponds "
-                      "to the second label in classification_labels."
-                      )
+            warn_once(
+                logger,
+                "Please make sure that your model's output corresponds "
+                "to the second label in classification_labels.",
+            )
 
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
@@ -595,11 +608,14 @@ class WrapperModel(BaseModel, ABC):
     def load(cls, local_dir, **kwargs):
         kwargs["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         kwargs["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
-        return cls(model=cls.load_model(local_dir), **kwargs)
+        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        constructor_params = meta.__dict__
+        constructor_params["id"] = model_id
+        return cls(model=cls.load_wrapped_model(local_dir), **(constructor_params | kwargs))
 
     @classmethod
     @abstractmethod
-    def load_model(cls, local_dir):
+    def load_wrapped_model(cls, local_dir):
         ...
 
     @classmethod
@@ -637,9 +653,6 @@ class MLFlowBasedModel(WrapperModel, ABC):
         MLFlow requires a target directory to be empty before the model is saved, thus we have to call
         save_with_mflow first and then save the rest of the metadata
         """
-        if not self.id:
-            self.id = uuid.uuid4()
-            self._cache.set_id(str(self.id))
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
@@ -668,7 +681,7 @@ class CloudpickleBasedModel(WrapperModel, ABC):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_wrapped_model(cls, local_dir):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():
