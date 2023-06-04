@@ -9,7 +9,7 @@ from ...models.base import BaseModel
 from ..decorators import detector
 
 
-@detector(name="ethical_bias", tags=["ethical_bias", "robustness", "nlp", "classification", "regression"])
+@detector(name="ethical_bias", tags=["ethical_bias", "robustness", "nlp", "classification", "regression", "generative", "llm"])
 class EthicalBiasDetector(BaseTextPerturbationDetector):
     _issue_cls = EthicalIssue
 

@@ -1,5 +1,6 @@
 import csv
 import os
+import uuid
 from pathlib import Path
 from typing import Dict, List, Any, Iterable, Optional
 
@@ -28,26 +29,27 @@ class ModelCache:
 
     vectorized_get_cache_or_na = None
 
-    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None):
-        self.id = id
+    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Path = None):
+        self.id = id or str(uuid.uuid4())
         self.prediction_cache = dict()
+        self.cache_dir = cache_dir or Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / self.id)
 
         if id is not None:
-            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / id)
-            if local_dir.exists():
-                with open(local_dir / CACHE_CSV_FILENAME, "r") as pred_f:
+            if (self.cache_dir / CACHE_CSV_FILENAME).exists():
+                with open(self.cache_dir / CACHE_CSV_FILENAME, "r") as pred_f:
                     reader = csv.reader(pred_f)
                     for row in reader:
-                        self.prediction_cache[row[0]] = [i if model_type == SupportedModelTypes.GENERATIVE else float(i)
-                                                         for i in row[1:]]
+                        if model_type == SupportedModelTypes.GENERATIVE:
+                            self.prediction_cache[row[0]] = row[1:]
+                        elif model_type == SupportedModelTypes.REGRESSION:
+                            self.prediction_cache[row[0]] = float(row[1])
+                        else:
+                            self.prediction_cache[row[0]] = [float(i) for i in row[1:]]
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
 
     def get_cache_or_na(self, key: str):
-        try:
-            return self.prediction_cache.__getitem__(key)
-        except KeyError:
-            return NaN
+        return self.prediction_cache.get(key, NaN)
 
     def read_from_cache(self, keys: pd.Series):
         return pd.Series(self.vectorized_get_cache_or_na(keys), index=keys.index)
@@ -57,9 +59,8 @@ class ModelCache:
             self.prediction_cache[keys.iloc[i]] = values[i]
 
         if self.id:
-            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / self.id)
-            os.makedirs(local_dir, exist_ok=True)
-            with open(local_dir / CACHE_CSV_FILENAME, "a") as pred_f:
+            os.makedirs(self.cache_dir, exist_ok=True)
+            with open(self.cache_dir / CACHE_CSV_FILENAME, "a") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
                     writer.writerow(flatten([keys.iloc[i], values[i]]))
@@ -72,14 +73,3 @@ class ModelCache:
             return pd.DataFrame(data, index=index)
         else:
             return pd.DataFrame({})
-
-    def set_id(self, id: str):
-        self.id = id
-
-        if len(self.prediction_cache.keys()) > 0:
-            local_dir = Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / id)
-            os.makedirs(local_dir, exist_ok=True)
-            with open(local_dir / CACHE_CSV_FILENAME, "w") as pred_f:
-                writer = csv.writer(pred_f)
-                for key, value in self.prediction_cache.items():
-                    writer.writerow([key, value])

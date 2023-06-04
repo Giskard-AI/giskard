@@ -156,6 +156,16 @@ dependencies = [
     "pyngrok>=6.0.0",
 ]
 
+[project.optional-dependencies]
+llm = [
+    "transformers",
+    "torch",
+    "langchain",
+    "datasets",
+    "evaluate",
+    "rouge_score",
+]
+
 [tool.black]
 # https://github.com/psf/black
 target-version = ['py38', 'py39', 'py310']
