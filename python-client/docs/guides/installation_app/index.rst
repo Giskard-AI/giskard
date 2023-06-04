@@ -1,8 +1,6 @@
 🌐 Run the Giskard Server
 ===============
-.. hint:: Note
-
-   To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
+.. hint:: To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
    
 .. toctree::
    :maxdepth: 1
@@ -10,6 +8,15 @@
    install_aws/index
    install_gcp/index
    install_azure/index
+
+The Giskard server is the app that you can install internally (locally or on your cloud instance) additionally to the [Giskard Python library](../installation_library/index.md). The Giskard server offers a bunch of features such as:
+* Debugging your tests to diagnose issues
+* Comparing models to decide which one to promote
+* Gathering all your internal tests of your team in the same place to work more efficiently 
+* Sharing your results and collect business feedback from your team
+* Creating more domain-specific tests based on the debugging sessions
+
+It can be installed locally or on a external server (cloud instance or external server) if you want to leverage all the collaborative Giskard feature.
 
 Requirements
 ^^^^^^^^^
