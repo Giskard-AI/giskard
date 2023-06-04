@@ -5,6 +5,7 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
+
 from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
@@ -28,11 +29,21 @@ class Scanner:
         self.only = only
         self.uuid = uuid.uuid4()
 
-    def analyze(self, model: BaseModel, dataset: Dataset, verbose=True) -> ScanResult:
+    def analyze(self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        time_start = perf_counter()
-        validate_model(model=model, validate_ds=dataset)
-        model_validation_time = perf_counter() - time_start
+        if model.is_generative:
+            logger.warning(
+                "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
+            )
+
+        model, dataset = self._prepare_model_dataset(model, dataset)
+
+        if not model.is_generative:
+            time_start = perf_counter()
+            validate_model(model=model, validate_ds=dataset)
+            model_validation_time = perf_counter() - time_start
+        else:
+            model_validation_time = None
 
         if not dataset.df.index.is_unique:
             warning(
@@ -46,7 +57,7 @@ class Scanner:
                 column_types=dataset.column_types,
             )
 
-        maybe_print("Running scan…", verbose=verbose)
+        maybe_print("🔎 Running scan…", verbose=verbose)
         time_start = perf_counter()
 
         # Collect the detectors
@@ -74,11 +85,12 @@ class Scanner:
                 )
                 analytics.track(
                     "scan:detector-run",
-                    {"scan_uuid": self.uuid.hex,
-                     "detector": fullname(detector),
-                     "detector_elapsed": detector_elapsed,
-                     "detected_issues": len(detected_issues) if detected_issues else None
-                     },
+                    {
+                        "scan_uuid": self.uuid.hex,
+                        "detector": fullname(detector),
+                        "detector_elapsed": detector_elapsed,
+                        "detected_issues": len(detected_issues) if detected_issues else None,
+                    },
                 )
 
                 issues.extend(detected_issues)
@@ -105,6 +117,25 @@ class Scanner:
 
         return issues
 
+    def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
+        if model.is_generative and dataset is None:
+            logger.warning(
+                "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
+            )
+            from .llm.utils import load_default_dataset
+
+            dataset = load_default_dataset()
+            model = model.rewrite_prompt(
+                template="{question}", input_variables=["question"], feature_names=["question"]
+            )
+
+            return model, dataset
+
+        if dataset is None:
+            raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")
+
+        return model, dataset
+
     @analytics_method
     def _collect_analytics(self, model, dataset, issues, elapsed, model_validation_time):
         inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
@@ -121,7 +152,7 @@ class Scanner:
                 "inner_model_class": inner_model_class,
                 "model_id": str(model.id),
                 "model_type": model.meta.model_type.value,
-                "dataset_id": str(dataset.id),
+                "dataset_id": str(dataset.id) if dataset is not None else "none",
                 "dataset_rows": dataset.df.shape[0],
                 "dataset_cols": dataset.df.shape[1],
                 "dataset_column_types": column_types,
@@ -130,7 +161,7 @@ class Scanner:
                 "elapsed": elapsed,
                 "model_validation_time": model_validation_time,
                 "total_issues": len(issues) if issues else None,
-                **issues_counter
+                **issues_counter,
             },
         )
 

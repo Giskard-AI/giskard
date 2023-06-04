@@ -47,7 +47,6 @@ def load_plugins():
         importlib.reload(sys.modules[giskard_functions_module])
 
     if not os.path.exists(plugins_root):
-        logger.info(f"Plugins directory doesn't exist: {plugins_root}")
         return
     import_plugin(plugins_root)
     for submodule in os.listdir(str(plugins_root)):
@@ -89,7 +88,8 @@ class GiskardTestRegistry:
     def register(self, meta: SavableMeta):
         if meta.uuid not in self._tests:
             self.add_func(meta)
-            logger.info(f"Registered test function: {meta.uuid}")
+            full_name = f"{meta.full_name} ({meta.uuid})" if hasattr(meta, "full_name") else f"{meta.uuid}"
+            logger.info(f"Registered test function: {full_name}")
 
     def add_func(self, meta: SavableMeta):
         self._tests[meta.uuid] = meta

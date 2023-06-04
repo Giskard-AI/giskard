@@ -186,7 +186,7 @@ class GiskardClient:
                 "name": anonymize(meta.name),
                 "projectKey": anonymize(project_key),
                 "languageVersion": python_version,
-                "modelType": meta.model_type,
+                "modelType": meta.model_type.name,
                 "threshold": meta.classification_threshold,
                 "featureNames": anonymize(meta.feature_names),
                 "language": "PYTHON",
