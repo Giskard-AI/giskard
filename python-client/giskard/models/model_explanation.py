@@ -1,19 +1,18 @@
-import logging
-import warnings
-from itertools import groupby
-from typing import Callable, Dict, List, Any
-
 import eli5
+import logging
 import numpy as np
 import pandas as pd
-
-warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
-import shap
+import warnings
 from eli5.lime import TextExplainer
+from itertools import groupby
+from typing import Callable, Dict, List, Any
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+
+warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
+import shap  # noqa
 
 logger = logging.getLogger(__name__)
 
