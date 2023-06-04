@@ -77,18 +77,21 @@ class Model(CloudpickleBasedModel, ABC):
        Union[CloudpickleBasedModel, SKLearnModel, HuggingFaceModel,
        CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
     """
+
     should_save_model_class = True
 
-    def __new__(cls, model: Any,
-                model_type: ModelType,
-                data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                model_postprocessing_function: Callable[[Any], Any] = None,
-                name: Optional[str] = None,
-                feature_names: Optional[Iterable] = None,
-                classification_threshold: Optional[float] = 0.5,
-                classification_labels: Optional[Iterable] = None,
-                **kwargs
-                ):
+    def __new__(
+        cls,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
+    ):
         """
         Used for dynamical inheritance and returns one of the following class instances:
         ``PredictionFunctionModel``, ``SKLearnModel``, ``CatboostModel``, ``HuggingFaceModel``,
@@ -107,7 +110,8 @@ class Model(CloudpickleBasedModel, ABC):
                 "The 'Model' class cannot be initiated without a `model` argument. "
                 "\n`model` can be either a model object (classifier, regressor, etc.) or a prediction function."
                 "\nIf a model object is provided, we use a model-tailored serialization method during its upload."
-                "\nIf a prediction function is provided, we use cloudpickle to serialize it.")
+                "\nIf a prediction function is provided, we use cloudpickle to serialize it."
+            )
         else:
             giskard_cls = infer_giskard_cls(model)
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
@@ -120,11 +124,16 @@ class Model(CloudpickleBasedModel, ABC):
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.save_model = giskard_cls.save_model
-                possibly_overriden_cls.load_model = giskard_cls.load_model
+                possibly_overriden_cls.load_wrapped_model = giskard_cls.load_wrapped_model
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
-                logger.info("Your " + input_type + " is successfully wrapped by Giskard's '"
-                            + str(giskard_cls.__name__) + "' wrapper class.")
+                logger.info(
+                    "Your "
+                    + input_type
+                    + " is successfully wrapped by Giskard's '"
+                    + str(giskard_cls.__name__)
+                    + "' wrapper class."
+                )
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
                 raise NotImplementedError(
@@ -151,7 +160,8 @@ class Model(CloudpickleBasedModel, ABC):
                 feature_names=feature_names,
                 classification_threshold=classification_threshold,
                 classification_labels=classification_labels,
-                **kwargs)
+                **kwargs,
+            )
 
             # Important in order for the load method to be executed consistently
             obj.meta.loader_class = possibly_overriden_cls.__name__

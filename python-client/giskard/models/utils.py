@@ -1,7 +1,9 @@
 import itertools
+import random
 from collections.abc import Iterator
-from typing import List
 from functools import lru_cache
+from typing import List
+
 import numpy as np
 
 
@@ -24,6 +26,17 @@ def np_types_to_native(some_list: List):
 def np_type_to_native(i):
     return i.item() if isinstance(i, np.generic) else i
 
+
+def fix_seed():
+    seed = 1337
+
+    random.seed(seed)
+    np.random.seed(seed)
+    try:
+        import torch
+        torch.manual_seed(seed)
+    except ImportError:
+        pass
 
 @lru_cache(None)
 def warn_once(logger, msg: str):
