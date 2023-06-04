@@ -5,10 +5,9 @@ import sys
 from asyncio import StreamReader, StreamWriter, IncompleteReadError
 from os import environ
 from random import random
+from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 from typing import Optional
 from urllib.parse import urlparse
-
-from tenacity import retry, wait_exponential, stop_after_attempt, after_log
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.bridge.data_encryptor import DataEncryptor
@@ -35,9 +34,9 @@ class MLWorkerBridge:
     remote_port: int
 
     def __init__(
-            self,
-            local_address: str,
-            client: GiskardClient,
+        self,
+        local_address: str,
+        client: GiskardClient,
     ) -> None:
         self.stopping = False
         self.local_address = local_address
@@ -81,13 +80,15 @@ class MLWorkerBridge:
 
     def fetch_connection_details(self):
         info = self.client.get_server_info()
-        self.remote_host = environ.get("GSK_EXTERNAL_ML_WORKER_HOST") \
-                           or info.get("externalMlWorkerEntrypointHost") \
-                           or urlparse(self.client.host_url).hostname
+        self.remote_host = (
+            environ.get("GSK_EXTERNAL_ML_WORKER_HOST")
+            or info.get("externalMlWorkerEntrypointHost")
+            or urlparse(self.client.host_url).hostname
+        )
 
-        self.remote_port = environ.get("GSK_EXTERNAL_ML_WORKER_PORT") \
-                           or info.get("externalMlWorkerEntrypointPort") \
-                           or 40051
+        self.remote_port = (
+            environ.get("GSK_EXTERNAL_ML_WORKER_PORT") or info.get("externalMlWorkerEntrypointPort") or 40051
+        )
 
         encryption_key = base64.b64decode(info["encryptionKey"])
 
@@ -95,7 +96,6 @@ class MLWorkerBridge:
         self.encryptor = DataEncryptor(encryption_key)
 
     async def connect_to_remote_host(self):
-
         self.fetch_connection_details()
 
         logger.info(f"Connecting to {self.remote_host}:{self.remote_port}")
@@ -176,7 +176,7 @@ class MLWorkerBridge:
             )
 
     async def create_sync_task(
-            self, client, reader, writer, encrypted_writer=False, encrypted_reader=False, task_name=""
+        self, client, reader, writer, encrypted_writer=False, encrypted_reader=False, task_name=""
     ):
         task = self.sync_data(client, reader, writer, encrypted_writer, encrypted_reader, task_name)
         if sys.version_info >= (3, 8):
@@ -185,13 +185,13 @@ class MLWorkerBridge:
             asyncio.create_task(task)
 
     async def sync_data(
-            self,
-            client,
-            reader: StreamReader,
-            writer: StreamWriter,
-            encrypted_writer=False,
-            encrypted_reader=False,
-            task_name: str = None,
+        self,
+        client,
+        reader: StreamReader,
+        writer: StreamWriter,
+        encrypted_writer=False,
+        encrypted_reader=False,
+        task_name: str = None,
     ):
         log_prefix = "" if not task_name else task_name + ": "
         try:
