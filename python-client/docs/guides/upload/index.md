@@ -10,7 +10,7 @@ Uploading objects to the Giskard server will help you:
 
 ## 1. Install the Giskard server
 
-To install the Giskard server, please check [Install the Giskard server](docs/guide/install_app/index.md).
+To install the Giskard server, please check the [run the Giskard server](../installation_app/index.rst) page.
 
 ## 2. Create a Giskard client
 
