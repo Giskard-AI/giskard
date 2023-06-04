@@ -14,9 +14,8 @@ class CatboostModel(SKLearnModel):
         _feature_names_attr (str): A string attribute indicating the name of the feature names attribute for the Catboost model.
 
     """
+
     _feature_names_attr = "feature_names_"
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
-        mlflow.catboost.save_model(
-            self.model, path=local_path, mlflow_model=mlflow_meta
-        )
+        mlflow.catboost.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)

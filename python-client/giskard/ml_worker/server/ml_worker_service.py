@@ -279,7 +279,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
 
         except Exception as exc:
-            logger.exception("An unexpected error arose during the test suite execution: %s", exc)
+            logger.exception("An error occurred during the test suite execution: %s", exc)
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=True,
                 is_pass=False,

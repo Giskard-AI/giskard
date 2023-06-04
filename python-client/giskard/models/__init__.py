@@ -17,7 +17,7 @@ ml_libraries = {
     ("giskard.models.langchain", "LangchainModel"): [("langchain.chains.base", "Chain")],
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
-    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")]
+    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
 }
 
 
@@ -41,15 +41,17 @@ def infer_giskard_cls(model: Any):
 
 
 @configured_validate_arguments
-def wrap_model(model,
-               model_type: ModelType,
-               data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-               model_postprocessing_function: Callable[[Any], Any] = None,
-               name: Optional[str] = None,
-               feature_names: Optional[Iterable] = None,
-               classification_threshold: Optional[float] = 0.5,
-               classification_labels: Optional[Iterable] = None,
-               **kwargs):
+def wrap_model(
+    model,
+    model_type: ModelType,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    name: Optional[str] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+    **kwargs,
+):
     """
     Wraps a trained model from :code:`sklearn`, :code:`catboost`, :code:`pytorch`, :code:`tensorflow` or
     :code:`huggingface` into a Giskard model.
@@ -93,17 +95,20 @@ def wrap_model(model,
     """
     giskard_cls = infer_giskard_cls(model)
     if giskard_cls:
-        logger.info("Your model is successfully wrapped by Giskard's '"
-                    + str(giskard_cls.__name__) + "' wrapper class.")
-        return giskard_cls(model=model,
-                           model_type=model_type,
-                           data_preprocessing_function=data_preprocessing_function,
-                           model_postprocessing_function=model_postprocessing_function,
-                           name=name,
-                           feature_names=feature_names,
-                           classification_threshold=classification_threshold,
-                           classification_labels=classification_labels,
-                           **kwargs)
+        logger.info(
+            "Your model is successfully wrapped by Giskard's '" + str(giskard_cls.__name__) + "' wrapper class."
+        )
+        return giskard_cls(
+            model=model,
+            model_type=model_type,
+            data_preprocessing_function=data_preprocessing_function,
+            model_postprocessing_function=model_postprocessing_function,
+            name=name,
+            feature_names=feature_names,
+            classification_threshold=classification_threshold,
+            classification_labels=classification_labels,
+            **kwargs,
+        )
     else:
         raise ValueError(
             'We could not infer your model library. We currently only support functions or models from:'
@@ -118,11 +123,16 @@ def wrap_model(model,
 
 
 @configured_validate_arguments
-def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
-                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                       model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None):
+def model_from_sklearn(
+    model,
+    model_type: ModelType,
+    name: Optional[str] = None,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+):
     """
     Factory method that creates an instance of the `SKLearnModel` class.
 
@@ -149,22 +159,30 @@ def model_from_sklearn(model, model_type: ModelType, name: Optional[str] = None,
             An instance of the `SKLearnModel` class.
     """
     from giskard.models.sklearn import SKLearnModel
-    return SKLearnModel(model,
-                        model_type,
-                        name,
-                        data_preprocessing_function,
-                        model_postprocessing_function,
-                        feature_names,
-                        classification_threshold,
-                        classification_labels)
+
+    return SKLearnModel(
+        model,
+        model_type,
+        name,
+        data_preprocessing_function,
+        model_postprocessing_function,
+        feature_names,
+        classification_threshold,
+        classification_labels,
+    )
 
 
 @configured_validate_arguments
-def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None,
-                        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                        model_postprocessing_function: Callable[[Any], Any] = None,
-                        feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                        classification_labels: Optional[Iterable] = None):
+def model_from_catboost(
+    model,
+    model_type: ModelType,
+    name: Optional[str] = None,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+):
     """
     Factory method that creates an instance of the `CatboostModel` class.
 
@@ -187,23 +205,33 @@ def model_from_catboost(model, model_type: ModelType, name: Optional[str] = None
         CatboostModel: An instance of the `CatboostModel` class.
     """
     from giskard.models.catboost import CatboostModel
-    return CatboostModel(model,
-                         model_type,
-                         name,
-                         data_preprocessing_function,
-                         model_postprocessing_function,
-                         feature_names,
-                         classification_threshold,
-                         classification_labels)
+
+    return CatboostModel(
+        model,
+        model_type,
+        name,
+        data_preprocessing_function,
+        model_postprocessing_function,
+        feature_names,
+        classification_threshold,
+        classification_labels,
+    )
 
 
 @configured_validate_arguments
-def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: Optional[str] = "cpu",
-                       name: Optional[str] = None,
-                       data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                       model_postprocessing_function: Callable[[Any], Any] = None,
-                       feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                       classification_labels: Optional[Iterable] = None, iterate_dataset=True):
+def model_from_pytorch(
+    model,
+    model_type: ModelType,
+    torch_dtype=None,
+    device: Optional[str] = "cpu",
+    name: Optional[str] = None,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+    iterate_dataset=True,
+):
     """
     Factory method that creates an instance of the `PyTorchModel` class.
 
@@ -236,25 +264,33 @@ def model_from_pytorch(model, model_type: ModelType, torch_dtype=None, device: O
 
     torch_dtype = torch.float32 if not torch_dtype else torch_dtype
     from giskard.models.pytorch import PyTorchModel
-    return PyTorchModel(model,
-                        model_type,
-                        torch_dtype,
-                        device,
-                        name,
-                        data_preprocessing_function,
-                        model_postprocessing_function,
-                        feature_names,
-                        classification_threshold,
-                        classification_labels,
-                        iterate_dataset)
+
+    return PyTorchModel(
+        model,
+        model_type,
+        torch_dtype,
+        device,
+        name,
+        data_preprocessing_function,
+        model_postprocessing_function,
+        feature_names,
+        classification_threshold,
+        classification_labels,
+        iterate_dataset,
+    )
 
 
 @configured_validate_arguments
-def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = None,
-                          data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                          model_postprocessing_function: Callable[[Any], Any] = None,
-                          feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                          classification_labels: Optional[Iterable] = None):
+def model_from_tensorflow(
+    model,
+    model_type: ModelType,
+    name: Optional[str] = None,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+):
     """
     Factory method that creates an instance of the `TensorFlowModel` class.
 
@@ -277,22 +313,30 @@ def model_from_tensorflow(model, model_type: ModelType, name: Optional[str] = No
         TensorFlowModel: An instance of the `TensorFlowModel` class.
     """
     from giskard.models.tensorflow import TensorFlowModel
-    return TensorFlowModel(model,
-                           model_type,
-                           name,
-                           data_preprocessing_function,
-                           model_postprocessing_function,
-                           feature_names,
-                           classification_threshold,
-                           classification_labels)
+
+    return TensorFlowModel(
+        model,
+        model_type,
+        name,
+        data_preprocessing_function,
+        model_postprocessing_function,
+        feature_names,
+        classification_threshold,
+        classification_labels,
+    )
 
 
 @configured_validate_arguments
-def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = None,
-                           data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-                           model_postprocessing_function: Callable[[Any], Any] = None,
-                           feature_names: Optional[Iterable] = None, classification_threshold: Optional[float] = 0.5,
-                           classification_labels: Optional[Iterable] = None):
+def model_from_huggingface(
+    model,
+    model_type: ModelType,
+    name: Optional[str] = None,
+    data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+    model_postprocessing_function: Callable[[Any], Any] = None,
+    feature_names: Optional[Iterable] = None,
+    classification_threshold: Optional[float] = 0.5,
+    classification_labels: Optional[Iterable] = None,
+):
     """
     Factory method that creates an instance of the `HuggingFaceModel` class.
 
@@ -315,11 +359,14 @@ def model_from_huggingface(model, model_type: ModelType, name: Optional[str] = N
         HuggingFaceModel: An instance of the `HuggingFaceModel` class.
     """
     from giskard.models.huggingface import HuggingFaceModel
-    return HuggingFaceModel(model,
-                            model_type,
-                            name,
-                            data_preprocessing_function,
-                            model_postprocessing_function,
-                            feature_names,
-                            classification_threshold,
-                            classification_labels)
+
+    return HuggingFaceModel(
+        model,
+        model_type,
+        name,
+        data_preprocessing_function,
+        model_postprocessing_function,
+        feature_names,
+        classification_threshold,
+        classification_labels,
+    )
