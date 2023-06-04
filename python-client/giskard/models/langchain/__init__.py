@@ -1,4 +1,5 @@
 from typing import Iterable, Optional, Callable, Any
+
 import mlflow
 import pandas as pd
 
@@ -19,6 +20,7 @@ class LangchainModel(MLFlowBasedModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ) -> None:
         assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
 
@@ -31,13 +33,14 @@ class LangchainModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            **kwargs,
         )
 
     def save_model(self, local_path, mlflow_meta):
         mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_wrapped_model(cls, local_dir):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
