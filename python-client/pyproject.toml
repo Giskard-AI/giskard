@@ -153,6 +153,7 @@ dependencies = [
     "langdetect>=1.0.9",
     "chardet",  # text metadata
     "jinja2>=3",  # scan template (temporary)
+    "pyngrok>=6.0.0",
 ]
 
 [project.optional-dependencies]
