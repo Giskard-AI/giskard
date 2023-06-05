@@ -97,16 +97,17 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "@/api";
-import { computed, onActivated, ref } from "vue";
+import {api} from "@/api";
+import {computed, onActivated, ref} from "vue";
 import router from '@/router';
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { storeToRefs } from "pinia";
-import { useMainStore } from "@/stores/main";
-import { TYPE } from "vue-toastification";
+import {useTestSuitesStore} from "@/stores/test-suites";
+import {storeToRefs} from "pinia";
+import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from "vue-final-modal";
+import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import mixpanel from "mixpanel-browser";
 
 const props = defineProps<{
     projectId: number
@@ -124,6 +125,8 @@ const { testSuites } = storeToRefs(testSuitesStore);
 
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
+
+
     const suite = await api.createTestSuite(project.key, {
         id: null,
         name: `Unnamed test suite`,
@@ -132,8 +135,15 @@ async function createTestSuite() {
         tests: []
     });
 
+    mixpanel.track('Create test suite',
+        {
+            id: suite,
+            projectKey: project.key,
+            screen: 'Test suites'
+        });
+
     await testSuitesStore.reload()
-    await router.push({ name: 'test-suite-overview', params: { suiteId: suite.toString() } });
+    await router.push({name: 'test-suite-overview', params: {suiteId: suite.toString()}});
 }
 
 async function openTestSuite(suiteId: number | null | undefined) {
@@ -173,6 +183,8 @@ function renameSuite(suiteId: number, name: string) {
     if (currentSuite) {
         currentSuite.name = name;
         testSuitesStore.updateSuiteName(currentSuite);
+
+        mixpanel.track('Renamed test suite', {suiteId});
     }
 }
 
@@ -189,6 +201,13 @@ function deleteTestSuite(suite: any) {
                 await api.deleteSuite(suite.projectKey!, suite.id!);
                 await testSuitesStore.reload();
                 close();
+
+                mixpanel.track('Delete test suite',
+                    {
+                        id: suite.id,
+                        projectKey: suite.projectKey,
+                        screen: 'Test suites'
+                    });
             }
         }
     });
