@@ -105,8 +105,6 @@ export const useTestSuiteStore = defineStore('testSuite', {
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-
-
             const jobUuid = await api.executeTestSuite(this.projectId!, this.suiteId!, input);
 
             mixpanel.track('Schedule test suite execution', {
