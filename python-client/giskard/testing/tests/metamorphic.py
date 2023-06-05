@@ -194,11 +194,9 @@ def test_metamorphic_invariance(
           Dataset used to compute the test
         transformation_function(TransformationFunction):
           Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        window_size(float):
-          Threshold of the ratio of invariant rows
-        output_sensitivity(float):
+        output_sensitivity(Optional[float]):
             Optional. The threshold for ratio between the difference between perturbed prediction and actual prediction over
             the actual prediction for a regression model. We consider there is a prediction difference for
             regression if the ratio is above the output_sensitivity of 0.1
@@ -259,10 +257,8 @@ def test_metamorphic_increasing(
           Dataset used to compute the test
         transformation_function(TransformationFunction):
           Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        window_size(float):
-          Threshold of the ratio of increasing rows
         classification_label(str):
           Optional.One specific label value from the target column
 
@@ -321,7 +317,7 @@ def test_metamorphic_decreasing(
           Dataset used to compute the test
         transformation_function(TransformationFunction):
           Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
         threshold(float):
           Threshold of the ratio of decreasing rows
@@ -406,9 +402,9 @@ def test_metamorphic_decreasing_t_test(
             Dataset used to compute the test
         transformation_function(TransformationFunction):
             Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        critical_quantile(float):
+        critical_quantile(Optional[float]):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
@@ -466,9 +462,9 @@ def test_metamorphic_increasing_t_test(
             Dataset used to compute the test
         transformation_function(TransformationFunction):
             Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        critical_quantile(float):
+        critical_quantile(Optional[float]):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
@@ -528,11 +524,11 @@ def test_metamorphic_invariance_t_test(
               Dataset used to compute the test
           transformation_function(TransformationFunction):
               Function performing the perturbations to be applied on dataset.
-          slicing_function(SlicingFunction):
+          slicing_function(Optional[SlicingFunction]):
               Slicing function to be applied on dataset
-          window_size(float):
+          window_size(Optional[float]):
               Probability window in which the mean of the perturbed sample can be in
-          critical_quantile(float):
+          critical_quantile(Optional[float]):
               Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
@@ -615,9 +611,9 @@ def test_metamorphic_decreasing_wilcoxon(
             Dataset used to compute the test
         transformation_function(TransformationFunction):
             Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on dataset
-        critical_quantile(float):
+        critical_quantile(Optional[float]):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
@@ -675,9 +671,9 @@ def test_metamorphic_increasing_wilcoxon(
             Dataset used to compute the test
         transformation_function(TransformationFunction):
             Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on dataset
-        critical_quantile(float):
+        critical_quantile(Optional[float]):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:
@@ -737,11 +733,11 @@ def test_metamorphic_invariance_wilcoxon(
             Dataset used to compute the test
         transformation_function(TransformationFunction):
             Function performing the perturbations to be applied on dataset.
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on dataset
-        window_size(float):
+        window_size(Optional[float]):
             Probability window in which the mean of the perturbed sample can be in
-        critical_quantile(float):
+        critical_quantile(Optional[float]):
             Critical quantile above which the null hypothesis cannot be rejected
 
     Returns:

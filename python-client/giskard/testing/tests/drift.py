@@ -186,9 +186,9 @@ def test_drift_psi(actual_dataset: Dataset, reference_dataset: Dataset, column_n
             Reference dataset used to compute the test
         column_name(str):
             Name of column with categorical feature
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
             Threshold value for PSI
         max_categories:
             the maximum categories to compute the PSI score
@@ -255,9 +255,9 @@ def test_drift_chi_square(actual_dataset: Dataset, reference_dataset: Dataset, c
             Reference dataset used to compute the test
         column_name(str):
             Name of column with categorical feature
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
             Threshold for p-value of chi-square
         max_categories:
             the maximum categories to compute the chi square
@@ -324,9 +324,9 @@ def test_drift_ks(actual_dataset: Dataset, reference_dataset: Dataset, column_na
             Reference dataset used to compute the test
         column_name(str):
             Name of column with numerical feature
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold:
+        threshold(Optional[float]):
             Threshold for p-value of KS test
 
     Returns:
@@ -383,9 +383,9 @@ def test_drift_earth_movers_distance(actual_dataset: Dataset, reference_dataset:
             Reference dataset used to compute the test
         column_name(str):
             Name of column with numerical feature
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on both actual and reference datasets
-        threshold:
+        threshold(Optional[float]):
             Threshold for earth movers distance
 
     Returns:
@@ -449,9 +449,9 @@ def test_drift_prediction_psi(model: BaseModel, actual_dataset: Dataset, referen
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
             Threshold value for PSI
         max_categories:
             The maximum categories to compute the PSI score
@@ -546,9 +546,9 @@ def test_drift_prediction_chi_square(model: BaseModel, actual_dataset: Dataset, 
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
             Threshold value of p-value of Chi-Square
         max_categories:
             the maximum categories to compute the PSI score
@@ -632,11 +632,11 @@ def test_drift_prediction_ks(model: BaseModel, actual_dataset: Dataset, referenc
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
             Threshold for p-value of Kolmogorov-Smirnov test
-        classification_label(str):
+        classification_label(Optional[str]):
             One specific label value from the target column for classification model
 
     Returns:
@@ -721,11 +721,11 @@ def test_drift_prediction_earth_movers_distance(model: BaseModel, actual_dataset
             Actual dataset used to compute the test
         reference_dataset(Dataset):
             Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on both actual and reference datasets
-        classification_label:
+        classification_label(Optional[str]):
             one specific label value from the target column for classification model
-        threshold:
+        threshold(Optional[float]):
             threshold for earth mover's distance
 
     Returns:

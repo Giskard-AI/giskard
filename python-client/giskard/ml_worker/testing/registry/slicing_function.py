@@ -21,10 +21,12 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
     """
     A slicing function used to subset data.
 
-    :param func: The function used to slice the data.
-    :type func: SlicingFunctionType
-    :param row_level: Whether the slicing function should operate on rows or columns. Defaults to True.
-    :type row_level: bool
+    Attributes:
+        func (SlicingFunctionType): The function used to slice the data.
+        row_level (bool): Whether the slicing function should operate on rows or columns.
+        cell_level (bool): Whether the slicing function should operate at the cell level.
+        params (Dict): Additional parameters for the slicing function.
+        is_initialized (bool): Indicates if the slicing function has been initialized.
     """
     func: SlicingFunctionType
     row_level: bool
@@ -77,10 +79,11 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         """
         Slices the data using the slicing function.
 
-        :param data: The data to slice.
-        :type data: Union[pd.Series, pd.DataFrame]
-        :return: The sliced data.
-        :rtype: Union[pd.Series, pd.DataFrame]
+        Args:
+            data (Union[pd.Series, pd.DataFrame]): The data to slice.
+
+        Returns:
+            Union[pd.Series, pd.DataFrame]: The sliced data.
         """
         if self.cell_level:
             actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
@@ -110,12 +113,17 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
 def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[str]] = None, cell_level=False):
     """
-    Decorator that registers a slicing function with the testing registry and returns a SlicingFunction instance.
+    Decorator that registers a function as a slicing function and returns a SlicingFunction instance.
+    It can be used for slicing datasets in a specific way during testing.
 
-    :param _fn: Optional function to decorate.
-    :param row_level: Whether to apply the slicing function row-wise (default) or on the full dataframe.
-    :param name: Optional name to use for the function when registering it with the testing registry.
+    :param _fn: function to decorate. No need to provide this argument, the decorator will automatically take as input the function to decorate.
+    :param name: Optional name to use for the function when registering it.
     :param tags: Optional list of tags to use when registering the function.
+    :param row_level: Whether to apply the slicing function row-wise (default) or on the full dataframe. If `row_level`
+                      is True, the slicing function will receive a row (either a Series or DataFrame),
+                      and if False, it will receive the entire dataframe.
+    :param cell_level: Whether to apply the slicing function on the cell level. If True, the slicing function
+                       will be applied to individual cells instead of rows or the entire dataframe.
     :return: The wrapped function or a new instance of SlicingFunction.
     """
 
