@@ -37,7 +37,7 @@ In order to start the Giskard server, execute the following command in your term
 
 .. code-block:: sh
 
-   giskard server start --version 2.0.0
+   giskard server start --version 2.0.0b1
 
 You'll then be able to open Giskard at `http://localhost:19000/ <http://localhost:19000/>`
 
