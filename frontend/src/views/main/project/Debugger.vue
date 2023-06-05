@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { computed, ref, onActivated, } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
@@ -159,31 +159,25 @@ onActivated(async () => {
       <v-expansion-panels v-if="debuggingSessionsStore.currentDebuggingSessionId === null">
         <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="3" class="col-container" title="Session name">Session name</v-col>
-          <v-col cols="1" class="col-container" title="Session ID">Session ID</v-col>
           <v-col cols="2" class="col-container" title="Created at">Created at</v-col>
-          <v-col cols="1" class="col-container" title="Dataset name">Dataset name</v-col>
-          <v-col cols="1" class="col-container" title="Dataset ID">Dataset ID</v-col>
-          <v-col cols="2" class="col-container" title="Model name">Model name</v-col>
-          <v-col cols="1" class="col-container" title="Model ID">Model ID</v-col>
+          <v-col cols="3" class="col-container" title="Dataset">Dataset</v-col>
+          <v-col cols="3" class="col-container" title="Model">Model</v-col>
           <v-col cols="1"></v-col>
         </v-row>
 
         <v-expansion-panel v-for="session in filteredSessions" :key="session.id" @click.stop="openDebuggingSession(session.id, projectId)" class="expansion-panel">
           <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
-              <v-col cols="3" class="font-weight-bold" :title="session.name">
+              <v-col cols="3" class="font-weight-bold" :title="`${session.name} (ID: ${session.id})`">
                 <div class="pr-4">
                   <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
                   </InlineEditText>
                 </div>
               </v-col>
-              <v-col cols="1" class="col-container" :title="session.id">{{ session.id }}</v-col>
               <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.name ? session.dataset.name : 'Unnamed dataset'">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
+              <v-col cols="3" class="col-container" :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
 
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
-              <v-col cols="2" class="col-container" :title="session.model.name">{{ session.model.name }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
+              <v-col cols="3" class="col-container" :title="`${session.model.name} (ID: ${session.model.id})`">{{ session.model.name ? session.model.name : 'Unnamed model' }}</v-col>
               <v-col cols="1">
                 <v-card-actions>
                   <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
