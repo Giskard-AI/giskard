@@ -60,7 +60,8 @@ import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { chain } from 'lodash';
 import { useMainStore } from "@/stores/main";
 import { TYPE } from 'vue-toastification';
-import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
+import { extractArgumentDocumentation, ParsedDocstring } from "@/utils/python-doc.utils";
+import mixpanel from 'mixpanel-browser';
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
@@ -78,21 +79,21 @@ const doc = ref<ParsedDocstring | null>(null);
 onMounted(() => loadData());
 
 async function loadData() {
-    doc.value = extractArgumentDocumentation(test)
-    testSuites.value = await api.getTestSuites(projectId);
-    selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
-    testInputs.value = test.args.reduce((result, arg) => {
-      result[arg.name] = testArguments[arg.name] ?? {
-        name: arg.name,
-        type: arg.type,
-        isAlias: false,
-        value: '',
-        params: []
-      }
-      return result
-    }, {} as { [name: string]: FunctionInputDTO })
-    testInputs.value['model'].value = null;
-    testInputs.value['dataset'].value = null;
+  doc.value = extractArgumentDocumentation(test)
+  testSuites.value = await api.getTestSuites(projectId);
+  selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
+  testInputs.value = test.args.reduce((result, arg) => {
+    result[arg.name] = testArguments[arg.name] ?? {
+      name: arg.name,
+      type: arg.type,
+      isAlias: false,
+      value: '',
+      params: []
+    }
+    return result
+  }, {} as { [name: string]: FunctionInputDTO })
+  testInputs.value['model'].value = null;
+  testInputs.value['dataset'].value = null;
 }
 
 
@@ -106,6 +107,10 @@ const inputs = computed(() =>
 const mainStore = useMainStore();
 
 async function submit(close) {
+  mixpanel.track("Add test to suite", {
+    testName: test.name,
+  })
+
   const suiteTest: SuiteTestDTO = {
     test,
     testUuid: test.uuid,
