@@ -82,9 +82,7 @@ def _detect_azureml():
     # AzureML seems to have multiple ways to render a notebook or lab.
     # If any of the following succeed, consider it within AzureML
     nbvm_file_path = "/mnt/azmnt/.nbvm"
-    azml_notebook_vm_check = os.path.exists(nbvm_file_path) and os.path.isfile(
-        nbvm_file_path
-    )
+    azml_notebook_vm_check = os.path.exists(nbvm_file_path) and os.path.isfile(nbvm_file_path)
     azml_notebook_check = "AZUREML_NB_PATH" in os.environ
     azml_lab_check = "LOGNAME" in os.environ and os.environ["LOGNAME"] == "azureuser"
     return azml_notebook_vm_check or azml_notebook_check or azml_lab_check
@@ -133,15 +131,9 @@ def is_cloud_env(detected):
         "colab",
         "azuresynapse",
     ]
-    if (
-            len(set(cloud_env).intersection(detected)) != 0
-            and len(set(non_cloud_env).intersection(detected)) == 0
-    ):
+    if len(set(cloud_env).intersection(detected)) != 0 and len(set(non_cloud_env).intersection(detected)) == 0:
         return ENV_DETECTED.CLOUD
-    elif (
-            len(set(cloud_env).intersection(detected)) != 0
-            and len(set(non_cloud_env).intersection(detected)) != 0
-    ):
+    elif len(set(cloud_env).intersection(detected)) != 0 and len(set(non_cloud_env).intersection(detected)) != 0:
         return ENV_DETECTED.BOTH_CLOUD_AND_NON_CLOUD
     else:
         return ENV_DETECTED.NON_CLOUD
@@ -167,6 +159,10 @@ class EnvironmentDetector:
     def detect(self):
         envs = []
         for name, check in self.checks.items():
-            if check():
+            try:
+                check_passed = check()
+            except Exception as e:  # noqa
+                check_passed = False
+            if check_passed:
                 envs.append(name)
         return envs
