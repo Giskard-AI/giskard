@@ -41,6 +41,7 @@ import {useTestSuiteStore} from '@/stores/test-suite';
 import {plurialize} from "@/utils/string.utils";
 import {Colors} from "@/utils/colors";
 import {timeSince} from "@/utils/time.utils";
+import mixpanel from "mixpanel-browser";
 
 const props = defineProps<{
     tests: {
@@ -95,6 +96,13 @@ function openLogs() {
             logs: props.execution?.logs
         }
     });
+
+    mixpanel.track('Open test suite execution logs', {
+        suiteId: suite.value!.id,
+        projectId: projectId.value!,
+        suiteExecutionStatus: props.execution?.result
+    });
+
 }
 </script>
 
