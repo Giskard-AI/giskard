@@ -159,6 +159,10 @@ class EnvironmentDetector:
     def detect(self):
         envs = []
         for name, check in self.checks.items():
-            if check():
+            try:
+                check_passed = check()
+            except Exception as e:  # noqa
+                check_passed = False
+            if check_passed:
                 envs.append(name)
         return envs
