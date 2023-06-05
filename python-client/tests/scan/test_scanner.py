@@ -35,7 +35,7 @@ def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    result = scanner.analyze(model, dataset)
+    result = scanner.analyze(model, dataset, raise_exceptions=True)
 
     assert isinstance(result, ScanResult)
     assert result.to_html()
