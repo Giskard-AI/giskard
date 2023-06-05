@@ -53,18 +53,18 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, ref } from 'vue';
-import { api } from '@/api';
-import { FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO } from '@/generated-sources';
+import {computed, onMounted, ref} from 'vue';
+import {api} from '@/api';
+import {FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import { chain } from 'lodash';
-import { useMainStore } from "@/stores/main";
-import { TYPE } from 'vue-toastification';
-import { extractArgumentDocumentation, ParsedDocstring } from "@/utils/python-doc.utils";
+import {chain} from 'lodash';
+import {useMainStore} from "@/stores/main";
+import {TYPE} from 'vue-toastification';
+import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
 import mixpanel from 'mixpanel-browser';
-import { anonymize } from "@/utils";
+import {anonymize} from "@/utils";
 
-const { projectId, test, suiteId, testArguments } = defineProps<{
+const {projectId, test, suiteId, testArguments} = defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
@@ -118,29 +118,46 @@ async function submit(close) {
     test,
     testUuid: test.uuid,
     functionInputs: chain(testInputs.value)
-      .omitBy(({ value }) => value === null
-        || (typeof value === 'string' && value.trim() === '')
-        || (typeof value === 'number' && Number.isNaN(value)))
-      .value() as { [name: string]: FunctionInputDTO }
+        .omitBy(({value}) => value === null
+            || (typeof value === 'string' && value.trim() === '')
+            || (typeof value === 'number' && Number.isNaN(value)))
+        .value() as { [name: string]: FunctionInputDTO }
   }
 
   await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
   await mainStore.addNotification({
-    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
+    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
     color: TYPE.SUCCESS
   });
   close();
+
+  mixpanel.track('Add test to test suite',
+      {
+        suiteId: selectedSuite.value,
+        projectId: projectId,
+        testUuid: test.uuid,
+        testName: test.displayName ?? test.name
+      });
 }
 
 async function createTestSuite() {
   const project = await api.getProject(projectId);
+
+
   const suite = await api.createTestSuite(project.key, {
     id: null,
     name: 'Unnamed test suite',
     projectKey: project.key,
-    testInputs: [],
+    functionInputs: [],
     tests: []
   });
+
+  mixpanel.track('Create test suite',
+      {
+        id: suite,
+        projectKey: project.key,
+        screen: 'Test catalog (Add test to suite modal)'
+      });
 
   await loadData();
 
