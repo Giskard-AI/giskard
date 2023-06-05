@@ -64,8 +64,17 @@ a {
     font-weight: 600;
 }
 
-.sidebar-container {
-    width: 19em;
+
+@media (max-width: 67em) {
+    .sidebar-container {
+        width: 15em;
+    }
+}
+
+@media (min-width: 67em) {
+    .sidebar-container {
+        width: 19em;
+    }
 }
 
 .sidebar-tree li > ul {
@@ -102,7 +111,7 @@ a {
 }
 
 .sidebar-logo {
-    max-width: 240px;
+    max-width: 200px;
     margin: 1em auto 0 auto;
 }
 
@@ -280,4 +289,21 @@ a {
 
 .sd-card-title {
     font-size: 16px;
+}
+
+html {
+    font-size: 16px;
+}
+
+h1 {
+    font-size: 36px;
+}
+
+h2 {
+    font-size: 28px;
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.8em;
 }
