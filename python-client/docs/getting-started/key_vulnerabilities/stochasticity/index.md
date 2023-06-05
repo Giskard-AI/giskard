@@ -1,6 +1,6 @@
 # Stochasticity
 
-The stochasticity issue in machine learning refers to a situation where a model provides different results at each execution, even when the input remains the same. Stochasticity arises from the inherent randomness present in certain machine learning algorithms or processes, leading to variations in the model's output. Avoiding stochastic behaviour is important to promote reproducibility, and obtain more reliable and consistent result from the models.
+The stochasticity issue in machine learning refers to a situation where a model provides different results each execution, even when the input remains the same. Stochasticity arises from the inherent randomness present in certain machine learning algorithms or processes, leading to variations in the model's output. Avoiding stochastic behaviour is important to promote reproducibility, and obtain more reliable and consistent result from the models.
 
 ## Causes of Stochasticity
 
@@ -8,7 +8,7 @@ Several factors can contribute to the occurrence of stochasticity when training 
 
 1. **Random Initialization**: Many machine learning algorithms, such as neural networks, utilize random initialization of parameters. The initial values of these parameters can have a significant impact on the model's training and subsequent predictions. As a result, different initializations can lead to divergent outcomes, contributing to stochastic behavior.
 
-2. **Stochastic Training Algorithms**: Some training algorithms employ stochastic optimization techniques, such as stochastic gradient descent (SGD), which introduce randomness into the learning process. The use of mini-batches or random sampling of training examples during optimization can lead to variations in the model's updates and result in different outcomes across different training runs.
+2. **Stochastic Training Algorithms**: Some training algorithms employ stochastic optimization techniques, such as stochastic gradient descent (SGD), which introduces randomness into the learning process. The use of mini-batches or random sampling of training examples during optimization can lead to variations in the model's updates and result in different outcomes across different training runs.
 
 3. **Randomness in Regularization Techniques**: Regularization techniques, such as dropout or weight decay, often incorporate randomness to prevent overfitting and improve generalization. The random dropout of units or the introduction of random noise can influence the model's predictions and contribute to stochastic behavior.
 
@@ -16,7 +16,7 @@ Several factors can contribute to the occurrence of stochasticity when training 
 
 ## Addressing the Stochasticity Issue
 
-While complete elimination of stochasticity may not always be desirable or possible, several approaches can help mitigate the impact of stochasticity in machine learning models:
+While complete elimination of stochasticity may not always be desirable or even possible, several approaches can help mitigate the impact of stochasticity in machine learning models:
 
 1. **Seed Initialization**: Setting a fixed random seed at the beginning of the training process can ensure reproducibility. By using the same seed across different runs, the model's initialization and other stochastic processes can be controlled, resulting in consistent outcomes.
 
