@@ -9,8 +9,6 @@ from typing import Dict, Optional
 import requests
 from mixpanel import Mixpanel
 
-from ..datasets.base import Dataset
-from ..models.base import BaseModel, WrapperModel
 from giskard.settings import settings
 from giskard.utils import fullname, threaded
 from giskard.utils.environment_detector import EnvironmentDetector
@@ -44,7 +42,9 @@ def anonymize(message):
     return hashlib.sha1(str(message).encode()).hexdigest()[:10]
 
 
-def get_model_properties(model: BaseModel):
+def get_model_properties(model):
+    from ..models.base import WrapperModel
+
     if model is None:
         return {}
 
@@ -60,7 +60,7 @@ def get_model_properties(model: BaseModel):
     }
 
 
-def get_dataset_properties(dataset: Dataset):
+def get_dataset_properties(dataset):
     if dataset is None:
         return {}
 
