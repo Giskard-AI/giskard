@@ -166,6 +166,7 @@ import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -234,6 +235,7 @@ async function runTransformationFunction() {
 
     mixpanel.track("Run transformation function from Catalog", {
         transformationFunctionName: selected.value!.name,
+        inputs: anonymize(params),
     });
 
     transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
