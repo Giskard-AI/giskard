@@ -166,6 +166,7 @@ import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import IEditorOptions = editor.IEditorOptions;
 import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -234,6 +235,7 @@ async function runSlicingFunction() {
 
     mixpanel.track("Run slicing function from Catalog", {
         slicingFunctionName: selected.value!.name,
+        inputs: anonymize(params),
     });
 
     sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{

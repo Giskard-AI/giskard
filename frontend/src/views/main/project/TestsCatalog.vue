@@ -139,6 +139,7 @@ import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import { alphabeticallySorted } from "@/utils/comparators";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -198,6 +199,7 @@ const selectedTestUsage = computed(() => {
 async function runTest() {
     mixpanel.track("Run test from Catalog", {
         testName: selected.value!.name,
+        inputs: anonymize(Object.values(testArguments.value))
     });
 
     testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
