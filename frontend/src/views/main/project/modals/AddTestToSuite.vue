@@ -62,6 +62,7 @@ import { useMainStore } from "@/stores/main";
 import { TYPE } from 'vue-toastification';
 import { extractArgumentDocumentation, ParsedDocstring } from "@/utils/python-doc.utils";
 import mixpanel from 'mixpanel-browser';
+import { anonymize } from "@/utils";
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
@@ -109,6 +110,8 @@ const mainStore = useMainStore();
 async function submit(close) {
   mixpanel.track("Add test to suite", {
     testName: test.name,
+    suiteId: anonymize(selectedSuite.value),
+    inputs: anonymize(Object.values(testInputs.value))
   })
 
   const suiteTest: SuiteTestDTO = {
