@@ -1416,6 +1416,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "nbsphinx"
+version = "0.9.2"
+requires_python = ">=3.6"
+summary = "Jupyter Notebook Tools for Sphinx"
+dependencies = [
+    "docutils",
+    "jinja2",
+    "nbconvert!=5.4",
+    "nbformat",
+    "sphinx>=1.8",
+    "traitlets>=5",
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.5.6"
 requires_python = ">=3.5"
@@ -2778,7 +2792,7 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:40cf2582f2c3caa6166abfe33d6d47a2806a5c94a3761ea04523c3ac72bd09ca"
+content_hash = "sha256:af52fd87c1474d9610a13ab129dfe2670634c3295d74546995c5be4f6f38ef80"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -4332,6 +4346,10 @@ content_hash = "sha256:40cf2582f2c3caa6166abfe33d6d47a2806a5c94a3761ea04523c3ac7
 "nbformat 5.9.0" = [
     {url = "https://files.pythonhosted.org/packages/73/b0/7dcb4288e9096fc544e4c511253c5720210748dd37c23f0486541d145a0a/nbformat-5.9.0.tar.gz", hash = "sha256:e98ebb6120c3efbafdee2a40af2a140cadee90bb06dd69a2a63d9551fcc7f976"},
     {url = "https://files.pythonhosted.org/packages/e1/ce/7f0f454b4e7f1cb31345f9f977bdce7486033a1c08b5945b17ea95c4afbc/nbformat-5.9.0-py3-none-any.whl", hash = "sha256:8c8fa16d6d05062c26177754bfbfac22de644888e2ef69d27ad2a334cf2576e5"},
+]
+"nbsphinx 0.9.2" = [
+    {url = "https://files.pythonhosted.org/packages/9f/30/ee4dc91710a76c287128f205087544e8adb3a373959e70be6c555ddb40c2/nbsphinx-0.9.2-py3-none-any.whl", hash = "sha256:2746680ece5ad3b0e980639d717a5041a1c1aafb416846b72dfaeecc306bc351"},
+    {url = "https://files.pythonhosted.org/packages/fe/6b/07c6a160493e5edeedfa19fe6f665925fe0a4ba55e030865435ebce31252/nbsphinx-0.9.2.tar.gz", hash = "sha256:540db7f4066347f23d0650c4ae8e7d85334c69adf749e030af64c12e996ff88e"},
 ]
 "nest-asyncio 1.5.6" = [
     {url = "https://files.pythonhosted.org/packages/35/76/64c51c1cbe704ad79ef6ec82f232d1893b9365f2ff194111787dc91b004f/nest_asyncio-1.5.6.tar.gz", hash = "sha256:d267cc1ff794403f7df692964d1d2a3fa9418ffea2a3f6859a439ff482fef290"},
