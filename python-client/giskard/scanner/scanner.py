@@ -12,9 +12,9 @@ from .registry import DetectorRegistry
 from .result import ScanResult
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
-from ..models.base import BaseModel, WrapperModel
+from ..models.base import BaseModel
 from ..utils import fullname
-from ..utils.analytics_collector import analytics, anonymize, analytics_method
+from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
 from giskard.client.python_utils import warning
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -89,7 +89,7 @@ class Scanner:
                         "scan_uuid": self.uuid.hex,
                         "detector": fullname(detector),
                         "detector_elapsed": detector_elapsed,
-                        "detected_issues": len(detected_issues) if detected_issues else None,
+                        "detected_issues": len(detected_issues),
                     },
                 )
 
@@ -138,32 +138,18 @@ class Scanner:
 
     @analytics_method
     def _collect_analytics(self, model, dataset, issues, elapsed, model_validation_time):
-        inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
         issues_counter = Counter([fullname(i) for i in issues]) if issues else {}
-        column_types = {anonymize(k): v for k, v in dataset.column_types.items()} if dataset.column_types else {}
-        column_dtypes = {anonymize(k): v for k, v in dataset.column_dtypes.items()}
-        feature_names = [anonymize(n) for n in model.meta.feature_names]
 
-        analytics.track(
-            "scan",
-            {
-                "scan_uuid": self.uuid.hex,
-                "model_class": fullname(model),
-                "inner_model_class": inner_model_class,
-                "model_id": str(model.id),
-                "model_type": model.meta.model_type.value,
-                "dataset_id": str(dataset.id) if dataset is not None else "none",
-                "dataset_rows": dataset.df.shape[0],
-                "dataset_cols": dataset.df.shape[1],
-                "dataset_column_types": column_types,
-                "dataset_column_dtypes": column_dtypes,
-                "model_feature_names": feature_names,
-                "elapsed": elapsed,
-                "model_validation_time": model_validation_time,
-                "total_issues": len(issues) if issues else None,
-                **issues_counter,
-            },
+        properties = dict(
+            elapsed=elapsed,
+            model_validation_time=model_validation_time,
+            total_issues=len(issues),
+            **issues_counter,
         )
+        properties.update(get_model_properties(model))
+        properties.update(get_dataset_properties(dataset))
+
+        analytics.track("scan", properties)
 
     def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
         """Returns the detector instances."""
