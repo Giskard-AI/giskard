@@ -1,4 +1,3 @@
-import time
 from abc import abstractmethod
 import numpy as np
 import pandas as pd
@@ -117,8 +116,8 @@ class BaseTextPerturbationDetector(Detector):
                 score = scorer.compute(
                     predictions=perturbed_pred.prediction,
                     references=original_pred.prediction,
-                    verbose=True,
-                    model_type="distilbert-base-multilingual-cased"
+                    model_type="distilbert-base-multilingual-cased",
+                    idf=True
                 )
                 passed = np.array(score["f1"]) > 1 - output_sensitivity
             else:
