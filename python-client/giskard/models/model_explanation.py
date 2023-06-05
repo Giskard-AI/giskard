@@ -1,9 +1,7 @@
-import eli5
 import logging
 import numpy as np
 import pandas as pd
 import warnings
-from eli5.lime import TextExplainer
 from itertools import groupby
 from typing import Callable, Dict, List, Any
 
@@ -64,10 +62,18 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
-    text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
-    prediction_function = text_explanation_prediction_wrapper(model.predict_df, input_df, text_column)
-    text_explain_attempts = 10
     try:
+        # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
+        # In principle we should have the following dependency in pyproject.toml:
+        # "scipy>=1.7.3,<1.9"
+        # But in order to let people use the rest of Giskard features we let giskard be installed with more modern scipy
+        # and let it fail here
+
+        import eli5
+        from eli5.lime import TextExplainer
+        text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
+        prediction_function = text_explanation_prediction_wrapper(model.predict_df, input_df, text_column)
+        text_explain_attempts = 10
         for i in range(text_explain_attempts):
             try:
                 text_explainer.fit(text_document, prediction_function)
