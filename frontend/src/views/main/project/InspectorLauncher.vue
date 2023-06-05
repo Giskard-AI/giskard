@@ -81,7 +81,11 @@ async function loadDatasets() {
 }
 
 async function launchInspector() {
-  mixpanel.track('Create inspection', { datasetId: datasetSelected.value!.id, modelId: props.model.id });
+  mixpanel.track('Create debugging session', {
+    source: "InspectorLauncher",
+    datasetId: datasetSelected.value!.id,
+    modelId: props.model.id
+  });
   try {
     creatingInspection.value = true;
 

@@ -138,6 +138,8 @@ import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import { alphabeticallySorted } from "@/utils/comparators";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -148,7 +150,6 @@ let props = defineProps<{
 const searchFilter = ref<string>("");
 let { testFunctions } = storeToRefs(useCatalogStore());
 let selected = ref<TestFunctionDTO | null>(null);
-let tryMode = ref(true)
 let testArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
@@ -196,6 +197,11 @@ const selectedTestUsage = computed(() => {
 
 
 async function runTest() {
+    mixpanel.track("Run test from Catalog", {
+        testName: selected.value!.name,
+        inputs: anonymize(Object.values(testArguments.value))
+    });
+
     testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
 }
 

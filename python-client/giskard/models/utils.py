@@ -38,6 +38,7 @@ def fix_seed():
     except ImportError:
         pass
 
+
 @lru_cache(None)
 def warn_once(logger, msg: str):
     logger.warning(msg)

@@ -116,29 +116,24 @@
                                             {{
                                                 sliceResult.totalRows
                                             }}</p>
-                                        <DatasetTable :dataset-id="sliceResult.datasetId"
-                                                      :deleted-rows="sliceResult.filteredRows"/>
+                                        <DatasetTable :dataset-id="sliceResult.datasetId" :deleted-rows="sliceResult.filteredRows" />
                                     </v-col>
                                 </v-row>
                             </div>
 
-                            <div id="code-group" class="py-4"
-                                 v-if="selected.processType == DatasetProcessFunctionType.CODE">
+                            <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CODE">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
                                     <span class="group-title">Source code</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code"
-                                             :key="selected.name + '_source_code'"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
                             </div>
-                            <div id="code-group" class="py-4"
-                                 v-if="selected.processType == DatasetProcessFunctionType.CLAUSES">
+                            <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CLAUSES">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-filter-check</v-icon>
                                     <span class="group-title">Clauses</span>
                                 </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.name"
-                                             :key="selected.name + '_source_code'"></CodeSnippet>
+                                <CodeSnippet class="mt-2" :codeContent="selected.name" :key="selected.name + '_source_code'"></CodeSnippet>
                             </div>
                         </div>
                     </v-col>
@@ -153,23 +148,25 @@
 </template>
 
 <script setup lang="ts">
-import {chain} from "lodash";
-import {computed, inject, onActivated, ref, watch} from "vue";
-import {pasterColor} from "@/utils";
-import {editor} from "monaco-editor";
-import {DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO} from "@/generated-sources";
+import { chain } from "lodash";
+import { computed, inject, onActivated, ref, watch } from "vue";
+import { pasterColor } from "@/utils";
+import { editor } from "monaco-editor";
+import { DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO } from "@/generated-sources";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "@/stores/catalog";
 import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import {api} from "@/api";
+import { api } from "@/api";
 import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
-import {alphabeticallySorted} from "@/utils/comparators";
-import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
+import { alphabeticallySorted } from "@/utils/comparators";
+import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import IEditorOptions = editor.IEditorOptions;
+import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -236,12 +233,16 @@ async function runSlicingFunction() {
         })
     }
 
+    mixpanel.track("Run slicing function from Catalog", {
+        slicingFunctionName: selected.value!.name,
+        inputs: anonymize(params),
+    });
+
     sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
         params,
         type: 'SLICING',
     }]);
-
 }
 
 watch(() => selected.value, () => {
