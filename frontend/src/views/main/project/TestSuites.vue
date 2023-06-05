@@ -1,10 +1,10 @@
 <template>
     <div class="vertical-container">
-        <v-container fluid class="vc" v-if="testSuites.length > 0">
+        <v-container fluid class="vc" v-if="testSuitesStore.testSuites.length > 0">
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
                     <v-col cols="4">
-                        <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession" style="visibility: hidden" disabled></v-text-field>
+                        <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field>
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end">
@@ -26,12 +26,12 @@
                         <v-col cols="1"></v-col>
                     </v-row>
 
-                    <v-expansion-panel v-for="(suite, index) in testSuites" :key="suite.id" @click.stop="openTestSuite(suite.id)" class="expansion-panel">
+                    <v-expansion-panel v-for="(suite, index) in filteredSuites" :key="suite.suite.id" @click.stop="openTestSuite(suite.suite.id)" class="expansion-panel">
                         <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
                             <v-row class="px-2 py-1 align-center">
                                 <v-col cols="3" class="font-weight-bold">
                                     <div class="pr-4">
-                                        <InlineEditText :text="suite.name" @save="(name) => renameSuite(suite.id, name)">
+                                        <InlineEditText :text="suite.suite.name" @save="(name) => renameSuite(suite.suite.id, name)">
                                         </InlineEditText>
                                     </div>
                                 </v-col>
@@ -41,7 +41,7 @@
                                 </v-col>
                                 <v-col cols="2">
                                     <div class="d-flex flex-column">
-                                        <span class="font-weight-bold">{{ suite.tests.length }} tests in total</span>
+                                        <span class="font-weight-bold">{{ suite.suite.tests.length }} tests in total</span>
                                         <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
                                             <span class="passed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === true).length }} passing</span>
                                             <span class="failed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === false).length }} failing</span>
@@ -66,7 +66,7 @@
                                 </v-col>
                                 <v-col cols="1">
                                     <v-card-actions>
-                                        <v-btn icon @click.stop="deleteTestSuite(suite)" @click.stop.prevent>
+                                        <v-btn icon @click.stop.prevent="deleteTestSuite(suite)">
                                             <v-icon color="accent">delete</v-icon>
                                         </v-btn>
                                     </v-card-actions>
@@ -79,8 +79,8 @@
             <div v-else>
                 <router-view />
             </div>
-
         </v-container>
+
         <v-container v-else class="vc mt-6 fill-height">
             <v-alert class="text-center">
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
@@ -97,17 +97,19 @@
 </template>
 
 <script lang="ts" setup>
-import {api} from "@/api";
-import {computed, onActivated, ref} from "vue";
+import { api } from "@/api";
+import { computed, onActivated, onBeforeMount, ref } from "vue";
 import router from '@/router';
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {storeToRefs} from "pinia";
-import {useMainStore} from "@/stores/main";
-import {TYPE} from "vue-toastification";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useMainStore } from "@/stores/main";
+import { TYPE } from "vue-toastification";
 import InlineEditText from '@/components/InlineEditText.vue';
-import {$vfm} from "vue-final-modal";
+import { $vfm } from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import mixpanel from "mixpanel-browser";
+
+const testSuitesStore = useTestSuitesStore();
+
 
 const props = defineProps<{
     projectId: number
@@ -115,17 +117,17 @@ const props = defineProps<{
 
 const searchSession = ref("");
 
+const filteredSuites = computed(() => {
+    return testSuitesStore.testSuitesComplete.filter(suite => suite.suite.name.toLowerCase().includes(searchSession.value.toLowerCase()));
+});
+
 const latestExecutions = computed(() => {
-    const executions = testSuitesStore.testSuitesComplete.map(suite => suite.executions);
+    const executions = filteredSuites.value.map(suite => suite.executions);
     return executions.map(executionsSuite => executionsSuite.length === 0 ? null : executionsSuite[0]);
 });
 
-const testSuitesStore = useTestSuitesStore();
-const { testSuites } = storeToRefs(testSuitesStore);
-
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
-
 
     const suite = await api.createTestSuite(project.key, {
         id: null,
@@ -140,10 +142,11 @@ async function createTestSuite() {
             id: suite,
             projectKey: project.key,
             screen: 'Test suites'
-        });
+        }
+    );
 
     await testSuitesStore.reload()
-    await router.push({name: 'test-suite-overview', params: {suiteId: suite.toString()}});
+    await router.push({ name: 'test-suite-overview', params: { suiteId: suite.toString() } });
 }
 
 async function openTestSuite(suiteId: number | null | undefined) {
@@ -169,6 +172,7 @@ async function redirectToTestSuite(projectId: string, suiteId: string) {
 }
 
 onActivated(async () => {
+    searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
         await redirectToTestSuite(props.projectId.toString(), testSuitesStore.currentTestSuiteId.toString());
     } else {
@@ -177,14 +181,19 @@ onActivated(async () => {
     }
 })
 
-function renameSuite(suiteId: number, name: string) {
+async function renameSuite(suiteId: number, name: string) {
     const currentSuite = testSuitesStore.testSuites.find(s => s.id === suiteId);
 
     if (currentSuite) {
         currentSuite.name = name;
-        testSuitesStore.updateSuiteName(currentSuite);
-
-        mixpanel.track('Renamed test suite', {suiteId});
+        await testSuitesStore.updateSuiteName({
+            id: currentSuite.id,
+            name,
+            projectKey: currentSuite.projectKey,
+            functionInputs: currentSuite.functionInputs,
+            tests: currentSuite.tests
+        })
+        mixpanel.track('Renamed test suite', { suiteId });
     }
 }
 
@@ -207,7 +216,8 @@ function deleteTestSuite(suite: any) {
                         id: suite.id,
                         projectKey: suite.projectKey,
                         screen: 'Test suites'
-                    });
+                    }
+                );
             }
         }
     });
