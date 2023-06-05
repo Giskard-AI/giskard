@@ -21,39 +21,101 @@ data-types/tabular/index
 data-types/text/index
 ```
 
-:::{hint}
-You can find all our examples on [GitHub](https://github.com/Giskard-AI/giskard-examples)
+<div>
+<h2>Libraries</h2>
+
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+:::{card} <h3><center>🤖 Scikit-learn</center></h3>
+:link: libraries/scikit-learn/index.html
 :::
+:::::
 
-## Libraries
+:::::{grid-item}
+:::{card} <h3><center>🏆 XGBoost</center></h3>
+:link: libraries/xgboost/index.html
+:::
+:::::
 
-### [Scikit-learn](<project:libraries/scikit-learn/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🌟 LightGBM</center></h3>
+:link: libraries/lightgbm/index.html
+:::
+:::::
 
-### [XGBoost](<project:libraries/xgboost/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>📙 TensorFlow</center></h3>
+:link: libraries/tensorflow/index.html
+:::
+:::::
 
-### [LightGBM](<project:libraries/lightgbm/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🔥 PyTorch</center></h3>
+:link: libraries/pytorch/index.html
+:::
+:::::
 
-### [Tensorflow](<project:libraries/tensorflow/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🤗 HuggingFace</center></h3>
+:link: libraries/huggingface/index.html
+:::
+:::::
 
-### [PyTorch](<project:libraries/pytorch/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🦜 LangChain</center></h3>
+:link: libraries/langchain/index.html
+:::
+:::::
 
-### [HuggingFace](<project:libraries/huggingface/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🌐 API</center></h3>
+:link: libraries/api/index.html
+:::
+:::::
+</div>
 
-### [Langchain](<project:libraries/langchain/index.md>)
+<div>
+<h2>ML tasks</h2>
 
-### [API](<project:libraries/api/index.md>)
+::::::{grid} 1 1 2 2
+:gutter: 1
 
-## ML tasks
+:::::{grid-item}
+:::{card} <h3><center>🏷️ Classification</center></h3>
+:link: tasks/classification/index.html
+:::
+:::::
 
-### [Classification](<project:libraries/classification/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>📈 Regression</center></h3>
+:link: tasks/regression/index.html
+:::
+:::::
 
-### [Regression](<project:libraries/regression/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>🦜 Text generation</center></h3>
+:link: tasks/text-generation/index.html
+:::
+:::::
+</div>
 
-### [Text generation](<project:libraries/text-generation/index.md>)
+<div>
+<h2>Data types</h2>
 
-## Data types
+::::::{grid} 1 1 2 2
+:gutter: 1
 
-### [Tabular](<project:data-types/tabular/index.md>)
+:::::{grid-item}
+:::{card} <h3><center>📊 Tabular</center></h3>
+:link: data-types/tabular/index.html
+:::
+:::::
 
-### [Text](<project:data-types/text/index.md>)
-
+:::::{grid-item}
+:::{card} <h3><center>📝 Text</center></h3>
+:link: data-types/text/index.html
+:::
+:::::
+</div>
