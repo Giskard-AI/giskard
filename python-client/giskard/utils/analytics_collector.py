@@ -9,14 +9,16 @@ from typing import Dict, Optional
 import requests
 from mixpanel import Mixpanel
 
+from ..datasets.base import Dataset
+from ..models.base import BaseModel, WrapperModel
 from giskard.settings import settings
-from giskard.utils import threaded
+from giskard.utils import fullname, threaded
 from giskard.utils.environment_detector import EnvironmentDetector
 
 
 def analytics_method(f):
     """
-        Only runs a decorated function if analytics is enabled and swallows the errors
+    Only runs a decorated function if analytics is enabled and swallows the errors
     """
 
     @wraps(f)
@@ -42,12 +44,44 @@ def anonymize(message):
     return hashlib.sha1(str(message).encode()).hexdigest()[:10]
 
 
+def get_model_properties(model: BaseModel):
+    if model is None:
+        return {}
+
+    inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
+    feature_names = [anonymize(n) for n in model.meta.feature_names]
+
+    return {
+        "model_id": str(model.id),
+        "model_type": model.meta.model_type.value,
+        "model_class": fullname(model),
+        "model_inner_class": inner_model_class,
+        "model_feature_names": feature_names,
+    }
+
+
+def get_dataset_properties(dataset: Dataset):
+    if dataset is None:
+        return {}
+
+    column_types = {anonymize(k): v for k, v in dataset.column_types.items()} if dataset.column_types else {}
+    column_dtypes = {anonymize(k): v for k, v in dataset.column_dtypes.items()}
+
+    return {
+        "dataset_id": str(dataset.id) if dataset is not None else "none",
+        "dataset_rows": dataset.df.shape[0],
+        "dataset_cols": dataset.df.shape[1],
+        "dataset_column_types": column_types,
+        "dataset_column_dtypes": column_dtypes,
+    }
+
+
 class GiskardAnalyticsCollector:
     lock = Lock()
     ip: Optional[str]
     dev_mp_project_key = "4cca5fabca54f6df41ea500e33076c99"
     prod_mp_project_key = "2c3efacc6c26ffb991a782b476b8c620"
-    server_info: Dict = None
+    server_info: Optional[Dict] = None
     mp: Mixpanel
     giskard_version: Optional[str]
     environment: str
@@ -67,8 +101,9 @@ class GiskardAnalyticsCollector:
         is_dev_mode = os.environ.get("GISKARD_DEV_MODE", "n").lower() in ["yes", "true", "1"]
 
         return Mixpanel(
-            GiskardAnalyticsCollector.dev_mp_project_key if is_dev_mode else
-            GiskardAnalyticsCollector.prod_mp_project_key
+            GiskardAnalyticsCollector.dev_mp_project_key
+            if is_dev_mode
+            else GiskardAnalyticsCollector.prod_mp_project_key
         )
 
     @analytics_method
@@ -85,6 +120,7 @@ class GiskardAnalyticsCollector:
     def track(self, event_name, properties=None, meta=None, force=False):
         if not self.giskard_version:
             import giskard
+
             self.giskard_version = giskard.get_version()
         if not self.ip:
             self.initialize_geo()
@@ -104,10 +140,7 @@ class GiskardAnalyticsCollector:
                 merged_props = {**merged_props, **self.server_info}
 
             self.mp.track(
-                distinct_id=self.distinct_user_id,
-                event_name=event_name,
-                properties=dict(merged_props),
-                meta=meta
+                distinct_id=self.distinct_user_id, event_name=event_name, properties=dict(merged_props), meta=meta
             )
 
     @staticmethod
