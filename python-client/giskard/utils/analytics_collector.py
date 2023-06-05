@@ -11,6 +11,7 @@ from mixpanel import Mixpanel
 
 from giskard.settings import settings
 from giskard.utils import threaded
+from giskard.utils.environment_detector import EnvironmentDetector
 
 
 def analytics_method(f):
@@ -49,11 +50,13 @@ class GiskardAnalyticsCollector:
     server_info: Dict = None
     mp: Mixpanel
     giskard_version: Optional[str]
+    environment: str
 
     def __init__(self) -> None:
         self.is_enabled = not settings.disable_analytics
         self.giskard_version = None
         self.ip = None
+        self.environment = EnvironmentDetector().detect()
         if self.is_enabled:
             self.mp = self.configure_mixpanel()
             self.distinct_user_id = GiskardAnalyticsCollector.machine_based_user_id()
@@ -92,7 +95,8 @@ class GiskardAnalyticsCollector:
                 "ip": self.ip,  # only for aggregated stats: city, country, region. IP itself isn't stored
                 "arch": platform.machine(),
                 "$os": platform.system(),
-                "os-full": platform.platform(aliased=True)
+                "os-full": platform.platform(aliased=True),
+                "environment": self.environment
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
