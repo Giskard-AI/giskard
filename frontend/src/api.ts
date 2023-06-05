@@ -1,6 +1,6 @@
-import axios, { AxiosError } from 'axios';
-import { apiURL } from '@/env';
-import { getLocalToken, removeLocalToken } from '@/utils';
+import axios, {AxiosError} from 'axios';
+import {apiURL} from '@/env';
+import {getLocalToken, removeLocalToken} from '@/utils';
 import Vue from 'vue';
 
 import {
@@ -51,11 +51,11 @@ import {
   UpdateMeDTO,
   UserDTO,
 } from './generated-sources';
-import { TYPE } from 'vue-toastification';
+import {TYPE} from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
-import { useUserStore } from '@/stores/user';
+import {useUserStore} from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
   // Do something before request is sent
@@ -371,9 +371,6 @@ export const api = {
   },
   async updateTestSuite(projectKey: string, suite: TestSuiteDTO) {
     return apiV2.put<unknown, TestSuiteDTO>(`testing/project/${projectKey}/suite/${suite.id}`, suite);
-  },
-  async getTestSuite(projectId: number, suiteId: number) {
-    return apiV2.get<unknown, TestSuiteDTO>(`testing/project/${projectId}/suite/${suiteId}`);
   },
   async getTestSuiteComplete(projectId: number, suiteId: number) {
     return apiV2.get<unknown, TestSuiteCompleteDTO>(`testing/project/${projectId}/suite/${suiteId}/complete`);

@@ -190,7 +190,6 @@ function isAllParamsSet() {
 const router = useRouter();
 
 async function executeTestSuite(close) {
-  mixpanel.track('Run test suite', {suiteId: props.suiteId});
   running.value = true;
 
   try {
