@@ -54,8 +54,8 @@ const refreshingRef = ref<() => void>();
 
 function trackTabChange(name: string) {
     mixpanel.track("Catalog tab change", {
-        from: route.path.split('/').pop(),
-        to: name
+        fromTab: route.path.split('/').pop(),
+        toTab: name
     });
 }
 
