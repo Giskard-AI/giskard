@@ -122,38 +122,25 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1,<3.11"
+requires-python = ">=3.8.1,<3.12"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
     "mlflow-skinny>=2",
     "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
     "scikit-learn>=1.0",
-    "scipy>=1.7.3,<1.9", # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
-    "shap>=0.41.0",
-    "eli5>=0.12.0",
-    "ipython", # eli5.show_prediction doesn't work without ipython
-    "requests-toolbelt>=0.9.1",
+    "scipy",
     "mixpanel>=4.4.0",
-    "grpcio>=1.39.0,<=1.51.1",
-    "grpcio-status>=1.16.0,<=1.51.1",
     "requests>=2.19",
-    "protobuf<=3.20.3",
     "pydantic>=1.7",
-    "tenacity>=4.11.0",
-    "python-daemon>=2.2.2,<3",
-    "click>=7.0",
-    "lockfile>=0.12.2",
-    "psutil>=5.4.6",
     "tqdm>=4.42.0",
     "setuptools>=39.1.0,<68.0.0",
-    "pycryptodome>=3.6.1",
     "pandas>=1.3.4,<2",
-    "docker>=6.0.0",
     "xxhash>=3.2.0",
     "langdetect>=1.0.9",
     "chardet", # text metadata
     "jinja2>=3", # scan template (temporary)
+    "requests-toolbelt>=0.9.1",
 ]
 
 [project.optional-dependencies]
@@ -164,6 +151,22 @@ llm = [
     "datasets",
     "evaluate",
     "rouge_score",
+]
+server = [
+    "tenacity>=4.11.0",
+    "psutil>=5.4.6",
+    "click>=7.0",
+    "docker>=6.0.0",
+    "shap>=0.41.0",
+    "eli5>=0.12.0",
+    "ipython", # eli5.show_prediction doesn't work without ipython
+    "grpcio>=1.39.0,<=1.51.1",
+    "grpcio-status>=1.16.0,<=1.51.1",
+    "lockfile>=0.12.2",
+    "protobuf<=3.20.3",
+    "python-daemon>=2.2.2,<3",
+    "pycryptodome>=3.6.1",
+    "pyngrok>=6.0.0",
 ]
 
 [tool.black]

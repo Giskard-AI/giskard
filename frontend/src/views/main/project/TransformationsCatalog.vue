@@ -162,9 +162,11 @@ import DatasetTable from "@/components/DatasetTable.vue";
 import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import { alphabeticallySorted } from "@/utils/comparators";
-import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
+import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
 import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
 
 let props = defineProps<{
     projectId: number,
@@ -230,6 +232,11 @@ async function runTransformationFunction() {
             value: selectedColumn.value
         })
     }
+
+    mixpanel.track("Run transformation function from Catalog", {
+        transformationFunctionName: selected.value!.name,
+        inputs: anonymize(params),
+    });
 
     transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
         uuid: selected.value!.uuid,
