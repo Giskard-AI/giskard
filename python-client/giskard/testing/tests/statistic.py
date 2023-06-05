@@ -33,9 +33,9 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
           Dataset used to compute the test
       classification_label(str):
           Classification label you want to test
-      slicing_function(SlicingFunction):
+      slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on the dataset
-      threshold(float):
+      threshold(Optional[float]):
           Threshold for the percentage of passed rows
 
     Returns:
@@ -90,15 +90,15 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
             Model used to compute the test
         dataset(Dataset):
             Dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
             Slicing function to be applied on the dataset
-        classification_label(str):
+        classification_label(Optional[str]):
             Optional. Classification label you want to test
-        min_range(float):
+        min_range(Optional[float]):
             Minimum probability of occurrence of classification label
-        max_range(float):
+        max_range(Optional[float]):
             Maximum probability of occurrence of classification label
-        threshold(float):
+        threshold(Optional[float]):
             Threshold for the percentage of passed rows
 
     Returns:
@@ -141,7 +141,7 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
-                          unprotected_slicing_function: SlicingFunction, positive_outcome: Optional[Iterable],
+                          unprotected_slicing_function: SlicingFunction, positive_outcome: Iterable,
                           slicing_function: SlicingFunction = None, min_threshold: float = 0.8,
                           max_threshold: float = 1.25) -> TestResult:
     """
@@ -170,17 +170,17 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
               Model used to compute the test
           dataset(Dataset):
               Dataset used to compute the test
-          protected_slicing_function:
+          protected_slicing_function(SlicingFunction):
               Slicing function that defines the protected group from the full dataset given
-          unprotected_slicing_function:
+          unprotected_slicing_function(SlicingFunction):
               Slicing function that defines the unprotected group from the full dataset given
           positive_outcome(str or float):
               The target value that is considered a positive outcome in the dataset
-          slicing_function(SlicingFunction):
+          slicing_function(Optional[SlicingFunction]):
               Slicing function to be applied on the dataset
-          min_threshold(float):
+          min_threshold(Optional[float]):
               Threshold below which the DI test is considered to fail, by default 0.8
-          max_threshold(float):
+          max_threshold(Optional[float]):
               Threshold above which the DI test is considered to fail, by default 1.25
 
     Returns:

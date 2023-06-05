@@ -67,6 +67,20 @@ class Artifact(Generic[SMT], ABC):
             return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
+        """
+        Uploads the slicing function and its metadata to the Giskard server.
+
+        Args:
+            client (GiskardClient): The Giskard client instance used for communication with the server.
+            project_key (str, optional): The project key where the slicing function will be uploaded. If None, the function
+                will be uploaded to the global scope. Defaults to None.
+
+        Returns:
+            str: The UUID of the uploaded slicing function.
+
+        Raises:
+            OSError: If an error occurs while creating the local directory.
+        """
         name = self._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid
@@ -83,6 +97,23 @@ class Artifact(Generic[SMT], ABC):
 
     @classmethod
     def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> 'Artifact':
+        """
+        Downloads the artifact from the Giskard server or retrieves it from the local cache.
+
+        Args:
+            uuid (str): The UUID of the artifact to download.
+            client (GiskardClient, optional): The Giskard client instance used for communication with the server. If None,
+                the artifact will be retrieved from the local cache if available. Defaults to None.
+            project_key (str, optional): The project key where the artifact is located. If None, the artifact will be
+                retrieved from the global scope. Defaults to None.
+
+        Returns:
+            Artifact: The downloaded artifact.
+
+        Raises:
+            AssertionError: If the artifact metadata cannot be retrieved.
+            AssertionError: If the artifact is not found in the cache and the Giskard client is None.
+        """
         name = cls._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / uuid

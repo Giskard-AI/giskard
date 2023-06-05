@@ -13,8 +13,10 @@ release = '2.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+import os
 
 extensions = ["myst_parser",
+              'nbsphinx',
               'sphinx_design',
               'sphinx.ext.todo',
               'sphinx.ext.napoleon',
@@ -52,16 +54,44 @@ myst_enable_extensions = [
 # HTML output
 # -----------------------------------------------------------------------------
 
-html_title = "Giskard v2.0 Documentation"
+html_title = "Giskard Documentation"
 
 html_theme = 'furo'
-# html_static_path = ['_static']
+html_static_path = ['_static']
+
+html_css_files = ['css/custom.css']
+html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js"]
 
 html_theme_options = {
-    "light_css_variables": {},
+    "light_logo": "logo_black.png",
+    "dark_logo": "logo_white.png",
+    "light_css_variables": {
+        "color-brand-content": "#173A2F",
+        "color-api-highlight": "#56D793",
+        "color-api-background": "#F5F5F5",
+        "color-toc-item-text--active": "#56D793",
+        "color-sidebar-current-text": "#56D793",
+        "color-sidebar-link-text--top-level": "#0c0c0c",
+        "color-content-foreground": "#484848",
+        "social-button-background": "#FFFFFF",
+        "social-button-text": "#91F6C0",
+    },
+    "dark_css_variables": {
+        "color-brand-primary": "#56D793",
+        "color-brand-content": "#91F6C0",
+        "color-api-background": "#242424",
+        "color-sidebar-current-text": "#56D793",
+        "color-toc-title": "#C4C4C4",
+        "color-toc-item-text--active": "#56D793",
+        "color-sidebar-link-text--top-level": "#FcFcFc",
+        "color-sidebar-search-foreground": "#a4a4a4",
+        "color-sidebar-search-border": "#a4a4a4",
+        "color-content-foreground": "#FFFFFF",
+        "social-button-background": "#000000",
+        "social-button-text": "#000000",
+    },
     "sidebar_hide_name": False,
     "navigation_with_keys": True,
-    "announcement": '<p style="color:#FF0000"> 🚧 Please note that this documentation is still a work-in-progress! 🚧</p>',
     "top_of_page_button": "edit",
     "source_repository": "https://github.com/Giskard-AI/giskard",
     "source_branch": "feature/sphinx-documentation",
@@ -69,15 +99,32 @@ html_theme_options = {
     "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/feature/sphinx-documentation/python-client/docs/{filename}",
 }
 
-html_logo = "imgs/giskard_logo.png"
-
 add_function_parentheses = False
+# Do not execute the notebooks when building the docs
+docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
+if docs_version == "latest":
+    branch = "main"
+else:
+    branch = docs_version.replace("-", "/")
+
+nbsphinx_execute = "never"
+nbsphinx_prolog = """
+.. raw:: html
+
+    <div class="open-in-colab__wrapper">
+    <a href="https://colab.research.google.com/github/giskard-ai/giskard/blob/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" style="display: inline; margin: 0" alt="Open In Colab"/></a>
+    <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
+    </div>
+"""
 
 import inspect
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath('../'))
+
+pygments_style = "github-dark"
+pygments_dark_style = "material"
 
 
 # make github links resolve

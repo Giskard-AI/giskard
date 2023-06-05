@@ -124,9 +124,9 @@ def test_auc(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
           Model used to compute the test
         dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value of AUC metrics
 
     Returns:
@@ -169,9 +169,9 @@ def test_f1(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunctio
           Model used to compute the test
         dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for F1 Score
 
 
@@ -202,9 +202,9 @@ def test_accuracy(model: BaseModel, dataset: Dataset, slicing_function: SlicingF
           Model used to compute the test
         dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Accuracy
 
     Returns:
@@ -236,9 +236,9 @@ def test_precision(
           Model used to compute the test
         dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Precision
     Returns:
         actual_slices_size:
@@ -267,9 +267,9 @@ def test_recall(model: BaseModel, dataset: Dataset, slicing_function: SlicingFun
           Model used to compute the test
         dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Recall
     Returns:
         actual_slices_size:
@@ -298,9 +298,9 @@ def test_rmse(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunct
           Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for RMSE
     Returns:
         actual_slices_size:
@@ -329,9 +329,9 @@ def test_mae(model: BaseModel, dataset: Dataset, slicing_function: SlicingFuncti
           Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for MAE
 
     Returns:
@@ -363,9 +363,9 @@ def test_r2(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunctio
           Model used to compute the test
         dataset(Dataset):
           Dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on dataset
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for R-Squared
 
     Returns:
@@ -408,9 +408,9 @@ def test_diff_accuracy(
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Accuracy Score difference
     Returns:
         actual_slices_size:
@@ -465,9 +465,9 @@ def test_diff_f1(
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for F1 Score difference
 
     Returns:
@@ -523,9 +523,9 @@ def test_diff_precision(
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Precision difference
     Returns:
         actual_slices_size:
@@ -580,9 +580,9 @@ def test_diff_recall(
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Actual dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for Recall difference
     Returns:
         actual_slices_size:
@@ -637,9 +637,9 @@ def test_diff_rmse(
           Actual dataset used to compute the test
         reference_dataset(Dataset):
           Reference dataset used to compute the test
-        slicing_function(SlicingFunction):
+        slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on both actual and reference datasets
-        threshold(float):
+        threshold(Optional[float]):
           Threshold value for RMSE difference
 
     Returns:
