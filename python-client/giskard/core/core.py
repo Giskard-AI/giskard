@@ -1,6 +1,7 @@
 import inspect
 import logging
 import re
+import typing
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -161,7 +162,7 @@ class CallableMeta(SavableMeta, ABC):
             self.args = {
                 parameter.name: FunctionArgument(
                     name=parameter.name,
-                    type=parameter.annotation.__qualname__,
+                    type=extract_optional(parameter.annotation).__qualname__,
                     optional=parameter.default != inspect.Parameter.empty,
                     default=None if parameter.default == inspect.Parameter.empty
                     else parameter.default,
@@ -331,6 +332,7 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
+    allowed_types = allowed_types + list(map(lambda x: Optional[x], allowed_types))
 
     has_kwargs = any([param for param in parameters if
                       not any([param.annotation == allowed_type for allowed_type in allowed_types])])
@@ -342,6 +344,13 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
         parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
 
     return parameters
+
+
+def extract_optional(field):
+    if typing.get_origin(field) is Union and type(None) in typing.get_args(field):
+        return Union[tuple([arg for arg in typing.get_args(Union[field]) if arg is not None and arg is not type(None)])]
+    else:
+        return field
 
 
 class ComparisonType(Enum):
