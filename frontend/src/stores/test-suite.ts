@@ -16,6 +16,7 @@ import {useMainStore} from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import {TYPE} from "vue-toastification";
+import {anonymize} from "@/utils";
 
 export const statusFilterOptions = [{
     label: 'All',
@@ -101,10 +102,6 @@ export const useTestSuiteStore = defineStore('testSuite', {
             testSuiteCompareStore.reset()
         },
         async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
-            mixpanel.track('Update test suite', {
-                projectKey
-            });
-
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
@@ -116,7 +113,18 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 suiteId: this.suiteId,
                 projectId: this.projectId,
                 inputLength: input.length,
-                testLength: this.suite!.tests.length,
+                tests: this.suite!.tests.map(({test, functionInputs}) => ({
+                    uuid: test.uuid,
+                    name: test.displayName ?? test.name,
+                    inputs: Object.values(functionInputs).map(({value, ...data}) => ({
+                        ...data,
+                        value: anonymize(value)
+                    }))
+                })),
+                inputs: input.map(({value, ...data}) => ({
+                    ...data,
+                    value: anonymize(value)
+                })),
                 jobUuid
             });
 

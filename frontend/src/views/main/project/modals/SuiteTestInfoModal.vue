@@ -42,30 +42,32 @@
 
 <script setup lang="ts">
 
-import { FunctionInputDTO, SuiteTestDTO } from '@/generated-sources';
-import { computed, onMounted, ref } from 'vue';
-import _, { chain } from 'lodash';
-import { storeToRefs } from 'pinia';
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { api } from '@/api';
+import {FunctionInputDTO, SuiteTestDTO} from '@/generated-sources';
+import {computed, onMounted, ref} from 'vue';
+import _, {chain} from 'lodash';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {api} from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
-import { $vfm } from "vue-final-modal";
+import {useCatalogStore} from "@/stores/catalog";
+import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
+import {$vfm} from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
 const props = defineProps<{
     suiteTest: SuiteTestDTO
 }>();
 
-const { projectId, suite } = storeToRefs(useTestSuiteStore());
-const { reload } = useTestSuiteStore();
+const {projectId, suite} = storeToRefs(useTestSuiteStore());
+const {reload} = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 const result = ref<{ [input: string]: FunctionInputDTO }>({});
 
-const { testFunctionsByUuid } = storeToRefs(useCatalogStore())
+const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
     return _.sortBy(_.values(props.suiteTest.test.args), value => {
@@ -94,6 +96,17 @@ async function saveEditedInputs(close) {
 
     await reload();
     close();
+
+    mixpanel.track('Edit test inputs of test suite', {
+        suiteId: suite.value!.id,
+        projectKey: suite.value!.projectKey,
+        testUuid: props.suiteTest.testUuid,
+        testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name,
+        inputs: Object.values(result.value).map(({value, ...data}) => ({
+            ...data,
+            value: anonymize(value)
+        }))
+    });
 }
 
 const inputType = computed(() => chain(sortedArguments.value)
@@ -116,6 +129,13 @@ async function removeTest(close) {
                 await useTestSuiteStore().reload();
                 closeConfirm();
                 close();
+
+                mixpanel.track('Removed test form test suite', {
+                    suiteId: suite.value!.id,
+                    projectKey: suite.value!.projectKey,
+                    testUuid: props.suiteTest.testUuid,
+                    testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name
+                });
             }
         }
     });
