@@ -61,13 +61,14 @@ import {chain} from 'lodash';
 import {useMainStore} from "@/stores/main";
 import {TYPE} from 'vue-toastification';
 import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
-import mixpanel from "mixpanel-browser";
+import mixpanel from 'mixpanel-browser';
+import {anonymize} from "@/utils";
 
 const {projectId, test, suiteId, testArguments} = defineProps<{
-    projectId: number,
-    test: TestFunctionDTO,
-    suiteId?: number,
-    testArguments: { [name: string]: FunctionInputDTO }
+  projectId: number,
+  test: TestFunctionDTO,
+  suiteId?: number,
+  testArguments: { [name: string]: FunctionInputDTO }
 }>();
 
 const dialog = ref<boolean>(false);
@@ -79,21 +80,21 @@ const doc = ref<ParsedDocstring | null>(null);
 onMounted(() => loadData());
 
 async function loadData() {
-    doc.value = extractArgumentDocumentation(test)
-    testSuites.value = await api.getTestSuites(projectId);
-    selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
-    testInputs.value = test.args.reduce((result, arg) => {
-      result[arg.name] = testArguments[arg.name] ?? {
-        name: arg.name,
-        type: arg.type,
-        isAlias: false,
-        value: '',
-        params: []
-      }
-      return result
-    }, {} as { [name: string]: FunctionInputDTO })
-    testInputs.value['model'].value = null;
-    testInputs.value['dataset'].value = null;
+  doc.value = extractArgumentDocumentation(test)
+  testSuites.value = await api.getTestSuites(projectId);
+  selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
+  testInputs.value = test.args.reduce((result, arg) => {
+    result[arg.name] = testArguments[arg.name] ?? {
+      name: arg.name,
+      type: arg.type,
+      isAlias: false,
+      value: '',
+      params: []
+    }
+    return result
+  }, {} as { [name: string]: FunctionInputDTO })
+  testInputs.value['model'].value = null;
+  testInputs.value['dataset'].value = null;
 }
 
 
@@ -107,54 +108,60 @@ const inputs = computed(() =>
 const mainStore = useMainStore();
 
 async function submit(close) {
-    const suiteTest: SuiteTestDTO = {
-        test,
+  mixpanel.track("Add test to suite", {
+    testName: test.name,
+    suiteId: selectedSuite.value,
+    inputs: anonymize(Object.values(testInputs.value))
+  })
+
+  const suiteTest: SuiteTestDTO = {
+    test,
+    testUuid: test.uuid,
+    functionInputs: chain(testInputs.value)
+        .omitBy(({value}) => value === null
+            || (typeof value === 'string' && value.trim() === '')
+            || (typeof value === 'number' && Number.isNaN(value)))
+        .value() as { [name: string]: FunctionInputDTO }
+  }
+
+  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
+  await mainStore.addNotification({
+    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
+    color: TYPE.SUCCESS
+  });
+  close();
+
+  mixpanel.track('Add test to test suite',
+      {
+        suiteId: selectedSuite.value,
+        projectId: projectId,
         testUuid: test.uuid,
-        functionInputs: chain(testInputs.value)
-            .omitBy(({value}) => value === null
-                || (typeof value === 'string' && value.trim() === '')
-                || (typeof value === 'number' && Number.isNaN(value)))
-            .value() as { [name: string]: FunctionInputDTO }
-    }
-
-    await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
-    await mainStore.addNotification({
-        content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
-        color: TYPE.SUCCESS
-    });
-    close();
-
-    mixpanel.track('Add test to test suite',
-        {
-            suiteId: selectedSuite.value,
-            projectId: projectId,
-            testUuid: test.uuid,
-            testName: test.displayName ?? test.name
-        });
+        testName: test.displayName ?? test.name
+      });
 }
 
 async function createTestSuite() {
-    const project = await api.getProject(projectId);
+  const project = await api.getProject(projectId);
 
 
-    const suite = await api.createTestSuite(project.key, {
-        id: null,
-        name: 'Unnamed test suite',
+  const suite = await api.createTestSuite(project.key, {
+    id: null,
+    name: 'Unnamed test suite',
+    projectKey: project.key,
+    functionInputs: [],
+    tests: []
+  });
+
+  mixpanel.track('Create test suite',
+      {
+        id: suite,
         projectKey: project.key,
-        functionInputs: [],
-        tests: []
-    });
+        screen: 'Test catalog (Add test to suite modal)'
+      });
 
-    mixpanel.track('Create test suite',
-        {
-            id: suite,
-            projectKey: project.key,
-            screen: 'Test catalog (Add test to suite modal)'
-        });
+  await loadData();
 
-    await loadData();
-
-    selectedSuite.value = suite;
+  selectedSuite.value = suite;
 }
 
 </script>
