@@ -19,7 +19,7 @@ from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analy
 
 ## Create your own slicing function
 
-To create a Giskard slicing function, you just need to decorate an existing Python function with `@slicing_function()`. Depending on the argument of the decorator, you can decorate different Python functions: filtered by row level, dataframe level, or at cell level:
+To create a Giskard slicing function, you just need to decorate an existing Python function with `@slicing_function()`. Depending on the argument of the decorator, you can decorate different Python functions filtered by row, dataframe, or cell level:
 
 :::::{tab-set}
 
@@ -128,7 +128,7 @@ Saving your slicing functions to the Giskard server will enable you to:
 * Further debug the examples inside your data slices using explanation
 * Apply the saved slicing functions to other datasets (new production data, etc.)
 
-To upload your slicing function to the Giskard server, go to [upload objects](../upload/index.md) to the Giskard server.
+To upload your slicing function to the Giskard server, go to [upload objects](../upload/index.md).
 
 <br>
 
