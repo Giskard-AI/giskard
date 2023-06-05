@@ -12,6 +12,7 @@ from giskard.core.core import TestFunctionMeta, SMT
 from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 from giskard.ml_worker.testing.test_result import TestResult
+from giskard.utils.analytics_collector import analytics
 
 Result = Union[TestResult, bool]
 
@@ -126,6 +127,8 @@ class GiskardTestMethod(GiskardTest):
         return instance
 
     def execute(self) -> Result:
+        analytics.track('test:execute', {"test_name": self.meta.full_name})
+
         return self.test_fn(**self.params)
 
     def __repr__(self) -> str:
