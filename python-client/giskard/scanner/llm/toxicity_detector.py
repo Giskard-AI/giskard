@@ -67,7 +67,7 @@ class LLMToxicityDetector:
 
             perturbed_model = model.rewrite_prompt(pp.replace("[INPUT]", model.model.prompt.template))
 
-            output = perturbed_model.predict(dataset)
+            output = perturbed_model.predict(samples)
             tox_scores = self._compute_toxicity_score(output.prediction)
 
             toxic_examples = []
