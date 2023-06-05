@@ -30,7 +30,7 @@ def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 def _track_validation_error(err, model, dataset):
     properties = {"error": str(err), "error_class": fullname(err)}
     properties.update(get_model_properties(model))
-    properties.update(get_dataset_properties(model))
+    properties.update(get_dataset_properties(dataset))
 
     analytics.track("validate_model:failed", properties)
 
