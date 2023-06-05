@@ -23,12 +23,13 @@
 import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import {computed, ComputedRef} from 'vue';
 import {storeToRefs} from 'pinia';
-import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
+import {useTestSuiteStore} from '@/stores/test-suite';
 import {useRoute} from 'vue-router/composables';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import {useCatalogStore} from "@/stores/catalog";
 import {chain} from 'lodash';
+import {TestsUtils} from "@/utils/tests.utils";
 
 const {executions, models, datasets, inputs, suite, statusFilter, searchFilter} = storeToRefs(useTestSuiteStore());
 const {testFunctionsByUuid} = storeToRefs(useCatalogStore());
@@ -70,20 +71,8 @@ const executionComparisons: ComputedRef<ExecutionComparison[]> = computed(() => 
               test: testFunctionsByUuid.value[suiteTest.testUuid],
               result: result.execution?.results?.find(result => result.test.id === suiteTest.id)
           }))
-          .filter(({result}) => statusFilterOptions.find(opt => statusFilter.value === opt.label)!.filter(result))
-          .filter(({suiteTest}) => {
-              const test = suiteTest.test;
-
-              const keywords = searchFilter.value.split(' ')
-                  .map(keyword => keyword.trim().toLowerCase())
-                  .filter(keyword => keyword !== '');
-              return keywords.filter(keyword =>
-                  test.name.toLowerCase().includes(keyword)
-                  || test.doc?.toLowerCase()?.includes(keyword)
-                  || test.displayName?.toLowerCase()?.includes(keyword)
-                  || test.tags?.filter(tag => tag.includes(keyword))?.length > 0
-              ).length === keywords.length;
-          });
+          .filter(TestsUtils.statusFilter(statusFilter.value))
+          .filter(TestsUtils.searchFilter(searchFilter.value));
   })
 
   return results;
