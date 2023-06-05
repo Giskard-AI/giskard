@@ -29,7 +29,9 @@ class Scanner:
         self.only = only
         self.uuid = uuid.uuid4()
 
-    def analyze(self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True) -> ScanResult:
+    def analyze(
+        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+    ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
         if model.is_generative:
             logger.warning(
@@ -63,48 +65,77 @@ class Scanner:
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
-        if not detectors:
-            raise RuntimeError("No issue detectors available. Scan will not be performed.")
-
-        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
-
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-
-            issues = []
-            for detector in detectors:
-                maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
-                detector_start = perf_counter()
-                detected_issues = detector.run(model, dataset)
-                detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
-                detector_elapsed = perf_counter() - detector_start
-                maybe_print(
-                    f" {len(detected_issues)} issues detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
-                    verbose=verbose,
-                )
-                analytics.track(
-                    "scan:detector-run",
-                    {
-                        "scan_uuid": self.uuid.hex,
-                        "detector": fullname(detector),
-                        "detector_elapsed": detector_elapsed,
-                        "detected_issues": len(detected_issues),
-                    },
-                )
-
-                issues.extend(detected_issues)
+            issues, errors = self._run_detectors(
+                detectors, model, dataset, verbose=verbose, raise_exceptions=raise_exceptions
+            )
 
         elapsed = perf_counter() - time_start
         maybe_print(
             f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})",
             verbose=verbose,
         )
+        if errors:
+            warning(
+                f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
+                "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
+            )
 
         issues = self._postprocess(issues)
         self._collect_analytics(model, dataset, issues, elapsed, model_validation_time)
 
         return ScanResult(issues)
+
+    def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
+        if not detectors:
+            raise RuntimeError("No issue detectors available. Scan will not be performed.")
+
+        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+
+        issues = []
+        errors = []
+        for detector in detectors:
+            maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
+            detector_start = perf_counter()
+            try:
+                detected_issues = detector.run(model, dataset)
+            except Exception as err:
+                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                errors.append((detector, err))
+                analytics.track(
+                    "scan:run-detector:error",
+                    {
+                        "scan_uuid": self.uuid.hex,
+                        "detector": fullname(detector),
+                        "error": str(err),
+                        "error_class": fullname(err),
+                    },
+                )
+                if raise_exceptions:
+                    raise err
+
+                detected_issues = []
+            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            detector_elapsed = perf_counter() - detector_start
+            maybe_print(
+                f" {len(detected_issues)} issues detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+                verbose=verbose,
+            )
+            analytics.track(
+                "scan:detector-run",
+                {
+                    "scan_uuid": self.uuid.hex,
+                    "detector": fullname(detector),
+                    "detector_elapsed": detector_elapsed,
+                    "detected_issues": len(detected_issues),
+                },
+            )
+
+            issues.extend(detected_issues)
+
+        return issues, errors
 
     def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
         # If we detected a StochasticityIssue, we will have a possibly false
