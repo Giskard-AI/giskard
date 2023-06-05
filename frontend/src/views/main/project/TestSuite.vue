@@ -29,14 +29,19 @@
                 <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
                     <v-col>
                         <div class="d-flex align-center justify-center">
-                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined>
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
+                                      item-text="label" variant="underlined" hide-details="auto" dense
+                                      class="mr-4 max-w-150" outlined @input="handleFilterChanged">
                             </v-select>
-                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text" outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense></v-text-field>
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
+                                          outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense
+                                          @input="handleFilterChanged"></v-text-field>
                             <div class="flex-grow-1"></div>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
                                     <div v-on="on">
-                                        <v-btn color="primary" large text @click="openExportDialog" disabled>Export</v-btn>
+                                        <v-btn color="primary" large text @click="openExportDialog" disabled>Export
+                                        </v-btn>
                                     </div>
                                 </template>
                                 <span>Coming soon</span>
@@ -73,6 +78,8 @@ import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.v
 import {api} from "@/api";
 import {useTestSuitesStore} from "@/stores/test-suites";
 import ExportTestModalVue from "./modals/ExportTestModal.vue";
+import {debounce} from "lodash";
+import mixpanel from "mixpanel-browser";
 
 const testSuitesStore = useTestSuitesStore();
 
@@ -148,6 +155,13 @@ function openExportDialog() {
         component: ExportTestModalVue,
     });
 }
+
+const handleFilterChanged = debounce(() => mixpanel.track('Filter tests of test suite', {
+    suiteId: props.suiteId,
+    projectId: props.projectId,
+    statusFilter: statusFilter.value,
+    searchFilter: searchFilter.value
+}), 1000)
 
 </script>
 
