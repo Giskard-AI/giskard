@@ -49,6 +49,7 @@ import {api} from "@/api";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import {useTestSuitesStore} from "@/stores/test-suites";
 import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
 const {projectKey, projectId, suite} = defineProps<{
     projectKey: string,
@@ -97,6 +98,12 @@ async function submit(close) {
 
     dialog.value = false;
     close();
+
+    mixpanel.track('Edited test suite', {
+        projectId: projectId,
+        suiteId: suite.id,
+        name: anonymize(suite.name)
+    });
 }
 
 
