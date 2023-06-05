@@ -3,6 +3,7 @@ import { computed, ref, onActivated, } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
+import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useMLWorkerStore } from "@/stores/ml-worker";
 import { useProjectStore } from "@/stores/project";
@@ -11,6 +12,8 @@ import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue'
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
 
 const router = useRouter();
 
@@ -88,6 +91,15 @@ function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
   });
 }
 
+function copyText(text: string, description?: string) {
+  copyToClipboard(text);
+  if (description) {
+    useMainStore().addSimpleNotification(description);
+  } else {
+    useMainStore().addSimpleNotification("Copied to clipboard");
+  }
+}
+
 function deleteDebuggingSession(debuggingSession: InspectionDTO) {
   $vfm.show({
     component: ConfirmModal,
@@ -101,6 +113,11 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
         await api.deleteInspection(debuggingSession.id);
         await debuggingSessionsStore.reload();
         close();
+        useMainStore().addNotification({
+          content: `The debugging session '${debuggingSession.name}' has been deleted.`,
+          color: TYPE.SUCCESS,
+          showProgress: false
+        });
       }
     }
   });
@@ -174,13 +191,23 @@ onActivated(async () => {
                   </InlineEditText>
                 </div>
               </v-col>
-              <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
-              <v-col cols="3" class="col-container" :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
+              <v-col cols="2" class="col-container">
+                <span :title="session.createdDate | date">
+                  {{ session.createdDate | date }}
+                </span>
+              </v-col>
+              <v-col cols="3" class="col-container">
+                <span :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`" @click.stop.prevent="copyText(session.dataset.id, 'Copied dataset ID to clipboard')">
+                  {{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}
+                </span>
+              </v-col>
 
-              <v-col cols="3" class="col-container" :title="`${session.model.name} (ID: ${session.model.id})`">{{ session.model.name ? session.model.name : 'Unnamed model' }}</v-col>
+              <v-col cols="3" class="col-container">
+                <span :title="`${session.model.name} (ID: ${session.model.id})`" @click.stop.prevent="copyText(session.model.id, 'Copied model ID to clipboard')">{{ session.model.name ? session.model.name : 'Unnamed model' }}</span>
+              </v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
+                  <v-btn icon @click.stop.prevent="deleteDebuggingSession(session)">
                     <v-icon color="accent">delete</v-icon>
                   </v-btn>
                 </v-card-actions>
