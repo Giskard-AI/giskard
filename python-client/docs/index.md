@@ -1,28 +1,63 @@
 ```{toctree}
-:caption: Table of Contents
+:caption: Getting Started
 :name: mastertoc
-:maxdepth: 2
+:maxdepth: 1
 :hidden:
 
 getting-started/index
-guides/index
-reference/index
+getting-started/quickstart
+getting-started/key_vulnerabilities/index
 ```
 
-# Giskard Documentation
+```{toctree}
+:caption: Guides
+:name: mastertoc
+:maxdepth: 1
+:hidden:
 
-<b>Giskard creates interfaces for humans to inspect & test AI models. It is open-source and self-hosted.</b>
+guides/installation_library/index
+guides/wrap_dataset/index
+guides/wrap_model/index
+guides/scan/index
+guides/slice/index
+guides/transformation/index
+guides/test-suite/index
+guides/cicd/pipeline
+guides/installation_app/index
+guides/upload/index
+```
 
-Giskard lets you instantly see your model's prediction for a given set of feature values. You can set the values directly in Giskard and see the prediction change.
+```{toctree}
+:caption: Tutorials
+:name: mastertoc
+:maxdepth: 1
+:hidden:
 
-Saw anything strange? Leave feedback directly within Giskard, so that your team can explore the query that generated the faulty result. 
+tutorials/libraries/index
+tutorials/tasks/index
+tutorials/data-types/index
+```
 
-Designed for both tech and business users, Giskard is super intuitive to use!
+```{toctree}
+:caption: Reference
+:name: mastertoc
+:maxdepth: 1
+:hidden:
 
-Want to ensure your model is right? Giskard enables you to turn your business feedback into actionable tests. Create in a few clicks automatic tests and execute them in your CI/CD pipeline each time, you create a new version of your model.
-And of course, Giskard works with any model, any environment and integrates seemlessly with your favorite tools.
+reference/index
+catalogs/index
+```
 
-::::::{grid} 1 1 2 2
+<h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
+<p align="center"> 
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+  <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
+  <a href="https://gisk.ar/discord"><b>Discord</b></a>
+ </p>
+<br />
+
+
+::::::{grid} 1 1 3 3
 :gutter: 1
 
 :::::{grid-item}
@@ -30,13 +65,11 @@ And of course, Giskard works with any model, any environment and integrates seem
 ::::{grid} 1 1 1 1
 :gutter: 1
 
-(cards-clickable)=
 :::{card} <h2><center> Getting Started </center></h2>
 :link: getting-started/index.html
-<img src="assets/intro/coffee.png" alt="coffee" width="100%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/coffee.png" alt="coffee" width="80%">
 :::
 
-(cards-clickable)=
 :::{card} <h2><center> API Reference </center></h2>
 :link: reference/index.html
 <img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
@@ -49,17 +82,33 @@ And of course, Giskard works with any model, any environment and integrates seem
 ::::{grid} 1 1 1 1
 :gutter: 1
 
-(cards-clickable)=
 :::{card} <h2><center> User Guide </center></h2>
 :link: guides/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="79.5%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="79%">
 :::
 
-(cards-clickable)=
-:::{card} <h2><center> Contributor's Guide </center></h2>
+:::{card} <h2><center> Tutorials </center></h2>
+:link: tutorials/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="97%">
+::::
+
+:::::
+
+:::::{grid-item}
+
+::::{grid} 1 1 1 1
+:gutter: 1
+
+:::{card} <h2><center> Catalogs </center></h2>
+:link: catalogs/index.html
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="89%">
+:::
+
+:::{card} <h2><center> Contribute </center></h2>
 :link: contribute/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="58.5%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
 ::::
 
 :::::

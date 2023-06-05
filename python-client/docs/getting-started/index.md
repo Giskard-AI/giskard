@@ -1,50 +1,31 @@
-# Getting Started
+# What is Giskard?
 
+Giskard is an **open-source testing framework** dedicated to ML models, ranging from tabular models to LLMs.
 
-```{toctree}
-:maxdepth: 2
-:hidden:
+Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
 
-scan/index
-test-suite/index
-slicing-and-transformation-functions/index
-```
+<p align="center">
+<strong>Where to start testing? Which tests to implement? What issues to cover? How to implement the tests?</strong>
+</p>
 
-::::::{grid} 1 1 2 2
-:gutter: 1
+<p align="center">
+  <img src="https://giskard.readthedocs.io/en/latest/_images/hey.png" alt="hey" width="20%">
+</p>
 
-:::::{grid-item}
+At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
 
-::::{grid} 1 1 1 1
-:gutter: 1
+- **Scan your model to find dozens of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 
-(cards-clickable)=
-:::{card} <h3><center> Scan your ML model </center></h3>
-:link: scan/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/intro/Giskard_Turtle_new_set_FINAL_05.png" alt="scan" width="79%">
-:::
+<br>
 
-(cards-clickable)=
-:::{card} <h3><center> Slicing and transformation functions </center></h3>
-:link: slicing-and-transformation-functions/index.html
+  ![](/_static/scan_example.png)
+- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/intro/Giskard_Turtle_new_set_FINAL_06.png" alt="slice" width="100%">
-:::
+<br>
 
-:::::
+  ![](/_static/test_suite_example.png)
+- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
 
-:::::{grid-item}
+<br>
 
-::::{grid} 1 1 1 1
-:gutter: 1
-
-(cards-clickable)=
-:::{card} <h3><center> Create a test suite </center></h3>
-:link: test-suite/index.html
-<img src="../assets/intro/test_turtle.png" alt="test" width="98%">
-::::
-
-
-:::::
-
-::::::
+  ![](/_static/catalog_example.png)

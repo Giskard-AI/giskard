@@ -20,6 +20,13 @@ suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, Slic
 
 
 class TestSuiteResult(tuple):
+    """
+    Represents the result of a test suite, derived from the tuple class.
+
+    Methods:
+        _repr_html_(): Returns an HTML representation of all the tests result contained in the test suite.
+
+    """
     def _repr_html_(self):
         passed = self[0]
         tests_results = ''.join(
@@ -35,6 +42,23 @@ class TestSuiteResult(tuple):
 
 
 class SuiteInput:
+    """
+    Represents an input parameter for a test suite.
+
+    Attributes:
+        name (str): The name of the input parameter.
+        type (Any): The type of the input parameter.
+
+    Raises:
+        AssertionError: If the input type is not supported.
+
+    Example:
+        >>> input_param = SuiteInput("age", int)
+        >>> input_param.name
+        'age'
+        >>> input_param.type
+        <class 'int'>
+    """
     type: Any
     name: str
 
@@ -45,6 +69,24 @@ class SuiteInput:
 
 
 class DatasetInput(SuiteInput):
+    """
+    Represents a dataset input parameter for a test suite.
+
+    Inherits from `SuiteInput`.
+
+    Attributes:
+        name (str): The name of the dataset input parameter.
+        target (Optional[str]): The target column of the dataset.
+
+    Example:
+        >>> dataset_input = DatasetInput("data", target="label")
+        >>> dataset_input.name
+        'data'
+        >>> dataset_input.type
+        <class 'Dataset'>
+        >>> dataset_input.target
+        'label'
+    """
     target: Optional[str] = None
 
     def __init__(self, name: str, target: Optional[str] = None) -> None:
@@ -53,6 +95,22 @@ class DatasetInput(SuiteInput):
 
 
 class ModelInput(SuiteInput):
+    """
+    Represents a model input parameter for a test suite.
+
+    Inherits from `SuiteInput`.
+
+    Attributes:
+        name (str): The name of the model input parameter.
+        model_type (Optional[str]): The type or name of the model.
+
+    Example:
+        >>> model_input = ModelInput("model", model_type="SKLearnModel")
+        >>> model_input.name
+        'model'
+        >>> model_input.model_type
+        'SKLearnModel'
+    """
     model_type: Optional[str] = None
 
     def __init__(self, name: str, model_type: Optional[str] = None) -> None:
@@ -216,19 +274,19 @@ class Suite:
 
     def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> 'Suite':
         """
-         Add a test to the suite.
+        Add a test to the suite.
 
-        :param test_fn: A test method that will be executed or an instance of a GiskardTest class
-        :type test_fn: Test
-        :param test_name: A unique identifier used to track the test result. If None, the identifier will be generated
-        based on the module and name of the test method. If the identifier already exists in the suite, a new unique
-        identifier will be generated.
-        :type test_name: Optional[Union[int, str]]
-        :param params: Default parameters to be passed to the test method. This parameter will be ignored if `test_fn`
-        is an instance of GiskardTest.
-        :type params: Dict[str, Any]
-        :return: The current instance of the test suite to allow chained calls.
-        :rtype: TestSuite
+        Args:
+            test_fn (Test): A test method that will be executed or an instance of a GiskardTest class.
+            test_name (Optional[Union[int, str]], optional): A unique identifier used to track the test result.
+                If None, the identifier will be generated based on the module and name of the test method.
+                If the identifier already exists in the suite, a new unique identifier will be generated.
+            **params: Default parameters to be passed to the test method.
+                This parameter will be ignored if `test_fn` is an instance of GiskardTest.
+
+        Returns:
+            Suite: The current instance of the test suite to allow chained calls.
+
         """
         if isinstance(test_fn, GiskardTestMethod):
             params = {k: v for k, v in test_fn.params.items() if v is not None}
