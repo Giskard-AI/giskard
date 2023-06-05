@@ -110,7 +110,7 @@ const mainStore = useMainStore();
 async function submit(close) {
   mixpanel.track("Add test to suite", {
     testName: test.name,
-    suiteId: anonymize(selectedSuite.value),
+    suiteId: selectedSuite.value,
     inputs: anonymize(Object.values(testInputs.value))
   })
 
