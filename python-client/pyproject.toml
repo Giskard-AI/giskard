@@ -97,7 +97,7 @@ homepage = "https://giskard-ai"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0"
+version = "2.0.0b1"
 description = "Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
