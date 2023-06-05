@@ -16,6 +16,7 @@ import {useMainStore} from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
 import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
 import {TYPE} from "vue-toastification";
+import {anonymize} from "@/utils";
 
 export const statusFilterOptions = [{
     label: 'All',
@@ -101,21 +102,40 @@ export const useTestSuiteStore = defineStore('testSuite', {
             testSuiteCompareStore.reset()
         },
         async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
-            mixpanel.track('Update test suite v2', {
-                projectKey
-            });
-
             this.suite = await api.updateTestSuite(projectKey, testSuite);
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
+            const jobUuid = await api.executeTestSuite(this.projectId!, this.suiteId!, input);
+
+            mixpanel.track('Schedule test suite execution', {
+                suiteId: this.suiteId,
+                projectId: this.projectId,
+                inputLength: input.length,
+                tests: this.suite!.tests.map(({test, functionInputs}) => ({
+                    uuid: test.uuid,
+                    name: test.displayName ?? test.name,
+                    inputs: Object.values(functionInputs).map(({value, ...data}) => ({
+                        ...data,
+                        value: anonymize(value)
+                    }))
+                })),
+                inputs: input.map(({value, ...data}) => ({
+                    ...data,
+                    value: anonymize(value)
+                })),
+                jobUuid
+            });
+
             return {
-                trackJob: this.trackJob(await api.executeTestSuite(this.projectId!, this.suiteId!, input))
-            }
+                trackJob: this.trackJob(jobUuid)
+            };
         },
         async tryTestSuite(input: Array<FunctionInputDTO>) {
             this.tryResult = await api.tryTestSuite(this.projectId!, this.suiteId!, input);
         },
         async trackJob(uuid: string) {
+            const start = new Date();
+
             const result = await trackJob(uuid, (res) => this.trackedJobs = {
                 ...this.trackedJobs,
                 [uuid]: res
@@ -124,6 +144,15 @@ export const useTestSuiteStore = defineStore('testSuite', {
             const res = {...this.trackedJobs};
             delete res[uuid]
             this.trackedJobs = res;
+
+            mixpanel.track('Executed test suite', {
+                suiteId: this.suiteId,
+                projectId: this.projectId,
+                testLength: this.suite!.tests.length,
+                executionDurationMs: new Date().getTime() - start.getTime(),
+                jobUuid: uuid,
+                result: result.state
+            });
 
             if (result && result.state !== JobState.ERROR) {
                 mainStore.addNotification({
@@ -139,11 +168,5 @@ export const useTestSuiteStore = defineStore('testSuite', {
 
             await this.reload();
         },
-        setStatusFilter(statusFilter: string) {
-            this.statusFilter = statusFilter
-        },
-        setSearchFilter(searchFilter: string) {
-            this.searchFilter = searchFilter
-        }
     }
 });

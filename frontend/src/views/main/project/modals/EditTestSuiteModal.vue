@@ -38,18 +38,20 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, ref } from 'vue';
-import { FunctionInputDTO, TestSuiteDTO } from '@/generated-sources';
-import { useRouter } from 'vue-router/composables';
-import { useTestSuiteStore } from '@/stores/test-suite';
+import {computed, onMounted, ref} from 'vue';
+import {FunctionInputDTO, TestSuiteDTO} from '@/generated-sources';
+import {useRouter} from 'vue-router/composables';
+import {useTestSuiteStore} from '@/stores/test-suite';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
-import { chain } from "lodash";
-import { $vfm } from "vue-final-modal";
-import { api } from "@/api";
+import {chain} from "lodash";
+import {$vfm} from "vue-final-modal";
+import {api} from "@/api";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import { useTestSuitesStore } from "@/stores/test-suites";
+import {useTestSuitesStore} from "@/stores/test-suites";
+import mixpanel from "mixpanel-browser";
+import {anonymize} from "@/utils";
 
-const { projectKey, projectId, suite } = defineProps<{
+const {projectKey, projectId, suite} = defineProps<{
     projectKey: string,
     projectId: number
     suite: TestSuiteDTO
@@ -96,6 +98,12 @@ async function submit(close) {
 
     dialog.value = false;
     close();
+
+    mixpanel.track('Edited test suite', {
+        projectId: projectId,
+        suiteId: suite.id,
+        name: anonymize(suite.name)
+    });
 }
 
 
@@ -117,6 +125,13 @@ async function deleteSuite(outerClose) {
                 })
                 close();
                 outerClose();
+
+                mixpanel.track('Delete test suite',
+                    {
+                        id: suite.id,
+                        projectKey: suite.projectKey,
+                        screen: 'Edit test suite modal'
+                    });
             }
         }
     });

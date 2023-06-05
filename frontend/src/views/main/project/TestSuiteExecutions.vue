@@ -77,17 +77,18 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted } from 'vue';
-import { JobDTO, JobState, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
-import { Colors } from '@/utils/colors';
-import { Comparators } from '@/utils/comparators';
-import { storeToRefs } from 'pinia';
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
-import { $vfm } from 'vue-final-modal';
+import {computed, onMounted} from 'vue';
+import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
+import {Colors} from '@/utils/colors';
+import {Comparators} from '@/utils/comparators';
+import {storeToRefs} from 'pinia';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import { chain } from "lodash";
+import {chain} from "lodash";
+import mixpanel from "mixpanel-browser";
 
 const {
     models,
@@ -185,11 +186,18 @@ onMounted(() => {
 })
 
 async function compare() {
-  await router.push({
-    name: 'test-suite-compare-executions',
-    query: { selectedIds: JSON.stringify(compareSelectedItems.value) }
-  })
-  testSuiteCompareStore.reset();
+    await router.push({
+        name: 'test-suite-compare-executions',
+        query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
+    })
+
+    mixpanel.track('Compare selected test suite executions', {
+        suiteId: suite.value!.id,
+        projectId: projectId.value,
+        executionsIds: compareSelectedItems.value
+    });
+
+    testSuiteCompareStore.reset();
 }
 
 async function openRunTestSuite(compareMode: boolean) {
