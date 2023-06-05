@@ -88,10 +88,9 @@ class RobustnessIssue(Issue):
 
         tests = [
             test_metamorphic_invariance(
-                model=self.model,
-                dataset=self.dataset,
-                transformation_function=self.info.transformation_fn,
-                slicing_function=None,
+                self.model,
+                self.dataset,
+                self.info.transformation_fn,
                 threshold=1 - self.info.threshold,
                 output_sensitivity=self.info.output_sensitivity,
             )
