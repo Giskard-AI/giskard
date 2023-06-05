@@ -77,9 +77,6 @@ class Artifact(Generic[SMT], ABC):
 
         Returns:
             str: The UUID of the uploaded slicing function.
-
-        Raises:
-            OSError: If an error occurs while creating the local directory.
         """
         name = self._get_name()
 
