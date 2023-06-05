@@ -3,6 +3,7 @@ import os
 import re
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 import click
 import docker
@@ -167,6 +168,48 @@ def _get_home_volume():
         home_volume = docker_client.volumes.create("giskard-home")
 
     return home_volume
+
+
+def _expose(token):
+    container = get_container()
+    if container:
+        if container.status != 'running':
+            print("Error: Giskard server is not running. Please start it using `giskard server start`")
+            raise click.Abort()
+    else:
+        raise click.Abort()
+    print("Exposing Giskard Server to the internet...")
+    from pyngrok import ngrok
+    from pyngrok.conf import PyngrokConfig
+    if token:
+        ngrok.set_auth_token(token)
+
+    http_tunnel = ngrok.connect(19000, "http", pyngrok_config=None if token else PyngrokConfig(region="us"))
+    tcp_tunnel = ngrok.connect(40051, "tcp", pyngrok_config=None if token else PyngrokConfig(region="eu"))
+
+    # Only split the last ':' in case the URL contains a port
+    tcp_addr = urlparse(tcp_tunnel.public_url)
+
+    print("Giskard Server is now exposed to the internet.")
+    print("You can now upload objects to the Giskard Server using the following client: \n")
+
+    print(f"""token=...
+client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
+
+# To run your model with the Giskard Server, execute these three lines on Google Colab:
+
+%env GSK_EXTERNAL_ML_WORKER_HOST={tcp_addr.hostname}
+%env GSK_EXTERNAL_ML_WORKER_PORT={tcp_addr.port}
+%env GSK_API_KEY=...
+!giskard worker start -u {http_tunnel.public_url}""")
+
+    ngrok_process = ngrok.get_ngrok_process()
+    try:
+        # Block until CTRL-C or some other terminating event
+        ngrok_process.proc.wait()
+    finally:
+        print("Shutting down expose.")
+        ngrok.kill()
 
 
 @server.command("start")
@@ -384,3 +427,19 @@ def clean(delete_data):
             logger.info("User data has been deleted in 'giskard-home' volume")
         except NotFound:
             logger.info("Volume 'giskard-home' does not exist")
+
+
+@server.command("expose")
+@click.option(
+    "--token",
+    "token",
+    required=False,
+    help="In case you have an ngrok account, you can use a token "
+         "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
+)
+@common_options
+def expose(token):
+    """\b
+    Expose your local Giskard Server to the outside world using ngrok to use in notebooks like Google Colab
+    """
+    _expose(token)

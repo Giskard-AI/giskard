@@ -3,8 +3,13 @@ import platform
 import click
 
 import giskard
-from giskard.commands.cli_server import server
-from giskard.commands.cli_worker import worker
+from giskard.core.errors import GiskardInstallationError
+
+try:
+    from giskard.commands.cli_server import server
+    from giskard.commands.cli_worker import worker
+except ImportError as e:
+    raise GiskardInstallationError(flavor="server", functionality="Server") from e
 from giskard.path_utils import run_dir
 
 run_dir.mkdir(parents=True, exist_ok=True)

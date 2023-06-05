@@ -26,7 +26,9 @@ def _register_default_detectors():
 _register_default_detectors()
 
 
-def scan(model: BaseModel, dataset: Optional[Dataset] = None, params=None, only=None, verbose=True):
+def scan(
+    model: BaseModel, dataset: Optional[Dataset] = None, params=None, only=None, verbose=True, raise_exceptions=False
+):
     """
     Scan a model with a dataset.
 
@@ -37,9 +39,15 @@ def scan(model: BaseModel, dataset: Optional[Dataset] = None, params=None, only=
             A Giskard dataset object.
         params (dict):
             Scanner configuration.
+        verbose (bool):
+            Whether to print information messages. Enabled by default.
+        raise_exceptions (bool):
+            Whether to raise an exception if detection errors are encoutered. By default, errors are logged and
+            handled gracefully, without interrupting the scan.
+
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(model, dataset, verbose=verbose)
+    return scanner.analyze(model, dataset, verbose=verbose, raise_exceptions=raise_exceptions)
 
 
 __all__ = ["scan", "Scanner", "logger"]
