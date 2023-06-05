@@ -1,7 +1,7 @@
 """Statistical tests"""
 import numpy as np
 import pandas as pd
-from typing import Optional, Iterable
+from typing import Optional, Union
 
 from giskard import test
 from giskard.datasets.base import Dataset
@@ -15,7 +15,7 @@ from giskard.ml_worker.testing.utils import check_slice_not_empty
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
 def test_right_label(model: BaseModel, dataset: Dataset, classification_label: str,
-                     slicing_function: SlicingFunction = None, threshold: float = 0.5) -> TestResult:
+                     slicing_function: Optional[SlicingFunction] = None, threshold: float = 0.5) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
 
@@ -35,7 +35,7 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
           Classification label you want to test
       slicing_function(Optional[SlicingFunction]):
           Slicing function to be applied on the dataset
-      threshold(Optional[float]):
+      threshold(float):
           Threshold for the percentage of passed rows
 
     Returns:
@@ -64,8 +64,8 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
-def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction = None,
-                         classification_label: str = None, min_range: float = 0.3, max_range: float = 0.7,
+def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None,
+                         classification_label: Optional[str] = None, min_range: float = 0.3, max_range: float = 0.7,
                          threshold: float = 0.5) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -94,11 +94,11 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
             Slicing function to be applied on the dataset
         classification_label(Optional[str]):
             Optional. Classification label you want to test
-        min_range(Optional[float]):
+        min_range(float):
             Minimum probability of occurrence of classification label
-        max_range(Optional[float]):
+        max_range(float):
             Maximum probability of occurrence of classification label
-        threshold(Optional[float]):
+        threshold(float):
             Threshold for the percentage of passed rows
 
     Returns:
@@ -141,8 +141,8 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: S
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
-                          unprotected_slicing_function: SlicingFunction, positive_outcome: Iterable,
-                          slicing_function: SlicingFunction = None, min_threshold: float = 0.8,
+                          unprotected_slicing_function: SlicingFunction, positive_outcome: Union[str, float],
+                          slicing_function: Optional[SlicingFunction] = None, min_threshold: float = 0.8,
                           max_threshold: float = 1.25) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -178,9 +178,9 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
               The target value that is considered a positive outcome in the dataset
           slicing_function(Optional[SlicingFunction]):
               Slicing function to be applied on the dataset
-          min_threshold(Optional[float]):
+          min_threshold(float):
               Threshold below which the DI test is considered to fail, by default 0.8
-          max_threshold(Optional[float]):
+          max_threshold(float):
               Threshold above which the DI test is considered to fail, by default 1.25
 
     Returns:
