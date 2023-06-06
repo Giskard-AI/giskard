@@ -473,7 +473,10 @@ class BaseModel(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                return clazz(**(constructor_params | kwargs))
+                clazz_kwargs = {}
+                clazz_kwargs.update(constructor_params)
+                clazz_kwargs.update(kwargs)
+                return clazz(**clazz_kwargs)
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
@@ -670,11 +673,11 @@ class WrapperModel(BaseModel, ABC):
         constructor_params = constructor_params.copy()
         constructor_params.update(kwargs)
 
-        return cls(model=cls.load_wrapped_model(local_dir), **constructor_params)
+        return cls(model=cls.load_model(local_dir), **constructor_params)
 
     @classmethod
     @abstractmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         """
         Loading the ``model`` object. The de-serialization depends on the model type:
 
@@ -744,7 +747,7 @@ class CloudpickleBasedModel(WrapperModel, ABC):
             )
 
     @classmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():
