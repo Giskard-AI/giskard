@@ -2,7 +2,7 @@
 
 ## Install the Giskard Python Library for only Python use (no Giskard server) without LLM models
 
-If you don't want to use the UI features and your model is not a generative model, you need to install the `giskard` library with `pip`:
+If you don't want to use the UI features and your model is not a text generation model, you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
@@ -24,7 +24,7 @@ pip install giskard --pre
 
 ## Install the Giskard Python Library for Python + Giskard server (UI features) without LLM
 
-If you want to use the Giskard server but your model is not a generative model you need to install the `giskard` library with `pip`:
+If you want to use the Giskard server but your model is not a text generation model you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
@@ -47,7 +47,7 @@ pip install giskard[server] --pre
 
 ## Install the Giskard Python Library for only Python use (no Giskard server) and with LLM
 
-If you don't want to use the UI features and your model is a generative model, you need to install the `giskard` library with `pip`:
+If you don't want to use the UI features and your model is a text generation model, you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
