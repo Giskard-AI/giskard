@@ -1,6 +1,5 @@
 <p align="center">
-  <img alt="giskardlogo" src="readme/giskard_logo.png#gh-light-mode-only">
-  <img alt="giskardlogo" src="readme/giskard_logo_green.png#gh-dark-mode-only">
+  <img alt="giskardlogo" src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/giskard_logo.png?raw=true">
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
