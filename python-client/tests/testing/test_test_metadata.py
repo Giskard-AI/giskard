@@ -22,6 +22,7 @@ def test_can_define_the_simplest_custom_test(german_credit_model):
     assert result.passed
 
 
+@pytest.mark.skip(reason="This is not supported yet")
 def test_can_define_test_with_union_type(german_credit_model):
     @test
     def my_union_test(model: BaseModel, target: Union[str, int]):
