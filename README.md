@@ -36,7 +36,7 @@
   * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
   * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
 3. [How to contribute](#how-to-contribute)
-4. [Like what we're doing?]()
+4. [Like what we're doing?](#like-what-were-doing)
 
 
 ## What is Giskard?
