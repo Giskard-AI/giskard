@@ -38,18 +38,19 @@ logger = logging.getLogger(__name__)
 
 class ModelPredictionResults(pydantic.BaseModel):
     """
-   Class representing the results of a model prediction.
+    Class representing the results of a model prediction.
 
-   * For regression models, the ``prediction`` field of the returned ``ModelPredictionResults`` object will contain the same values as the ``raw_prediction`` field.
-   * For binary or multiclass classification models, the `prediction` field of the returned ``ModelPredictionResults`` object will contain the predicted class labels for each example in the input dataset. The ``probabilities`` field will contain the predicted probabilities for the predicted class label. The ``all_predictions`` field will contain the predicted probabilities for all class labels for each example in the input dataset.
+    * For regression models, the ``prediction`` field of the returned ``ModelPredictionResults`` object will contain the same values as the ``raw_prediction`` field.
+    * For binary or multiclass classification models, the `prediction` field of the returned ``ModelPredictionResults`` object will contain the predicted class labels for each example in the input dataset. The ``probabilities`` field will contain the predicted probabilities for the predicted class label. The ``all_predictions`` field will contain the predicted probabilities for all class labels for each example in the input dataset.
 
-   Attributes:
-       raw (Any): the predicted probabilities.
-       prediction (Any): the predicted class labels for each example in the input dataset.
-       raw_prediction (Any): the predicted class label.
-       probabilities (Optional[Any]): the predicted probabilities for the predicted class label.
-       all_predictions (Optional[Any]): the predicted probabilities for all class labels for each example in the input dataset.
+    Attributes:
+        raw (Any): the predicted probabilities.
+        prediction (Any): the predicted class labels for each example in the input dataset.
+        raw_prediction (Any): the predicted class label.
+        probabilities (Optional[Any]): the predicted probabilities for the predicted class label.
+        all_predictions (Optional[Any]): the predicted probabilities for all class labels for each example in the input dataset.
     """
+
     raw: Any = []
     prediction: Any = []
     raw_prediction: Any = []
@@ -70,12 +71,12 @@ class BaseModel(ABC):
              and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
              also accepted.
              Make sure that the probability provided is for the second label provided in classification_labels.
-           * if regression or generative: an array of predictions corresponding to data entries
+           * if regression or text_generation: an array of predictions corresponding to data entries
              (rows of pandas.DataFrame) and outputs.
        name (Optional[str]):
             the name of the model.
        model_type (ModelType):
-           The type of the model: regression, classification or generative.
+           The type of the model: regression, classification or text_generation.
        feature_names (Optional[Iterable[str]]):
            list of feature names matching the column names in the data that correspond to the features which the model
            trained on. By default, feature_names are all the Dataset columns except from target.
@@ -99,13 +100,13 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -183,7 +184,11 @@ class BaseModel(ABC):
         """
         Returns True if the model is of type generative, False otherwise.
         """
-        return self.meta.model_type == SupportedModelTypes.GENERATIVE
+        return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
+
+    @property
+    def is_text_generation(self):
+        return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
     def determine_model_class(cls, meta, local_dir):
@@ -308,7 +313,7 @@ class BaseModel(ABC):
                 self.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
             )
 
-        if self.is_regression or self.is_generative:
+        if self.is_regression or self.is_text_generation:
             result = ModelPredictionResults(
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
@@ -496,16 +501,16 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -622,7 +627,7 @@ class WrapperModel(BaseModel, ABC):
           and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
           also accepted.
           Make sure that the probability provided is for the second label provided in classification_labels.
-        * if regression or generative: an array of predictions corresponding to data entries
+        * if regression or text_generation: an array of predictions corresponding to data entries
           (rows of pandas.DataFrame) and outputs.
 
         Args:

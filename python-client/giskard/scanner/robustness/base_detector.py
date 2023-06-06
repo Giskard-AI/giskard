@@ -105,7 +105,7 @@ class BaseTextPerturbationDetector(Detector):
             elif model.is_regression:
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < output_sensitivity
-            elif model.is_generative:
+            elif model.is_text_generation:
                 try:
                     import evaluate
                 except ImportError as err:
@@ -153,14 +153,14 @@ def _relative_delta(actual, reference):
 
 
 def _get_default_num_samples(model) -> int:
-    if model.is_generative:
+    if model.is_text_generation:
         return 10
 
     return 1_000
 
 
 def _get_default_output_sensitivity(model) -> float:
-    if model.is_generative:
+    if model.is_text_generation:
         return 0.1
 
     return 0.05
