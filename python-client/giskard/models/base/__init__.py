@@ -180,13 +180,6 @@ class BaseModel(ABC):
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
     @property
-    def is_generative(self):
-        """
-        Returns True if the model is of type generative, False otherwise.
-        """
-        return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
-
-    @property
     def is_text_generation(self):
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
