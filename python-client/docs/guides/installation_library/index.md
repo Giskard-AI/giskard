@@ -1,6 +1,8 @@
 # 📥 Install the Giskard Python Library
 
-In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
+## Install the Giskard Python Library for only Python use (no Giskard server) without LLM models
+
+If you don't want to use the UI features and your model is not a generative model, you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
@@ -20,11 +22,75 @@ pip install giskard --user
 :::
 ::::
 
+## Install the Giskard Python Library for Python + Giskard server (UI features) without LLM
+
+If you want to use the Giskard server but your model is not a generative model you need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install giskard[server]
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install giskard[server] --user
+```
+
+:::
+::::
+
+
+## Install the Giskard Python Library for only Python use (no Giskard server) and with LLM
+
+If you don't want to use the UI features and your model is a generative model, you need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install giskard[llm]
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install giskard[llm] --user
+```
+
+:::
+::::
+
+## Install the Giskard Python Library with full functionalities (server + LLM)
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install giskard[server, llm]
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install giskard[server, llm] --user
+```
+
+:::
+::::
 ## Requirements
 
-Giskard works with Python `3.8`, `3.9` and `3.10`.
+`giskard[server]` works with Python `3.8`, `3.9` and `3.10`.
 
-Below is the list of dependencies needed to make Giskard work:
+Below is the list of dependencies needed to make `giskard[server]` work:
 
 ```sh
 dependencies = [
