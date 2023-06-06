@@ -15,7 +15,7 @@ proto = "setup.py grpc"
 test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml"
 test.env = { GSK_DISABLE_ANALYTICS = "True"}
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
-test-fast.cmd = "pytest -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml"
+test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml"
 test-fast.env = { GSK_DISABLE_ANALYTICS = "True"}
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
