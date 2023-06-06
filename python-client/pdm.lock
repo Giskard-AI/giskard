@@ -166,6 +166,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bert-score"
+version = "0.3.13"
+requires_python = ">=3.6"
+summary = "PyTorch implementation of BERT score"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "packaging>=20.9",
+    "pandas>=1.0.1",
+    "requests",
+    "torch>=1.0.0",
+    "tqdm>=4.31.1",
+    "transformers>=3.0.0",
+]
+
+[[package]]
 name = "black"
 version = "23.3.0"
 requires_python = ">=3.7"
@@ -2037,18 +2053,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rouge-score"
-version = "0.1.2"
-requires_python = ">=3.7"
-summary = "Pure python implementation of ROUGE-1.5.5."
-dependencies = [
-    "absl-py",
-    "nltk",
-    "numpy",
-    "six>=1.14.0",
-]
-
-[[package]]
 name = "rsa"
 version = "4.9"
 requires_python = ">=3.6,<4"
@@ -2788,7 +2792,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:33bd3f44a45c81608182015b0305fa39dd9c561d0157cf84ccd10b460dc1fcb4"
+content_hash = "sha256:cbfe53bba55d0eb0c6e896f69ce22ba8c4afc0aeb5a953e774c1ff7b0ec9e202"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -2970,6 +2974,10 @@ content_hash = "sha256:33bd3f44a45c81608182015b0305fa39dd9c561d0157cf84ccd10b460
 "beautifulsoup4 4.12.2" = [
     {url = "https://files.pythonhosted.org/packages/57/f4/a69c20ee4f660081a7dedb1ac57f29be9378e04edfcb90c526b923d4bebc/beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
     {url = "https://files.pythonhosted.org/packages/af/0b/44c39cf3b18a9280950ad63a579ce395dda4c32193ee9da7ff0aed547094/beautifulsoup4-4.12.2.tar.gz", hash = "sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da"},
+]
+"bert-score 0.3.13" = [
+    {url = "https://files.pythonhosted.org/packages/1c/93/2c97a85cbb66a8a256a13176e11c9c4508074e2341299fe75ee955c81eff/bert_score-0.3.13.tar.gz", hash = "sha256:8ffe5838eac8cdd988b8b1a896af7f49071188c8c011a1ed160d71a9899a2ba4"},
+    {url = "https://files.pythonhosted.org/packages/c6/8c/bc5457de4c004b1a623b31f7bc8d0375fb699b7d67df11879098b4b7b7c8/bert_score-0.3.13-py3-none-any.whl", hash = "sha256:bbbb4c7fcdaa46d7681aff49f37f96faa09ed74e1b150e659bdc6b58a66989b9"},
 ]
 "black 23.3.0" = [
     {url = "https://files.pythonhosted.org/packages/06/1e/273d610249f0335afb1ddb03664a03223f4826e3d1a95170a0142cb19fb4/black-23.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:6b39abdfb402002b8a7d030ccc85cf5afff64ee90fa4c5aebc531e3ad0175ddb"},
@@ -5168,9 +5176,6 @@ content_hash = "sha256:33bd3f44a45c81608182015b0305fa39dd9c561d0157cf84ccd10b460
 "rich 13.4.1" = [
     {url = "https://files.pythonhosted.org/packages/02/97/0046b5e3c6a5057b5817e5e6c51a776d410b953e6a9c67ae249dafdd2999/rich-13.4.1.tar.gz", hash = "sha256:76f6b65ea7e5c5d924ba80e322231d7cb5b5981aa60bfc1e694f1bc097fe6fe1"},
     {url = "https://files.pythonhosted.org/packages/ea/93/c68645c689d10a035010e3ae314b6b2855d040ce0d11fdfdfbb8be416581/rich-13.4.1-py3-none-any.whl", hash = "sha256:d204aadb50b936bf6b1a695385429d192bc1fdaf3e8b907e8e26f4c4e4b5bf75"},
-]
-"rouge-score 0.1.2" = [
-    {url = "https://files.pythonhosted.org/packages/e2/c5/9136736c37022a6ad27fea38f3111eb8f02fe75d067f9a985cc358653102/rouge_score-0.1.2.tar.gz", hash = "sha256:c7d4da2683e68c9abf0135ef915d63a46643666f848e558a1b9f7ead17ff0f04"},
 ]
 "rsa 4.9" = [
     {url = "https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl", hash = "sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7"},
