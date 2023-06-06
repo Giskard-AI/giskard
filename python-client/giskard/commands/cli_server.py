@@ -29,10 +29,10 @@ def create_docker_client() -> DockerClient:
     try:
         return docker.from_env()
     except DockerException as e:
-        logger.error("""Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
+        logger.exception("""Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
 For an easy installation of Docker you can execute:
 - sudo curl -fsSL https://get.docker.com -o get-docker.sh
-- sudo sh get-docker.sh""")
+- sudo sh get-docker.sh""", e)
         exit(1)
 
 
