@@ -76,7 +76,7 @@ tasks {
     create<PythonTask>("test") {
         dependsOn("install")
         module = "pdm"
-        command = "test -m \"not slow\""
+        command = "test"
     }
 
     idea {
