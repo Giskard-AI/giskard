@@ -90,8 +90,14 @@ giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
 giskard = "giskard.cli:cli"
 
 [project.urls]
-repository = "https://github.com/Giskard-AI/giskard"
-homepage = "https://giskard-ai"
+"Homepage" = "https://giskard.ai"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
+"Bug Tracker" = "https://github.com/Giskard-AI/giskard/issues"
+"Documentation" = "https://docs.giskard.ai/"
+"Discord" = "https://discord.gg/ABvfpbu69R"
+"Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Twitter" = "https://twitter.com/giskard_ai"
+
 
 [project]
 name = "giskard"
