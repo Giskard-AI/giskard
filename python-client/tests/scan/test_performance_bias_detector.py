@@ -1,6 +1,9 @@
 import logging
-import pandas as pd
 from unittest import mock
+
+import pandas as pd
+import pytest
+
 from giskard import Dataset
 from giskard.scanner.issues import Issue
 from giskard.scanner.performance import PerformanceBiasDetector
@@ -52,6 +55,7 @@ def test_performance_bias_detector_with_tabular(german_credit_model, german_cred
     assert all([isinstance(issue, Issue) for issue in issues])
 
 
+@pytest.mark.slow
 def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
     df = pd.DataFrame({col: enron_data.df[col].sample(500, replace=True).values for col in enron_data.columns})
