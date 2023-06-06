@@ -53,7 +53,7 @@ def check_latest_giskard_version():
         if latest_release_date > releases_dates[current_version]:
             warning(
                 "You're using a pre-release version of giskard while a "
-                "new version is available, please install it with\n"
+                "new version is available, please install it with: "
                 f"pip install \"giskard=={latest_version}\""
             )
     except BaseException as e:
