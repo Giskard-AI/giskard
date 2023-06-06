@@ -35,10 +35,13 @@
   * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
   * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
 3. [How to contribute](#how-to-contribute)
-4. [Like what we're doing?]()
+4. [Like what we're doing?](#like-what-were-doing)
 
+
+<div id="what-is-giskard">
 
 ## What is Giskard?
+
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
@@ -76,10 +79,13 @@ And of course, Giskard works with any model, any environment and integrates seam
   <img width='600' src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/tools.png?raw=true">
 </p>
 <br/>
+</div>
 
-
+<div id="getting-started">
 
 ## Getting started
+
+<div id="installation">
 
 ### Installation
 ```sh
@@ -89,6 +95,8 @@ giskard server start
 ```
 
 That's it. Access at http://localhost:19000
+</div>
+<div id="scan-your-model-to-detect-vulnerabilities">
 
 ### Scan your model to detect vulnerabilities
 
@@ -114,6 +122,9 @@ Once the scan completes, you can display the results directly in your notebook:
 ```python
 display(scan_results)  # in your notebook
 ```
+</div>
+
+<div id="automatically-generate-a-test-suite-based-on-the-scan-results">
 
 ### Automatically generate a test suite based on the scan results
 
@@ -129,6 +140,8 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 # You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()
 ```
+</div>
+<div id="upload-your-test-suite-to-the-giskard-server">
 
 ### Upload your test suite to the Giskard server
 
@@ -155,16 +168,22 @@ test_suite.upload(client, "my_project")
 ```
     
 For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+</div>
+</div>
+
+<div id="how-to-contribute">
 
 ## How to contribute
 We welcome contributions from the Machine Learning community!
 
 Read this [guide](CONTRIBUTING.md) to get started.
-
+</div>
 <br />
+<div id="like-what-were-doing">
 
 ## Like what we're doing?
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
 ❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
+</div>
