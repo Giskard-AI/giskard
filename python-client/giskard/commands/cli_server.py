@@ -209,7 +209,7 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 %env GSK_EXTERNAL_ML_WORKER_HOST={tcp_addr.hostname}
 %env GSK_EXTERNAL_ML_WORKER_PORT={tcp_addr.port}
 %env GSK_API_KEY=...
-!giskard worker start -u {http_tunnel.public_url}""")
+!giskard worker start -d -u {http_tunnel.public_url}""")
 
     ngrok_process = ngrok.get_ngrok_process()
     try:
