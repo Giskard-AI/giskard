@@ -1,7 +1,8 @@
 """Statistical tests"""
+import numbers
 import numpy as np
 import pandas as pd
-from typing import Optional, Union
+from typing import Optional
 
 from giskard import test
 from giskard.datasets.base import Dataset
@@ -140,10 +141,16 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: O
 
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
-def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_function: SlicingFunction,
-                          unprotected_slicing_function: SlicingFunction, positive_outcome: Union[str, float],
-                          slicing_function: Optional[SlicingFunction] = None, min_threshold: float = 0.8,
-                          max_threshold: float = 1.25) -> TestResult:
+def test_disparate_impact(
+    model: BaseModel,
+    dataset: Dataset,
+    protected_slicing_function: SlicingFunction,
+    unprotected_slicing_function: SlicingFunction,
+    positive_outcome: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    min_threshold: float = 0.8,
+    max_threshold: float = 1.25,
+) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
     Note that this test reflects only a possible bias in the model while being agnostic to any biaas in the dataset
@@ -174,7 +181,7 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
               Slicing function that defines the protected group from the full dataset given
           unprotected_slicing_function(SlicingFunction):
               Slicing function that defines the unprotected group from the full dataset given
-          positive_outcome(str or float):
+          positive_outcome(str):
               The target value that is considered a positive outcome in the dataset
           slicing_function(Optional[SlicingFunction]):
               Slicing function to be applied on the dataset
@@ -192,6 +199,13 @@ def test_disparate_impact(model: BaseModel, dataset: Dataset, protected_slicing_
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_disparate_impact")
+
+    # Try to automatically cast `positive_outcome` to the right type
+    if isinstance(model.meta.classification_labels[0], numbers.Number):
+        try:
+            positive_outcome = float(positive_outcome)
+        except ValueError:
+            pass
 
     if positive_outcome not in list(model.meta.classification_labels):
         raise ValueError(
