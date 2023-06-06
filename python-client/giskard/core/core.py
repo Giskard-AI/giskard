@@ -48,10 +48,10 @@ def create_test_function_id(func):
 class SupportedModelTypes(Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
-    GENERATIVE = "generative"
+    TEXT_GENERATION = "text_generation"
 
 
-ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "generative"]]
+ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "text_generation"]]
 
 
 class SupportedColumnTypes(Enum):

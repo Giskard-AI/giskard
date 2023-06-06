@@ -30,7 +30,6 @@ def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, re
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
         ("fraud_detection_data", "fraud_detection_model"),
@@ -88,7 +87,7 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock()
-    model.is_generative = True
+    model.is_text_generation = True
     scanner = Scanner()
 
     with mock.patch('giskard.scanner.llm.utils.load_default_dataset') as load_default_dataset:
@@ -103,7 +102,7 @@ def test_generative_model_dataset():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
     chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="generative")
+    model = Model(chain, model_type="text_generation")
     dataset = Dataset(
         pd.DataFrame(
             {
@@ -148,10 +147,7 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
     if model_name not in _EXCEPTION_MODELS:
         test_suite = result.generate_test_suite()
 
-        client = GiskardClient(
-            url="http://localhost:19000",  # URL of your Giskard instance
-            token="API_TOKEN"
-        )
+        client = GiskardClient(url="http://localhost:19000", token="API_TOKEN")  # URL of your Giskard instance
 
         try:
             client.create_project("testing_UI", "testing_UI", "testing_UI")
