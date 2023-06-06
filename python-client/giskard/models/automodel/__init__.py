@@ -35,7 +35,7 @@ class Model(CloudpickleBasedModel, ABC):
       serializable by ``cloudpickle`` (e.g., TensorFlow models). This requires:
 
       - Mandatory: Overriding the ``model_predict`` method, which should take as input the raw pandas dataframe and
-        return the probabilities for each classification label (classification), predictions (regression or generative).
+        return the probabilities for each classification label (classification), predictions (regression or text generation).
       - Optional: If none of the pre-defined serialization methods apply, ``cloudpickle`` is used as the default
         serialization method. If this fails, the user is asked to override the ``save_model`` and ``load_model``
         methods to provide their own serialization of the model object.
@@ -49,12 +49,12 @@ class Model(CloudpickleBasedModel, ABC):
              and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
              also accepted.
              Make sure that the probability provided is for the second label provided in classification_labels.
-           * if regression or generative: an array of predictions corresponding to data entries
+           * if regression or text_generation: an array of predictions corresponding to data entries
              (rows of pandas.DataFrame) and outputs.
        name (Optional[str]):
             the name of the model.
        model_type (ModelType):
-           The type of the model: regression, classification or generative.
+           The type of the model: regression, classification or text_generation.
        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
            A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
            that could be directly fed to clf. You can also choose to include your preprocessing inside clf,

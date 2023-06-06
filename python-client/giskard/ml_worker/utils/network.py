@@ -33,6 +33,7 @@ def is_pre_release(current_version: str):
     # A very dummy pre-release checker, to be improved
     return re.match(r'.*[a-z].*', current_version) is not None
 
+
 @threaded
 def check_latest_giskard_version():
     try:
