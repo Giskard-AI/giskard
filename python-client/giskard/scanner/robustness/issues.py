@@ -1,9 +1,8 @@
+import numpy as np
+import pandas as pd
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import List
-
-import numpy as np
-import pandas as pd
 
 from ..issues import Issue
 from ...datasets.base import Dataset
@@ -88,9 +87,10 @@ class RobustnessIssue(Issue):
 
         tests = [
             test_metamorphic_invariance(
-                self.model,
-                self.dataset,
-                self.info.transformation_fn,
+                model=self.model,
+                dataset=self.dataset,
+                transformation_function=self.info.transformation_fn,
+                slicing_function=None,
                 threshold=1 - self.info.threshold,
                 output_sensitivity=self.info.output_sensitivity,
             )
