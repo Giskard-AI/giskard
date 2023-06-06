@@ -156,7 +156,8 @@ def test_auc(
         non_declared_categories = set(predictions.columns) - set(dataset.df[dataset.target].unique())
         assert not len(
             non_declared_categories
-        ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}'
+        ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}. ' \
+           'ROC AUC score is not defined in that case.'
 
         metric = roc_auc_score(dataset.df[dataset.target], predictions, multi_class="ovo")
 
