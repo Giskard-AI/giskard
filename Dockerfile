@@ -34,7 +34,7 @@ RUN ./gradlew clean package -Pprod --parallel --info --stacktrace
 # Create an environment and install giskard wheel. Some dependencies may require gcc which is only installed in build
 # stage, but not in the production one
 RUN python3 -m virtualenv python-client/.venv-prod
-RUN python-client/.venv-prod/bin/pip install python-client/dist/giskard*.whl
+RUN WHEEL=$(ls python-client/dist/giskard*.whl) python-client/.venv-prod/bin/pip install $WHEEL\[server\]
 
 
 
