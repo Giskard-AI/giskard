@@ -117,7 +117,7 @@ class BaseTextPerturbationDetector(Detector):
                 )
                 passed = np.array(score["rougeL"]) > output_sensitivity
             else:
-                raise NotImplementedError("Only classification, regression, or generative models are supported.")
+                raise NotImplementedError("Only classification, regression, or text generation models are supported.")
 
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
