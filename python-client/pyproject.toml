@@ -93,15 +93,22 @@ giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
 giskard = "giskard.cli:cli"
 
 [project.urls]
-repository = "https://github.com/Giskard-AI/giskard"
-homepage = "https://giskard-ai"
+"Homepage" = "https://giskard.ai"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
+"Bug Tracker" = "https://github.com/Giskard-AI/giskard/issues"
+"Documentation" = "https://docs.giskard.ai/"
+"Discord" = "https://discord.gg/ABvfpbu69R"
+"Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Mastodon" = "https://fosstodon.org/@Giskard"
+"Twitter" = "https://twitter.com/giskard_ai"
+
 
 [project]
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
 version = "2.0.0b2"
-description = "Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"
+description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
 ]
