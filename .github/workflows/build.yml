@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
 
@@ -114,6 +114,7 @@ jobs:
       - name: Build
         env:
           GSK_DISABLE_ANALYTICS: True
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 4
         run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
