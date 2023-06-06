@@ -124,7 +124,8 @@ class Model(CloudpickleBasedModel, ABC):
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.save_model = giskard_cls.save_model
-                possibly_overriden_cls.load_wrapped_model = giskard_cls.load_wrapped_model
+                possibly_overriden_cls.load_model = giskard_cls.load_model
+                possibly_overriden_cls.should_save_model_class = True
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
                 logger.info(
