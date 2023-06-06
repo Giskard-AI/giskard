@@ -47,7 +47,7 @@ wrapped_model = Model(
       to $n$ data entries (rows of `pandas.DataFrame`) and $m$ `classification_labels`. In the case of binary
       classification, an array  
       ($n\times 1$) of probabilities is also accepted.
-    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories contained in your dataset target variable.
       If `classification_labels`
       is a list of $m$ elements, make sure that:
@@ -93,7 +93,7 @@ wrapped_model = Model(
     * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
       corresponding
       to $n$ data entries (rows of `pandas.DataFrame`).
-    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
@@ -102,8 +102,8 @@ wrapped_model = Model(
       Make sure these features are in the same order as they are in your training dataset.
 
 ::::
-::::{tab-item} Generative
-Prediction function is any Python function that takes the input as <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your generative task.
+::::{tab-item} Text generation
+Prediction function is any Python function that takes the input as <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your text generation task.
 
 <b><u>Make sure that:</b></u>
 
@@ -131,14 +131,14 @@ chain = LLMChain(llm=llm, prompt=prompt)
 def prediction_function(df):
     return [chain.predict(**data) for data in df.to_dict('records')]
 
-wrapped_model = Model(prediction_function, model_type='generative')
+wrapped_model = Model(prediction_function, model_type='text_generation')
 ```
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
       corresponding
       to $n$ data entries (rows of `pandas.DataFrame`).
-    * `model_type`: The type of model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
@@ -156,7 +156,7 @@ object and provide a suitable serialization method (provided by `save_model` and
 This requires:
 
 - <b><u>Mandatory</u></b>: Overriding the `model_predict` method which should take the input as <b>raw</b> pandas dataframe
-  and return the <b>probabilities</b> for each classification labels (classification) or predictions (regression or generative).
+  and return the <b>probabilities</b> for each classification labels (classification) or predictions (regression or text_generation).
 - <b><u>Optional</u></b>: Our pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
   `tensorflow`, `huggingface` and `langchain` libraries. If none of these libraries are detected, `cloudpickle`
   is used as the default for serialization. If this fails, we will ask you to also override the `save_model` and `load_model`
@@ -193,7 +193,7 @@ wrapped_model = MyCustomModel(
       the [tutorials](../../tutorials/index.md)). If none of these
       libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
-    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories contained in your dataset target variable.
       If `classification_labels`
       is a list of $m$ elements, make sure that:
@@ -242,7 +242,7 @@ wrapped_model = MyCustomModel(
       the [tutorials](../../tutorials/index.md)). If none of these
       libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
-    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
@@ -256,7 +256,7 @@ wrapped_model = MyCustomModel(
     * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
 
 ::::
-::::{tab-item} Generative
+::::{tab-item} Text generation
 
 ```python
 from langchain.chains import LLMChain
@@ -279,7 +279,7 @@ class MyCustomModel(Model):
     def model_predict(self, df):
         return [self.model.predict(**data) for data in df.to_dict('records')]
 
-wrapped_model = MyCustomModel(chain, model_type='generative')
+wrapped_model = MyCustomModel(chain, model_type='text_generation')
 ```
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
@@ -287,7 +287,7 @@ wrapped_model = MyCustomModel(chain, model_type='generative')
       the [tutorials](../../tutorials/index.md)). If none of these
       libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
-    * `model_type`: The type of the model, either `regression`, `classification` or `generative`.
+    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
