@@ -348,7 +348,7 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
 
 def extract_optional(field):
     if typing.get_origin(field) is Union and type(None) in typing.get_args(field):
-        return Union[tuple([arg for arg in typing.get_args(Union[field]) if arg is not None and arg is not type(None)])]
+        return Union[tuple([arg for arg in typing.get_args(field) if arg is not None and arg is not type(None)])]
     else:
         return field
 
