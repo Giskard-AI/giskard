@@ -8,7 +8,7 @@
                         No execution has been performed yet!
                     </h4>
                     <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert">
-                        An error arose during the execution. Executed <strong>{{
+                        An error occurred during the execution. Executed <strong>{{
                             timeSince(execution.executionDate)
                         }}</strong>.
                         Check the <span @click="openLogs" class="clickable">execution logs.</span>
