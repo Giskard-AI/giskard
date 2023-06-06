@@ -141,7 +141,7 @@ def test_rmse(model, data, threshold, expected_metric, actual_slices_size, reque
 
 @pytest.mark.parametrize(
     "model,data,threshold,expected_metric,actual_slices_size",
-    [("linear_regression_diabetes", "diabetes_dataset_with_target", 54**2, 53.49**2, 442)],
+    [("linear_regression_diabetes", "diabetes_dataset_with_target", 54**2, 2860.97, 442)],
 )
 def test_mse(model, data, threshold, expected_metric, actual_slices_size, request):
     results = performance.test_mse(
@@ -149,7 +149,7 @@ def test_mse(model, data, threshold, expected_metric, actual_slices_size, reques
     ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
-    assert round(results.metric, 2) == expected_metric
+    assert results.metric == pytest.approx(expected_metric)
     assert results.passed
 
 
