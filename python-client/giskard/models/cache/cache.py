@@ -39,7 +39,7 @@ class ModelCache:
                 with open(self.cache_dir / CACHE_CSV_FILENAME, "r") as pred_f:
                     reader = csv.reader(pred_f)
                     for row in reader:
-                        if model_type == SupportedModelTypes.GENERATIVE:
+                        if model_type == SupportedModelTypes.TEXT_GENERATION:
                             self.prediction_cache[row[0]] = row[1:]
                         elif model_type == SupportedModelTypes.REGRESSION:
                             self.prediction_cache[row[0]] = float(row[1])
