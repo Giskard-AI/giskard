@@ -122,14 +122,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1,<3.12"
+requires-python = ">=3.8.1,<3.11"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
     "mlflow-skinny>=2",
     "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
     "scikit-learn>=1.0",
-    "scipy",
+    "scipy>=1.7.3,<1.9", # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic>=1.7",
