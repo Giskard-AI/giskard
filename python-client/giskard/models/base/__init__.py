@@ -361,7 +361,7 @@ class BaseModel(ABC):
         # TODO: check if there is a better solution
         return np.array(np.array(cached_predictions).tolist())
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
+    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> str:
         """
         Uploads the model to a Giskard project using the provided Giskard client. Also validates the model
         using the given validation dataset, if any.
@@ -384,6 +384,8 @@ class BaseModel(ABC):
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
+
+        return str(self.id)
 
     @classmethod
     def download(cls, client: GiskardClient, project_key, model_id):
