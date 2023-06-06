@@ -674,7 +674,10 @@ class WrapperModel(BaseModel, ABC):
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
         constructor_params["id"] = model_id
-        return cls(model=cls.load_wrapped_model(local_dir), **(constructor_params | kwargs))
+        constructor_params = constructor_params.copy()
+        constructor_params.update(kwargs)
+
+        return cls(model=cls.load_wrapped_model(local_dir), **constructor_params)
 
     @classmethod
     @abstractmethod
