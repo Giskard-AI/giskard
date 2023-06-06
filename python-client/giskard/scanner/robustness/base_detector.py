@@ -18,11 +18,11 @@ class BaseTextPerturbationDetector(Detector):
     _issue_cls = RobustnessIssue
 
     def __init__(
-            self,
-            transformations: Optional[Sequence[TextTransformation]] = None,
-            threshold: float = 0.05,
-            output_sensitivity=None,
-            num_samples: Optional[int] = None,
+        self,
+        transformations: Optional[Sequence[TextTransformation]] = None,
+        threshold: float = 0.05,
+        output_sensitivity=None,
+        num_samples: Optional[int] = None,
     ):
         self.transformations = transformations
         self.threshold = threshold
@@ -57,11 +57,11 @@ class BaseTextPerturbationDetector(Detector):
         ...
 
     def _detect_issues(
-            self,
-            model: BaseModel,
-            dataset: Dataset,
-            transformation: TextTransformation,
-            features: Sequence[str],
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation: TextTransformation,
+        features: Sequence[str],
     ) -> Sequence[Issue]:
         num_samples = self.num_samples or _get_default_num_samples(model)
         output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
@@ -117,7 +117,7 @@ class BaseTextPerturbationDetector(Detector):
                     predictions=perturbed_pred.prediction,
                     references=original_pred.prediction,
                     model_type="distilbert-base-multilingual-cased",
-                    idf=True
+                    idf=True,
                 )
                 passed = np.array(score["f1"]) > 1 - output_sensitivity
             else:
