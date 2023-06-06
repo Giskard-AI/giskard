@@ -35,7 +35,7 @@
 
 :::::{grid-item}
 :::{card} <h3><center>🏦 Credit scoring</center></h3>
-:link: ./credit_scoring.md
+:link: ../../../reference/notebooks/credit_scoring.ipynb
 :::
 :::::
 
