@@ -163,7 +163,7 @@ class GiskardAnalyticsCollector:
             if self.ip:
                 return
             try:
-                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')
+                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')  # noqa safe
             except:  # noqa
                 self.ip = "unknown"
 
