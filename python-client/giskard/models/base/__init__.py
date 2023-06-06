@@ -473,7 +473,9 @@ class BaseModel(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                return clazz(**(constructor_params | kwargs))
+                params = constructor_params.copy()
+                params.update(kwargs)
+                return clazz(**params)
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
