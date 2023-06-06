@@ -1,8 +1,9 @@
 <p align="center">
-  <img alt="giskardlogo" src="readme/correct_logo.png">
+  <img alt="giskardlogo" src="readme/giskard_logo.png#gh-light-mode-only">
+  <img alt="giskardlogo" src="readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
-<h1 align="center" weight='300' >Quality Assurance for AI models</h1>
-<h3 align="center" weight='300' >Eliminate AI bias in production. Deliver ML products, better & faster</h3>
+<h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
+<h3 align="center" weight='300' >Scan your AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
       <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
@@ -13,16 +14,13 @@
   <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml">
     <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml/badge.svg?branch=main"/>
  </a>
-   <a href="https://sonarcloud.io/summary/overall?id=giskard">
-      <img alt="Reliability Rating" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=reliability_rating">
-  </a>
   <a href="https://gisk.ar/discord">
     <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
   </a>
   <a rel="me" href="https://fosstodon.org/@Giskard"></a>
 </p>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/"><b>Documentation</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
@@ -30,7 +28,18 @@
  </h3>
 <br />
 
-# About Giskard
+## Table of contents
+1. [What is Giskard?](#what-is-giskard)
+2. [Getting started](#getting-started)
+  * [Installation](#installation)
+  * [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
+  * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
+  * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
+3. [How to contribute](#how-to-contribute)
+4. [Like what we're doing?]()
+
+
+## What is Giskard?
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
@@ -48,19 +57,19 @@ At Giskard, we believe that Machine Learning needs its own testing framework. Cr
 - **Scan your model to find dozens of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 
 <p align="center">
-  <img src="/readme/scan_example.png" alt="Scan Example" width="700px">
+  <img src="readme/scan_example.png" alt="Scan Example" width="700px">
 </p>
 
 - **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
 
 <p align="center">
-  <img src="/readme/test_suite_example.png" alt="Scan Example" width="700px">
+  <img src="readme/test_suite_example.png" alt="Scan Example" width="700px">
 </p>
 
 - **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
 
 <p align="center">
-  <img src="/readme/catalog_example.png" alt="Scan Example" width="700px">
+  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
 
 And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
@@ -71,8 +80,9 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 
 
-# Getting Started with Giskard
-## Installation
+## Getting started
+
+### Installation
 ```sh
 pip install giskard
 
@@ -81,19 +91,23 @@ giskard server start
 
 That's it. Access at http://localhost:19000
 
-## Scan your model to detect vulnerabilities
+### Scan your model to detect vulnerabilities
 
-After having wrapped your [model](../wrap_model/index.md) & [dataset](../wrap_dataset/index.md), you can scan your model for vulnerabilities using:
+After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html), you can scan your model for vulnerabilities using:
 
 ```python
-from giskard import demo, Model, Dataset, scan
+import giskard
 
-model, df = demo.titanic()
+model, df = giskard.demo.titanic()
 
-wrapped_model = Model(model=model, model_type="classification")
-wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+model = giskard.Model(model=model, model_type="classification")
+dataset = giskard.Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
 
-scan_results = scan(wrapped_model, wrapped_dataset)
+scan_results = giskard.scan(model, dataset)
 ```
 
 Once the scan completes, you can display the results directly in your notebook:
@@ -102,7 +116,7 @@ Once the scan completes, you can display the results directly in your notebook:
 display(scan_results)  # in your notebook
 ```
 
-## Automatically generate a test suite based on the scan results
+### Automatically generate a test suite based on the scan results
 
 If the scan found potential issues in your model, you can automatically generate a test suite.
 
@@ -117,7 +131,7 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 test_suite.run()
 ```
 
-## Upload your test suite to the Giskard server
+### Upload your test suite to the Giskard server
 
 You can then upload the test suite to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
@@ -125,29 +139,33 @@ You can then upload the test suite to the local Giskard server. This will enable
 - Create more domain-specific tests relevant to your use case
 - Share results, and collaborate with your team to integrate business feedback
 
-```python
+First, install the Giskard server by following [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html)
 
+```python
 # Create a Giskard client after having installed the Giskard server (see documentation)
 token = "API_TOKEN"  # Find it in Settings in the Giskard server
 client = GiskardClient(
-    url="http://localhost:19000",  # URL of your Giskard instance
-    token=token
+    url="http://localhost:19000", token=token  # URL of your Giskard instance
 )
 
 my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
 
 # Upload to the current project
 test_suite.upload(client, "my_project")
+
 ```
     
-For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](../upload/index.md) page.
+For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 
-# How to contribute
+## How to contribute
 We welcome contributions from the Machine Learning community!
 
 Read this [guide](CONTRIBUTING.md) to get started.
 
 <br />
 
-# Like what we're doing?
+## Like what we're doing?
+
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
+
+❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
