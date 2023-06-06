@@ -3,7 +3,7 @@
   <img alt="giskardlogo" src="readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
-<h3 align="center" weight='300' >Scan your AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
+<h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
 <p align="center">
    <a href="https://github.com/Giskard-AI/giskard/releases">
       <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
@@ -84,7 +84,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 ### Installation
 ```sh
-pip install giskard
+pip install 'giskard[server]==2.0.0b2'
 
 giskard server start
 ```
