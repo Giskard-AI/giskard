@@ -6,6 +6,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from types import NoneType
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
 logger = logging.getLogger(__name__)
@@ -347,8 +348,8 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
 
 
 def extract_optional(field):
-    if typing.get_origin(field) is Union and type(None) in typing.get_args(field):
-        return Union[tuple([arg for arg in typing.get_args(field) if arg is not None and arg is not type(None)])]
+    if typing.get_origin(field) is Union and NoneType in typing.get_args(field):
+        return Union[tuple([arg for arg in typing.get_args(field) if arg is not None and arg is not NoneType])]
     else:
         return field
 
