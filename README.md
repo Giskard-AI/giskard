@@ -84,7 +84,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 ### Installation
 ```sh
-pip install giskard
+pip install 'giskard[server]==2.0.0b2'
 
 giskard server start
 ```
