@@ -12,7 +12,7 @@ name = "torch"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test.cmd = "pytest -n auto -c pyproject.toml --cov=giskard tests --cov-report=xml"
+test.cmd = "pytest -n auto -c pyproject.toml --cov=giskard --cov-report=xml tests"
 test.env = { GSK_DISABLE_ANALYTICS = "True"}
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
@@ -122,14 +122,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1,<3.12"
+requires-python = ">=3.8.1,<3.11"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
     "mlflow-skinny>=2",
     "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
     "scikit-learn>=1.0",
-    "scipy",
+    "scipy>=1.7.3,<1.9", # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic>=1.7",
@@ -239,6 +239,10 @@ warn_unused_ignores = false
 # Directories that are not visited by pytest collector:
 norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
 doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
 # Extra options:
 addopts = [
     "--strict-markers",
