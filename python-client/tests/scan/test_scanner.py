@@ -2,7 +2,6 @@ from unittest import mock
 
 import pandas as pd
 import pytest
-from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset
@@ -11,23 +10,39 @@ from giskard import Model
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.result import ScanResult
+from langchain import LLMChain, PromptTemplate
 
 
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
         ("german_credit_data", "german_credit_model"),
-        ("enron_data_full", "enron_model"),
-        ("medical_transcript_data", "medical_transcript_model"),
         ("breast_cancer_data", "breast_cancer_model"),
-        ("fraud_detection_data", "fraud_detection_model"),
         ("drug_classification_data", "drug_classification_model"),
-        ("amazon_review_data", "amazon_review_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
         ("hotel_text_data", "hotel_text_model"),
     ],
 )
-def test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
+def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, request):
+    _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request)
+
+
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+
+        ("enron_data_full", "enron_model"),
+        ("medical_transcript_data", "medical_transcript_model"),
+        ("fraud_detection_data", "fraud_detection_model"),
+        ("amazon_review_data", "amazon_review_model"),
+    ],
+)
+@pytest.mark.slow
+def test_scanner_returns_non_empty_scan_result_slow(dataset_name, model_name, request):
+    _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request)
+
+
+def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
     _EXCEPTION_MODELS = ["linear_regression_diabetes"]
 
     scanner = Scanner()
@@ -146,6 +161,7 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
         test_suite.upload(client, "testing_UI")
 
 
+@pytest.mark.slow
 def test_warning_duplicate_index(german_credit_model, german_credit_data):
     df = german_credit_data.df.copy()
     new_row = df.loc[1]
