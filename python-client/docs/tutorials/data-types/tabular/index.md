@@ -29,6 +29,6 @@
 
 :::::{grid-item}
 :::{card} <h3><center>🏦 Credit scoring</center></h3>
-:link: ../../../tutorials/libraries/scikit-learn/credit_scoring.md
+:link: ../../../reference/notebooks/credit_scoring.ipynb
 :::
 :::::
