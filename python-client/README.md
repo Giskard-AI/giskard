@@ -176,7 +176,7 @@ For more information on uploading to your local Giskard server, go to the [Uploa
 ## How to contribute
 We welcome contributions from the Machine Learning community!
 
-Read this [guide](CONTRIBUTING.md) to get started.
+Read this [guide](https://github.com/Giskard-AI/giskard/blob/main/CONTRIBUTING.md) to get started.
 </div>
 <br />
 <div id="like-what-were-doing">
