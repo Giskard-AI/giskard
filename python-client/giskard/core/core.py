@@ -6,7 +6,11 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from types import NoneType
+try:
+    from types import NoneType
+except ImportError:
+    # types.NoneType is only available from python >=3.10
+    NoneType = type(None)
 from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
 
 logger = logging.getLogger(__name__)
