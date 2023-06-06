@@ -57,24 +57,24 @@ At Giskard, we believe that Machine Learning needs its own testing framework. Cr
 - **Scan your model to find dozens of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 
 <p align="center">
-  <img src="readme/scan_example.png" alt="Scan Example" width="700px">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/scan_example.png?raw=true" alt="Scan Example" width="700px">
 </p>
 
 - **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
 
 <p align="center">
-  <img src="readme/test_suite_example.png" alt="Scan Example" width="700px">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/test_suite_example.png?raw=true" alt="Scan Example" width="700px">
 </p>
 
 - **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
 
 <p align="center">
-  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/catalog_example.png?raw=true" alt="Scan Example" width="700px">
 </p>
 
 And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 <p align="center">
-  <img width='600' src="readme/tools.png">
+  <img width='600' src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/tools.png?raw=true">
 </p>
 <br/>
 
@@ -84,7 +84,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 ### Installation
 ```sh
-pip install 'giskard[server]==2.0.0b2'
+pip install "giskard[server]==2.0.0b2"
 
 giskard server start
 ```
