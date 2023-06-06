@@ -537,7 +537,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     @staticmethod
     def pandas_df_to_proto_df(df):
         return ml_worker_pb2.DataFrame(
-            rows=[ml_worker_pb2.DataRow(columns=r.astype(str).to_dict()) for _, r in df.iterrows()]
+            rows=[ml_worker_pb2.DataRow(columns={str(k): v for k, v in r.astype(str).to_dict().items()}) for _, r in
+                  df.iterrows()]
         )
 
     @staticmethod
