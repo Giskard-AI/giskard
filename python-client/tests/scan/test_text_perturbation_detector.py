@@ -42,7 +42,7 @@ def test_llm_text_transformation():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
     chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="generative")
+    model = Model(chain, model_type="text_generation")
 
     dataset = Dataset(
         pd.DataFrame(
