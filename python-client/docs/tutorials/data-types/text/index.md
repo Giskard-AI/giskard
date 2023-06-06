@@ -27,3 +27,9 @@
 :::
 :::::
 
+:::::{grid-item}
+:::{card} <h3><center>🦜 Newspaper comment generation</center></h3>
+:link: ../../../reference/notebooks/llm_comment_generation.ipynb
+:::
+:::::
+
