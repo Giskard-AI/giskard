@@ -9,18 +9,19 @@
    install_gcp/index
    install_azure/index
 
-The Giskard server is the app that you can install internally (locally or on your cloud instance) additionally to the [Giskard Python library](../installation_library/index.md). The Giskard server offers a bunch of features such as:
-* Debugging your tests to diagnose issues
-* Comparing models to decide which one to promote
-* Gathering all your internal tests of your team in the same place to work more efficiently 
-* Sharing your results and collect business feedback from your team
-* Creating more domain-specific tests based on the debugging sessions
+The Giskard server is the app you can install internally (locally or on your cloud instance) in addition to the `Giskard Python library <../installation_library/index.md>`_. The Giskard server offers lot's of features such as:
 
-It can be installed locally or on a external server (cloud instance or external server) if you want to leverage all the collaborative Giskard feature.
+* Debug your tests to diagnose issues with your model
+* Compare models to decide which one performs the best for your use case
+* Gather all your teams internal tests in one place to work more efficiently
+* Share test results with your team and collect business feedback if needed
+* Create more domain-specific tests based on the debugging sessions
+
+It can be installed locally or on an external server (cloud instance or external server) if you want to leverage all the collaborative Giskard features.
 
 Requirements
 ^^^^^^^^^
-To install Giskard, you need a **Linux** or **macOS** machine or **WSL2 in Windows** with:
+To install Giskard you need a **Linux** or **macOS** machine, or **WSL2 in Windows** with:
 
 - Giskard uses 2 TCP ports: ``19000`` and ``40051``. If you don't use Giskard locally (installation in the cloud for instance), **make sure that these two ports are open** on the machine where Giskard is installed
 - ``docker`` (`download <https://docs.docker.com/engine/install/debian/>`_). For an easy installation of Docker you can execute:
@@ -41,7 +42,7 @@ In order to start the Giskard server, execute the following command in your term
 
 You'll then be able to open Giskard at `http://localhost:19000/ <http://localhost:19000/>`
 
-.. hint:: warning
+.. warning::
 
    - Make sure to run Docker before starting the Giskard server
    - To see the available commands, you can execute:
@@ -50,7 +51,7 @@ You'll then be able to open Giskard at `http://localhost:19000/ <http://localhos
 
         giskard server --help
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload-your-artefacts <../upload-your-model/>`_ tutorial.
+Now you should be set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload-your-artefacts <../upload-your-model/.>`_ tutorial.
 
 Connect the Giskard ML worker
 ^^^^^^^^^
@@ -61,7 +62,7 @@ Giskard executes your model directly in your Python environment through an ML wo
 
    giskard worker start -u http://localhost:19000/
 
-Troubleshooting[​]()
+Troubleshooting
 ^^^^^^^^^
 
 .. details::
