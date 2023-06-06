@@ -1,8 +1,9 @@
 import os
 import random
-import string
 import re
+import string
 
+import numpy as np
 import pandas as pd
 
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
@@ -47,6 +48,9 @@ def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
     Typos are generated through character substitution based on keyboard proximity
     """
     # Split the text into words
+    if pd.isnull(text):
+        return text
+
     words = text.split(" ")
 
     # Introduce typos into some of the words
@@ -69,7 +73,7 @@ def uppercase_transformation(text: str) -> str:
     """
     Transform the text to uppercase
     """
-    return text.upper()
+    return np.nan if pd.isnull(text) else text.upper()
 
 
 @transformation_function(name="To lowercase", tags=['text'], cell_level=True)
@@ -77,7 +81,7 @@ def lowercase_transformation(text: str) -> str:
     """
     Transform the text of the column 'column_name' to lowercase
     """
-    return text.lower()
+    return np.nan if pd.isnull(text) else text.lower()
 
 
 @transformation_function(name="Strip punctuation", tags=['text'], cell_level=True)
@@ -85,6 +89,9 @@ def strip_punctuation(text: str) -> str:
     """
     Remove all punctuation symbols (e.g., ., !, ?) from the text of the column 'column_name'
     """
+    if pd.isnull(text):
+        return text
+
     split_urls_from_text = gruber.split(text)
 
     # The non-URLs are always even-numbered entries in the list and the URLs are odd-numbered.
