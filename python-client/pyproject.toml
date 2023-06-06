@@ -8,13 +8,11 @@ giskard = "giskard.cli:cli"
 
 [tool.poetry]
 name = "giskard"
-version = "1.9.1"
+version = "1.9.2"
 description = "Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"
 readme = "README.md"
 authors = ["Giskard AI <hello@giskard.ai>"]
 license = "Apache Software License 2.0"
-repository = "https://github.com/Giskard-AI/python-client"
-homepage = "https://github.com/Giskard-AI/python-client"
 include = ["giskard/ml_worker/generated/*"]
 
 # Keywords description https://python-poetry.org/docs/pyproject/#keywords
@@ -39,6 +37,15 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
+[tool.poetry.urls]
+"Homepage" = "https://giskard.ai"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
+"Bug Tracker" = "https://github.com/Giskard-AI/giskard/issues"
+"Documentation" = "https://docs.giskard.ai/"
+"Discord" = "https://discord.gg/ABvfpbu69R"
+"Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Mastodon" = "https://fosstodon.org/@Giskard"
+"Twitter" = "https://twitter.com/giskard_ai"
 
 
 [tool.poetry.dependencies]
