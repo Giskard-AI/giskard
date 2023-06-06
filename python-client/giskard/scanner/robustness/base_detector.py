@@ -20,7 +20,7 @@ class BaseTextPerturbationDetector(Detector):
     def __init__(
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
-        threshold: float = 0.05,
+        threshold: Optional[float] = None,
         output_sensitivity=None,
         num_samples: Optional[int] = None,
     ):
