@@ -33,6 +33,10 @@ def _verify_target_availability(dataset):
         )
 
 
+def _get_mse(y_actual, y_predicted):
+    return mean_squared_error(y_actual, y_predicted)
+
+
 def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
@@ -325,6 +329,39 @@ def test_rmse(
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_rmse")
     return _test_regression_score(_get_rmse, model, dataset, threshold)
+
+
+@test(name='MSE', tags=['performance', 'regression', 'ground_truth'])
+def test_mse(
+    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+):
+    """
+    Test if the model mean squared error (MSE) is lower than a threshold.
+
+    Example: The test is passed when the MSE is lower than 10.
+
+
+    Args:
+        model(BaseModel):
+          Model used to compute the test
+        dataset(Dataset):
+          Dataset used to compute the test
+        slicing_function(Optional[SlicingFunction]):
+          Slicing function to be applied on dataset
+        threshold(float):
+          Threshold value for MSE
+    Returns:
+        actual_slices_size:
+          Length of dataset tested
+        metric:
+          The MSE metric
+        passed:
+          True if MSE metric <= threshold
+    """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mse")
+    return _test_regression_score(_get_mse, model, dataset, threshold)
 
 
 @test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
