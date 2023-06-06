@@ -12,7 +12,7 @@ name = "torch"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test.cmd = "pytest -n auto -c pyproject.toml --cov=giskard tests --cov-report=xml"
+test.cmd = "pytest -n auto -c pyproject.toml --cov=giskard --cov-report=xml tests"
 test.env = { GSK_DISABLE_ANALYTICS = "True"}
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
@@ -239,6 +239,10 @@ warn_unused_ignores = false
 # Directories that are not visited by pytest collector:
 norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
 doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
 # Extra options:
 addopts = [
     "--strict-markers",
