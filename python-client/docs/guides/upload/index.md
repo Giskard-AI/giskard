@@ -14,7 +14,7 @@ To install the Giskard server, please check the [run the Giskard server](../inst
 
 ## 2. Create a Giskard client
 
-To create a Giskard client please, execute the following Python code:
+To create a Giskard client, please execute the following Python code:
 
 ```python
 from giskard import GiskardClient
