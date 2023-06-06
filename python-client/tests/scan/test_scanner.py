@@ -88,7 +88,6 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock()
     model.is_text_generation = True
-    model.is_generative = True
     scanner = Scanner()
 
     with mock.patch('giskard.scanner.llm.utils.load_default_dataset') as load_default_dataset:
