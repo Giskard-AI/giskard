@@ -96,6 +96,7 @@ giskard = "giskard.cli:cli"
 "Documentation" = "https://docs.giskard.ai/"
 "Discord" = "https://discord.gg/ABvfpbu69R"
 "Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Mastodon" = "https://fosstodon.org/@Giskard"
 "Twitter" = "https://twitter.com/giskard_ai"
 
 
