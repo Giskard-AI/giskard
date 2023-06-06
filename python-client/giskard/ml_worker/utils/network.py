@@ -54,7 +54,7 @@ def check_latest_giskard_version():
             warning(
                 "You're using a pre-release version of giskard while a "
                 "new version is available, please install it with\n"
-                f"pip install giskard=={latest_version}"
+                f"pip install \"giskard=={latest_version}\""
             )
     except BaseException as e:
         logger.exception("Failed to fetch latest giskard version", e)
