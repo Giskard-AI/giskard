@@ -22,6 +22,23 @@ def test_can_define_the_simplest_custom_test(german_credit_model):
     assert result.passed
 
 
+def test_can_define_test_with_optional_type(german_credit_model):
+    @test
+    def my_optional_test(model: BaseModel, threshold: Optional[float] = None):
+        return TestResult(passed=True)
+
+    my_test = my_optional_test(german_credit_model, 0.10)
+    result = my_test.execute()
+
+    assert result.passed
+
+    assert my_test.meta.args["model"].argOrder == 0
+    assert my_test.meta.args["threshold"].argOrder == 1
+
+    my_test = my_optional_test(german_credit_model)
+    result = my_test.execute()
+
+
 @pytest.mark.skip(reason="This is not supported yet")
 def test_can_define_test_with_union_type(german_credit_model):
     @test
