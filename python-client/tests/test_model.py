@@ -1,7 +1,5 @@
 import tempfile
-import time
 from pathlib import Path
-from time import perf_counter
 
 import numpy as np
 import pytest
@@ -36,12 +34,10 @@ def test_catboost_changed_column_order(german_credit_test_data, german_credit_ca
     ), "Predictions are not the same after changing features order"
 
 
-def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regression_diabetes_raw, diabetes_dataset, request):
+def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regression_diabetes_raw, diabetes_dataset):
     nb_of_prediction_calls = [0]
 
     def prediction_fn(df):
-        # simulate slowish prediction
-        time.sleep(1)
         nb_of_prediction_calls[0] += 1
         return np.ones(df.shape[0])
 
@@ -52,17 +48,11 @@ def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regres
                       feature_names=linear_regression_diabetes.meta.feature_names,
                       prediction_cache_dir=Path(cache_dir))
 
-        start = perf_counter()
         predictions = model.predict(diabetes_dataset)
-        first_elapsed = perf_counter() - start
         model.save(model_dir)
 
         loaded_model = Model.load(model_dir, prediction_cache_dir=Path(cache_dir))
-        start = perf_counter()
         second_predictions = loaded_model.predict(diabetes_dataset)
-        second_elapsed = perf_counter() - start
 
         assert np.all(np.equal(predictions.raw, second_predictions.raw))
         assert nb_of_prediction_calls[0] == 1
-        # prediction from cache takes at most 5% of the original time
-        assert second_elapsed / first_elapsed < 0.05
