@@ -2790,7 +2790,6 @@ dependencies = [
 
 [metadata]
 lock_version = "4.2"
-cross_platform = true
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
 content_hash = "sha256:af52fd87c1474d9610a13ab129dfe2670634c3295d74546995c5be4f6f38ef80"
 
