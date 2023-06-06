@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
-from ..common.examples import ExampleExtractor
-
 from .metrics import PerformanceMetric
+from ..common.examples import ExampleExtractor
 from ..issues import Issue
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction

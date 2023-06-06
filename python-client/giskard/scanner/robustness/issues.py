@@ -1,9 +1,8 @@
+import numpy as np
+import pandas as pd
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import List
-
-import numpy as np
-import pandas as pd
 
 from ..issues import Issue
 from ...datasets.base import Dataset
