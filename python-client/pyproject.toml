@@ -150,7 +150,7 @@ llm = [
     "langchain",
     "datasets",
     "evaluate",
-    "rouge_score",
+    "bert_score",
 ]
 server = [
     "tenacity>=4.11.0",
