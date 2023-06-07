@@ -270,7 +270,11 @@ async function createAlias(name: string, type: string) {
 watch(() => [editedInputs.value, buttonToggleValues], () => {
   emit('result', editedInputs.value);
   emit('invalid', Object.values(editedInputs.value)
-      .findIndex(param => param && param.type !== 'SlicingFunction' && (param.value === null || param.value.trim() === '')) !== -1);
+      .findIndex(param => {
+            let isOptional = props.test?.args.find(a => a.name === param.name)?.optional;
+            return param && !isOptional && (param.value === null || param.value?.trim() === '');
+          }
+      ) !== -1);
 }, {deep: true})
 
 
