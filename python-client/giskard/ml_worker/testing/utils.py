@@ -1,5 +1,6 @@
 from enum import Enum
 from functools import wraps
+import numbers
 from typing import Optional
 
 from giskard.datasets.base import Dataset
@@ -20,11 +21,24 @@ def validate_classification_label(func):
         model = kwargs.get('model', None)
         classification_label = kwargs.get('classification_label', None)
         target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
+
+        # Try to automatically cast `classification_label` to the right type
+        if (
+            classification_label is not None
+            and model is not None
+            and isinstance(model.meta.classification_labels[0], numbers.Number)
+        ):
+            try:
+                classification_label = int(classification_label)
+            except ValueError:
+                pass
+
+        # Validate the label
         if target and classification_label and model:
             assert classification_label != target, (
-                f'By "classification_label", we refer to one of the values: '
+                'By "classification_label", we refer to one of the values: '
                 f'{model.meta.classification_labels} and not the target: "{target}". '
-                f'Please re-assign this argument.'
+                'Please re-assign this argument.'
             )
 
         assert (

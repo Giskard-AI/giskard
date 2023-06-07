@@ -181,6 +181,9 @@ class BaseModel(ABC):
 
     @property
     def is_text_generation(self):
+        """
+        Returns True if the model is of type text generation, False otherwise.
+        """
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
@@ -361,7 +364,7 @@ class BaseModel(ABC):
         # TODO: check if there is a better solution
         return np.array(np.array(cached_predictions).tolist())
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> None:
+    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> str:
         """
         Uploads the model to a Giskard project using the provided Giskard client. Also validates the model
         using the given validation dataset, if any.
@@ -384,6 +387,8 @@ class BaseModel(ABC):
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
+
+        return str(self.id)
 
     @classmethod
     def download(cls, client: GiskardClient, project_key, model_id):
@@ -473,7 +478,10 @@ class BaseModel(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 clazz = cloudpickle.load(f)
-                return clazz(**(constructor_params | kwargs))
+                clazz_kwargs = {}
+                clazz_kwargs.update(constructor_params)
+                clazz_kwargs.update(kwargs)
+                return clazz(**clazz_kwargs)
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
@@ -670,11 +678,11 @@ class WrapperModel(BaseModel, ABC):
         constructor_params = constructor_params.copy()
         constructor_params.update(kwargs)
 
-        return cls(model=cls.load_wrapped_model(local_dir), **constructor_params)
+        return cls(model=cls.load_model(local_dir), **constructor_params)
 
     @classmethod
     @abstractmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         """
         Loading the ``model`` object. The de-serialization depends on the model type:
 
@@ -744,7 +752,7 @@ class CloudpickleBasedModel(WrapperModel, ABC):
             )
 
     @classmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():

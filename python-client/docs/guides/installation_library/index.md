@@ -8,7 +8,7 @@ If you don't want to use the UI features and your model is not a text generation
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard --pre
+pip install "giskard==2.0.0b4"
 ```
 
 :::
@@ -16,7 +16,7 @@ pip install giskard --pre
 :::{tab-item} Windows
 
 ```sh
-pip install giskard --pre
+pip install "giskard==2.0.0b4" --user
 ```
 
 :::
@@ -30,7 +30,7 @@ If you want to use the Giskard server but your model is not a text generation mo
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard[server] --pre
+pip install "giskard[server]==2.0.0b4"
 ```
 
 :::
@@ -38,12 +38,11 @@ pip install giskard[server] --pre
 :::{tab-item} Windows
 
 ```sh
-pip install giskard[server] --pre
+pip install "giskard[server]==2.0.0b4" --user
 ```
 
 :::
 ::::
-
 
 ## Install the Giskard Python Library for only Python use (no Giskard server) and with LLM
 
@@ -53,7 +52,7 @@ If you don't want to use the UI features and your model is a text generation mod
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard[llm] --pre
+pip install "giskard[llm]==2.0.0b4"
 ```
 
 :::
@@ -61,7 +60,7 @@ pip install giskard[llm] --pre
 :::{tab-item} Windows
 
 ```sh
-pip install giskard[llm] --pre
+pip install "giskard[llm]==2.0.0b4"
 ```
 
 :::
@@ -73,7 +72,7 @@ pip install giskard[llm] --pre
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard[server, llm] --pre
+pip install "giskard[server, llm]==2.0.0b4"
 ```
 
 :::
@@ -81,11 +80,12 @@ pip install giskard[server, llm] --pre
 :::{tab-item} Windows
 
 ```sh
-pip install giskard[server, llm] --pre
+pip install "giskard[server, llm]==2.0.0b4"
 ```
 
 :::
 ::::
+
 ## Requirements
 
 `giskard[server]` works with Python `3.8`, `3.9` and `3.10`.
@@ -129,11 +129,12 @@ dependencies = [
 
 ## What should I do if I have dependency issues?
 
-While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies above), please change the version of the conflicting libraries. 
+While installing Giskard, if you have any conflicts with the Giskard dependencies (see the list of dependencies above), please change the version of the conflicting libraries.
 
 For instance, if you have dependency conflicts with `pandas`, please do:
+
 ```sh
 pip uninstall giskard
 pip uninstall pandas
-pip install giskard --pre
+pip install "giskard==2.0.0b4"
 ```

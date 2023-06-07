@@ -61,10 +61,16 @@
     {%- block htmltitle -%}
     {% if not docstitle %}
     <title>{{ title|striptags|e }}</title>
+    <meta content="Learn more about {{ title|striptags|e }} | Open source Python ML library to test and debug AI models."
+          name="description">
     {% elif pagename == master_doc %}
     <title>{{ docstitle|striptags|e }}</title>
+    <meta content="Learn more about Giskard | Open source Python ML library to test and debug AI models."
+          name="description">
     {% else %}
     <title>{{ title|striptags|e }} - {{ docstitle|striptags|e }}</title>
+    <meta content="Learn more about {{ title|striptags|e }} | Open source Python ML library to test and debug AI models."
+          name="description">
     {% endif %}
     {%- endblock -%}
 

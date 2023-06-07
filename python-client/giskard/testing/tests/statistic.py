@@ -1,7 +1,6 @@
 """Statistical tests"""
 import numbers
 import numpy as np
-import pandas as pd
 from typing import Optional
 
 from giskard import test
@@ -114,22 +113,18 @@ def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: O
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_output_in_range")
 
-    results_df = pd.DataFrame()
-
     prediction_results = model.predict(dataset)
 
     if model.is_regression:
-        results_df["output"] = prediction_results.raw_prediction
+        output = prediction_results.raw_prediction
 
     elif model.is_classification:
-        results_df["output"] = prediction_results.all_predictions[classification_label]
+        output = prediction_results.all_predictions[classification_label]
 
     else:
         raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
 
-    passed_idx = dataset.df.loc[
-        (results_df["output"] <= max_range) & (results_df["output"] >= min_range)
-        ].index.values
+    passed_idx = dataset.df.loc[(output <= max_range) & (output >= min_range)].index.values
 
     passed_ratio = len(passed_idx) / len(dataset)
 

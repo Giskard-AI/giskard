@@ -2261,6 +2261,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "sphinx-favicon"
+version = "1.0.1"
+requires_python = ">=3.7"
+summary = "Sphinx Extension adding support for custom favicons"
+dependencies = [
+    "sphinx>=3.4",
+]
+
+[[package]]
 name = "sphinx-rtd-theme"
 version = "1.2.1"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
@@ -2792,7 +2801,7 @@ dependencies = [
 [metadata]
 lock_version = "4.2"
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:cbfe53bba55d0eb0c6e896f69ce22ba8c4afc0aeb5a953e774c1ff7b0ec9e202"
+content_hash = "sha256:4a0dc78c52b6b305f302b9480ecf4cb8cc3aaf52b658660f47619f81913b6cf2"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -5374,6 +5383,10 @@ content_hash = "sha256:cbfe53bba55d0eb0c6e896f69ce22ba8c4afc0aeb5a953e774c1ff7b0
 "sphinx-design 0.4.1" = [
     {url = "https://files.pythonhosted.org/packages/86/7b/f61142380242b5cd192157fe4a626d92b0a74874f41ba9dc52d406ba2060/sphinx_design-0.4.1.tar.gz", hash = "sha256:5b6418ba4a2dc3d83592ea0ff61a52a891fe72195a4c3a18b2fa1c7668ce4708"},
     {url = "https://files.pythonhosted.org/packages/c2/8a/7538087272110d010cd27024c392dca176315ad7dfc3f3df3f99798cc21b/sphinx_design-0.4.1-py3-none-any.whl", hash = "sha256:23bf5705eb31296d4451f68b0222a698a8a84396ffe8378dfd9319ba7ab8efd9"},
+]
+"sphinx-favicon 1.0.1" = [
+    {url = "https://files.pythonhosted.org/packages/92/c2/152bd6c211b847e525d2c7004fd98e3ac5baeace192716da8cd9c9ec2427/sphinx_favicon-1.0.1-py3-none-any.whl", hash = "sha256:7c93d6b634cb4c9687ceab67a8526f05d3b02679df94e273e51a43282e6b034c"},
+    {url = "https://files.pythonhosted.org/packages/b1/25/3c78b785c3ea991597c310ac6bdc7949c2a7549e031dbb22db4ce8d1b99b/sphinx-favicon-1.0.1.tar.gz", hash = "sha256:df796de32125609c1b4a8964db74270ebf4502089c27cd53f542354dc0b57e8e"},
 ]
 "sphinx-rtd-theme 1.2.1" = [
     {url = "https://files.pythonhosted.org/packages/9a/79/0b25a26c2103457553530c45d0f5408e3ca19c02274f170d86607d0b805c/sphinx_rtd_theme-1.2.1.tar.gz", hash = "sha256:cf9a7dc0352cf179c538891cb28d6fad6391117d4e21c891776ab41dd6c8ff70"},

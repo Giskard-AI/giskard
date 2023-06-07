@@ -36,7 +36,7 @@
   * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
   * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
 3. [How to contribute](#how-to-contribute)
-4. [Like what we're doing?]()
+4. [Like what we're doing?](#like-what-were-doing)
 
 
 ## What is Giskard?
@@ -84,7 +84,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 ### Installation
 ```sh
-pip install 'giskard[server]==2.0.0b2'
+pip install 'giskard[server]==2.0.0b4'
 
 giskard server start
 ```
@@ -97,8 +97,9 @@ After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_
 
 ```python
 import giskard
+from giskard import demo
 
-model, df = giskard.demo.titanic()
+model, df = demo.titanic()
 
 model = giskard.Model(model=model, model_type="classification")
 dataset = giskard.Dataset(

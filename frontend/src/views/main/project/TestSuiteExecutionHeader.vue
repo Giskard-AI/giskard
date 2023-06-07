@@ -7,22 +7,22 @@
                     <h4 v-if="!props.execution" class="text-alert">
                         No execution has been performed yet!
                     </h4>
-                    <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert">
-                        An error arose during the execution. Executed <strong>{{
+                    <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert d-flex">
+                        An error occurred during the execution. Executed <strong class="ml-2">{{
                             timeSince(execution.executionDate)
-                        }}</strong>.
-                        Check the <span @click="openLogs" class="clickable">execution logs.</span>
+                        }}</strong><v-spacer/>
+                      <v-btn color="error" small @click="openLogs">execution logs.</v-btn>
                     </h4>
-                    <h4 v-else class="text-alert">Test suite
+                    <h4 v-else class="text-alert d-flex">Test suite
                         {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
                         <span v-if="successRatio.failed > 0">{{ plurialize('test', successRatio.failed) }} failed</span>
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
                         <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
                         Executed
-                        <span>{{ timeSince(execution.executionDate) }}</span>
-                        .
-                        Check the <strong @click="openLogs" class="clickable">execution logs.</strong>
+                        <span class="ml-2">{{ timeSince(execution.executionDate) }}</span>
+                        <v-spacer/>
+                        <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small @click="openLogs">execution logs</v-btn>
                     </h4>
                 </v-col>
             </v-row>
