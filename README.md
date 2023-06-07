@@ -97,8 +97,9 @@ After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_
 
 ```python
 import giskard
+from giskard import demo
 
-model, df = giskard.demo.titanic()
+model, df = demo.titanic()
 
 model = giskard.Model(model=model, model_type="classification")
 dataset = giskard.Dataset(

@@ -181,6 +181,9 @@ class BaseModel(ABC):
 
     @property
     def is_text_generation(self):
+        """
+        Returns True if the model is of type text generation, False otherwise.
+        """
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
