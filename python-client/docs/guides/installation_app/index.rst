@@ -17,8 +17,9 @@ To run the Giskard server and use all the above UI features, you need to complet
 1. Start the server
 ^^^^^^^^^
 To run the Giskard server you need:
-- a **Linux**, **macOS** machine, or **WSL2 in Windows**
-- to install the Giskard Python library, see `here <../installation_library/index.md>`_.
+
+- A **Linux**, **macOS** machine, or **WSL2 in Windows**
+- To install the Giskard Python library, see `here <../installation_library/index.md>`_.
 
 You can either install and run the server **locally** or on an **external server** (ex: cloud instance)
 
