@@ -161,7 +161,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 });
             } else {
                 mainStore.addNotification({
-                    content: 'An error has happened during the test suite execution',
+                    content: 'An error has happened during the test suite execution. Make sure the ML Worker is connected (On the settings tab) and check the suite execution logs',
                     color: TYPE.ERROR
                 });
             }
