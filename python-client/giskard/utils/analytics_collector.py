@@ -1,10 +1,13 @@
 import hashlib
 import os
 import platform
+import time
 import uuid
+from dataclasses import dataclass
 from functools import wraps
+from queue import Queue
 from threading import Lock
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import requests
 from mixpanel import Mixpanel
@@ -76,8 +79,17 @@ def get_dataset_properties(dataset):
     }
 
 
+@dataclass
+class TelemetryMessage:
+    event_name: Any
+    properties: Any
+    meta: Any
+
+
 class GiskardAnalyticsCollector:
-    lock = Lock()
+    is_consuming: bool = False
+    geo_lock = Lock()
+    consume_lock = Lock()
     ip: Optional[str]
     dev_mp_project_key = "4cca5fabca54f6df41ea500e33076c99"
     prod_mp_project_key = "2c3efacc6c26ffb991a782b476b8c620"
@@ -85,6 +97,7 @@ class GiskardAnalyticsCollector:
     mp: Mixpanel
     giskard_version: Optional[str]
     environment: str
+    queue: Queue[TelemetryMessage] = Queue()
 
     def __init__(self) -> None:
         self.is_enabled = not settings.disable_analytics
@@ -94,6 +107,25 @@ class GiskardAnalyticsCollector:
         if self.is_enabled:
             self.mp = self.configure_mixpanel()
             self.distinct_user_id = GiskardAnalyticsCollector.machine_based_user_id()
+
+    @threaded
+    def _consume(self):
+        with self.consume_lock:
+            self.is_consuming = True
+            while not self.queue.empty():
+                event = self.queue.get(block=True)
+                self.mp.track(
+                    distinct_id=self.distinct_user_id,
+                    event_name=event.event_name,
+                    properties=event.properties,
+                    meta=event.meta
+                )
+                # in case of very frequent requests make a pause between them
+                time.sleep(0.2)
+            self.is_consuming = False
+
+    def _submit(self, msg):
+        self.queue.put(msg, block=True)
 
     @staticmethod
     @analytics_method
@@ -139,9 +171,12 @@ class GiskardAnalyticsCollector:
             if self.server_info is not None:
                 merged_props = {**merged_props, **self.server_info}
 
-            self.mp.track(
-                distinct_id=self.distinct_user_id, event_name=event_name, properties=dict(merged_props), meta=meta
-            )
+            self._submit(TelemetryMessage(
+                event_name=event_name, properties=dict(merged_props), meta=meta
+            ))
+
+            if not self.is_consuming:
+                self._consume()
 
     @staticmethod
     def machine_based_user_id():
@@ -159,7 +194,7 @@ class GiskardAnalyticsCollector:
             - country
         IP address itself **isn't stored** by in the telemetry data
         """
-        with GiskardAnalyticsCollector.lock:
+        with GiskardAnalyticsCollector.geo_lock:
             if self.ip:
                 return
             try:
