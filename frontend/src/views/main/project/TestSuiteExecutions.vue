@@ -17,7 +17,7 @@
         </v-btn>
       </v-container>
       <v-row v-else class="fill-height">
-        <v-col cols="3" class="vc fill-height">
+        <v-col cols="6" md="4" lg="3" class="vc fill-height">
           <v-tooltip top>
             <template v-slot:activator="{ on, attrs }">
               <div v-bind="attrs" v-on="on">
@@ -43,8 +43,8 @@
                     </v-icon>
                   </v-list-item-icon>
                   <v-list-item-content>
-                    <div class="d-flex">
-                      <div class="overflow-ellipsis">
+                    <div class="d-flex justify-space-between">
+                      <div>
                         <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
                         <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br/></span>
                         <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
