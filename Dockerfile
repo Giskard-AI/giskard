@@ -1,176 +1,85 @@
-FROM ubuntu:latest as build
-
-# >>> BACKEND
+FROM python:3.10 as build
 
 RUN apt-get update
-RUN apt -y install openjdk-17-jdk
+RUN apt-get -y install openjdk-17-jdk-headless
+
+ARG RUN_TESTS=false
+ARG FRONTEND_ENV=production
 
 ENV _JAVA_OPTIONS="-Xmx4048m -Xms512m" \
     SPRING_PROFILES_ACTIVE=prod \
-    MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true \
-    SPRING_DATASOURCE_USERNAME=postgres
-
-WORKDIR /app
-
-COPY supervisord.conf /etc/
-COPY gradle gradle
-COPY gradlew .
-COPY gradle.properties .
-COPY settings.gradle.kts .
-COPY build.gradle.kts .
-COPY .git .git
-COPY common common
-
-COPY backend backend
-
-WORKDIR /app/backend
-
-ARG RUN_TESTS=false
-
-RUN bash -c " \
-    echo RUN_TESTS=$RUN_TESTS && \
-    if [ "$RUN_TESTS" = true ] ;  \
-      then  ../gradlew -Pprod clean test bootJar --info --stacktrace;  \
-      else  ../gradlew -Pprod clean bootJar --info --stacktrace ;  \
-    fi"
-
-# <<< BACKEND
-
-# >>> FRONTEND
-
-WORKDIR /app/frontend
-
-COPY frontend/package*.json ./
-
-RUN apt-get update -y && apt-get install -y libxml2-dev libgcrypt-dev npm
-RUN npm install
-
-COPY frontend/ ./
-ARG FRONTEND_ENV=production
-ENV VUE_APP_ENV=${FRONTEND_ENV}
-RUN npm run build
-
-# <<< FRONTEND
-
-# >>> ML-WORKER
-
-FROM python:3.7.13 as python-base
-
-ENV PYTHONUNBUFFERED=1 \
+    MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=false \
+    VUE_APP_ENV=${FRONTEND_ENV} \
+    PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
-    PIP_DEFAULT_TIMEOUT=100 \
-    POETRY_VERSION=1.2.2 \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1 \
-    PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv"
+    PIP_DEFAULT_TIMEOUT=100
 
-ENV PATH="$VENV_PATH/bin:$POETRY_HOME/bin:$PATH"
+WORKDIR /app
+# unnecessary files are filtered out by .dockerignore
+COPY python-client python-client
+COPY frontend frontend
+COPY backend backend
+COPY common common
+COPY gradle gradle
+# Copying .git to make gradle-git-properties gradle plugin work
+COPY .git .git
 
-FROM python-base as builder-base
+COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-        git \
-        curl \
-        build-essential vim
+RUN ./gradlew clean install -Pprod --parallel --info --stacktrace
+RUN ./gradlew :backend:package -Pprod --parallel --info --stacktrace
+RUN ./gradlew :frontend:package -Pprod --parallel --info --stacktrace
+RUN ./gradlew :python-client:package -Pprod --parallel --info --stacktrace
 
-RUN pip install --upgrade pip && \
-    pip install -U pip setuptools
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# Create an environment and install giskard wheel. Some dependencies may require gcc which is only installed in build
+# stage, but not in the production one
+RUN python3 -m virtualenv python-client/.venv-prod
+RUN WHEEL=$(ls python-client/dist/giskard*.whl) && python-client/.venv-prod/bin/pip install $WHEEL\[server\]
 
-WORKDIR $PYSETUP_PATH
 
-COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
 
-ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --only main ; fi"
-
-RUN pip install  \
-    torch==1.12.0 \
-    transformers==4.20.1 \
-    nlpaug==1.1.11
-
-FROM builder-base as proto-builder
-
-WORKDIR $PYSETUP_PATH
-
-RUN poetry install --only main,dev
-COPY ./common/proto ./proto
-COPY ./python-client/giskard ./giskard
-COPY ./python-client/scripts ./scripts
-
-RUN mkdir -p giskard/ml_worker/generated && \
-    python -m grpc_tools.protoc \
-      -Iproto \
-      --python_out=giskard/ml_worker/generated \
-      --grpc_python_out=giskard/ml_worker/generated \
-      --mypy_out=giskard/ml_worker/generated \
-      --mypy_grpc_out=giskard/ml_worker/generated \
-      proto/ml-worker.proto && \
-    python scripts/fix_grpc_generated_imports.py giskard/ml_worker/generated giskard.ml_worker.generated
-
-# <<< ML-WORKER
-
-# >>> FINAL CONFIGURATION
-
-FROM python-base as production
+FROM python:3.10-slim
 ENV SPRING_PROFILES_ACTIVE=prod
-
-
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y \
-    postgresql \
-    nginx \
-    openjdk-17-jre \
-    supervisor
+    postgresql nginx openjdk-17-jre-headless supervisor git gettext-base
 
-ENV PYSETUP_PATH="/opt/pysetup" \
-    VENV_PATH="/opt/pysetup/.venv" \
-    PGDATA=/var/lib/postgresql/data/pgdata \
-    SPRING_DATASOURCE_USERNAME=postgres \
-    SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/app \
-    SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/app
+ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
+    SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/postgres \
+    GSK_HOST=0.0.0.0 \
+    GSK_USER_HOME=/home/giskard \
+    GSK_HOME=/home/giskard/datadir \
+    GSK_DIST_PATH=/opt/giskard
 
-ENV PATH="$VENV_PATH/bin:$POETRY_HOME/bin:$PATH"
+ENV VENV_PATH=$GSK_DIST_PATH/internal-mlworker-venv
 
-WORKDIR /app
+ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/13/bin:$PATH" \
+    PGDATA=$GSK_HOME/database \
+    GISKARD_HOME=$GSK_HOME
 
-COPY --from=builder-base $VENV_PATH $VENV_PATH
-COPY --from=proto-builder $PYSETUP_PATH/giskard $PYSETUP_PATH/giskard
-COPY --from=build /app/backend/build/libs/backend*.jar /app/backend/lib/giskard.jar
-COPY --from=build /etc/supervisord.conf /app/
-COPY --from=build /app/frontend/dist /usr/share/nginx/html
-COPY supervisord.conf /app/supervisord.conf
+WORKDIR $GSK_DIST_PATH
 
-COPY frontend/packaging/nginx_single_dockerfile.conf /etc/nginx/sites-enabled/default.conf
+COPY --from=build /app/python-client/.venv-prod $VENV_PATH
+COPY --from=build /app/backend/build/libs/backend*.jar $GSK_DIST_PATH/backend/giskard.jar
+COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist
 
-RUN rm /etc/nginx/sites-enabled/default
+COPY supervisord.conf ./
+COPY packaging/nginx.conf.template $GSK_DIST_PATH/frontend/
 
-ENV GSK_HOST=0.0.0.0
-ENV PYTHONPATH=$PYSETUP_PATH
+ARG GISKARD_UID=50000
 
-RUN mkdir /var/lib/postgresql/data /root/giskard-home
+RUN adduser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password \
+       --quiet "giskard" --uid "${GISKARD_UID}" --gid "0" --home "${GSK_USER_HOME}" && \
+    mkdir -p "${GSK_HOME}/run" && chown -R "giskard:0" "${GSK_USER_HOME}" "${GSK_DIST_PATH}"
 
-RUN useradd -u 1000 postgres; exit 0
-RUN usermod -u 1000 postgres; exit 0
+RUN chown -R giskard:0 /var/run/postgresql /var/lib/nginx
 
-RUN chown -R 1000:1000 /var/run/postgresql && \
-    chown -R 1000:1000 /var/log/nginx && \
-    chown -R 1000:1000 /var/lib/nginx && \
-    chown -R 1000:1000 /etc/nginx && \
-    chown -R 1000:1000 /root/giskard-home && \
-    chown -R 1000:1000 /var/lib/postgresql/data && \
-    chown -R 1000:1000 /run && \
-    chown -R 1000:1000 $PYSETUP_PATH && \
-    chown -R 1000:1000 /app
+USER giskard
+WORKDIR $GSK_HOME
 
-ENTRYPOINT ["supervisord", "-c", "/app/supervisord.conf"]
-
-# <<< FINAL CONFIGURATION
+ENTRYPOINT ["supervisord", "-c", "/opt/giskard/supervisord.conf"]

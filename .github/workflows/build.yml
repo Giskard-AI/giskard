@@ -9,8 +9,10 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
+
       - name: Check if organization member
         id: is_organization_member
         uses: JamesSingleton/is-organization-member@1.0.1
@@ -49,24 +51,11 @@ jobs:
         uses: actions/checkout@v3.3.0
         with:
           fetch-depth: 0
-      #        with:
-      #          ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: actions/setup-node@v3
+      - name: Setup Gradle # To cache ~/.gradle
+        uses: gradle/gradle-build-action@v2
         with:
-          node-version: 16
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
+          cache-read-only: false
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
@@ -85,16 +74,36 @@ jobs:
       - name: Cache Giskard test resources
         uses: actions/cache@v3
         with:
-          path: $HOME/.giskard
-          key: giskard-test-resources
-          restore-keys: giskard-test-resources
-          
+          path: ~/.giskard
+          key: ${{ runner.os }}-giskard-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ runner.os }}-giskard-test-resources
+
       - name: Cache Python dependencies
         uses: actions/cache@v3
         with:
           path: python-client/.venv
           key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
           restore-keys: ${{ runner.os }}-client
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run Python commands
+        run: |
+          python -m pip install virtualenv -U --upgrade pip
+          echo "Python ($(which python)) packages:\n $(python -m pip list)"
 
       - name: Get current date
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
@@ -103,15 +112,14 @@ jobs:
           TZ: Europe/Paris
         run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: "Python client: set dev version"
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: ciiiii/toml-editor@1.0.0
-        with:
-          file: "python-client/pyproject.toml"
-          key: "tool.poetry.version"
-          value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
+      - name: Get number of available workers
+        id: nb_workers
+        run: python -c 'import os; print(f"nb_workers={max(1,os.cpu_count()-1)}")' >> $GITHUB_OUTPUT
 
       - name: Build
+        env:
+          GSK_DISABLE_ANALYTICS: True
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
         run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
@@ -128,3 +136,5 @@ jobs:
         with:
           name: giskard-dev.whl
           path: python-client/dist/*whl
+
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"

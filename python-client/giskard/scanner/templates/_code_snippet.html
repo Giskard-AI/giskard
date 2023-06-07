@@ -1,0 +1,19 @@
+<div class="p-4">
+    <h2 class="my-4 mr-2 font-medium">Generate a Test Suite to debug the detected issues</h2>
+
+    <div class="text-sm">
+        <pre><code class="language-python rounded">{% raw %}from giskard import GiskardClient
+test_suite = results.generate_test_suite("My first test suite")
+
+# To start the Giskard server, run in your terminal within the Python
+# environment containing the dependencies of your model: 
+giskard server start --version 2.0.0b4
+giskard worker start -u http://localhost:19000/
+
+# Then upload your test suite to the opened Giskard server
+client = GiskardClient("http://localhost:19000", "GISKARD_API_KEY")
+client.create_project("my_project_id", "my_project_name")
+test_suite.upload(client, "my_project_id"){% endraw %}
+</code></pre>
+    </div>
+</div>

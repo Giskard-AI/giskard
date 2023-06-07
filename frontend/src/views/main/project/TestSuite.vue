@@ -1,101 +1,239 @@
 <template>
-  <v-container fluid v-if="testSuite" class="vertical-container">
-    <v-row>
-      <v-col>
-        <span>Test suite: </span>
-        <router-link class="text-h6 text-decoration-none" :to="{name: 'suite-details', params: {
-          suiteId: this.suiteId
-         } }">
-          {{ testSuite.name }}
-        </router-link>
-      </v-col>
-      <v-col :align="'right'" v-show="$router.currentRoute.name === 'suite-test-list'">
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="openSettings()"
-        >
-          <v-icon>settings</v-icon>
-        </v-btn>
-        <v-btn
-            class="mx-2 mr-0"
-            dark
-            small
-            outlined
-            color="primary"
-            @click="remove()"
-        >
-          <v-icon>delete</v-icon>
-        </v-btn>
-      </v-col>
-    </v-row>
-    <router-view class="vertical-container"></router-view>
-  </v-container>
+    <div class="vc pb-0 parent-container">
+        <div class="vc">
+            <v-container class="main-container vc pt-0">
+                <div class="d-flex pl-3 pr-3">
+                    <h1 class="test-suite-name">{{ suite.name }}</h1>
+                    <div class="flex-grow-1"></div>
+                    <v-btn text @click.stop="redirectToTesting">
+                        <v-icon class="mr-2">mdi-arrow-left</v-icon>
+                        Back to all suites
+                    </v-btn>
+                    <v-btn text @click="() => openSettings()">
+                        Edit test suite
+                    </v-btn>
+                    <v-btn outlined class='mx-1' v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                        Add test
+                    </v-btn>
+                </div>
+                <v-tabs class="pl-3 pr-3 mt-2">
+                    <v-tab :to="{ name: 'test-suite-overview' }">
+                        <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                        <span class="tab-item-text">Report</span>
+                    </v-tab>
+                    <v-tab :to="{ name: 'test-suite-executions' }">
+                        <v-icon class="mr-2">history</v-icon>
+                        <span class="tab-item-text">Past executions</span>
+                    </v-tab>
+                </v-tabs>
+                <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
+                    <v-col>
+                        <div class="d-flex align-center justify-center">
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined @input="handleFilterChanged">
+                            </v-select>
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text" outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense @input="handleFilterChanged"></v-text-field>
+                            <div class="flex-grow-1"></div>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <div v-on="on">
+                                        <v-btn color="primary" large text @click="openExportDialog" disabled>Export
+                                        </v-btn>
+                                    </div>
+                                </template>
+                                <span>Coming soon</span>
+                            </v-tooltip>
+                            <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress" @click='openRunTestSuite(true)' color="primary">
+                                Compare
+                            </v-btn>
+                            <v-btn large class='mx-1' v-if="hasTest" @click='handleRunTestSuite' color="primary" :loading="hasJobInProgress">
+                                Run test suite
+                            </v-btn>
+                        </div>
+                    </v-col>
+                </v-row>
+                <v-row class="vc overview-container pl-3 mt-0">
+                    <v-col class="vc pb-0" cols="12">
+                        <router-view />
+                    </v-col>
+                </v-row>
+            </v-container>
+        </div>
+
+        <v-dialog v-model="displayWorkerInstructions" @click:outside="openWorkerInstructions = false" max-width="70vw">
+            <v-card>
+                <v-card-title class="py-6">
+                    <h2>ML Worker is not connected</h2>
+                </v-card-title>
+                <v-card-text>
+                    <StartWorkerInstructions></StartWorkerInstructions>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+    </div>
 </template>
 
-<script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import {Prop} from "vue-property-decorator";
-import {api} from "@/api";
-import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import * as _ from "lodash";
-import Tests from "@/views/main/project/Tests.vue";
-import TestSuiteSettings from "@/views/main/project/modals/TestSuiteSettings.vue";
-import {TestSuiteDTO} from '@/generated-sources';
+<script lang="ts" setup>
 
+import { computed, onActivated, ref, watch } from "vue";
+import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
+import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
+import { useCatalogStore } from "@/stores/catalog";
+import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
+import { api } from "@/api";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useMLWorkerStore } from "@/stores/ml-worker";
+import ExportTestModalVue from "./modals/ExportTestModal.vue";
+import { debounce } from "lodash";
+import mixpanel from "mixpanel-browser";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
-@Component({
-  components:
-      {
-        DatasetSelector, ModelSelector,
-        Tests, TestSuiteSettings
-      }
-})
-export default class TestSuite extends Vue {
-  @Prop({required: true}) projectId?: number;
-  @Prop({required: true}) suiteId!: number;
-  testSuite: TestSuiteDTO | null = null;
-  savedTestSuite: TestSuiteDTO | null = null;
+const testSuitesStore = useTestSuitesStore();
+const mlWorkerStore = useMLWorkerStore();
 
-  async activated() {
-    await this.init();
-  }
+const props = defineProps<{
+    projectId: number,
+    suiteId: number
+}>();
 
-  async mounted() {
-    await this.init();
-  }
+const {
+    suite,
+    inputs,
+    executions,
+    hasTest,
+    hasInput,
+    statusFilter,
+    searchFilter,
+    hasJobInProgress
+} = storeToRefs(useTestSuiteStore())
 
+onActivated(() => loadData());
+watch(() => props.suiteId, () => loadData());
 
-  private async init() {
-    this.savedTestSuite = await api.getTestSuite(this.suiteId);
-    this.testSuite = _.cloneDeep(this.savedTestSuite);
-  }
+const { loadTestSuites, runTestSuite } = useTestSuiteStore();
+const { loadCatalog } = useCatalogStore();
 
-  async remove() {
-    if (await this.$dialog.confirm({
-      text: `Would you like to delete test suite "${this.testSuite?.name}"?`,
-      title: 'Delete test suite',
-      showClose: false,
-      actions: {
-        false: 'Cancel',
-        true: 'Delete'
-      }
-    })) {
-      await api.deleteTestSuite(this.testSuite!.id);
-      await this.$router.push({name: 'project-test-suites', params: {projectId: this.projectId!.toString()}})
-    }
-  }
+const router = useRouter();
+const route = useRoute();
 
-  async openSettings() {
-    let modifiedSuite = await this.$dialog.showAndWait(TestSuiteSettings, {scrollable: true, width: 800, testSuite: this.testSuite});
-    if (modifiedSuite) {
-      this.testSuite = modifiedSuite;
-    }
-  }
+const openWorkerInstructions = ref(false);
+
+const displayWorkerInstructions = computed(() => !mlWorkerStore.isExternalWorkerConnected && openWorkerInstructions.value);
+
+const hideHeader = computed(() => route.name === 'test-suite-configuration')
+
+async function loadData() {
+    await loadTestSuites(props.projectId, props.suiteId);
+    await loadCatalog(props.projectId);
 }
+
+async function openRunTestSuite(compareMode: boolean) {
+    if (hasInput.value) {
+        await $vfm.show({
+            component: RunTestSuiteModal,
+            bind: {
+                projectId: props.projectId,
+                suiteId: props.suiteId,
+                inputs: inputs.value,
+                compareMode,
+                previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs
+            }
+        });
+    } else {
+        await mlWorkerStore.checkExternalWorkerConnection();
+        if (!mlWorkerStore.isExternalWorkerConnected) {
+            openWorkerInstructions.value = true;
+            return;
+        } else {
+            await runTestSuite([]);
+        }
+    }
+}
+
+async function openSettings() {
+    const project = await api.getProject(props.projectId)
+    $vfm.show({
+        component: EditTestSuiteModal,
+        bind: {
+            projectKey: project.key,
+            projectId: project.id,
+            suite: suite.value
+        }
+    });
+}
+
+async function redirectToTesting() {
+    testSuitesStore.setCurrentTestSuiteId(null);
+    await router.push({ name: 'project-testing' });
+}
+
+function openExportDialog() {
+    $vfm.show({
+        component: ExportTestModalVue,
+    });
+}
+
+const handleFilterChanged = debounce(() => mixpanel.track('Filter tests of test suite', {
+    suiteId: props.suiteId,
+    projectId: props.projectId,
+    statusFilter: statusFilter.value,
+    searchFilter: searchFilter.value
+}), 1000)
+
+function handleRunTestSuite() {
+    openRunTestSuite(false);
+}
+
 </script>
+
+
+<style scoped lang="scss">
+.main-container {
+    width: 100%;
+    max-width: 100%;
+    color: rgb(98, 98, 98);
+
+    b {
+        color: black;
+    }
+}
+
+.parent-container {
+    margin-left: -12px;
+    margin-right: -12px;
+}
+
+.overview-container {
+    background-color: #f5f5f5;
+}
+
+.test-suite-name {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 32px;
+
+    color: #163A30;
+}
+
+.max-w-150 {
+    max-width: 150px;
+}
+
+.max-w-250 {
+    max-width: 250px;
+}
+
+.tab-item-text {
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.875em;
+    line-height: 17px;
+    display: flex;
+    align-items: flex-end;
+    text-transform: uppercase;
+    font-feature-settings: 'case' on, 'cpsp' on;
+}
+</style>

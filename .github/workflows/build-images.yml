@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-images:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
@@ -25,10 +25,17 @@ jobs:
           endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
           ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
 
-
       - name: Extract branch name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          SANITIZED_BRANCH=${BRANCH//"/"/-}
+          
+          echo $BRANCH
+          echo $SANITIZED_BRANCH
+          
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "tag=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
         id: extract_branch
 
       - name: Login to Docker registry
@@ -40,7 +47,7 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@master
         env:
-          TAG: dev
+          TAG: ${{ (steps.extract_branch.outputs.tag == 'main' && 'dev') || steps.extract_branch.outputs.tag }}
         with:
           push: true
           set: |
@@ -49,6 +56,7 @@ jobs:
             *.platform=linux/arm64
 
       - name: Invoke deployment hook
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
 

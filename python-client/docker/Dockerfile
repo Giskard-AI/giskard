@@ -1,5 +1,5 @@
 # `python-base` sets up all our shared environment variables
-FROM python:3.7.13-buster as python-base
+FROM python:3.9.16-buster as python-base
 
     # python
 ENV PYTHONUNBUFFERED=1 \
@@ -40,19 +40,19 @@ RUN apt-get update && \
         build-essential vim
 
 RUN pip install --upgrade pip && \
-    pip install -U pip setuptools
+    pip install -U pip && \
+    pip install pdm
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
-RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY ./python-client/pyproject.toml ./python-client/poetry.lock ./
+COPY ./python-client/pyproject.toml ./python-client/pdm.lock ./
 
 # install deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
-RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --only main ; fi"
+WORKDIR $PYSETUP_PATH/python-client
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then pdm install ; else pdm install --prod ; fi"
 
 
 
@@ -73,9 +73,10 @@ RUN pip install  \
 
 FROM builder-base as proto-builder
 
-WORKDIR $PYSETUP_PATH
+WORKDIR $PYSETUP_PATH/python-client
 # install dev dependencies needed to protobuf code generation
-RUN poetry install --only main,dev
+RUN pdm install --group dev,proto
+WORKDIR $PYSETUP_PATH
 
 COPY ./python-client/giskard ./giskard
 COPY ./common/proto ./proto
@@ -89,9 +90,7 @@ RUN mkdir -p giskard/ml_worker/generated && \
       --grpc_python_out=giskard/ml_worker/generated \
       --mypy_out=giskard/ml_worker/generated \
       --mypy_grpc_out=giskard/ml_worker/generated \
-      proto/ml-worker.proto && \
-    python scripts/fix_grpc_generated_imports.py giskard/ml_worker/generated giskard.ml_worker.generated
-
+      proto/ml-worker.proto
 
 
 # `production` image used for runtime
@@ -103,6 +102,11 @@ WORKDIR $PYSETUP_PATH
 
 ENV GSK_HOST=0.0.0.0
 ENV PYTHONPATH=.
+
+# Since artifacts can't be loaded from server (no real API token specified) read them directly from "projects" directory
+# where they're put after demo projects are created and not from "cache"
+ENV GSK_CACHE_DIR=projects
+ENV GSK_HOME=/giskard-home
 
 CMD ["python", "giskard/cli.py", "worker", "start", "-s"]
 EXPOSE 50051

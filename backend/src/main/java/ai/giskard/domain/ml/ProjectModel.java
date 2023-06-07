@@ -1,22 +1,36 @@
 package ai.giskard.domain.ml;
 
-import ai.giskard.domain.ProjectFile;
+import ai.giskard.domain.AbstractAuditingEntity;
+import ai.giskard.domain.Project;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.UUID;
 
 
 @Entity(name = "project_models")
 @Getter
 @Setter
 @NoArgsConstructor
-public class ProjectModel extends ProjectFile {
+@AllArgsConstructor
+public class ProjectModel extends AbstractAuditingEntity {
+
+    @Id
+    private UUID id;
     private String name;
+
+
+    @ManyToOne
+    @JsonBackReference
+    private Project project;
+
+    private long size;
 
     private String languageVersion;
 
@@ -36,6 +50,5 @@ public class ProjectModel extends ProjectFile {
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<String> classificationLabels;
 
-    @NonNull
-    private String requirementsFileName;
+    private String classificationLabelsDtype;
 }

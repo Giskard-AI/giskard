@@ -98,7 +98,7 @@ liquibase {
     activities.register("main") {
         this.arguments = mapOf(
             "driver" to "org.postgresql.Driver",
-            "url" to System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/app"),
+            "url" to System.getenv().getOrDefault("SPRING_LIQUIBASE_URL", "jdbc:postgresql://localhost:5432/postgres"),
             "username" to System.getenv().getOrDefault("POSTGRES_USER", "postgres"),
             "password" to System.getenv().getOrDefault("POSTGRES_PASSWORD", "y1QYbF2BtFUC"),
             "changeLogFile" to "src/main/resources/config/liquibase/master.xml",
@@ -151,6 +151,8 @@ dependencies {
     implementation("io.grpc:grpc-census:$grpcVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
+
+
     testImplementation("io.grpc:grpc-testing:$grpcVersion")
 
     implementation(platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"))
@@ -234,6 +236,9 @@ dependencies {
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.google.protobuf:protobuf-java-util:3.21.9")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
+
+    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-io:commons-io:2.11.0")
 }
 
 protobuf {
@@ -386,6 +391,9 @@ tasks {
 
     register("start") {
         dependsOn("bootRun")
+    }
+    register("package") {
+        dependsOn("bootJar")
     }
 }
 

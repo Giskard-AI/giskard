@@ -10,7 +10,8 @@ export default new Vuetify({
     options: { customProperties: true },
     themes: {
       light: {
-        primary: colors.cyan.darken2,
+        primaryLight: "#91f7c0",   
+        primary: "#087038",
         secondary: colors.grey.darken3,
         accent: colors.pink.darken3,
         error: colors.red.darken4,

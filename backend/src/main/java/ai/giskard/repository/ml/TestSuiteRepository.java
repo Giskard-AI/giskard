@@ -1,21 +1,28 @@
 package ai.giskard.repository.ml;
 
 import ai.giskard.domain.ml.TestSuite;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import ai.giskard.repository.MappableJpaRepository;
+import ai.giskard.web.rest.errors.Entity;
+import org.mapstruct.Named;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface TestSuiteRepository extends JpaRepository<TestSuite, Long> {
-    List<TestSuite> findAllByProjectId(long projectId);
+public interface TestSuiteRepository extends MappableJpaRepository<TestSuite, Long> {
+    @Override
+    default Entity getEntityType() {
+        return Entity.TEST_SUITE;
+    }
 
-    List<TestSuite> findAllByModelId(long modelId);
+    List<TestSuite> findAllByProjectId(Long projectId);
 
-    @Query("FROM TestSuite where actualDataset.id = :id or referenceDataset.id = :id")
-    List<TestSuite> findByDatasetId(@Param("id") long datasetId);
+    TestSuite findOneByProjectIdAndId(Long projectId, Long id);
 
-    List<TestSuite> findByModelId(long modelId);
+
+    @Named("no_mapstruct")
+    @EntityGraph(attributePaths = {"functionInputs"})
+    TestSuite getWithFunctionInputsById(Long id);
+
 }

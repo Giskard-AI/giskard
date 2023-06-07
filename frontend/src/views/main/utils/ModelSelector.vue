@@ -1,34 +1,25 @@
 <template>
-  <v-select
-      outlined
-      class="model-selector"
-      label="Model"
-      :value="value"
-      :items="projectModels"
-      :item-text="extractModelName"
-      :item-value="'id'"
-      :return-object="returnObject"
-      @input="onInput"
-  ></v-select>
+  <v-select clearable outlined class="model-selector" :label="label" :value="value" :items="projectModels" :item-text="extractModelName" :item-value="'id'" :return-object="returnObject" @input="onInput" dense hide-details></v-select>
 </template>
 
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
 import axios from "axios";
-import {apiURL} from "@/env";
-import {Prop} from "vue-property-decorator";
-import {ModelDTO} from '@/generated-sources';
+import { apiURL } from "@/env";
+import { Prop } from "vue-property-decorator";
+import { ModelDTO } from '@/generated-sources';
 
 @Component
 export default class ModelSelector extends Vue {
-  @Prop({required: true}) projectId!: number;
-  @Prop({default: true}) returnObject!: boolean;
+  @Prop({ required: true }) projectId!: number;
+  @Prop({ default: true }) returnObject!: boolean;
+  @Prop({ default: "Model" }) label!: string;
   projectModels: Array<ModelDTO> = [];
   @Prop() value?: ModelDTO | number;
 
   extractModelName(model: ModelDTO) {
-    return model.name || model.fileName;
+    return model.name || model.id;
   }
 
   onInput(value) {
@@ -43,6 +34,6 @@ export default class ModelSelector extends Vue {
 
 <style scoped>
 .model-selector {
-  min-width: 300px
+  min-width: 200px
 }
 </style>

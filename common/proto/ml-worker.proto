@@ -12,16 +12,18 @@ package worker;
 
 service MLWorker {
   rpc getInfo(MLWorkerInfoRequest) returns (MLWorkerInfo){}
-  rpc runTest (RunTestRequest) returns (TestResultMessage) {}
   rpc runAdHocTest (RunAdHocTestRequest) returns (TestResultMessage) {}
-  rpc runModel(RunModelRequest) returns (RunModelResponse) {}
+  rpc datasetProcessing (DatasetProcessingRequest) returns (DatasetProcessingResultMessage) {}
+  rpc runTestSuite (RunTestSuiteRequest) returns (TestSuiteResultMessage) {}
+  rpc runModel(RunModelRequest) returns (google.protobuf.Empty) {}
   rpc runModelForDataFrame(RunModelForDataFrameRequest) returns (RunModelForDataFrameResponse) {}
   rpc explain(ExplainRequest) returns (ExplainResponse) {}
   rpc explainText(ExplainTextRequest) returns (ExplainTextResponse) {}
   rpc echo(EchoMsg) returns (EchoMsg){}
-  rpc upload(stream FileUploadRequest) returns (stream UploadStatus) {}
-  rpc getTestRegistry(google.protobuf.Empty) returns (TestRegistryResponse) {}
-  rpc filterDataset(stream FilterDatasetRequest) returns (stream FilterDatasetResponse) {}
+  rpc generateTestSuite(GenerateTestSuiteRequest) returns (GenerateTestSuiteResponse) {}
+  rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+  rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
+  rpc generateQueryBasedSlicingFunction(GenerateQueryBasedSliceRequest) returns (GenerateQueryBasedSliceResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -33,7 +35,7 @@ message MLWorkerInfo{
   string interpreter = 2;
   string interpreter_version = 3;
   map<string, string> installed_packages = 4;
-  uint32 internal_grpc_port = 5;
+  string internal_grpc_address = 5;
   bool is_remote = 6;
   uint32 pid = 7;
   uint64 process_start_time = 8;
@@ -74,16 +76,16 @@ message EchoMsg{
 }
 
 message ExplainRequest{
-  SerializedGiskardModel model = 1;
-  SerializedGiskardDataset dataset = 2;
+  ArtifactRef model = 1;
+  ArtifactRef dataset = 2;
   map<string, string> columns = 3;
 }
 
 message ExplainTextRequest{
-  SerializedGiskardModel model = 1;
+  ArtifactRef model = 1;
   string feature_name = 2;
   map<string, string> columns = 3;
-  map<string, string> feature_types = 4;
+  map<string, string> column_types = 4;
   uint32 n_samples = 5;
 }
 
@@ -109,24 +111,28 @@ message RunModelForDataFrameResponse{
   repeated float probabilities = 3;
   repeated float raw_prediction = 4;
 }
+
 message DataRow{
   map<string, string> columns = 1;
 }
+
 message DataFrame{
   repeated DataRow rows = 1;
 }
 
 message RunModelForDataFrameRequest{
-  SerializedGiskardModel model = 1;
+  ArtifactRef model = 1;
   DataFrame dataframe = 2;
   string target = 3;
-  map<string, string> feature_types = 4;
-  map<string, string> column_types = 5;
-
+  map<string, string> column_types = 4;
+  map<string, string> column_dtypes = 5;
 }
+
 message RunModelRequest{
-  SerializedGiskardModel model = 1;
-  SerializedGiskardDataset dataset = 2;
+  ArtifactRef model = 1;
+  ArtifactRef dataset = 2;
+  uint64 inspectionId = 3;
+  string project_key = 4;
 }
 
 message RunModelResponse{
@@ -135,33 +141,49 @@ message RunModelResponse{
 }
 
 message RunAdHocTestRequest {
-  string testId = 1;
-  repeated TestArgument arguments = 2;
+  string testUuid = 1;
+  repeated FuncArgument arguments = 2;
 }
 
-message TestArgument{
+message DatasetProcessingRequest {
+  ArtifactRef dataset = 1;
+  repeated DatasetProcessingFunction functions = 2;
+}
+
+message DatasetProcessingFunction {
+  oneof function {
+    ArtifactRef slicingFunction = 1;
+    ArtifactRef transformationFunction = 2;
+  }
+  repeated FuncArgument arguments = 3;
+}
+
+message SuiteTestArgument {
+  int64 id = 1;
+  string testUuid = 2;
+  repeated FuncArgument arguments = 3;
+}
+
+message RunTestSuiteRequest {
+  repeated SuiteTestArgument tests = 1;
+  repeated FuncArgument globalArguments = 2;
+}
+
+message FuncArgument{
   string name = 1;
   oneof argument{
-    SerializedGiskardModel model = 2;
-    SerializedGiskardDataset dataset = 3;
+    ArtifactRef model = 2;
+    ArtifactRef dataset = 3;
     float float = 4;
-    string string = 5;
+    int32 int = 5;
+    string str = 6;
+    bool bool = 7;
+    ArtifactRef slicingFunction = 8;
+    ArtifactRef transformationFunction = 9;
+    string kwargs = 10;
   }
-}
-
-message RunTestRequest {
-  string code = 1;
-  SerializedGiskardModel model = 2;
-  SerializedGiskardDataset actual_ds = 3;
-  SerializedGiskardDataset reference_ds = 4;
-}
-
-message SerializedGiskardDataset{
-  string project_key = 1;
-  string file_name = 2;
-  string target = 3;
-  map<string, string> feature_types = 4;
-  map<string, string> column_types = 5;
+  repeated FuncArgument args = 11;
+  bool none = 12;
 }
 
 message RunTestResponse {
@@ -174,9 +196,13 @@ message Partial_unexpected_counts {
 }
 
 message NamedSingleTestResult{
-  string name = 1;
+  string testUuid = 1;
   SingleTestResult result = 2;
+}
 
+message IdentifierSingleTestResult{
+  int64 id = 1;
+  SingleTestResult result = 2;
 }
 
 
@@ -194,12 +220,12 @@ message SingleTestResult{
   repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
-  google.protobuf.Int32Value missing_count = 2;
-  google.protobuf.DoubleValue missing_percent = 3;
-  google.protobuf.Int32Value unexpected_count = 4;
-  google.protobuf.DoubleValue unexpected_percent = 5;
-  google.protobuf.DoubleValue unexpected_percent_total = 6;
-  google.protobuf.DoubleValue unexpected_percent_nonmissing = 7;
+  int32 missing_count = 2;
+  double missing_percent = 3;
+  int32 unexpected_count = 4;
+  double unexpected_percent = 5;
+  double unexpected_percent_total = 6;
+  double unexpected_percent_nonmissing = 7;
   repeated uint32 partial_unexpected_index_list = 9;
   repeated Partial_unexpected_counts partial_unexpected_counts = 10;
   repeated uint32 unexpected_index_list = 12;
@@ -214,13 +240,29 @@ message TestResultMessage {
   repeated NamedSingleTestResult results = 1;
 }
 
-message SerializedGiskardModel{
-  string model_type = 2;
-  google.protobuf.DoubleValue threshold = 3;
-  repeated string feature_names = 4;
-  repeated string classification_labels = 5;
-  string project_key = 6;
-  string file_name = 7;
+message DatasetProcessingResultMessage {
+  string datasetId = 1;
+  uint32 totalRows = 2;
+  repeated uint32 filteredRows = 3;
+  repeated DatasetRowModificationResult modifications = 4;
+}
+
+message DatasetRowModificationResult {
+  uint32 rowId = 1;
+  map<string, string> modifications = 2;
+}
+
+message TestSuiteResultMessage {
+  bool is_error = 1; // True when an unhandled exception happened (!= test failed)
+  bool is_pass = 2;
+  repeated IdentifierSingleTestResult results = 3;
+  string logs = 4;
+}
+
+message ArtifactRef{
+  string project_key = 1;
+  string id = 2;
+  optional bool sample = 3;
 }
 
 message Chunk {
@@ -240,49 +282,114 @@ message UploadStatus {
   StatusCode code = 1;
 }
 
+message MLWorkerErrorInfo{
+  string error = 1;
+  string stack = 2;
+}
+
+message SuiteInput{
+  string name = 1;
+  string type = 2;
+  optional ModelMeta model_meta = 3;
+  optional DatasetMeta dataset_meta = 4;
+}
+
+message ModelMeta{
+  optional string model_type = 1;
+}
+
+message DatasetMeta {
+  optional string target = 1;
+}
+
+message GenerateTestSuiteRequest{
+  string project_key = 1;
+  repeated SuiteInput inputs = 2;
+}
+
+message GenerateTestSuiteResponse{
+  repeated GeneratedTest tests = 1;
+}
+
+message GeneratedTest{
+  string test_uuid = 1;
+  repeated GeneratedTestInput inputs = 2;
+}
+
+message GeneratedTestInput{
+  string name = 1;
+  string value = 2;
+  bool is_alias = 3;
+}
+
+message CatalogResponse{
+  map<string, FunctionMeta> tests = 1;
+  map<string, DatasetProcessFunctionMeta> slices = 2;
+  map<string, DatasetProcessFunctionMeta> transformations = 3;
+}
+
+message FunctionMeta {
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated TestFunctionArgument args = 8;
+  repeated string tags = 9;
+  string code = 10;
+  string type = 11;
+}
+
+message DatasetProcessFunctionMeta {
+  string uuid = 1;
+  string name = 2;
+  string displayName = 3;
+  uint32 version = 4;
+  string module = 5;
+  string doc = 6;
+  string moduleDoc = 7;
+  repeated TestFunctionArgument args = 8;
+  repeated string tags = 9;
+  string code = 10;
+  string type = 11;
+  bool cellLevel = 12;
+  optional string columnType = 13;
+  string processType = 14;
+}
+
 
 message TestFunctionArgument{
   string name = 1;
   string type = 2;
   bool optional = 3;
   string default = 4;
+  uint32 argOrder = 5;
 }
 
+enum ComparisonType {
+  IS = 0;
+  IS_NOT = 1;
+  CONTAINS = 2;
+  DOES_NOT_CONTAINS = 3;
+  STARTS_WITH = 4;
+  ENDS_WITH = 5;
+  IS_EMPTY = 6;
+  IS_NOT_EMPTY = 7;
+}
 
-message TestFunction{
+message ComparisonClause{
+  string column_name = 1;
+  ComparisonType comparison_type = 2;
+  string column_dtype = 3;
+  optional string value = 4;
+}
+
+message GenerateQueryBasedSliceRequest{
+  repeated ComparisonClause comparison_clauses = 1;
+}
+
+message GenerateQueryBasedSliceResponse{
   string id = 1;
-  string name = 2;
-  string module = 3;
-  string doc = 4;
-  string module_doc = 5;
-  map<string, TestFunctionArgument> arguments = 6;
-  repeated string tags = 7;
-}
-
-message TestRegistryResponse{
-  repeated TestFunction functions = 1;
-}
-
-message MLWorkerErrorInfo{
-  string error = 1;
-  string stack = 2;
-}
-
-message FilterDatasetRequest {
-  FilterDatasetMetadata meta = 1;
-  Chunk data = 2;
-  uint32 idx = 3;
-}
-
-message FilterDatasetMetadata {
-  string function = 1;
-  string headers = 2; // Since we are going to stream the CSV rows, we store the headers first
-  map<string, string> column_types = 3;
-}
-
-message FilterDatasetResponse {
-  StatusCode code = 1;
-  uint32 idx = 2;
-  repeated uint32 rows = 3; // Will we ever have >4 billion rows in a chunk?
-  string error_message = 4;
 }

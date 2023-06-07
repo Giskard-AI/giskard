@@ -1,0 +1,19 @@
+{% block head %}
+<style>{% include "static/style.css" %}</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="dark">
+    <div id="gsk-scan" class="dark:text-white dark:bg-zinc-800 rounded border border-gray-500">
+        {% include "_tab_header.html" %}
+        {% include "_main_content.html" %}
+        {% if issues|length > 0 and not issues[0].model.is_text_generation %}
+        {% include "_code_snippet.html" %}
+        {% endif %}
+    </div>
+</div>
+<script type="text/javascript">
+    {% include "static/internal.js" %}
+</script>
+{% endblock %}

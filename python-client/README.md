@@ -1,361 +1,190 @@
-# Giskard Client
+<p align="center">
+  <img alt="giskardlogo" src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/giskard_logo.png?raw=true">
+</p>
+<h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
+<h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
+<p align="center">
+   <a href="https://github.com/Giskard-AI/giskard/releases">
+      <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
+  </a>
+ <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
+     <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
+ </a>
+  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml">
+    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml/badge.svg?branch=main"/>
+ </a>
+  <a href="https://gisk.ar/discord">
+    <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
+  </a>
+  <a rel="me" href="https://fosstodon.org/@Giskard"></a>
+</p>
+<h3 align="center">
+   <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+  <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
+  <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
+  <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
+ </h3>
+<br />
 
-<div align="center">
+## Table of contents
+1. [What is Giskard?](#what-is-giskard)
+2. [Getting started](#getting-started)
+  * [Installation](#installation)
+  * [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
+  * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
+  * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
+3. [How to contribute](#how-to-contribute)
+4. [Like what we're doing?](#like-what-were-doing)
 
-[![Python Version](https://img.shields.io/pypi/pyversions/python-client.svg)](https://pypi.org/project/python-client/)
-[![Dependencies Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/Giskard-AI/python-client/pulls?utf8=%E2%9C%93&q=is%3Apr%20author%3Aapp%2Fdependabot)
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Security: bandit](https://img.shields.io/badge/security-bandit-green.svg)](https://github.com/PyCQA/bandit)
-[![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/Giskard-AI/python-client/blob/main/.pre-commit-config.yaml)
-[![Semantic Versions](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--versions-e10079.svg)](https://github.com/Giskard-AI/python-client/releases)
-[![License](https://img.shields.io/github/license/Giskard-AI/python-client)](https://github.com/Giskard-AI/python-client/blob/main/LICENSE)
+<div id="what-is-giskard">
 
-Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬
+## What is Giskard?
 
+**Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
+
+Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
+
+<p align="center">
+<strong>Where to start testing? Which tests to implement? What issues to cover? How to implement the tests?</strong>
+</p>
+
+<p align="center">
+  <img src="https://giskard.readthedocs.io/en/latest/_images/hey.png" alt="hey" width="20%">
+</p>
+
+At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
+
+- **Scan your model to find dozens of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
+
+<p align="center">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/scan_example.png?raw=true" alt="Scan Example" width="700px">
+</p>
+
+- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+
+<p align="center">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/test_suite_example.png?raw=true" alt="Scan Example" width="700px">
+</p>
+
+- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
+
+<p align="center">
+  <img src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/catalog_example.png?raw=true" alt="Scan Example" width="700px">
+</p>
+
+And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
+<p align="center">
+  <img width='600' src="https://github.com/Giskard-AI/giskard/blob/9f9f9994ab5deb503ed9c64e672982432a493cca/readme/tools.png?raw=true">
+</p>
+<br/>
 </div>
 
-## Very first steps
+<div id="getting-started">
 
-### Initial
-1. Clone the project in a local directory
+## Getting started
 
-2. Using `pyenv` setup a local python 3.7
+<div id="installation">
 
-3. If you don't have `Poetry` installed run:
+### Installation
+```sh
+pip install "giskard[server]==2.0.0b4"
 
-```bash
-make download-poetry
+giskard server start
 ```
 
-4. Initialize poetry and install `pre-commit` hooks:
+That's it. Access at http://localhost:19000
+</div>
+<div id="scan-your-model-to-detect-vulnerabilities">
 
-```bash
-make install
+### Scan your model to detect vulnerabilities
+
+After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html), you can scan your model for vulnerabilities using:
+
+```python
+import giskard
+from giskard import demo
+
+model, df = demo.titanic()
+
+model = giskard.Model(model=model, model_type="classification")
+dataset = giskard.Dataset(
+    df=df,
+    target="Survived",
+    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+)
+
+scan_results = giskard.scan(model, dataset)
 ```
 
-5. Tests folder contain scripts that can upload data to your Giskard Backend. Run them using
-```bash 
-make test
+Once the scan completes, you can display the results directly in your notebook:
+
+```python
+display(scan_results)  # in your notebook
 ```
-Or individually:
+</div>
 
-```bash 
-poetry run pytest tests/model_inspector/test_upload_text_classification.py
+<div id="automatically-generate-a-test-suite-based-on-the-scan-results">
+
+### Automatically generate a test suite based on the scan results
+
+If the scan found potential issues in your model, you can automatically generate a test suite.
+
+Generating a test suite from your scan results will enable you to:
+- Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
+- Diagnose your vulnerabilities and debug the issues you found in the scan
+
+```python
+test_suite = scan_results.generate_test_suite("My first test suite")
+
+# You can run the test suite locally to verify that it reproduces the issues
+test_suite.run()
 ```
+</div>
+<div id="upload-your-test-suite-to-the-giskard-server">
 
-Make sure you have setup the correct URL, as well as your Giskard API token in a `.env` file at the root of the project. 
+### Upload your test suite to the Giskard server
 
-### Poetry
+You can then upload the test suite to the local Giskard server. This will enable you to:
+- Compare the quality of different models to decide which one to promote
+- Debug your tests to diagnose the identified issues
+- Create more domain-specific tests relevant to your use case
+- Share results, and collaborate with your team to integrate business feedback
 
-Want to know more about Poetry? Check [its documentation](https://python-poetry.org/docs/).
+First, install the Giskard server by following [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html)
 
-<details>
-<summary>Details about Poetry</summary>
-<p>
+```python
+# Create a Giskard client after having installed the Giskard server (see documentation)
+token = "API_TOKEN"  # Find it in Settings in the Giskard server
+client = GiskardClient(
+    url="http://localhost:19000", token=token  # URL of your Giskard instance
+)
 
-Poetry's [commands](https://python-poetry.org/docs/cli/#commands) are very intuitive and easy to learn, like:
+my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
 
-- `poetry add numpy@latest`
-- `poetry run pytest`
-- `poetry publish --build`
+# Upload to the current project
+test_suite.upload(client, "my_project")
 
-etc
-</p>
-</details>
-
-### Building and releasing your package
-
-Building a new version of the application contains steps:
-
-- Bump the version of your package `poetry version <version>`. You can pass the new version explicitly, or a rule such as `major`, `minor`, or `patch`. For more details, refer to the [Semantic Versions](https://semver.org/) standard.
-- Make a commit to `GitHub`.
-- Create a `GitHub release`.
-- And... publish 🙂 `poetry publish --build`
-
-## 🎯 What's next
-
-Well, that's up to you 💪🏻. I can only recommend the packages and articles that helped me.
-
-- [`Typer`](https://github.com/tiangolo/typer) is great for creating CLI applications.
-- [`Rich`](https://github.com/willmcgugan/rich) makes it easy to add beautiful formatting in the terminal.
-- [`Pydantic`](https://github.com/samuelcolvin/pydantic/) – data validation and settings management using Python type hinting.
-- [`Loguru`](https://github.com/Delgan/loguru) makes logging (stupidly) simple.
-- [`tqdm`](https://github.com/tqdm/tqdm) – fast, extensible progress bar for Python and CLI.
-- [`IceCream`](https://github.com/gruns/icecream) is a little library for sweet and creamy debugging.
-- [`orjson`](https://github.com/ijl/orjson) – ultra fast JSON parsing library.
-- [`Returns`](https://github.com/dry-python/returns) makes you function's output meaningful, typed, and safe!
-- [`Hydra`](https://github.com/facebookresearch/hydra) is a framework for elegantly configuring complex applications.
-- [`FastAPI`](https://github.com/tiangolo/fastapi) is a type-driven asynchronous web framework.
-
-Articles:
-
-- [Open Source Guides](https://opensource.guide/).
-- [A handy guide to financial support for open source](https://github.com/nayafia/lemonade-stand)
-- [GitHub Actions Documentation](https://help.github.com/en/actions).
-- Maybe you would like to add [gitmoji](https://gitmoji.carloscuesta.me/) to commit names. This is really funny. 😄
-
-## 🚀 Features
-
-### Development features
-
-- Supports for `Python 3.7` and higher.
-- [`Poetry`](https://python-poetry.org/) as the dependencies manager. See configuration in [`pyproject.toml`](https://github.com/Giskard-AI/python-client/blob/main/pyproject.toml) and [`setup.cfg`](https://github.com/Giskard-AI/python-client/blob/main/setup.cfg).
-- Automatic codestyle with [`black`](https://github.com/psf/black), [`isort`](https://github.com/timothycrosley/isort) and [`pyupgrade`](https://github.com/asottile/pyupgrade).
-- Ready-to-use [`pre-commit`](https://pre-commit.com/) hooks with code-formatting.
-- Type checks with [`mypy`](https://mypy.readthedocs.io); docstring checks with [`darglint`](https://github.com/terrencepreilly/darglint); security checks with [`safety`](https://github.com/pyupio/safety) and [`bandit`](https://github.com/PyCQA/bandit)
-- Testing with [`pytest`](https://docs.pytest.org/en/latest/).
-- Ready-to-use [`.editorconfig`](https://github.com/Giskard-AI/python-client/blob/main/.editorconfig), [`.dockerignore`](https://github.com/Giskard-AI/python-client/blob/main/.dockerignore), and [`.gitignore`](https://github.com/Giskard-AI/python-client/blob/main/.gitignore). You don't have to worry about those things.
-
-### Deployment features
-
-- `GitHub` integration: issue and pr templates.
-- `Github Actions` with predefined [build workflow](https://github.com/Giskard-AI/python-client/blob/main/.github/workflows/build.yml) as the default CI/CD.
-- Everything is already set up for security checks, codestyle checks, code formatting, testing, linting, docker builds, etc with [`Makefile`](https://github.com/Giskard-AI/python-client/blob/main/Makefile#L89). More details in [makefile-usage](#makefile-usage).
-- [Dockerfile](https://github.com/Giskard-AI/python-client/blob/main/docker/Dockerfile) for your package.
-- Always up-to-date dependencies with [`@dependabot`](https://dependabot.com/). You will only [enable it](https://docs.github.com/en/github/administering-a-repository/enabling-and-disabling-version-updates#enabling-github-dependabot-version-updates).
-- Automatic drafts of new releases with [`Release Drafter`](https://github.com/marketplace/actions/release-drafter). You may see the list of labels in [`release-drafter.yml`](https://github.com/Giskard-AI/python-client/blob/main/.github/release-drafter.yml). Works perfectly with [Semantic Versions](https://semver.org/) specification.
-
-### Open source community features
-
-- Ready-to-use [Pull Requests templates](https://github.com/Giskard-AI/python-client/blob/main/.github/PULL_REQUEST_TEMPLATE.md) and several [Issue templates](https://github.com/Giskard-AI/python-client/tree/main/.github/ISSUE_TEMPLATE).
-- Files such as: `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and `SECURITY.md` are generated automatically.
-- [`Stale bot`](https://github.com/apps/stale) that closes abandoned issues after a period of inactivity. (You will only [need to setup free plan](https://github.com/marketplace/stale)). Configuration is [here](https://github.com/Giskard-AI/python-client/blob/main/.github/.stale.yml).
-- [Semantic Versions](https://semver.org/) specification with [`Release Drafter`](https://github.com/marketplace/actions/release-drafter).
-
-## Installation
-
-```bash
-pip install -U python-client
 ```
+    
+For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+</div>
+</div>
 
-or install with `Poetry`
+<div id="how-to-contribute">
 
-```bash
-poetry add python-client
-```
+## How to contribute
+We welcome contributions from the Machine Learning community!
 
+Read this [guide](https://github.com/Giskard-AI/giskard/blob/main/CONTRIBUTING.md) to get started.
+</div>
+<br />
+<div id="like-what-were-doing">
 
+## Like what we're doing?
 
-### Makefile usage
+🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
-[`Makefile`](https://github.com/Giskard-AI/python-client/blob/main/Makefile) contains a lot of functions for faster development.
-
-<details>
-<summary>1. Download and remove Poetry</summary>
-<p>
-
-To download and install Poetry run:
-
-```bash
-make poetry-download
-```
-
-To uninstall
-
-```bash
-make poetry-remove
-```
-
-</p>
-</details>
-
-<details>
-<summary>2. Install all dependencies and pre-commit hooks</summary>
-<p>
-
-Install requirements:
-
-```bash
-make install
-```
-
-Pre-commit hooks coulb be installed after `git init` via
-
-```bash
-make pre-commit-install
-```
-
-</p>
-</details>
-
-<details>
-<summary>3. Codestyle</summary>
-<p>
-
-Automatic formatting uses `pyupgrade`, `isort` and `black`.
-
-```bash
-make codestyle
-
-# or use synonym
-make formatting
-```
-
-Codestyle checks only, without rewriting files:
-
-```bash
-make check-codestyle
-```
-
-> Note: `check-codestyle` uses `isort`, `black` and `darglint` library
-
-<details>
-<summary>4. Code security</summary>
-<p>
-
-```bash
-make check-safety
-```
-
-This command launches `Poetry` integrity checks as well as identifies security issues with `Safety` and `Bandit`.
-
-```bash
-make check-safety
-```
-
-</p>
-</details>
-
-</p>
-</details>
-
-<details>
-<summary>5. Type checks</summary>
-<p>
-
-Run `mypy` static type checker
-
-```bash
-make mypy
-```
-
-</p>
-</details>
-
-<details>
-<summary>6. Tests</summary>
-<p>
-
-Run `pytest`
-
-```bash
-make test
-```
-
-</p>
-</details>
-
-<details>
-<summary>7. All linters</summary>
-<p>
-
-Of course there is a command to ~~rule~~ run all linters in one:
-
-```bash
-make lint
-```
-
-the same as:
-
-```bash
-make test && make check-codestyle && make mypy && make check-safety
-```
-
-</p>
-</details>
-
-<details>
-<summary>8. Docker</summary>
-<p>
-
-```bash
-make docker-build
-```
-
-which is equivalent to:
-
-```bash
-make docker-build VERSION=latest
-```
-
-Remove docker image with
-
-```bash
-make docker-remove
-```
-
-More information [about docker](https://github.com/Giskard-AI/python-client/tree/main/docker).
-
-</p>
-</details>
-
-<details>
-<summary>9. Cleanup</summary>
-<p>
-Delete pycache files
-
-```bash
-make pycache-remove
-```
-
-Remove package build
-
-```bash
-make build-remove
-```
-
-Or to remove pycache, build and docker image run:
-
-```bash
-make clean-all
-```
-
-</p>
-</details>
-
-## 📈 Releases
-
-You can see the list of available releases on the [GitHub Releases](https://github.com/Giskard-AI/python-client/releases) page.
-
-We follow [Semantic Versions](https://semver.org/) specification.
-
-We use [`Release Drafter`](https://github.com/marketplace/actions/release-drafter). As pull requests are merged, a draft release is kept up-to-date listing the changes, ready to publish when you’re ready. With the categories option, you can categorize pull requests in release notes using labels.
-
-### List of labels and corresponding titles
-
-|               **Label**               |  **Title in Releases**  |
-| :-----------------------------------: | :---------------------: |
-|       `enhancement`, `feature`        |       🚀 Features       |
-| `bug`, `refactoring`, `bugfix`, `fix` | 🔧 Fixes & Refactoring  |
-|       `build`, `ci`, `testing`        | 📦 Build System & CI/CD |
-|              `breaking`               |   💥 Breaking Changes   |
-|            `documentation`            |    📝 Documentation     |
-|            `dependencies`             | ⬆️ Dependencies updates |
-
-You can update it in [`release-drafter.yml`](https://github.com/Giskard-AI/python-client/blob/main/.github/release-drafter.yml).
-
-GitHub creates the `bug`, `enhancement`, and `documentation` labels for you. Dependabot creates the `dependencies` label. Create the remaining labels on the Issues tab of your GitHub repository, when you need them.
-
-## 🛡 License
-
-[![License](https://img.shields.io/github/license/Giskard-AI/python-client)](https://github.com/Giskard-AI/python-client/blob/main/LICENSE)
-
-This project is licensed under the terms of the `Apache Software License 2.0` license. See [LICENSE](https://github.com/Giskard-AI/python-client/blob/main/LICENSE) for more details.
-
-## 📃 Citation
-
-```bibtex
-@misc{python-client,
-  author = {Giskard AI},
-  title = {Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬},
-  year = {2021},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/Giskard-AI/python-client
-}
-```
-
-## Credits [![🚀 Your next Python package needs a bleeding-edge project structure.](https://img.shields.io/badge/python--package--template-%F0%9F%9A%80-brightgreen)](https://github.com/TezRomacH/python-package-template)
-
-This project was generated with [`python-package-template`](https://github.com/TezRomacH/python-package-template)
+❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
+</div>

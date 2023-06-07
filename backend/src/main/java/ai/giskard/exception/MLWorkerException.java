@@ -6,10 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class
-
-
-MLWorkerException extends StatusRuntimeException {
+public class MLWorkerException extends StatusRuntimeException {
     @Setter
     private String errorClass;
     private final String message;

@@ -20,7 +20,7 @@
             <column name="size" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="feature_types" type="VARCHAR"/>
+            <column name="column_types" type="VARCHAR"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="target" type="VARCHAR(255)"/>
             <column name="project_id" type="BIGINT"/>

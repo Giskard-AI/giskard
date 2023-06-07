@@ -17,6 +17,7 @@ import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -85,8 +86,6 @@ class AdminProjectControllerIT {
 
     /**
      * Get all Projects
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -101,8 +100,6 @@ class AdminProjectControllerIT {
     /**
      * Get all projects with user not in database authority
      * Expect NotInDatabaseException
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -113,8 +110,6 @@ class AdminProjectControllerIT {
 
     /**
      * Show a project
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -128,8 +123,6 @@ class AdminProjectControllerIT {
 
     /**
      * Create new Project
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -148,8 +141,6 @@ class AdminProjectControllerIT {
 
     /**
      * Update Project
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -169,8 +160,6 @@ class AdminProjectControllerIT {
 
     /**
      * Update project when not owner
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -189,8 +178,6 @@ class AdminProjectControllerIT {
 
     /**
      * Remove project
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -204,8 +191,6 @@ class AdminProjectControllerIT {
 
     /**
      * Add user to project's guestlist
-     *
-     * @throws Exception
      */
     @Test
     @Transactional
@@ -221,16 +206,16 @@ class AdminProjectControllerIT {
 
     @Test
     @Transactional
+    @Disabled("restore after the rest of demo projects are recreated")
     void exportImportProject() throws Exception {
         Project project = projectRepository.getOneByName(PROJECTKEY);
         String url = String.format("/api/v2/download/project/%d/export", project.getId());
         assertThat(project.getKey()).isEqualTo(project.getKey());
         ResultActions resultActions = restUserMockMvc.perform(get(url))
             .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
-            .andExpect(status().isOk());
+            .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM));
         byte[] res = resultActions.andReturn().getResponse().getContentAsByteArray();
-        String unzipUrl = String.format("/api/v2/project/import/prepare");
+        String unzipUrl = "/api/v2/project/import/prepare";
         resultActions = restUserMockMvc.perform(multipart(unzipUrl).file(new MockMultipartFile("file", res)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -248,12 +233,8 @@ class AdminProjectControllerIT {
     }
 
 
-
-
     /**
      * Remove user from the guestlist
-     *
-     * @throws Exception
      */
     @Test
     @Transactional

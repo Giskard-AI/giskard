@@ -9,7 +9,7 @@ import './plugins/vee-validate';
 import App from './App.vue';
 import router from './router';
 import './registerServiceWorker';
-import 'vuetify/dist/vuetify.min.css';
+// import 'vuetify/dist/vuetify.min.css';
 import 'vuetify-dialog/dist/vuetify-dialog.css';
 import './filters'
 

@@ -5,6 +5,47 @@ $color-pack: false;
 @import "./font-awesome/scss/solid.scss";
 @import "./font-awesome/scss/brands.scss";
 
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 0% 200%;
+  src: url('@/assets/fonts/FiraCode-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 0% 200%;
+  src: url('@/assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
+}
+
+html {
+  scrollbar-width: thin;
+
+  ::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 4px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: white;
+    box-shadow: inset 0 0 4px #d2d2d2;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #8f8f8f;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: white;
+  }
+}
+
+
 .w100 {
   width: 100%;
   max-width: 100%;
@@ -37,24 +78,68 @@ $notification-spinner-size: 20px;
 }
 
 .vertical-container {
-  @extend .d-flex;
-  @extend .flex-grow-1;
-  @extend .flex-column;
 
-  & > .v-tabs,
-  & > .v-toolbar,
-  & > .row {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1 !important;
+  overflow-y: auto;
+
+  & > *:not(.vertical-container) {
     flex-grow: 0;
-    margin-bottom: 0;
+    flex-shrink: 0;
   }
+}
+
+.vc {
+  @extend .vertical-container
 }
 
 .vertical-container .v-main__wrap {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 72px;
+  right: 0;
+}
+
+
+.debug {
+  background-color: rgba(240, 128, 128, 0.29);
+  border: 4px solid red;
+
+  &.tall {
+    height: 9999px;
+  }
+
+  &.x-tall {
+    height: 999999px;
+  }
+}
+
+.v-tabs.vertical-container {
   flex-grow: 1;
-  height: 100vh;
-  overflow: auto;
+  overflow-y: hidden;
+
+  .v-tabs-items {
+    @extend .vertical-container;
+    overflow-y: hidden;
+
+    .v-window__container {
+      @extend .vertical-container;
+      height: 1px;
+    }
+
+    //flex-grow: 1;
+    //display: flex;
+    //flex-direction: column;
+    //.v-window__container{
+    //  flex-grow: 1;
+    //}
+  }
 }
 
 
@@ -64,7 +149,8 @@ $vt-text-color-error: #bb0000 !default;
 .Vue-Toastification__toast--error {
   border: 2px solid $vt-text-color-error;
   border-left: 10px solid $vt-text-color-error;
-  .Vue-Toastification__close-button{
+
+  .Vue-Toastification__close-button {
     color: black;
   }
 
@@ -81,8 +167,19 @@ $vt-text-color-error: #bb0000 !default;
 }
 
 // fix for https://github.com/yariksav/vuetify-dialog/issues/139
-.v-dialog--scrollable{
-  .v-dialog-wrapper{
+.v-dialog--scrollable {
+  .v-dialog-wrapper {
     overflow: auto;
   }
+}
+
+
+.primaryLightBtn {
+  @extend .grey--text !optional;
+  @extend .text--darken-4 !optional;
+}
+
+// Hide Monaco autocompletion widget that becomes a black row in the case when there are no suggestions
+.suggest-widget{
+  display: none !important;
 }

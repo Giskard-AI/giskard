@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.security.RandomUtil;
 
 import java.time.Instant;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
  * Service class for managing users.
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
@@ -242,27 +240,22 @@ public class UserService {
             });
     }
 
-    @Transactional(readOnly = true)
     public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(AdminUserDTO::new);
     }
 
-    @Transactional(readOnly = true)
     public List<User> getAllCoworkers(String currentUserLogin) {
         return new ArrayList<>(userRepository.getAllWithRolesByLoginNot(currentUserLogin));
     }
 
-    @Transactional(readOnly = true)
     public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
         return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(giskardMapper::userToUserDTO);
     }
 
-    @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithRolesByLogin(login);
     }
 
-    @Transactional(readOnly = true)
     public User getUserByLogin(String login) {
         return userRepository.getOneByLogin(login);
     }
@@ -273,7 +266,6 @@ public class UserService {
      *
      * @return a list of all the authorities.
      */
-    @Transactional(readOnly = true)
     public List<String> getAuthorities() {
         return roleRepository.findAll().stream().map(Role::getName).toList();
     }

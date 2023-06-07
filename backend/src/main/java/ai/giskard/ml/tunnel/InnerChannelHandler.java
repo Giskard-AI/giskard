@@ -1,49 +1,48 @@
 package ai.giskard.ml.tunnel;
 
+import ai.giskard.config.SpringContext;
+import ai.giskard.service.ml.MLWorkerDataEncryptor;
+import ai.giskard.service.ml.MLWorkerSecurityService;
 import com.google.common.util.concurrent.SettableFuture;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.ml.tunnel.ServiceChannelCommand.REGISTER_CLIENT_CHANNEL;
 
 public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     private final Logger log = LoggerFactory.getLogger(InnerChannelHandler.class);
     private final SocketChannel serviceOuterChannel;
-    private final Map<String, SettableFuture<Channel>> outerChannelByInnerChannelId;
-    private final Map<ChannelId, String> innerChannelIdByOuterChannel;
-    private final Map<String, Channel> innerChannelById;
+    private final ChannelRegistry channelRegistry;
     private final SettableFuture<Channel> innerChannelFuture;
+    private final MLWorkerDataEncryptor encryptor;
 
-    public InnerChannelHandler(SocketChannel serviceOuterChannel, Map<String,
-        SettableFuture<Channel>> outerChannelByInnerChannelId, Map<ChannelId,
-        String> innerChannelIdByOuterChannel, Map<String, Channel> innerChannelById,
-                               SettableFuture<Channel> innerChannelFuture) {
+    public InnerChannelHandler(SocketChannel serviceOuterChannel,
+                               ChannelRegistry channelRegistry,
+                               SettableFuture<Channel> innerChannelFuture, String keyId) {
         this.serviceOuterChannel = serviceOuterChannel;
-        this.outerChannelByInnerChannelId = outerChannelByInnerChannelId;
-        this.innerChannelIdByOuterChannel = innerChannelIdByOuterChannel;
-        this.innerChannelById = innerChannelById;
+        this.channelRegistry = channelRegistry;
         this.innerChannelFuture = innerChannelFuture;
+        this.encryptor = new MLWorkerDataEncryptor(SpringContext.getBean(MLWorkerSecurityService.class).findKey(keyId).getKey());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        log.info("Connection to inner server closed, channel id {}", ctx.channel().id());
-        Channel outerChannel = outerChannelByInnerChannelId.remove(ctx.channel().id().asShortText()).get();
+        ChannelId innerChannelId = ctx.channel().id();
+        log.debug("Connection to inner server closed, channel id {}", innerChannelId);
+        Channel outerChannel = channelRegistry.getOuterChannelByInnerChannelId(innerChannelId);
         outerChannel.close().sync();
-        innerChannelIdByOuterChannel.remove(outerChannel.id());
+        channelRegistry.removeInnerChannel(innerChannelId);
         log.info("Closed outer channel {}", outerChannel.id());
     }
 
@@ -51,14 +50,10 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) {
         Channel innerChannel = ctx.channel();
         String innerChannelShortName = innerChannel.id().asShortText();
-        log.info("New connection to inner server, channel id {}", ctx.channel().id());
+        log.debug("New connection to inner server, channel id {}", ctx.channel().id());
 
-        innerChannelById.put(innerChannelShortName, innerChannel);
+        channelRegistry.addInnerChannel(innerChannel);
         innerChannelFuture.set(innerChannel);
-        innerChannel.closeFuture().addListener(future -> innerChannelById.remove(innerChannelShortName));
-
-        SettableFuture<Channel> outerChannelFuture = SettableFuture.create();
-        outerChannelByInnerChannelId.put(innerChannelShortName, outerChannelFuture);
 
         callRegisterClientChannel(innerChannelShortName);
     }
@@ -67,25 +62,29 @@ public class InnerChannelHandler extends ChannelInboundHandlerAdapter {
         ByteBuf out = Unpooled.buffer();
         out.writeBytes(Unpooled.copiedBuffer(innerChannelShortName, StandardCharsets.UTF_8));
         out.writeByte(REGISTER_CLIENT_CHANNEL);
-        log.info("Linking inner channel {} with new outer channel through service channel {}", innerChannelShortName, serviceOuterChannel.id());
-        serviceOuterChannel.writeAndFlush(out);
+        log.debug("Linking inner channel {} with new outer channel through service channel {}", innerChannelShortName, serviceOuterChannel.id());
+        serviceOuterChannel.writeAndFlush(
+            Unpooled.wrappedBuffer(encryptor.encrypt(ByteBufUtil.getBytes(out)))
+        );
     }
 
-    @SneakyThrows
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        Channel outerChannel = outerChannelByInnerChannelId.get(ctx.channel().id().asShortText()).get();
+        Channel outerChannel = channelRegistry.getOuterChannelByInnerChannelId(ctx.channel().id());
         ByteBuf in = (ByteBuf) msg;
         int originalLength = in.readableBytes();
-        log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ctx.channel().id(), outerChannel.id());
 
-        outerChannel.writeAndFlush(in);
+        if (originalLength != 0) {
+            log.debug("Inner->Outer: Writing {} bytes from {} to {}", originalLength, ctx.channel().id(), outerChannel.id());
+            byte[] bytes = encryptor.encrypt(ByteBufUtil.getBytes(in));
+            outerChannel.writeAndFlush(Unpooled.wrappedBuffer(bytes));
+        }
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws ExecutionException, InterruptedException {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         log.warn("Caught exception in inner server handler", cause);
-        Channel outerChannel = outerChannelByInnerChannelId.get(ctx.channel().id().asShortText()).get();
+        Channel outerChannel = channelRegistry.getOuterChannelByInnerChannelId(ctx.channel().id());
         ctx.close().addListener(future ->
             log.info("Inner channel is closed by exception {}: {}", ctx.channel().id(), cause.getMessage())
         );

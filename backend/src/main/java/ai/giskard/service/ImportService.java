@@ -1,6 +1,5 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.BaseEntity;
 import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
@@ -18,71 +17,60 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ImportService {
 
-    private final FileUploadService fileUploadService;
     private final FeedbackRepository feedbackRepository;
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
     private final UserRepository userRepository;
-    private final TestSuiteRepository testSuiteRepository;
     private final FileLocationService locationService;
+    private final TestSuiteService testSuiteService;
     private final ProjectRepository projectRepository;
+    private final TestSuiteRepository testSuiteRepository;
 
 
-    private Map<Long, Long> saveImportDataset(List<Dataset> datasets, Path pathToMetadataDirectory, Project savedProject) {
-        Map<Long, Long> mapFormerNewIdDataset = new HashMap<>();
+    private Map<UUID, UUID> saveImportDataset(List<Dataset> datasets, Project savedProject) {
+        Map<UUID, UUID> mapFormerNewIdDataset = new HashMap<>();
         datasets.forEach(dataset -> {
-            Long formerId = getIdFromFileName(dataset);
-            Path formerDatasetPath = pathToMetadataDirectory.resolve("datasets").resolve(FileLocationService.createZSTname("data_", formerId));
-            try {
-                dataset.setProject(savedProject);
-                FileInputStream datasetStream = new FileInputStream(formerDatasetPath.toFile());
-                Dataset savedDataset = fileUploadService.uploadDataset(savedProject, dataset, datasetStream);
-                mapFormerNewIdDataset.put(formerId, savedDataset.getId());
-            } catch (IOException e) {
-                throw new GiskardRuntimeException("Couldn't upload the datasets", e);
-            }
+            UUID formerId = dataset.getId();
+            UUID newId = UUID.randomUUID();
+            dataset.setProject(savedProject);
+            dataset.setId(newId);
+            mapFormerNewIdDataset.put(formerId, newId);
+            datasetRepository.save(dataset);
         });
         return mapFormerNewIdDataset;
     }
 
-    private Map<Long, Long> saveImportModel(List<ProjectModel> models, Path pathToMetadataDirectory, Project savedProject){
-        Map<Long, Long> mapFormerNewIdModel = new HashMap<>();
+    private Map<UUID, UUID> saveImportModel(List<ProjectModel> models, Project savedProject) {
+        Map<UUID, UUID> mapFormerNewIdModel = new HashMap<>();
         models.forEach(model -> {
-            Long formerId = getIdFromFileName(model);
-            Path formerModelPath = pathToMetadataDirectory.resolve("models").resolve(FileLocationService.createZSTname("model_", formerId));
-            Path formerRequirementsModelPath = pathToMetadataDirectory.resolve("models").resolve(FileLocationService.createTXTname("model-requirements_", formerId));
-            try {
-                model.setProject(savedProject);
-                FileInputStream modelStream = new FileInputStream(formerModelPath.toFile());
-                FileInputStream modelRequirementStream = new FileInputStream(formerRequirementsModelPath.toFile());
-                ProjectModel savedModel = fileUploadService.uploadModel(model, modelStream, modelRequirementStream);
-                mapFormerNewIdModel.put(formerId, savedModel.getId());
-            } catch (IOException e) {
-                throw new GiskardRuntimeException("Couldn't upload the models. ", e);
-            }
+            UUID formerId = model.getId();
+            UUID newId = UUID.randomUUID();
+            model.setProject(savedProject);
+            model.setId(newId);
+            mapFormerNewIdModel.put(formerId, newId);
+            modelRepository.save(model);
         });
         return mapFormerNewIdModel;
     }
 
-    private void saveImportFeedback(List<Feedback> feedbacks, Project savedProject, Map<Long, Long> mapFormerNewIdModel, Map<Long, Long> mapFormerNewIdDataset, Map<String, String> importedUsersToCurrent){
+    private void saveImportFeedback(List<Feedback> feedbacks, Project savedProject, Map<UUID, UUID> mapFormerNewIdModel, Map<UUID, UUID> mapFormerNewIdDataset, Map<String, String> importedUsersToCurrent) {
         feedbacks.forEach(feedback -> {
             feedback.setProject(savedProject);
-            feedback.setDataset(datasetRepository.getById(mapFormerNewIdDataset.get(getIdFromFileName(feedback.getDataset()))));
-            feedback.setModel(modelRepository.getById(mapFormerNewIdModel.get(getIdFromFileName(feedback.getModel()))));
+            feedback.setDataset(datasetRepository.getMandatoryById(mapFormerNewIdDataset.get(feedback.getDataset().getId())));
+            feedback.setModel(modelRepository.getMandatoryById(mapFormerNewIdModel.get(feedback.getModel().getId())));
             feedback.setUser(userRepository.getOneByLogin(importedUsersToCurrent.get(feedback.getUser().getLogin())));
             feedback.getFeedbackReplies().forEach(reply -> {
                 reply.setFeedback(feedback);
@@ -92,19 +80,19 @@ public class ImportService {
         });
     }
 
-    private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject, Map<Long, Long> mapFormerNewIdModel, Map<Long, Long> mapFormerNewIdDataset){
-        testSuites.forEach(testSuite -> {
-            testSuite.setProject(savedProject);
-            testSuite.setActualDataset(datasetRepository.getById(mapFormerNewIdDataset.get(getIdFromFileName(testSuite.getActualDataset()))));
-            testSuite.setReferenceDataset(datasetRepository.getById(mapFormerNewIdDataset.get(getIdFromFileName(testSuite.getReferenceDataset()))));
-            testSuite.setModel(modelRepository.getById(mapFormerNewIdModel.get(getIdFromFileName(testSuite.getModel()))));
-            TestSuite savedTs = testSuiteRepository.save(testSuite);
-            testSuite.getTests().forEach(test -> test.setTestSuite(savedTs));
-            testSuiteRepository.save(savedTs);
+    private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject) {
+        testSuites.forEach(suite -> {
+            suite.setProject(savedProject);
+
+            suite.getTests().forEach(test -> test.setSuite(suite));
+
+            suite.getExecutions().forEach(execution -> execution.setSuite(suite));
+
+            testSuiteRepository.save(suite);
         });
     }
 
-    private Project saveImportProject(Project project, String userNameOwner, String projectKey, Map<String, String> importedUsersToCurrent){
+    private Project saveImportProject(Project project, String userNameOwner, String projectKey, Map<String, String> importedUsersToCurrent) {
         project.setOwner(userRepository.getOneByLogin(userNameOwner));
         project.setKey(projectKey);
         Set<User> guestList = new HashSet<>();
@@ -116,36 +104,51 @@ public class ImportService {
         return projectRepository.save(project);
     }
 
+    /**
+     * Copies a folder inside the temporary directory provided into the project's directory,
+     * then iterates over subfolders
+     * to rename them according to the provided idMap
+     */
+    private void copyFilesToProjectFolder(Project newProject, Path metadataTmpDirectory, Map<UUID, UUID> idMap, String folderName) throws IOException {
+        Path projectDir = locationService.resolvedProjectHome(newProject.getKey());
+        Path tmpModelDir = metadataTmpDirectory.resolve(folderName);
+        Path finalModelDir = projectDir.resolve(folderName);
 
-    Project importProject(Map<String, String> importedUsersToCurrent, String metadataDirectory, String projectKey, String userNameOwner) throws IOException{
+        FileUtils.copyDirectory(tmpModelDir.toFile(), finalModelDir.toFile());
+
+        for (Map.Entry<UUID, UUID> ids : idMap.entrySet()) {
+            Files.move(finalModelDir.resolve(ids.getKey().toString()), finalModelDir.resolve(ids.getValue().toString()));
+        }
+    }
+
+    Project importProject(Map<String, String> importedUsersToCurrent, String metadataDirectory, String projectKey, String userNameOwner) throws IOException {
         Path pathMetadataDirectory = Paths.get(metadataDirectory);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // Get back object from file
-        Project project = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Project.class.getSimpleName()).toFile(), new TypeReference<>(){});
-        List<ProjectModel> models = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, ProjectModel.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Dataset.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>(){} );
-        List<TestSuite> testSuites = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>(){} );
+        Project project = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Project.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<ProjectModel> models = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, ProjectModel.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Dataset.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<TestSuite> testSuites = mapper.readValue(testSuiteService.resolvedMetadataPath(pathMetadataDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
         Project savedProject = saveImportProject(project, userNameOwner, projectKey, importedUsersToCurrent);
 
         // Save new objects in memory
-        Map<Long, Long> mapFormerNewIdModel = saveImportModel(models, pathMetadataDirectory, savedProject);
-        Map<Long, Long> mapFormerNewIdDataset = saveImportDataset(datasets, pathMetadataDirectory, savedProject);
+        Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, savedProject);
+        Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, savedProject);
         saveImportFeedback(feedbacks, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset, importedUsersToCurrent);
-        saveImportTestSuites(testSuites, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset);
+        saveImportTestSuites(testSuites, savedProject);
+
+        // Once everything is remapped, at this stage we want to save the files into appropriate folders
+        copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdModel, "models");
+        copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdDataset, "datasets");
 
         return projectRepository.save(savedProject);
-    }
-
-    private Long getIdFromFileName(BaseEntity b){
-        if (b.getClass() == Dataset.class){
-            return Long.parseLong(((Dataset) b).getFileName().replaceFirst("data_", "").replaceFirst(".zst", ""));
-        } else if (b.getClass() == ProjectModel.class){
-            return Long.parseLong(((ProjectModel) b).getFileName().replaceFirst("model_", "").replaceFirst(".zst", ""));
-        } else {
-            throw new GiskardRuntimeException("Cannot get id of your entity");
-        }
     }
 }

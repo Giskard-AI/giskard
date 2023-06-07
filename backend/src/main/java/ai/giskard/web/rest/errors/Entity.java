@@ -7,10 +7,14 @@ public enum Entity {
     DATASET("Dataset"),
     PROJECT_MODEL("Model"),
     TEST_SUITE("Test suite"),
+    TEST_FUNCTION("Test function"),
+    SLICING_FUNCTION("Slicing function"),
+    TRANSFORMATION_FUNCTION("Transformation function"),
     TEST("Test"),
     USER("User"),
     ROLE("Role"),
     FEEDBACK("Feedback"),
+    FEEDBACK_REPLY("Feedback reply"),
     INSPECTION("Inspection");
 
     @Getter

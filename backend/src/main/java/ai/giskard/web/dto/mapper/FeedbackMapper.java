@@ -45,4 +45,6 @@ public interface FeedbackMapper {
     FeedbackReplyDTO feedbackReplyToFeedbackReplyDTO(FeedbackReply feedbackReply);
 
     List<FeedbackMinimalDTO> feedbacksToFeedbackMinimalDTOs(List<Feedback> feedbacks);
+
+    List<FeedbackReplyDTO> feedbackRepliesToFeedbackReplyDTOs(List<FeedbackReply> feedbackReplies);
 }

@@ -4,15 +4,14 @@ import ai.giskard.IntegrationTest;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.InitService;
 import ai.giskard.service.TestSuiteService;
-import ai.giskard.web.dto.ml.TestSuiteDTO;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -48,21 +47,16 @@ class TestControllerIT {
 
     @Test
     @Transactional
+    @Disabled("TODO: call another endpoint since it has been removed")
     void getAllProjects() throws Exception {
-        TestSuite testSuite = new TestSuite();
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin("admin"));
         Optional<ProjectModel> model = project.getModels().stream().findFirst();
         Optional<Dataset> dataset = project.getDatasets().stream().findFirst();
         if (model.isEmpty() || dataset.isEmpty()) {
             throw new AssertionError("demo model and dataset not found");
         }
-        testSuite.setName("demo test suite");
-        testSuite.setProject(project);
-        testSuite.setModel(model.get());
-        testSuite.setActualDataset(dataset.get());
 
-        TestSuiteDTO suite = testSuiteService.createTestSuite(testSuite, false);
-        restUserMockMvc.perform(get(String.format("/api/v2/testing/tests/code-test-templates?suiteId=%s", suite.getId())).accept(MediaType.APPLICATION_JSON))
+        restUserMockMvc.perform(get("/api/v2/testing/tests/code-test-templates").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.collections.[*].title").isNotEmpty())
@@ -78,12 +72,11 @@ class TestControllerIT {
             .filter(d -> d.getTarget() != null)
             .findFirst();
         Assertions.assertFalse(dataset.isEmpty(), "demo dataset with target not found");
-        restUserMockMvc.perform(get(String.format("/api/v2/datasets/%s/metadata", dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
+        restUserMockMvc.perform(get(String.format("/api/v2/project/%s/datasets/%s", dataset.get().getProject().getKey(), dataset.get().getId())).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").isNotEmpty())
             .andExpect(jsonPath("$.target").isString())
-            .andExpect(jsonPath("$.featureTypes").isNotEmpty())
             .andExpect(jsonPath("$.columnTypes").isNotEmpty());
     }
 }

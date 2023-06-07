@@ -1,13 +1,11 @@
 package ai.giskard.web.dto.mapper;
 
-import ai.giskard.domain.Feedback;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.Role;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
+import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.utils.JSON;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.ml.*;
@@ -15,10 +13,7 @@ import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import org.mapstruct.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Mapper(
@@ -28,6 +23,7 @@ import java.util.stream.Collectors;
         DatasetRepository.class,
         ModelRepository.class,
         ProjectRepository.class,
+        TestFunctionRepository.class,
         JSON.class
     }
 )
@@ -54,7 +50,6 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
-    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -62,21 +57,12 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     void updateProjectFromDto(ProjectPostDTO dto, @MappingTarget Project entity);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    @Mapping(target = "project", ignore = true)
-    void updateSliceFromDto(SlicePutDTO dto, @MappingTarget Slice entity);
-
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
-    @Mapping(target = "slices", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -84,15 +70,10 @@ public interface GiskardMapper {
     @Mapping(target = "mlWorkerType", ignore = true)
     Project projectPostDTOToProject(ProjectPostDTO projectPostDto);
 
-    TestSuiteDTO testSuiteToTestSuiteDTO(TestSuite testSuite);
-
     ProjectPostDTO projectToProjectPostDTO(Project project);
 
     ProjectDTO projectToProjectDTO(Project project);
 
-    SliceDTO sliceToSliceDTO(Slice slice);
-
-    List<SliceDTO> slicesToSlicesDTO(List<Slice> slice);
 
     List<ProjectDTO> projectsToProjectDTOs(List<Project> projects);
 
@@ -104,21 +85,9 @@ public interface GiskardMapper {
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);
 
-    @Mapping(source = "featureTypes", target = "featureTypes")
+    @Mapping(source = "columnTypes", target = "columnTypes")
     DatasetDTO datasetToDatasetDTO(Dataset dataset);
 
-    List<TestSuiteDTO> testSuitesToTestSuiteDTOs(List<TestSuite> testSuites);
-
-    @Mapping(source = "actualDatasetId", target = "actualDataset")
-    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
-    @Mapping(source = "modelId", target = "model")
-    @Mapping(target = "project", ignore = true)
-    @Mapping(target = "tests", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdDate", ignore = true)
-    @Mapping(target = "lastModifiedBy", ignore = true)
-    @Mapping(target = "lastModifiedDate", ignore = true)
-    void updateTestSuiteFromDTO(UpdateTestSuiteDTO dto, @MappingTarget TestSuite entity);
 
     UserDTO userToUserDTO(User user);
 
@@ -126,7 +95,10 @@ public interface GiskardMapper {
         return dtos.stream().filter(Objects::nonNull).map(this::userToUserDTO).toList();
     }
 
+
     InspectionDTO toDTO(Inspection inspection);
+
+    List<InspectionDTO> inspectionsToInspectionDTOs(List<Inspection> inspections);
 
     AdminUserDTO userToAdminUserDTO(User user);
 
@@ -145,35 +117,96 @@ public interface GiskardMapper {
     @Mapping(source = "featureNames", target = "featureNames")
     ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
 
-    @Mapping(source = "modelId", target = "model")
-    @Mapping(source = "referenceDatasetId", target = "referenceDataset")
-    @Mapping(source = "actualDatasetId", target = "actualDataset")
     @Mapping(source = "projectId", target = "project")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "tests", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
-    TestSuite fromDTO(TestSuiteCreateDTO dto);
+    ProjectModel fromDTO(ModelDTO dto);
 
-    @Mapping(source = "projectId", target = "project")
-    @Mapping(target = "id", ignore = true)
+    @Mapping(source = "columnTypes", target = "columnTypes")
+    @Mapping(target = "inspections", ignore = true)
+    @Mapping(target = "project", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
-    Slice fromDTO(SliceCreateDTO dto);
-
+    Dataset fromDTO(DatasetDTO dto);
 
     @Mapping(target = "message", source = "feedbackMessage")
     @Mapping(target = "projectId", source = "project.id")
     PrepareDeleteDTO.LightFeedback toDTO(Feedback obj);
 
-    @Mapping(target = "projectId", source = "project.id")
-    PrepareDeleteDTO.LightTestSuite toDTO(TestSuite obj);
-
     List<PrepareDeleteDTO.LightFeedback> toLightFeedbacks(List<Feedback> obj);
 
-    List<PrepareDeleteDTO.LightTestSuite> toLightTestSuites(List<TestSuite> obj);
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdDate", ignore = true)
+    @Mapping(target = "lastModifiedBy", ignore = true)
+    @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "project", source = "projectKey")
+    @Mapping(target = "executions", ignore = true)
+    TestSuite fromDTO(TestSuiteDTO dto);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "suite", ignore = true)
+    @Mapping(target = "testFunction", source = "testUuid")
+    @Mapping(target = "executions", ignore = true)
+    SuiteTest fromDTO(SuiteTestDTO dto);
+
+    @AfterMapping
+    default void afterMapping(@MappingTarget TestSuite suite) {
+        suite.getTests().forEach(e -> e.setSuite(suite));
+    }
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "alias", source = "alias")
+    FunctionInput fromDTO(FunctionInputDTO dto);
+
+    FunctionInputDTO toDTO(FunctionInput obj);
+
+
+    List<TestSuiteDTO> toDTO(List<TestSuite> suites);
+
+    @Mapping(target = "projectKey", source = "project.key")
+    TestSuiteDTO toDTO(TestSuite suite);
+
+    @Mapping(target = "testUuid", source = "testFunction.uuid")
+    @Mapping(target = "test", source = "testFunction")
+    SuiteTestDTO toDTO(SuiteTest dto);
+
+    default Map<String, FunctionInputDTO> map(List<FunctionInput> value) {
+        return value.stream().collect(Collectors.toMap(FunctionInput::getName, this::toDTO));
+    }
+
+    default List<FunctionInput> map(Map<String, FunctionInputDTO> value) {
+        return value.values().stream().map(this::fromDTO).toList();
+    }
+
+    @Mapping(target = "suiteId", source = "suite.id")
+    TestSuiteExecutionDTO toDTO(TestSuiteExecution save);
+
+    List<TestSuiteExecutionDTO> testSuiteExecutionToDTOs(List<TestSuiteExecution> save);
+
+    TestFunctionArgumentDTO toDTO(FunctionArgument functionArgument);
+
+    @Mapping(target = "function", ignore = true)
+    FunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
+
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    TestFunctionDTO toDTO(TestFunction testFunction);
+
+    @Mapping(target = "suiteTests", ignore = true)
+    TestFunction fromDTO(TestFunctionDTO testFunction);
+
+    SlicingFunction fromDTO(SlicingFunctionDTO testFunction);
+
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    SlicingFunctionDTO toDTO(SlicingFunction testFunction);
+
+    @Mapping(target = "potentiallyUnavailable", ignore = true)
+    TransformationFunctionDTO toDTO(TransformationFunction testFunction);
+
+    TransformationFunction fromDTO(TransformationFunctionDTO testFunction);
+
 }

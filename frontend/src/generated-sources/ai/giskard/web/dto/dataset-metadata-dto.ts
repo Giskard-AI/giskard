@@ -1,11 +1,14 @@
-import type {FeatureType} from './../../domain/feature-type';
+import type {ColumnType} from './../../domain/column-type';
 
 /**
  * Generated from ai.giskard.web.dto.DatasetMetadataDTO
  */
 export interface DatasetMetadataDTO {
-    columnTypes?: {[key: string]: string} | null;
-    featureTypes: {[key: string]: FeatureType};
-    id: number;
+    categoryFeatures: {[key: string]: string[]};
+    columnDtypes?: {[key: string]: string} | null;
+    columnTypes: {[key: string]: ColumnType};
+    id: string;
+    name: string;
+    numberOfRows: number;
     target?: string | null;
 }

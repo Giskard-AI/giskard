@@ -1,10 +1,12 @@
 package ai.giskard.domain.ml;
 
 
-import ai.giskard.domain.FeatureType;
-import ai.giskard.domain.ProjectFile;
+import ai.giskard.domain.AbstractAuditingEntity;
+import ai.giskard.domain.ColumnType;
+import ai.giskard.domain.Project;
 import ai.giskard.utils.JSONStringAttributeConverter;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -12,38 +14,52 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Entity(name = "datasets")
 @NoArgsConstructor
 @Getter
-public class Dataset extends ProjectFile {
+@Setter
+public class Dataset extends AbstractAuditingEntity {
+    @Id
+    private UUID id;
+
     @Converter
-    public static class FeatureTypesConverter extends JSONStringAttributeConverter<Map<String, FeatureType>> {
+    public static class ColumnTypesConverter extends JSONStringAttributeConverter<Map<String, ColumnType>> {
         @Override
-        public TypeReference<Map<String, FeatureType>> getValueTypeRef() {return new TypeReference<>() {};}
+        public TypeReference<Map<String, ColumnType>> getValueTypeRef() {
+            return new TypeReference<>() {
+            };
+        }
     }
 
-    @Setter
     private String name;
 
     @Column(columnDefinition = "VARCHAR")
-    @Setter
-    @Convert(converter = FeatureTypesConverter.class)
-    private Map<String, FeatureType> featureTypes;
+    @Convert(converter = ColumnTypesConverter.class)
+    private Map<String, ColumnType> columnTypes;
 
-    @Setter
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    private Map<String, String> columnTypes;
-    @Setter
+    private Map<String, String> columnDtypes;
     private String target;
 
-    @Setter
     @OneToMany(mappedBy = "dataset", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Inspection> inspections = new HashSet<>();
+
+    @ManyToOne
+    @JsonBackReference
+    private Project project;
+
+    private Long originalSizeBytes;
+
+    private Long compressedSizeBytes;
+
+    private long numberOfRows;
+
+    @Column(columnDefinition = "VARCHAR")
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
+    private Map<String, List<String>> categoryFeatures;
 
 }

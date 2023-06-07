@@ -61,8 +61,8 @@ import OverlayLoader from "@/components/OverlayLoader.vue";
 
 
 interface Props {
-  modelId: number,
-  datasetId: number,
+  modelId: string,
+  datasetId: string,
   textFeatureNames: string[],
   classificationLabels: string[]
   inputData?: object,

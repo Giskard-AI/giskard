@@ -10,9 +10,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
-from giskard.ml_worker.core.model import GiskardModel
+from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.catboost import CatboostModel
+from giskard.models.sklearn import SKLearnModel
 from tests import path
 
 logger = logging.getLogger(__name__)
@@ -42,30 +44,25 @@ input_types = {
 
 
 @pytest.fixture()
-def german_credit_data() -> GiskardDataset:
+def german_credit_data() -> Dataset:
     logger.info("Reading german_credit_prepared.csv")
     df = pd.read_csv(
         path("test_data/german_credit_prepared.csv"),
         keep_default_na=False,
         na_values=["_GSK_NA_"],
     )
-    return GiskardDataset(
-        df=df,
-        column_types=df.dtypes.apply(lambda x: x.name).to_dict(),
-        target="default",
-        feature_types=input_types,
-    )
+    return Dataset(df=df, name='Test german credit scoring dataset', target="default", column_types=input_types)
 
 
 @pytest.fixture()
-def german_credit_catboost(german_credit_data) -> GiskardModel:
+def german_credit_catboost_raw_model(german_credit_data):
     from catboost import CatBoostClassifier
     from sklearn import model_selection
 
     timer = Timer()
-    feature_types = {i: input_types[i] for i in input_types if i != "default"}
+    column_types = {i: input_types[i] for i in input_types if i != "default"}
 
-    columns_to_encode = [key for key in feature_types.keys() if feature_types[key] == "category"]
+    columns_to_encode = [key for key in column_types.keys() if column_types[key] == "category"]
 
     credit = german_credit_data.df
 
@@ -80,29 +77,27 @@ def german_credit_catboost(german_credit_data) -> GiskardModel:
     model_score = cb.score(X_test, Y_test)
     timer.stop(f"Trained model with score: {model_score}")
 
-    return GiskardModel(
-        prediction_function=cb.predict_proba,
-        model_type="classification",
+    return cb
+
+
+@pytest.fixture()
+def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
+    return CatboostModel(
+        model=german_credit_catboost_raw_model,
+        model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
-        classification_threshold=0.5,
-        classification_labels=cb.classes_,
+        classification_labels=german_credit_catboost_raw_model.classes_,
     )
 
 
 @pytest.fixture()
 def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
-    column_types = german_credit_data.column_types
-    return GiskardDataset(
-        df=df,
-        feature_types=input_types,
-        column_types={c: column_types[c] for c in column_types if c != "default"},
-        target=None,
-    )
+    return Dataset(df=df, target=None, column_types=input_types)
 
 
 @pytest.fixture()
-def german_credit_model(german_credit_data) -> GiskardModel:
+def german_credit_raw_model(german_credit_data):
     timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
@@ -127,7 +122,7 @@ def german_credit_model(german_credit_data) -> GiskardModel:
     clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
 
     Y = german_credit_data.df["default"]
-    X = german_credit_data.df.drop(columns="default")
+    X = german_credit_data.df[german_credit_data.columns].drop(columns="default")
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
         X, Y, test_size=0.20, random_state=30, stratify=Y  # NOSONAR
     )
@@ -136,26 +131,31 @@ def german_credit_model(german_credit_data) -> GiskardModel:
     model_score = clf.score(X_test, Y_test)
     timer.stop(f"Trained model with score: {model_score}")
 
-    return GiskardModel(
-        prediction_function=clf.predict_proba,
-        model_type="classification",
+    return clf
+
+
+@pytest.fixture()
+def german_credit_model(german_credit_raw_model) -> SKLearnModel:
+    return SKLearnModel(
+        model=german_credit_raw_model,
+        model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
-        classification_labels=clf.classes_,
+        classification_labels=list(german_credit_raw_model.classes_),
     )
 
 
 @pytest.fixture()
-def german_credit_always_default_model(german_credit_data) -> GiskardModel:
+def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
     X = german_credit_data.df.drop(columns="default")
     y = german_credit_data.df["default"]
 
     dummy = DummyClassifier(strategy="constant", constant="Default")
     dummy.fit(X, y)
 
-    return GiskardModel(
-        prediction_function=dummy.predict_proba,
-        model_type="classification",
+    return SKLearnModel(
+        model=dummy,
+        model_type=SupportedModelTypes.CLASSIFICATION,
         feature_names=list(input_types),
         classification_threshold=0.5,
         classification_labels=dummy.classes_,

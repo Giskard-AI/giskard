@@ -21,7 +21,7 @@ public class GeneralSettingsService {
     private final GeneralSettingsRepository settingsRepository;
 
     public GeneralSettings getSettings() {
-        return deserializeSettings(settingsRepository.getById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());
+        return deserializeSettings(settingsRepository.getMandatoryById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());
     }
 
     public GeneralSettings save(GeneralSettings settings) {

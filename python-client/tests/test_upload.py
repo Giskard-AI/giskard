@@ -1,144 +1,85 @@
-import json
-from io import BytesIO
+import re
 
-import httpretty
-import numpy as np
-import pandas as pd
 import pytest
-from requests_toolbelt.multipart import decoder
 
-from giskard.client.giskard_client import GiskardClient
-from giskard.client.io_utils import decompress, load_decompress
-from giskard.client.model import GiskardModel
-from giskard.client.project import GiskardProject
-from giskard.ml_worker.core.giskard_dataset import GiskardDataset
+from giskard import Dataset
+from giskard.models.sklearn import SKLearnModel
+from tests.utils import MockedClient, match_model_id, match_url_patterns
 
-url = "http://giskard-host:12345"
-token = "SECRET_TOKEN"
-auth = "Bearer SECRET_TOKEN"
-content_type = "multipart/form-data; boundary="
 model_name = "uploaded model"
-b_content_type = b"application/json"
 
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
-def test_upload_df(diabetes_dataset: GiskardDataset):
-    httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/data/upload")
-    dataset_name = "diabetes dataset"
-    client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
+def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
+    artifact_url_pattern = re.compile(
+        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
+    )
+    datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
-    with pytest.raises(Exception):  # Error Scenario
-        project.upload_df(
-            df=diabetes_dataset.df,
-            column_types=diabetes_dataset.feature_types,
-            target=diabetes_dataset.target,
-            name=dataset_name,
-        )
-    with pytest.raises(Exception):  # Error Scenario
-        project.upload_df(df=diabetes_dataset.df, column_types={"test": "test"}, name=dataset_name)
+    with MockedClient() as (client, mr):
+        saved_id = diabetes_dataset_with_target.upload(client, "test-project")
+        match_model_id(saved_id)
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, datasets_url_pattern)
 
-    project.upload_df(df=diabetes_dataset.df, column_types=diabetes_dataset.feature_types, name=dataset_name)
+        with pytest.raises(Exception) as e:
+            Dataset(df=diabetes_dataset.df,
+                    column_types=diabetes_dataset.column_types, target=diabetes_dataset_with_target.target)
+        assert e.match(
+            "Invalid target parameter: 'target' column is not present in the dataset "
+            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]")  # noqa
 
-    req = httpretty.last_request()
-    assert req.headers.get("Authorization") == auth
-    assert int(req.headers.get("Content-Length")) > 0
-    assert req.headers.get("Content-Type").startswith(content_type)
-
-    multipart_data = decoder.MultipartDecoder(req.body, req.headers.get("Content-Type"))
-    assert len(multipart_data.parts) == 2
-    meta, upload_file = multipart_data.parts
-    assert meta.headers.get(b"Content-Type") == b_content_type
-    pd.testing.assert_frame_equal(diabetes_dataset.df, pd.read_csv(BytesIO(decompress(upload_file.content))))
+        with pytest.raises(Exception) as e:
+            diabetes_dataset.column_types = {"test": "test"}
+            Dataset(df=diabetes_dataset.df,
+                    column_types=diabetes_dataset.column_types, target=diabetes_dataset_with_target.target)
+        assert e.match(
+            "Invalid target parameter: 'target' column is not present in the dataset "
+            "with columns: \['age', 'sex', 'bmi', 'bp', 's1', 's2', 's3', 's4', 's5', 's6'\]")  # noqa
 
 
-@httpretty.activate(verbose=True, allow_net_connect=False)
-def _test_upload_model(model: GiskardModel, ds: GiskardDataset):
-    httpretty.register_uri(httpretty.POST, "http://giskard-host:12345/api/v2/project/models/upload")
+def _test_upload_model(model: SKLearnModel, ds: Dataset):
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
+    with MockedClient() as (client, mr):
+        if model.is_regression:
+            # Warning Scenario: classification_labels is sent for regression model
+            with pytest.warns(UserWarning):
+                model.upload(client, "test-project", ds)
+        else:
+            model.upload(client, "test-project", ds)
 
-    client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
-    if model.model_type == "regression":
-        # Warning Scenario: classification_labels is sent for regression model
-        with pytest.warns(UserWarning):
-            project.upload_model(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                feature_names=model.feature_names,
+        match_model_id(model.id)
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, models_url_pattern)
+
+
+def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
+    with MockedClient() as (client, mr):
+        # Error Scenario : invalid feature_names
+        with pytest.raises(Exception) as e:
+            SKLearnModel(
+                model=model.model,
+                model_type=model.meta.model_type,
+                feature_names=["some"],
                 name=model_name,
-                validate_df=ds.df,
-                classification_labels=model.classification_labels,
-            )
-    else:
-        project.upload_model(
-            prediction_function=model.prediction_function,
-            model_type=model.model_type,
-            feature_names=model.feature_names,
-            name=model_name,
-            validate_df=ds.df,
-            classification_labels=model.classification_labels,
-        )
+                classification_labels=model.meta.classification_labels,
+            ).upload(client, "test-project", ds)
+        assert e.match("Value mentioned in feature_names is not available in validate_df")
 
-    req = httpretty.last_request()
-    assert req.headers.get("Authorization") == auth
-    assert int(req.headers.get("Content-Length")) > 0
-    assert req.headers.get("Content-Type").startswith(content_type)
-
-    multipart_data = decoder.MultipartDecoder(req.body, req.headers.get("Content-Type"))
-    assert len(multipart_data.parts) == 3
-    meta, model_file, requirements_file = multipart_data.parts
-
-    if model.model_type == "classification":
-        metadata = json.loads(meta.content)
-        assert np.array_equal(model.classification_labels, metadata.get("classificationLabels"))
-
-    assert meta.headers.get(b"Content-Type") == b_content_type
-    loaded_model = load_decompress(model_file.content)
-
-    assert np.array_equal(loaded_model(ds.df), model.prediction_function(ds.df))
-    assert requirements_file.content.decode()
-
-
-def _test_upload_model_exceptions(model: GiskardModel, ds: GiskardDataset):
-    client = GiskardClient(url, token)
-    project = GiskardProject(client.session, "test-project", 1)
-
-    # Error Scenario : Column_types dictionary sent as feature_names
-    with pytest.raises(Exception):
-        project.upload_model(
-            prediction_function=model.prediction_function,
-            model_type=model.model_type,
-            feature_names=model.feature_names,
-            name=model_name,
-            validate_df=ds.df,
-            classification_labels=model.classification_labels,
-        )
-
-    if model.model_type == "classification":
-        # Error Scenario: Classification model sent without classification_labels
-        with pytest.raises(Exception):
-            project.upload_model_and_df(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                df=ds.df,
-                column_types=ds.feature_types,
-                feature_names=model.feature_names,
-                model_name=model_name,
-                target="default",
-            )
-
-        # Error Scenario: Target has values not declared in Classification Label
-        with pytest.raises(Exception):
-            project.upload_model_and_df(
-                prediction_function=model.prediction_function,
-                model_type=model.model_type,
-                target="default",
-                df=ds.df,
-                column_types=ds.feature_types,
-                feature_names=model.feature_names,
-                model_name=model_name,
-                classification_labels=[0, 1],
-            )
+        if model.is_classification:
+            # Error Scenario: Target has values not declared in Classification Label
+            with pytest.raises(Exception) as e:
+                SKLearnModel(
+                    model=model.model,
+                    model_type=model.meta.model_type,
+                    feature_names=model.meta.feature_names,
+                    name=model_name,
+                    classification_labels=[0, 1],
+                ).upload(client, "test-project", ds)
+            assert e.match(
+                "Values .* in .* column are not declared in classification_labels parameter .* of the model: uploaded model")  # noqa
 
 
 @pytest.mark.parametrize(

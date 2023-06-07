@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,8 +17,8 @@ public class FeedbackMinimalDTO {
     private String userLogin;
     private String modelName;
     private String datasetName;
-    private Long modelId;
-    private Long datasetId;
+    private UUID modelId;
+    private UUID datasetId;
     private Instant createdOn;
     private String feedbackType;
     private String featureName;

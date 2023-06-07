@@ -1,66 +1,108 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.Project;
-import ai.giskard.domain.ml.Dataset;
-import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.repository.ProjectRepository;
-import ai.giskard.security.PermissionEvaluator;
+import ai.giskard.domain.ArtifactType;
 import ai.giskard.service.FileUploadService;
-import ai.giskard.web.dto.DataUploadParamsDTO;
-import ai.giskard.web.dto.ModelUploadParamsDTO;
-import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.web.dto.ml.ModelDTO;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class UploadController {
-    private final GiskardMapper giskardMapper;
+    private static final String GLOBAL_KEY = "global";
+
     private final FileUploadService uploadService;
-    private final ProjectRepository projectRepository;
-    private final PermissionEvaluator permissionEvaluator;
-    private final Logger log = LoggerFactory.getLogger(UploadController.class);
 
-    @PostMapping("project/models/upload")
-    @Transactional
-    public ModelDTO uploadModel(
-        @RequestPart("metadata") ModelUploadParamsDTO params,
-        @RequestPart("modelFile") MultipartFile modelFile,
-        @RequestPart("requirementsFile") MultipartFile requirementsFile) throws IOException {
-        log.info("Loading model: {}.{} into project {}", params.getProjectKey(), params.getName(), params.getProjectKey());
+    @GetMapping("artifact-info/global/{artifactType}/{artifactId}")
+    public Set<String> getGlobalArtifactInfo(@PathVariable String artifactType,
+                                             @PathVariable String artifactId) {
 
-        ProjectModel savedModel = uploadService.uploadModel(params, modelFile.getInputStream(), requirementsFile.getInputStream());
-        return giskardMapper.modelToModelDTO(savedModel);
+        return uploadService.listArtifacts(GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId);
     }
 
-    @PostMapping("project/data/upload")
-    @Transactional
-    public DatasetDTO dataUpload(
-        @RequestPart("metadata") DataUploadParamsDTO params,
-        @RequestPart("file") MultipartFile file) throws IOException {
-        log.info("Loading dataset: {}.{} into project {}", params.getProjectKey(), params.getName(), params.getProjectKey());
+    @GetMapping("artifact-info/{projectKey}/{artifactType}/{artifactId}")
+    @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
+    public Set<String> getArtifactInfo(@PathVariable String projectKey,
+                                       @PathVariable String artifactType,
+                                       @PathVariable String artifactId) {
 
-        Project project = projectRepository.getOneByKey(params.getProjectKey());
-        permissionEvaluator.validateCanWriteProject(project.getId());
-
-        Dataset savedDataset = uploadService.uploadDataset(
-            project, params.getName(), params.getFeatureTypes(),
-            params.getColumnTypes(),
-            params.getTarget(), file.getInputStream()
-        );
-        return giskardMapper.datasetToDatasetDTO(savedDataset);
+        return uploadService.listArtifacts(projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId);
     }
 
+    @GetMapping("artifacts/global/{artifactType}/{artifactId}/**")
+    public void downloadGlobalArtifact( @PathVariable String artifactType,
+                                 @PathVariable String artifactId,
+                                 HttpServletRequest request,
+                                 HttpServletResponse response) throws IOException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
+
+        try (InputStream artifactStream = uploadService.getArtifactStream(GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath)) {
+            IOUtils.copy(artifactStream, response.getOutputStream());
+            response.flushBuffer();
+        }
+    }
+
+    @GetMapping("artifacts/{projectKey}/{artifactType}/{artifactId}/**")
+    @PreAuthorize("@permissionEvaluator.canReadProjectKey(#projectKey)")
+    public void downloadArtifact(@PathVariable String projectKey,
+                                 @PathVariable String artifactType,
+                                 @PathVariable String artifactId,
+                                 HttpServletRequest request,
+                                 HttpServletResponse response) throws IOException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
+
+        try (InputStream artifactStream = uploadService.getArtifactStream(projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath)) {
+            IOUtils.copy(artifactStream, response.getOutputStream());
+            response.flushBuffer();
+        }
+    }
+
+    @PostMapping("artifacts/global/{artifactType}/{artifactId}/**")
+    public ResponseEntity<Void> uploadGlobalArtifact(@PathVariable String artifactType,
+                                               @PathVariable String artifactId,
+                                               HttpServletRequest request) throws IOException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
+
+
+        try (InputStream uploadedStream = request.getInputStream()) {
+            uploadService.saveArtifact(uploadedStream, GLOBAL_KEY, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    @PostMapping("artifacts/{projectKey}/{artifactType}/{artifactId}/**")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    public ResponseEntity<Void> uploadArtifact(@PathVariable String projectKey,
+                                               @PathVariable String artifactType,
+                                               @PathVariable String artifactId,
+                                               HttpServletRequest request) throws IOException {
+        String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        String matchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        String resoursePath = new AntPathMatcher().extractPathWithinPattern(matchPattern, path);
+
+
+        try (InputStream uploadedStream = request.getInputStream()) {
+            uploadService.saveArtifact(uploadedStream, projectKey, ArtifactType.fromDirectoryName(artifactType), artifactId, resoursePath);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

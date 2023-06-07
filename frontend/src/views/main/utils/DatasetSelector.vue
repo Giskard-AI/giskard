@@ -1,50 +1,52 @@
 <template>
-  <v-select
-      clearable
-      outlined
-      class="dataset-selector"
-      :label="label"
-      :value="value"
-      :items="projectDatasets"
-      :item-text="extractDatasetName"
-      item-value="id"
-      :return-object="returnObject"
-      @input="onInput"
-  ></v-select>
+    <v-select
+        clearable
+        outlined
+        class="slice-function-selector"
+        :label="label"
+        :value="value"
+        :items="projectDatasets"
+        :item-text="extractDatasetName"
+        item-value="id"
+        :return-object="returnObject"
+        @input="onInput"
+        dense
+        hide-details
+    ></v-select>
 </template>
 
-<script lang="ts">
-import Component from "vue-class-component";
-import Vue from "vue";
+<script setup lang="ts">
+
+
+import {onMounted, ref} from "vue";
 import axios from "axios";
 import {apiURL} from "@/env";
-import {Prop} from "vue-property-decorator";
 import {DatasetDTO} from '@/generated-sources';
 
-@Component
-export default class DatasetSelector extends Vue {
-  @Prop({required: true}) projectId!: number;
-  @Prop({default: 'Dataset', required: true}) label!: string;
-  @Prop({default: true}) returnObject!: boolean;
-  @Prop() value?: DatasetDTO | number;
-  projectDatasets: Array<DatasetDTO> = [];
+const props = defineProps<{
+    projectId: number,
+    label: string,
+    returnObject: boolean,
+    value?: string
+}>()
 
-  extractDatasetName(dataset: DatasetDTO) {
-    return dataset.name || dataset.fileName;
-  }
+const emit = defineEmits(['update:value']);
 
-  onInput(value) {
-    this.$emit('update:value', value);
-  }
+const projectDatasets = ref<Array<DatasetDTO>>([])
 
-  async mounted() {
-    this.projectDatasets = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${this.projectId}/datasets`)).data;
-  }
+onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data)
+
+function extractDatasetName(dataset: DatasetDTO) {
+    return dataset.name || dataset.id;
+}
+
+function onInput(value) {
+    emit('update:value', value);
 }
 </script>
 
 <style scoped>
-.dataset-selector {
-  min-width: 300px
+.slice-function-selector {
+    min-width: 200px
 }
 </style>

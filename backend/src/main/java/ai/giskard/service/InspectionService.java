@@ -2,17 +2,17 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Inspection;
+import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.google.common.primitives.Ints;
+import ai.giskard.utils.FileUtils;
+import ai.giskard.web.dto.InspectionCreateDTO;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileSystemUtils;
-import tech.tablesaw.api.*;
+import tech.tablesaw.api.DoubleColumn;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
@@ -21,37 +21,33 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 import static ai.giskard.domain.ml.table.RowFilterType.CUSTOM;
-import static ai.giskard.service.DatasetService.GISKARD_DATASET_INDEX_COLUMN_NAME;
-import static ai.giskard.web.rest.errors.Entity.INSPECTION;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class InspectionService {
-    private final Logger log = LoggerFactory.getLogger(InspectionService.class);
 
 
     private final InspectionRepository inspectionRepository;
-    private final DatasetService datasetService;
     private final ApplicationProperties applicationProperties;
     private final FileLocationService fileLocationService;
-    private final SliceService sliceService;
+    private final ModelService modelService;
 
     public Table getTableFromBucketFile(String location) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(location));
         return Table.read().csv(reader);
     }
 
-    public Table getTableFromBucketFile(String location, ColumnType[] columnTypes) throws FileNotFoundException {
+    public Table getTableFromBucketFile(String location, tech.tablesaw.api.ColumnType[] columnDtypes) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(
             new FileInputStream(location));
         CsvReadOptions csvReadOptions = CsvReadOptions
             .builder(reader)
-            .columnTypes(columnTypes)
+            .columnTypes(columnDtypes)
             .build();
         return Table.read().csv(csvReadOptions);
     }
@@ -133,18 +129,20 @@ public class InspectionService {
 
     public Path getPredictionsPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("predictions.csv");
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+            .resolve(FileUtils.getFileName("predictions", "csv", inspection.isSample()));
     }
 
     public Path getCalculatedPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId()).resolve("calculated.csv");
+        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+            .resolve(FileUtils.getFileName("calculated", "csv", inspection.isSample()));
     }
 
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
         Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
-        ColumnType[] columnTypes = {ColumnType.STRING, ColumnType.STRING, ColumnType.DOUBLE};
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnTypes);
+        tech.tablesaw.api.ColumnType[] columnDtypes = {tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.DOUBLE};
+        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnDtypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         Selection selection = predictedClass.isNotMissing();
         if (inspection.getDataset().getTarget() != null) {
@@ -191,18 +189,9 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
-    public Table getRowsFiltered(@NotNull Long inspectionId, @NotNull Filter filter) throws IOException {
-        Inspection inspection = inspectionRepository.findById(inspectionId).orElseThrow(() -> new EntityNotFoundException(INSPECTION, inspectionId));
-        Table table = datasetService.readTableByDatasetId(inspection.getDataset().getId());
-        table.addColumns(IntColumn.indexColumn(GISKARD_DATASET_INDEX_COLUMN_NAME, table.rowCount(), 0));
-        Selection selection = inspection.getModel().getModelType().isClassification() ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
-
-        if (filter.getSliceId() != null && filter.getSliceId() > 0) {
-            List<Integer> filteredRowIds = sliceService.getSlicedRowsForDataset(filter.getSliceId(), inspection.getDataset());
-            Selection withFilteredRowIds = Selection.with(Ints.toArray(filteredRowIds));
-            selection = selection != null ? selection.and(Selection.with(Ints.toArray(filteredRowIds))) : withFilteredRowIds;
-        }
+    public Table getRowsFiltered(@NotNull Table table, @NotNull Filter filter) throws IOException {
+        Inspection inspection = inspectionRepository.getMandatoryById(filter.getInspectionId());
+        Selection selection = (inspection.getModel().getModelType() == ModelType.CLASSIFICATION) ? getSelection(inspection, filter) : getSelectionRegression(inspection, filter);
 
         return selection == null ? table : table.where(selection);
     }
@@ -212,9 +201,8 @@ public class InspectionService {
      *
      * @return filtered table
      */
-    @Transactional
     public List<String> getLabels(@NotNull Long inspectionId) {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
         return inspection.getModel().getClassificationLabels();
     }
 
@@ -234,5 +222,29 @@ public class InspectionService {
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete inspections", e);
         }
+    }
+
+    public List<Inspection> getInspections() {
+        return inspectionRepository.findAll();
+    }
+
+    public List<Inspection> getInspectionsByProjectId(long projectId) {
+        return inspectionRepository.findAllByModelProjectId(projectId);
+    }
+
+    public void deleteInspection(Long inspectionId) {
+        inspectionRepository.deleteById(inspectionId);
+    }
+
+    public Inspection updateInspection(long inspectionId, InspectionCreateDTO update) {
+        Inspection inspection = inspectionRepository.getMandatoryById(inspectionId);
+        inspection.setName(update.getName());
+        inspection.setSample(update.isSample());
+
+        if (!Files.exists(getPredictionsPath(inspection))) {
+            modelService.predictSerializedDataset(inspection.getModel(), inspection.getDataset(), inspectionId, inspection.isSample());
+        }
+
+        return inspectionRepository.save(inspection);
     }
 }

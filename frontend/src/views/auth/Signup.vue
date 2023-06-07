@@ -37,6 +37,7 @@ import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router/composables";
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -94,8 +95,8 @@ async function submit() {
       }
     } else {
       mainStore.addNotification({
-        content: 'No token provided in the URL',
-        color: 'error',
+          content: 'No token provided in the URL',
+          color: TYPE.ERROR,
       });
     }
   });

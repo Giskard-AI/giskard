@@ -1,27 +1,17 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.ml.Inspection;
-import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.InspectionService;
 import ai.giskard.service.ModelService;
 import ai.giskard.web.dto.InspectionCreateDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.InspectionDTO;
-import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomUtils;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import tech.tablesaw.api.Table;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,50 +23,29 @@ public class InspectionController {
     private final ModelService modelService;
     private final InspectionRepository inspectionRepository;
     private final GiskardMapper giskardMapper;
-    private final PermissionEvaluator permissionEvaluator;
-
 
     /**
-     * Retrieve the row specified by the given range on the dataset
-     * TODO Replace with spring pagination
-     *
-     * @param inspectionId id of the inspection
-     * @param filter       filter parameters object
-     * @param rangeMin     minimum range
-     * @param rangeMax     maximum range
-     * @param isRandom     is selection random
-     * @return list of filtered rows
+     * get all inspections
+     * @return list of inspections
      */
-    @PostMapping("/inspection/{inspectionId}/rowsFiltered")
-    @Transactional
-    public JsonNode getRowsFiltered(@PathVariable @NotNull Long inspectionId, @RequestBody Filter filter, @RequestParam("minRange") @NotNull int rangeMin, @RequestParam("maxRange") @NotNull int rangeMax, @RequestParam("isRandom") @NotNull boolean isRandom) throws IOException {
-        Inspection inspection = inspectionRepository.getById(inspectionId);
-        permissionEvaluator.validateCanReadProject(inspection.getDataset().getProject().getId());
+    @GetMapping("/inspections")
+    public List<InspectionDTO> getInspections() {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspections());
+    }
 
-        Table filteredTable = inspectionService.getRowsFiltered(inspectionId, filter);
-
-        if (rangeMax > filteredTable.rowCount()) {
-            rangeMax = filteredTable.rowCount();
-        }
-        if (rangeMin > rangeMax) {
-            throw new IllegalArgumentException("minimum range should be less than maximum range");
-        }
-
-        Table filteredMTable = isRandom ? filteredTable.sampleN(rangeMax - rangeMin - 1)
-            .sortOn(RandomUtils.nextInt(0, 3) - 1) : filteredTable.inRange(rangeMin, rangeMax); //NOSONAR
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonTable = filteredMTable.write().toString("json");
-        JsonNode jsonNode = objectMapper.readTree(jsonTable);
-        JsonNode result = objectMapper.createObjectNode().set("data", jsonNode);
-        ((ObjectNode) result).put("rowNb", filteredTable.rowCount());
-        ((ObjectNode) result).set("columns", objectMapper.valueToTree(filteredTable.columnNames()));
-        return result;
+    /**
+     * get all inspections for a project
+     * @param projectId id of the project
+     * @return list of inspections
+     */
+    @GetMapping("project/{projectId}/inspections")
+    public List<InspectionDTO> listProjectInspections(@PathVariable @NotNull long projectId) {
+        return giskardMapper.inspectionsToInspectionDTOs(inspectionService.getInspectionsByProjectId(projectId));
     }
 
     @GetMapping("/inspection/{id}")
     public InspectionDTO getInspection(@PathVariable @NotNull Long id) {
-        Inspection inspection = inspectionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.INSPECTION, id));
+        Inspection inspection = inspectionRepository.getMandatoryById(id);
         return giskardMapper.toDTO(inspection);
     }
 
@@ -93,9 +62,27 @@ public class InspectionController {
     }
 
     @PostMapping("/inspection")
-    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) throws IOException {
-        return giskardMapper.toDTO(modelService.createInspection(createDTO.getModelId(), createDTO.getDatasetId()));
+    public InspectionDTO createInspection(@RequestBody @NotNull InspectionCreateDTO createDTO) {
+        return giskardMapper.toDTO(modelService.createInspection(createDTO.getName(), createDTO.getModelId(), createDTO.getDatasetId(), createDTO.isSample()));
     }
 
+    /**
+     * delete an inspection
+     * @param id id of the inspection
+     */
+    @DeleteMapping("/inspections/{id}")
+    public void deleteInspection(@PathVariable @NotNull Long id) {
+        inspectionService.deleteInspection(id);
+    }
 
+    /**
+     * @param id
+     * @param createDTO
+     * @return updated inspection
+     * @throws EntityNotFoundException
+     */
+    @PutMapping("/inspections/{id}")
+    public InspectionDTO updateInspection(@PathVariable @NotNull Long id, @RequestBody @NotNull InspectionCreateDTO createDTO) throws EntityNotFoundException {
+        return giskardMapper.toDTO(inspectionService.updateInspection(id, createDTO));
+    }
 }

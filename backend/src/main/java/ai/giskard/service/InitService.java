@@ -1,34 +1,50 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.*;
+import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelLanguage;
+import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.RoleRepository;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.repository.ml.DatasetRepository;
+import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
+import ai.giskard.web.dto.mapper.GiskardMapper;
+import ai.giskard.web.dto.ml.DatasetDTO;
+import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.validation.constraints.NotNull;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,149 +53,34 @@ import static java.util.Arrays.stream;
 @Service
 @RequiredArgsConstructor
 public class InitService {
+    @Autowired
+    Environment env;
 
-    private static final Map<String, FeatureType> germanCreditFeatureTypes = new HashMap<>();
-    private static final Map<String, String> germanCreditColumnTypes = new HashMap<>();
-    private static final Map<String, FeatureType> enronFeatureTypes = new HashMap<>();
-    private static final Map<String, String> enronColumnTypes = new HashMap<>();
-    private static final Map<String, FeatureType> zillowFeatureTypes = new HashMap<>();
-    private static final Map<String, String> zillowColumnTypes = new HashMap<>();
-    private static final String CLASSPATH = "classpath:";
-    private static final String PROJECTDIR = "demo_projects/";
+    private static final Map<String, ColumnType> germanCreditColumnTypes = new HashMap<>();
+    private static final Map<String, String> germanCreditColumnDtypes = new HashMap<>();
+    private static final Map<String, ColumnType> enronColumnTypes = new HashMap<>();
+    private static final Map<String, String> enronColumnDtypes = new HashMap<>();
+    private static final Map<String, ColumnType> zillowColumnTypes = new HashMap<>();
+    private static final Map<String, String> zillowColumnDtypes = new HashMap<>();
     public static final String ZILLOW_PROJECT_KEY = "zillow";
     public static final String ENRON_PROJECT_KEY = "enron";
     public static final String GERMAN_CREDIT_PROJECT_KEY = "credit";
-
-    public static final String OBJECT = "object";
-
-    public static final String INT_64 = "int64";
-
-    public static final String FLOAT_64 = "float64";
-
-    static {
-        germanCreditColumnTypes.put("account_check_status", OBJECT);
-        germanCreditColumnTypes.put("duration_in_month", INT_64);
-        germanCreditColumnTypes.put("credit_history", OBJECT);
-        germanCreditColumnTypes.put("purpose", OBJECT);
-        germanCreditColumnTypes.put("credit_amount", INT_64);
-        germanCreditColumnTypes.put("savings", OBJECT);
-        germanCreditColumnTypes.put("present_emp_since", OBJECT);
-        germanCreditColumnTypes.put("installment_as_income_perc", INT_64);
-        germanCreditColumnTypes.put("sex", OBJECT);
-        germanCreditColumnTypes.put("personal_status", OBJECT);
-        germanCreditColumnTypes.put("other_debtors", OBJECT);
-        germanCreditColumnTypes.put("present_res_since", INT_64);
-        germanCreditColumnTypes.put("property", OBJECT);
-        germanCreditColumnTypes.put("age", INT_64);
-        germanCreditColumnTypes.put("other_installment_plans", OBJECT);
-        germanCreditColumnTypes.put("housing", OBJECT);
-        germanCreditColumnTypes.put("credits_this_bank", INT_64);
-        germanCreditColumnTypes.put("job", OBJECT);
-        germanCreditColumnTypes.put("people_under_maintenance", INT_64);
-        germanCreditColumnTypes.put("telephone", OBJECT);
-        germanCreditColumnTypes.put("foreign_worker", OBJECT);
-
-        germanCreditFeatureTypes.put("account_check_status", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("duration_in_month", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("credit_history", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("purpose", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("credit_amount", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("savings", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("present_emp_since", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("installment_as_income_perc", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("sex", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("personal_status", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("other_debtors", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("present_res_since", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("property", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("age", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("other_installment_plans", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("housing", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("credits_this_bank", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("job", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("people_under_maintenance", FeatureType.NUMERIC);
-        germanCreditFeatureTypes.put("telephone", FeatureType.CATEGORY);
-        germanCreditFeatureTypes.put("foreign_worker", FeatureType.CATEGORY);
-
-
-        enronColumnTypes.put("Subject", OBJECT);
-        enronColumnTypes.put("Content", OBJECT);
-        enronColumnTypes.put("Week_day", OBJECT);
-        enronColumnTypes.put("Year", FLOAT_64);
-        enronColumnTypes.put("Month", OBJECT);
-        enronColumnTypes.put("Hour", FLOAT_64);
-        enronColumnTypes.put("Nb_of_forwarded_msg", FLOAT_64);
-
-        enronFeatureTypes.put("Subject", FeatureType.TEXT);
-        enronFeatureTypes.put("Content", FeatureType.TEXT);
-        enronFeatureTypes.put("Week_day", FeatureType.CATEGORY);
-        enronFeatureTypes.put("Month", FeatureType.CATEGORY);
-        enronFeatureTypes.put("Hour", FeatureType.NUMERIC);
-        enronFeatureTypes.put("Nb_of_forwarded_msg", FeatureType.NUMERIC);
-        enronFeatureTypes.put("Year", FeatureType.NUMERIC);
-
-        zillowColumnTypes.put("TypeOfDewelling", OBJECT);
-        zillowColumnTypes.put("BldgType", OBJECT);
-        zillowColumnTypes.put("AbvGrndLivArea", INT_64);
-        zillowColumnTypes.put("Neighborhood", OBJECT);
-        zillowColumnTypes.put("KitchenQual", OBJECT);
-        zillowColumnTypes.put("NumGarageCars", INT_64);
-        zillowColumnTypes.put("YearBuilt", INT_64);
-        zillowColumnTypes.put("YearRemodAdd", INT_64);
-        zillowColumnTypes.put("ExterQual", OBJECT);
-        zillowColumnTypes.put("LotArea", INT_64);
-        zillowColumnTypes.put("LotShape", OBJECT);
-        zillowColumnTypes.put("Fireplaces", INT_64);
-        zillowColumnTypes.put("NumBathroom", INT_64);
-        zillowColumnTypes.put("Basement1Type", OBJECT);
-        zillowColumnTypes.put("Basement1SurfaceArea", INT_64);
-        zillowColumnTypes.put("Basement2Type", OBJECT);
-        zillowColumnTypes.put("Basement2SurfaceArea", INT_64);
-        zillowColumnTypes.put("TotalBasementArea", INT_64);
-        zillowColumnTypes.put("GarageArea", INT_64);
-        zillowColumnTypes.put("1stFlrArea", INT_64);
-        zillowColumnTypes.put("2ndFlrArea", INT_64);
-        zillowColumnTypes.put("Utilities", OBJECT);
-        zillowColumnTypes.put("OverallQual", INT_64);
-
-        zillowFeatureTypes.put("TypeOfDewelling", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("BldgType", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("AbvGrndLivArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("Neighborhood", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("KitchenQual", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("NumGarageCars", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("YearBuilt", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("YearRemodAdd", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("ExterQual", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("LotArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("LotShape", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("Fireplaces", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("NumBathroom", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("Basement1Type", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("Basement1SurfaceArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("Basement2Type", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("Basement2SurfaceArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("TotalBasementArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("GarageArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("1stFlrArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("2ndFlrArea", FeatureType.NUMERIC);
-        zillowFeatureTypes.put("Utilities", FeatureType.CATEGORY);
-        zillowFeatureTypes.put("OverallQual", FeatureType.CATEGORY);
-    }
-
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ProjectRepository projectRepository;
     private final ProjectService projectService;
+    private final GiskardMapper giskardMapper;
     private final PasswordEncoder passwordEncoder;
     private final Logger logger = LoggerFactory.getLogger(InitService.class);
     private final GeneralSettingsService generalSettingsService;
-    private final ResourceLoader resourceLoader;
-    private final FileUploadService fileUploadService;
+    private final FileLocationService fileLocationService;
     private final LicenseService licenseService;
     private Map<String, ProjectConfig> projects;
     String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
+    private final DatasetRepository datasetRepository;
+    private final ModelRepository modelRepository;
+    private final ResourceLoader resourceLoader;
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
         return Map.of(
@@ -189,13 +90,13 @@ public class InitService {
                     .name("House Pricing Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(zillowFeatureTypes.keySet().stream().toList())
+                    .featureNames(zillowColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .projectKey(ZILLOW_PROJECT_KEY)
                     .name("House Pricing Data")
-                    .featureTypes(zillowFeatureTypes)
                     .columnTypes(zillowColumnTypes)
+                    .columnDtypes(zillowColumnDtypes)
                     .target("SalePrice")
                     .build(),
                 new InspectionSettings()
@@ -207,12 +108,12 @@ public class InitService {
                     .name("Email Classification Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(enronFeatureTypes.keySet().stream().toList())
+                    .featureNames(enronColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Email data")
-                    .featureTypes(enronFeatureTypes)
                     .columnTypes(enronColumnTypes)
+                    .columnDtypes(enronColumnDtypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
                     .build(),
@@ -225,14 +126,14 @@ public class InitService {
                     .name("Credit Scoring Model")
                     .language(ModelLanguage.PYTHON)
                     .languageVersion("3.7")
-                    .featureNames(germanCreditFeatureTypes.keySet().stream().toList())
+                    .featureNames(germanCreditColumnTypes.keySet().stream().toList())
                     .build(),
                 DataUploadParamsDTO.builder()
                     .name("Credit Scoring data")
                     .projectKey(GERMAN_CREDIT_PROJECT_KEY)
                     .target("default")
-                    .featureTypes(germanCreditFeatureTypes)
                     .columnTypes(germanCreditColumnTypes)
+                    .columnDtypes(germanCreditColumnDtypes)
                     .build(),
                 new InspectionSettings()
             )
@@ -251,13 +152,15 @@ public class InitService {
      * Initializing first authorities, mock users, and mock projects
      */
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void init() {
         projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
         initUsers();
-        initProjects();
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+        if (!profiles.contains("prod") && !profiles.contains("dev")) {
+            initProjects();
+        }
     }
 
     /**
@@ -348,81 +251,105 @@ public class InitService {
             project.setInspectionSettings(projects.get(projectKey).inspectionSettings);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
-            List<String> models = getFileNames(projectKey, "models");
-            models.forEach(e -> uploadModel(projectKey, e));
-            List<String> datasets = getFileNames(projectKey, "datasets");
-            datasets.forEach(e -> uploadDataframe(projectKey, e));
+
+
+            loadDatasets(project);
+            loadModels(project);
+
             logger.info("Created project: {}", projectName);
         } else {
             logger.info("Project with key {} already exists", projectKey);
         }
     }
 
-    /**
-     * Get the list of file keys
-     * This necessary when calling from jar
-     *
-     * @param projectKey key of the project
-     * @param type       type (models/datasets)
-     * @return List of names
-     */
-    private List<String> getFileNames(String projectKey, String type) throws IOException {
-        String path = PROJECTDIR + projectKey + "/" + type + "/*";
+    private void loadDatasets(Project project) throws IOException {
+        List<UUID> ids = copyResource(project, "datasets");
+
+        for (UUID id : ids) {
+            Path metaPath = fileLocationService.resolvedDatasetPath(project.getKey(), id).resolve("giskard-dataset-meta.yaml");
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            DatasetDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), DatasetDTO.class);
+            Dataset dataset = giskardMapper.fromDTO(loadedMeta);
+            dataset.setProject(project);
+            datasetRepository.save(dataset);
+        }
+    }
+
+    private void loadModels(Project project) throws IOException {
+        List<UUID> ids = copyResource(project, "models");
+
+        for (UUID id : ids) {
+            Path metaPath = fileLocationService.resolvedModelPath(project.getKey(), id).resolve("giskard-model-meta.yaml");
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ModelDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), ModelDTO.class);
+            ProjectModel model = giskardMapper.fromDTO(loadedMeta);
+            model.setProject(project);
+            modelRepository.save(model);
+        }
+    }
+
+    private List<UUID> copyResource(Project project, String artifactType) throws IOException {
+        Resource[] artifactResources;
+
+        Path originalRoot = Paths.get("demo_projects", project.getKey(), artifactType);
+
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        return Arrays.stream(resolver.getResources(path)).map(e -> Objects.requireNonNull(e.getFilename())
-            .substring(0, e.getFilename().indexOf("."))).toList();
-    }
 
-    private void uploadDataframe(String projectKey, String fileName) {
-        ProjectConfig config = projects.get(projectKey);
-        Project project = projectRepository.getOneByKey(projectKey);
-        String path = CLASSPATH + PROJECTDIR + projectKey + "/datasets/" + fileName + ".csv.zst";
-        Resource dsResource = resourceLoader.getResource(path);
-        try (InputStream dsStream = dsResource.getInputStream()) {
-            DataUploadParamsDTO dsParams = config.datasetParams;
-            String target = fileName.contains("prod") ? null : dsParams.getTarget();
-            fileUploadService.uploadDataset(
-                project,
-                dsParams.getName() + " " + fileName,
-                dsParams.getFeatureTypes(),
-                dsParams.getColumnTypes(), target,
-                dsStream
-            );
-        } catch (IOException e) {
-            logger.warn("Failed to upload dataset for demo project {}", projectKey);
-            throw new RuntimeException(e);
+        try {
+            artifactResources = resolver.getResources(originalRoot.resolve("**").toString());
+        } catch (FileNotFoundException e) {
+            logger.info("Failed to load demo project resources: {}: {}", project.getKey(), artifactType);
+            return Collections.emptyList();
+        }
+
+        if (artifactResources[0] instanceof ClassPathResource) {
+            return loadClasspathArtifacts(artifactType, artifactResources, originalRoot, project.getKey());
+        } else {
+            return loadFilesystemArtifacts(artifactType, originalRoot, resolver, project.getKey());
         }
     }
 
-    private void uploadModel(String projectKey, String filename) {
-        ProjectConfig config = projects.get(projectKey);
-        String pathToModel = CLASSPATH + PROJECTDIR + projectKey + "/models/" + filename + ".model.pkl.zst";
-        String pathToRequirements = CLASSPATH + PROJECTDIR + projectKey + "/requirements/" + filename + ".requirements.txt";
-        Resource modelResource = resourceLoader.getResource(pathToModel);
-        Resource requirementsResource = resourceLoader.getResource(pathToRequirements);
-        ModelUploadParamsDTO modelDTO = projects.get(projectKey).modelParams;
-        // hacky way to override features list, we should rely on project export/import in the future to handle demo projects
-        if (ENRON_PROJECT_KEY.equals(projectKey) && "pytorch_bert".equals(filename)) {
-            modelDTO.setFeatureNames(Lists.newArrayList("Content"));
-        }
-        ModelUploadParamsDTO modelDTOCopy = ModelUploadParamsDTO.builder().modelType(modelDTO.getModelType())
-            .projectKey(modelDTO.getProjectKey())
-            .name(config.modelParams.getName() + " " + filename)
-            .language(modelDTO.getLanguage())
-            .languageVersion(modelDTO.getLanguageVersion())
-            .featureNames(modelDTO.getFeatureNames())
-            .classificationLabels(modelDTO.getClassificationLabels())
-            .build();
-        try (InputStream modelStream = modelResource.getInputStream()) {
-            try (InputStream requirementsStream = requirementsResource.getInputStream()) {
-
-                fileUploadService.uploadModel(modelDTOCopy, modelStream, requirementsStream);
+    private List<UUID> loadFilesystemArtifacts(String artifactType, Path originalRoot, PathMatchingResourcePatternResolver resolver, @NotNull String projectKey) throws IOException {
+        List<UUID> res = new ArrayList<>();
+        for (Resource resource : resolver.getResources(originalRoot.resolve("*").toString())) {
+            if (!resource.getFile().isDirectory()) {
+                continue;
             }
-        } catch (IOException e) {
-            logger.warn("Failed to upload model for demo project {}", projectKey);
-            throw new RuntimeException(e);
+            String resourceId = resource.getFilename();
+            assert resourceId != null;
+
+            res.add(UUID.fromString(resourceId));
+            FileUtils.copyDirectory(resource.getFile(),
+                fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(resourceId).toFile());
         }
+        return res;
     }
+
+
+    private List<UUID> loadClasspathArtifacts(String artifactType, Resource[] artifactResources, Path originalRoot, @NotNull String projectKey) throws IOException {
+        List<UUID> artifactIds = new ArrayList<>();
+        for (Resource resource : artifactResources) {
+            byte[] content = resource.getInputStream().readAllBytes();
+
+            Path resourcePath = Paths.get(((ClassPathResource) resource).getPath());
+            Path relativeResourcePath = originalRoot.relativize(resourcePath);
+            Path destination = fileLocationService.resolvedProjectHome(projectKey).resolve(artifactType).resolve(relativeResourcePath);
+
+            if (relativeResourcePath.getNameCount() == 1 && !relativeResourcePath.getName(0).toString().isEmpty()) {
+                artifactIds.add(UUID.fromString(relativeResourcePath.getName(0).toString()));
+            }
+
+            if (content.length == 0) {
+                FileUtils.forceMkdir(destination.toFile());
+            } else {
+                FileUtils.writeByteArrayToFile(destination.toFile(), content);
+            }
+        }
+        return artifactIds;
+    }
+
 
     private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
                                  DataUploadParamsDTO datasetParams, InspectionSettings inspectionSettings) {

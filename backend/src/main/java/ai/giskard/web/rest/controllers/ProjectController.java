@@ -82,11 +82,10 @@ public class ProjectController {
      * @return created project
      */
     @GetMapping(value = "project")
-    @Transactional
     public ProjectDTO getProject(@RequestParam(value = "id", required = false) Long id, @RequestParam(value = "key", required = false) String key) {
         Project project;
         if (id != null) {
-            project = this.projectRepository.getById(id);
+            project = this.projectRepository.getMandatoryById(id);
         } else if (key != null) {
             project = this.projectRepository.getOneByKey(key);
         } else {
@@ -117,7 +116,6 @@ public class ProjectController {
      */
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
     @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
-    @Transactional
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.uninvite(id, userId);
         return giskardMapper.projectToProjectDTO(project);
@@ -138,14 +136,13 @@ public class ProjectController {
         return giskardMapper.projectToProjectDTO(project);
     }
 
-    @PostMapping(value = "/project/import/prepare", consumes = "multipart/form-data")
+    @PostMapping(value = "/project/import/prepare")
     public PrepareImportProjectDTO prepareImport(@RequestParam("file") MultipartFile zipFile) throws IOException {
         permissionEvaluator.canWrite();
         return projectService.prepareImport(zipFile);
     }
 
     @PostMapping(value = "/project/import")
-    @Transactional
     public ProjectDTO importProject(@RequestBody PostImportProjectDTO postImportProject, @AuthenticationPrincipal final UserDetails userDetails) throws IOException {
         permissionEvaluator.canWrite();
         Project project = projectService.importProject(postImportProject.getMappedUsers(), postImportProject.getPathToMetadataDirectory(), postImportProject.getProjectKey(), userDetails.getUsername());

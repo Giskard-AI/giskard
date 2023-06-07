@@ -21,7 +21,9 @@
     "core-js": "^3.24.1",
     "crypto-js": "^4.1.1",
     "date-fns": "^2.29.3",
+    "diff": "^5.1.0",
     "echarts": "^5.3.3",
+    "highlight.js": "^11.8.0",
     "lodash": "^4.17.21",
     "mixpanel-browser": "^2.45.0",
     "monaco-editor": "^0.34.0",
@@ -43,8 +45,7 @@
     "vue-toastification": "^1.7.14",
     "vue-virtual-collection": "1.5.0",
     "vuetify": "^2.6.13",
-    "vuetify-dialog": "^2.0.17",
-    "vue-virtual-collection": "1.5.0"
+    "vuetify-dialog": "^2.0.17"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

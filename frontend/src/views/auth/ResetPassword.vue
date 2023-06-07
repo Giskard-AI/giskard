@@ -6,7 +6,7 @@
           <v-card class="elevation-12">
             <ValidationObserver ref="observer" v-slot="{ invalid }">
             <v-form @submit.prevent="">
-            <v-toolbar dark prominent :src="require('@/assets/wallpaper-skyline-reduced.jpg')">
+            <v-toolbar dark prominent :src="require('@/assets/wallpaper.jpg')">
               <v-toolbar-title>{{appName}} - Reset Password</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
@@ -34,12 +34,13 @@
 </template>
 
 <script setup lang="ts">
-import { appName as appname } from '@/env';
+import {appName as appname} from '@/env';
 import mixpanel from "mixpanel-browser";
 import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router/composables";
 import {useMainStore} from "@/stores/main";
 import {useUserStore} from "@/stores/user";
+import {TYPE} from "vue-toastification";
 
 const router = useRouter();
 const mainStore = useMainStore();
@@ -69,9 +70,9 @@ function checkToken() {
   const token = (router.currentRoute.query.token as string);
   if (!token) {
     mainStore.addNotification({
-          content: 'No token provided in the URL, start a new password recovery',
-          color: 'error',
-        });
+        content: 'No token provided in the URL, start a new password recovery',
+        color: TYPE.ERROR,
+    });
     router.push('/recover-password');
   } else {
     return token;

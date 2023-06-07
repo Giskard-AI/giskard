@@ -3,6 +3,7 @@ import {AdminUserDTO, RoleDTO} from "@/generated-sources";
 import {api} from "@/api";
 import {useMainStore} from "@/stores/main";
 import {useUserStore} from "@/stores/user";
+import {TYPE} from "vue-toastification";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 
@@ -57,7 +58,7 @@ export const useAdminStore = defineStore('admin', {
                 const response = await api.updateUser(payload.user);
                 this.setUser(response);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'User successfully updated', color: 'success'});
+                mainStore.addNotification({content: 'User successfully updated', color: TYPE.SUCCESS});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -72,7 +73,7 @@ export const useAdminStore = defineStore('admin', {
                 const response = await api.createUser(user);
                 this.setUser(response);
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'User successfully created', color: 'success'});
+                mainStore.addNotification({content: 'User successfully created', color: TYPE.SUCCESS});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);
@@ -88,7 +89,7 @@ export const useAdminStore = defineStore('admin', {
                 await api.deleteUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Successfully deleted', color: 'success'});
+                mainStore.addNotification({content: 'Successfully deleted', color: TYPE.SUCCESS});
 
                 // If we deleted ourselves, we want to logout as our user no longer exists.
                 if (userStore.userProfile?.id === user.id) {
@@ -108,7 +109,7 @@ export const useAdminStore = defineStore('admin', {
                 await api.enableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Successfully restored', color: 'success'});
+                mainStore.addNotification({content: 'Successfully restored', color: TYPE.SUCCESS});
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);

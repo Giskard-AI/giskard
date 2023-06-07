@@ -4,6 +4,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import org.mapstruct.Named;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
@@ -14,11 +15,26 @@ import static ai.giskard.web.rest.errors.EntityNotFoundException.By;
 
 @Repository
 public interface ProjectRepository extends MappableJpaRepository<Project, Long> {
+    @Override
+    default Entity getEntityType() {
+        return Entity.PROJECT;
+    }
+
     @EntityGraph(attributePaths = "guests")
     Optional<Project> findOneWithGuestsById(Long id);
 
+    @EntityGraph(attributePaths = {"guests", "owner"})
+    Optional<Project> findOneWithOwnerAndGuestsById(Long id);
+
+    @EntityGraph(attributePaths = {"guests", "owner"})
+    Optional<Project> findOneWithOwnerAndGuestsByKey(String projectKey);
+
+    @EntityGraph(attributePaths = "guests")
+    Optional<Project> findOneWithGuestsByKey(String key);
+
     List<Project> getProjectsByOwnerOrGuestsContains(User owner, User guest);
 
+    @Named("no_mapstruct")
     default Project getOneByName(String name) {
         return findOneByName(name).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.NAME, name));
     }

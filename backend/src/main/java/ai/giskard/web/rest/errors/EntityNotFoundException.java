@@ -2,7 +2,7 @@ package ai.giskard.web.rest.errors;
 
 import lombok.Getter;
 
-public class EntityNotFoundException extends BadRequestAlertException { //NOSONAR
+public class EntityNotFoundException extends BadRequestAlertException {
     public enum By {
         NAME("name"),
         ID("id"),

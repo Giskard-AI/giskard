@@ -1,8 +1,10 @@
-import pandas as pd
-
-from giskard.ml_worker.generated.ml_worker_pb2 import SingleTestResult
-from giskard.ml_worker.utils.logging import timer
 from enum import Enum
+from functools import wraps
+import numbers
+from typing import Optional
+
+from giskard.datasets.base import Dataset
+from giskard.core.core import SupportedModelTypes
 
 
 class Direction(Enum):
@@ -11,40 +13,44 @@ class Direction(Enum):
     Decreasing = -1
 
 
-def ge_result_to_test_result(result, passed=True) -> SingleTestResult:
-    """
-        Converts a result of Great Expectations to TestResultMessage - java/python bridge test result class
-    :param passed: boolean flag containing result of a test
-    :param result: Great Expectations result
-    :return: TestResultMessage - a protobuf generated test result class
-    """
+def validate_classification_label(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        reference_slice = kwargs.get('reference_dataset', None)
+        actual_slice = kwargs.get('dataset', None)
+        model = kwargs.get('model', None)
+        classification_label = kwargs.get('classification_label', None)
+        target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
 
-    return SingleTestResult(
-        passed=passed,
-        actual_slices_size=[result["element_count"]],
-        missing_count=result["missing_count"],
-        missing_percent=result["missing_percent"],
-        unexpected_count=result["unexpected_count"],
-        unexpected_percent=result["unexpected_percent"],
-        unexpected_percent_total=result["unexpected_percent_total"],
-        unexpected_percent_nonmissing=result["unexpected_percent_nonmissing"],
-        partial_unexpected_index_list=result["partial_unexpected_index_list"],
-        unexpected_index_list=result["unexpected_index_list"],
-    )
+        # Try to automatically cast `classification_label` to the right type
+        if (
+            classification_label is not None
+            and model is not None
+            and isinstance(model.meta.classification_labels[0], numbers.Number)
+        ):
+            try:
+                classification_label = int(classification_label)
+            except ValueError:
+                pass
+
+        # Validate the label
+        if target and classification_label and model:
+            assert classification_label != target, (
+                'By "classification_label", we refer to one of the values: '
+                f'{model.meta.classification_labels} and not the target: "{target}". '
+                'Please re-assign this argument.'
+            )
+
+        assert (
+            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
+            or classification_label in model.meta.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
-@timer("Perturb data")
-def apply_perturbation_inplace(df: pd.DataFrame, perturbation_dict):
-    modified_rows = []
-    i = 0
-    for idx, r in df.iterrows():
-        added = False
-        for pert_col, pert_func in perturbation_dict.items():
-            original_value = r[pert_col]
-            new_value = pert_func(r)
-            if original_value != new_value and not added:
-                added = True
-                modified_rows.append(i)
-                df.loc[idx, pert_col] = new_value
-        i += 1
-    return modified_rows
+def check_slice_not_empty(sliced_dataset: Dataset, dataset_name: Optional[str] = "", test_name: Optional[str] = ""):
+    if sliced_dataset.df.empty:
+        test_name = " in " + test_name
+        raise ValueError("The sliced " + dataset_name + test_name + " is empty.")

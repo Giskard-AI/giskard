@@ -1,30 +1,96 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer
-        dark
-        fixed
-        app
-        persistent
-        class="background"
-        mobile-breakpoint="sm"
-        width="72"
-    >
+    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
       <v-layout column fill-height>
         <v-list subheader class="align-center">
-          <v-list-item to="/">
+          <v-list-item to="/" @click.stop="() => {
+            projectStore.setCurrentProjectId(null);
+          }">
             <v-list-item-content>
               <div class="align-center text-center">
-                <img src="@/assets/logo_v2_white.png" alt="Giskard icon" width="45px"/>
+                <img src="@/assets/logo_v2.png" alt="Giskard icon" width="45px" />
               </div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
-          <v-list-item to="/main/projects">
-            <v-list-item-content>
-              <v-icon>web</v-icon>
-              <div class="caption">Projects</div>
-            </v-list-item-content>
-          </v-list-item>
+          <v-divider />
+
+          <v-tooltip v-if="projectStore.currentProjectId === null" :disabled="projectStore.currentProjectId !== null" right>
+            <template v-slot:activator="{ on, attrs }">
+              <div v-on="on">
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                    <div class="caption">Catalog</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-list-status</v-icon>
+                    <div class="caption">Testing</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-shield-search</v-icon>
+                    <div class="caption">Debugger</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+                <v-list-item :disabled="true">
+                  <v-list-item-content>
+                    <v-icon>mdi-comment-multiple-outline</v-icon>
+                    <div class="caption">Feedback</div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
+              </div>
+            </template>
+            <span>You have to select a project to interact with this menu.</span>
+          </v-tooltip>
+
+          <div v-else>
+            <v-list-item :to="{
+              name: 'project-catalog',
+              params: {
+                id: projectStore.currentProjectId,
+              }
+            }" value="catalog">
+              <v-list-item-content>
+                <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                <div class="caption">Catalog</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item value="testing" @click="redirectToTesting" link>
+              <v-list-item-content>
+                <v-icon>mdi-list-status</v-icon>
+                <div class="caption">Testing</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item value="debugger" @click="redirectToDebugger" link>
+              <v-list-item-content>
+                <v-icon>mdi-shield-search</v-icon>
+                <div class="caption">Debugger</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{
+              name: 'project-feedbacks', params: {
+                id: projectStore.currentProjectId,
+              }
+            }" value="feedbacks">
+              <v-list-item-content>
+                <v-icon>mdi-comment-multiple-outline</v-icon>
+                <div class="caption">Feedback</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+          </div>
+
+
         </v-list>
         <v-spacer></v-spacer>
         <v-list>
@@ -38,14 +104,14 @@
               </v-tooltip>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
+          <v-divider />
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
               <v-icon>mdi-cog</v-icon>
               <div class="caption">Settings</div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider/>
+          <v-divider />
           <v-list-item to="/main/profile/view" v-if="authAvailable">
             <v-list-item-content>
               <v-icon>person</v-icon>
@@ -62,21 +128,29 @@
       </v-layout>
     </v-navigation-drawer>
 
-    <div class="pa-1 vertical-container">
-      <router-view></router-view>
+    <div class="pa-0 vertical-container overflow-hidden fill-height">
+      <router-view class="overflow-hidden fill-height"></router-view>
     </div>
   </v-main>
 </template>
 
 <script lang="ts" setup>
-import {useUserStore} from "@/stores/user";
-import {useMainStore} from "@/stores/main";
-import {computed, ref} from "vue";
+import { useUserStore } from "@/stores/user";
+import { useMainStore } from "@/stores/main";
+import { useProjectStore } from "@/stores/project";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from 'vue-router/composables';
 import moment from "moment/moment";
 
+const route = useRoute();
+const router = useRouter();
 const mainStore = useMainStore();
 const userStore = useUserStore();
-
+const projectStore = useProjectStore();
+const debuggingSessionsStore = useDebuggingSessionsStore();
+const testSuitesStore = useTestSuitesStore();
 
 let warningMessage = ref<string>()
 
@@ -108,22 +182,53 @@ const userId = computed(() => {
   }
 });
 
+
+watch(() => route.name, async (name) => {
+  if (name === 'projects-home') {
+    projectStore.setCurrentProjectId(null);
+  }
+})
+
 async function logout() {
   await userStore.userLogout();
+}
+
+async function redirectToDebugger() {
+  if (projectStore.currentProjectId === null) {
+    return;
+  }
+  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  await router.push({
+    name: 'project-debugger',
+    params: {
+      projectId: projectStore.currentProjectId.toString()
+    }
+  });
+}
+
+async function redirectToTesting() {
+  if (projectStore.currentProjectId === null) {
+    return;
+  }
+  testSuitesStore.setCurrentTestSuiteId(null);
+  await router.push({
+    name: 'project-testing',
+    params: {
+      projectId: projectStore.currentProjectId.toString()
+    }
+  });
 }
 </script>
 
 <style scoped>
-
-
 .background {
-  background-image: url("~@/assets/wallpaper-skyline-reduced.jpg");
+  background-image: none;
   background-position: 0 20%;
   background-size: auto 100%;
 }
 
 div.caption {
-  font-size: 11px !important;
+  font-size: 0.6875em !important;
   align-self: center;
   text-align: center;
 }

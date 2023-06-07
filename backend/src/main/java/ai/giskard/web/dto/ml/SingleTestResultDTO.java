@@ -1,6 +1,5 @@
 package ai.giskard.web.dto.ml;
 
-import ai.giskard.utils.GRPCUtils;
 import ai.giskard.worker.SingleTestResult;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
@@ -29,12 +28,12 @@ public class SingleTestResultDTO {
     private float metric;
 
     public SingleTestResultDTO(SingleTestResult message) {
-        this.missingCount = GRPCUtils.convertType(message.getMissingCount());
-        this.missingPercent = GRPCUtils.convertType(message.getMissingPercent());
-        this.unexpectedCount = GRPCUtils.convertType(message.getUnexpectedCount());
-        this.unexpectedPercent = GRPCUtils.convertType(message.getUnexpectedPercent());
-        this.unexpectedPercentTotal = GRPCUtils.convertType(message.getUnexpectedPercentTotal());
-        this.unexpectedPercentNonmissing = GRPCUtils.convertType(message.getUnexpectedPercentNonmissing());
+        this.missingCount = message.getMissingCount();
+        this.missingPercent = message.getMissingPercent();
+        this.unexpectedCount = message.getUnexpectedCount();
+        this.unexpectedPercent = message.getUnexpectedPercent();
+        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
+        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.passed = message.getPassed();

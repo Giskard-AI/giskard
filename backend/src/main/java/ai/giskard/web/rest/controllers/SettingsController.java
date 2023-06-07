@@ -2,46 +2,37 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.GeneralSettings;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseException;
 import ai.giskard.service.ee.LicenseService;
-import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerSecretKey;
+import ai.giskard.service.ml.MLWorkerSecurityService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.LicenseDTO;
-import ai.giskard.web.dto.config.MLWorkerInfoDTO;
+import ai.giskard.web.dto.config.MLWorkerConnectionInfoDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
-import ai.giskard.worker.MLWorkerInfo;
-import ai.giskard.worker.MLWorkerInfoRequest;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
+import ai.giskard.web.rest.errors.ExpiredTokenException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
@@ -64,22 +55,21 @@ public class SettingsController {
     private final GeneralSettingsService settingsService;
     private final ApplicationProperties applicationProperties;
 
-    @Autowired
-    private final MLWorkerService mlWorkerService;
+    private final MLWorkerSecurityService mlWorkerSecurityService;
     private final LicenseService licenseService;
 
 
     @PostMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    @Transactional
     public GeneralSettings saveGeneralSettings(@RequestBody GeneralSettings settings) {
         return settingsService.save(settings);
     }
 
     @GetMapping("")
-    @Transactional
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
-        log.debug("REST request to get all public User names");
+        if (user == null) {
+            throw new ExpiredTokenException();
+        }
         AdminUserDTO userDTO = userRepository
             .findOneWithRolesByLogin(user.getUsername())
             .map(AdminUserDTO::new)
@@ -108,9 +98,27 @@ public class SettingsController {
                 .planCode(currentLicense.getPlanCode())
                 .planName(currentLicense.getPlanName())
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+                .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
                 .roles(roles)
                 .build())
             .user(userDTO)
+            .build();
+    }
+
+    @GetMapping("/ml-worker-connect")
+    public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() throws NoSuchAlgorithmException {
+        String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
+        MLWorkerSecretKey key = mlWorkerSecurityService.registerVacantKey(currentUser);
+
+        return MLWorkerConnectionInfoDTO.builder()
+            .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
+            .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+            .instanceId(settingsService.getSettings().getInstanceId())
+            .serverVersion(buildVersion)
+            .user(currentUser)
+            .instanceLicenseId(licenseService.getCurrentLicense().getId())
+            .encryptionKey(key.toBase64())
+            .keyId(key.getKeyId())
             .build();
     }
 
@@ -139,28 +147,5 @@ public class SettingsController {
             .build();
     }
 
-    @GetMapping("/ml-worker-info")
-    public List<MLWorkerInfoDTO> getMLWorkerInfo() throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
-        try (MLWorkerClient internalClient = mlWorkerService.createClient(true, false);
-             MLWorkerClient externalClient = mlWorkerService.createClient(false, false)) {
-            List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
 
-            if (internalClient != null) {
-                awaitableResults.add(internalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
-            }
-            if (externalClient != null) {
-                awaitableResults.add(externalClient.getFutureStub().getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
-            }
-
-            List<MLWorkerInfo> mlWorkerInfos = Futures.successfulAsList(awaitableResults).get();
-            List<MLWorkerInfoDTO> res = new ArrayList<>();
-            for (MLWorkerInfo info : mlWorkerInfos) {
-                if (info != null) {
-                    res.add(new ObjectMapper().readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class));
-                }
-            }
-
-            return res;
-        }
-    }
 }

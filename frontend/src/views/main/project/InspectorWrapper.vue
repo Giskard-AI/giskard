@@ -1,424 +1,449 @@
 <template>
-  <v-container v-if="inspection" fluid>
-    <v-row
-        align="center"
-        no-gutters
-        style='height: 60px;'
-    >
+  <v-container v-if="inspection" fluid class="vc">
+    <v-row align="center" no-gutters style='height: 60px;'>
 
-      <v-toolbar id='data-explorer-toolbar' flat>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <v-icon v-on="on" class="pr-5" small>info</v-icon>
-          </template>
-          <h3> Model </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer/>
-            <div> {{ inspection.model.id }}</div>
-          </div>
-          <div class="d-flex">
-            <div> Name</div>
-            <v-spacer/>
-            <div class="pl-5"> {{ inspection.model.name }}</div>
-          </div>
-          <br/>
-          <h3> Dataset </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer/>
-            <div> {{ inspection.dataset.id }}</div>
-          </div>
-          <div class="d-flex pb-3">
-            <div> Name</div>
-            <v-spacer/>
-            <div class="pl-5"> {{ inspection.dataset.name }}</div>
-          </div>
+      <v-toolbar class='data-explorer-toolbar' flat>
+        <v-tooltip bottom min-width="400">
+            <template v-slot:activator="{ on, attrs }">
+                <v-icon v-on="on" class="pr-5" medium>info</v-icon>
+            </template>
+            <h3> Debugging session </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.id }}</div>
+            </div>
+            <div class="d-flex">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.name || "-" }}</div>
+            </div>
+            <br/>
+            <h3> Model </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.model.id }}</div>
+            </div>
+            <div class="d-flex">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.model.name }}</div>
+            </div>
+            <br/>
+            <h3> Dataset </h3>
+            <div class="d-flex">
+                <div> Id</div>
+                <v-spacer/>
+                <div> {{ inspection.dataset.id }}</div>
+            </div>
+            <div class="d-flex pb-3">
+                <div> Name</div>
+                <v-spacer/>
+                <div class="pl-5"> {{ inspection.dataset.name }}</div>
+            </div>
         </v-tooltip>
-        <span class='subtitle-2 mr-2'>Dataset Explorer</span>
-        <v-btn icon @click='shuffleMode = !shuffleMode'>
-          <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
-          <v-icon v-else>mdi-shuffle-variant</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canPrevious()' icon @click='previous'>
-          <v-icon>mdi-skip-previous</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canNext()' icon @click='next'>
-          <v-icon>mdi-skip-next</v-icon>
-        </v-btn>
-        <span class='caption grey--text' v-if="totalRows > 0">
+          <span class='subtitle-1 mr-2'>Dataset Explorer</span>
+          <v-btn icon @click='shuffleMode = !shuffleMode'>
+              <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
+              <v-icon v-else>mdi-shuffle-variant</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canPrevious' icon @click='previous'>
+              <v-icon>mdi-skip-previous</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canNext' icon @click='next'>
+              <v-icon>mdi-skip-next</v-icon>
+          </v-btn>
+
+          <span class='caption grey--text' v-if="totalRows > 0">
           Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
         </span>
-        <span v-show="originalData && isDefined(originalData.Index)" class='caption grey--text'
-              style='margin-left: 15px'>Row Index {{ originalData.Index + 1 }}</span>
+          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
+                style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <v-chip class="ml-2" outlined link
+                  :color="inspection.sample ? 'purple' : 'primary'"
+                  @click="handleSwitchSample" x-small>
+              {{ inspection.sample ? 'Sample' : 'Whole' }} data
+          </v-chip>
       </v-toolbar>
-      <v-spacer/>
+        <v-spacer/>
 
-      <SliceDropdown :project-id="projectId" :is-project-owner-or-admin="isProjectOwnerOrAdmin" @onSelect="applySlice"
-                     @onClear="clearSlice" :loading="loadingSlice" :default-dataset-id="inspection.dataset.id"
-                     class="mr-3 "/>
+        <SlicingFunctionSelector label="Slice to apply" :project-id="projectId"
+                                 :full-width="false" :icon="true" class="mr-3"
+                                 :allow-no-code-slicing="true"
+                                 @onChanged="processDataset"
+                                 :value.sync="selectedSlicingFunction.uuid"
+                                 :args.sync="selectedSlicingFunction.params"
+                                 :dataset="inspection.dataset"/>
 
-      <InspectionFilter
-          :is-target-available="isDefined(inspection.dataset.target)"
-          :labels="labels"
-          :model-type="inspection.model.modelType"
-          @input="f=>filter = f"
-      />
+        <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
+                          :model-type="inspection.model.modelType" @input="f => filter = f"/>
     </v-row>
-    <Inspector :dataset='inspection.dataset'
-               :inputData.sync='inputData'
-               :model='inspection.model'
-               :originalData='originalData'
-               class='px-0'
-               @reset='resetInput'
-               @submitValueFeedback='submitValueFeedback'
-               @submitValueVariationFeedback='submitValueVariationFeedback'
-               v-if="totalRows > 0"
-    />
-    <v-alert v-else border="bottom"
-             colored-border
-             type="warning"
-             class="mt-8"
-             elevation="2">
-      No data matches the selected filter.<br/>
-      In order to show data, please refine the filter's criteria.
-    </v-alert>
+      <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
+                 :originalData='originalData'
+                 :transformationModifications="modifications"
+                 class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback'
+                 @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
+      <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
+          No data matches the selected filter.<br/>
+          In order to show data, please refine the filter's criteria.
+      </v-alert>
 
 
-    <!-- For general feedback -->
-    <v-tooltip left>
-      <template v-slot:activator='{ on, attrs }'>
-        <v-btn :class="feedbackPopupToggle? 'secondary': 'primary'" bottom fab fixed
-               class="zindex-10"
-               right
-               v-bind='attrs'
-               @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'
-        >
-          <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
-          <v-icon v-else>mdi-message-plus</v-icon>
-        </v-btn>
-      </template>
-      <span v-if='feedbackPopupToggle'>Close</span>
-      <span v-else>Feedback</span>
-    </v-tooltip>
-    <v-overlay
-        :value='feedbackPopupToggle'
-        :z-index='10'
-    ></v-overlay>
-    <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
-      <v-card-title>Is this input case insightful?</v-card-title>
-      <v-card-text class='px-3 py-0'>
-        <v-radio-group v-model='feedbackChoice' class='mb-2 mt-0' dark hide-details row>
-          <v-radio label='Yes' value='yes'></v-radio>
-          <v-radio label='No' value='no'></v-radio>
-          <v-radio label='Other' value='other'></v-radio>
-        </v-radio-group>
-        <v-textarea
-            v-model='feedback'
-            :disabled='feedbackSubmitted'
-            hide-details
-            no-resize
-            outlined
-            placeholder='Why?'
-            rows='2'
-        ></v-textarea>
-      </v-card-text>
-      <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white'
-               light small @click='submitGeneralFeedback'>
-          Send
-        </v-btn>
-        <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
-      </v-card-actions>
-    </v-card>
-    <!-- End For general feedback -->
+      <!-- For general feedback -->
+      <v-tooltip left>
+          <template v-slot:activator='{ on, attrs }'>
+              <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right
+                     v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
+                  <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
+                  <v-icon v-else>mdi-message-plus</v-icon>
+              </v-btn>
+          </template>
+          <span v-if='feedbackPopupToggle'>Close</span>
+          <span v-else>Feedback</span>
+      </v-tooltip>
+      <v-overlay :value='feedbackPopupToggle' :z-index='10'></v-overlay>
+      <v-card v-if='feedbackPopupToggle' id='feedback-card' color='primary' dark>
+          <v-card-title>Is this input case insightful?</v-card-title>
+          <v-card-text class='px-3 py-0'>
+              <v-radio-group v-model='feedbackChoice' class='mb-2 mt-0' dark hide-details row>
+                  <v-radio label='Yes' value='yes'></v-radio>
+                  <v-radio label='No' value='no'></v-radio>
+                  <v-radio label='Other' value='other'></v-radio>
+              </v-radio-group>
+              <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined
+                          placeholder='Why?' rows='2'></v-textarea>
+          </v-card-text>
+          <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
+          <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
+              <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light
+                     small @click='submitGeneralFeedback'>
+                  Send
+              </v-btn>
+              <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
+          </v-card-actions>
+      </v-card>
+      <!-- End For general feedback -->
   </v-container>
 </template>
 
-<script lang='ts'>
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
-import OverlayLoader from '@/components/OverlayLoader.vue';
-import PredictionResults from './PredictionResults.vue';
-import PredictionExplanations from './PredictionExplanations.vue';
-import TextExplanation from './TextExplanation.vue';
+<script setup lang='ts'>
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
 import {api} from '@/api';
-import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
-import {CreateFeedbackDTO, Filter, InspectionDTO, ModelType, RowFilterType, SliceDTO} from '@/generated-sources';
+import {
+    CreateFeedbackDTO,
+    DatasetProcessingResultDTO,
+    Filter,
+    InspectionDTO,
+    ModelType,
+    ParameterizedCallableDTO,
+    RowFilterType
+} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
-import SliceDropdown from "@/components/slice/SliceDropdown.vue";
+import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
+import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useInspectionStore} from "@/stores/inspection";
+import {$vfm} from "vue-final-modal";
+import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
+import {confirm} from "@/utils/confirmation.utils";
 
-type CreatedFeedbackCommonDTO = {
-  targetFeature?: string | null;
-  userData: string;
-  modelId: number;
-  datasetId: number;
-  originalData: string;
-  projectId: number
-};
-@Component({
-  components: {
-    SliceDropdown,
-    OverlayLoader,
-    Inspector,
-    PredictionResults,
-    FeedbackPopover,
-    PredictionExplanations,
-    TextExplanation,
-    InspectionFilter
+interface CreatedFeedbackCommonDTO {
+    targetFeature?: string | null;
+    userData: string;
+    modelId: string;
+    datasetId: string;
+    originalData: string;
+    projectId: number
+}
+
+interface Props {
+    inspectionId: number;
+    projectId: number;
+    isProjectOwnerOrAdmin: boolean;
+}
+
+const props = defineProps<Props>();
+
+const inspection = ref<InspectionDTO | null>(null);
+const mouseTrap = new Mousetrap();
+const loadingData = ref(false);
+const loadingProcessedDataset = ref(false); // specific boolean for slice loading because it can take a while...
+const inputData = ref({});
+const originalData = ref<any>({});
+const rowNb = ref(0);
+const shuffleMode = ref(false);
+const dataErrorMsg = ref('');
+
+const feedbackPopupToggle = ref(false);
+const feedback = ref('');
+const feedbackChoice = ref(null);
+const feedbackError = ref('');
+const feedbackSubmitted = ref(false);
+const labels = ref<string[]>([]);
+const filter = ref<Filter>({
+    inspectionId: props.inspectionId,
+    type: RowFilterType.ALL
+});
+
+const selectedSlicingFunction = ref<Partial<ParameterizedCallableDTO>>({
+    uuid: undefined,
+    params: [],
+    type: 'SLICING'
+});
+
+const dataProcessingResult = ref<DatasetProcessingResultDTO | null>(null);
+
+const totalRows = ref(0);
+const mt = ModelType;
+const rows = ref<Record<string, any>[]>([]);
+const numberOfRows = ref(0);
+const itemsPerPage = 200;
+const rowIdxInPage = ref(0);
+const regressionThreshold = ref(0.1);
+const percentRegressionUnit = ref(true);
+
+const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
+const canNext = computed(() => rowNb.value < totalRows.value - 1);
+const {transformationFunctions} = storeToRefs(useInspectionStore());
+
+function commonFeedbackData(): CreatedFeedbackCommonDTO {
+  return {
+    targetFeature: inspection.value?.dataset.target,
+    userData: JSON.stringify(inputData.value),
+    modelId: inspection.value!.model.id,
+    datasetId: inspection.value!.dataset.id,
+    originalData: JSON.stringify(originalData.value),
+    projectId: props.projectId
+  };
+}
+
+function clearFeedback() {
+  feedback.value = '';
+  feedbackError.value = '';
+  feedbackSubmitted.value = false;
+  feedbackChoice.value = null;
+  feedbackPopupToggle.value = false;
+}
+
+function isDefined(val: any): boolean {
+  return !_.isNil(val);
+}
+
+function previous() {
+  if (canPrevious.value) {
+    clearFeedback();
+    rowNb.value -= 1;
+    debouncedUpdateRow();
   }
-})
-export default class InspectorWrapper extends Vue {
-  @Prop() inspectionId!: number;
-  @Prop() projectId!: number;
-  @Prop() isProjectOwnerOrAdmin!: boolean;
+}
 
-  inspection: InspectionDTO | null = null;
-  mouseTrap = new Mousetrap();
-  loadingData = false;
-  loadingSlice = false; // specific boolean for slice loading because it can take a while...
-  inputData = {};
-  originalData = {};
-  rowNb: number = 0;
-  shuffleMode: boolean = false;
-  dataErrorMsg = '';
-
-  feedbackPopupToggle = false;
-  feedback: string = '';
-  feedbackChoice = null;
-  feedbackError: string = '';
-  feedbackSubmitted: boolean = false;
-  labels: string[] = [];
-  filter: Filter = {type: RowFilterType.ALL};
-
-  totalRows = 0;
-  mt = ModelType;
-  rows: Record<string, any>[] = [];
-  numberOfRows: number = 0;
-  itemsPerPage = 200;
-  rowIdxInPage: number = 0;
-  regressionThreshold: number = 0.1;
-  percentRegressionUnit = true;
-  RowFilterType = RowFilterType;
-
-  get commonFeedbackData(): CreatedFeedbackCommonDTO {
-    return {
-      projectId: parseInt(this.$router.currentRoute.params.id),
-      modelId: this.inspection!.model.id,
-      datasetId: this.inspection!.dataset.id,
-      targetFeature: this.inspection!.dataset.target,
-      userData: JSON.stringify(this.inputData),
-      originalData: JSON.stringify(this.originalData)
-    };
+function next() {
+  if (canNext.value) {
+    clearFeedback();
+    rowNb.value += 1;
+    debouncedUpdateRow();
   }
+}
 
-  isDefined(val: any) {
-    return !_.isNil(val);
+async function submitGeneralFeedback() {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'general',
+    feedbackChoice: feedbackChoice.value,
+    feedbackMessage: feedback.value
+  };
+
+  try {
+    feedbackSubmitted.value = true;
+    await doSubmitFeedback(newFeedback);
+    feedbackPopupToggle.value = false;
+  } catch (err) {
+    feedbackError.value = err.response.data.detail;
   }
+}
 
-  async init() {
-    this.inspection = await api.getInspection(this.inspectionId);
+async function submitValueFeedback(userData: object) {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'value',
+    ...userData
+  };
+  await doSubmitFeedback(newFeedback);
+}
+
+async function submitValueVariationFeedback(userData: object) {
+  const newFeedback: CreateFeedbackDTO = {
+    ...commonFeedbackData(),
+    feedbackType: 'value perturbation',
+    ...userData
+  };
+  await doSubmitFeedback(newFeedback);
+}
+
+const debouncedUpdateRow = _.debounce(async () => {
+  await updateRow(false);
+}, 150);
+
+async function applyFilter(nv, ov) {
+  if (JSON.stringify(nv) === JSON.stringify(ov)) {
+    return;
   }
+  await updateRow(true);
+}
 
-  async mounted() {
-    this.labels = await api.getLabelsForTarget(this.inspectionId);
-    await this.init();
+watch(() => [
+  inspection.value?.id,
+  regressionThreshold.value,
+  filter.value,
+  shuffleMode.value,
+  percentRegressionUnit.value,
+    dataProcessingResult.value
+], async (nv, ov) => applyFilter(nv, ov), { deep: true, immediate: false });
+
+async function updateRow(forceFetch) {
+  await fetchRows(rowNb.value, forceFetch);
+  assignCurrentRow(forceFetch)
+}
+
+/**
+ * Calling fetch rows if necessary, i.e. when start or end of the page
+ * @param rowIdxInResults index of the row in the results
+ * @param forceFetch
+ */
+async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
+  const remainder = rowIdxInResults % itemsPerPage;
+  const newPage = Math.floor(rowIdxInResults / itemsPerPage);
+  if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
+      const result = await api.getDatasetRows(inspection.value!.dataset.id,
+          newPage * itemsPerPage, itemsPerPage, {
+              filter: {
+                  ...filter.value,
+                  inspectionId: props.inspectionId
+              },
+              removeRows: dataProcessingResult.value?.filteredRows
+          }, inspection.value!.sample, shuffleMode.value)
+      rows.value = result.content;
+      numberOfRows.value = result.totalItems;
   }
-
-  bindKeys() {
-    this.mouseTrap.bind('left', this.previous);
-    this.mouseTrap.bind('right', this.next);
-  }
-
-  resetKeys() {
-    this.mouseTrap.reset();
-  }
-
-  public canPrevious() {
-    return !this.shuffleMode && this.rowNb > 0;
-  }
-
-  public canNext() {
-    return this.rowNb < this.totalRows - 1;
-  }
-
-  /**
-   * Call on active tab
-   */
-  async activated() {
-    this.bindKeys();
-    await this.init();
-  }
-
-  deactivated() {
-    this.resetKeys();
-  }
-
-  public next() {
-    if (this.canNext()) {
-      this.clearFeedback();
-      this.rowNb += 1;
-      this.debouncedUpdateRow();
-    }
-  }
-
-  public previous() {
-    if (this.canPrevious()) {
-      this.clearFeedback();
-      this.rowNb -= 1;
-      this.debouncedUpdateRow();
-    }
-  }
-
-  public clearFeedback() {
-    this.feedback = '';
-    this.feedbackError = '';
-    this.feedbackSubmitted = false;
-    this.feedbackChoice = null;
-    this.feedbackPopupToggle = false;
-  }
-
-  public async submitGeneralFeedback() {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'general',
-      feedbackChoice: this.feedbackChoice,
-      feedbackMessage: this.feedback
-    };
-    try {
-      this.feedbackSubmitted = true;
-      await this.doSubmitFeedback(feedback);
-      this.feedbackPopupToggle = false;
-    } catch (err) {
-      this.feedbackError = err.response.data.detail;
-    }
-  }
-
-  public async submitValueFeedback(userData: object) {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'value',
-      ...userData
-    };
-    await this.doSubmitFeedback(feedback);
-  }
-
-  public async submitValueVariationFeedback(userData: object) {
-    const feedback: CreateFeedbackDTO = {
-      ...this.commonFeedbackData,
-      feedbackType: 'value perturbation',
-      ...userData
-    };
-    await this.doSubmitFeedback(feedback);
-  }
-
-  private debouncedUpdateRow = _.debounce(async () => {
-    await this.updateRow(false);
-  }, 150);
+}
 
 
-  @Watch('inspection.id')
-  @Watch('regressionThreshold')
-  @Watch('filter', {deep: true, immediate: false})
-  @Watch('shuffleMode')
-  @Watch('percentRegressionUnit')
-  async applyFilter(nv, ov) {
-    if (JSON.stringify(nv) === JSON.stringify(ov)) {
-      return;
-    }
-    await this.updateRow(true);
-  }
+function assignCurrentRow(forceFetch: boolean) {
+    rowIdxInPage.value = rowNb.value % itemsPerPage;
+    loadingData.value = true;
 
-  async updateRow(forceFetch) {
-    await this.fetchRows(this.rowNb, forceFetch);
-    this.assignCurrentRow(forceFetch)
-  }
-
-  /**
-   * Calling fetch rows if necessary, i.e. when start or end of the page
-   * @param rowIdxInResults index of the row in the results
-   * @param forceFetch
-   */
-  public async fetchRows(rowIdxInResults: number, forceFetch: boolean) {
-    const remainder = rowIdxInResults % this.itemsPerPage;
-    const newPage = Math.floor(rowIdxInResults / this.itemsPerPage);
-    if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
-      await this.fetchRowsByRange(newPage * this.itemsPerPage, (newPage + 1) * this.itemsPerPage);
-    }
-  }
-
-  /**
-   * Requesting the filtered rows in a given range
-   * @param minRange
-   * @param maxRange
-   */
-  public async fetchRowsByRange(minRange: number, maxRange: number) {
-    const props = {
-      'modelId': this.inspection?.model.id,
-      'minRange': minRange,
-      'maxRange': maxRange,
-      'isRandom': this.shuffleMode
-    };
-    const response = await api.getDataFilteredByRange(this.inspection?.id, props, this.filter);
-    this.rows = response.data;
-    this.numberOfRows = response.rowNb;
-  }
-
-  private assignCurrentRow(forceFetch: boolean) {
-    this.rowIdxInPage = this.rowNb % this.itemsPerPage;
-    this.loadingData = true;
-
-    this.inputData = this.rows[this.rowIdxInPage];
-    this.originalData = {...this.inputData}; // deep copy to avoid caching mechanisms
-    this.dataErrorMsg = '';
-    this.loadingData = false;
-    this.totalRows = this.numberOfRows;
+    inputData.value = rows.value[rowIdxInPage.value];
+    originalData.value = {...inputData.value}; // deep copy to avoid caching mechanisms
+    dataErrorMsg.value = '';
+    loadingData.value = false;
+    totalRows.value = numberOfRows.value;
     if (forceFetch) {
-      this.rowNb = 0;
+        rowNb.value = 0;
     }
-  }
+}
 
-  private resetInput() {
-    this.inputData = {...this.originalData};
-  }
 
-  private async doSubmitFeedback(payload: CreateFeedbackDTO) {
+const modifications = computed(() => dataProcessingResult.value?.modifications?.find(m => m.rowId === originalData.value['_GISKARD_INDEX_'])?.modifications ?? {});
+
+function resetInput() {
+    inputData.value = {
+        ...originalData.value,
+        ...modifications.value
+    };
+}
+
+async function doSubmitFeedback(payload: CreateFeedbackDTO) {
     mixpanel.track('Submit feedback', {
-      datasetId: payload.datasetId,
-      feedbackChoice: payload.feedbackChoice,
-      feedbackType: payload.feedbackType,
-      modelId: payload.modelId,
-      projectId: payload.projectId
+        datasetId: payload.datasetId,
+        feedbackChoice: payload.feedbackChoice,
+        feedbackType: payload.feedbackType,
+        modelId: payload.modelId,
+        projectId: payload.projectId
     });
     await api.submitFeedback(payload, payload.projectId);
-  }
+}
 
-  private async applySlice(slice: SliceDTO) {
-    this.loadingSlice = true;
-    this.filter.sliceId = slice.id;
-    await this.updateRow(true);
-    this.loadingSlice = false;
-    mixpanel.track('Apply slice', {sliceId: this.filter.sliceId});
-  }
+const transformationPipeline = computed(() => Object.values(transformationFunctions.value))
 
-  private async clearSlice() {
-    this.loadingSlice = true;
-    this.filter.sliceId = 0;
-    await this.updateRow(true);
-    this.loadingSlice = false;
-  }
+watch(() => transformationPipeline.value, processDataset, {deep: true})
 
+async function processDataset() {
+    const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
+        .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
+
+    loadingProcessedDataset.value = true;
+    dataProcessingResult.value = await api.datasetProcessing(props.projectId, inspection.value!.dataset.id, pipeline, inspection.value!.sample)
+    loadingProcessedDataset.value = false;
+}
+
+function bindKeys() {
+  mouseTrap.bind('left', previous);
+  mouseTrap.bind('right', next);
+}
+
+function resetKeys() {
+  mouseTrap.reset();
+}
+
+
+async function init() {
+    inspection.value = await api.getInspection(props.inspectionId);
+    useInspectionStore().$reset();
+    await useCatalogStore().loadCatalog(props.projectId);
+}
+
+onMounted(async () => {
+    labels.value = await api.getLabelsForTarget(props.inspectionId);
+    bindKeys();
+    await init();
+});
+
+onUnmounted(() => {
+    resetKeys();
+});
+
+async function handleSwitchSample() {
+    if (inspection.value!.sample) {
+        const confirmed = await confirm($vfm, 'Inspect whole dataset', 'Opening the debugger on the whole data might cause performance issues');
+        if (!confirmed) {
+            return;
+        }
+    }
+
+    await $vfm.show({
+        component: BlockingLoadingModal,
+        bind: {
+            title: "Preprocessing dataset",
+            text: "Please wait. This operation might take some time."
+        },
+        on: {
+            async mounted(close) {
+                try {
+                    inspection.value = await api.updateInspectionName(inspection.value!.id, {
+                        name: inspection.value!.name,
+                        datasetId: inspection.value!.dataset.id,
+                        modelId: inspection.value!.model.id,
+                        sample: !inspection.value!.sample
+                    });
+                    await updateRow(true);
+                } finally {
+                    close();
+                }
+            }
+        }
+    });
 }
 </script>
 
 <style scoped>
-#data-explorer-toolbar .v-btn {
+.data-explorer-toolbar .v-btn {
   height: 36px;
   width: 36px;
 }

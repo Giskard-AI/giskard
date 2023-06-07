@@ -1,7 +1,7 @@
 <template>
   <v-tabs v-if="data">
     <v-tab>Overview</v-tab>
-    <v-tab @change="onInspectorActivated">Inspector</v-tab>
+    <v-tab @change="onInspectorActivated">Debugger</v-tab>
     <v-tab-item class="height85vh">
       <div class="d-flex flex-column metadata fill-height align-baseline">
         <v-container class="w100 flex-grow-1 ">
@@ -38,22 +38,10 @@
               <v-card class="scrollable max75vh">
                 <v-card-title>Discussion</v-card-title>
                 <v-card-text>
-                  <MessageReply
-                      :author="data.user"
-                      :created-on="data.createdOn"
-                      :content="data.feedbackMessage"
-                      :repliable="true"
-                      :hideableBox="false"
-                      @reply="doSendReply($event)"/>
+                  <MessageReply :replyId="data.id" :author="data.user" :created-on="data.createdOn" :content="data.feedbackMessage" :repliable="true" :replies=firstLevelReplies :type="'feedback'" :hideableBox="false" @reply="doSendReply($event)" @delete="deleteFeedback" />
                   <div v-for="(r, idx) in firstLevelReplies" :key="r.id">
                     <v-divider class="my-1" v-show="idx < firstLevelReplies.length"></v-divider>
-                    <MessageReply
-                        :author="r.user"
-                        :created-on="r.createdOn"
-                        :content="r.content"
-                        :repliable="true"
-                        :replies="secondLevelReplies(r.id)"
-                        @reply="doSendReply($event, r.id)"/>
+                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" />
                   </div>
                 </v-card-text>
               </v-card>
@@ -65,35 +53,37 @@
       </div>
     </v-tab-item>
     <v-tab-item class="height85vh scrollable">
-      <Inspector
-          :model="data.model"
-          :dataset="data.dataset"
-          :originalData="originalData"
-          :inputData="userData"
-          :isMiniMode="true"
-          @reset="resetInput"
-      />
+      <Inspector :model="data.model" :dataset="data.dataset" :originalData="originalData" :inputData="userData" :isMiniMode="true" @reset="resetInput" />
     </v-tab-item>
   </v-tabs>
   <div v-else>Feedback #{{ id }} non existent</div>
 </template>
 
 <script setup lang="ts">
-import {api} from "@/api";
+import { api } from "@/api";
 import Inspector from "./Inspector.vue";
 import MessageReply from "@/components/MessageReply.vue";
-import {FeedbackDTO, FeedbackReplyDTO} from "@/generated-sources";
+import { FeedbackDTO, FeedbackReplyDTO } from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
-import {computed, onMounted, ref} from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import { useMainStore } from "@/stores/main";
 
-const props = defineProps({
-  id: {type: Number, required: true },
-});
+const mainStore = useMainStore();
+
+const router = useRouter();
+
+interface Props {
+  id: number,
+}
+
+const props = defineProps<Props>();
 
 const data = ref<FeedbackDTO | null>(null);
-const userData = ref<{[key: string]: string} | null>(null);
+const userData = ref<{ [key: string]: string } | null>(null);
 const originalData = ref<object | null>(null);
-
 onMounted(() => {
   reloadFeedback();
 })
@@ -113,14 +103,53 @@ function onInspectorActivated() {
 
 function resetInput() {
   if (data.value) {
-    userData.value = {...originalData.value}
+    userData.value = { ...originalData.value }
   }
 }
 
 async function doSendReply(content: string, replyToId: number | null = null) {
-  mixpanel.track('Reply to feedback', {replyTo: replyToId});
+  mixpanel.track('Reply to feedback', { replyTo: replyToId });
   await api.replyToFeedback(props.id, content, replyToId);
   await reloadFeedback();
+  mainStore.addSimpleNotification('Reply sent!');
+}
+
+function deleteFeedback(feedbackId: number) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete feedback',
+      text: `Are you sure that you want to delete this feedback permanently? All replies will be deleted as well.`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedback(feedbackId);
+        await router.push({ name: 'project-feedbacks', params: { id: data.value!.project.id.toString() } });
+        close();
+        mainStore.addSimpleNotification('Successfully deleted feedback!');
+      }
+    }
+  });
+}
+
+function deleteReply(replyId: number) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete reply',
+      text: `Are you sure that you want to delete this reply permanently? All replies to this reply will be deleted as well.`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteFeedbackReply(data.value!.id, replyId);
+        await reloadFeedback();
+        close();
+        mainStore.addSimpleNotification('Successfully deleted reply!');
+      }
+    }
+  });
 }
 
 const firstLevelReplies = computed<FeedbackReplyDTO[]>(() => {

@@ -1,11 +1,13 @@
 import Vue from "vue";
 import moment from "moment";
 
-Vue.filter('date',  function (value) {
+export function formatDate(value) {
     if (value) {
         return moment(String(value)).format('DD/MM/YYYY HH:mm')
     }
-});
+}
+
+Vue.filter('date', formatDate);
 
 Vue.filter('formatTwoDigits', function (n) {
     try {

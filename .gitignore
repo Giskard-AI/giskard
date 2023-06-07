@@ -73,6 +73,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+_build
 
 # PyBuilder
 target/
@@ -152,3 +153,4 @@ backend/demo-notebook/notebook/.*
 *.orig
 classes/
 out/
+enron_with_categories

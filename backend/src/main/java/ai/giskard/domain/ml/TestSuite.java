@@ -2,37 +2,35 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
-import ai.giskard.domain.ml.testing.Test;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
-public class TestSuite extends AbstractAuditingEntity {
-    @NotNull
+public class TestSuite extends AbstractAuditingEntity implements Serializable {
+    @Id
+    @GeneratedValue
+    private Long id;
+
     private String name;
 
     @ManyToOne
     @NotNull
-    @JsonBackReference
     private Project project;
 
-    @ManyToOne
-    private Dataset referenceDataset;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "suite_id")
+    private List<FunctionInput> functionInputs = new java.util.ArrayList<>();
 
-    @ManyToOne
-    private Dataset actualDataset;
+    @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SuiteTest> tests = new java.util.ArrayList<>();
 
-    @ManyToOne
-    private ProjectModel model;
-
-    @OneToMany(mappedBy = "testSuite", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Test> tests = new HashSet<>();
+    @OneToMany(mappedBy = "suite", cascade = CascadeType.ALL)
+    private List<TestSuiteExecution> executions = new java.util.ArrayList<>();
 }

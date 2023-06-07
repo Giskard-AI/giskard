@@ -2,6 +2,8 @@
  * Generated from ai.giskard.web.dto.InspectionCreateDTO
  */
 export interface InspectionCreateDTO {
-    datasetId: number;
-    modelId: number;
+    datasetId: string;
+    modelId: string;
+    name: string;
+    sample: boolean;
 }

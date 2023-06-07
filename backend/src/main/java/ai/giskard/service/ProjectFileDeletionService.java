@@ -6,17 +6,16 @@ import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,18 +26,13 @@ public class ProjectFileDeletionService {
     final InspectionService inspectionService;
     final DatasetRepository datasetRepository;
     final ModelRepository modelRepository;
-    final TestSuiteRepository testSuiteRepository;
     final InspectionRepository inspectionRepository;
     final FeedbackRepository feedbackRepository;
     final PermissionEvaluator permissionEvaluator;
 
-    @Transactional
-    public void deleteDataset(Long datasetId) {
-        Dataset dataset = datasetRepository.getById(datasetId);
+    public void deleteDataset(UUID datasetId) {
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanWriteProject(dataset.getProject().getId());
-
-        log.info("Deleting test suites linked to dataset {}", datasetId);
-        testSuiteRepository.deleteAll(testSuiteRepository.findByDatasetId(datasetId));
 
         log.info("Deleting inspections linked to dataset {}", datasetId);
         inspectionService.deleteInspections(inspectionRepository.findAllByDatasetId(datasetId));
@@ -50,24 +44,20 @@ public class ProjectFileDeletionService {
         log.info("Deleting dataset from the database: {}", dataset.getId());
         datasetRepository.delete(dataset);
 
+        Path datasetPath = locationService.resolvedDatasetPath(dataset);
         try {
             datasetRepository.flush();
-            Path datasetPath = locationService.datasetsDirectory(dataset.getProject().getKey()).resolve(dataset.getFileName());
-            log.info("Removing dataset file: {}", datasetPath.getFileName());
-            Files.deleteIfExists(datasetPath);
+            log.info("Removing dataset: {}", datasetPath);
+            FileSystemUtils.deleteRecursively(datasetPath);
         } catch (Exception e) {
-            throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", dataset.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove dataset %s", datasetPath), e);
         }
 
     }
 
-    @Transactional
-    public void deleteModel(Long modelId) {
-        ProjectModel model = modelRepository.getById(modelId);
+    public void deleteModel(UUID modelId) {
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
-
-        log.info("Deleting test suites for model: {}", model.getId());
-        testSuiteRepository.deleteAll(testSuiteRepository.findAllByModelId(modelId));
 
         log.info("Deleting feedbacks for model: {}", model.getId());
         feedbackRepository.deleteAll(feedbackRepository.findAllByModelId(modelId));
@@ -78,16 +68,14 @@ public class ProjectFileDeletionService {
         log.info("Deleting model from the database: {}", model.getId());
         modelRepository.delete(model);
 
-
+        Path modelPath = locationService.resolvedModelPath(model);
         try {
             modelRepository.flush();
             Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
-            log.info("Removing model file: {}", model.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getFileName()));
-            log.info("Removing model requirements file: {}", modelsDirectory.getFileName());
-            Files.deleteIfExists(modelsDirectory.resolve(model.getRequirementsFileName()));
+            log.info("Removing model: {}", modelPath);
+            FileSystemUtils.deleteRecursively(modelsDirectory.resolve(modelPath));
         } catch (IOException e) {
-            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", model.getFileName()), e);
+            throw new GiskardRuntimeException(String.format("Failed to remove model files %s", modelPath), e);
         }
 
     }

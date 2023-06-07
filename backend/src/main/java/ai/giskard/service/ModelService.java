@@ -1,6 +1,6 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.FeatureType;
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
@@ -10,45 +10,39 @@ import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ModelService {
     private final DatasetRepository datasetRepository;
-    private final TestSuiteRepository testSuiteRepository;
     final FeedbackRepository feedbackRepository;
     final ModelRepository modelRepository;
     private final PermissionEvaluator permissionEvaluator;
     private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final MLWorkerService mlWorkerService;
-    private final FileLocationService locationService;
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
 
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
+    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            UploadStatus modelUploadStatus = mlWorkerService.upload(client, model);
-            assert modelUploadStatus.getCode().equals(StatusCode.Ok) : "Failed to upload model";
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
         return response;
@@ -57,34 +51,42 @@ public class ModelService {
     private RunModelForDataFrameResponse getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features, MLWorkerClient client) {
         RunModelForDataFrameResponse response;
         RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.serialize(model))
+            .setModel(grpcMapper.createRef(model))
             .setDataframe(
                 DataFrame.newBuilder()
-                    .addRows(DataRow.newBuilder().putAllColumns(Maps.filterValues(features, Objects::nonNull)))
+                    .addRows(DataRow.newBuilder().putAllColumns(
+                        features.entrySet().stream()
+                            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    ))
                     .build()
             );
         if (dataset.getTarget() != null) {
             requestBuilder.setTarget(dataset.getTarget());
         }
-        if (dataset.getFeatureTypes() != null) {
-            requestBuilder.putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName));
-        }
         if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(dataset.getColumnTypes());
+            requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+        }
+        if (dataset.getColumnDtypes() != null) {
+            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
         }
         response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
         return response;
     }
 
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) throws IOException {
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-            mlWorkerService.upload(client, dataset);
+    public boolean shouldDrop(String columnDtype, String value) {
+        return Objects.isNull(value) ||
+            (columnDtype.startsWith("int") || columnDtype.startsWith("float") && Strings.isBlank(value));
+    }
 
+    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
             ExplainRequest request = ExplainRequest.newBuilder()
-                .setModel(grpcMapper.serialize(model))
-                .setDataset(grpcMapper.serialize(dataset))
-                .putAllColumns(Maps.filterValues(features, Objects::nonNull))
+                .setModel(grpcMapper.createRef(model))
+                .setDataset(grpcMapper.createRef(dataset, false))
+                .putAllColumns(features.entrySet().stream()
+                    .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build();
 
             return client.getBlockingStub().explain(request);
@@ -94,14 +96,12 @@ public class ModelService {
     public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
         ExplainTextResponse response;
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-
             response = client.getBlockingStub().explainText(
                 ExplainTextRequest.newBuilder()
-                    .setModel(grpcMapper.serialize(model))
+                    .setModel(grpcMapper.createRef(model))
                     .setFeatureName(featureName)
                     .putAllColumns(features)
-                    .putAllFeatureTypes(Maps.transformValues(dataset.getFeatureTypes(), FeatureType::getName))
+                    .putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
                     .setNSamples(inspectionSettings.getLimeNumberSamples())
                     .build()
             );
@@ -109,42 +109,38 @@ public class ModelService {
         return response;
     }
 
-    public Inspection createInspection(Long modelId, Long datasetId) throws IOException {
+    public Inspection createInspection(String name, UUID modelId, UUID datasetId, boolean sample) {
         log.info("Creating inspection for model {} and dataset {}", modelId, datasetId);
-        ProjectModel model = modelRepository.getById(modelId);
-        Dataset dataset = datasetRepository.getById(datasetId);
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
+        Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
 
         Inspection inspection = new Inspection();
+
+        if (name == null || name.isEmpty())
+            inspection.setName("Unnamed session");
+        else
+            inspection.setName(name);
+
         inspection.setDataset(dataset);
         inspection.setModel(model);
+        inspection.setSample(sample);
+
         inspection = inspectionRepository.save(inspection);
 
-        RunModelResponse predictions = predictSerializedDataset(model, dataset);
-        if (predictions == null) {
-            return inspection;
-        }
-        Path inspectionPath = fileLocationService.resolvedInspectionPath(model.getProject().getKey(), inspection.getId());
-        Files.createDirectories(inspectionPath);
-        Files.write(inspectionPath.resolve("predictions.csv"), predictions.getResultsCsvBytes().toByteArray());
-        Files.write(inspectionPath.resolve("calculated.csv"), predictions.getCalculatedCsvBytes().toByteArray());
+        predictSerializedDataset(model, dataset, inspection.getId(), sample);
         return inspection;
     }
 
-    private RunModelResponse predictSerializedDataset(ProjectModel model, Dataset dataset) throws IOException {
-        RunModelResponse response;
+    protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
         try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            mlWorkerService.upload(client, model);
-            mlWorkerService.upload(client, dataset);
-
             RunModelRequest request = RunModelRequest.newBuilder()
-                .setModel(grpcMapper.serialize(model))
-                .setDataset(grpcMapper.serialize(dataset))
+                .setModel(grpcMapper.createRef(model))
+                .setDataset(grpcMapper.createRef(dataset, sample))
+                .setInspectionId(inspectionId)
+                .setProjectKey(model.getProject().getKey())
                 .build();
-
-            response = client.getBlockingStub().runModel(request);
+            client.getBlockingStub().runModel(request);
         }
-
-        return response;
     }
 }

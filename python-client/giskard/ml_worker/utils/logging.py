@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 def configure_logging():
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     logging.getLogger("shap").setLevel(logging.WARNING)
+    logging.getLogger("pyngrok").setLevel(logging.ERROR)
+    logging.getLogger("giskard").setLevel(logging.WARNING)
     logging.basicConfig(
         level=settings.loglevel,
         format="%(asctime)s pid:%(process)d %(threadName)s %(name)-12s %(levelname)-8s %(message)s",

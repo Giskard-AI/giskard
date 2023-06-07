@@ -5,7 +5,7 @@ on:
       - "v*.*.*"
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -37,10 +37,10 @@ jobs:
       - name: Make
         run: make
 
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v1.11
-        with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+#      - name: Build and publish to pypi
+#        uses: JRubics/poetry-publish@v1.11
+#        with:
+#          pypi_token: ${{ secrets.PYPI_TOKEN }}
 
       - name: Build <current version>+latest ml-worker image
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}

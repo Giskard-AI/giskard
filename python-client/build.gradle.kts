@@ -1,3 +1,4 @@
+import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.USER
 import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.VIRTUALENV
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
@@ -13,17 +14,22 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.7.13"
+        minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("poetry:1.2.2", "importlib-metadata:4.13.0"))
+        pip(listOf("pdm:2.5.0", "urllib3:1.26.15"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
-        module = "poetry"
-        command = "install"
+        var cmd = "install -G:all"
+        if (project.hasProperty("prod")) {
+            cmd += " --prod"
+        }
+
+        module = "pdm"
+        command = cmd
     }
 
     clean {
@@ -34,6 +40,11 @@ tasks {
         val script_path = file("scripts/fix_grpc_generated_imports.py")
         val fout = file(protoGeneratedPath)
         command = "$script_path $fout giskard.ml_worker.generated"
+    }
+
+    create<PythonTask>("sphinx-autobuild") {
+        module = "sphinx_autobuild"
+        command = "docs docs/_build/html"
     }
 
     create<PythonTask>("generateProto") {
@@ -52,23 +63,26 @@ tasks {
         module = "grpc_tools.protoc"
 
         command =
-            "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
+                "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
 
     }
 
     create<PythonTask>("lint") {
-        module = "flake8"
-        command = "giskard tests"
+        dependsOn("install")
+        module = "pdm"
+        command = "lint"
     }
 
     create<PythonTask>("test") {
-        module = "pytest"
-        command = "-c ${file("pyproject.toml")} --cov=giskard tests --cov-report=xml"
+        dependsOn("install")
+        module = "pdm"
+        command = "run test-fast"
     }
 
     idea {
         module {
             excludeDirs.add(file(virtualEnvDirectory))
+            excludeDirs.add(file("dist"))
 
             // "generated" directory should be marked as both source and generatedSource,
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
@@ -78,7 +92,7 @@ tasks {
         }
     }
     build {
-        dependsOn("install", "generateProto", "test")
+        dependsOn("install", "test")
     }
 
     create<PythonTask>("start") {
@@ -87,7 +101,9 @@ tasks {
     }
 
     create<PythonTask>("package") {
-        module = "poetry"
+        dependsOn("pipInstall")
+
+        module = "pdm"
         command = "build"
     }
 }

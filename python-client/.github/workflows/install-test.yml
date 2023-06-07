@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-8vcpu-ubuntu-2204
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: ${{ runner.os }}-venv-${{ matrix.python-version }}-${{ hashFiles('poetry.lock')}}
+          key: ${{ runner.os }}-venv-${{ matrix.python-version }}-${{ hashFiles('pdm.lock')}}
           restore-keys: ${{ runner.os }}-venv-${{ matrix.python-version }}
 
       - name: Upgrade pip
@@ -53,7 +53,7 @@ jobs:
         id: read_toml
         with:
           file: 'pyproject.toml'
-          field: 'tool.poetry.version'
+          field: 'project.version'
 
       - name: Get current date
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
@@ -67,7 +67,7 @@ jobs:
         uses: ciiiii/toml-editor@1.0.0
         with:
           file: "pyproject.toml"
-          key: "tool.poetry.version"
+          key: "project.version"
           value: '${{ steps.read_toml.outputs.value }}.dev${{ steps.current_date.outputs.CURRENT_DATE }}'
 
       - name: Build dev version

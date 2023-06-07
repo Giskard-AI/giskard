@@ -9,7 +9,6 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -34,7 +33,7 @@ public class PermissionEvaluator {
      * @return true if the user can write
      */
     public boolean canWriteProject(@NotNull Long id) {
-        Project project = this.projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        Project project = this.projectRepository.getMandatoryById(id);
 
         return isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
     }
@@ -47,9 +46,14 @@ public class PermissionEvaluator {
      * @return true if the user is guest with the required permissions
      */
     public boolean isGuestWithAnyRole(@NotNull Long projectId, @NotBlank String... roles) {
-        Project project = this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectId));
+        Project project = this.projectRepository.getMandatoryById(projectId);
 
         return SecurityUtils.hasCurrentUserAnyOfAuthorities(roles) && isCurrentUserGuest(project);
+    }
+
+    public boolean canWriteProjectKey(@NotNull String projectKey) {
+        Project project = this.projectRepository.findOneByKey(projectKey).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
+        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
     /**
@@ -66,20 +70,22 @@ public class PermissionEvaluator {
      * @param id project's id
      * @return true if user can read
      */
-    @Transactional
     public boolean canReadProject(@NotNull Long id) {
-        Project project = this.projectRepository.findOneWithGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+        Project project = this.projectRepository.findOneWithOwnerAndGuestsById(id).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
         return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
     }
 
-    @Transactional
+    public boolean canReadProjectKey(@NotNull String projectKey) {
+        Project project = this.projectRepository.findOneWithOwnerAndGuestsByKey(projectKey).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
+        return (projectService.isUserInGuestList(project.getGuests()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
+    }
+
     public void validateCanReadProject(@NotNull Long id) {
         if (!canReadProject(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);
         }
     }
 
-    @Transactional
     public void validateCanWriteProject(@NotNull Long id) {
         if (!canWriteProject(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);

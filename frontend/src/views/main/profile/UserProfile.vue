@@ -1,11 +1,11 @@
 <template>
-  <div>
-    <v-toolbar flat dense light>
+  <div class="fill-height d-flex flex-column">
+    <v-toolbar flat dense light class="flex-grow-0">
       <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">
         My Profile
       </v-toolbar-title>
     </v-toolbar>
-    <v-container>
+    <v-container class="flex-grow-1 overflow-y-auto" fluid>
       <v-row v-if="userProfile">
         <v-col>
           <v-card height="100%">
@@ -73,6 +73,11 @@
           <ApiTokenCard/>
         </v-col>
       </v-row>
+      <v-row v-if="isAdmin">
+        <v-col>
+          <RunningWorkerJobs/>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -81,9 +86,11 @@
 import {computed, ref} from "vue";
 import {UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
+import ApiTokenCard from "@/components/ApiTokenCard.vue";
+import RunningWorkerJobs from '@/views/main/profile/RunningWorkerJobs.vue';
+
 import {useUserStore} from "@/stores/user";
 import {useMainStore} from "@/stores/main";
-import ApiTokenCard from "@/components/ApiTokenCard.vue";
 
 const userStore = useUserStore();
 const mainStore = useMainStore();
@@ -154,7 +161,7 @@ function submit() {
 .token-area {
   user-select: all;
   word-break: break-all;
-  font-size: 12px;
+  font-size: 0.75em;
   font-family: monospace;
 }
 

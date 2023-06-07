@@ -16,6 +16,12 @@ services:
     build:
       dockerfile: python-client/docker/Dockerfile
       context: .
+    environment:
+      GIT_REPOSITORY: http://frontend/git/udf.git
+      GIT_USER: ${GIT_USER:-giskard}
+      GIT_PASSWORD: ${GIT_PASSWORD:-giskard123!}
+    volumes:
+      - giskard-home:/giskard-home
 
   backend:
     image: 'docker.io/giskardai/backend:${TAG-latest}'
@@ -56,7 +62,9 @@ services:
       context: frontend
       dockerfile: Dockerfile
       args:
-        FRONTEND_ENV: ${FRONTEND_ENV-production}
+        FRONTEND_ENV: ${FRONTEND_ENV:-production}
+        GIT_USER: ${GIT_USER:-giskard}
+        GIT_PASSWORD: ${GIT_PASSWORD:-giskard123!}
     ports:
       - "${GISKARD_PORT-19000}:80"
     expose:
@@ -65,7 +73,10 @@ services:
       - backend
     env_file:
       - .env
+    volumes:
+      - git-data:/git
 
 volumes:
   app-db-data:
+  git-data:
   giskard-home:

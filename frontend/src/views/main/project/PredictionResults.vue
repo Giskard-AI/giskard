@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mb-4" id="resultCard">
+  <v-card class="mb-4" id="resultCard" outlined>
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <OverlayLoader :show="loading" absolute solid no-fade/>
@@ -45,8 +45,11 @@
 
             </div>
             <div class="caption">
-              <div v-if="targetFeature">target: {{ targetFeature }}</div>
-              <div v-if="model && model.threshold">threshold: {{ model.threshold }}</div>
+                <div v-if="targetFeature">target: {{ targetFeature }}</div>
+                <div v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
+                    threshold:
+                    {{ model.threshold }}
+                </div>
             </div>
           </div>
         </v-col>
@@ -114,7 +117,7 @@ Vue.component("v-chart", ECharts);
 })
 export default class PredictionResults extends Vue {
   @Prop({required: true}) model!: ModelDTO;
-  @Prop({required: true}) datasetId!: number;
+  @Prop({required: true}) datasetId!: string;
   @Prop({required: true}) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() modelFeatures!: string[];
@@ -316,8 +319,8 @@ div.center-center {
 }
 
 div.caption {
-  font-size: 11px !important;
-  line-height: 1rem !important;
+    font-size: 0.6875em !important;
+    line-height: 1rem !important;
 }
 
 #labels-container {

@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     max_send_message_length_mb: int = 1024
     max_receive_message_length_mb: int = 1024
     loglevel = "INFO"
+    cache_dir: str = "cache"
+    disable_analytics = False
 
     class Config:
         env_prefix = "GSK_"
