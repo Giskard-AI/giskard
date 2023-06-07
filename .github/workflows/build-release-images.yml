@@ -1,9 +1,9 @@
 name: Build and publish released version
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+#on:
+#  push:
+#    tags:
+#      - "v*.*.*"
 
 jobs:
   build-images:
