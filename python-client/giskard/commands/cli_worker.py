@@ -146,7 +146,10 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
         logger.warning(
             f"Another ML Worker {_ml_worker_description(is_server, url)} "
             f"is already running with PID: {existing_pid}. "
-            f"Not starting a new one."
+            "Not starting a new one. "
+            "To stop a running worker for this instance execute: \"giskard worker stop\" or "
+            "\"giskard worker stop -a\" to stop all running workers"
+
         )
     finally:
         if pid_file.i_am_locking():
