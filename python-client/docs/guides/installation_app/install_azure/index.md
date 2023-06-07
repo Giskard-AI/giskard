@@ -6,14 +6,14 @@ Installing Giskard in Azure enables you to inspect & test models that you create
 
 1. Select "Create a resource" and choose Virtual Machine
 2. In the configuration of your VM, select the default configuration:
-   1. Choose a Linux machine. For instance, it can be the default `Ubuntu server 20.04 LTS`
-   2. We recommend you choose at least the `Standard_D2s` machine (2vCPU, 8GB memory)
-   3. Enable the default SSH connection by selecting `Inbound ports: SSH (22)`
+    1. Choose a Linux machine. For instance, it can be the default `Ubuntu server 20.04 LTS`
+    2. We recommend you choose at least the `Standard_D2s` machine (2vCPU, 8GB memory)
+    3. Enable the default SSH connection by selecting `Inbound ports: SSH (22)`
 3. Create your VM instance. Make sure you downloaded the certificate file containing the private key you will need to SSH
 4. On the home page, select the VM you just created by selecting `Go to Resource`
-5.  Go to `Settings`, `Networking`, and click on `Add inbound port rule` with the following properties:
+5. Go to `Settings`, `Networking`, and click on `Add inbound port rule` with the following properties:
 
-    <figure><img src="../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
+   <figure><img src="../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 6. Connect to your VM in SSH by using the path of the **private key file** you downloaded. To do so, go to the tab `Overview`, select `Connect` and `SSH` then follow the different steps to get the right command to execute in your terminal.&#x20;
 
 {% hint style="info" %}
@@ -22,9 +22,8 @@ For example, the terminal command line to SSH connect to your install from your 
 ```
 sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 ```
+
 {% endhint %}
-
-
 
 ### 2. Install Giskard in the VM
 
@@ -38,7 +37,7 @@ sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 * Installation of Giskard
 
 ```bash
-giskard server start
+giskard server start --version 2.0.0b4
 ```
 
 ### 3. Connect to your instance and start uploading ML model
@@ -52,7 +51,7 @@ You can stop the instance and restart it when you need to save your Azure comput
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **re-start the Giskard server**, by executing in the Giskard folder:
 
-&#x20;`giskard server start`
+&#x20;`giskard server start --version 2.0.0b4`
 {% endhint %}
 
 * The user id is `admin` and the password is `admin`

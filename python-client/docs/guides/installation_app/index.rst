@@ -16,6 +16,7 @@ To run the Giskard server and use all the above UI features, you need to complet
 
 1. Start the server
 ^^^^^^^^^
+To install Giskard you need a **Linux** or **macOS** machine, or **WSL2 in Windows** with:
 
 You can either install and run the server **locally** or on an **external server** (ex: cloud instance)
 
@@ -36,8 +37,8 @@ You can either install and run the server **locally** or on an **external server
       To start the Giskard server, execute the following command in your terminal:
 
       .. code-block:: sh
-
-         giskard server start
+      
+         giskard server start --version 2.0.0b4
 
       You'll then be able to open Giskard at `http://localhost:19000/`
 
@@ -45,6 +46,7 @@ You can either install and run the server **locally** or on an **external server
 
          - Make sure to **run Docker** before starting the Giskard server
          - To see the available commands of the giskard server, you can execute:
+
 
            .. code-block:: sh
 
