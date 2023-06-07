@@ -6,9 +6,9 @@ Installing Giskard in GCP enables you to inspect & test models that you created 
 
 1. Go to VM instances in Compute Engine and create a VM instance
 2. In the configuration of your VM :
-   1. We recommend you choose at least an `e2-standard-2` (2vCPU, 8GB memory)
-   2. Choose `Allow full access to all Cloud APIs`
-   3. In the firewall section, allow **HTTP** and **HTTPS** traffic
+    1. We recommend you choose at least an `e2-standard-2` (2vCPU, 8GB memory)
+    2. Choose `Allow full access to all Cloud APIs`
+    3. In the firewall section, allow **HTTP** and **HTTPS** traffic
 3. Connect to your VM in SSH by opening a browser window
 4. Create a firewall rule to open ports `19000` and `40051` port of the Giskard instance. Here is the command line that you can execute in the terminal opened by your SSH connection:
 
@@ -32,7 +32,7 @@ Creating the firewall rules can also be done **through UI** in the `VPC Network`
 * In `Protocols and ports`, select `Specified protocols and ports`
 * Then select `TCP`, and type `19000`
 * `Repeat the same steps to open port 40051`
-{% endhint %}
+  {% endhint %}
 
 ### 2. Install Giskard in the GCP VM
 
@@ -46,7 +46,7 @@ Creating the firewall rules can also be done **through UI** in the `VPC Network`
 * Installation of Giskard
 
 ```bash
-giskard server start
+giskard server start --version 2.0.0b4
 ```
 
 ### 3. Connect to your instance and start uploading ML model
@@ -60,7 +60,7 @@ You can stop the instance and restart it when you need to save your GCP compute 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **restart the giskard server**, by executing in the Giskard folder:
 
-&#x20;`giskard server start`
+&#x20;`giskard server start --version 2.0.0b4`
 {% endhint %}
 
 That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](docs/guide/upload/index.md)! To do that in GCP, you can use a workbench notebook, for example! &#x20;

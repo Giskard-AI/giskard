@@ -11,9 +11,9 @@
                         An error occurred during the execution. Executed <strong>{{
                             timeSince(execution.executionDate)
                         }}</strong>.
-                        Check the <span @click="openLogs" class="clickable">execution logs.</span>
+                        Check the <v-btn outlined @click="openLogs" class="clickable">execution logs.</v-btn>
                     </h4>
-                    <h4 v-else class="text-alert">Test suite
+                    <h4 v-else class="text-alert d-flex">Test suite
                         {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
                         <span v-if="successRatio.failed > 0">{{ plurialize('test', successRatio.failed) }} failed</span>
                         <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
@@ -21,8 +21,8 @@
                         <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
                         Executed
                         <span>{{ timeSince(execution.executionDate) }}</span>
-                        .
-                        Check the <strong @click="openLogs" class="clickable">execution logs.</strong>
+                        <v-spacer/>
+                        <v-btn color="error" small @click="openLogs">execution logs.</v-btn>
                     </h4>
                 </v-col>
             </v-row>
