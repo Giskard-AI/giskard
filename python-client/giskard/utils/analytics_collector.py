@@ -147,7 +147,7 @@ class GiskardAnalyticsCollector:
     def machine_based_user_id():
         try:
             return anonymize(str(uuid.getnode()) + os.getlogin())
-        except BaseException:  # noqa
+        except BaseException:  # noqa NOSONAR
             # https://bugs.python.org/issue40821
             return "unknown"
 
@@ -163,8 +163,8 @@ class GiskardAnalyticsCollector:
             if self.ip:
                 return
             try:
-                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')
-            except:  # noqa
+                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')  # noqa NOSONAR
+            except:  # noqa NOSONAR
                 self.ip = "unknown"
 
 

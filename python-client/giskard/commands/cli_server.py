@@ -14,8 +14,10 @@ from docker.errors import NotFound, DockerException
 from docker.models.containers import Container
 from tenacity import retry, wait_exponential
 
+import giskard
 from giskard.cli_utils import common_options
 from giskard.settings import settings
+from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,11 @@ def create_docker_client() -> DockerClient:
     try:
         return docker.from_env()
     except DockerException as e:
-        raise RuntimeError("Failed to connect to Docker") from e
+        logger.exception("""Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
+For an easy installation of Docker you can execute:
+- sudo curl -fsSL https://get.docker.com -o get-docker.sh
+- sudo sh get-docker.sh""", e)
+        exit(1)
 
 
 @click.group("server", help="Giskard UI management", context_settings={"show_default": True})
@@ -106,6 +112,7 @@ def _start(attached=False, version=None):
             volumes={home_volume.name: {'bind': '/home/giskard/datadir', 'mode': 'rw'}},
         )
     container.start()
+    analytics.track("Giskard Server started", {"client version": giskard.__version__, "server version": version})
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
 
 
@@ -190,6 +197,7 @@ def _expose(token):
     # Only split the last ':' in case the URL contains a port
     tcp_addr = urlparse(tcp_tunnel.public_url)
 
+    analytics.track("Giskard Server exposed via ngrok", {"client version": giskard.__version__})
     print("Giskard Server is now exposed to the internet.")
     print("You can now upload objects to the Giskard Server using the following client: \n")
 
@@ -201,7 +209,7 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 %env GSK_EXTERNAL_ML_WORKER_HOST={tcp_addr.hostname}
 %env GSK_EXTERNAL_ML_WORKER_PORT={tcp_addr.port}
 %env GSK_API_KEY=...
-!giskard worker start -u {http_tunnel.public_url}""")
+!giskard worker start -d -u {http_tunnel.public_url}""")
 
     ngrok_process = ngrok.get_ngrok_process()
     try:
@@ -332,6 +340,7 @@ def diagnose(local_dir):
     with open(out_file, 'wb') as f:
         for chunk in bits:
             f.write(chunk)
+    analytics.track("Giskard Server diagnosis ran", {"client version": giskard.__version__})
     logger.info(f"Wrote diagnose info to {out_file}")
 
 
@@ -354,6 +363,7 @@ def update(version):
     logger.info(f"Updating Giskard Server {installed_version} -> {version}")
     _pull_image(version)
     _write_settings({**_get_settings(), **{"version": version}})
+    analytics.track("Giskard Server updated", {"client version": giskard.__version__, "server version": version})
     logger.info(f"Giskard Server updated to {version}")
 
 

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 import os
 import platform
 import sys
@@ -11,6 +10,7 @@ from pathlib import Path
 
 import google
 import grpc
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -347,7 +347,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
         return ml_worker_pb2.ExplainTextResponse(
             weights={
-                k: ml_worker_pb2.ExplainTextResponse.WeightsPerFeature(
+                str(k): ml_worker_pb2.ExplainTextResponse.WeightsPerFeature(
                     weights=[weight for weight in map_features_weight[k]]
                 )
                 for k in map_features_weight
@@ -537,7 +537,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     @staticmethod
     def pandas_df_to_proto_df(df):
         return ml_worker_pb2.DataFrame(
-            rows=[ml_worker_pb2.DataRow(columns=r.astype(str).to_dict()) for _, r in df.iterrows()]
+            rows=[ml_worker_pb2.DataRow(columns={str(k): v for k, v in r.astype(str).to_dict().items()}) for _, r in
+                  df.iterrows()]
         )
 
     @staticmethod

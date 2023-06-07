@@ -22,7 +22,7 @@ class LangchainModel(MLFlowBasedModel):
         classification_labels: Optional[Iterable] = None,
         **kwargs,
     ) -> None:
-        assert model_type == SupportedModelTypes.GENERATIVE, 'LangchainModel only support generative ModelType'
+        assert model_type == SupportedModelTypes.TEXT_GENERATION, 'LangchainModel only support text_generation ModelType'
 
         super().__init__(
             model=model,
@@ -40,7 +40,7 @@ class LangchainModel(MLFlowBasedModel):
         mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     @classmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):

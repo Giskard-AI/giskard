@@ -1,86 +1,158 @@
 🌐 Run the Giskard Server
 ===============
-.. hint:: To install Giskard in the **Cloud**, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
-   
-.. toctree::
-   :maxdepth: 1
 
-   install_aws/index
-   install_gcp/index
-   install_azure/index
+Additionally to the `Giskard Python library <../installation_library/index.md>`_, the Giskard server is the app that you can install either **locally** or on your **cloud instance**. The Giskard server offers a bunch of features such as:
 
-The Giskard server is the app you can install internally (locally or on your cloud instance) in addition to the `Giskard Python library <../installation_library/index.md>`_. The Giskard server offers lot's of features such as:
+- Debugging your tests to diagnose issues
+- Comparing models to decide which one to promote
+- Gathering all your internal tests of your team at the same place to work more efficiently
+- Sharing your results and collect business feedback from your team
+- Creating more domain-specific tests based on the debugging sessions
 
-* Debug your tests to diagnose issues with your model
-* Compare models to decide which one performs the best for your use case
-* Gather all your teams internal tests in one place to work more efficiently
-* Share test results with your team and collect business feedback if needed
-* Create more domain-specific tests based on the debugging sessions
+To run the Giskard server and use all the above UI features, you need to complete the following 2 steps:
 
-It can be installed locally or on an external server (cloud instance or external server) if you want to leverage all the collaborative Giskard features.
+- **Start the server**: the server contains all the UI components to test, debug and compare your ML models
+- **Start the worker**: the worker enables the server to execute your model directly within your Python environment. This is important to be able to execute the model with all its dependent libraries.
 
-Requirements
+1. Start the server
 ^^^^^^^^^
 To install Giskard you need a **Linux** or **macOS** machine, or **WSL2 in Windows** with:
 
-- Giskard uses 2 TCP ports: ``19000`` and ``40051``. If you don't use Giskard locally (installation in the cloud for instance), **make sure that these two ports are open** on the machine where Giskard is installed
-- ``docker`` (`download <https://docs.docker.com/engine/install/debian/>`_). For an easy installation of Docker you can execute:
+You can either install and run the server **locally** or on an **external server** (ex: cloud instance)
 
-   .. code-block:: bash
+.. tab-set::
 
-      sudo curl -fsSL https://get.docker.com -o get-docker.sh
-      sudo sh get-docker.sh
+   .. tab-item:: Local installation
+   
+      To install Giskard locally, you need: 
 
-Run the Giskard server
+      - A **Linux**, **macOS** machine or **WSL2 in Windows** 
+      - A running ``docker`` (`download <https://docs.docker.com/engine/install/debian/>`_) setup. For an easy installation of Docker you can execute:
+
+         .. code-block:: bash
+
+            sudo curl -fsSL https://get.docker.com -o get-docker.sh
+            sudo sh get-docker.sh
+
+      To start the Giskard server, execute the following command in your terminal:
+
+      .. code-block:: sh
+      
+         giskard server start
+
+      You'll then be able to open Giskard at `http://localhost:19000/`
+
+      .. warning::
+
+         - Make sure to **run Docker** before starting the Giskard server
+         - To see the available commands of the giskard server, you can execute:
+
+
+           .. code-block:: sh
+
+              giskard server --help
+
+
+   .. tab-item:: Cloud installation
+
+      Installing Giskard in the cloud is preferable if you want to use the **collaborative** features of Giskard: collect feedback on your model from your team, share your Quality Assurance results, save and provide all your custom tests to your team, etc. 
+
+      Since Giskard uses 2 TCP ports: ``19000`` and ``40051``, **make sure that these two ports are open** on the cloud instances where Giskard is installed. For step-by-step installation steps in the cloud, please go to the `AWS <docs/guide/instal_aws/index.md>`_, `GCP <docs/guide/instal_gcp/index.md>`_, and `Azure <docs/guide/instal_azure/index.md>`_ installation pages.
+
+      .. toctree::
+         :maxdepth: 1
+
+         install_aws/index
+         install_gcp/index
+         install_azure/index
+
+2. Start the ML worker
 ^^^^^^^^^
 
-In order to start the Giskard server, execute the following command in your terminal:
+Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker: 
 
-.. code-block:: sh
+- From your **local notebook** within the kernel that contains all the dependencies of your model
+- From **Google Colab** within the kernel that contains all the dependencies of your model
+- Or from **your terminal** within the Python environment that contains all the dependencies of your model
 
-   giskard server start --version 2.0.0
+.. tab-set::
 
-You'll then be able to open Giskard at `http://localhost:19000/ <http://localhost:19000/>`
+   .. tab-item:: From your local notebook
 
-.. warning::
+      To start the ML worker from your notebook, you need to start Giskard in the deamon mode by providing the token in the Settings tab of the Giskard server (accessible via http://localhost:19000/).
 
-   - Make sure to run Docker before starting the Giskard server
-   - To see the available commands, you can execute:
+      - If Giskard server is installed **locally**, run in a cell in your notebook:
 
-     .. code-block:: sh
+         .. code-block:: sh
 
-        giskard server --help
+            !giskard worker start -d -k YOUR_TOKEN
 
-Now you should be set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload-your-artefacts <../upload-your-model/.>`_ tutorial.
+      - If Giskard server is installed on an **external server** (for instance in AWS ec2 instance), run in your notebook:
 
-Connect the Giskard ML worker
-^^^^^^^^^
+         .. code-block:: sh
 
-Giskard executes your model directly in your Python environment through an ML worker. To connect the ML worker, execute the following command in your terminal within the Python environment that contains all the dependencies of your model:
+            !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
 
-.. code-block:: sh
+      .. hint:: To see the available commands of the worker, you can execute:
 
-   giskard worker start -u http://localhost:19000/
+         .. code-block:: sh
 
-Troubleshooting
-^^^^^^^^^
+            !giskard worker --help
 
-.. details::
+      You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload an object <../upload/index.html>`_ page.
+      
+   .. tab-item:: From Colab notebook
 
-   **How can I connect to my local Giskard instance from Google Colab/other remote notebook or code environment?**
+      - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance):
 
-   We provide a `ngrok <https://ngrok.com/>`_ configuration file `here <https://github.com/Giskard-AI/giskard/blob/main/scripts/ngrok.yml>`_ which will automatically expose the required ports. You can run it using ``ngrok start --config ngrok.yml --all --authtoken YOUR_AUTH_TOKEN``
+         Run on a cell in Colab:
+         
+         .. code-block:: sh
 
-   1. Download the configuration file on the device hosting the Giskard instance
-   2. In that folder, run the command ``ngrok start --config ngrok.yml --all --authtoken YOUR_AUTH_TOKEN``
-   3. You should see an output similar to this::
+               !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+               
+      - If the Giskard server is installed **locally**: 
 
-      .. figure:: ../../.gitbook/assets/image (1) (1).png
-         :alt:
+         Run in your **local** terminal (not the the terminal from Colab):
 
-         Sample "ngrok start" output
+         .. code-block:: sh
+               
+               giskard server expose
+               
+         Then run the below 4 lines of code in a **cell of your Colab notebook**:
+            
+         .. code-block:: sh
+               
+            %env GSK_EXTERNAL_ML_WORKER_HOST=4.tcp.ngrok.io
+            %env GSK_EXTERNAL_ML_WORKER_PORT=10853
+            %env GSK_API_KEY=YOUR_API_KEY
+            !giskard worker start -d -u https://e840-93-23-184-184.ngrok-free.app
 
-   4. Start your ML Worker with:
-      ``giskard worker start -h X.tcp.xx.ngrok.io -p XXXXX`` replacing with the URL and port from your console.
-   5. Create your GiskardClient with your address like this:
-      ``GiskardClient('https://xxxx-xx-xx-xx-xx.xx.ngrok.io')
+
+      You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload an object <../upload/index.html>`_ page.
+
+   .. tab-item:: From your terminal
+
+      - If Giskard server is installed **locally**:
+      
+         Run this command **within the Python environment that contains all the dependencies of your model**:
+
+            .. code-block:: sh
+
+               giskard worker start -u http://localhost:19000/
+
+            You then will be asked to provide your API token. The API access token can be found in the Settings tab of the Giskard server (accessible via: http://localhost:19000/)
+         
+      - If Giskard server is installed in an **external server** (for instance in AWS ec2 instance):
+
+         Run this command **within the Python environment that contains all the dependencies of your model**:
+
+            .. code-block:: sh
+
+               giskard worker start -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+      
+      .. hint:: To see the available commands of the worker, you can execute:
+
+         .. code-block:: sh
+
+            giskard worker --help

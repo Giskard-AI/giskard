@@ -17,6 +17,7 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
 from giskard.utils.analytics_collector import GiskardAnalyticsCollector
+from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
 
 configure_logging()
@@ -33,6 +34,8 @@ def get_version() -> str:
 
 
 __version__: str = get_version()
+
+check_latest_giskard_version()
 
 __all__ = [
     'SingleTestResult',

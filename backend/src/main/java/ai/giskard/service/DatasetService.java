@@ -92,7 +92,7 @@ public class DatasetService {
         }
 
         if (rowFilter.getRemoveRows() != null) {
-            table = table.where(indexColumn.isNotIn(rowFilter.getRemoveRows()));
+            table = table.where(table.intColumn(GISKARD_DATASET_INDEX_COLUMN_NAME).isNotIn(rowFilter.getRemoveRows()));
         }
 
         return new DatasetPageDTO(table.rowCount(), table.inRange(rangeMin, Math.min(table.rowCount(), rangeMax)).stream()

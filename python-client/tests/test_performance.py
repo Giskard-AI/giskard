@@ -141,6 +141,20 @@ def test_rmse(model, data, threshold, expected_metric, actual_slices_size, reque
 
 @pytest.mark.parametrize(
     "model,data,threshold,expected_metric,actual_slices_size",
+    [("linear_regression_diabetes", "diabetes_dataset_with_target", 54**2, 2860.97, 442)],
+)
+def test_mse(model, data, threshold, expected_metric, actual_slices_size, request):
+    results = performance.test_mse(
+        model=request.getfixturevalue(model), dataset=request.getfixturevalue(data), threshold=threshold
+    ).execute()
+
+    assert results.actual_slices_size[0] == actual_slices_size
+    assert results.metric == pytest.approx(expected_metric)
+    assert results.passed
+
+
+@pytest.mark.parametrize(
+    "model,data,threshold,expected_metric,actual_slices_size",
     [("linear_regression_diabetes", "diabetes_dataset_with_target", 44, 43.3, 442)],
 )
 def test_mae(model, data, threshold, expected_metric, actual_slices_size, request):

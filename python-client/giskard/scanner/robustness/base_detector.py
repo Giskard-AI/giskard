@@ -20,7 +20,7 @@ class BaseTextPerturbationDetector(Detector):
     def __init__(
         self,
         transformations: Optional[Sequence[TextTransformation]] = None,
-        threshold: float = 0.05,
+        threshold: Optional[float] = None,
         output_sensitivity=None,
         num_samples: Optional[int] = None,
     ):
@@ -65,6 +65,7 @@ class BaseTextPerturbationDetector(Detector):
     ) -> Sequence[Issue]:
         num_samples = self.num_samples or _get_default_num_samples(model)
         output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
+        threshold = self.threshold or _get_default_threshold(model)
 
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
@@ -105,28 +106,30 @@ class BaseTextPerturbationDetector(Detector):
             elif model.is_regression:
                 rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
                 passed = np.abs(rel_delta) < output_sensitivity
-            elif model.is_generative:
+            elif model.is_text_generation:
                 try:
                     import evaluate
                 except ImportError as err:
                     raise LLMImportError() from err
 
-                scorer = evaluate.load("rouge")
+                scorer = evaluate.load("bertscore")
                 score = scorer.compute(
-                    predictions=perturbed_pred.prediction, references=original_pred.prediction, use_aggregator=False
+                    predictions=perturbed_pred.prediction,
+                    references=original_pred.prediction,
+                    model_type="distilbert-base-multilingual-cased",
+                    idf=True,
                 )
-                passed = np.array(score["rougeL"]) > output_sensitivity
+                passed = np.array(score["f1"]) > 1 - output_sensitivity
             else:
-                raise NotImplementedError("Only classification, regression, or generative models are supported.")
+                raise NotImplementedError("Only classification, regression, or text generation models are supported.")
 
             pass_ratio = passed.mean()
             fail_ratio = 1 - pass_ratio
-
             logger.info(
                 f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
             )
 
-            if fail_ratio >= self.threshold:
+            if fail_ratio >= threshold:
                 info = RobustnessIssueInfo(
                     feature=feature,
                     fail_ratio=fail_ratio,
@@ -134,13 +137,13 @@ class BaseTextPerturbationDetector(Detector):
                     perturbed_data_slice=perturbed_data,
                     perturbed_data_slice_predictions=perturbed_pred,
                     fail_data_idx=original_data.df[~passed].index.values,
-                    threshold=self.threshold,
+                    threshold=threshold,
                     output_sensitivity=output_sensitivity,
                 )
                 issue = self._issue_cls(
                     model,
                     dataset,
-                    level="major" if fail_ratio >= 2 * self.threshold else "medium",
+                    level="major" if fail_ratio >= 2 * threshold else "medium",
                     info=info,
                 )
                 issues.append(issue)
@@ -153,14 +156,21 @@ def _relative_delta(actual, reference):
 
 
 def _get_default_num_samples(model) -> int:
-    if model.is_generative:
+    if model.is_text_generation:
         return 10
 
     return 1_000
 
 
 def _get_default_output_sensitivity(model) -> float:
-    if model.is_generative:
-        return 0.1
+    if model.is_text_generation:
+        return 0.15
+
+    return 0.05
+
+
+def _get_default_threshold(model) -> float:
+    if model.is_text_generation:
+        return 0.10
 
     return 0.05

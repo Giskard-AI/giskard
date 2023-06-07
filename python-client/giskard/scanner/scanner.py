@@ -33,14 +33,14 @@ class Scanner:
         self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
     ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
-        if model.is_generative:
+        if model.is_text_generation:
             logger.warning(
                 "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
             )
 
         model, dataset = self._prepare_model_dataset(model, dataset)
 
-        if not model.is_generative:
+        if not model.is_text_generation:
             time_start = perf_counter()
             validate_model(model=model, validate_ds=dataset)
             model_validation_time = perf_counter() - time_start
@@ -149,7 +149,7 @@ class Scanner:
         return issues
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
-        if model.is_generative and dataset is None:
+        if model.is_text_generation and dataset is None:
             logger.warning(
                 "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
             )
