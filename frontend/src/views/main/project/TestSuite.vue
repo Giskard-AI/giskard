@@ -60,7 +60,14 @@
         </div>
 
         <v-dialog v-model="displayWorkerInstructions" @click:outside="openWorkerInstructions = false">
-            <StartWorkerInstructions></StartWorkerInstructions>
+            <v-card>
+                <v-card-title class="py-6">
+                    <h2>ML Worker is not connected</h2>
+                </v-card-title>
+                <v-card-text>
+                    <StartWorkerInstructions></StartWorkerInstructions>
+                </v-card-text>
+            </v-card>
         </v-dialog>
     </div>
 </template>
