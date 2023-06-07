@@ -332,9 +332,9 @@ passed_2, results_2 = suite.run(actual_dataset=batch_2)
 
 :::{tab-item} Shared test input
 
-For advanced cases, you may need to define some test inputs that are shared between different tests inside your suite. In this case, you should use the `SuiteInput` object that takes the parameter as:
-* the name of the test input (a string)
-* the type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. 
+For advanced cases, you may need to define some test inputs that are shared between different tests inside your suite. In this case, you should use the `SuiteInput` whose parameter are:
+* The name of the test input (a string)
+* The type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. 
 
 In the example below, the data slice `female` is shared between two performance tests:
 
