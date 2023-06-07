@@ -29,13 +29,9 @@
                 <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
                     <v-col>
                         <div class="d-flex align-center justify-center">
-                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions"
-                                      item-text="label" variant="underlined" hide-details="auto" dense
-                                      class="mr-4 max-w-150" outlined @input="handleFilterChanged">
+                            <v-select v-model="statusFilter" label="Test execution status" :items="statusFilterOptions" item-text="label" variant="underlined" hide-details="auto" dense class="mr-4 max-w-150" outlined @input="handleFilterChanged">
                             </v-select>
-                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text"
-                                          outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense
-                                          @input="handleFilterChanged"></v-text-field>
+                            <v-text-field v-model="searchFilter" append-icon="search" label="Search test" type="text" outlined hide-details="auto" class="max-w-250" placeholder="Performance" dense @input="handleFilterChanged"></v-text-field>
                             <div class="flex-grow-1"></div>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
@@ -49,7 +45,7 @@
                             <v-btn large outlined class='mx-1' v-if="hasTest && hasInput && !hasJobInProgress" @click='openRunTestSuite(true)' color="primary">
                                 Compare
                             </v-btn>
-                            <v-btn large class='mx-1' v-if="hasTest" @click='() => openRunTestSuite(false)' color="primary" :loading="hasJobInProgress">
+                            <v-btn large class='mx-1' v-if="hasTest" @click='handleRunTestSuite' color="primary" :loading="hasJobInProgress">
                                 Run test suite
                             </v-btn>
                         </div>
@@ -62,27 +58,40 @@
                 </v-row>
             </v-container>
         </div>
+
+        <v-dialog v-model="displayWorkerInstructions" @click:outside="openWorkerInstructions = false" max-width="70vw">
+            <v-card>
+                <v-card-title class="py-6">
+                    <h2>ML Worker is not connected</h2>
+                </v-card-title>
+                <v-card-text>
+                    <StartWorkerInstructions></StartWorkerInstructions>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 
 <script lang="ts" setup>
 
-import {computed, onActivated, watch} from "vue";
-import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
-import {storeToRefs} from 'pinia';
-import {useRoute, useRouter} from 'vue-router/composables';
-import {$vfm} from 'vue-final-modal';
+import { computed, onActivated, ref, watch } from "vue";
+import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {useCatalogStore} from "@/stores/catalog";
+import { useCatalogStore } from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
-import {api} from "@/api";
-import {useTestSuitesStore} from "@/stores/test-suites";
+import { api } from "@/api";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useMLWorkerStore } from "@/stores/ml-worker";
 import ExportTestModalVue from "./modals/ExportTestModal.vue";
-import {debounce} from "lodash";
+import { debounce } from "lodash";
 import mixpanel from "mixpanel-browser";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
 const testSuitesStore = useTestSuitesStore();
-
+const mlWorkerStore = useMLWorkerStore();
 
 const props = defineProps<{
     projectId: number,
@@ -109,6 +118,10 @@ const { loadCatalog } = useCatalogStore();
 const router = useRouter();
 const route = useRoute();
 
+const openWorkerInstructions = ref(false);
+
+const displayWorkerInstructions = computed(() => !mlWorkerStore.isExternalWorkerConnected && openWorkerInstructions.value);
+
 const hideHeader = computed(() => route.name === 'test-suite-configuration')
 
 async function loadData() {
@@ -129,7 +142,13 @@ async function openRunTestSuite(compareMode: boolean) {
             }
         });
     } else {
-        await runTestSuite([]);
+        await mlWorkerStore.checkExternalWorkerConnection();
+        if (!mlWorkerStore.isExternalWorkerConnected) {
+            openWorkerInstructions.value = true;
+            return;
+        } else {
+            await runTestSuite([]);
+        }
     }
 }
 
@@ -147,7 +166,7 @@ async function openSettings() {
 
 async function redirectToTesting() {
     testSuitesStore.setCurrentTestSuiteId(null);
-    await router.push({name: 'project-testing'});
+    await router.push({ name: 'project-testing' });
 }
 
 function openExportDialog() {
@@ -162,6 +181,10 @@ const handleFilterChanged = debounce(() => mixpanel.track('Filter tests of test 
     statusFilter: statusFilter.value,
     searchFilter: searchFilter.value
 }), 1000)
+
+function handleRunTestSuite() {
+    openRunTestSuite(false);
+}
 
 </script>
 
