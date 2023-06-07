@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
-from ..common.examples import ExampleExtractor
-
 from .metrics import PerformanceMetric
+from ..common.examples import ExampleExtractor
 from ..issues import Issue
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -105,7 +104,11 @@ class PerformanceIssue(Issue):
         delta = (self.info.metric.greater_is_better * 2 - 1) * self.info.threshold * self.info.metric_value_reference
         abs_threshold = self.info.metric_value_reference - delta
 
-        tests = [test_fn(self.model, self.dataset, self.info.slice_fn, abs_threshold)]
+        tests = [
+            test_fn(
+                model=self.model, dataset=self.dataset, slicing_function=self.info.slice_fn, threshold=abs_threshold
+            )
+        ]
 
         if with_names:
             names = [f"{self.info.metric.name} on data slice “{self.info.slice_fn}”"]

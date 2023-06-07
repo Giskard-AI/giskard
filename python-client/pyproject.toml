@@ -12,8 +12,11 @@ name = "torch"
 [tool.pdm.scripts]
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test.cmd = "pytest -n auto -c pyproject.toml --cov=giskard tests --cov-report=xml"
+test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
 test.env = { GSK_DISABLE_ANALYTICS = "True"}
+# for some reason github runners don't work when calling 'pdm test -m "not slow"'
+test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
+test-fast.env = { GSK_DISABLE_ANALYTICS = "True"}
 lint = "flake8 giskard tests"
 doc = "python -m sphinx_autobuild docs docs/_build/html"
 
@@ -90,15 +93,22 @@ giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
 giskard = "giskard.cli:cli"
 
 [project.urls]
-repository = "https://github.com/Giskard-AI/giskard"
-homepage = "https://giskard-ai"
+"Homepage" = "https://giskard.ai"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
+"Bug Tracker" = "https://github.com/Giskard-AI/giskard/issues"
+"Documentation" = "https://docs.giskard.ai/"
+"Discord" = "https://discord.gg/ABvfpbu69R"
+"Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Mastodon" = "https://fosstodon.org/@Giskard"
+"Twitter" = "https://twitter.com/giskard_ai"
+
 
 [project]
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0"
-description = "Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"
+version = "2.0.0b3"
+description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
 ]
@@ -122,14 +132,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1,<3.12"
+requires-python = ">=3.8.1,<3.11"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
     "mlflow-skinny>=2",
     "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
     "scikit-learn>=1.0",
-    "scipy",
+    "scipy>=1.7.3,<1.9", # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic>=1.7",
@@ -150,7 +160,7 @@ llm = [
     "langchain",
     "datasets",
     "evaluate",
-    "rouge_score",
+    "bert_score",
 ]
 server = [
     "tenacity>=4.11.0",
@@ -239,6 +249,10 @@ warn_unused_ignores = false
 # Directories that are not visited by pytest collector:
 norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
 doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
 # Extra options:
 addopts = [
     "--strict-markers",

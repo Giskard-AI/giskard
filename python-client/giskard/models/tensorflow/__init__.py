@@ -38,7 +38,7 @@ class TensorFlowModel(MLFlowBasedModel):
         )
 
     @classmethod
-    def load_wrapped_model(cls, local_path):
+    def load_model(cls, local_path):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):

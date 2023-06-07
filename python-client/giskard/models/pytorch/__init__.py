@@ -101,7 +101,7 @@ class PyTorchModel(MLFlowBasedModel):
         self.iterate_dataset = iterate_dataset
 
     @classmethod
-    def load_wrapped_model(cls, local_dir):
+    def load_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):

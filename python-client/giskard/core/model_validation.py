@@ -61,7 +61,7 @@ def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
 
         if model.is_regression:
             validate_model_execution(model, validate_ds)
-        elif model.is_generative:
+        elif model.is_text_generation:
             validate_model_execution(model, validate_ds, False)
         elif model.is_classification and validate_ds.target is not None:
             target_values = validate_ds.df[validate_ds.target].unique()
@@ -195,7 +195,7 @@ def validate_classification_labels(classification_labels: Union[np.ndarray, List
             )
 
     if (
-        model_type == SupportedModelTypes.REGRESSION or model_type == SupportedModelTypes.GENERATIVE
+        model_type == SupportedModelTypes.REGRESSION or model_type == SupportedModelTypes.TEXT_GENERATION
     ) and classification_labels is not None:
         warning("'classification_labels' parameter is ignored for regression model")
 
@@ -261,7 +261,7 @@ def validate_prediction_output(ds: Dataset, model_type: ModelType, prediction):
         if model_type == SupportedModelTypes.REGRESSION:
             if not any(isinstance(x, (np.floating, float)) for x in prediction):
                 raise ValueError("Model prediction should return float values ")
-        if model_type == SupportedModelTypes.GENERATIVE:
+        if model_type == SupportedModelTypes.TEXT_GENERATION:
             if not any(isinstance(x, str) for x in prediction):
                 raise ValueError("Model prediction should return string values ")
     else:

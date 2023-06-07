@@ -54,6 +54,8 @@ jobs:
 
       - name: Setup Gradle # To cache ~/.gradle
         uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: false
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
@@ -92,7 +94,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -111,9 +112,14 @@ jobs:
           TZ: Europe/Paris
         run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
 
+      - name: Get number of available workers
+        id: nb_workers
+        run: python -c 'import os; print(f"nb_workers={max(1,os.cpu_count()-1)}")' >> $GITHUB_OUTPUT
+
       - name: Build
         env:
           GSK_DISABLE_ANALYTICS: True
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
         run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar

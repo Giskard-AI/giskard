@@ -1,12 +1,14 @@
 # 📥 Install the Giskard Python Library
 
-In order to scan your model for vulnerabilities, you'll need to install the `giskard` library with `pip`:
+## Install the Giskard Python Library for only Python use (no Giskard server) without LLM models
+
+If you don't want to use the UI features and your model is not a text generation model, you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install giskard
+pip install "giskard==2.0.0b3"
 ```
 
 :::
@@ -14,17 +16,81 @@ pip install giskard
 :::{tab-item} Windows
 
 ```sh
-pip install giskard --user
+pip install "giskard==2.0.0b3"
 ```
 
 :::
 ::::
 
+## Install the Giskard Python Library for Python + Giskard server (UI features) without LLM
+
+If you want to use the Giskard server but your model is not a text generation model you need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install "giskard[server]==2.0.0b3"
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install "giskard[server]==2.0.0b3"
+```
+
+:::
+::::
+
+
+## Install the Giskard Python Library for only Python use (no Giskard server) and with LLM
+
+If you don't want to use the UI features and your model is a text generation model, you need to install the `giskard` library with `pip`:
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install "giskard[llm]==2.0.0b3"
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install "giskard[llm]==2.0.0b3"
+```
+
+:::
+::::
+
+## Install the Giskard Python Library with full functionalities (server + LLM)
+
+::::{tab-set}
+:::{tab-item} Mac and Linux
+
+```sh
+pip install "giskard[server, llm]==2.0.0b3"
+```
+
+:::
+
+:::{tab-item} Windows
+
+```sh
+pip install "giskard[server, llm]==2.0.0b3"
+```
+
+:::
+::::
 ## Requirements
 
-Giskard works with Python `3.8`, `3.9` and `3.10`.
+`giskard[server]` works with Python `3.8`, `3.9` and `3.10`.
 
-Below is the list of dependencies needed to make Giskard work:
+Below is the list of dependencies needed to make `giskard[server]` work:
 
 ```sh
 dependencies = [
@@ -69,5 +135,5 @@ For instance, if you have dependency conflicts with `pandas`, please do:
 ```sh
 pip uninstall giskard
 pip uninstall pandas
-pip install giskard
+pip install "giskard==2.0.0b3"
 ```

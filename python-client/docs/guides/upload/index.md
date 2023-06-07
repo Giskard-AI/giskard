@@ -8,7 +8,7 @@ Uploading objects to the Giskard server will help you:
 * **Compare** the results of your test suite for different models
 * Help you create more **insightful tests** based on domain knowledge
 
-## 1. Install the Giskard server
+## 1. Run the Giskard server
 
 To install the Giskard server, please check the [run the Giskard server](../installation_app/index.rst) page.
 
