@@ -67,7 +67,7 @@ catalogs/index
 
 :::{card} <h2><center> Getting Started </center></h2>
 :link: getting-started/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/coffee.png" alt="coffee" width="80%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/coffee.png" alt="coffee" width="82%">
 :::
 
 :::{card} <h2><center> API Reference </center></h2>
@@ -85,12 +85,12 @@ catalogs/index
 :::{card} <h2><center> User Guide </center></h2>
 :link: guides/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="79%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="78.5%">
 :::
 
 :::{card} <h2><center> Tutorials </center></h2>
 :link: tutorials/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="97%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="95%">
 ::::
 
 :::::
@@ -103,7 +103,7 @@ catalogs/index
 :::{card} <h2><center> Catalogs </center></h2>
 :link: catalogs/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="89%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86%">
 :::
 
 :::{card} <h2><center> Contribute </center></h2>
