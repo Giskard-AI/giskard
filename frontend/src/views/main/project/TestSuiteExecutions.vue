@@ -43,24 +43,22 @@
                     </v-icon>
                   </v-list-item-icon>
                   <v-list-item-content>
-                    <v-list-item-title>
-                      <div class="d-flex justify-space-between">
-                        <div>
-                          <span v-if="getModel(e)">Model: {{ getModel(e) }}<br /></span>
-                          <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br /></span>
-                          <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
-                        </div>
-                        <v-tooltip bottom v-if="!e.disabled">
-                          <template v-slot:activator="{ on, attrs }">
-                            <div v-bind="attrs" v-on="on">
-                              <v-checkbox v-model="compareSelectedItems" :value="e.execution.id" />
-                            </div>
-                          </template>
-                          <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
-                          <span v-else>Add to comparison</span>
-                        </v-tooltip>
+                    <div class="d-flex">
+                      <div class="overflow-ellipsis">
+                        <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
+                        <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br/></span>
+                        <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
                       </div>
-                    </v-list-item-title>
+                      <v-tooltip bottom v-if="!e.disabled">
+                        <template v-slot:activator="{ on, attrs }">
+                          <div v-bind="attrs" v-on="on">
+                            <v-checkbox v-model="compareSelectedItems" :value="e.execution.id"/>
+                          </div>
+                        </template>
+                        <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
+                        <span v-else>Add to comparison</span>
+                      </v-tooltip>
+                    </div>
                   </v-list-item-content>
                 </v-list-item>
               </div>
