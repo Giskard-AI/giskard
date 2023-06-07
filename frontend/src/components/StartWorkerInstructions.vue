@@ -68,12 +68,12 @@ async function checkForExternalWorker() {
     await mlWorkerStore.checkExternalWorkerConnection();
     if (mlWorkerStore.isExternalWorkerConnected) {
         useMainStore().addNotification({
-            content: 'External worker connection found!',
+            content: 'External ML Worker is connected!',
             color: TYPE.SUCCESS,
         });
     } else {
         useMainStore().addNotification({
-            content: 'No external worker connection found',
+            content: 'External ML Worker is not connected',
             color: TYPE.ERROR,
         });
     }

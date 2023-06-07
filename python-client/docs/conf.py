@@ -103,7 +103,7 @@ add_function_parentheses = False
 # Do not execute the notebooks when building the docs
 docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
 if docs_version == "latest":
-    branch = "main"
+    branch = "feature/ai-test-v2-merged"
 else:
     branch = docs_version.replace("-", "/")
 
