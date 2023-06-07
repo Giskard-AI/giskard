@@ -28,7 +28,10 @@ COPY .git .git
 
 COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
 
-RUN ./gradlew clean package -Pprod --parallel --info --stacktrace
+RUN ./gradlew clean install -Pprod --parallel --info --stacktrace
+RUN ./gradlew :backend:package -Pprod --parallel --info --stacktrace
+RUN ./gradlew :frontend:package -Pprod --parallel --info --stacktrace
+RUN ./gradlew :python-client:package -Pprod --parallel --info --stacktrace
 
 
 # Create an environment and install giskard wheel. Some dependencies may require gcc which is only installed in build
