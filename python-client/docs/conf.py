@@ -25,7 +25,8 @@ extensions = ["myst_parser",
               'sphinx_tabs.tabs',
               'sphinx_copybutton',
               'sphinx_tabs.tabs',
-              'sphinx_click']
+              'sphinx_click',
+              'sphinx_favicon']
 
 # autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ['_templates']
@@ -58,6 +59,8 @@ html_title = "Giskard Documentation"
 
 html_theme = 'furo'
 html_static_path = ['_static']
+
+favicons = [{"href": "giskard_logo.png"}]
 
 html_css_files = ['css/custom.css']
 html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js"]
