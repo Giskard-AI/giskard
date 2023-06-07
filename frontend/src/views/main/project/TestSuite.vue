@@ -59,7 +59,7 @@
             </v-container>
         </div>
 
-        <v-dialog v-model="displayWorkerInstructions" @click:outside="openWorkerInstructions = false">
+        <v-dialog v-model="displayWorkerInstructions" @click:outside="openWorkerInstructions = false" max-width="70vw">
             <v-card>
                 <v-card-title class="py-6">
                     <h2>ML Worker is not connected</h2>
