@@ -19,7 +19,7 @@ To run the Giskard server and use all the above UI features, you need to complet
 To run the Giskard server you need:
 
 - A **Linux**, **macOS** machine, or **WSL2 in Windows**
-- To install the Giskard Python library, see `here <../installation_library/index.md>`_.
+- To install the Giskard **Python library**, see `here <../installation_library/index.md>`_.
 
 You can either install and run the server **locally** or on an **external server** (ex: cloud instance)
 
@@ -123,7 +123,7 @@ Giskard executes your model using an worker that runs directly the model in your
             %env GSK_EXTERNAL_ML_WORKER_HOST=4.tcp.ngrok.io
             %env GSK_EXTERNAL_ML_WORKER_PORT=10853
             %env GSK_API_KEY=YOUR_API_KEY
-            !giskard worker start -d -u https://e840-93-23-184-184.ngrok-free.app
+            !giskard worker start -d -k YOUR_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
 
       - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance):
 
