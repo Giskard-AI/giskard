@@ -1,22 +1,24 @@
 <template>
     <div class="d-flex" :class="{ w100: fullWidth }">
-        <v-select clearable :outlined="fullWidth" class="slice-function-selector" :label="label" v-model="value" :items="[{
+      <v-select clearable :outlined="fullWidth" class="slice-function-selector" :label="label" v-model="value"
+                :items="[{
             name: 'None',
             displayName: 'None',
-            uuid: 'None',
+            uuid: null,
             args: []
-        }, ...slicingFunctions]" :item-text="extractName" item-value="uuid" :return-object="false" @input="onInput" :dense="fullWidth" hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-            <template v-slot:append-item v-if="allowNoCodeSlicing">
-                <v-list-item @click="createSlice">
-                    <v-list-item-content>
-                        <v-list-item-title>
-                            <v-icon>add</v-icon>
-                            Create new slice
-                        </v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-            </template>
-        </v-select>
+        }, ...slicingFunctions]" :item-text="extractName" item-value="uuid" :return-object="false" @input="onInput"
+                :dense="fullWidth" hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
+        <template v-slot:append-item v-if="allowNoCodeSlicing">
+          <v-list-item @click="createSlice">
+            <v-list-item-content>
+              <v-list-item-title>
+                <v-icon>add</v-icon>
+                Create new slice
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+      </v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
         </v-btn>
@@ -27,23 +29,23 @@
 
 
 import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
-import { computed } from "vue";
-import { $vfm } from "vue-final-modal";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
+import {computed} from "vue";
+import {$vfm} from "vue-final-modal";
 import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
-import { chain } from "lodash";
+import {chain} from "lodash";
 import CreateSliceModal from "@/views/main/project/modals/CreateSliceModal.vue";
 
 const props = withDefaults(defineProps<{
-    projectId: number,
-    label: string,
-    fullWidth: boolean,
-    value?: string,
-    args?: Array<FunctionInputDTO>,
-    icon: boolean,
-    dataset?: DatasetDTO,
-    allowNoCodeSlicing: boolean
+  projectId: number,
+  label: string,
+  fullWidth: boolean,
+  value?: string,
+  args?: Array<FunctionInputDTO>,
+  icon: boolean,
+  dataset?: DatasetDTO,
+  allowNoCodeSlicing: boolean
 }>(), {
     fullWidth: true,
     icon: false,
@@ -59,37 +61,37 @@ function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
 }
 
 async function onInput(value) {
-    if (!value || slicingFunctionsByUuid.value[value].args.length === 0) {
-        emit('update:value', value);
-        emit('update:args', []);
-        emit('onChanged');
-        return;
-    }
-
-    const previousValue = props.value;
+  if (!value || slicingFunctionsByUuid.value[value].args.length === 0) {
     emit('update:value', value);
+    emit('update:args', []);
+    emit('onChanged');
+    return;
+  }
 
-    const func = slicingFunctionsByUuid.value[value];
-    await $vfm.show({
-        component: FunctionInputsModal,
-        bind: {
-            projectId: props.projectId,
-            title: `Set up parameters for '${func.displayName ?? func.name}'`,
-            function: func,
-            defaultValue: {},
-        },
-        on: {
-            async save(args: Array<FunctionInputDTO>) {
-                emit('update:args', args);
-                emit('onChanged');
-            },
-            async cancel() {
-                // Rollback changes
-                emit('update:value', previousValue)
-            }
-        },
-        cancel: {}
-    });
+  const previousValue = props.value;
+  emit('update:value', value);
+
+  const func = slicingFunctionsByUuid.value[value];
+  await $vfm.show({
+    component: FunctionInputsModal,
+    bind: {
+      projectId: props.projectId,
+      title: `Set up parameters for '${func.displayName ?? func.name}'`,
+      function: func,
+      defaultValue: {},
+    },
+    on: {
+      async save(args: Array<FunctionInputDTO>) {
+        emit('update:args', args);
+        emit('onChanged');
+      },
+      async cancel() {
+        // Rollback changes
+        emit('update:value', previousValue)
+      }
+    },
+    cancel: {}
+  });
 }
 
 async function updateArgs() {
