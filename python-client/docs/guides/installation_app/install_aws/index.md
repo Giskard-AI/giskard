@@ -30,7 +30,7 @@
 * Installation of Giskard
 
 ```bash
-giskard server start
+giskard server start --version 2.0.0b4
 ```
 
 ### 4. Connect to your instance and start uploading an ML model
