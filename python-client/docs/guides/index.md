@@ -15,6 +15,7 @@
    cicd/index
    installation_app/index
    upload/index
+   FAQ/index
 ```
 
 ::::::{grid} 1 1 2 2
