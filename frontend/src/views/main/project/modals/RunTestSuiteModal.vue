@@ -64,7 +64,14 @@
                     </v-card-actions>
                 </v-card>
             </div>
-            <StartWorkerInstructions v-else />
+            <v-card v-else>
+                <v-card-title class="py-6">
+                    <h2>ML Worker is not connected</h2>
+                </v-card-title>
+                <v-card-text>
+                    <StartWorkerInstructions></StartWorkerInstructions>
+                </v-card-text>
+            </v-card>
         </vue-final-modal>
     </div>
 </template>
