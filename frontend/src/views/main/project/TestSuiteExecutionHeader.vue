@@ -3,28 +3,39 @@
         <v-alert prominent :icon="testResultStyle.icon" text :color="testResultStyle.color"
                  class="flex-grow-1">
             <v-row align="center">
-                <v-col class="grow">
-                    <h4 v-if="!props.execution" class="text-alert">
-                        No execution has been performed yet!
-                    </h4>
-                    <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert d-flex">
-                        An error occurred during the execution. Executed <strong class="ml-2">{{
-                            timeSince(execution.executionDate)
-                        }}</strong><v-spacer/>
-                      <v-btn color="error" small @click="openLogs">execution logs.</v-btn>
-                    </h4>
-                    <h4 v-else class="text-alert d-flex">Test suite
-                        {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
-                        <span v-if="successRatio.failed > 0">{{ plurialize('test', successRatio.failed) }} failed</span>
-                        <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
-                        <span v-if="successRatio.passed > 0">{{ plurialize('test', successRatio.passed) }} passed</span>
-                        <span v-if="successRatio.failed > 0 || successRatio.passed > 0">. </span>
-                        Executed
-                        <span class="ml-2">{{ timeSince(execution.executionDate) }}</span>
-                        <v-spacer/>
-                        <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small @click="openLogs">execution logs</v-btn>
-                    </h4>
-                </v-col>
+              <v-col class="grow d-flex">
+                <h4 v-if="!props.execution" class="text-alert">
+                  No execution has been performed yet!
+                </h4>
+                <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert d-flex">
+                  An error occurred during the execution. Executed <strong class="ml-2">{{
+                    timeSince(execution.executionDate)
+                  }}</strong>
+                  <v-spacer/>
+                  <v-btn color="error" small @click="openLogs">execution logs.</v-btn>
+                </h4>
+                <h4 v-else class="text-alert">Test suite
+                  {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
+                  <span class="ml-1" v-if="successRatio.error > 0">{{ plurialize('test', successRatio.error) }} with error</span>
+                  <span
+                      v-if="successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)">, </span>
+                  <span class="ml-1" v-if="successRatio.failed > 0">{{
+                      plurialize('test', successRatio.failed)
+                    }} failed</span>
+                  <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
+                  <span class="ml-1" v-if="successRatio.passed > 0">{{
+                      plurialize('test', successRatio.passed)
+                    }} passed</span>
+                  <span
+                      v-if="successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0">. </span>
+                  <span class="ml-1">Executed {{ timeSince(execution.executionDate) }}</span>
+
+                </h4>
+                <v-spacer/>
+                <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
+                       @click="openLogs">execution logs
+                </v-btn>
+              </v-col>
             </v-row>
         </v-alert>
     </div>
@@ -82,26 +93,28 @@ const testResultStyle = computed(() => {
 })
 
 const successRatio = computed(() => ({
-    passed: executedTests.value.filter(({result}) => result!.passed).length,
-    failed: executedTests.value.filter(({result}) => !result!.passed).length
+  passed: executedTests.value.filter(({result}) => result!.passed).length,
+  // TODO: add status error to differentiate failed
+  failed: executedTests.value.filter(({result}) => !result!.passed && result!.messages?.find(({type}) => type === 'ERROR') === undefined).length,
+  error: executedTests.value.filter(({result}) => result!.messages?.find(({type}) => type === 'ERROR') !== undefined).length
 }))
 
 const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
     : props.tests.filter(({result}) => result !== undefined));
 
 function openLogs() {
-    $vfm.show({
-        component: ExecutionLogsModal,
-        bind: {
-            logs: props.execution?.logs
-        }
-    });
+  $vfm.show({
+    component: ExecutionLogsModal,
+    bind: {
+      logs: props.execution?.logs
+    }
+  });
 
-    mixpanel.track('Open test suite execution logs', {
-        suiteId: suite.value!.id,
-        projectId: projectId.value!,
-        suiteExecutionStatus: props.execution?.result
-    });
+  mixpanel.track('Open test suite execution logs', {
+    suiteId: suite.value!.id,
+    projectId: projectId.value!,
+    suiteExecutionStatus: props.execution?.result
+  });
 
 }
 </script>

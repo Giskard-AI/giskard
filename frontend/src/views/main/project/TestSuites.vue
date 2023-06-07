@@ -43,8 +43,15 @@
                                     <div class="d-flex flex-column">
                                         <span class="font-weight-bold">{{ suite.tests.length }} tests in total</span>
                                         <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
-                                            <span class="passed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === true).length }} passing</span>
-                                            <span class="failed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === false).length }} failing</span>
+                                          <span class="passed-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => result.passed).length
+                                            }} passing</span>
+                                          <span class="failed-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => !result.passed && result.messages?.find(({type}) => type === 'ERROR') === undefined).length
+                                            }} failing</span>
+                                          <span class="error-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => result.messages?.find(({type}) => type === 'ERROR') !== undefined).length
+                                            }} with error</span>
                                         </div>
                                     </div>
                                 </v-col>
@@ -234,12 +241,17 @@ function deleteTestSuite(suite: any) {
 }
 
 .passed-tests {
-    margin-top: 0.25rem;
-    color: #66AD5B;
+  margin-top: 0.25rem;
+  color: #66AD5B;
 }
 
 .failed-tests {
-    margin-top: 0.25rem;
-    color: #EB5E59;
+  margin-top: 0.25rem;
+  color: #EB5E59;
+}
+
+.error-tests {
+  margin-top: 0.25rem;
+  color: #ebba59;
 }
 </style>

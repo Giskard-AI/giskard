@@ -5,42 +5,48 @@
                 Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
                 <span v-if="transformationFunction"> to {{
                     transformationFunction.displayName ?? transformationFunction.name
-                }}</span>
+                  }}</span>
                 <span v-if="slicingFunction"> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
-            <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
-                <div class="d-flex flex-row gap-4">
-                    <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
-                            label>
-                        {{ tag }}
-                    </v-chip>
-                </div>
-            -->
-            <div class="flex-grow-1" />
-            <div v-if="result" :class="`d-flex flex-row align-center gap-8 ${result.passed ? 'test-passed' : 'test-failed'}`">
+          <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
+              <div class="d-flex flex-row gap-4">
+                  <v-chip v-if="!compact" v-for="tag in sorted(suiteTest.test.tags)" x-small :color="pasterColor(tag)"
+                          label>
+                      {{ tag }}
+                  </v-chip>
+              </div>
+          -->
+          <div class="flex-grow-1"/>
+          <div v-if="result"
+               :class="`d-flex flex-row align-center gap-8 ${result.passed ? 'test-passed' : 'test-failed'}`">
                 <span v-if="result.metric" class="metric">Measured <strong>Metric = {{
                     result.metric
-                }}</strong></span>
-                <v-chip v-if="result.passed" :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE" label>
-                    <v-icon>done</v-icon>
-                    Passed
-                </v-chip>
-                <v-chip v-else small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
-                    <v-icon small>close</v-icon>
-                    Failed
-                </v-chip>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div v-on="on">
-                            <v-btn color="primary" outlined small disabled>
-                                <v-icon small>info</v-icon>
-                                Debug
-                            </v-btn>
-                        </div>
-                    </template>
-                    <span>Coming soon</span>
-                </v-tooltip>
-            </div>
+                  }}</strong></span>
+            <v-chip v-if="errors.length > 0" color="#fff3cd" text-color="#856404"
+                    label link @click="openLogs">
+              <v-icon class="mr-1">mdi-alert-outline</v-icon>
+              Error
+            </v-chip>
+            <v-chip v-else-if="result.passed" :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE" label>
+              <v-icon class="mr-1">done</v-icon>
+              Passed
+            </v-chip>
+            <v-chip v-else :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
+              <v-icon class="mr-1">close</v-icon>
+              Failed
+            </v-chip>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <div v-on="on">
+                  <v-btn color="primary" outlined small disabled>
+                    <v-icon small>info</v-icon>
+                    Debug
+                  </v-btn>
+                </div>
+              </template>
+              <span>Coming soon</span>
+            </v-tooltip>
+          </div>
         </div>
         <div class="d-flex flex-row align-end test-card-footer">
             <div v-for="({ name, value, type }) in orderedParams" class="d-flex flex-column">
@@ -60,23 +66,25 @@
 
 <script setup lang="ts">
 
-import { SuiteTestDTO, SuiteTestExecutionDTO } from '@/generated-sources';
-import { computed } from "vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
-import { Colors } from "@/utils/colors";
-import { $vfm } from "vue-final-modal";
+import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
+import {computed} from "vue";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
+import {Colors} from "@/utils/colors";
+import {$vfm} from "vue-final-modal";
 import SuiteTestInfoModal from "@/views/main/project/modals/SuiteTestInfoModal.vue";
-import { useTestSuiteStore } from "@/stores/test-suite";
+import {useTestSuiteStore} from "@/stores/test-suite";
+import ExecutionLogsModal from "@/views/main/project/modals/ExecutionLogsModal.vue";
+import mixpanel from "mixpanel-browser";
 
-const { slicingFunctionsByUuid, transformationFunctionsByUuid } = storeToRefs(useCatalogStore())
-const { models, datasets } = storeToRefs(useTestSuiteStore())
+const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore())
+const {models, datasets} = storeToRefs(useTestSuiteStore())
 
 const props = defineProps<{
-    suiteTest: SuiteTestDTO,
-    result?: SuiteTestExecutionDTO,
-    compact: boolean,
-    isPastExecution: boolean
+  suiteTest: SuiteTestDTO,
+  result?: SuiteTestExecutionDTO,
+  compact: boolean,
+  isPastExecution: boolean
 }>();
 
 const params = computed(() => props.isPastExecution && props.result
@@ -122,23 +130,37 @@ const slicingFunction = computed(() => {
 })
 
 const transformationFunction = computed(() => {
-    const uuid = params.value ? params.value['transformation_function'] : undefined;
+  const uuid = params.value ? params.value['transformation_function'] : undefined;
 
-    if (uuid) {
-        return transformationFunctionsByUuid.value[uuid];
-    } else {
-        return undefined;
-    }
+  if (uuid) {
+    return transformationFunctionsByUuid.value[uuid];
+  } else {
+    return undefined;
+  }
 })
+
+const errors = computed(() => props.result?.messages?.filter(message => message.type === 'ERROR') ?? []);
 
 
 async function editTests() {
-    await $vfm.show({
-        component: SuiteTestInfoModal,
-        bind: {
-            suiteTest: props.suiteTest
-        }
-    });
+  await $vfm.show({
+    component: SuiteTestInfoModal,
+    bind: {
+      suiteTest: props.suiteTest
+    }
+  });
+}
+
+function openLogs() {
+  $vfm.show({
+    component: ExecutionLogsModal,
+    bind: {
+      logs: errors.value.map(({text}) => text).join('\n')
+    }
+  });
+
+  mixpanel.track('Open test error logs');
+
 }
 </script>
 
