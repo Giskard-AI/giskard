@@ -89,89 +89,31 @@ const apiAccessToken = ref<JWTToken | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
-const clientCodeContent = computed(() => {
-  return `from giskard import GiskardClient
-
-url = "${apiURL}" # URL of your Giskard instance
-client = GiskardClient(url, token)`
-});
-
 
 const uploadSnippet = computed(() => {
   // language=Python
-  return `from giskard import Dataset, Model, GiskardClient
-from giskard.demo import titanic  # for demo purposes only 🛳️
+  return `import giskard
 
-original_model, original_df = titanic()  # Replace with your dataframe creation
+# for demo purposes only 🛳️. Replace with your dataframe creation
+original_model, original_df = giskard.demo.titanic()
 
 # Create a Giskard client
 token = "${apiAccessToken.value!.id_token}"
-client = GiskardClient(
+client = giskard.GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
 )
 
 # Wrap your Pandas Dataframe and model with Giskard 🎁
-giskard_dataset = Dataset(original_df, target="Survived", name="Titanic dataset")
-giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
+giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
 
 # Upload to the current project ✉️
 giskard_dataset.upload(client, "${props.project.key}")
 giskard_model.upload(client, "${props.project.key}")`
 });
 
-const datasetCodeContent = computed(() => {
-  return `import pandas as pd
 
-iris_df = pd.DataFrame({"sepal length": [5.1],
-                        "sepal width": [3.5],
-                        "petal size": ["medium"],
-                        "species": ["Setosa"]})
-
-from giskard import wrap_dataset
-
-wrapped_dataset = wrap_dataset(
-  df=iris_df, 
-  target="species", # Optional but a MUST if available
-  cat_columns=["petal size"] # Optional but a MUST if available. Inferred automatically if not.
-  # name="my_iris_dataset", # Optional
-  # column_types=None # # Optional: if not provided, it is inferred automatically
-)
-  
-dataset_id = wrapped_dataset.upload(client, "${props.project.key}")`
-})
-
-const modelCodeContent = computed(() => {
-  // language=Python
-  return `import pandas as pd
-    import numpy as np
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.linear_model import LogisticRegression
-    from giskard import wrap_model
-
-    scaler = StandardScaler()
-    clf = LogisticRegression()
-
-
-    def prediction_function(df: pd.DataFrame) -> np.ndarray:
-        #Scale all the numerical variables
-  num_cols = ["sepal length", "sepal width"]
-  df[num_cols] = scaler.transform(df[num_cols])
-  
-  return clf.predict_proba(df)
-
-
-wrapped_model = wrap_model(
-  prediction_function,
-  model_type="classification",
-  classification_labels=['Setosa', 'Versicolor', 'Virginica'],
-  feature_names=['sepal length', 'sepal width'],  # Default: all columns of your dataset
-  # name="my_iris_classification_model", # Optional
-  # classification_threshold=0.5, # Default: 0.5
-)
-
-model_id = wrapped_model.upload(client, "${props.project.key}")`
-})
 
 const scanCodeContent: string = `import giskard
 
