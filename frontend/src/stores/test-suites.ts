@@ -49,7 +49,7 @@ export const useTestSuitesStore = defineStore('testSuites', {
     },
     async updateSuiteName(suite: TestSuiteDTO) {
       await api.updateTestSuite(suite.projectKey!, suite);
-      await this.reload();
+      await this.reloadComplete();
     },
     setCurrentTestSuiteId(suiteId: number | null) {
       this.currentTestSuiteId = suiteId;
