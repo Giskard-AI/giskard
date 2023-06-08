@@ -2,7 +2,7 @@
   <v-main class="fill-height vertical-container">
     <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
       <v-layout column fill-height>
-        <v-list subheader class="align-center">
+        <v-list subheader class="align-center" @click="resetStates">
           <v-list-item to="/" @click.stop="() => {
             projectStore.setCurrentProjectId(null);
           }">
@@ -50,38 +50,29 @@
             <span>You have to select a project to interact with this menu.</span>
           </v-tooltip>
 
-          <div v-else>
-            <v-list-item :to="{
-              name: 'project-catalog',
-              params: {
-                id: projectStore.currentProjectId,
-              }
-            }" value="catalog">
+          <div v-else @click="resetStates">
+            <v-list-item :to="{ name: 'project-catalog', params: { id: currentProjectId } }" value="catalog">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
                 <div class="caption">Catalog</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item value="testing" @click="redirectToTesting" link>
+            <v-list-item :to="{ name: 'project-testing', params: { id: currentProjectId } }" value="testing">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item value="debugger" @click="redirectToDebugger" link>
+            <v-list-item :to="{ name: 'project-debugger', params: { id: currentProjectId } }" value="debugger">
               <v-list-item-content>
                 <v-icon>mdi-shield-search</v-icon>
                 <div class="caption">Debugger</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{
-              name: 'project-feedbacks', params: {
-                id: projectStore.currentProjectId,
-              }
-            }" value="feedbacks">
+            <v-list-item :to="{ name: 'project-feedbacks', params: { id: currentProjectId } }" value="feedbacks">
               <v-list-item-content>
                 <v-icon>mdi-comment-multiple-outline</v-icon>
                 <div class="caption">Feedback</div>
@@ -89,8 +80,6 @@
             </v-list-item>
             <v-divider />
           </div>
-
-
         </v-list>
         <v-spacer></v-spacer>
         <v-list>
@@ -141,11 +130,10 @@ import { useProjectStore } from "@/stores/project";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useTestSuitesStore } from "@/stores/test-suites";
 import { computed, ref, watch } from "vue";
-import { useRoute, useRouter } from 'vue-router/composables';
+import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
 
 const route = useRoute();
-const router = useRouter();
 const mainStore = useMainStore();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -164,7 +152,6 @@ if (mainStore.license) {
 
 
 const hasAdminAccess = computed(() => {
-
   return userStore.hasAdminAccess;
 });
 
@@ -182,42 +169,27 @@ const userId = computed(() => {
   }
 });
 
+const currentProjectId = computed(() => {
+  if (projectStore.currentProjectId === null) {
+    return null;
+  }
+  return projectStore.currentProjectId.toString();
+});
+
+async function logout() {
+  await userStore.userLogout();
+}
+
+function resetStates() {
+  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  testSuitesStore.setCurrentTestSuiteId(null);
+}
 
 watch(() => route.name, async (name) => {
   if (name === 'projects-home') {
     projectStore.setCurrentProjectId(null);
   }
 })
-
-async function logout() {
-  await userStore.userLogout();
-}
-
-async function redirectToDebugger() {
-  if (projectStore.currentProjectId === null) {
-    return;
-  }
-  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
-  await router.push({
-    name: 'project-debugger',
-    params: {
-      projectId: projectStore.currentProjectId.toString()
-    }
-  });
-}
-
-async function redirectToTesting() {
-  if (projectStore.currentProjectId === null) {
-    return;
-  }
-  testSuitesStore.setCurrentTestSuiteId(null);
-  await router.push({
-    name: 'project-testing',
-    params: {
-      projectId: projectStore.currentProjectId.toString()
-    }
-  });
-}
 </script>
 
 <style scoped>
