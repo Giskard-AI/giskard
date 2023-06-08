@@ -118,21 +118,14 @@ class GiskardAnalyticsCollector:
     @threaded
     @analytics_method
     def track(self, event_name, properties=None, meta=None, force=False):
-        if not self.giskard_version:
-            import giskard
+        self.initialize_giskard_version()
+        self.initialize_user_properties()
 
-            self.giskard_version = giskard.get_version()
-        if not self.ip:
-            self.initialize_geo()
         if self.is_enabled or force:
             merged_props = {
                 "giskard_version": self.giskard_version,
                 "python_version": platform.python_version(),
-                "ip": self.ip,  # only for aggregated stats: city, country, region. IP itself isn't stored
-                "arch": platform.machine(),
-                "$os": platform.system(),
-                "os-full": platform.platform(aliased=True),
-                "environment": self.environment
+                "environment": self.environment,
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
@@ -141,6 +134,26 @@ class GiskardAnalyticsCollector:
 
             self.mp.track(
                 distinct_id=self.distinct_user_id, event_name=event_name, properties=dict(merged_props), meta=meta
+            )
+
+    def initialize_giskard_version(self):
+        if not self.giskard_version:
+            import giskard
+            self.giskard_version = giskard.get_version()
+
+    def initialize_user_properties(self):
+        if not self.ip:
+            self.initialize_geo()
+            self.mp.people_set(
+                self.distinct_user_id,
+                {
+                    "$name": "",
+                    "arch": platform.machine(),
+                    "$os": platform.system(),
+                    "os-full": platform.platform(aliased=True),
+                },
+                # only for aggregated stats: city, country, region. IP itself isn't stored
+                meta={'$ip': self.ip},
             )
 
     @staticmethod
@@ -157,13 +170,14 @@ class GiskardAnalyticsCollector:
             - city
             - region
             - country
-        IP address itself **isn't stored** by in the telemetry data
+        IP address itself **isn't stored** by in the telemetry data, see:
+        https://docs.mixpanel.com/docs/tracking/how-tos/effective-server#tracking-geolocation
         """
         with GiskardAnalyticsCollector.lock:
             if self.ip:
                 return
             try:
-                self.ip = requests.get('http://ip-api.com/json').json().get('query', 'unknown')  # noqa NOSONAR
+                self.ip = requests.get('https://api64.ipify.org/?format=json').json().get('ip', 'unknown')
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 
