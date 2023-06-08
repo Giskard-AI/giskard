@@ -1,142 +1,3 @@
-<script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
-import { $vfm } from 'vue-final-modal';
-import { api } from '@/api';
-import { useRouter } from 'vue-router/composables';
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
-import { InspectionDTO } from "@/generated-sources";
-import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
-import InlineEditText from '@/components/InlineEditText.vue';
-import ConfirmModal from './modals/ConfirmModal.vue';
-import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-
-const router = useRouter();
-
-const projectStore = useProjectStore();
-const debuggingSessionsStore = useDebuggingSessionsStore();
-const mlWorkerStore = useMLWorkerStore();
-
-interface Props {
-  projectId: number;
-}
-
-const props = defineProps<Props>();
-
-const searchSession = ref("");
-
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
-
-const filteredSessions = computed(() => {
-
-  return orderByDate(debuggingSessionsStore.debuggingSessions.filter((session) => {
-    const dataset = session.dataset;
-    const model = session.model;
-    const search = searchSession.value.toLowerCase();
-
-    return (
-      session.id.toString().includes(search) ||
-      session.name.toLowerCase().includes(search) ||
-      dataset.name.toLowerCase().includes(search) ||
-      dataset.id.toString().includes(search) ||
-      model.name.toLowerCase().includes(search) ||
-      model.id.toString().includes(search)
-    );
-  }));
-})
-
-async function showPastSessions() {
-  debuggingSessionsStore.reload();
-  resetSearchInput();
-  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
-  await router.push({
-    name: 'project-debugger',
-    params: {
-      projectId: props.projectId.toString()
-    }
-  });
-}
-
-async function createDebuggingSession(debuggingSession: InspectionDTO) {
-  debuggingSessionsStore.reload();
-  debuggingSessionsStore.setCurrentDebuggingSessionId(debuggingSession.id);
-  await openInspection(props.projectId.toString(), debuggingSession.id.toString());
-}
-
-async function renameSession(id: number, name: string) {
-  const currentSession = debuggingSessionsStore.debuggingSessions.find(s => s.id === id);
-  if (currentSession) {
-    currentSession.name = name;
-    debuggingSessionsStore.updateDebuggingSessionName(id, {
-      name,
-      datasetId: currentSession.dataset.id,
-      modelId: currentSession.model.id,
-      sample: currentSession.sample
-    });
-  }
-}
-
-function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
-  return debuggingSessions.sort((a, b) => {
-    const aDate = new Date(a.createdDate);
-    const bDate = new Date(b.createdDate);
-
-    return bDate.getTime() - aDate.getTime();
-  });
-}
-
-function deleteDebuggingSession(debuggingSession: InspectionDTO) {
-  $vfm.show({
-    component: ConfirmModal,
-    bind: {
-      title: 'Delete debugging session',
-      text: `Are you sure that you want to delete the debugging session '${debuggingSession.name}'?`,
-      isWarning: true
-    },
-    on: {
-      async confirm(close) {
-        await api.deleteInspection(debuggingSession.id);
-        await debuggingSessionsStore.reload();
-        close();
-      }
-    }
-  });
-}
-
-async function openDebuggingSession(debuggingSessionId: number, projectId: number) {
-  debuggingSessionsStore.setCurrentDebuggingSessionId(debuggingSessionId);
-  await openInspection(projectId.toString(), debuggingSessionId.toString());
-}
-
-function resetSearchInput() {
-  searchSession.value = "";
-}
-
-async function openInspection(projectId: string, inspectionId: string) {
-  await router.push({
-    name: 'inspection',
-    params: {
-      projectId,
-      inspectionId
-    }
-  });
-}
-
-onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
-  await mlWorkerStore.checkExternalWorkerConnection();
-
-  if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
-    await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
-  } else {
-    await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
-  }
-});
-
-</script>
 
 <template>
   <div v-if="mlWorkerStore.isExternalWorkerConnected" class="vertical-container">
@@ -204,7 +65,7 @@ onActivated(async () => {
       <v-alert class="text-center">
         <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
       </v-alert>
-      <AddDebuggingSessionModal :projectId="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
+      <AddDebuggingSessionModal v-show="debuggingSessionsStore.currentDebuggingSessionId === null" :projectId="projectId" @createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
       <div class="d-flex justify-center mb-6">
         <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
       </div>
@@ -215,6 +76,154 @@ onActivated(async () => {
     <StartWorkerInstructions></StartWorkerInstructions>
   </v-container>
 </template>
+
+<script setup lang="ts">
+import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { $vfm } from 'vue-final-modal';
+import { api } from '@/api';
+import { useRouter, useRoute } from 'vue-router/composables';
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { useMLWorkerStore } from "@/stores/ml-worker";
+import { useProjectStore } from "@/stores/project";
+import { InspectionDTO } from "@/generated-sources";
+import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
+import InlineEditText from '@/components/InlineEditText.vue';
+import ConfirmModal from './modals/ConfirmModal.vue';
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { debug } from "console";
+
+const router = useRouter();
+const route = useRoute();
+
+const projectStore = useProjectStore();
+const debuggingSessionsStore = useDebuggingSessionsStore();
+const mlWorkerStore = useMLWorkerStore();
+
+interface Props {
+  projectId: number;
+}
+
+const props = defineProps<Props>();
+
+const searchSession = ref("");
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
+const filteredSessions = computed(() => {
+
+  return orderByDate(debuggingSessionsStore.debuggingSessions.filter((session) => {
+    const dataset = session.dataset;
+    const model = session.model;
+    const search = searchSession.value.toLowerCase();
+
+    return (
+      session.id.toString().includes(search) ||
+      session.name.toLowerCase().includes(search) ||
+      dataset.name.toLowerCase().includes(search) ||
+      dataset.id.toString().includes(search) ||
+      model.name.toLowerCase().includes(search) ||
+      model.id.toString().includes(search)
+    );
+  }));
+})
+
+async function showPastSessions() {
+  debuggingSessionsStore.reload();
+  resetSearchInput();
+  debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  await router.push({
+    name: 'project-debugger',
+    params: {
+      projectId: props.projectId.toString()
+    }
+  });
+}
+
+async function createDebuggingSession(debuggingSession: InspectionDTO) {
+  await openDebuggingSession(debuggingSession.id, props.projectId);
+}
+
+async function renameSession(id: number, name: string) {
+  const currentSession = debuggingSessionsStore.debuggingSessions.find(s => s.id === id);
+  if (currentSession) {
+    currentSession.name = name;
+    debuggingSessionsStore.updateDebuggingSessionName(id, {
+      name,
+      datasetId: currentSession.dataset.id,
+      modelId: currentSession.model.id,
+      sample: currentSession.sample
+    });
+  }
+}
+
+function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
+  return debuggingSessions.sort((a, b) => {
+    const aDate = new Date(a.createdDate);
+    const bDate = new Date(b.createdDate);
+
+    return bDate.getTime() - aDate.getTime();
+  });
+}
+
+function deleteDebuggingSession(debuggingSession: InspectionDTO) {
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Delete debugging session',
+      text: `Are you sure that you want to delete the debugging session '${debuggingSession.name}'?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await api.deleteInspection(debuggingSession.id);
+        await debuggingSessionsStore.reload();
+        close();
+      }
+    }
+  });
+}
+
+async function openDebuggingSession(debuggingSessionId: number, projectId: number) {
+  debuggingSessionsStore.setCurrentDebuggingSessionId(debuggingSessionId);
+  await openInspection(projectId.toString(), debuggingSessionId.toString());
+}
+
+function resetSearchInput() {
+  searchSession.value = "";
+}
+
+async function openInspection(projectId: string, inspectionId: string) {
+  await router.push({
+    name: 'inspection',
+    params: {
+      id: projectId,
+      inspectionId: inspectionId
+    }
+  });
+}
+
+watch(() => debuggingSessionsStore.currentDebuggingSessionId, async (currentDebuggingSessionId) => {
+  if (currentDebuggingSessionId !== null) {
+    await openInspection(props.projectId.toString(), currentDebuggingSessionId.toString());
+  }
+});
+
+onActivated(async () => {
+  await projectStore.getProject({ id: props.projectId });
+  await mlWorkerStore.checkExternalWorkerConnection();
+  await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
+
+  if (route.params.inspectionId !== undefined) {
+    debuggingSessionsStore.setCurrentDebuggingSessionId(parseInt(route.params.inspectionId));
+  }
+
+  if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
+    await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
+  }
+});
+</script>
 
 <style scoped>
 .debugger-logo {

@@ -54,12 +54,13 @@ async function createNewDebuggingSession() {
       datasetId: selectedDataset.value!.id,
       modelId: selectedModel.value!.id,
       name: sessionName.value,
-      sample: true
+      sample: false
     });
-    closeDialog();
+    debuggingSessionsStore.setCurrentDebuggingSessionId(newDebuggingSession.id);
     emit('createDebuggingSession', newDebuggingSession);
   } finally {
     loading.value = false;
+    closeDialog();
   }
 }
 
