@@ -1,9 +1,10 @@
 name: Build and publish released version
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+#  push:
+#    tags:
+#      - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   build-images:
