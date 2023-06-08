@@ -39,7 +39,7 @@ def anonymize(message):
     if isinstance(message, list):
         return [anonymize(m) for m in message]
 
-    return hashlib.sha1(str(message).encode()).hexdigest()[:10]
+    return hashlib.sha1(str(message).encode()).hexdigest()[:16]
 
 
 def get_model_properties(model):
