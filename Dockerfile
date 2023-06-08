@@ -1,7 +1,7 @@
 FROM python:3.10 AS build
 
 RUN apt-get update
-RUN apt-get -y install openjdk-17-jdk-headless
+RUN apt-get -y install --no-install-recommends openjdk-17-jdk-headless
 
 ARG RUN_TESTS=false
 ARG FRONTEND_ENV=production

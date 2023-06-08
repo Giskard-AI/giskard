@@ -14,6 +14,9 @@
   <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml">
     <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml/badge.svg?branch=main"/>
  </a>
+  <a href="https://sonarcloud.io/summary/new_code?id=giskard">
+    <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
+ </a>
   <a href="https://gisk.ar/discord">
     <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
   </a>
