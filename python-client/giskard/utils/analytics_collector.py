@@ -1,3 +1,4 @@
+import getpass
 import hashlib
 import os
 import platform
@@ -159,7 +160,7 @@ class GiskardAnalyticsCollector:
     @staticmethod
     def machine_based_user_id():
         try:
-            return anonymize(str(uuid.getnode()) + os.getlogin())
+            return anonymize(str(uuid.getnode()) + getpass.getuser())
         except BaseException:  # noqa NOSONAR
             # https://bugs.python.org/issue40821
             return "unknown"
