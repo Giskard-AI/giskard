@@ -1,4 +1,3 @@
-import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.USER
 import ru.vyarus.gradle.plugin.python.PythonExtension.Scope.VIRTUALENV
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
