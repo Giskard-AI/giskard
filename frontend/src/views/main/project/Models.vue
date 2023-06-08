@@ -115,20 +115,19 @@ const apiAccessToken = ref<JWTToken | null>(null);
 const codeContent = computed(
   // language=Python
   () =>
-    `from giskard import Model, GiskardClient
-from giskard.demo import titanic  # for demo purposes only 🛳️
+    `import giskard
 
-original_model, _ = titanic()  # Replace with your model creation
+original_model, _ = giskard.demo.titanic()  # for demo purposes only 🛳️. Replace with your model creation
 
 # Create a Giskard client
 token = "${apiAccessToken.value?.id_token}"
-client = GiskardClient(
+client = giskard.GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
 )
 
 # Wrap your model with Giskard model 🎁
-giskard_model = Model(original_model, model_type="classification", name="Titanic model")
+giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
 
 # Upload to the current project ✉️
 giskard_model.upload(client, "${project.value!.key}")`
