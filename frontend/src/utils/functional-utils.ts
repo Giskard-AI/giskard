@@ -22,4 +22,6 @@ export function computeOnValueChanged<T, R>(func: (value: T) => R, equals: (l: T
     };
 }
 
-export const voidFunction = () => {};
+export const voidFunction = () => {
+    // This is intentional
+};

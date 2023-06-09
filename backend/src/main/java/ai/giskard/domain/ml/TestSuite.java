@@ -7,13 +7,15 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
+import java.io.Serial;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
-public class TestSuite extends AbstractAuditingEntity implements Serializable {
+public class TestSuite extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
     @Id
     @GeneratedValue
     private Long id;

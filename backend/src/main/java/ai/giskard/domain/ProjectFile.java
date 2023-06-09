@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serial;
 
 
 @MappedSuperclass
@@ -14,6 +15,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 public abstract class ProjectFile extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
     @Id
     @GeneratedValue
     private Long id;

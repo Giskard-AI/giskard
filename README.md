@@ -11,7 +11,7 @@
  <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
      <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
  </a>
-  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml">
+  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml?query=branch%3Amain">
     <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build.yml/badge.svg?branch=main"/>
  </a>
   <a href="https://sonarcloud.io/summary/new_code?id=giskard">

@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { chain } from "lodash";
+import _, { chain } from "lodash";
 import { api } from "@/api";
 import { computed, onActivated, ref, watch } from "vue";
 import { pasterColor } from "@/utils";
@@ -225,12 +225,6 @@ watch(selected, (value) => {
 });
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
-
-function sorted(arr: any[]) {
-    const res = _.cloneDeep(arr);
-    res.sort()
-    return res;
-}
 
 const hasGiskardTests = computed(() => {
     return testFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
