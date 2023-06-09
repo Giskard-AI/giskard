@@ -120,7 +120,7 @@ jobs:
         env:
           GSK_DISABLE_ANALYTICS: True
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
-        run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
+        run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
