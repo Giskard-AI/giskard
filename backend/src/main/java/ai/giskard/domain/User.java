@@ -14,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.io.Serial;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
@@ -29,6 +30,8 @@ import java.util.Set;
 @NotNull
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "login")
 public class User extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
     @Id
     @GeneratedValue
     private Long id;

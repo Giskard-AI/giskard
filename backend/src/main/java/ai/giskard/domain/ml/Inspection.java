@@ -10,11 +10,15 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.io.Serial;
 
 @Getter
 @Setter
 @Entity(name = "inspections")
 public class Inspection extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
+
     @Id
     @JsonIgnore
     @GeneratedValue

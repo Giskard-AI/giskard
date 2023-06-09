@@ -9,6 +9,7 @@
             <v-list-item-content>
               <div class="align-center text-center">
                 <img src="@/assets/logo_v2.png" alt="Giskard icon" width="45px" />
+                <span class="caption">Projects</span>
               </div>
             </v-list-item-content>
           </v-list-item>

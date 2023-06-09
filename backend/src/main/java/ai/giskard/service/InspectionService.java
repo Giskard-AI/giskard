@@ -111,7 +111,7 @@ public class InspectionService {
                         selection = selection.and(diffPercent.isGreaterThanOrEqualTo(filter.getMinDiffThreshold() / 100));
                     }
                 }
-                default -> {
+                default -> { // NOQA
                 }
             }
         } else if (filter.getType() == CUSTOM) {
