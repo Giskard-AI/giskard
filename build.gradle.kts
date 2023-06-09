@@ -7,17 +7,19 @@ fun Project.applySonarProperties() {
         }
 
         sonarProperties.forEach { key, value ->
-            sonarqube {
+            sonar {
                 properties {
                     property(key as String, value as String)
                 }
             }
         }
-        sonarqube {
+        sonar {
             properties {
                 property("sonar.projectVersion", version.toString())
+                property("sonar.branch", "fix/cleanup-after-v2")
             }
         }
+
     }
 }
 tasks.clean {

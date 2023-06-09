@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -26,6 +27,9 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "key")
 public class Project extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
+
     @Id
     @Getter
     @GeneratedValue(strategy = GenerationType.AUTO)
