@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.util.*;
 
 @Entity(name = "datasets")
@@ -21,6 +22,8 @@ import java.util.*;
 @Getter
 @Setter
 public class Dataset extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
     @Id
     private UUID id;
 

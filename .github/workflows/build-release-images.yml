@@ -1,13 +1,14 @@
 name: Build and publish released version
 
-#on:
+on:
 #  push:
 #    tags:
 #      - "v*.*.*"
+  workflow_dispatch:
 
 jobs:
   build-images:
-    runs-on: buildjet-8vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0

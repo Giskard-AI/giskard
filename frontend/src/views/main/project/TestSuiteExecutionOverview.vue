@@ -7,7 +7,7 @@
         <SuiteTestExecutionList :tests="filteredTest" :compact="false" :is-past-execution="isPastExecution"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
-        <v-alert class="text-center">
+        <v-alert class="text-center transparent">
             <p class="headline font-weight-medium grey--text text--darken-2">No tests have been added to the suite.</p>
         </v-alert>
         <v-btn tile color="primaryLight" class="primaryLightBtn" :to="{ name: 'project-catalog-tests', query: { suiteId: suite?.id } }">

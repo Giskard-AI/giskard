@@ -1,14 +1,15 @@
-import pandas as pd
-import numpy as np
 import os
+
+import numpy as np
+import pandas as pd
 from sklearn import model_selection
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def titanic_df():
@@ -89,3 +90,13 @@ def linear_pipeline():
         return df["x"].to_numpy().reshape(len(df["x"]), 1)
 
     return preprocessor, reg
+
+
+__all__ = [
+    "titanic_df",
+    "titanic",
+    "titanic_pipeline",
+    "linear_df",
+    "linear",
+    "linear_pipeline",
+]

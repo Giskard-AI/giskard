@@ -105,25 +105,26 @@ const filePreviewData = ref<any[]>([]);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
-  `from giskard import Dataset, GiskardClient
-from giskard.demo import titanic  # for demo purposes only 🛳️
+  `import giskard
 
-_, df = titanic()  # Replace with your dataframe creation
+# for demo purposes only 🛳️. Replace with your dataframe creation
+_, df = giskard.demo.titanic()
 
 # Create a Giskard client
 token = "${apiAccessToken.value?.id_token}"
-client = GiskardClient(
+client = giskard.GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token=token
 )
 
 # Wrap your Pandas Dataframe with Giskard dataset 🎁
-giskard_dataset = Dataset(df,
-                          target="Survived",
-                          name="Titanic dataset")
+giskard_dataset = giskard.Dataset(df,
+                                  target="Survived",
+                                  name="Titanic dataset")
 
 # Upload to the current project ✉️
-giskard_dataset.upload(client, "${project.value!.key}")`
+giskard_dataset.upload(client, "${project.value!.key}")
+`
 )
 
 const project = computed(() => {

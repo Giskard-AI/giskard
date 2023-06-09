@@ -77,7 +77,7 @@ const selectedSuite = ref<number | null>(null);
 const testInputs = ref<{ [name: string]: FunctionInputDTO }>({});
 const doc = ref<ParsedDocstring | null>(null);
 
-onMounted(() => loadData());
+onMounted(loadData);
 
 async function loadData() {
   doc.value = extractArgumentDocumentation(test)
@@ -125,7 +125,7 @@ async function submit(close) {
   }
 
   await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
-  await mainStore.addNotification({
+  mainStore.addNotification({
     content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
     color: TYPE.SUCCESS
   });

@@ -23,6 +23,6 @@ public abstract class DatasetProcessFunction extends Callable {
     @Column()
     private DatasetProcessFunctionType processType;
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    private List<Map<String, Object>> clauses;
+    private List<Map<String, Object>> clauses; // NOSONAR
 
 }
