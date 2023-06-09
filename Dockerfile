@@ -1,7 +1,7 @@
-FROM python:3.10 as build
+FROM python:3.10 AS build
 
 RUN apt-get update
-RUN apt-get -y install openjdk-17-jdk-headless
+RUN apt-get -y install --no-install-recommends openjdk-17-jdk-headless
 
 ARG RUN_TESTS=false
 ARG FRONTEND_ENV=production
@@ -38,8 +38,6 @@ RUN ./gradlew :python-client:package -Pprod --parallel --info --stacktrace
 # stage, but not in the production one
 RUN python3 -m virtualenv python-client/.venv-prod
 RUN WHEEL=$(ls python-client/dist/giskard*.whl) && python-client/.venv-prod/bin/pip install $WHEEL\[server\]
-
-
 
 FROM python:3.10-slim
 ENV SPRING_PROFILES_ACTIVE=prod

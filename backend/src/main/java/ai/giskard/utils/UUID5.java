@@ -21,7 +21,7 @@ public class UUID5 {
     public static UUID nameUUIDFromNamespaceAndBytes(UUID namespace, byte[] name) {
         MessageDigest md;
         try {
-            md = MessageDigest.getInstance("SHA-1");
+            md = MessageDigest.getInstance("SHA-1"); // NOSONAR
         } catch (NoSuchAlgorithmException nsae) {
             throw new InternalError("SHA-1 not supported");
         }
