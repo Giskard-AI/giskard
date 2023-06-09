@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 import pandas as pd
-from lightgbm import LGBMClassifier
 from pandas.api.types import union_categoricals
 
 from giskard import Dataset, Model
@@ -134,6 +133,8 @@ def fraud_detection_data() -> Dataset:
 
 @pytest.fixture()
 def fraud_detection_model(fraud_detection_data: Dataset) -> Model:
+    from lightgbm import LGBMClassifier
+
     x = fraud_detection_data.df.drop(TARGET_COLUMN, axis=1)
     y = fraud_detection_data.df[TARGET_COLUMN]
 
