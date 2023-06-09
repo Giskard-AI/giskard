@@ -103,7 +103,7 @@ async function launchInspector() {
       datasetId: datasetSelected.value!.id,
       modelId: props.model.id,
       name: "",
-      sample: false
+      sample: true
     });
 
     debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);

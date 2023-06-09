@@ -54,7 +54,7 @@ async function createNewDebuggingSession() {
       datasetId: selectedDataset.value!.id,
       modelId: selectedModel.value!.id,
       name: sessionName.value,
-      sample: false
+      sample: true
     });
     debuggingSessionsStore.setCurrentDebuggingSessionId(newDebuggingSession.id);
     emit('createDebuggingSession', newDebuggingSession);
