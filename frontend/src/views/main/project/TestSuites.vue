@@ -98,7 +98,7 @@
 
 <script lang="ts" setup>
 import { api } from "@/api";
-import { computed, onActivated, onBeforeMount, ref } from "vue";
+import { computed, onActivated, ref } from "vue";
 import router from '@/router';
 import { useTestSuitesStore } from "@/stores/test-suites";
 import { useMainStore } from "@/stores/main";
@@ -186,13 +186,7 @@ async function renameSuite(suiteId: number, name: string) {
 
     if (currentSuite) {
         currentSuite.name = name;
-        await testSuitesStore.updateSuiteName({
-            id: currentSuite.id,
-            name,
-            projectKey: currentSuite.projectKey,
-            functionInputs: currentSuite.functionInputs,
-            tests: currentSuite.tests
-        });
+        await testSuitesStore.updateSuiteName(currentSuite);
         mixpanel.track('Renamed test suite', { suiteId });
     }
 }
