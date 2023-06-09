@@ -210,6 +210,15 @@ watch(() => debuggingSessionsStore.currentDebuggingSessionId, async (currentDebu
   }
 });
 
+
+watch(() => route.name, async (name) => {
+  if (name === 'project-debugger') {
+    await debuggingSessionsStore.reload();
+    resetSearchInput();
+    debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  }
+});
+
 onActivated(async () => {
   await projectStore.getProject({ id: props.projectId });
   await mlWorkerStore.checkExternalWorkerConnection();
