@@ -149,7 +149,6 @@ interface CreatedFeedbackCommonDTO {
 interface Props {
   inspectionId: number;
   projectId: number;
-  // isProjectOwnerOrAdmin: boolean;
 }
 
 const props = defineProps<Props>();
