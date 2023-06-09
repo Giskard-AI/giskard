@@ -17,7 +17,7 @@ def imdb_data():
     )
 
     raw_train_ds = text_dataset_from_directory(
-        Path(dataset) / 'train', batch_size=batch_size, validation_split=0.2, subset='training', seed=seed
+        Path(dataset) / "train", batch_size=batch_size, validation_split=0.2, subset="training", seed=seed
     )
-    raw_test_ds = text_dataset_from_directory(Path(dataset) / 'test', batch_size=batch_size)
+    raw_test_ds = text_dataset_from_directory(Path(dataset) / "test", batch_size=batch_size)
     return raw_train_ds, raw_test_ds

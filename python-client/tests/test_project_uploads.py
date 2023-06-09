@@ -52,7 +52,7 @@ def test_verify_is_pandasdataframe_pass(data):
 
 
 def test_validate_deterministic_model():
-    data = pd.DataFrame(np.random.rand(5, 1), columns=['0'])
+    data = pd.DataFrame(np.random.rand(5, 1), columns=["0"])
     ones = np.ones(len(data))
     constant_model = SKLearnModel(
         model=DummyClassifier(strategy="constant", constant=1).fit(data, np.ones(len(data))),
@@ -76,8 +76,8 @@ def test_validate_column_types(german_credit_data, german_credit_test_data):
     ds = german_credit_data
 
     with pytest.warns(
-            UserWarning,
-            match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+        UserWarning,
+        match=r"Feature 'people_under_maintenance' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
     ):
         validate_column_categorization(test_ds)
 
@@ -90,11 +90,12 @@ def test_validate_column_types(german_credit_data, german_credit_test_data):
         validate_column_types(ds)
     assert e.match(
         r"The following keys \['sex'\] are missing from 'column_types'\. "
-        r"Please make sure that the column names in `column_types` covers all the existing columns in your dataset\.")
+        r"Please make sure that the column names in `column_types` covers all the existing columns in your dataset\."
+    )
 
     with pytest.warns(
-            UserWarning,
-            match=r"The provided keys .* in 'column_types' are not part of your.*",
+        UserWarning,
+        match=r"The provided keys .* in 'column_types' are not part of your.*",
     ):
         new_ft = dict(original_column_types)
         new_ft["non-existing-column"] = SupportedColumnTypes.CATEGORY.value
@@ -104,8 +105,8 @@ def test_validate_column_types(german_credit_data, german_credit_test_data):
     broken_types["people_under_maintenance"] = SupportedColumnTypes.CATEGORY.value
     broken_types["sex"] = SupportedColumnTypes.NUMERIC.value
     with pytest.warns(
-            UserWarning,
-            match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
+        UserWarning,
+        match=r"Feature 'sex' is declared as 'numeric' but has 2 .* Are you sure it is not a 'category' feature?",
     ):
         test_ds.column_types = broken_types
         validate_column_categorization(test_ds)

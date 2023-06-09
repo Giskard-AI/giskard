@@ -21,7 +21,7 @@ from giskard import Dataset, Model
 from tests.url_utils import fetch_from_ftp
 
 logger = logging.getLogger(__name__)
-nltk.download('stopwords')
+nltk.download("stopwords")
 
 # Data
 DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "tripadvisor_reviews_dataset", "{}")
@@ -29,7 +29,7 @@ DATA_PATH = Path.home() / ".giskard" / "tripadvisor_reviews_dataset"
 DATA_FILE_NAME = "tripadvisor_hotel_reviews.csv"
 
 # Constants
-STOP_WORDS = set(stopwords.words('english'))
+STOP_WORDS = set(stopwords.words("english"))
 PRETRAINED_WEIGHTS_NAME = "distilbert-base-uncased"
 TEXT_COLUMN_NAME = "Review"
 TARGET_COLUMN_NAME = "label"
@@ -78,31 +78,31 @@ def remove_emoji(data: str) -> str:
     """Remove emoji from the text."""
     emoji = re.compile(
         "["
-        u"\U0001F600-\U0001F64F"
-        u"\U0001F300-\U0001F5FF"
-        u"\U0001F680-\U0001F6FF"
-        u"\U0001F1E0-\U0001F1FF"
-        u"\U00002500-\U00002BEF"
-        u"\U00002702-\U000027B0"
-        u"\U00002702-\U000027B0"
-        u"\U000024C2-\U0001F251"
-        u"\U0001f926-\U0001f937"
-        u"\U00010000-\U0010ffff"
-        u"\u2640-\u2642"
-        u"\u2600-\u2B55"
-        u"\u200d"
-        u"\u23cf"
-        u"\u23e9"
-        u"\u231a"
-        u"\ufe0f"
-        u"\u3030"
+        "\U0001F600-\U0001F64F"
+        "\U0001F300-\U0001F5FF"
+        "\U0001F680-\U0001F6FF"
+        "\U0001F1E0-\U0001F1FF"
+        "\U00002500-\U00002BEF"
+        "\U00002702-\U000027B0"
+        "\U00002702-\U000027B0"
+        "\U000024C2-\U0001F251"
+        "\U0001f926-\U0001f937"
+        "\U00010000-\U0010ffff"
+        "\u2640-\u2642"
+        "\u2600-\u2B55"
+        "\u200d"
+        "\u23cf"
+        "\u23e9"
+        "\u231a"
+        "\ufe0f"
+        "\u3030"
         "]+",
         re.UNICODE,
     )
-    return re.sub(emoji, '', data)
+    return re.sub(emoji, "", data)
 
 
-regex = re.compile('[%s]' % re.escape(string.punctuation))
+regex = re.compile("[%s]" % re.escape(string.punctuation))
 
 
 def remove_punctuation(text: str) -> str:
@@ -155,7 +155,7 @@ class Config:
     add_special_tokens = True
     return_attention_mask = True
     pad_to_max_length = True
-    return_tensors = 'pt'
+    return_tensors = "pt"
 
 
 # Load tokenizer.
@@ -172,8 +172,8 @@ def create_dataloader(df: pd.DataFrame) -> DataLoader:
 
     def _create_dataset(encoded_data: dict) -> TensorDataset:
         """Create dataset object with input data."""
-        input_ids = encoded_data['input_ids']
-        attention_masks = encoded_data['attention_mask']
+        input_ids = encoded_data["input_ids"]
+        attention_masks = encoded_data["attention_mask"]
         return TensorDataset(input_ids, attention_masks)
 
     # Tokenize data.
@@ -200,7 +200,7 @@ def infer_predictions(_model: torch.nn.Module, _dataloader: DataLoader) -> np.nd
     y_pred = list()
     for batch in _dataloader:
         batch = tuple(b.to(Config.device) for b in batch)
-        inputs = {'input_ids': batch[0], 'attention_mask': batch[1]}
+        inputs = {"input_ids": batch[0], "attention_mask": batch[1]}
 
         with torch.no_grad():
             outputs = _model(**inputs)
