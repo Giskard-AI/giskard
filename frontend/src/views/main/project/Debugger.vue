@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { computed, ref, onActivated } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
@@ -14,7 +13,6 @@ import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
 const router = useRouter();
 
-const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 const mlWorkerStore = useMLWorkerStore();
 
@@ -25,10 +23,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const searchSession = ref("");
-
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
 
 const filteredSessions = computed(() => {
 
@@ -126,7 +120,6 @@ async function openInspection(projectId: string, inspectionId: string) {
 }
 
 onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
   await mlWorkerStore.checkExternalWorkerConnection();
 
   if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
