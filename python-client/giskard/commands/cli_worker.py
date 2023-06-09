@@ -20,7 +20,8 @@ from giskard.cli_utils import (
     run_daemon,
     get_log_path,
     tail,
-    follow_file, validate_url,
+    follow_file,
+    validate_url,
 )
 from giskard.path_utils import run_dir
 from giskard.settings import settings
@@ -147,9 +148,8 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
             f"Another ML Worker {_ml_worker_description(is_server, url)} "
             f"is already running with PID: {existing_pid}. "
             "Not starting a new one. "
-            "To stop a running worker for this instance execute: \"giskard worker stop\" or "
-            "\"giskard worker stop -a\" to stop all running workers"
-
+            'To stop a running worker for this instance execute: "giskard worker stop" or '
+            '"giskard worker stop -a" to stop all running workers'
         )
     finally:
         if pid_file.i_am_locking():

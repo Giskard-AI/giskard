@@ -26,6 +26,7 @@ if sys.version_info >= (3, 8):
 else:
     import importlib_metadata
 
+
 def get_version() -> str:
     try:
         return importlib_metadata.version(__name__)
@@ -38,19 +39,19 @@ __version__: str = get_version()
 check_latest_giskard_version()
 
 __all__ = [
-    'SingleTestResult',
-    'Project',
-    'Dataset',
-    'GiskardClient',
-    'test',
-    'Model',
-    'Suite',
-    'slicing_function',
-    'transformation_function',
-    'SuiteInput',
-    'SlicingFunction',
-    'scan',
-    'TestResult',
-    'GiskardTest',
-    "demo"
+    "SingleTestResult",
+    "Project",
+    "Dataset",
+    "GiskardClient",
+    "test",
+    "Model",
+    "Suite",
+    "slicing_function",
+    "transformation_function",
+    "SuiteInput",
+    "SlicingFunction",
+    "scan",
+    "TestResult",
+    "GiskardTest",
+    "demo",
 ]

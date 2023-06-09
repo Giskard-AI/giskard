@@ -20,7 +20,6 @@ def escape(value) -> str:
 
 
 class Clause(ABC):
-
     @abstractmethod
     def mask(self, df: pd.DataFrame) -> pd.Series:
         ...
@@ -58,9 +57,9 @@ class ContainsWord(Clause):
 
     def to_clause(self):
         return {
-            'columnName': self.column,
-            'comparisonType': 'DOES_NOT_CONTAINS' if self.is_not else 'CONTAINS',
-            'value': self.value
+            "columnName": self.column,
+            "comparisonType": "DOES_NOT_CONTAINS" if self.is_not else "CONTAINS",
+            "value": self.value,
         }
 
 
@@ -80,9 +79,9 @@ class IsNa(Clause):
 
     def to_clause(self):
         return {
-            'columnName': self.column,
-            'comparisonType': 'IS_NOT_EMPTY' if self.is_not else 'IS_EMPTY',
-            'value': None
+            "columnName": self.column,
+            "comparisonType": "IS_NOT_EMPTY" if self.is_not else "IS_EMPTY",
+            "value": None,
         }
 
 
@@ -92,7 +91,7 @@ class StartsWith(Clause):
         self.value = value
 
     def __str__(self) -> str:
-        return f"`{self.column}` starts with \"{self.value}\""
+        return f'`{self.column}` starts with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
         return df[self.column].str.lower().str.startswith(self.value.lower())
@@ -101,11 +100,7 @@ class StartsWith(Clause):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
 
     def to_clause(self):
-        return {
-            'columnName': self.column,
-            'comparisonType': 'STARTS_WITH',
-            'value': self.value
-        }
+        return {"columnName": self.column, "comparisonType": "STARTS_WITH", "value": self.value}
 
 
 class EndsWith(Clause):
@@ -114,7 +109,7 @@ class EndsWith(Clause):
         self.value = value
 
     def __str__(self) -> str:
-        return f"`{self.column}` ends with \"{self.value}\""
+        return f'`{self.column}` ends with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
         return df[self.column].str.lower().str.endswith(self.value.lower())
@@ -123,11 +118,7 @@ class EndsWith(Clause):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
 
     def to_clause(self):
-        return {
-            'columnName': self.column,
-            'comparisonType': 'ENDS_WITH',
-            'value': self.value
-        }
+        return {"columnName": self.column, "comparisonType": "ENDS_WITH", "value": self.value}
 
 
 class GreaterThan(ComparisonClause):
@@ -145,9 +136,9 @@ class GreaterThan(ComparisonClause):
 
     def to_clause(self):
         return {
-            'columnName': self.column,
-            'comparisonType': 'GREATER_THAN_EQUALS' if self.equal else "GREATER_THAN",
-            'value': self.value
+            "columnName": self.column,
+            "comparisonType": "GREATER_THAN_EQUALS" if self.equal else "GREATER_THAN",
+            "value": self.value,
         }
 
 
@@ -166,9 +157,9 @@ class LowerThan(ComparisonClause):
 
     def to_clause(self):
         return {
-            'columnName': self.column,
-            'comparisonType': 'LOWER_THAN_EQUALS' if self.equal else "LOWER_THAN",
-            'value': self.value
+            "columnName": self.column,
+            "comparisonType": "LOWER_THAN_EQUALS" if self.equal else "LOWER_THAN",
+            "value": self.value,
         }
 
 
@@ -179,11 +170,7 @@ class EqualTo(ComparisonClause):
         return f"`{self.column}` == {_pretty_str(self.value)}"
 
     def to_clause(self):
-        return {
-            'columnName': self.column,
-            'comparisonType': 'IS',
-            'value': self.value
-        }
+        return {"columnName": self.column, "comparisonType": "IS", "value": self.value}
 
 
 class NotEqualTo(ComparisonClause):
@@ -193,38 +180,34 @@ class NotEqualTo(ComparisonClause):
         return f"`{self.column}` != {_pretty_str(self.value)}"
 
     def to_clause(self):
-        return {
-            'columnName': self.column,
-            'comparisonType': 'IS_NOT',
-            'value': self.value
-        }
+        return {"columnName": self.column, "comparisonType": "IS_NOT", "value": self.value}
 
 
 def generate_clause(clause: Dict[str, str]) -> Clause:
-    if clause['comparisonType'] == 'IS':
-        return EqualTo(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'IS_NOT':
-        return NotEqualTo(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'CONTAINS':
-        return ContainsWord(clause['columnName'], clause['value'], is_not=False)
-    elif clause['comparisonType'] == 'DOES_NOT_CONTAINS':
-        return ContainsWord(clause['columnName'], clause['value'], is_not=True)
-    elif clause['comparisonType'] == 'STARTS_WITH':
-        return StartsWith(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'ENDS_WITH':
-        return EndsWith(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'GREATER_THAN_EQUALS':
-        return GreaterThan(clause['columnName'], clause['value'], equal=True)
-    elif clause['comparisonType'] == 'GREATER_THAN':
-        return GreaterThan(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'LOWER_THAN_EQUALS':
-        return LowerThan(clause['columnName'], clause['value'], equal=True)
-    elif clause['comparisonType'] == 'LOWER_THAN':
-        return LowerThan(clause['columnName'], clause['value'])
-    elif clause['comparisonType'] == 'IS_EMPTY':
-        return IsNa(clause['columnName'], is_not=False)
-    elif clause['comparisonType'] == 'IS_NOT_EMPTY':
-        return IsNa(clause['columnName'], is_not=True)
+    if clause["comparisonType"] == "IS":
+        return EqualTo(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "IS_NOT":
+        return NotEqualTo(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "CONTAINS":
+        return ContainsWord(clause["columnName"], clause["value"], is_not=False)
+    elif clause["comparisonType"] == "DOES_NOT_CONTAINS":
+        return ContainsWord(clause["columnName"], clause["value"], is_not=True)
+    elif clause["comparisonType"] == "STARTS_WITH":
+        return StartsWith(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "ENDS_WITH":
+        return EndsWith(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "GREATER_THAN_EQUALS":
+        return GreaterThan(clause["columnName"], clause["value"], equal=True)
+    elif clause["comparisonType"] == "GREATER_THAN":
+        return GreaterThan(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "LOWER_THAN_EQUALS":
+        return LowerThan(clause["columnName"], clause["value"], equal=True)
+    elif clause["comparisonType"] == "LOWER_THAN":
+        return LowerThan(clause["columnName"], clause["value"])
+    elif clause["comparisonType"] == "IS_EMPTY":
+        return IsNa(clause["columnName"], is_not=False)
+    elif clause["comparisonType"] == "IS_NOT_EMPTY":
+        return IsNa(clause["columnName"], is_not=True)
     else:
         raise TypeError(f"The comparison clause of type {clause['comparisonType']} does not exist")
 
@@ -308,14 +291,14 @@ class QueryBasedSliceFunction(SlicingFunction):
     def __init__(self, query: Query):
         super().__init__(None, row_level=False, cell_level=False)
         self.query = query
-        self.meta = DatasetProcessFunctionMeta(type='SLICE', process_type=DatasetProcessFunctionType.CLAUSES)
+        self.meta = DatasetProcessFunctionMeta(type="SLICE", process_type=DatasetProcessFunctionType.CLAUSES)
         self.meta.uuid = get_object_uuid(query)
         self.meta.clauses = self.query.to_clauses()
         self.meta.code = ""
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = 'Automatically generated slicing function'
+        self.meta.doc = "Automatically generated slicing function"
 
     def execute(self, data: pd.DataFrame):
         return self.query.run(data)

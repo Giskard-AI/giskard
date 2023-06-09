@@ -27,7 +27,7 @@ def analytics_method(f):
                 return f(*args, **kwargs)
         except BaseException as e:  # NOSONAR
             try:
-                analytics.track('tracking error', {'error': str(e)})
+                analytics.track("tracking error", {"error": str(e)})
             except BaseException:  # NOSONAR
                 pass
 
@@ -140,6 +140,7 @@ class GiskardAnalyticsCollector:
     def initialize_giskard_version(self):
         if not self.giskard_version:
             import giskard
+
             self.giskard_version = giskard.get_version()
 
     def initialize_user_properties(self):
@@ -154,7 +155,7 @@ class GiskardAnalyticsCollector:
                     "os-full": platform.platform(aliased=True),
                 },
                 # only for aggregated stats: city, country, region. IP itself isn't stored
-                meta={'$ip': self.ip},
+                meta={"$ip": self.ip},
             )
 
     @staticmethod
@@ -178,7 +179,7 @@ class GiskardAnalyticsCollector:
             if self.ip:
                 return
             try:
-                self.ip = requests.get('https://api64.ipify.org/?format=json').json().get('ip', 'unknown')
+                self.ip = requests.get("https://api64.ipify.org/?format=json").json().get("ip", "unknown")
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 
