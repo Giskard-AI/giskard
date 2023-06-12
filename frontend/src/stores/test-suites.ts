@@ -24,8 +24,9 @@ export const useTestSuitesStore = defineStore('testSuites', {
       }
     },
     async reloadComplete() {
-      if (this.projectId !== null && this.currentTestSuiteId !== null) {
+      if (this.projectId !== null) {
         await this.loadTestSuiteComplete(this.projectId);
+        await this.reload();
       }
     },
     async loadTestSuites(projectId: number) {
@@ -47,10 +48,8 @@ export const useTestSuitesStore = defineStore('testSuites', {
       }
     },
     async updateSuiteName(suite: TestSuiteDTO) {
-      if (this.projectId !== null) {
-        await api.updateTestSuite(suite.projectKey!, suite);
-        await this.reload();
-      }
+      await api.updateTestSuite(suite.projectKey!, suite);
+      await this.reloadComplete();
     },
     setCurrentTestSuiteId(suiteId: number | null) {
       this.currentTestSuiteId = suiteId;

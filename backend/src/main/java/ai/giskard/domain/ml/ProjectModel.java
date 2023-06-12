@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,6 +21,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectModel extends AbstractAuditingEntity {
+    @Serial
+    private static final long serialVersionUID = 0L;
 
     @Id
     private UUID id;

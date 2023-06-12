@@ -1,3 +1,4 @@
+import getpass
 import hashlib
 import os
 import platform
@@ -39,7 +40,7 @@ def anonymize(message):
     if isinstance(message, list):
         return [anonymize(m) for m in message]
 
-    return hashlib.sha1(str(message).encode()).hexdigest()[:10]
+    return hashlib.sha1(str(message).encode()).hexdigest()[:16]
 
 
 def get_model_properties(model):
@@ -159,7 +160,7 @@ class GiskardAnalyticsCollector:
     @staticmethod
     def machine_based_user_id():
         try:
-            return anonymize(str(uuid.getnode()) + os.getlogin())
+            return anonymize(str(uuid.getnode()) + getpass.getuser())
         except BaseException:  # noqa NOSONAR
             # https://bugs.python.org/issue40821
             return "unknown"
