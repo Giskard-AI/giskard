@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { computed, ref, onActivated } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
+import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { copyText } from "@/utils";
+import { TYPE } from "vue-toastification";
 
 const router = useRouter();
 
-const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 const mlWorkerStore = useMLWorkerStore();
 
@@ -25,10 +26,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const searchSession = ref("");
-
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
 
 const filteredSessions = computed(() => {
 
@@ -101,6 +98,11 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
         await api.deleteInspection(debuggingSession.id);
         await debuggingSessionsStore.reload();
         close();
+        useMainStore().addNotification({
+          content: `The debugging session '${debuggingSession.name}' has been deleted.`,
+          color: TYPE.SUCCESS,
+          showProgress: false
+        });
       }
     }
   });
@@ -126,7 +128,6 @@ async function openInspection(projectId: string, inspectionId: string) {
 }
 
 onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
   await mlWorkerStore.checkExternalWorkerConnection();
 
   if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
@@ -159,34 +160,37 @@ onActivated(async () => {
       <v-expansion-panels v-if="debuggingSessionsStore.currentDebuggingSessionId === null">
         <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="3" class="col-container" title="Session name">Session name</v-col>
-          <v-col cols="1" class="col-container" title="Session ID">Session ID</v-col>
           <v-col cols="2" class="col-container" title="Created at">Created at</v-col>
-          <v-col cols="1" class="col-container" title="Dataset name">Dataset name</v-col>
-          <v-col cols="1" class="col-container" title="Dataset ID">Dataset ID</v-col>
-          <v-col cols="2" class="col-container" title="Model name">Model name</v-col>
-          <v-col cols="1" class="col-container" title="Model ID">Model ID</v-col>
+          <v-col cols="3" class="col-container" title="Dataset">Dataset</v-col>
+          <v-col cols="3" class="col-container" title="Model">Model</v-col>
           <v-col cols="1"></v-col>
         </v-row>
 
         <v-expansion-panel v-for="session in filteredSessions" :key="session.id" @click.stop="openDebuggingSession(session.id, projectId)" class="expansion-panel">
           <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
             <v-row class="px-2 py-1 align-center">
-              <v-col cols="3" class="font-weight-bold" :title="session.name">
+              <v-col cols="3" class="font-weight-bold" :title="`${session.name} (ID: ${session.id})`">
                 <div class="pr-4">
                   <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
                   </InlineEditText>
                 </div>
               </v-col>
-              <v-col cols="1" class="col-container" :title="session.id">{{ session.id }}</v-col>
-              <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.name ? session.dataset.name : 'Unnamed dataset'">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
-
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
-              <v-col cols="2" class="col-container" :title="session.model.name">{{ session.model.name }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
+              <v-col cols="2" class="col-container">
+                <span :title="session.createdDate | date">
+                  {{ session.createdDate | date }}
+                </span>
+              </v-col>
+              <v-col cols="3" class="col-container">
+                <span :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`" @click.stop.prevent="copyText(session.dataset.id, 'Copied dataset ID to clipboard')">
+                  {{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}
+                </span>
+              </v-col>
+              <v-col cols="3" class="col-container">
+                <span :title="`${session.model.name} (ID: ${session.model.id})`" @click.stop.prevent="copyText(session.model.id, 'Copied model ID to clipboard')">{{ session.model.name ? session.model.name : 'Unnamed model' }}</span>
+              </v-col>
               <v-col cols="1">
                 <v-card-actions>
-                  <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
+                  <v-btn icon @click.stop.prevent="deleteDebuggingSession(session)">
                     <v-icon color="accent">delete</v-icon>
                   </v-btn>
                 </v-card-actions>
