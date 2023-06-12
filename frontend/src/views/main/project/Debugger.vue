@@ -78,24 +78,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { computed, ref, onActivated } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter, useRoute } from 'vue-router/composables';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { debug } from "console";
+import { copyText } from "@/utils";
+import { TYPE } from "vue-toastification";
 
 const router = useRouter();
 const route = useRoute();
 
-const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 const mlWorkerStore = useMLWorkerStore();
 
@@ -106,10 +105,6 @@ interface Props {
 const props = defineProps<Props>();
 
 const searchSession = ref("");
-
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
 
 const filteredSessions = computed(() => {
 
@@ -180,6 +175,11 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
         await api.deleteInspection(debuggingSession.id);
         await debuggingSessionsStore.reload();
         close();
+        useMainStore().addNotification({
+          content: `The debugging session '${debuggingSession.name}' has been deleted.`,
+          color: TYPE.SUCCESS,
+          showProgress: false
+        });
       }
     }
   });
@@ -220,7 +220,6 @@ watch(() => route.name, async (name) => {
 });
 
 onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
   await mlWorkerStore.checkExternalWorkerConnection();
   await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
 
@@ -233,6 +232,7 @@ onActivated(async () => {
   }
 });
 </script>
+
 
 <style scoped>
 .debugger-logo {

@@ -1,73 +1,79 @@
 <template>
-  <v-container v-if="inspection" fluid class="vc" :key="inspection.id">
-    <v-row align="center" no-gutters style='height: 60px;'>
+  <v-container v-if="inspection" fluid class="vc">
+    <v-row align="center" no-gutters>
+      <v-col lg="6" sm="12">
+        <v-toolbar class='data-explorer-toolbar' flat>
+          <v-tooltip bottom min-width="400">
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon v-on="on" class="pr-16" medium>info</v-icon>
+            </template>
+            <h3> Debugging session </h3>
+            <div class="d-flex">
+              <div> Id</div>
+              <v-spacer />
+              <div> {{ inspection.id }}</div>
+            </div>
+            <div class="d-flex">
+              <div> Name</div>
+              <v-spacer />
+              <div class="pl-5"> {{ inspection.name || "-" }}</div>
+            </div>
+            <br />
+            <h3> Model </h3>
+            <div class="d-flex">
+              <div> Id</div>
+              <v-spacer />
+              <div> {{ inspection.model.id }}</div>
+            </div>
+            <div class="d-flex">
+              <div> Name</div>
+              <v-spacer />
+              <div class="pl-5"> {{ inspection.model.name }}</div>
+            </div>
+            <br />
+            <h3> Dataset </h3>
+            <div class="d-flex">
+              <div> Id</div>
+              <v-spacer />
+              <div> {{ inspection.dataset.id }}</div>
+            </div>
+            <div class="d-flex pb-3">
+              <div> Name</div>
+              <v-spacer />
+              <div class="pl-5"> {{ inspection.dataset.name }}</div>
+            </div>
+          </v-tooltip>
+          <span class='subtitle-1 mr-2'>Dataset Explorer</span>
+          <v-btn icon @click='shuffleMode = !shuffleMode'>
+            <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
+            <v-icon v-else>mdi-shuffle-variant</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canPrevious' icon @click='previous'>
+            <v-icon>mdi-skip-previous</v-icon>
+          </v-btn>
+          <v-btn :disabled='!canNext' icon @click='next'>
+            <v-icon>mdi-skip-next</v-icon>
+          </v-btn>
 
-      <v-toolbar class='data-explorer-toolbar' flat>
-        <v-tooltip bottom min-width="400">
-          <template v-slot:activator="{ on, attrs }">
-            <v-icon v-on="on" class="pr-5" medium>info</v-icon>
-          </template>
-          <h3> Debugging session </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.id }}</div>
-          </div>
-          <div class="d-flex">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.name || "-" }}</div>
-          </div>
-          <br />
-          <h3> Model </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.model.id }}</div>
-          </div>
-          <div class="d-flex">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.model.name }}</div>
-          </div>
-          <br />
-          <h3> Dataset </h3>
-          <div class="d-flex">
-            <div> Id</div>
-            <v-spacer />
-            <div> {{ inspection.dataset.id }}</div>
-          </div>
-          <div class="d-flex pb-3">
-            <div> Name</div>
-            <v-spacer />
-            <div class="pl-5"> {{ inspection.dataset.name }}</div>
-          </div>
-        </v-tooltip>
-        <span class='subtitle-1 mr-2'>Dataset Explorer</span>
-        <v-btn icon @click='shuffleMode = !shuffleMode'>
-          <v-icon v-if='shuffleMode' color='primary'>mdi-shuffle-variant</v-icon>
-          <v-icon v-else>mdi-shuffle-variant</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canPrevious' icon @click='previous'>
-          <v-icon>mdi-skip-previous</v-icon>
-        </v-btn>
-        <v-btn :disabled='!canNext' icon @click='next'>
-          <v-icon>mdi-skip-next</v-icon>
-        </v-btn>
-
-        <span class='caption grey--text' v-if="totalRows > 0">
-          Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
-        </span>
-        <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text' style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
-        <v-chip class="ml-2" outlined link :color="inspection.sample ? 'purple' : 'primary'" @click="handleSwitchSample" x-small>
-          {{ inspection.sample ? 'Sample' : 'Whole' }} data
-        </v-chip>
-      </v-toolbar>
-      <v-spacer />
-
-      <SlicingFunctionSelector label="Slice to apply" :project-id="projectId" :full-width="false" :icon="true" class="mr-3" :allow-no-code-slicing="true" @onChanged="processDataset" :value.sync="selectedSlicingFunction.uuid" :args.sync="selectedSlicingFunction.params" :dataset="inspection.dataset" />
-
-      <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels" :model-type="inspection.model.modelType" @input="f => filter = f" />
+          <span class='caption grey--text' v-if="totalRows > 0">
+            Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
+          </span>
+          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text' style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <v-chip class="ml-2" outlined link :color="inspection.sample ? 'purple' : 'primary'" @click="handleSwitchSample" x-small>
+            {{ inspection.sample ? 'Sample' : 'Whole' }} data
+          </v-chip>
+        </v-toolbar>
+      </v-col>
+      <v-col lg="6" sm="12" class="pl-4">
+        <v-row no-gutters align="center">
+          <v-col cols="8" class="pb-4">
+            <SlicingFunctionSelector label="Slice to apply" :project-id="projectId" :full-width="false" :icon="true" class="mr-3" :allow-no-code-slicing="true" @onChanged="processDataset" :value.sync="selectedSlicingFunction.uuid" :args.sync="selectedSlicingFunction.params" :dataset="inspection.dataset" />
+          </v-col>
+          <v-col cols="4" class="d-flex pl-2">
+            <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels" :model-type="inspection.model.modelType" @input="f => filter = f" />
+          </v-col>
+        </v-row>
+      </v-col>
     </v-row>
     <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' :transformationModifications="modifications" class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" />
     <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
