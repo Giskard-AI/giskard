@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -12,6 +11,8 @@ import yaml
 from docker import DockerClient
 from docker.errors import NotFound, DockerException
 from docker.models.containers import Container
+from packaging import version
+from packaging.version import InvalidVersion, Version
 from tenacity import retry, wait_exponential
 
 import giskard
@@ -29,10 +30,13 @@ def create_docker_client() -> DockerClient:
     try:
         return docker.from_env()
     except DockerException as e:
-        logger.exception("""Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
+        logger.exception(
+            """Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
 For an easy installation of Docker you can execute:
 - sudo curl -fsSL https://get.docker.com -o get-docker.sh
-- sudo sh get-docker.sh""", e)
+- sudo sh get-docker.sh""",
+            e,
+        )
         exit(1)
 
 
@@ -49,18 +53,22 @@ def update_options(fn):
 
 
 def get_version(version=None):
-    if not version:
-        app_settings = _get_settings()
-        if not app_settings:
-            version = _fetch_latest_tag()
-            logger.info(f"Giskard Server not installed. Latest version is {version}")
-            _write_settings({"version": version})
-        else:
-            version = app_settings["version"]
-    else:
+    if version:
         current_settings = _get_settings() or {}
-        current_settings['version'] = version
+        current_settings["version"] = version
         _write_settings(current_settings)
+    else:
+        app_settings = _get_settings()
+        if app_settings:
+            version = app_settings["version"]
+        else:
+            version = giskard.get_version()
+            _write_settings({"version": version})
+            latest_version = _fetch_latest_tag()
+            message = f"Giskard Server not installed. Using version {version}."
+            if latest_version and version != latest_version:
+                message += f" Latest available version is {latest_version}. To use it pass a --version argument"
+            logger.info(message)
     return version
 
 
@@ -92,8 +100,8 @@ def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
     settings = _get_settings() or {}
-    port = settings.get('port', 19000)
-    ml_worker_port = settings.get('ml_worker_port', 40051)
+    port = settings.get("port", 19000)
+    ml_worker_port = settings.get("ml_worker_port", 40051)
 
     version = get_version(version)
 
@@ -109,7 +117,7 @@ def _start(attached=False, version=None):
             detach=not attached,
             name=get_container_name(version),
             ports={7860: port, 40051: ml_worker_port},
-            volumes={home_volume.name: {'bind': '/home/giskard/datadir', 'mode': 'rw'}},
+            volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
         )
     container.start()
     analytics.track("Giskard Server started", {"client version": giskard.__version__, "server version": version})
@@ -143,13 +151,19 @@ def _pull_image(version):
 @retry(wait=wait_exponential(min=0.1, max=5, multiplier=0.1))
 def _fetch_latest_tag() -> str:
     """
-    Returns: the latest tag from the GitHub API. Format: vX.Y.Z
+    Returns: the latest tag from the Docker Hub API. Format: vX.Y.Z
     """
-    response = requests.get("https://api.github.com/repos/Giskard-AI/giskard/releases/latest")
+    response = requests.get("https://hub.docker.com/v2/namespaces/giskardai/repositories/giskard/tags?page_size=10")
     response.raise_for_status()
     json_response = response.json()
-    tag = json_response["tag_name"]
-    return tag.replace('v', '')
+    latest_tag = "latest"
+    latest = next(i for i in json_response["results"] if i["name"] == latest_tag)
+    latest_version_image = next(
+        i for i in json_response["results"] if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))
+    )
+
+    tag = latest_version_image["name"]
+    return tag.replace("v", "")
 
 
 def _write_settings(settings):
@@ -180,7 +194,7 @@ def _get_home_volume():
 def _expose(token):
     container = get_container()
     if container:
-        if container.status != 'running':
+        if container.status != "running":
             print("Error: Giskard server is not running. Please start it using `giskard server start`")
             raise click.Abort()
     else:
@@ -188,6 +202,7 @@ def _expose(token):
     print("Exposing Giskard Server to the internet...")
     from pyngrok import ngrok
     from pyngrok.conf import PyngrokConfig
+
     if token:
         ngrok.set_auth_token(token)
 
@@ -201,7 +216,8 @@ def _expose(token):
     print("Giskard Server is now exposed to the internet.")
     print("You can now upload objects to the Giskard Server using the following client: \n")
 
-    print(f"""token=...
+    print(
+        f"""token=...
 client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 
 # To run your model with the Giskard Server, execute these three lines on Google Colab:
@@ -209,7 +225,8 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 %env GSK_EXTERNAL_ML_WORKER_HOST={tcp_addr.hostname}
 %env GSK_EXTERNAL_ML_WORKER_PORT={tcp_addr.port}
 %env GSK_API_KEY=...
-!giskard worker start -d -u {http_tunnel.public_url}""")
+!giskard worker start -d -u {http_tunnel.public_url}"""
+    )
 
     ngrok_process = ngrok.get_ngrok_process()
     try:
@@ -250,7 +267,7 @@ def stop():
     Stops a running Giskard server. Does nothing if Giskard server is not running.
     """
     container = get_container()
-    if container.status != 'exited':
+    if container.status != "exited":
         logger.info("Stopping Giskard Server")
         container.stop()
         logger.info("Giskard Server stopped")
@@ -269,7 +286,7 @@ def restart(service, hard):
     Stops any running Giskard server and starts it again.
     """
     container = get_container()
-    if container.status != 'running':
+    if container.status != "running":
         logger.info("Giskard server isn't running")
         _start()
     else:
@@ -337,7 +354,7 @@ def diagnose(local_dir):
 
     now = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     out_file = out_dir / f"giskard-diagnose-{get_version().replace('.', '_')}-{now}.tar.gz"
-    with open(out_file, 'wb') as f:
+    with open(out_file, "wb") as f:
         for chunk in bits:
             f.write(chunk)
     analytics.track("Giskard Server diagnosis ran", {"client version": giskard.__version__})
@@ -355,7 +372,7 @@ def update(version):
     if not version:
         version = latest_version
 
-    installed_version = _get_settings().get('version')
+    installed_version = _get_settings().get("version")
     if installed_version == version:
         logger.info(f"Giskard server is already running version {version}")
         return
@@ -367,8 +384,11 @@ def update(version):
     logger.info(f"Giskard Server updated to {version}")
 
 
-def convert_version_to_number(version: str) -> int:
-    return int(''.join(re.findall(r'\d', version)))
+def read_version(version_str: str) -> Version:
+    try:
+        return version.parse(version_str)
+    except InvalidVersion:
+        return version.NegativeInfinity
 
 
 @server.command("status")
@@ -384,17 +404,17 @@ def status():
     else:
         version = app_settings["version"]
 
-    logger.info(f"Giskard Server {version} is installed.")
+    logger.info(f"Giskard Server version is set to {version}")
 
     latest = _fetch_latest_tag()
 
-    if convert_version_to_number(version) < convert_version_to_number(version):
+    if read_version(version) < read_version(latest):
         logger.info(f"A new version is available: {latest}")
 
     container = get_container()
     if container:
-        if container.status == 'running':
-            logger.info(F"Container {container.name} status:")
+        if container.status == "running":
+            logger.info(f"Container {container.name} status:")
             print(get_container().exec_run("supervisorctl -c /opt/giskard/supervisord.conf").output.decode())
         else:
             logger.info(f"Container {container.name} isn't running ({container.status})")
@@ -432,7 +452,7 @@ def clean(delete_data):
 
     if data_deletion_confirmed:
         try:
-            volume = client.volumes.get('giskard-home')
+            volume = client.volumes.get("giskard-home")
             volume.remove(force=True)
             logger.info("User data has been deleted in 'giskard-home' volume")
         except NotFound:
@@ -445,7 +465,7 @@ def clean(delete_data):
     "token",
     required=False,
     help="In case you have an ngrok account, you can use a token "
-         "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
+    "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
 )
 @common_options
 def expose(token):
