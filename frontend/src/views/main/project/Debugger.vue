@@ -12,7 +12,7 @@ import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue'
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { copyToClipboard } from "@/global-keys";
+import { copyText } from "@/utils";
 import { TYPE } from "vue-toastification";
 
 const router = useRouter();
@@ -89,15 +89,6 @@ function orderByDate(debuggingSessions: InspectionDTO[]): InspectionDTO[] {
 
     return bDate.getTime() - aDate.getTime();
   });
-}
-
-function copyText(text: string, description?: string) {
-  copyToClipboard(text);
-  if (description) {
-    useMainStore().addSimpleNotification(description);
-  } else {
-    useMainStore().addSimpleNotification("Copied to clipboard");
-  }
 }
 
 function deleteDebuggingSession(debuggingSession: InspectionDTO) {
