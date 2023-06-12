@@ -212,6 +212,8 @@ dependencies {
     implementation("com.h2database:h2")
     testImplementation("com.h2database:h2")
 
+    implementation("com.corundumstudio.socketio:netty-socketio:1.7.18")
+
 //    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
