@@ -46,7 +46,7 @@ Creating the firewall rules can also be done **through UI** in the `VPC Network`
 * Installation of Giskard
 
 ```bash
-giskard server start
+giskard server start --version 2.0.0b4
 ```
 
 ### 3. Connect to your instance and start uploading ML model
@@ -60,7 +60,7 @@ You can stop the instance and restart it when you need to save your GCP compute 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **restart the giskard server**, by executing in the Giskard folder:
 
-&#x20;`giskard server start`
+&#x20;`giskard server start --version 2.0.0b4`
 {% endhint %}
 
 That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](docs/guide/upload/index.md)! To do that in GCP, you can use a workbench notebook, for example! &#x20;

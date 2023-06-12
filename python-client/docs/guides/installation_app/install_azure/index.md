@@ -37,7 +37,7 @@ sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 * Installation of Giskard
 
 ```bash
-giskard server start
+giskard server start --version 2.0.0b4
 ```
 
 ### 3. Connect to your instance and start uploading ML model
@@ -51,7 +51,7 @@ You can stop the instance and restart it when you need to save your Azure comput
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **re-start the Giskard server**, by executing in the Giskard folder:
 
-&#x20;`giskard server start`
+&#x20;`giskard server start --version 2.0.0b4`
 {% endhint %}
 
 * The user id is `admin` and the password is `admin`
