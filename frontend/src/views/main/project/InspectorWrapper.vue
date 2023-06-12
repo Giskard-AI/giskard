@@ -155,7 +155,6 @@ interface CreatedFeedbackCommonDTO {
 interface Props {
   inspectionId: number;
   projectId: number;
-  isProjectOwnerOrAdmin: boolean;
 }
 
 const props = defineProps<Props>();
@@ -362,6 +361,12 @@ async function doSubmitFeedback(payload: CreateFeedbackDTO) {
 const transformationPipeline = computed(() => Object.values(transformationFunctions.value))
 
 watch(() => transformationPipeline.value, processDataset, { deep: true })
+
+watch(() => props.inspectionId, async (nv, ov) => {
+  if (nv !== ov) {
+    await init();
+  }
+});
 
 async function processDataset() {
   const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]

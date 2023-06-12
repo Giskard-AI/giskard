@@ -56,10 +56,11 @@ async function createNewDebuggingSession() {
       name: sessionName.value,
       sample: true
     });
-    closeDialog();
+    debuggingSessionsStore.setCurrentDebuggingSessionId(newDebuggingSession.id);
     emit('createDebuggingSession', newDebuggingSession);
   } finally {
     loading.value = false;
+    closeDialog();
   }
 }
 
