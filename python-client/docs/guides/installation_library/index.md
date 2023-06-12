@@ -8,7 +8,7 @@ If you don't want to use the UI features and your model is not a text generation
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard==2.0.0b4"
+pip install "giskard>=2.0.0b" -U
 ```
 
 :::
@@ -16,7 +16,7 @@ pip install "giskard==2.0.0b4"
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard==2.0.0b4" --user
+pip install "giskard>=2.0.0b" -U --user
 ```
 
 :::
@@ -30,7 +30,7 @@ If you want to use the Giskard server but your model is not a text generation mo
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[server]==2.0.0b4"
+pip install "giskard[server]>=2.0.0b" -U
 ```
 
 :::
@@ -38,7 +38,7 @@ pip install "giskard[server]==2.0.0b4"
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[server]==2.0.0b4" --user
+pip install "giskard[server]>=2.0.0b" -U --user
 ```
 
 :::
@@ -52,7 +52,7 @@ If you don't want to use the UI features and your model is a text generation mod
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[llm]==2.0.0b4"
+pip install "giskard[llm]>=2.0.0b" -U
 ```
 
 :::
@@ -60,7 +60,7 @@ pip install "giskard[llm]==2.0.0b4"
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[llm]==2.0.0b4"
+pip install "giskard[llm]>=2.0.0b" -U
 ```
 
 :::
@@ -72,7 +72,7 @@ pip install "giskard[llm]==2.0.0b4"
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[server, llm]==2.0.0b4"
+pip install "giskard[server, llm]>=2.0.0b" -U
 ```
 
 :::
@@ -80,7 +80,7 @@ pip install "giskard[server, llm]==2.0.0b4"
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[server, llm]==2.0.0b4"
+pip install "giskard[server, llm]>=2.0.0b" -U
 ```
 
 :::
@@ -136,5 +136,5 @@ For instance, if you have dependency conflicts with `pandas`, please do:
 ```sh
 pip uninstall giskard
 pip uninstall pandas
-pip install "giskard==2.0.0b4"
+pip install "giskard>=2.0.0b" -U
 ```

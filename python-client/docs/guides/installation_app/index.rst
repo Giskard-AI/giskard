@@ -41,7 +41,7 @@ You can either install and run the server **locally** or on an **external server
 
       .. code-block:: sh
       
-         giskard server start --version 2.0.0b4
+         giskard server start
 
       You'll then be able to open Giskard at `http://localhost:19000/`
 
