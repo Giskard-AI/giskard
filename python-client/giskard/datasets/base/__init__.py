@@ -29,6 +29,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
+from ...utils.analytics_collector import report_error
 
 SAMPLE_SIZE = 1000
 
@@ -133,6 +134,7 @@ class Dataset(ColumnMetadataMixin):
     id: uuid.UUID
     data_processor: DataProcessor
 
+    @report_error
     @configured_validate_arguments
     def __init__(
         self,
@@ -193,7 +195,7 @@ class Dataset(ColumnMetadataMixin):
         self.category_features = {
             column: list(map(lambda x: str(x), self.df[column].dropna().unique()))
             for column, column_type in self.column_types.items()
-            if column_type == 'category'
+            if column_type == "category"
         }
 
         self.data_processor = DataProcessor()
@@ -224,7 +226,7 @@ class Dataset(ColumnMetadataMixin):
     def row_hashes(self):
         return pandas.Series(
             map(
-                lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode('utf-8')),
+                lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode("utf-8")),
                 self.df.values,
             ),
             index=self.df.index,
@@ -263,9 +265,10 @@ class Dataset(ColumnMetadataMixin):
             slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
 
         if slicing_function.cell_level and column_name is not None:
-            slicing_function = slicing_function(column_name=column_name,
-                                                **{key: value for key, value in slicing_function.params.items() if
-                                                   key != 'column_name'})
+            slicing_function = slicing_function(
+                column_name=column_name,
+                **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
+            )
 
         return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
 
@@ -304,13 +307,13 @@ class Dataset(ColumnMetadataMixin):
             )
 
         if transformation_function.cell_level and column_name is not None:
-            transformation_function = transformation_function(column_name=column_name,
-                                                              **{key: value for key, value in
-                                                                 transformation_function.params.items() if
-                                                                 key != 'column_name'})
+            transformation_function = transformation_function(
+                column_name=column_name,
+                **{key: value for key, value in transformation_function.params.items() if key != "column_name"},
+            )
 
         assert (
-            not transformation_function.cell_level or 'column_name' in transformation_function.params
+            not transformation_function.cell_level or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -323,31 +326,32 @@ class Dataset(ColumnMetadataMixin):
         """
         return self.data_processor.apply(self)
 
-    def _infer_column_types(self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]],
-                            validation: bool = True):
+    def _infer_column_types(
+        self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]], validation: bool = True
+    ):
         """
-       This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
+        This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
 
-       Here's a summary of the function's logic:
+        Here's a summary of the function's logic:
 
-       1. If no column types are provided, initialize an empty dictionary.
-       2. Determine the columns in the DataFrame, excluding the target column if it exists.
-       3. If categorical columns are specified, prioritize them over the provided column types and mark them as 'category'.
-       4. Check for any unknown columns in the provided column types and remove them from the dictionary.
-       5. If there are no missing columns, remove the target column (if present) from the column types dictionary.
-       6. Calculate the number of unique values in each missing column.
-       7. For each missing column:
+        1. If no column types are provided, initialize an empty dictionary.
+        2. Determine the columns in the DataFrame, excluding the target column if it exists.
+        3. If categorical columns are specified, prioritize them over the provided column types and mark them as 'category'.
+        4. Check for any unknown columns in the provided column types and remove them from the dictionary.
+        5. If there are no missing columns, remove the target column (if present) from the column types dictionary.
+        6. Calculate the number of unique values in each missing column.
+        7. For each missing column:
 
-          - If the number of unique values is less than or equal to the category threshold, categorize it as 'category'.
-          - Otherwise, attempt to convert the column to numeric using `pd.to_numeric` and categorize it as 'numeric'.
-          - If the column does not have the expected numeric data type and validation is enabled, issue a warning message.
-          - If conversion to numeric raises a ValueError, categorize the column as 'text'.
-       8. Return the column types dictionary.
+           - If the number of unique values is less than or equal to the category threshold, categorize it as 'category'.
+           - Otherwise, attempt to convert the column to numeric using `pd.to_numeric` and categorize it as 'numeric'.
+           - If the column does not have the expected numeric data type and validation is enabled, issue a warning message.
+           - If conversion to numeric raises a ValueError, categorize the column as 'text'.
+        8. Return the column types dictionary.
 
-       The logarithmic rule is used to calculate the category threshold. The formula is: `category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2`. This means that if the length of the DataFrame is greater than or equal to 100, the category threshold is set to the rounded value of the base-10 logarithm of the DataFrame length. Otherwise, the category threshold is set to 2. The logarithmic rule helps in dynamically adjusting the category threshold based on the size of the DataFrame.
+        The logarithmic rule is used to calculate the category threshold. The formula is: `category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2`. This means that if the length of the DataFrame is greater than or equal to 100, the category threshold is set to the rounded value of the base-10 logarithm of the DataFrame length. Otherwise, the category threshold is set to 2. The logarithmic rule helps in dynamically adjusting the category threshold based on the size of the DataFrame.
 
-       Returns:
-          dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
+        Returns:
+           dict: A dictionary that maps column names to their inferred types, one of 'text', 'numeric', or 'category'.
         """
         if not column_types:
             column_types = {}
@@ -457,7 +461,7 @@ class Dataset(ColumnMetadataMixin):
         logger.info(f"Casting dataframe columns from {current_types} to {column_dtypes}")
         if column_dtypes:
             try:
-                df = df.astype(column_dtypes, errors='ignore')
+                df = df.astype(column_dtypes, errors="ignore")
             except Exception as e:
                 raise ValueError("Failed to apply column types to dataset") from e
         return df

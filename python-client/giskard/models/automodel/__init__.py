@@ -1,85 +1,87 @@
+import logging
 from abc import ABC
 from typing import Callable, Optional, Iterable, Any
 
 import pandas as pd
-import logging
 
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
+from giskard.utils.analytics_collector import report_error
 
 logger = logging.getLogger(__name__)
 
 
 class Model(CloudpickleBasedModel, ABC):
     """
-   A wrapper class that automatically infers the ML library of the ``model`` argument and provides suitable
-   serialization methods (provided by ``save_model`` and ``load_model`` methods).
+    A wrapper class that automatically infers the ML library of the ``model`` argument and provides suitable
+    serialization methods (provided by ``save_model`` and ``load_model`` methods).
 
-   Pre-defined serialization and prediction methods cover the ``sklearn``, ``catboost``, ``pytorch``, ``tensorflow``,
-   ``huggingface`` and ``langchain`` libraries. If none of these libraries are detected, ``cloudpickle`` is used as the
-   default serialization method, and the user is prompted to provide their own prediction method.
+    Pre-defined serialization and prediction methods cover the ``sklearn``, ``catboost``, ``pytorch``, ``tensorflow``,
+    ``huggingface`` and ``langchain`` libraries. If none of these libraries are detected, ``cloudpickle`` is used as the
+    default serialization method, and the user is prompted to provide their own prediction method.
 
-   Two ways to wrap your model:
+    Two ways to wrap your model:
 
-   1. Wrap a prediction function that contains all your data preprocessing steps. It takes as input the raw pandas
-      dataframe and returns the probabilities for each classification label or predictions for your regression task.
-      Make sure that:
+    1. Wrap a prediction function that contains all your data preprocessing steps. It takes as input the raw pandas
+       dataframe and returns the probabilities for each classification label or predictions for your regression task.
+       Make sure that:
 
-      - ``prediction_function`` encapsulates all the data preprocessing steps (categorical encoding, numerical scaling,
-        etc.).
-      - ``prediction_function(df[feature_names])`` does not return an error message.
+       - ``prediction_function`` encapsulates all the data preprocessing steps (categorical encoding, numerical scaling,
+         etc.).
+       - ``prediction_function(df[feature_names])`` does not return an error message.
 
-   2. Wrap a model object. This is recommended if your model is not
-      serializable by ``cloudpickle`` (e.g., TensorFlow models). This requires:
+    2. Wrap a model object. This is recommended if your model is not
+       serializable by ``cloudpickle`` (e.g., TensorFlow models). This requires:
 
-      - Mandatory: Overriding the ``model_predict`` method, which should take as input the raw pandas dataframe and
-        return the probabilities for each classification label (classification), predictions (regression or text generation).
-      - Optional: If none of the pre-defined serialization methods apply, ``cloudpickle`` is used as the default
-        serialization method. If this fails, the user is asked to override the ``save_model`` and ``load_model``
-        methods to provide their own serialization of the model object.
+       - Mandatory: Overriding the ``model_predict`` method, which should take as input the raw pandas dataframe and
+         return the probabilities for each classification label (classification), predictions (regression or text generation).
+       - Optional: If none of the pre-defined serialization methods apply, ``cloudpickle`` is used as the default
+         serialization method. If this fails, the user is asked to override the ``save_model`` and ``load_model``
+         methods to provide their own serialization of the model object.
 
-   Args:
-       model (Any):
-           Could be any function or ML model. The standard model output required for Giskard is:
+    Args:
+        model (Any):
+            Could be any function or ML model. The standard model output required for Giskard is:
 
-           * if classification: an array (nxm) of probabilities corresponding to n data entries
-             (rows of pandas.DataFrame)
-             and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-             also accepted.
-             Make sure that the probability provided is for the second label provided in classification_labels.
-           * if regression or text_generation: an array of predictions corresponding to data entries
-             (rows of pandas.DataFrame) and outputs.
-       name (Optional[str]):
-            the name of the model.
-       model_type (ModelType):
-           The type of the model: regression, classification or text_generation.
-       data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
-           A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
-           that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
-           in which case no need to provide this argument.
-       model_postprocessing_function (Optional[Callable[[Any], Any]]):
-           A function that takes a clf output as input,
-           applies postprocessing and returns an object of the same type and shape as the clf output.
-       feature_names (Optional[Iterable[str]]):
-           list of feature names matching the column names in the data that correspond to the features which the model
-           trained on. By default, feature_names are all the Dataset columns except from target.
-       classification_threshold (float):
-           represents the classification model threshold, for binary
-           classification models.
-       classification_labels (Optional[Iterable[str]]):
-           that represents the classification labels, if model_type is
-           classification. Make sure the labels have the same order as the column output of clf.
-       **kwargs: Additional keyword arguments.
+            * if classification: an array (nxm) of probabilities corresponding to n data entries
+              (rows of pandas.DataFrame)
+              and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
+              also accepted.
+              Make sure that the probability provided is for the second label provided in classification_labels.
+            * if regression or text_generation: an array of predictions corresponding to data entries
+              (rows of pandas.DataFrame) and outputs.
+        name (Optional[str]):
+             the name of the model.
+        model_type (ModelType):
+            The type of the model: regression, classification or text_generation.
+        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
+            A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
+            that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
+            in which case no need to provide this argument.
+        model_postprocessing_function (Optional[Callable[[Any], Any]]):
+            A function that takes a clf output as input,
+            applies postprocessing and returns an object of the same type and shape as the clf output.
+        feature_names (Optional[Iterable[str]]):
+            list of feature names matching the column names in the data that correspond to the features which the model
+            trained on. By default, feature_names are all the Dataset columns except from target.
+        classification_threshold (float):
+            represents the classification model threshold, for binary
+            classification models.
+        classification_labels (Optional[Iterable[str]]):
+            that represents the classification labels, if model_type is
+            classification. Make sure the labels have the same order as the column output of clf.
+        **kwargs: Additional keyword arguments.
 
-   Returns:
-       Union[CloudpickleBasedModel, SKLearnModel, HuggingFaceModel,
-       CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
+    Returns:
+        Union[CloudpickleBasedModel, SKLearnModel, HuggingFaceModel,
+        CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
     """
 
     should_save_model_class = True
 
+    @report_error
     def __new__(
         cls,
         model: Any,
@@ -117,7 +119,7 @@ class Model(CloudpickleBasedModel, ABC):
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
             # if the Model class is instantiated (thus == Model) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleBasedModel
-            is_overriden = cls.__name__ != 'Model'  # TODO: Improve this
+            is_overriden = cls.__name__ != "Model"  # TODO: Improve this
             if is_overriden:
                 if not giskard_cls:
                     giskard_cls = CloudpickleBasedModel
@@ -138,15 +140,15 @@ class Model(CloudpickleBasedModel, ABC):
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleBasedModel
                 raise NotImplementedError(
-                    'We could not infer your model library. You have two options:'
-                    '\n- Pass a prediction_function to the Model class '
+                    "We could not infer your model library. You have two options:"
+                    "\n- Pass a prediction_function to the Model class "
                     '(we will try to serialize it with "cloudpickle").'
-                    '\n- Extend the Model class and override '
+                    "\n- Extend the Model class and override "
                     'the abstract "model_predict" method. Upon upload to the Giskard server, we will try to serialise'
                     'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
                     '"load_model" with your own serialization methods.'
-                    '\nWe recommend that you follow our documentation page: '
-                    'https://giskard.readthedocs.io/en/latest/getting-started/scan'
+                    "\nWe recommend that you follow our documentation page: "
+                    "https://giskard.readthedocs.io/en/latest/getting-started/scan"
                 )
 
             methods = dict(possibly_overriden_cls.__dict__)
