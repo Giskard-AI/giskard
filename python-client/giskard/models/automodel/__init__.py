@@ -8,7 +8,6 @@ from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
 from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
-from giskard.utils.analytics_collector import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +80,6 @@ class Model(CloudpickleBasedModel, ABC):
 
     should_save_model_class = True
 
-    @report_error
     def __new__(
         cls,
         model: Any,

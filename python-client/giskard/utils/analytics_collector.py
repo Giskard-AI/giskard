@@ -2,6 +2,8 @@ import getpass
 import hashlib
 import os
 import platform
+import sys
+import threading
 import traceback
 import uuid
 from functools import wraps
@@ -78,30 +80,23 @@ def get_dataset_properties(dataset):
     }
 
 
-def report_error(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except BaseException as e:
-            try:
-                exc = traceback.TracebackException.from_exception(e)
-                for frame in exc.stack:
-                    frame.filename = os.path.relpath(frame.filename)
+def _report_error(e):
+    exc = traceback.TracebackException.from_exception(e)
+    is_giskard_error = False
 
-                analytics.track(
-                    "python error",
-                    {
-                        "exception": fullname(e),
-                        "error message": str(e),
-                        "stack": "".join(exc.format()),
-                    },
-                )
-            except BaseException:  # noqa
-                pass
-            raise e
-
-    return wrapper
+    for frame in exc.stack:
+        if not is_giskard_error and "giskard" in frame.filename:
+            is_giskard_error = True
+        frame.filename = os.path.relpath(frame.filename)
+    if is_giskard_error:
+        analytics.track(
+            "python error",
+            {
+                "exception": fullname(e),
+                "error message": str(e),
+                "stack": "".join(exc.format()),
+            },
+        )
 
 
 class GiskardAnalyticsCollector:
@@ -210,5 +205,24 @@ class GiskardAnalyticsCollector:
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 
+
+def add_exception_hook(original_hook=None):
+    def _exception_hook(type, value, traceback):
+        try:
+            _report_error(value)
+        except BaseException:  # noqa NOSONAR
+            pass
+
+        if original_hook:
+            return original_hook(type, value, traceback)
+        else:
+            return sys.__excepthook__(type, value, traceback)
+
+    return _exception_hook
+
+
+if not settings.disable_analytics:
+    sys.excepthook = add_exception_hook(sys.excepthook)
+    threading.excepthook = add_exception_hook(threading.excepthook)
 
 analytics = GiskardAnalyticsCollector()

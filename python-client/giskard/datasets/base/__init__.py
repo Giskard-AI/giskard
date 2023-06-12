@@ -29,7 +29,6 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
-from ...utils.analytics_collector import report_error
 
 SAMPLE_SIZE = 1000
 
@@ -134,7 +133,6 @@ class Dataset(ColumnMetadataMixin):
     id: uuid.UUID
     data_processor: DataProcessor
 
-    @report_error
     @configured_validate_arguments
     def __init__(
         self,
