@@ -203,6 +203,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "black"
+version = "23.3.0"
+extras = ["d"]
+requires_python = ">=3.7"
+summary = "The uncompromising code formatter."
+dependencies = [
+    "aiohttp>=3.7.4",
+    "black==23.3.0",
+]
+
+[[package]]
 name = "bleach"
 version = "6.0.0"
 requires_python = ">=3.7"
@@ -2797,7 +2808,7 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:ebff430ca6a6a60e7ee20bb240cf5a92f4ac8417ff9fd614f277b2ee075b0cd9"
+content_hash = "sha256:28efbd76b5aa1aa128a01bd37e62f7a3312cd90a472606ab954970defae50a72"
 
 [metadata.files]
 "absl-py 1.4.0" = [

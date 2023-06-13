@@ -10,7 +10,6 @@ from giskard.models.huggingface import HuggingFaceModel
 
 
 def test_sequence_classification_distilbert_base_uncased_pytorch():
-
     tokenizer_distilbert_base_uncased = AutoTokenizer.from_pretrained("stevhliu/my_awesome_model")
 
     id2label = {0: "NEGATIVE", 1: "POSITIVE"}
@@ -30,7 +29,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch():
     feature_names = ["text"]
 
     def my_preproccessing_function(df):
-        return tokenizer_distilbert_base_uncased(list(df['text']), return_tensors="pt")
+        return tokenizer_distilbert_base_uncased(list(df["text"]), return_tensors="pt")
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",
@@ -38,7 +37,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch():
         feature_names=feature_names,
         model_type="classification",
         classification_labels=list(label2id.keys()),
-        data_preprocessing_function=my_preproccessing_function
+        data_preprocessing_function=my_preproccessing_function,
     )
 
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")

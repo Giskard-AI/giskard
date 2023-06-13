@@ -20,9 +20,9 @@ class GitConfig:
 
 def load_config() -> GitConfig:
     return GitConfig(
-        repo=os.getenv('GIT_REPOSITORY'),
-        user=os.getenv('GIT_USER'),
-        pwd=os.getenv('GIT_PASSWORD'),
+        repo=os.getenv("GIT_REPOSITORY"),
+        user=os.getenv("GIT_USER"),
+        pwd=os.getenv("GIT_PASSWORD"),
     )
 
 
@@ -36,7 +36,8 @@ def init_udf_repository(udf_enabled: bool = False) -> bool:
 
         if config.repo is None:
             logger.warning(
-                "UDF repository is not available because the 'GIT_REPOSITORY' environment variable is not set")
+                "UDF repository is not available because the 'GIT_REPOSITORY' environment variable is not set"
+            )
             return False
 
         if udf_root.exists():
@@ -52,7 +53,7 @@ def init_udf_repository(udf_enabled: bool = False) -> bool:
 def update_udf_repository():
     repo = Repo(udf_root)
 
-    logger.info('Repository already existing, fetching updates')
+    logger.info("Repository already existing, fetching updates")
     origin = repo.remotes.origin
     origin.pull()
 
@@ -60,13 +61,13 @@ def update_udf_repository():
 
 
 def clone_udf_repository(config: GitConfig):
-    logger.info(f'cloning repository: {config.repo}')
+    logger.info(f"cloning repository: {config.repo}")
 
     host = config.repo
 
-    protocol = 'http'
-    if not host.startswith('http://'):
-        protocol = 'https'
+    protocol = "http"
+    if not host.startswith("http://"):
+        protocol = "https"
 
     host = f"{protocol}://{config.user}:{config.pwd}@{config.repo.replace('http://', '').replace('https://', '')}"
 

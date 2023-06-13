@@ -16,17 +16,12 @@ from tests.url_utils import fetch_from_ftp
 
 # Constants.
 LABELS_LIST = [
-    'Neurosurgery',
-    'ENT - Otolaryngology',
-    'Discharge Summary',
+    "Neurosurgery",
+    "ENT - Otolaryngology",
+    "Discharge Summary",
 ]
 
-COLUMNS_DROP = [
-    'Unnamed: 0',
-    'description',
-    "sample_name",
-    "keywords"
-]
+COLUMNS_DROP = ["Unnamed: 0", "description", "sample_name", "keywords"]
 
 TEXT_COLUMN_NAME = "transcription"
 TARGET_COLUMN_NAME = "medical_specialty"
@@ -34,8 +29,9 @@ TARGET_COLUMN_NAME = "medical_specialty"
 LANGUAGE = "english"
 
 # Paths.
-DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources",
-                        "medical_transcript_classification_dataset", "mtsamples.csv")
+DATA_URL = os.path.join(
+    "ftp://sys.giskard.ai", "pub", "unit_test_resources", "medical_transcript_classification_dataset", "mtsamples.csv"
+)
 DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv"
 
 
@@ -66,10 +62,9 @@ def load_data() -> pd.DataFrame:
 @pytest.fixture()
 def medical_transcript_data() -> Dataset:
     raw_data = load_data()
-    wrapped_data = Dataset(raw_data,
-                           name="medical_transcript_dataset",
-                           target=TARGET_COLUMN_NAME,
-                           column_types={TEXT_COLUMN_NAME: "text"})
+    wrapped_data = Dataset(
+        raw_data, name="medical_transcript_dataset", target=TARGET_COLUMN_NAME, column_types={TEXT_COLUMN_NAME: "text"}
+    )
     return wrapped_data
 
 
@@ -77,7 +72,7 @@ def preprocess_text(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess text."""
 
     # Remove punctuation.
-    df[TEXT_COLUMN_NAME] = df[TEXT_COLUMN_NAME].apply(lambda x: x.translate(str.maketrans('', '', string.punctuation)))
+    df[TEXT_COLUMN_NAME] = df[TEXT_COLUMN_NAME].apply(lambda x: x.translate(str.maketrans("", "", string.punctuation)))
 
     return df
 
@@ -96,21 +91,25 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
 @pytest.fixture()
 def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
     # Define final pipeline.
-    pipeline = Pipeline(steps=[
-        ("text_preprocessor", FunctionTransformer(preprocess_text)),
-        ("vectorizer_input_adapter", FunctionTransformer(adapt_vectorizer_input)),
-        ("vectorizer", CountVectorizer(ngram_range=(1, 1))),
-        ("estimator", RandomForestClassifier(n_estimators=1, max_depth=3))
-    ])
+    pipeline = Pipeline(
+        steps=[
+            ("text_preprocessor", FunctionTransformer(preprocess_text)),
+            ("vectorizer_input_adapter", FunctionTransformer(adapt_vectorizer_input)),
+            ("vectorizer", CountVectorizer(ngram_range=(1, 1))),
+            ("estimator", RandomForestClassifier(n_estimators=1, max_depth=3)),
+        ]
+    )
 
     # Fit pipeline.
     pipeline.fit(medical_transcript_data.df[[TEXT_COLUMN_NAME]], medical_transcript_data.df[TARGET_COLUMN_NAME])
 
     # Wrap model with giskard
-    wrapped_model = SKLearnModel(pipeline,
-                                 model_type="classification",
-                                 name="medical_transcript_classification",
-                                 feature_names=[TEXT_COLUMN_NAME],
-                                 classification_labels=pipeline.classes_)
+    wrapped_model = SKLearnModel(
+        pipeline,
+        model_type="classification",
+        name="medical_transcript_classification",
+        feature_names=[TEXT_COLUMN_NAME],
+        classification_labels=pipeline.classes_,
+    )
 
     return wrapped_model

@@ -158,7 +158,7 @@ class MLWorkerBridge:
             # On Windows, we go over TCP because UDS are not supported yet.
             # Check on gRPC every once in a while for eventual support.
             if sys.platform == "win32":
-                address_parts = self.local_address.split(':')
+                address_parts = self.local_address.split(":")
                 grpc_reader, grpc_writer = await asyncio.open_connection(address_parts[0], address_parts[1])
             # On Linux, we can use Unix Domain Sockets.
             else:
