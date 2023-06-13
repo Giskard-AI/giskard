@@ -16,15 +16,17 @@ tasks {
         minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("pdm:2.5.0", "urllib3:1.26.15"))
+        pip(listOf("pdm:2.7.2", "urllib3:1.26.15"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
     create<PythonTask>("install") {
         dependsOn("pipInstall")
-        var cmd = "install -G:all"
+        var cmd = "install"
         if (project.hasProperty("prod")) {
             cmd += " --prod"
+        } else {
+            cmd += " -G:all"
         }
 
         module = "pdm"

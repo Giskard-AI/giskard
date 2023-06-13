@@ -2,6 +2,9 @@ import getpass
 import hashlib
 import os
 import platform
+import sys
+import threading
+import traceback
 import uuid
 from functools import wraps
 from threading import Lock
@@ -77,6 +80,25 @@ def get_dataset_properties(dataset):
     }
 
 
+def _report_error(e):
+    exc = traceback.TracebackException.from_exception(e)
+    is_giskard_error = False
+
+    for frame in exc.stack:
+        if not is_giskard_error and "giskard" in frame.filename:
+            is_giskard_error = True
+        frame.filename = os.path.relpath(frame.filename)
+    if is_giskard_error:
+        analytics.track(
+            "python error",
+            {
+                "exception": fullname(e),
+                "error message": str(e),
+                "stack": "".join(exc.format()),
+            },
+        )
+
+
 class GiskardAnalyticsCollector:
     lock = Lock()
     ip: Optional[str]
@@ -127,6 +149,8 @@ class GiskardAnalyticsCollector:
                 "giskard_version": self.giskard_version,
                 "python_version": platform.python_version(),
                 "environment": self.environment,
+                # only for aggregated stats: city, country, region. IP itself isn't stored
+                "ip": self.ip,
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
@@ -154,8 +178,6 @@ class GiskardAnalyticsCollector:
                     "$os": platform.system(),
                     "os-full": platform.platform(aliased=True),
                 },
-                # only for aggregated stats: city, country, region. IP itself isn't stored
-                meta={"$ip": self.ip},
             )
 
     @staticmethod
@@ -183,5 +205,24 @@ class GiskardAnalyticsCollector:
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 
+
+def add_exception_hook(original_hook=None):
+    def _exception_hook(type, value, traceback):
+        try:
+            _report_error(value)
+        except BaseException:  # noqa NOSONAR
+            pass
+
+        if original_hook:
+            return original_hook(type, value, traceback)
+        else:
+            return sys.__excepthook__(type, value, traceback)
+
+    return _exception_hook
+
+
+if not settings.disable_analytics:
+    sys.excepthook = add_exception_hook(sys.excepthook)
+    threading.excepthook = add_exception_hook(threading.excepthook)
 
 analytics = GiskardAnalyticsCollector()

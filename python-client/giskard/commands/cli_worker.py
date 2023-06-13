@@ -90,6 +90,10 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
     - client: ML Worker acts as a client and should connect to a running Giskard instance
         by specifying this instance's host and port.
     """
+    analytics.track(
+        "giskard-worker:start",
+        {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
+    )
     api_key = initialize_api_key(api_key, is_server)
     _start_command(is_server, url, api_key, is_daemon)
 
@@ -107,10 +111,6 @@ def initialize_api_key(api_key, is_server):
 
 def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
     from giskard.ml_worker.ml_worker import MLWorker
-
-    analytics.track(
-        "Start ML Worker", {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon}, force=True
-    )
 
     start_msg = "Starting ML Worker"
     start_msg += " server" if is_server else " client"
@@ -167,6 +167,10 @@ def _ml_worker_description(is_server, url):
 def stop_command(is_server, url, stop_all):
     import re
 
+    analytics.track(
+        "giskard-worker:stop",
+        {"is_server": is_server, "url": anonymize(url), "stop_all": stop_all},
+    )
     if stop_all:
         for pid_fname in os.listdir(run_dir):
             if not re.match(r"^ml-worker-.*\.pid$", pid_fname):
@@ -181,6 +185,10 @@ def stop_command(is_server, url, stop_all):
 @start_stop_options
 @click.option("--api-key", "-k", "api_key", help="Giskard server API key")
 def restart_command(is_server, url, api_key):
+    analytics.track(
+        "giskard-worker:restart",
+        {"is_server": is_server, "url": anonymize(url)},
+    )
     api_key = initialize_api_key(api_key, is_server)
 
     _find_and_stop(is_server, url)
@@ -230,6 +238,13 @@ def _find_and_stop(is_server, url):
     help="Output appended data as new logs are being generated",
 )
 def read_logs(lines, is_follow):
+    analytics.track(
+        "giskard-worker:logs",
+        {
+            "lines": lines,
+            "is_follow": is_follow,
+        },
+    )
     log_path = get_log_path()
 
     if not os.path.exists(log_path):
