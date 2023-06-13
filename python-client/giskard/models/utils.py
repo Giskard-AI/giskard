@@ -27,14 +27,14 @@ def np_type_to_native(i):
     return i.item() if isinstance(i, np.generic) else i
 
 
-def fix_seed():
-    seed = 1337
-
+def fix_seed(seed=1337):
     random.seed(seed)
     np.random.seed(seed)
     try:
         import torch
+
         torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
     except ImportError:
         pass
 

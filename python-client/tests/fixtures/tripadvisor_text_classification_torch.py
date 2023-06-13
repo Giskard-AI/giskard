@@ -1,7 +1,6 @@
 import os
 import re
 import string
-import random
 from typing import Union, List
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +13,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
+from giskard import models
 from giskard import Dataset, Model
 from tests.url_utils import fetch_from_ftp
 
@@ -194,10 +194,7 @@ class CustomWrapper(Model):
     def model_predict(self, df: pd.DataFrame) -> np.ndarray:
         """Perform inference using overwritten prediction logic."""
         # Set random seed
-        random.seed(RANDOM_SEED)
-        np.random.seed(RANDOM_SEED)
-        torch.manual_seed(RANDOM_SEED)
-        torch.cuda.manual_seed_all(RANDOM_SEED)
+        models.fix_seed(RANDOM_SEED)
 
         cleaned_df = text_preprocessor(df)
         data_loader = create_dataloader(cleaned_df)
