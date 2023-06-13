@@ -34,6 +34,7 @@ def fix_seed():
     np.random.seed(seed)
     try:
         import torch
+
         torch.manual_seed(seed)
     except ImportError:
         pass

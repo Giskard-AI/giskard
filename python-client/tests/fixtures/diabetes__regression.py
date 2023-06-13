@@ -41,9 +41,11 @@ def linear_regression_diabetes_raw():
 @pytest.fixture()
 def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
     diabetes = datasets.load_diabetes()
-    return SKLearnModel(linear_regression_diabetes_raw,
-                        model_type=SupportedModelTypes.REGRESSION,
-                        feature_names=diabetes["feature_names"])
+    return SKLearnModel(
+        linear_regression_diabetes_raw,
+        model_type=SupportedModelTypes.REGRESSION,
+        feature_names=diabetes["feature_names"],
+    )
 
 
 @pytest.fixture()

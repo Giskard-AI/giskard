@@ -21,11 +21,11 @@ logger = logging.getLogger(__name__)
 
 @configured_validate_arguments
 def wrap_dataset(
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[str, str]] = None,
+    df: pd.DataFrame,
+    name: Optional[str] = None,
+    target: Optional[str] = None,
+    cat_columns: Optional[List[str]] = None,
+    column_types: Optional[Dict[str, str]] = None,
 ):
     """
     A function that wraps a Pandas DataFrame into a Giskard Dataset object, with optional validation of input arguments.

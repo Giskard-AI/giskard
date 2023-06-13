@@ -46,12 +46,8 @@ input_types = {
 @pytest.fixture()
 def german_credit_data() -> Dataset:
     logger.info("Reading german_credit_prepared.csv")
-    df = pd.read_csv(
-        path("test_data/german_credit_prepared.csv"),
-        keep_default_na=False,
-        na_values=["_GSK_NA_"],
-    )
-    return Dataset(df=df, name='Test german credit scoring dataset', target="default", column_types=input_types)
+    df = pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
+    return Dataset(df=df, name="Test german credit scoring dataset", target="default", column_types=input_types)
 
 
 @pytest.fixture()

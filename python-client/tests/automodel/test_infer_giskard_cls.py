@@ -9,30 +9,35 @@ from giskard.models.tensorflow import TensorFlowModel
 
 def pytorch_model():
     from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
+
     num_classes = 2
     input_dim = 768
 
     classifier_head = RobertaClassificationHead(num_classes=num_classes, input_dim=input_dim)
-    return XLMR_BASE_ENCODER.get_model(head=classifier_head, load_weights=False).to('cpu')
+    return XLMR_BASE_ENCODER.get_model(head=classifier_head, load_weights=False).to("cpu")
 
 
 def tensorflow_model():
     import tensorflow as tf
     from tensorflow import keras
-    return tf.keras.Sequential([
-        keras.layers.Dense(512, activation='relu', input_shape=(784,)),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(10, activation='softmax')
-    ])
+
+    return tf.keras.Sequential(
+        [
+            keras.layers.Dense(512, activation="relu", input_shape=(784,)),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(10, activation="softmax"),
+        ]
+    )
 
 
 def huggingface_model():
     from transformers import AutoModelForSequenceClassification
+
     return AutoModelForSequenceClassification.from_pretrained("camembert-base").to("cpu")
 
 
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
-    giskard_cls = infer_giskard_cls(lambda x: x ** 2)
+    giskard_cls = infer_giskard_cls(lambda x: x**2)
     assert giskard_cls == PredictionFunctionModel
 
     giskard_cls = infer_giskard_cls(german_credit_raw_model)

@@ -26,17 +26,16 @@ def test_autoserializablemodel_abstract():
     unsupported_model = UnsupportedModel()
     with pytest.raises(NotImplementedError) as e:
         Model(model=unsupported_model, model_type="regression")
-    assert e.match(
-        "We could not infer your model library.*")
+    assert e.match("We could not infer your model library.*")
 
 
 def test_autoserializablemodel_arbitrary_default():
     def prediction_function(df):
-        return df['x'] ** 2
+        return df["x"] ** 2
 
     my_model = Model(model=prediction_function, model_type="regression")
 
-    my_dataset = Dataset(df=pd.DataFrame({"x": [1., 2.], "y": [1, 2]}), target="y")
+    my_dataset = Dataset(df=pd.DataFrame({"x": [1.0, 2.0], "y": [1, 2]}), target="y")
 
     assert isinstance(my_model, PredictionFunctionModel)
     tests.utils.verify_model_upload(my_model, my_dataset)
@@ -56,7 +55,7 @@ def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_c
 
 def test_autoserializablemodel_arbitrary():
     my_model = MyArbitraryModel(
-        model=lambda x: x ** 2,
+        model=lambda x: x**2,
         model_type="regression",
     )
 

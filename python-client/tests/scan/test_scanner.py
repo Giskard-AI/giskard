@@ -90,7 +90,7 @@ def test_default_dataset_is_used_with_generative_model():
     model.is_text_generation = True
     scanner = Scanner()
 
-    with mock.patch('giskard.scanner.llm.utils.load_default_dataset') as load_default_dataset:
+    with mock.patch("giskard.scanner.llm.utils.load_default_dataset") as load_default_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
