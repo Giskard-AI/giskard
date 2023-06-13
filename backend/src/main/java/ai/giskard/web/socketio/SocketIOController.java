@@ -1,19 +1,17 @@
 package ai.giskard.web.socketio;
 
 import ai.giskard.service.ml.MLWorkerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
 import com.corundumstudio.socketio.SocketIOServer;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-@RestController
+@Controller
 public class SocketIOController {
 
-    @Autowired
-    private SocketIOServer socketServer;
+    private final SocketIOServer socketServer;
     private final MLWorkerService mlWorkerService;
 
 

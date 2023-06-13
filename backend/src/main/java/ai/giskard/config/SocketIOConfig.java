@@ -27,6 +27,7 @@ public class SocketIOConfig {
         } else {
             config.setPort(Integer.parseInt(port));
         }
+        config.setOrigin("http://localhost:8080");
         server = new SocketIOServer(config);
         server.start();
         return server;
