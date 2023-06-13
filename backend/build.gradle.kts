@@ -186,6 +186,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     testImplementation("org.testcontainers:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web") {
@@ -212,7 +213,6 @@ dependencies {
     implementation("com.h2database:h2")
     testImplementation("com.h2database:h2")
 
-    implementation("com.corundumstudio.socketio:netty-socketio:1.7.18")
 
 //    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")

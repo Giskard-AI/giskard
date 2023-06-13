@@ -1,24 +1,21 @@
 package ai.giskard.web.socketio;
 
 import ai.giskard.service.ml.MLWorkerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import com.corundumstudio.socketio.SocketIOServer;
+
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
 @Controller
+@RequiredArgsConstructor
 public class SocketIOController {
 
-    private final SocketIOServer socketServer;
     private final MLWorkerService mlWorkerService;
-
-
-    public SocketIOController(SocketIOServer socketServer, MLWorkerService mlWorkerService) {
-        this.socketServer = socketServer;
-        this.mlWorkerService = mlWorkerService;
-    }
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
 
     @PostConstruct
@@ -27,7 +24,8 @@ public class SocketIOController {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                socketServer.getBroadcastOperations().sendEvent("worker-status",
+                simpMessagingTemplate.convertAndSend(
+                    "/topic/worker-status",
                     new HashMap<String, Boolean>() {{
                         put("connected", mlWorkerService.isExternalWorkerConnected());
                     }}
