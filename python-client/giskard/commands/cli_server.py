@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -24,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 giskard_settings_path = settings.home_dir / "server-settings.yml"
 IMAGE_NAME = "docker.io/giskardai/giskard"
-
 
 def create_docker_client() -> DockerClient:
     try:
@@ -96,6 +96,30 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
             return None
 
 
+def _backend_ready(endpoint) -> bool:
+    try:
+        response = requests.get(endpoint)
+
+        if response.status_code != 200:
+            return False
+
+        return "UP" == response.json()['components']['readinessState']['status']
+    except OSError:
+        return False
+    except KeyError:
+        return False
+
+
+def _await_backend_ready(port: int):
+    endpoint = f"http://localhost:{port}/management/health"
+    backoff_time = 2
+    up = False
+
+    while not up:
+        time.sleep(backoff_time)
+        up = _backend_ready(endpoint)
+
+
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
@@ -120,6 +144,9 @@ def _start(attached=False, version=None):
             volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
         )
     container.start()
+
+    _await_backend_ready(port)
+
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
 
 
