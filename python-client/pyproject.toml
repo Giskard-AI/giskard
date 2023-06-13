@@ -57,7 +57,7 @@ test = [
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
-    "transformers>=4.27.4",
+    "transformers>=4.27.4, <4.30",
     "torch>=2.0.0",
     "torchdata>=0.6.0",
     "torchtext>=0.15.1",
@@ -108,7 +108,7 @@ giskard = "giskard.cli:cli"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b4"
+version = "2.0.0b6"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
@@ -189,7 +189,6 @@ ignore = ["E501"]
 target-version = ['py38', 'py39', 'py310']
 line-length = 120
 color = true
-skip-magic-trailing-comma = true
 
 exclude = '''
 /(

@@ -2,6 +2,9 @@ import getpass
 import hashlib
 import os
 import platform
+import sys
+import threading
+import traceback
 import uuid
 from functools import wraps
 from threading import Lock
@@ -27,7 +30,7 @@ def analytics_method(f):
                 return f(*args, **kwargs)
         except BaseException as e:  # NOSONAR
             try:
-                analytics.track('tracking error', {'error': str(e)})
+                analytics.track("tracking error", {"error": str(e)})
             except BaseException:  # NOSONAR
                 pass
 
@@ -75,6 +78,25 @@ def get_dataset_properties(dataset):
         "dataset_column_types": column_types,
         "dataset_column_dtypes": column_dtypes,
     }
+
+
+def _report_error(e):
+    exc = traceback.TracebackException.from_exception(e)
+    is_giskard_error = False
+
+    for frame in exc.stack:
+        if not is_giskard_error and "giskard" in frame.filename:
+            is_giskard_error = True
+        frame.filename = os.path.relpath(frame.filename)
+    if is_giskard_error:
+        analytics.track(
+            "python error",
+            {
+                "exception": fullname(e),
+                "error message": str(e),
+                "stack": "".join(exc.format()),
+            },
+        )
 
 
 class GiskardAnalyticsCollector:
@@ -140,6 +162,7 @@ class GiskardAnalyticsCollector:
     def initialize_giskard_version(self):
         if not self.giskard_version:
             import giskard
+
             self.giskard_version = giskard.get_version()
 
     def initialize_user_properties(self):
@@ -154,7 +177,7 @@ class GiskardAnalyticsCollector:
                     "os-full": platform.platform(aliased=True),
                 },
                 # only for aggregated stats: city, country, region. IP itself isn't stored
-                meta={'$ip': self.ip},
+                meta={"$ip": self.ip},
             )
 
     @staticmethod
@@ -178,9 +201,28 @@ class GiskardAnalyticsCollector:
             if self.ip:
                 return
             try:
-                self.ip = requests.get('https://api64.ipify.org/?format=json').json().get('ip', 'unknown')
+                self.ip = requests.get("https://api64.ipify.org/?format=json").json().get("ip", "unknown")
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 
+
+def add_exception_hook(original_hook=None):
+    def _exception_hook(type, value, traceback):
+        try:
+            _report_error(value)
+        except BaseException:  # noqa NOSONAR
+            pass
+
+        if original_hook:
+            return original_hook(type, value, traceback)
+        else:
+            return sys.__excepthook__(type, value, traceback)
+
+    return _exception_hook
+
+
+if not settings.disable_analytics:
+    sys.excepthook = add_exception_hook(sys.excepthook)
+    threading.excepthook = add_exception_hook(threading.excepthook)
 
 analytics = GiskardAnalyticsCollector()
