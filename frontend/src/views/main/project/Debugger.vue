@@ -73,27 +73,27 @@
       </div>
     </v-container>
   </div>
-  <v-container v-else class="d-flex flex-column vc fill-height">
+  <v-container v-else class="d-flex flex-column align-center">
     <h1 class="pt-16">ML Worker is not connected</h1>
     <StartWorkerInstructions></StartWorkerInstructions>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onActivated, watch } from "vue";
-import { $vfm } from 'vue-final-modal';
-import { api } from '@/api';
-import { useRouter, useRoute } from 'vue-router/composables';
-import { useMainStore } from "@/stores/main";
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from "@/stores/ml-worker";
-import { InspectionDTO } from "@/generated-sources";
+import {computed, onActivated, ref, watch} from "vue";
+import {$vfm} from 'vue-final-modal';
+import {api} from '@/api';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {useMainStore} from "@/stores/main";
+import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import {useMLWorkerStore} from "@/stores/ml-worker";
+import {InspectionDTO} from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { copyText } from "@/utils";
-import { TYPE } from "vue-toastification";
+import {copyText} from "@/utils";
+import {TYPE} from "vue-toastification";
 
 const router = useRouter();
 const route = useRoute();
