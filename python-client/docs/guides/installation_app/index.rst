@@ -27,9 +27,7 @@ You can either install and run the server **locally** or on an **external server
 
    .. tab-item:: Local installation
    
-      .. hint:: Docker requirement
-      
-         To install Giskard locally, you need a **running** ``docker`` (`download <https://docs.docker.com/engine/install/debian/>`_) setup.
+      .. hint:: **Docker requirements**: To install Giskard locally, you need a **running** ``docker``. After `installation <https://docs.docker.com/engine/install/debian/>`_ of Docker, you can run it in the background by just opening the Docker app (Mac or Windows)
          
          - For an easy installation of Docker you can execute:
 
@@ -38,7 +36,7 @@ You can either install and run the server **locally** or on an **external server
             sudo curl -fsSL https://get.docker.com -o get-docker.sh
             sudo sh get-docker.sh
             
-         - You don't have the sudo rights to run docker, please see the Docker setup(`page <https://docs.docker.com/engine/install/linux-postinstall/>`_)
+         - If you don't have the `sudo` rights to run docker, please see the Docker setup `page <https://docs.docker.com/engine/install/linux-postinstall/>`_
 
       To start the Giskard server, execute the following command in your terminal:
 
