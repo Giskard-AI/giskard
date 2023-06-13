@@ -3,6 +3,8 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ...testing.tests.calibration import test_overconfidence_rate
+
 from ..common.examples import ExampleExtractor
 
 from ..issues import Issue
@@ -106,6 +108,23 @@ class OverconfidenceIssue(CalibrationIssue):
     @property
     def metric(self) -> str:
         return "Overconfidence rate"
+
+    def generate_tests(self, with_names=False) -> list:
+        tests = [
+            test_overconfidence_rate(
+                model=self.model,
+                dataset=self.dataset,
+                slicing_function=self.info.slice_fn,
+                threshold=self.info.threshold,
+            )
+        ]
+
+        if with_names:
+            names = [f"Overconfidence on data slice “{self.info.slice_fn}”"]
+
+            return list(zip(tests, names))
+
+        return tests
 
 
 class UnderconfidenceIssue(CalibrationIssue):

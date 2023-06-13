@@ -1,0 +1,83 @@
+import numpy as np
+import pandas as pd
+from typing import Optional
+
+from ...ml_worker.testing.registry.decorators import test
+
+from ...ml_worker.testing.test_result import TestResult
+
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...datasets.base import Dataset
+from ...models.base import BaseModel
+
+
+def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
+    true_target = dataset.df.loc[:, dataset.target].values
+    pred = model.predict(dataset)
+    label2id = {label: n for n, label in enumerate(model.meta.classification_labels)}
+
+    # Empirical cost associated to overconfidence, i.e. the difference between
+    # the probability assigned to the predicted label and the correct label.
+    p_max = pred.probabilities
+    p_true_label = np.array([pred.raw[n, label2id[label]] for n, label in enumerate(true_target)])
+
+    overconfidence_score = p_max - p_true_label
+    return pd.Series(overconfidence_score, index=dataset.df.index)
+
+
+def _default_overconfidence_threshold(model: BaseModel) -> float:
+    n = len(model.meta.classification_labels)
+    return 1 / (3e-1 * (n - 2) + 2 - 1e-3 * (n - 2) ** 2)
+
+
+@test(name="overconfidence_rate", tags=["classification"])
+def test_overconfidence_rate(
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: Optional[float] = 0.10,
+    p_threshold: Optional[float] = None,
+):
+    """Tests that the rate of overconfident predictions is below a threshold.
+
+    Overconfident predictions are defined as predictions where the model
+    assigned a large probability to the wrong label. We quantify this as the
+    difference between the largest probability assigned to a label and the
+    probability assigned to the correct label (this will be 0 if the model
+    made the correct prediction). If this is larger than a threshold
+    (`p_threshold`, typically determined automatically depending on the number
+    of classes), then the prediction is considered overconfident.
+    We then calculate the rate of overconfident predictions as the number of
+    overconfident samples divided by the total number of wrongly predicted
+    samples, and check that it is below a user-specified threshold.
+
+    Arguments:
+        model(BaseModel): The model to test.
+        dataset(Dataset): The dataset to test the model on.
+        slicing_function(SlicingFunction, optional): An optional slicing function to use
+            to slice the dataset before testing. If not provided, the whole
+            dataset will be considered in calculating the overconfidence rate.
+        threshold(float, optional): The threshold for overconfident prediction rate, i.e.
+            the max ratio of overconfident samples over number of wrongly
+            predicted samples. Default is 0.10 (10%).
+        p_threshold(float, optional): The threshold for the difference between the
+            probability assigned to the wrong label and the correct label over
+            which a prediction is considered overconfident. If not provided,
+            it will be determined automatically depending on the number of
+            classes.
+    """
+    if not model.is_classification:
+        raise ValueError("This test is only applicable to classification models.")
+
+    if slicing_function is not None:
+        dataset = dataset.slice(slicing_function)
+
+    overconfidence_score = _calculate_overconfidence_score(model, dataset)
+
+    if p_threshold is None:
+        p_threshold = _default_overconfidence_threshold(model)
+
+    rate = (overconfidence_score[overconfidence_score > 0].dropna() > p_threshold).mean()
+    passed = rate < threshold
+
+    return TestResult(passed=passed, metric=rate)
