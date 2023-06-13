@@ -5,17 +5,17 @@ from giskard.datasets.base import Dataset
 
 valid_df = pd.DataFrame(
     {
-        "categorical_column": ['turtle', 'crocodile', 'turtle'],
-        "text_column": ['named Giskard', 'a nile crocodile', 'etc'],
+        "categorical_column": ["turtle", "crocodile", "turtle"],
+        "text_column": ["named Giskard", "a nile crocodile", "etc"],
         "numeric_column": [15.5, 25.9, 2.4],
     }
 )
-valid_df_column_types = {'categorical_column': 'category', 'text_column': 'text', 'numeric_column': 'numeric'}
+valid_df_column_types = {"categorical_column": "category", "text_column": "text", "numeric_column": "numeric"}
 
 nonvalid_df = pd.DataFrame(
     {
-        "categorical_column": [['turtle'], ['crocodile'], ['turtle']],
-        "text_column": [{1: 'named Giskard'}, {2: 'a nile crocodile'}, {3: 'etc'}],
+        "categorical_column": [["turtle"], ["crocodile"], ["turtle"]],
+        "text_column": [{1: "named Giskard"}, {2: "a nile crocodile"}, {3: "etc"}],
         "numeric_column": [(15.5, 1), (25.9, 2), (2.4, 3)],
     }
 )
@@ -35,9 +35,9 @@ def test_valid_df_column_types():
     ):
         my_dataset = Dataset(valid_df)
     assert my_dataset.column_types == {
-        'categorical_column': 'category',
-        'text_column': 'text',
-        'numeric_column': 'numeric',
+        "categorical_column": "category",
+        "text_column": "text",
+        "numeric_column": "numeric",
     }
 
     # Option 1: column_types is provided
@@ -45,7 +45,7 @@ def test_valid_df_column_types():
     assert my_dataset.column_types == valid_df_column_types
 
     # Option 2: cat_columns is provided
-    cat_columns = ['categorical_column']
+    cat_columns = ["categorical_column"]
     my_dataset = Dataset(valid_df, cat_columns=cat_columns)
     assert my_dataset.column_types == valid_df_column_types
 
@@ -72,7 +72,7 @@ def test_nonvalid_df_column_types():
         Dataset(nonvalid_df, column_types=valid_df_column_types)
 
     # Option 2: cat_columns is provided
-    cat_columns = ['categorical_column']
+    cat_columns = ["categorical_column"]
     with pytest.raises(
         TypeError,
         match=r"The following columns in your df: \['categorical_column', 'text_column'\] are not hashable\. "
@@ -97,18 +97,18 @@ def test_dataset_raises_exception_if_mixed_column_types():
 
 
 def test_inference_priority():
-    column_types = {'categorical_column': 'text'}
-    expected_df_column_types = {'categorical_column': 'text', 'text_column': 'text', 'numeric_column': 'numeric'}
+    column_types = {"categorical_column": "text"}
+    expected_df_column_types = {"categorical_column": "text", "text_column": "text", "numeric_column": "numeric"}
 
     # Case 1: only one column in column_types is provided
     my_dataset = Dataset(valid_df, column_types=column_types)
     assert my_dataset.column_types == expected_df_column_types
 
     # Case 2: one column in column_types is provided, one in cat_columns
-    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
     assert my_dataset.column_types == valid_df_column_types
 
     # Case 3: an unknown column in column_types is provided
-    column_types = {'unknown_column': 'text'}
-    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=['categorical_column'])
+    column_types = {"unknown_column": "text"}
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
     assert my_dataset.column_types == valid_df_column_types

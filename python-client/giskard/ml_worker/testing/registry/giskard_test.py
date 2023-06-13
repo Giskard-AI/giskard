@@ -47,7 +47,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
     @classmethod
     def _get_name(cls) -> str:
-        return 'tests'
+        return "tests"
 
     @classmethod
     def _get_meta_class(cls) -> type(SMT):
@@ -57,7 +57,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _save_locally(self, local_dir: Path):
-        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+        with open(Path(local_dir) / "data.pkl", "wb") as f:
             cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
@@ -72,14 +72,14 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: TestFunctionMeta):
         if local_dir.exists():
-            with open(Path(local_dir) / 'data.pkl', 'rb') as f:
+            with open(Path(local_dir) / "data.pkl", "rb") as f:
                 func = pickle.load(f)
         elif hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             return None
 
-        if inspect.isclass(func) or hasattr(func, 'meta'):
+        if inspect.isclass(func) or hasattr(func, "meta"):
             giskard_test = func()
         elif isinstance(func, GiskardTest):
             giskard_test = func
@@ -115,7 +115,7 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
         super(GiskardTest, self).__init__(meta)
 
-    def __call__(self, *args, **kwargs) -> 'GiskardTestMethod':
+    def __call__(self, *args, **kwargs) -> "GiskardTestMethod":
         instance = copy.deepcopy(self)
 
         instance.is_initialized = True
@@ -127,7 +127,7 @@ class GiskardTestMethod(GiskardTest):
         return instance
 
     def execute(self) -> Result:
-        analytics.track('test:execute', {"test_name": self.meta.full_name})
+        analytics.track("test:execute", {"test_name": self.meta.full_name})
 
         return self.test_fn(**self.params)
 
@@ -146,5 +146,5 @@ class GiskardTestMethod(GiskardTest):
         return GiskardTestMethod(self.test_fn)
 
     def _save_locally(self, local_dir: Path):
-        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+        with open(Path(local_dir) / "data.pkl", "wb") as f:
             cloudpickle.dump(self.test_fn, f, protocol=pickle.DEFAULT_PROTOCOL)

@@ -18,13 +18,13 @@ class TextTransformation(TransformationFunction):
     def __init__(self, column):
         super().__init__(None, row_level=False, cell_level=False)
         self.column = column
-        self.meta = DatasetProcessFunctionMeta(type='TRANSFORMATION')
+        self.meta = DatasetProcessFunctionMeta(type="TRANSFORMATION")
         self.meta.uuid = get_object_uuid(self)
         self.meta.code = self.name
         self.meta.name = self.name
         self.meta.display_name = self.name
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = 'Automatically generated transformation function'
+        self.meta.doc = "Automatically generated transformation function"
 
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
@@ -82,23 +82,23 @@ class TextTypoTransformation(TextTransformation):
         # Get the token's word and apply a perturbation with probability 0.1
         if random.random() < 0.2 and len(word) > 1:
             # Choose a perturbation type randomly
-            perturbation_type = random.choice(['insert', 'delete', 'replace'])
+            perturbation_type = random.choice(["insert", "delete", "replace"])
             # Apply the perturbation
-            if perturbation_type == 'insert':
+            if perturbation_type == "insert":
                 idx = random.randint(0, len(word))
                 new_char = chr(random.randint(33, 126))
                 word = word[:idx] + new_char + word[idx:]
                 return word
-            elif perturbation_type == 'delete':
+            elif perturbation_type == "delete":
                 idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1:]
+                word = word[:idx] + word[idx + 1 :]
                 return word
-            elif perturbation_type == 'replace':
+            elif perturbation_type == "replace":
                 j = random.randint(0, len(word) - 1)
                 c = word[j]
                 if c in self._typos:
                     replacement = random.choice(self._typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1:]
+                    text_modified = word[:j] + replacement + word[j + 1 :]
                     return text_modified
         return word
 
@@ -120,7 +120,7 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
         # The non-URLs are always even-numbered entries in the list and the URLs are odd-numbered.
         for i in range(0, len(split_urls_from_text), 2):
-            split_urls_from_text[i] = split_urls_from_text[i].translate(str.maketrans('', '', self._punctuation))
+            split_urls_from_text[i] = split_urls_from_text[i].translate(str.maketrans("", "", self._punctuation))
 
         stripped_text = "".join(split_urls_from_text)
 
@@ -140,7 +140,7 @@ class TextLanguageBasedTransformation(TextTransformation):
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         feature_data = dataset.df.loc[:, (self.column,)].dropna().astype(str)
-        meta_dataframe = dataset.column_meta[self.column, "text"].add_suffix('__gsk__meta')
+        meta_dataframe = dataset.column_meta[self.column, "text"].add_suffix("__gsk__meta")
         feature_data = feature_data.join(meta_dataframe)
         dataset.df.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation, axis=1)
         return dataset.df
@@ -178,7 +178,7 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 
         new_text = text
         for original_word, switched_word in replacements:
-            new_text = re.sub(fr"\b{original_word}\b", switched_word, new_text)
+            new_text = re.sub(rf"\b{original_word}\b", switched_word, new_text)
 
         return new_text
 
@@ -250,7 +250,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         for entity_type, income_type in ent_types:
             for n, entity_word in enumerate(nationalities_word_dict[entity_type][income_type]):
                 mask_value = f"__GSK__ENT__{entity_type}__{income_type}__{n}__"
-                text, num_rep = re.subn(fr"\b{entity_word}\b", mask_value, text, flags=re.IGNORECASE)
+                text, num_rep = re.subn(rf"\b{entity_word}\b", mask_value, text, flags=re.IGNORECASE)
                 if num_rep > 0:
                     r_income_type = "low-income" if income_type == "high-income" else "high-income"
                     replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])

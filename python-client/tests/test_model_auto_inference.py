@@ -24,6 +24,7 @@ def test_catboost():
 def test_huggingface():
     from giskard.models.huggingface import HuggingFaceModel
     from transformers import BertForSequenceClassification
+
     model_name = "cross-encoder/ms-marco-TinyBERT-L-2"
     my_model = BertForSequenceClassification.from_pretrained(model_name, num_labels=4, ignore_mismatched_sizes=True)
 
@@ -47,10 +48,13 @@ def test_tensorflow():
     from tensorflow import keras
     from giskard.models.tensorflow import TensorFlowModel
 
-    my_model = tf.keras.Sequential([
-        keras.layers.Dense(512, activation='relu', input_shape=(784,)),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(10, activation='softmax')])
+    my_model = tf.keras.Sequential(
+        [
+            keras.layers.Dense(512, activation="relu", input_shape=(784,)),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(10, activation="softmax"),
+        ]
+    )
     kwargs = {"model": my_model, "model_type": "classification", "classification_labels": [""]}
     my_automodel = Model(**kwargs)
     assert isinstance(my_automodel, TensorFlowModel)

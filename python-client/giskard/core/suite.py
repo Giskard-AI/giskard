@@ -27,18 +27,24 @@ class TestSuiteResult(tuple):
         _repr_html_(): Returns an HTML representation of all the tests result contained in the test suite.
 
     """
+
     def _repr_html_(self):
         passed = self[0]
-        tests_results = ''.join(
-            [f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}" for
-             key, value in self[1]])
+        tests_results = "".join(
+            [
+                f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
+                for key, value in self[1]
+            ]
+        )
         return """
                <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
                {3}
-               """.format('green' if passed else 'red',
-                          '\u2713' if passed else '\u00D7',
-                          'succeed' if passed else 'failed',
-                          tests_results)
+               """.format(
+            "green" if passed else "red",
+            "\u2713" if passed else "\u00D7",
+            "succeed" if passed else "failed",
+            tests_results,
+        )
 
 
 class SuiteInput:
@@ -59,11 +65,12 @@ class SuiteInput:
         >>> input_param.type
         <class 'int'>
     """
+
     type: Any
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        assert ptype in suite_input_types, f'Type should be one of those: {suite_input_types}'
+        assert ptype in suite_input_types, f"Type should be one of those: {suite_input_types}"
         self.name = name
         self.type = ptype
 
@@ -87,6 +94,7 @@ class DatasetInput(SuiteInput):
         >>> dataset_input.target
         'label'
     """
+
     target: Optional[str] = None
 
     def __init__(self, name: str, target: Optional[str] = None) -> None:
@@ -111,6 +119,7 @@ class ModelInput(SuiteInput):
         >>> model_input.model_type
         'SKLearnModel'
     """
+
     model_type: Optional[str] = None
 
     def __init__(self, name: str, model_type: Optional[str] = None) -> None:
@@ -148,11 +157,15 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client)
         uploaded_uuids.append(str(p.meta.uuid))
-        return TestInputDTO(name=pname, value=str(p.meta.uuid), type=ptype,
-                            params=[
-                                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key,
-                                                     uploaded_uuids) for pname, value in
-                                p.params.items()])
+        return TestInputDTO(
+            name=pname,
+            value=str(p.meta.uuid),
+            type=ptype,
+            params=[
+                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key, uploaded_uuids)
+                for pname, value in p.params.items()
+            ],
+        )
     elif isinstance(p, SuiteInput):
         return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
     else:
@@ -263,16 +276,21 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
-            suite_tests.append(SuiteTestDTO(
-                testUuid=t.giskard_test.upload(client),
-                functionInputs={
-                    pname: build_test_input_dto(client, p, pname, t.giskard_test.meta.args[pname].type, project_key,
-                                                uploaded_uuids) for pname, p in t.provided_inputs.items()}
-            ))
+            suite_tests.append(
+                SuiteTestDTO(
+                    testUuid=t.giskard_test.upload(client),
+                    functionInputs={
+                        pname: build_test_input_dto(
+                            client, p, pname, t.giskard_test.meta.args[pname].type, project_key, uploaded_uuids
+                        )
+                        for pname, p in t.provided_inputs.items()
+                    },
+                )
+            )
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> 'Suite':
+    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> "Suite":
         """
         Add a test to the suite.
 
@@ -292,8 +310,8 @@ class Suite:
             params = {k: v for k, v in test_fn.params.items() if v is not None}
         elif isinstance(test_fn, GiskardTest):
             params = {
-                k: test_fn.__dict__[k] for k, v
-                in inspect.signature(test_fn.__init__).parameters.items()
+                k: test_fn.__dict__[k]
+                for k, v in inspect.signature(test_fn.__init__).parameters.items()
                 if test_fn.__dict__[k] is not None
             }
         else:
@@ -322,15 +340,19 @@ class Suite:
                     elif isinstance(test_partial.provided_inputs[p.name], SuiteInput):
                         if test_partial.provided_inputs[p.name].type != p.annotation:
                             raise ValueError(
-                                f'Test {test_partial.giskard_test.func.__name__} requires {p.name} input to '
-                                f'be {p.annotation.__name__} '
-                                f'but {test_partial.provided_inputs[p.name].type.__name__} was provided')
+                                f"Test {test_partial.giskard_test.func.__name__} requires {p.name} input to "
+                                f"be {p.annotation.__name__} "
+                                f"but {test_partial.provided_inputs[p.name].type.__name__} was provided"
+                            )
                         res[test_partial.provided_inputs[p.name].name] = p.annotation
         return res
 
     def generate_tests(self, inputs: List[SuiteInput]):
-        giskard_tests = [test for test in tests_registry.get_all().values()
-                         if contains_tag(test, 'giskard') and not self._contains_test(test)]
+        giskard_tests = [
+            test
+            for test in tests_registry.get_all().values()
+            if contains_tag(test, "giskard") and not self._contains_test(test)
+        ]
 
         for test in giskard_tests:
             self._add_test_if_suitable(test, inputs)
@@ -339,13 +361,15 @@ class Suite:
 
     def _add_test_if_suitable(self, test_func: TestFunctionMeta, inputs: List[SuiteInput]):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
-        input_dict: Dict[str, SuiteInput] = {
-            i.name: i
-            for i in inputs
-        }
+        input_dict: Dict[str, SuiteInput] = {i.name: i for i in inputs}
 
-        if any([arg for arg in required_args if
-                arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__]):
+        if any(
+            [
+                arg
+                for arg in required_args
+                if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
+            ]
+        ):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
             return
@@ -356,15 +380,21 @@ class Suite:
             # Set default value if not provided
             suite_args[arg.name] = arg.default
 
-        models = [modelInput for modelInput in input_dict.values() if
-                  isinstance(modelInput, ModelInput)
-                  and modelInput.model_type is not None and modelInput.model_type != ""]
+        models = [
+            modelInput
+            for modelInput in input_dict.values()
+            if isinstance(modelInput, ModelInput) and modelInput.model_type is not None and modelInput.model_type != ""
+        ]
         if any(models) and not contains_tag(test_func, next(iter(models)).model_type):
             return
 
-        if contains_tag(test_func, 'ground_truth') \
-                and any([dataset for dataset in input_dict.values()
-                         if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""]):
+        if contains_tag(test_func, "ground_truth") and any(
+            [
+                dataset
+                for dataset in input_dict.values()
+                if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
+            ]
+        ):
             return
 
         self.add_test(GiskardTest.load(test_func.uuid, None, None).get_builder()(**suite_args))
@@ -381,4 +411,4 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
     if isinstance(result, TestResult):
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
-        return 'passed' if result else 'failed'
+        return "passed" if result else "failed"

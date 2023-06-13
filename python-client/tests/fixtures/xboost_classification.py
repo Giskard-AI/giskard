@@ -32,7 +32,7 @@ def breast_cancer_model(breast_cancer_data: Dataset) -> Model:
         breast_cancer_data.df[TARGET_COLUMN_NAME],
         random_state=RANDOM_SEED,
     )
-    xgb = XGBClassifier(objective='binary:logistic')
+    xgb = XGBClassifier(objective="binary:logistic")
     xgb.fit(X_train, y_train)
     return Model(
         model=xgb,
