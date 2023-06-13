@@ -35,7 +35,7 @@
                   </tr>
                   <tr>
                     <td>Project Unique Key:</td>
-                    <td>{{ project.key }}</td>
+                    <td @click.stop.prevent="copyText(project.key, 'Copied project key')" class="hoverable">{{ project.key }}</td>
                   </tr>
                 </v-simple-table>
               </v-col>
@@ -131,6 +131,7 @@ import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
 import { useRouter } from "vue-router/composables";
+import { copyText } from '@/utils';
 
 const router = useRouter();
 
@@ -258,5 +259,9 @@ async function deleteProject() {
 
 .flex-1 {
   flex: 1;
+}
+
+.hoverable {
+  cursor: pointer;
 }
 </style>
