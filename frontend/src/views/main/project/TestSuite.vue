@@ -29,7 +29,7 @@
         </v-tabs>
         <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
           <v-col>
-            <div class="d-flex align-center justify-center">
+            <div class="d-flex flex-wrap align-center">
               <v-select v-model="statusFilter" :items="statusFilterOptions" class="mr-4 max-w-150"
                         dense hide-details="auto" item-text="label" label="Test execution status" outlined
                         variant="underlined"
