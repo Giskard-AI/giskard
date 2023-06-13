@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+import { computed, ref, onActivated } from "vue";
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
@@ -11,6 +11,7 @@ import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue'
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { state } from "@/socket";
 
 const router = useRouter();
 
@@ -47,6 +48,8 @@ const filteredSessions = computed(() => {
     );
   }));
 })
+
+const workerStatus = computed(() => state.workerStatus);
 
 async function showPastSessions() {
   debuggingSessionsStore.reload();
