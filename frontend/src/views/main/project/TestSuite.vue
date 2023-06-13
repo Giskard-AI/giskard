@@ -1,75 +1,75 @@
 <template>
-  <div class="vc pb-0 parent-container">
-    <div class="vc">
-      <v-container class="main-container vc pt-0">
-        <div class="d-flex flex-wrap pl-3 pr-3">
-          <h1 class="test-suite-name">{{ suite.name }}</h1>
-          <div class="flex-grow-1"></div>
-          <v-btn text @click.stop="redirectToTesting">
-            <v-icon class="mr-2">mdi-arrow-left</v-icon>
+  <div class='vc pb-0 parent-container'>
+    <div class='vc'>
+      <v-container class='main-container vc pt-0'>
+        <div class='d-flex flex-wrap pl-3 pr-3'>
+          <h1 class='test-suite-name'>{{ suite.name }}</h1>
+          <div class='flex-grow-1'></div>
+          <v-btn text @click.stop='redirectToTesting'>
+            <v-icon class='mr-2'>mdi-arrow-left</v-icon>
             Back to all suites
           </v-btn>
-          <v-btn text @click="() => openSettings()">
+          <v-btn text @click='() => openSettings()'>
             Edit test suite
           </v-btn>
-          <v-btn v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" class='mx-1'
-                 color="secondary" outlined>
+          <v-btn v-if='hasTest' :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" class='mx-1'
+                 color='secondary' outlined>
             Add test
           </v-btn>
         </div>
-        <v-tabs class="pl-3 pr-3 mt-2">
+        <v-tabs class='pl-3 pr-3 mt-2'>
           <v-tab :to="{ name: 'test-suite-overview' }">
-            <v-icon class="mr-2">mdi-chart-bar</v-icon>
-            <span class="tab-item-text">Report</span>
+            <v-icon class='mr-2'>mdi-chart-bar</v-icon>
+            <span class='tab-item-text'>Report</span>
           </v-tab>
           <v-tab :to="{ name: 'test-suite-executions' }">
-            <v-icon class="mr-2">history</v-icon>
-            <span class="tab-item-text">Past executions</span>
+            <v-icon class='mr-2'>history</v-icon>
+            <span class='tab-item-text'>Past executions</span>
           </v-tab>
         </v-tabs>
-        <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
+        <v-row v-if='!hideHeader' class='mt-0 overview-container pl-3 pr-3 pb-3'>
           <v-col>
-            <div class="d-flex flex-wrap align-center">
-              <v-select v-model="statusFilter" :items="statusFilterOptions" class="mr-4 max-w-150"
-                        dense hide-details="auto" item-text="label" label="Test execution status" outlined
-                        variant="underlined"
-                        @input="handleFilterChanged">
+            <div class='d-flex flex-wrap align-center'>
+              <v-select v-model='statusFilter' :items='statusFilterOptions' class='mr-4 max-w-150'
+                        dense hide-details='auto' item-text='label' label='Test execution status' outlined
+                        variant='underlined'
+                        @input='handleFilterChanged'>
               </v-select>
-              <v-text-field v-model="searchFilter" append-icon="search" class="max-w-250" dense hide-details="auto"
-                            label="Search test" outlined placeholder="Performance" type="text"
-                            @input="handleFilterChanged"></v-text-field>
-              <div class="flex-grow-1"></div>
+              <v-text-field v-model='searchFilter' append-icon='search' class='max-w-250' dense hide-details='auto'
+                            label='Search test' outlined placeholder='Performance' type='text'
+                            @input='handleFilterChanged'></v-text-field>
+              <div class='flex-grow-1'></div>
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <div v-on="on">
-                    <v-btn color="primary" disabled large text @click="openExportDialog">Export
+                <template v-slot:activator='{ on, attrs }'>
+                  <div v-on='on'>
+                    <v-btn color='primary' disabled large text @click='openExportDialog'>Export
                     </v-btn>
                   </div>
                 </template>
                 <span>Coming soon</span>
               </v-tooltip>
-              <v-btn v-if="hasTest && hasInput && !hasJobInProgress" class='mx-1' color="primary" large
+              <v-btn v-if='hasTest && hasInput && !hasJobInProgress' class='mx-1' color='primary' large
                      outlined @click='openRunTestSuite(true)'>
                 Compare
               </v-btn>
-              <v-btn v-if="hasTest" :loading="hasJobInProgress" class='mx-1' color="primary" large
+              <v-btn v-if='hasTest' :loading='hasJobInProgress' class='mx-1' color='primary' large
                      @click='handleRunTestSuite'>
                 Run test suite
               </v-btn>
             </div>
           </v-col>
         </v-row>
-        <v-row class="vc overview-container pl-3 mt-0">
-          <v-col class="vc pb-0" cols="12">
-            <router-view/>
+        <v-row class='vc overview-container pl-3 mt-0'>
+          <v-col class='vc pb-0' cols='12'>
+            <router-view />
           </v-col>
         </v-row>
       </v-container>
     </div>
 
-    <v-dialog v-model="displayWorkerInstructions" max-width="70vw" @click:outside="openWorkerInstructions = false">
+    <v-dialog v-model='displayWorkerInstructions' max-width='70vw' @click:outside='openWorkerInstructions = false'>
       <v-card>
-        <v-card-title class="py-6">
+        <v-card-title class='py-6'>
           <h2>ML Worker is not connected</h2>
         </v-card-title>
         <v-card-text>
@@ -80,23 +80,23 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang='ts' setup>
 
-import {computed, onActivated, ref, watch} from "vue";
-import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
-import {storeToRefs} from 'pinia';
-import {useRoute, useRouter} from 'vue-router/composables';
-import {$vfm} from 'vue-final-modal';
+import { computed, onActivated, ref, watch } from 'vue';
+import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {useCatalogStore} from "@/stores/catalog";
-import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
-import {api} from "@/api";
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {useMLWorkerStore} from "@/stores/ml-worker";
-import ExportTestModalVue from "./modals/ExportTestModal.vue";
-import {debounce} from "lodash";
-import mixpanel from "mixpanel-browser";
-import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { useCatalogStore } from '@/stores/catalog';
+import EditTestSuiteModal from '@/views/main/project/modals/EditTestSuiteModal.vue';
+import { api } from '@/api';
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { useMLWorkerStore } from '@/stores/ml-worker';
+import ExportTestModalVue from './modals/ExportTestModal.vue';
+import { debounce } from 'lodash';
+import mixpanel from 'mixpanel-browser';
+import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 
 const testSuitesStore = useTestSuitesStore();
 const mlWorkerStore = useMLWorkerStore();
@@ -115,13 +115,13 @@ const {
   statusFilter,
   searchFilter,
   hasJobInProgress
-} = storeToRefs(useTestSuiteStore())
+} = storeToRefs(useTestSuiteStore());
 
 onActivated(() => loadData());
 watch(() => props.suiteId, () => loadData());
 
-const {loadTestSuites, runTestSuite} = useTestSuiteStore();
-const {loadCatalog} = useCatalogStore();
+const { loadTestSuites, runTestSuite } = useTestSuiteStore();
+const { loadCatalog } = useCatalogStore();
 
 const router = useRouter();
 const route = useRoute();
@@ -130,7 +130,7 @@ const openWorkerInstructions = ref(false);
 
 const displayWorkerInstructions = computed(() => !mlWorkerStore.isExternalWorkerConnected && openWorkerInstructions.value);
 
-const hideHeader = computed(() => route.name === 'test-suite-configuration')
+const hideHeader = computed(() => route.name === 'test-suite-configuration');
 
 async function loadData() {
   await loadTestSuites(props.projectId, props.suiteId);
@@ -161,7 +161,7 @@ async function openRunTestSuite(compareMode: boolean) {
 }
 
 async function openSettings() {
-  const project = await api.getProject(props.projectId)
+  const project = await api.getProject(props.projectId);
   $vfm.show({
     component: EditTestSuiteModal,
     bind: {
@@ -174,12 +174,12 @@ async function openSettings() {
 
 async function redirectToTesting() {
   testSuitesStore.setCurrentTestSuiteId(null);
-  await router.push({name: 'project-testing'});
+  await router.push({ name: 'project-testing' });
 }
 
 function openExportDialog() {
   $vfm.show({
-    component: ExportTestModalVue,
+    component: ExportTestModalVue
   });
 }
 
@@ -188,7 +188,7 @@ const handleFilterChanged = debounce(() => mixpanel.track('Filter tests of test 
   projectId: props.projectId,
   statusFilter: statusFilter.value,
   searchFilter: searchFilter.value
-}), 1000)
+}), 1000);
 
 function handleRunTestSuite() {
   openRunTestSuite(false);
@@ -197,7 +197,7 @@ function handleRunTestSuite() {
 </script>
 
 
-<style lang="scss" scoped>
+<style lang='scss' scoped>
 .main-container {
   width: 100%;
   max-width: 100%;
