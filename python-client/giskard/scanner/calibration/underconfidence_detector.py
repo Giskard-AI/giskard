@@ -1,6 +1,7 @@
 from typing import Sequence
-import numpy as np
 import pandas as pd
+
+from ...testing.tests.calibration import _calculate_underconfidence_score
 
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
@@ -29,15 +30,7 @@ class UnderconfidenceDetector(LossBasedDetector):
         return super().run(model, dataset)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-        # Empirical cost associated to underconfidence: difference between
-        # the two most probable classes.
-        ps = model.predict(dataset).raw
-
-        # Relative difference
-        ps_2 = -np.partition(-ps, 1, axis=-1)[:, :2]
-        loss_values = ps_2.min(axis=-1) / ps_2.max(axis=-1)
-
-        return pd.DataFrame({self.LOSS_COLUMN_NAME: loss_values}, index=dataset.df.index)
+        return _calculate_underconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)
 
     def _find_issues(
         self,
@@ -89,6 +82,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                             loss_values=meta[self.LOSS_COLUMN_NAME],
                             fail_idx=fail_idx,
                             threshold=self.threshold,
+                            p_threshold=self.p_threshold,
                         ),
                     )
                 )

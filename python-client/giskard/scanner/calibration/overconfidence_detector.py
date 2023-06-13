@@ -79,6 +79,7 @@ class OverconfidenceDetector(LossBasedDetector):
                             loss_values=meta[self.LOSS_COLUMN_NAME],
                             fail_idx=fail_idx,
                             threshold=self.threshold,
+                            p_threshold=p_threshold,
                         ),
                     )
                 )
