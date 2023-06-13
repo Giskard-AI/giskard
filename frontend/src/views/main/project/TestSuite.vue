@@ -2,27 +2,28 @@
     <div class="vc pb-0 parent-container">
         <div class="vc">
             <v-container class="main-container vc pt-0">
-                <div class="d-flex pl-3 pr-3">
-                    <h1 class="test-suite-name">{{ suite.name }}</h1>
-                    <div class="flex-grow-1"></div>
-                    <v-btn text @click.stop="redirectToTesting">
-                        <v-icon class="mr-2">mdi-arrow-left</v-icon>
-                        Back to all suites
-                    </v-btn>
-                    <v-btn text @click="() => openSettings()">
-                        Edit test suite
-                    </v-btn>
-                    <v-btn outlined class='mx-1' v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
-                        Add test
-                    </v-btn>
-                </div>
-                <v-tabs class="pl-3 pr-3 mt-2">
-                    <v-tab :to="{ name: 'test-suite-overview' }">
-                        <v-icon class="mr-2">mdi-chart-bar</v-icon>
-                        <span class="tab-item-text">Report</span>
-                    </v-tab>
-                    <v-tab :to="{ name: 'test-suite-executions' }">
-                        <v-icon class="mr-2">history</v-icon>
+              <div class="d-flex flex-wrap pl-3 pr-3">
+                <h1 class="test-suite-name">{{ suite.name }}</h1>
+                <div class="flex-grow-1"></div>
+                <v-btn text @click.stop="redirectToTesting">
+                  <v-icon class="mr-2">mdi-arrow-left</v-icon>
+                  Back to all suites
+                </v-btn>
+                <v-btn text @click="() => openSettings()">
+                  Edit test suite
+                </v-btn>
+                <v-btn outlined class='mx-1' v-if="hasTest"
+                       :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" color="secondary">
+                  Add test
+                </v-btn>
+              </div>
+              <v-tabs class="pl-3 pr-3 mt-2">
+                <v-tab :to="{ name: 'test-suite-overview' }">
+                  <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                  <span class="tab-item-text">Report</span>
+                </v-tab>
+                <v-tab :to="{ name: 'test-suite-executions' }">
+                  <v-icon class="mr-2">history</v-icon>
                         <span class="tab-item-text">Past executions</span>
                     </v-tab>
                 </v-tabs>
@@ -74,19 +75,19 @@
 
 <script lang="ts" setup>
 
-import { computed, onActivated, ref, watch } from "vue";
-import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { $vfm } from 'vue-final-modal';
+import {computed, onActivated, ref, watch} from "vue";
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import { useCatalogStore } from "@/stores/catalog";
+import {useCatalogStore} from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
-import { api } from "@/api";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { useMLWorkerStore } from "@/stores/ml-worker";
+import {api} from "@/api";
+import {useTestSuitesStore} from "@/stores/test-suites";
+import {useMLWorkerStore} from "@/stores/ml-worker";
 import ExportTestModalVue from "./modals/ExportTestModal.vue";
-import { debounce } from "lodash";
+import {debounce} from "lodash";
 import mixpanel from "mixpanel-browser";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
@@ -94,7 +95,7 @@ const testSuitesStore = useTestSuitesStore();
 const mlWorkerStore = useMLWorkerStore();
 
 const props = defineProps<{
-    projectId: number,
+  projectId: number,
     suiteId: number
 }>();
 
