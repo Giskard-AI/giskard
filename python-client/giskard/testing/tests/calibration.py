@@ -102,7 +102,7 @@ def test_underconfidence_rate(
     dataset: Dataset,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
-    p_threshold: float = 0.95,
+    p_threshold: float = 0.90,
 ):
     """Tests that the rate of underconfident predictions is below a threshold.
 
@@ -111,7 +111,7 @@ def test_underconfidence_rate(
     changes can make the model flip its predicted label. By default, we mark a
     prediction as underconfident when the second most probable prediction has a
     probability which is only less than 5% smaller than the predicted label
-    (`p_threshold=0.95`).
+    (`p_threshold=0.90`).
     We then calculate the rate of underconfident predictions as the number of
     underconfident samples divided by the total number of samples, and check
     that it is below the user-specified threshold.
@@ -129,8 +129,8 @@ def test_underconfidence_rate(
         p_threshold(float, optional): The threshold for the relative value of
             the second most-probable prediction and the max probability. If
             greater that this value, the prediction is considered
-            underconfident. Default is 0.95, i.e. when the second most probable
-            prediction is 95% or more with respect to the highest probability,
+            underconfident. Default is 0.90, i.e. when the second most probable
+            prediction is 90% or more with respect to the highest probability,
             the sample prediction is considered underconfident.
     """
     if not model.is_classification:
