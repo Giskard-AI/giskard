@@ -58,6 +58,7 @@ class UnderconfidenceDetector(LossBasedDetector):
             fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > self.p_threshold)].index
 
             # Skip non representative slices
+            # @TODO: do this with a statistical test instead of filtering by count only
             if len(fail_idx) < 20:
                 continue
 
