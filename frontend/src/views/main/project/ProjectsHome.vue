@@ -107,7 +107,7 @@
     <v-dialog v-model="openPrepareDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="ImportIfNoConflictKey()">
+          <v-form @submit.prevent="importIfNoConflictKey()">
             <v-card-text>
               <div class="title">Set new key for the imported project</div>
               <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{ errors }">
@@ -175,19 +175,19 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {ValidationObserver} from "vee-validate";
-import {Role} from "@/enums";
-import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
-import {toSlug} from "@/utils";
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, onMounted, ref, watch } from "vue";
+import { ValidationObserver } from "vee-validate";
+import { Role } from "@/enums";
+import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
+import { toSlug } from "@/utils";
+import { useRoute, useRouter } from "vue-router/composables";
 import moment from "moment";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {api} from "@/api";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 
 const route = useRoute();
 const router = useRouter();
@@ -196,6 +196,8 @@ const userStore = useUserStore();
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
+
+const defaultRoute: string = 'project-testing';
 
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const openPrepareDialog = ref<boolean>(false);
@@ -211,17 +213,9 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultRoute: string = 'project-catalog';
-
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
 const file = ref<File | null>(null);
-
-onMounted(async () => {
-  const f = route.query.f ? route.query.f[0] || '' : '';
-  creatorFilter.value = parseInt(f) || 0;
-  await loadProjects();
-})
 
 // computed
 const userProfile = computed(() => {
@@ -246,6 +240,17 @@ const projects = computed(() => {
 })
 
 // functions
+function clearAndCloseDialog() {
+  dialogForm.value?.reset();
+  openCreateDialog.value = false;
+  openImportDialog.value = false;
+  openPrepareDialog.value = false;
+  newProjectName.value = '';
+  newProjectKey.value = '';
+  newProjectDesc.value = '';
+  projectCreateError.value = '';
+}
+
 async function loadProjects() {
   await projectStore.getProjects();
 }
@@ -276,7 +281,7 @@ async function prepareImport() {
     .finally(() => preparingImport.value = false);
 }
 
-async function ImportIfNoConflictKey() {
+async function importIfNoConflictKey() {
   if (!file.value) {
     return;
   }
@@ -310,17 +315,6 @@ async function ImportIfNoConflictKey() {
   }
 }
 
-function clearAndCloseDialog() {
-  dialogForm.value?.reset();
-  openCreateDialog.value = false;
-  openImportDialog.value = false;
-  openPrepareDialog.value = false;
-  newProjectName.value = '';
-  newProjectKey.value = '';
-  newProjectDesc.value = '';
-  projectCreateError.value = '';
-}
-
 async function submitNewProject() {
   if (!newProjectName.value) {
     return;
@@ -344,17 +338,23 @@ async function submitNewProject() {
   }
 }
 
-// watchers
-watch(() => newProjectName.value, (value) => {
-  newProjectKey.value = toSlug(value);
-})
-
 async function updateCurrentProject(projectId: number) {
   projectStore.setCurrentProjectId(projectId);
   await testSuitesStore.loadTestSuites(projectId);
   await debuggingSessionsStore.loadDebuggingSessions(projectId);
   await router.push({ name: defaultRoute, params: { id: projectId.toString() } });
 }
+
+// watchers
+watch(() => newProjectName.value, (value) => {
+  newProjectKey.value = toSlug(value);
+})
+
+onMounted(async () => {
+  const f = route.query.f ? route.query.f[0] || '' : '';
+  creatorFilter.value = parseInt(f) || 0;
+  await loadProjects();
+})
 </script>
 
 <style>
