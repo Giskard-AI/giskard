@@ -280,11 +280,6 @@ async function refresh() {
     await projectArtifactsStore.loadProjectArtifacts(false);
 }
 
-// // make filteredSuites reactive
-// watch(searchSession, () => {
-//     filteredSuites.value;
-// });
-
 onActivated(async () => {
     searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
