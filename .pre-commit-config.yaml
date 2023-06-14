@@ -1,16 +1,20 @@
 repos:
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 22.10.0
     hooks:
       - id: black
+        files: '^.*\.py$'
+        args:
+          - "--config"
+          - "python-client/pyproject.toml"
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: ""
+    rev: v0.0.272
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: ""
-    hooks:
-      - id: prettier
+        files: '^.*\.py$'
+        args:
+          - "--config"
+          - "python-client/pyproject.toml"
+          - "--fix"
+          - "--exit-non-zero-on-fix"

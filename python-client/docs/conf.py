@@ -1,3 +1,7 @@
+import inspect
+import os
+import sys
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -6,31 +10,32 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Giskard'
-copyright = '2023, Giskard AI'
-author = 'Giskard AI'
-release = '2.0.0'
+project = "Giskard"
+copyright = "2023, Giskard AI"
+author = "Giskard AI"
+release = "2.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-import os
 
-extensions = ["myst_parser",
-              'nbsphinx',
-              'sphinx_design',
-              'sphinx.ext.todo',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.linkcode',
-              'sphinx_tabs.tabs',
-              'sphinx_copybutton',
-              'sphinx_tabs.tabs',
-              'sphinx_click',
-              'sphinx_favicon']
+extensions = [
+    "myst_parser",
+    "nbsphinx",
+    "sphinx_design",
+    "sphinx.ext.todo",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.linkcode",
+    "sphinx_tabs.tabs",
+    "sphinx_copybutton",
+    "sphinx_tabs.tabs",
+    "sphinx_click",
+    "sphinx_favicon",
+]
 
 # autodoc_mock_imports = ["giskard.ml_worker.generated"]
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 myst_enable_extensions = [
     "amsmath",
@@ -57,12 +62,12 @@ myst_enable_extensions = [
 
 html_title = "Giskard Documentation"
 
-html_theme = 'furo'
-html_static_path = ['_static']
+html_theme = "furo"
+html_static_path = ["_static"]
 
 favicons = [{"href": "giskard_logo.png"}]
 
-html_css_files = ['css/custom.css']
+html_css_files = ["css/custom.css"]
 html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js"]
 
 html_theme_options = {
@@ -111,6 +116,7 @@ else:
     branch = docs_version.replace("-", "/")
 
 nbsphinx_execute = "never"
+# fmt: off
 nbsphinx_prolog = """
 .. raw:: html
 
@@ -119,12 +125,9 @@ nbsphinx_prolog = """
     <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
     </div>
 """
+# fmt: on
 
-import inspect
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath("../"))
 
 pygments_style = "github-dark"
 pygments_dark_style = "material"
