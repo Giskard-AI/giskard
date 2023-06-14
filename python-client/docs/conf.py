@@ -116,6 +116,7 @@ else:
     branch = docs_version.replace("-", "/")
 
 nbsphinx_execute = "never"
+# fmt: off
 nbsphinx_prolog = """
 .. raw:: html
 
@@ -124,6 +125,7 @@ nbsphinx_prolog = """
     <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
     </div>
 """
+# fmt: on
 
 sys.path.insert(0, os.path.abspath("../"))
 
