@@ -197,8 +197,6 @@ const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 
-const defaultRoute: string = 'project-testing';
-
 const openCreateDialog = ref<boolean>(false); // toggle for edit or create dialog
 const openPrepareDialog = ref<boolean>(false);
 const openImportDialog = ref<boolean>(false);
@@ -342,7 +340,7 @@ async function updateCurrentProject(projectId: number) {
   projectStore.setCurrentProjectId(projectId);
   await testSuitesStore.loadTestSuites(projectId);
   await debuggingSessionsStore.loadDebuggingSessions(projectId);
-  await router.push({ name: defaultRoute, params: { id: projectId.toString() } });
+  await router.push({ name: 'project-home', params: { id: projectId.toString() } });
 }
 
 // watchers
