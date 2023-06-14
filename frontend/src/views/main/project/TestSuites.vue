@@ -66,7 +66,7 @@
                                 </v-col>
                                 <v-col cols="1">
                                     <v-card-actions>
-                                        <v-btn icon @click.stop.prevent="deleteTestSuite(suite)">
+                                        <v-btn icon @click.stop.prevent="deleteTestSuite(suite.suite)">
                                             <v-icon color="accent">delete</v-icon>
                                         </v-btn>
                                     </v-card-actions>
@@ -248,8 +248,13 @@ function deleteTestSuite(suite: any) {
         on: {
             async confirm(close) {
                 await api.deleteSuite(suite.projectKey!, suite.id!);
-                await testSuitesStore.reload();
+                await testSuitesStore.reloadComplete();
                 close();
+                useMainStore().addNotification({
+                    content: `The test suite '${suite.name}' has been deleted.`,
+                    color: TYPE.SUCCESS,
+                    showProgress: false
+                });
 
                 mixpanel.track('Delete test suite',
                     {
