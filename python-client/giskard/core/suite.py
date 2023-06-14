@@ -232,7 +232,7 @@ class Suite:
                 if verbose:
                     print("""Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params,
                                                                               result))
-            except Exception as e:
+            except Exception:
                 error = traceback.format_exc()
                 logging.error(error)
                 res.append((test_partial.test_name,
