@@ -30,7 +30,7 @@ export const useMainStore = defineStore('main', {
         license: null,
         coworkers: [],
         notifications: [],
-        backendReady: false
+        backendReady: true
     }),
     getters: {
         authAvailable(state: State) {
