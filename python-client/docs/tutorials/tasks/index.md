@@ -1,4 +1,4 @@
-# ML tasks
+# By ML tasks
 
 ```{toctree}
 :caption: Table of Contents
