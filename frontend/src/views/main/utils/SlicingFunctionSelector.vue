@@ -1,15 +1,16 @@
 <template>
     <div class="d-flex" :class="{ w100: fullWidth }">
-      <v-select clearable :outlined="fullWidth" class="slice-function-selector" :label="label" v-model="value"
+      <v-select clearable :outlined='fullWidth' class='slice-function-selector' :label='label' v-model='value'
                 :items="[{
             name: 'None',
             displayName: 'None',
             uuid: null,
             args: []
-        }, ...slicingFunctions]" :item-text="extractName" item-value="uuid" :return-object="false" @input="onInput"
-                :dense="fullWidth" hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-        <template v-slot:append-item v-if="allowNoCodeSlicing">
-          <v-list-item @click="createSlice">
+        }, ...availableSlicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false'
+                @input='onInput'
+                :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
+        <template v-slot:append-item v-if='allowNoCodeSlicing'>
+          <v-list-item @click='createSlice'>
             <v-list-item-content>
               <v-list-item-title>
                 <v-icon>add</v-icon>
@@ -28,14 +29,15 @@
 <script setup lang="ts">
 
 
-import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
-import {computed} from "vue";
-import {$vfm} from "vue-final-modal";
-import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
-import {chain} from "lodash";
-import CreateSliceModal from "@/views/main/project/modals/CreateSliceModal.vue";
+import { DatasetDTO, FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
+import { storeToRefs } from 'pinia';
+import { useCatalogStore } from '@/stores/catalog';
+import { computed } from 'vue';
+import { $vfm } from 'vue-final-modal';
+import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal.vue';
+import { chain } from 'lodash';
+import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
+import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -47,17 +49,21 @@ const props = withDefaults(defineProps<{
   dataset?: DatasetDTO,
   allowNoCodeSlicing: boolean
 }>(), {
-    fullWidth: true,
-    icon: false,
-    allowNoCodeSlicing: false
+  fullWidth: true,
+  icon: false,
+  allowNoCodeSlicing: false
 });
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore())
+const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore());
+
+const availableSlicingFunctions = computed(() => props.dataset
+  ? slicingFunctions.value.filter(slicingFn => DatasetProcessFunctionUtils.canApply(slicingFn, props.dataset!))
+  : slicingFunctions.value);
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
-    return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
+  return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name;
 }
 
 async function onInput(value) {
