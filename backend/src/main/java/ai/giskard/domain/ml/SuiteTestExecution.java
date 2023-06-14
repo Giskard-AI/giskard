@@ -87,7 +87,7 @@ public class SuiteTestExecution extends BaseEntity {
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
         this.status = message.getIsError()
             ? TestResult.ERROR : message.getPassed()
-            ? TestResult.PASSED : TestResult.ERROR;
+            ? TestResult.PASSED : TestResult.FAILED;
         this.metric = message.getMetric();
         this.actualSlicesSize = message.getActualSlicesSizeList();
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
