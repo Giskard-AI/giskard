@@ -81,7 +81,7 @@
             </div>
 
         </v-container>
-        <v-container v-else-if="projectArtifactsStore.datasets.length > 0 && projectArtifactsStore.models.length" class="vc mt-6 fill-height">
+        <v-container v-else-if="projectArtifactsStore.datasets.length > 0 && projectArtifactsStore.models.length > 0" class="vc mt-6 fill-height">
             <v-alert class="text-center">
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
             </v-alert>
