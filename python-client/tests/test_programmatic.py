@@ -127,7 +127,7 @@ def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseM
     assert result[1][0][1].messages[0].type is TestMessageLevel.ERROR
     assert 'The sliced dataset in test_f1 is empty.' in result[1][0][1].messages[0].text
     assert result[1][1][1].passed is True
-    assert result[1][0][1].is_error is False
+    assert result[1][1][1].is_error is False
 
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
