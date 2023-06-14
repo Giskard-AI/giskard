@@ -81,7 +81,7 @@
             </div>
 
         </v-container>
-        <v-container v-else class="vc mt-6 fill-height">
+        <v-container v-else-if="projectArtifactsStore.datasets.length > 0 && projectArtifactsStore.models.length" class="vc mt-6 fill-height">
             <v-alert class="text-center">
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
             </v-alert>
@@ -93,28 +93,84 @@
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
             </div>
         </v-container>
+        <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
+            <div class="d-flex mb-6">
+                <v-spacer></v-spacer>
+
+                <div class="mr-2">
+                    <v-btn @click="refresh">
+                        Reload
+                        <v-icon right>refresh</v-icon>
+                    </v-btn>
+                    <v-btn v-if="projectArtifactsStore.datasets.length > 0" color="primary" class="ml-2" @click="">
+                        Upload with API
+                        <v-icon right>mdi-application-braces-outline</v-icon>
+                    </v-btn>
+                </div>
+            </div>
+            <p class="font-weight-medium secondary--text">There are no artifacts (datasets and models) in this project yet. Follow the code snippet below to upload them and create a test suite 👇</p>
+            <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
+            <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
+        </v-container>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { api } from "@/api";
-import { computed, onActivated, ref } from "vue";
+import { apiURL } from "@/env";
+import { computed, onActivated, ref, watch } from "vue";
 import router from '@/router';
-import { useTestSuitesStore } from "@/stores/test-suites";
 import { useMainStore } from "@/stores/main";
+import { useProjectStore } from "@/stores/project";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import { TYPE } from "vue-toastification";
 import InlineEditText from '@/components/InlineEditText.vue';
 import { $vfm } from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import mixpanel from "mixpanel-browser";
+import CodeSnippet from '@/components/CodeSnippet.vue';
+import { JWTToken } from "@/generated-sources";
 
+const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
+const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = defineProps<{
     projectId: number
 }>();
 
 const searchSession = ref("");
+const apiAccessToken = ref<JWTToken | null>(null);
+
+const codeContent = computed(() =>
+    `import giskard
+
+# for demo purposes only 🛳️. Replace with your dataframe creation
+original_model, original_df = giskard.demo.titanic()
+
+# Create a Giskard client
+token = "${apiAccessToken.value?.id_token}"
+client = giskard.GiskardClient(
+    url="${apiURL}",  # URL of your Giskard instance
+    token=token
+)
+
+# Wrap your model and dataset with Giskard 🎁
+giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
+giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
+
+# Scan your model for potential issues 🕵️
+results = giskard.scan(giskard_model, giskard_dataset)
+
+# Upload an automatically created test suite to the current project ✉️
+results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
+`
+);
+
+const project = computed(() => {
+    return projectStore.project(props.projectId)
+});
 
 const filteredSuites = computed(() => {
     return testSuitesStore.testSuitesComplete.filter(suite => suite.suite.name.toLowerCase().includes(searchSession.value.toLowerCase()));
@@ -171,16 +227,6 @@ async function redirectToTestSuite(projectId: string, suiteId: string) {
     });
 }
 
-onActivated(async () => {
-    searchSession.value = "";
-    if (testSuitesStore.currentTestSuiteId !== null) {
-        await redirectToTestSuite(props.projectId.toString(), testSuitesStore.currentTestSuiteId.toString());
-    } else {
-        await testSuitesStore.loadTestSuites(props.projectId);
-        await testSuitesStore.loadTestSuiteComplete(props.projectId);
-    }
-})
-
 async function renameSuite(suiteId: number, name: string) {
     const currentSuite = testSuitesStore.testSuites.find(s => s.id === suiteId);
 
@@ -216,6 +262,35 @@ function deleteTestSuite(suite: any) {
     });
 }
 
+const generateApiAccessToken = async () => {
+    try {
+        apiAccessToken.value = await api.getApiAccessToken();
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function refresh() {
+    await testSuitesStore.reloadComplete();
+    await projectArtifactsStore.loadProjectArtifacts(false);
+}
+
+// // make filteredSuites reactive
+// watch(searchSession, () => {
+//     filteredSuites.value;
+// });
+
+onActivated(async () => {
+    searchSession.value = "";
+    if (testSuitesStore.currentTestSuiteId !== null) {
+        await redirectToTestSuite(props.projectId.toString(), testSuitesStore.currentTestSuiteId.toString());
+    } else {
+        await testSuitesStore.loadTestSuites(props.projectId);
+        await testSuitesStore.loadTestSuiteComplete(props.projectId);
+        await projectArtifactsStore.setProjectId(props.projectId, false);
+    }
+    await generateApiAccessToken();
+})
 </script>
 
 <style scoped>
