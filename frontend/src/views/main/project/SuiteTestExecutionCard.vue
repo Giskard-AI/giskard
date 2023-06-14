@@ -6,7 +6,7 @@
                 <span v-if="transformationFunction"> to {{
                     transformationFunction.displayName ?? transformationFunction.name
                   }}</span>
-                <span v-if="slicingFunction"> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
+                <span v-if='slicingFunction'> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
           <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
               <div class="d-flex flex-row gap-4">
@@ -16,29 +16,22 @@
                   </v-chip>
               </div>
           -->
-          <div class="flex-grow-1"/>
-          <div v-if="result"
-               :class="`d-flex flex-row align-center gap-8 ${result.passed ? 'test-passed' : 'test-failed'}`">
-                <span v-if="result.metric" class="metric">Measured <strong>Metric = {{
+          <div class='flex-grow-1' />
+          <div v-if='result'
+               :class='`d-flex flex-row align-center gap-8 test-${result.status.toLowerCase()}`'>
+                <span v-if='result.metric' class='metric'>Measured <strong>Metric = {{
                     result.metric
                   }}</strong></span>
-            <v-chip v-if="errors.length > 0" color="#fff3cd" text-color="#856404"
-                    label link @click="openLogs">
-              <v-icon class="mr-1">mdi-alert-outline</v-icon>
-              Error
-            </v-chip>
-            <v-chip v-else-if="result.passed" :color="Colors.PASS_SURFACE" :text-color="Colors.ON_PASS_SURFACE" label>
-              <v-icon class="mr-1">done</v-icon>
-              Passed
-            </v-chip>
-            <v-chip v-else :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
-              <v-icon class="mr-1">close</v-icon>
-              Failed
+            <v-chip :color='TEST_RESULT_DATA[result.status].color'
+                    :text-color='TEST_RESULT_DATA[result.status].textColor'
+                    label link @click='openLogs'>
+              <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
+              {{ TEST_RESULT_DATA[result.status].capitalized }}
             </v-chip>
             <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <div v-on="on">
-                  <v-btn color="primary" outlined small disabled>
+              <template v-slot:activator='{ on, attrs }'>
+                <div v-on='on'>
+                  <v-btn color='primary' outlined small disabled>
                     <v-icon small>info</v-icon>
                     Debug
                   </v-btn>
@@ -66,19 +59,19 @@
 
 <script setup lang="ts">
 
-import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
-import {computed} from "vue";
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
-import {Colors} from "@/utils/colors";
-import {$vfm} from "vue-final-modal";
-import SuiteTestInfoModal from "@/views/main/project/modals/SuiteTestInfoModal.vue";
-import {useTestSuiteStore} from "@/stores/test-suite";
-import ExecutionLogsModal from "@/views/main/project/modals/ExecutionLogsModal.vue";
-import mixpanel from "mixpanel-browser";
+import { SuiteTestDTO, SuiteTestExecutionDTO } from '@/generated-sources';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useCatalogStore } from '@/stores/catalog';
+import { $vfm } from 'vue-final-modal';
+import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
+import mixpanel from 'mixpanel-browser';
+import { TEST_RESULT_DATA } from '@/utils/tests.utils';
 
-const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore())
-const {models, datasets} = storeToRefs(useTestSuiteStore())
+const { slicingFunctionsByUuid, transformationFunctionsByUuid } = storeToRefs(useCatalogStore());
+const { models, datasets } = storeToRefs(useTestSuiteStore());
 
 const props = defineProps<{
   suiteTest: SuiteTestDTO,
@@ -88,10 +81,10 @@ const props = defineProps<{
 }>();
 
 const params = computed(() => props.isPastExecution && props.result
-    ? props.result?.inputs
-    : Object.values(props.suiteTest.functionInputs)
-        .filter(input => !input.isAlias)
-        .reduce((r, input) => ({ ...r, [input.name]: input.value }), {}))
+  ? props.result?.inputs
+  : Object.values(props.suiteTest.functionInputs)
+    .filter(input => !input.isAlias)
+    .reduce((r, input) => ({ ...r, [input.name]: input.value }), {}));
 
 function mapValue(value: string, type: string): string {
     if (type === 'SlicingFunction') {

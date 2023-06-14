@@ -44,13 +44,13 @@
                                         <span class="font-weight-bold">{{ suite.suite.tests.length }} tests in total</span>
                                         <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
                                           <span class="passed-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => result.passed).length
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.PASSED).length
                                             }} passing</span>
                                           <span class="failed-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => !result.passed && result.messages?.find(({type}) => type === 'ERROR') === undefined).length
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.FAILED).length
                                             }} failing</span>
                                           <span class="error-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => result.messages?.find(({type}) => type === 'ERROR') !== undefined).length
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.ERROR).length
                                             }} with error</span>
                                         </div>
                                     </div>
@@ -104,24 +104,25 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "@/api";
-import { computed, onActivated, ref } from "vue";
+import { api } from '@/api';
+import { computed, onActivated, ref } from 'vue';
 import router from '@/router';
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { useMainStore } from "@/stores/main";
-import { TYPE } from "vue-toastification";
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { useMainStore } from '@/stores/main';
+import { TYPE } from 'vue-toastification';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from "vue-final-modal";
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import mixpanel from "mixpanel-browser";
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import mixpanel from 'mixpanel-browser';
+import { TestResult } from '@/generated-sources';
 
 const testSuitesStore = useTestSuitesStore();
 
 const props = defineProps<{
-    projectId: number
+  projectId: number
 }>();
 
-const searchSession = ref("");
+const searchSession = ref('');
 
 const filteredSuites = computed(() => {
     return testSuitesStore.testSuitesComplete.filter(suite => suite.suite.name.toLowerCase().includes(searchSession.value.toLowerCase()));

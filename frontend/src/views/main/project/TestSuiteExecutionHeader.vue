@@ -43,25 +43,25 @@
 
 <script setup lang="ts">
 
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {computed} from 'vue';
-import {$vfm} from 'vue-final-modal';
+import { SuiteTestDTO, SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
+import { computed } from 'vue';
+import { $vfm } from 'vue-final-modal';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {plurialize} from "@/utils/string.utils";
-import {Colors} from "@/utils/colors";
-import {timeSince} from "@/utils/time.utils";
-import mixpanel from "mixpanel-browser";
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { plurialize } from '@/utils/string.utils';
+import { Colors } from '@/utils/colors';
+import { timeSince } from '@/utils/time.utils';
+import mixpanel from 'mixpanel-browser';
 
 const props = defineProps<{
-    tests: {
-        suiteTest: SuiteTestDTO
-        result?: SuiteTestExecutionDTO
-    }[],
-    execution?: TestSuiteExecutionDTO,
-    compact: boolean,
-    tryMode: boolean
+  tests: {
+    suiteTest: SuiteTestDTO
+    result?: SuiteTestExecutionDTO
+  }[],
+  execution?: TestSuiteExecutionDTO,
+  compact: boolean,
+  tryMode: boolean
 }>();
 
 const {suite, projectId} = storeToRefs(useTestSuiteStore());
@@ -93,10 +93,9 @@ const testResultStyle = computed(() => {
 })
 
 const successRatio = computed(() => ({
-  passed: executedTests.value.filter(({result}) => result!.passed).length,
-  // TODO: add status error to differentiate failed
-  failed: executedTests.value.filter(({result}) => !result!.passed && result!.messages?.find(({type}) => type === 'ERROR') === undefined).length,
-  error: executedTests.value.filter(({result}) => result!.messages?.find(({type}) => type === 'ERROR') !== undefined).length
+  passed: executedTests.value.filter(({ result }) => result!.status === TestResult.PASSED).length,
+  failed: executedTests.value.filter(({ result }) => result!.status === TestResult.FAILED).length,
+  error: executedTests.value.filter(({ result }) => result!.status === TestResult.ERROR).length
 }))
 
 const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
