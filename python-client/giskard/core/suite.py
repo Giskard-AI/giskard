@@ -1,5 +1,6 @@
 import inspect
 import logging
+import traceback
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional
 
@@ -11,7 +12,7 @@ from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -224,11 +225,19 @@ class Suite:
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
-            test_params = self.create_test_params(test_partial, suite_run_args)
-            result = test_partial.giskard_test.get_builder()(**test_params).execute()
-            res.append((test_partial.test_name, result))
-            if verbose:
-                print("""Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result))
+            try:
+                test_params = self.create_test_params(test_partial, suite_run_args)
+                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+                res.append((test_partial.test_name, result))
+                if verbose:
+                    print("""Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params,
+                                                                              result))
+            except Exception as e:
+                error = traceback.format_exc()
+                logging.error(error)
+                res.append((test_partial.test_name,
+                            TestResult(passed=False, is_error=True,
+                                       messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)])))
 
         result = single_binary_result([result for name, result in res])
 
