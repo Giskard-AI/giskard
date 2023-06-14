@@ -65,6 +65,7 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
     try:
         import eli5
         from eli5.lime import TextExplainer
+
         text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
         prediction_function = text_explanation_prediction_wrapper(model.predict_df, input_df, text_column)
         text_explain_attempts = 10

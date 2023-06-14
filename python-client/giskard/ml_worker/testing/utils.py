@@ -16,11 +16,11 @@ class Direction(Enum):
 def validate_classification_label(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        reference_slice = kwargs.get('reference_dataset', None)
-        actual_slice = kwargs.get('dataset', None)
-        model = kwargs.get('model', None)
-        classification_label = kwargs.get('classification_label', None)
-        target = getattr(reference_slice, 'target', getattr(actual_slice, 'target', None))
+        reference_slice = kwargs.get("reference_dataset", None)
+        actual_slice = kwargs.get("dataset", None)
+        model = kwargs.get("model", None)
+        classification_label = kwargs.get("classification_label", None)
+        target = getattr(reference_slice, "target", getattr(actual_slice, "target", None))
 
         # Try to automatically cast `classification_label` to the right type
         if (
@@ -38,7 +38,7 @@ def validate_classification_label(func):
             assert classification_label != target, (
                 'By "classification_label", we refer to one of the values: '
                 f'{model.meta.classification_labels} and not the target: "{target}". '
-                'Please re-assign this argument.'
+                "Please re-assign this argument."
             )
 
         assert (

@@ -26,12 +26,12 @@ def readable_hex(data):
     if not os.environ.get("GSK_ML_WORKER_LOG_HEX", False):
         return ""
     s = codecs.encode(data, "hex").decode()
-    return " ".join(s[i: i + 2] for i in range(0, len(s), 2))
+    return " ".join(s[i : i + 2] for i in range(0, len(s), 2))
 
 
 def is_pre_release(current_version: str):
     # A very dummy pre-release checker, to be improved
-    return re.match(r'.*[a-z].*', current_version) is not None
+    return re.match(r".*[a-z].*", current_version) is not None
 
 
 @threaded
@@ -40,13 +40,13 @@ def check_latest_giskard_version():
         current_version = giskard.__version__
         if not is_pre_release(current_version):
             return
-        respose = requests.get('https://pypi.org/pypi/giskard/json').json()
-        releases = respose.get('releases')
+        respose = requests.get("https://pypi.org/pypi/giskard/json").json()
+        releases = respose.get("releases")
         releases_dates = {}
         if current_version not in releases:
             return
         for ver, resources in releases.items():
-            latest_release_date = max(map(lambda r: datetime.datetime.fromisoformat(r['upload_time']), resources))
+            latest_release_date = max(map(lambda r: datetime.datetime.fromisoformat(r["upload_time"]), resources))
             releases_dates[ver] = latest_release_date
         latest_version, latest_release_date = max(releases_dates.items(), key=lambda x: x[1])
 
@@ -54,7 +54,7 @@ def check_latest_giskard_version():
             warning(
                 "You're using a pre-release version of giskard while a "
                 "new version is available, please install it with: "
-                f"pip install \"giskard=={latest_version}\""
+                f'pip install "giskard=={latest_version}"'
             )
     except BaseException as e:
         logger.exception("Failed to fetch latest giskard version", e)

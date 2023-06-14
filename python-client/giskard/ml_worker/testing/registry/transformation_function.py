@@ -17,7 +17,7 @@ from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_r
 
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
-default_tags = ['transformation']
+default_tags = ["transformation"]
 
 
 class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
@@ -29,7 +29,7 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
     @classmethod
     def _get_name(cls) -> str:
-        return 'transformations'
+        return "transformations"
 
     def __init__(self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False):
         self.func = func
@@ -39,11 +39,12 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None and func is not None:
-            meta = tests_registry.register(DatasetProcessFunctionMeta(func, tags=default_tags, type='TRANSFORMATION',
-                                                                      cell_level=self.cell_level))
+            meta = tests_registry.register(
+                DatasetProcessFunctionMeta(func, tags=default_tags, type="TRANSFORMATION", cell_level=self.cell_level)
+            )
         super().__init__(meta)
 
-    def __call__(self, *args, **kwargs) -> 'TransformationFunction':
+    def __call__(self, *args, **kwargs) -> "TransformationFunction":
         self.is_initialized = True
         self.params = kwargs
 
@@ -63,10 +64,10 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
             Union[pd.Series, pd.DataFrame]: The transformed data.
         """
         if self.cell_level:
-            actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
+            actual_params = {k: v for k, v in self.params.items() if k != "column_name"}
 
             def apply(row: pd.Series) -> pd.Series:
-                row[self.params['column_name']] = self.func(row[self.params['column_name']], **actual_params)
+                row[self.params["column_name"]] = self.func(row[self.params["column_name"]], **actual_params)
                 return row
 
             return data.apply(apply, axis=1)
@@ -80,11 +81,13 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         return DatasetProcessFunctionMeta
 
 
-def transformation_function(_fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
-                            row_level=True,
-                            cell_level=False,
-                            name=None,
-                            tags: Optional[List[str]] = None):
+def transformation_function(
+    _fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
+    row_level=True,
+    cell_level=False,
+    name=None,
+    tags: Optional[List[str]] = None,
+):
     """
     Decorator that registers a function as a transformation function and returns a TransformationFunction instance.
     It can be used for transforming datasets in a specific way during testing.
@@ -99,12 +102,19 @@ def transformation_function(_fn: Union[TransformationFunctionType, Type[Transfor
                        will be applied to individual cells instead of rows or the entire dataframe.
     :return: The wrapped function or a new instance of TransformationFunction.
     """
+
     def inner(func: Union[TransformationFunctionType, Type[TransformationFunction]]) -> TransformationFunction:
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
-                                       type='TRANSFORMATION', cell_level=cell_level))
+            DatasetProcessFunctionMeta(
+                func,
+                name=name,
+                tags=default_tags if not tags else (default_tags + tags),
+                type="TRANSFORMATION",
+                cell_level=cell_level,
+            )
+        )
 
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func

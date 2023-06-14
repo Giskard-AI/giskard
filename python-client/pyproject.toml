@@ -23,7 +23,7 @@ doc = "python -m sphinx_autobuild docs docs/_build/html"
 [tool.pdm.dev-dependencies]
 dev = [
     "typing-extensions>=4.5.0",
-    "black>=23.3.0",
+    "black[d]>=23.3.0",
     "bandit>=1.7.4",
     "darglint>=1.8.1",
     "jupyter>=1.0.0",
@@ -108,7 +108,7 @@ giskard = "giskard.cli:cli"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b4"
+version = "2.0.0b7"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },

@@ -39,8 +39,8 @@ class MLWorker:
         server = grpc.aio.server(
             interceptors=[MLWorkerRequestInterceptor()],
             options=[
-                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024 ** 2),
-                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024 ** 2),
+                ("grpc.max_send_message_length", settings.max_send_message_length_mb * 1024**2),
+                ("grpc.max_receive_message_length", settings.max_receive_message_length_mb * 1024**2),
             ],
         )
 

@@ -8,13 +8,17 @@ import pandas as pd
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import RegistryArtifact
-from giskard.ml_worker.testing.registry.decorators_utils import validate_arg_type, drop_arg, \
-    make_all_optional_or_suite_input, set_return_type
+from giskard.ml_worker.testing.registry.decorators_utils import (
+    validate_arg_type,
+    drop_arg,
+    make_all_optional_or_suite_input,
+    set_return_type,
+)
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
 SlicingFunctionType = Callable[..., bool]
 
-default_tags = ['filter']
+default_tags = ["filter"]
 
 
 class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
@@ -28,6 +32,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         params (Dict): Additional parameters for the slicing function.
         is_initialized (bool): Indicates if the slicing function has been initialized.
     """
+
     func: SlicingFunctionType
     row_level: bool
     cell_level: bool
@@ -42,7 +47,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         :return: The name of the class.
         :rtype: str
         """
-        return 'slices'
+        return "slices"
 
     def __init__(self, func: Optional[SlicingFunctionType], row_level=True, cell_level=False):
         """
@@ -62,11 +67,11 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
         if meta is None and func is not None:
-            meta = DatasetProcessFunctionMeta(func, tags=default_tags, type='SLICE', cell_level=self.cell_level)
+            meta = DatasetProcessFunctionMeta(func, tags=default_tags, type="SLICE", cell_level=self.cell_level)
             tests_registry.register(meta)
         super().__init__(meta)
 
-    def __call__(self, *args, **kwargs) -> 'SlicingFunction':
+    def __call__(self, *args, **kwargs) -> "SlicingFunction":
         self.is_initialized = True
         self.params = kwargs
 
@@ -86,8 +91,8 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
             Union[pd.Series, pd.DataFrame]: The sliced data.
         """
         if self.cell_level:
-            actual_params = {k: v for k, v in self.params.items() if k != 'column_name'}
-            return data.loc[data.apply(lambda row: self.func(row[self.params['column_name']], **actual_params), axis=1)]
+            actual_params = {k: v for k, v in self.params.items() if k != "column_name"}
+            return data.loc[data.apply(lambda row: self.func(row[self.params["column_name"]], **actual_params), axis=1)]
         if self.row_level:
             return data.loc[data.apply(lambda row: self.func(row, **self.params), axis=1)]
         else:
@@ -128,12 +133,17 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
     """
 
     def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
-
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
         tests_registry.register(
-            DatasetProcessFunctionMeta(func, name=name, tags=default_tags if not tags else (default_tags + tags),
-                                       type='SLICE', cell_level=cell_level))
+            DatasetProcessFunctionMeta(
+                func,
+                name=name,
+                tags=default_tags if not tags else (default_tags + tags),
+                type="SLICE",
+                cell_level=cell_level,
+            )
+        )
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 

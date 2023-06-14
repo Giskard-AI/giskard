@@ -6,6 +6,7 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+
 try:
     from types import NoneType
 except ImportError:
@@ -34,6 +35,7 @@ def _get_plugin_method_full_name(func):
 def create_test_function_id(func):
     try:
         from giskard.ml_worker.testing.registry.registry import plugins_root
+
         # is_relative_to is only available from python 3.9
         is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
     except ValueError:
@@ -70,9 +72,7 @@ class SavableMeta:
         self.uuid = uuid
 
     def to_json(self):
-        return {
-            "uuid": self.uuid
-        }
+        return {"uuid": self.uuid}
 
     @classmethod
     def from_json(cls, json):
@@ -127,12 +127,14 @@ class CallableMeta(SavableMeta, ABC):
     type: str
     args: Dict[str, FunctionArgument]
 
-    def __init__(self,
-                 callable_obj: Union[Callable, Type] = None,
-                 name: Optional[str] = None,
-                 tags: List[str] = None,
-                 version: Optional[int] = None,
-                 type: str = None):
+    def __init__(
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        version: Optional[int] = None,
+        type: str = None,
+    ):
         self.version = version
         self.type = type
         self.name = name
@@ -169,12 +171,11 @@ class CallableMeta(SavableMeta, ABC):
                     name=parameter.name,
                     type=extract_optional(parameter.annotation).__qualname__,
                     optional=parameter.default != inspect.Parameter.empty,
-                    default=None if parameter.default == inspect.Parameter.empty
-                    else parameter.default,
-                    argOrder=idx
+                    default=None if parameter.default == inspect.Parameter.empty else parameter.default,
+                    argOrder=idx,
                 )
                 for idx, parameter in enumerate(parameters.values())
-                if name != 'self'
+                if name != "self"
             }
 
     def extract_parameters(self, callable_obj):
@@ -233,7 +234,11 @@ class CallableMeta(SavableMeta, ABC):
                     "default": arg.default,
                     "optional": arg.optional,
                     "argOrder": arg.argOrder,
-                } for arg in self.args.values()] if self.args else None
+                }
+                for arg in self.args.values()
+            ]
+            if self.args
+            else None,
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -247,15 +252,20 @@ class CallableMeta(SavableMeta, ABC):
         self.tags = json["tags"]
         self.version = json["version"]
         self.type = json["type"]
-        self.args = {
-            arg["name"]: FunctionArgument(
-                name=arg["name"],
-                type=arg["type"],
-                default=arg["defaultValue"],
-                optional=arg["optional"],
-                argOrder=arg["argOrder"]
-            ) for arg in json["args"]
-        } if json["args"] else None
+        self.args = (
+            {
+                arg["name"]: FunctionArgument(
+                    name=arg["name"],
+                    type=arg["type"],
+                    default=arg["defaultValue"],
+                    optional=arg["optional"],
+                    argOrder=arg["argOrder"],
+                )
+                for arg in json["args"]
+            }
+            if json["args"]
+            else None
+        )
 
 
 def __repr__(self) -> str:
@@ -280,15 +290,17 @@ class DatasetProcessFunctionMeta(CallableMeta):
     process_type: DatasetProcessFunctionType
     clauses: Optional[List[Dict[str, Any]]]
 
-    def __init__(self,
-                 callable_obj: Union[Callable, Type] = None,
-                 name: Optional[str] = None,
-                 tags: List[str] = None,
-                 version: Optional[int] = None,
-                 type: str = None,
-                 process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
-                 cell_level: bool = False,
-                 clauses: Optional[List[Dict[str, Any]]] = None):
+    def __init__(
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        version: Optional[int] = None,
+        type: str = None,
+        process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
+        cell_level: bool = False,
+        clauses: Optional[List[Dict[str, Any]]] = None,
+    ):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
         self.process_type = process_type
@@ -312,10 +324,10 @@ class DatasetProcessFunctionMeta(CallableMeta):
         json = super().to_json()
         return {
             **json,
-            'cellLevel': self.cell_level,
-            'columnType': self.column_type,
-            'processType': self.process_type.value,
-            'clauses': self.clauses
+            "cellLevel": self.cell_level,
+            "columnType": self.column_type,
+            "processType": self.process_type.value,
+            "clauses": self.clauses,
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -326,8 +338,8 @@ class DatasetProcessFunctionMeta(CallableMeta):
         self.clauses = json["clauses"]
 
 
-DT = TypeVar('DT')
-SMT = TypeVar('SMT', bound=SavableMeta)
+DT = TypeVar("DT")
+SMT = TypeVar("SMT", bound=SavableMeta)
 
 
 def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
@@ -339,14 +351,16 @@ def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[i
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
     allowed_types = allowed_types + list(map(lambda x: Optional[x], allowed_types))
 
-    has_kwargs = any([param for param in parameters if
-                      not any([param.annotation == allowed_type for allowed_type in allowed_types])])
+    has_kwargs = any(
+        [param for param in parameters if not any([param.annotation == allowed_type for allowed_type in allowed_types])]
+    )
 
-    parameters = [param for param in parameters if
-                  any([param.annotation == allowed_type for allowed_type in allowed_types])]
+    parameters = [
+        param for param in parameters if any([param.annotation == allowed_type for allowed_type in allowed_types])
+    ]
 
     if has_kwargs:
-        parameters.append(inspect.Parameter(name='kwargs', kind=4, annotation=Kwargs))
+        parameters.append(inspect.Parameter(name="kwargs", kind=4, annotation=Kwargs))
 
     return parameters
 
@@ -359,14 +373,14 @@ def extract_optional(field):
 
 
 class ComparisonType(Enum):
-    IS = 'IS'
-    IS_NOT = 'IS_NOT'
-    CONTAINS = 'CONTAINS'
-    DOES_NOT_CONTAINS = 'DOES_NOT_CONTAINS'
-    STARTS_WITH = 'STARTS_WITH'
-    ENDS_WITH = 'ENDS_WITH'
-    IS_EMPTY = 'IS_EMPTY'
-    IS_NOT_EMPTY = 'IS_NOT_EMPTY'
+    IS = "IS"
+    IS_NOT = "IS_NOT"
+    CONTAINS = "CONTAINS"
+    DOES_NOT_CONTAINS = "DOES_NOT_CONTAINS"
+    STARTS_WITH = "STARTS_WITH"
+    ENDS_WITH = "ENDS_WITH"
+    IS_EMPTY = "IS_EMPTY"
+    IS_NOT_EMPTY = "IS_NOT_EMPTY"
 
 
 @dataclass

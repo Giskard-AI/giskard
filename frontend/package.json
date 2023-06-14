@@ -72,8 +72,6 @@
     "vuetify-loader": "^1.9.2"
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 10"
+    "last 2 years"
   ]
 }

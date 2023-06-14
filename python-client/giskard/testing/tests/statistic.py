@@ -14,8 +14,13 @@ from giskard.ml_worker.testing.utils import check_slice_not_empty
 
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
-def test_right_label(model: BaseModel, dataset: Dataset, classification_label: str,
-                     slicing_function: Optional[SlicingFunction] = None, threshold: float = 0.5) -> TestResult:
+def test_right_label(
+    model: BaseModel,
+    dataset: Dataset,
+    classification_label: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 0.5,
+) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
 
@@ -64,9 +69,15 @@ def test_right_label(model: BaseModel, dataset: Dataset, classification_label: s
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
-def test_output_in_range(model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None,
-                         classification_label: Optional[str] = None, min_range: float = 0.3, max_range: float = 0.7,
-                         threshold: float = 0.5) -> TestResult:
+def test_output_in_range(
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    classification_label: Optional[str] = None,
+    min_range: float = 0.3,
+    max_range: float = 0.7,
+    threshold: float = 0.5,
+) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
 

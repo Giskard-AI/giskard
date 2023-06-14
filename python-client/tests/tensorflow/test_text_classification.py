@@ -10,19 +10,19 @@ from giskard.models.tensorflow import TensorFlowModel
 def test_text_classification_1d_output(imdb_data):
     raw_train_ds, raw_test_ds = imdb_data
 
-    test_dataset = {'Review': [], 'Label': []}
+    test_dataset = {"Review": [], "Label": []}
     for text_batch, label_batch in raw_test_ds.take(782):
         for i in range(8):
-            test_dataset['Review'].append(text_batch.numpy()[i])
-            test_dataset['Label'].append(label_batch.numpy()[i])
+            test_dataset["Review"].append(text_batch.numpy()[i])
+            test_dataset["Label"].append(label_batch.numpy()[i])
         test_df = pd.DataFrame.from_dict(test_dataset)
 
     max_features = 10000
     sequence_length = 250
     vectorize_layer = tf.keras.layers.TextVectorization(
-        standardize='lower_and_strip_punctuation',
+        standardize="lower_and_strip_punctuation",
         max_tokens=max_features,
-        output_mode='int',
+        output_mode="int",
         output_sequence_length=sequence_length,
     )
 
@@ -43,13 +43,13 @@ def test_text_classification_1d_output(imdb_data):
     )
 
     model.compile(
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer='adam', metrics=['accuracy']
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=["accuracy"]
     )
 
     export_model = tf.keras.Sequential([vectorize_layer, model])
 
     export_model.compile(
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=["accuracy"]
     )
 
     def FromPandastoTFModelInput(test_df):
@@ -60,7 +60,7 @@ def test_text_classification_1d_output(imdb_data):
     my_model = TensorFlowModel(
         name="Tensorflow_text_classification",
         model=export_model,
-        feature_names=['Review'],
+        feature_names=["Review"],
         model_type="classification",
         classification_labels=[0, 1],
         data_preprocessing_function=FromPandastoTFModelInput,
@@ -74,19 +74,19 @@ def test_text_classification_1d_output(imdb_data):
 def test_text_classification_2d_output(imdb_data):
     raw_train_ds, raw_test_ds = imdb_data
 
-    test_dataset = {'Review': [], 'Label': []}
+    test_dataset = {"Review": [], "Label": []}
     for text_batch, label_batch in raw_test_ds.take(782):
         for i in range(8):
-            test_dataset['Review'].append(text_batch.numpy()[i])
-            test_dataset['Label'].append(label_batch.numpy()[i])
+            test_dataset["Review"].append(text_batch.numpy()[i])
+            test_dataset["Label"].append(label_batch.numpy()[i])
         test_df = pd.DataFrame.from_dict(test_dataset)
 
     max_features = 10000
     sequence_length = 250
     vectorize_layer = tf.keras.layers.TextVectorization(
-        standardize='lower_and_strip_punctuation',
+        standardize="lower_and_strip_punctuation",
         max_tokens=max_features,
-        output_mode='int',
+        output_mode="int",
         output_sequence_length=sequence_length,
     )
 
@@ -108,13 +108,13 @@ def test_text_classification_2d_output(imdb_data):
     )
 
     model.compile(
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer='adam', metrics=['accuracy']
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=["accuracy"]
     )
 
     export_model = tf.keras.Sequential([vectorize_layer, model])
 
     export_model.compile(
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=["accuracy"]
     )
 
     def FromPandastoTFModelInput(test_df):
@@ -125,7 +125,7 @@ def test_text_classification_2d_output(imdb_data):
     my_model = TensorFlowModel(
         name="Tensorflow_text_classification",
         model=export_model,
-        feature_names=['Review'],
+        feature_names=["Review"],
         model_type="classification",
         classification_labels=[0, 1],
         data_preprocessing_function=FromPandastoTFModelInput,

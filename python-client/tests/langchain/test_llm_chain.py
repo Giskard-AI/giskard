@@ -21,9 +21,9 @@ def test_llm_chain():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = Model(chain, model_type='text_generation')
+    wrapped_model = Model(chain, model_type="text_generation")
 
-    df = pd.DataFrame(["colorful socks", "electric car"], columns=['product'])
+    df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
     wrapped_dataset = Dataset(df, cat_columns=[])
 

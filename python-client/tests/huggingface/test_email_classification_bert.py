@@ -17,9 +17,9 @@ def test_email_classification_bert_custom_model(dataset_name, request):
 
     # Exclude target category with very few rows ; 812 rows remains
     excluded_category = [
-        'talking points',
-        'meeting minutes',
-        'trip reports',
+        "talking points",
+        "meeting minutes",
+        "trip reports",
     ]
     data_filtered = data_filtered[-data_filtered["Target"].isin(excluded_category)]
 
@@ -32,7 +32,7 @@ def test_email_classification_bert_custom_model(dataset_name, request):
     for param in model.base_model.parameters():
         param.requires_grad = False
 
-    classification_labels_mapping = {'REGULATION': 0, 'INTERNAL': 1, 'CALIFORNIA CRISIS': 2, 'INFLUENCE': 3}
+    classification_labels_mapping = {"REGULATION": 0, "INTERNAL": 1, "CALIFORNIA CRISIS": 2, "INFLUENCE": 3}
 
     def preprocessing_func(test_dataset):
         test_dataset = test_dataset.squeeze(axis=1)
@@ -43,14 +43,14 @@ def test_email_classification_bert_custom_model(dataset_name, request):
     my_model = HuggingFaceModel(
         name=model_name,
         model=model,
-        feature_names=['Content'],
+        feature_names=["Content"],
         model_type="classification",
         classification_labels=list(classification_labels_mapping.keys()),
         data_preprocessing_function=preprocessing_func,
     )
 
     my_test_dataset = Dataset(
-        data_filtered.head(5), name="test dataset", target="Target", cat_columns=['Week_day', 'Month']
+        data_filtered.head(5), name="test dataset", target="Target", cat_columns=["Week_day", "Month"]
     )
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
