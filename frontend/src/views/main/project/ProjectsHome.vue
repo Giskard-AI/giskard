@@ -50,21 +50,21 @@
         <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="updateCurrentProject(p.id)" link>
           <v-row class="pa-2">
             <v-col cols=2>
-              <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
+              <span class="subtitle-2 primary--text text--darken-1">{{ p.name }}</span>
             </v-col>
             <v-col cols=2>
-              <div>{{ p.key }}</div>
+              <span @click.stop.prevent="copyText(p.key, 'Copied project key')">{{ p.key }}</span>
             </v-col>
             <v-col cols=4>
-              <div>{{ p.description || "-" }}</div>
+              <span>{{ p.description || "-" }}</span>
             </v-col>
             <v-col cols=2>
-              <div :class="{ 'font-weight-bold': p.owner.id === userProfile.id }">
+              <span :class="{ 'font-weight-bold': p.owner.id === userProfile.id }">
                 {{ p.owner.user_id === userProfile.user_id ? "me" : (p.owner.displayName || p.owner.user_id) }}
-              </div>
+              </span>
             </v-col>
             <v-col cols=2>
-              <div>{{ p.createdDate | date }}</div>
+              <span>{{ p.createdDate | date }}</span>
             </v-col>
           </v-row>
           <v-divider></v-divider>
@@ -175,19 +175,20 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {ValidationObserver} from "vee-validate";
-import {Role} from "@/enums";
-import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
-import {toSlug} from "@/utils";
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, onMounted, ref, watch } from "vue";
+import { ValidationObserver } from "vee-validate";
+import { Role } from "@/enums";
+import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
+import { toSlug } from "@/utils";
+import { useRoute, useRouter } from "vue-router/composables";
 import moment from "moment";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {api} from "@/api";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { copyText } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
