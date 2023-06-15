@@ -7,10 +7,10 @@ import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import { computed, onActivated, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from '@/stores/ml-worker';
+import { state } from "@/socket";
+
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
-const mlWorkerStore = useMLWorkerStore();
 
 interface Props {
   projectId: number;
@@ -28,6 +28,10 @@ const sessionName = ref("");
 const selectedDataset = ref<DatasetDTO | null>(null);
 const selectedModel = ref<ModelDTO | null>(null);
 
+const isMLWorkerConnected = computed(() => {
+  return state.workerStatus.connected;
+});
+
 const missingValues = computed(() => {
   if (selectedDataset.value === null || selectedModel.value === null) {
     return true;
@@ -38,9 +42,8 @@ const missingValues = computed(() => {
 const emit = defineEmits(['createDebuggingSession'])
 
 async function createNewDebuggingSession() {
-  await mlWorkerStore.checkExternalWorkerConnection();
 
-  if (!mlWorkerStore.isExternalWorkerConnected) {
+  if (!isMLWorkerConnected.value) {
     useMainStore().addNotification({
       content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
       color: TYPE.ERROR,
