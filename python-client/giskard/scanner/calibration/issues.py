@@ -3,6 +3,10 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
 
+from ...testing.tests.calibration import test_underconfidence_rate
+
+from ...testing.tests.calibration import test_overconfidence_rate
+
 from ..common.examples import ExampleExtractor
 
 from ..issues import Issue
@@ -22,6 +26,7 @@ class CalibrationIssueInfo:
     loss_values: pd.Series
     fail_idx: pd.DataFrame
     threshold: float
+    p_threshold: float
 
     @property
     def metric_rel_delta(self):
@@ -107,6 +112,26 @@ class OverconfidenceIssue(CalibrationIssue):
     def metric(self) -> str:
         return "Overconfidence rate"
 
+    def generate_tests(self, with_names=False) -> list:
+        abs_threshold = self.info.metric_value_reference * (1 + self.info.threshold)
+
+        tests = [
+            test_overconfidence_rate(
+                model=self.model,
+                dataset=self.dataset,
+                slicing_function=self.info.slice_fn,
+                threshold=abs_threshold,
+                p_threshold=self.info.p_threshold,
+            )
+        ]
+
+        if with_names:
+            names = [f"Overconfidence on data slice “{self.info.slice_fn}”"]
+
+            return list(zip(tests, names))
+
+        return tests
+
 
 class UnderconfidenceIssue(CalibrationIssue):
     group = "Underconfidence"
@@ -120,3 +145,23 @@ class UnderconfidenceIssue(CalibrationIssue):
     @property
     def deviation(self):
         return f"{self.info.metric_rel_delta * 100:.2f}% than global"
+
+    def generate_tests(self, with_names=False) -> list:
+        abs_threshold = self.info.metric_value_reference * (1 + self.info.threshold)
+
+        tests = [
+            test_underconfidence_rate(
+                model=self.model,
+                dataset=self.dataset,
+                slicing_function=self.info.slice_fn,
+                threshold=abs_threshold,
+                p_threshold=self.info.p_threshold,
+            )
+        ]
+
+        if with_names:
+            names = [f"Underconfidence on data slice “{self.info.slice_fn}”"]
+
+            return list(zip(tests, names))
+
+        return tests
