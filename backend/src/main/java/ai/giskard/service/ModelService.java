@@ -76,7 +76,7 @@ public class ModelService {
 
     public boolean shouldDrop(String columnDtype, String value) {
         return Objects.isNull(value) ||
-            (columnDtype.startsWith("int") || columnDtype.startsWith("float") && Strings.isBlank(value));
+            ((columnDtype.startsWith("int") || columnDtype.startsWith("float")) && Strings.isBlank(value));
     }
 
     public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {

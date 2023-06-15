@@ -25,6 +25,7 @@ guides/test-suite/index
 guides/cicd/pipeline
 guides/installation_app/index
 guides/upload/index
+contribute/index
 ```
 
 ```{toctree}

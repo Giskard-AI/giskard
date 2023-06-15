@@ -329,7 +329,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         return ml_worker_pb2.ExplainResponse(
             explanations={
-                k: ml_worker_pb2.ExplainResponse.Explanation(per_feature=v)
+                str(k): ml_worker_pb2.ExplainResponse.Explanation(per_feature=v)
                 for k, v in explanations["explanations"].items()
             }
         )
