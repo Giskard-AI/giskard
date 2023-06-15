@@ -65,8 +65,21 @@
       </v-card>
 
       <!-- Dialog for launching model inspection -->
-      <v-dialog persistent max-width="600" v-model="showInspectDialog" class="inspector-launcher-container">
-        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel=" cancelLaunchInspector()" />
+      <v-dialog v-if="isMLWorkerConnected" v-model="showInspectDialog" @click:outside="cancelLaunchInspector" max-width="600">
+        <InspectorLauncher :projectId="projectId" :model="modelToInspect" @cancel="cancelLaunchInspector"></InspectorLauncher>
+      </v-dialog>
+      <v-dialog v-else v-model="showInspectDialog" @click:outside="cancelLaunchInspector" max-width="1000">
+        <v-card>
+          <v-card-title class="py-6">
+            <h2>ML Worker is not connected</h2>
+          </v-card-title>
+          <v-card-text>
+            <StartWorkerInstructions></StartWorkerInstructions>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn text @click="cancelLaunchInspector">Close</v-btn>
+          </v-card-actions>
+        </v-card>
       </v-dialog>
 
     </v-container>
@@ -96,6 +109,9 @@ import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import { state } from "@/socket";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -111,6 +127,10 @@ const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
 const apiAccessToken = ref<JWTToken | null>(null);
+
+const isMLWorkerConnected = computed(() => {
+  return state.workerStatus.connected;
+});
 
 const codeContent = computed(
   // language=Python
