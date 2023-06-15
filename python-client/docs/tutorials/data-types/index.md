@@ -1,4 +1,4 @@
-# Data types
+# By data types
 
 ```{toctree}
 :caption: Table of Contents
