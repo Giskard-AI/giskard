@@ -107,7 +107,7 @@
     <v-dialog v-model="openPrepareDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="ImportIfNoConflictKey()">
+          <v-form @submit.prevent="importIfNoConflictKey()">
             <v-card-text>
               <div class="title">Set new key for the imported project</div>
               <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{ errors }">
@@ -212,17 +212,9 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultRoute: string = 'project-catalog';
-
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
 const file = ref<File | null>(null);
-
-onMounted(async () => {
-  const f = route.query.f ? route.query.f[0] || '' : '';
-  creatorFilter.value = parseInt(f) || 0;
-  await loadProjects();
-})
 
 // computed
 const userProfile = computed(() => {
@@ -247,6 +239,17 @@ const projects = computed(() => {
 })
 
 // functions
+function clearAndCloseDialog() {
+  dialogForm.value?.reset();
+  openCreateDialog.value = false;
+  openImportDialog.value = false;
+  openPrepareDialog.value = false;
+  newProjectName.value = '';
+  newProjectKey.value = '';
+  newProjectDesc.value = '';
+  projectCreateError.value = '';
+}
+
 async function loadProjects() {
   await projectStore.getProjects();
 }
@@ -277,7 +280,7 @@ async function prepareImport() {
     .finally(() => preparingImport.value = false);
 }
 
-async function ImportIfNoConflictKey() {
+async function importIfNoConflictKey() {
   if (!file.value) {
     return;
   }
@@ -311,17 +314,6 @@ async function ImportIfNoConflictKey() {
   }
 }
 
-function clearAndCloseDialog() {
-  dialogForm.value?.reset();
-  openCreateDialog.value = false;
-  openImportDialog.value = false;
-  openPrepareDialog.value = false;
-  newProjectName.value = '';
-  newProjectKey.value = '';
-  newProjectDesc.value = '';
-  projectCreateError.value = '';
-}
-
 async function submitNewProject() {
   if (!newProjectName.value) {
     return;
@@ -345,17 +337,23 @@ async function submitNewProject() {
   }
 }
 
+async function updateCurrentProject(projectId: number) {
+  projectStore.setCurrentProjectId(projectId);
+  await testSuitesStore.loadTestSuites(projectId);
+  await debuggingSessionsStore.loadDebuggingSessions(projectId);
+  await router.push({ name: 'project-home', params: { id: projectId.toString() } });
+}
+
 // watchers
 watch(() => newProjectName.value, (value) => {
   newProjectKey.value = toSlug(value);
 })
 
-async function updateCurrentProject(projectId: number) {
-  projectStore.setCurrentProjectId(projectId);
-  await testSuitesStore.loadTestSuites(projectId);
-  await debuggingSessionsStore.loadDebuggingSessions(projectId);
-  await router.push({ name: defaultRoute, params: { id: projectId.toString() } });
-}
+onMounted(async () => {
+  const f = route.query.f ? route.query.f[0] || '' : '';
+  creatorFilter.value = parseInt(f) || 0;
+  await loadProjects();
+})
 </script>
 
 <style>
