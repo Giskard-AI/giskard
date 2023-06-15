@@ -8,6 +8,7 @@ import { computed, onActivated, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { state } from "@/socket";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
@@ -101,7 +102,7 @@ onActivated(async () => {
           New debugging session
         </v-btn>
       </template>
-      <v-card>
+      <v-card v-if="isMLWorkerConnected">
         <v-card-title class="headline">Create a new debugging session</v-card-title>
         <v-card-text>
           <v-text-field label="Session name (optional)" v-model="sessionName" class="selector" outlined dense hide-details></v-text-field>
@@ -114,6 +115,14 @@ onActivated(async () => {
           <v-spacer></v-spacer>
           <v-btn color="primaryLight" class="primaryLightBtn" @click="createNewDebuggingSession" :disabled="missingValues" :loading="loading">Create</v-btn>
         </v-card-actions>
+      </v-card>
+      <v-card v-else>
+        <v-card-title class="py-6">
+          <h2>ML Worker is not connected</h2>
+        </v-card-title>
+        <v-card-text>
+          <StartWorkerInstructions></StartWorkerInstructions>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </div>
