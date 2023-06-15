@@ -44,13 +44,11 @@ class TextSlicer(BaseSlicer):
             raise NotImplementedError("Only single-feature slicing is implemented for now.")
         (feature,) = features
 
-        has_numeric_target = pd.api.types.is_numeric_dtype(self.dataset.df[target])
-
         # Make metadata slices
         metadata_slices = self.find_metadata_slices(feature, target)
 
         # Make top token slices
-        token_slices = self.find_token_based_slices(feature, target) if has_numeric_target else []
+        token_slices = self.find_token_based_slices(feature, target)
 
         return metadata_slices + token_slices
 
@@ -79,12 +77,14 @@ class TextSlicer(BaseSlicer):
         return slices
 
     def find_token_based_slices(self, feature, target):
+        target_is_numeric = pd.api.types.is_numeric_dtype(self.dataset.df[target])
         try:
-            tokens = set(
-                self._get_high_loss_tokens(feature, target)
-                + self._get_deviant_tokens(feature, target)
-                + self._get_top_tokens(feature, target)
-            )
+            tokens = self._get_top_tokens(feature, target)
+
+            if target_is_numeric:
+                tokens += self._get_high_loss_tokens(feature, target) + self._get_deviant_tokens(feature, target)
+
+            tokens = set(tokens)
         except VectorizerError:
             # Could not get meaningful tokens (e.g. all stop words)
             warning(f"Could not get meaningful tokens for textual feature `{feature}`. Are you sure this is text?")
