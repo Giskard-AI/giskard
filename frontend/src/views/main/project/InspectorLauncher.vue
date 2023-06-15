@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { DatasetDTO, ModelDTO } from "@/generated-sources";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { api } from "@/api";
 import { TYPE } from "vue-toastification";
 import mixpanel from "mixpanel-browser";
@@ -37,12 +37,11 @@ import { useRouter } from "vue-router/composables";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from '@/stores/ml-worker';
+import { state } from "@/socket";
 
 const router = useRouter();
 
 const debuggingSessionsStore = useDebuggingSessionsStore();
-const mlWorkerStore = useMLWorkerStore();
 
 interface Props {
   projectId: number,
@@ -59,10 +58,9 @@ const datasetSelected = ref<DatasetDTO | null>(null);
 const datasetFeatures = ref<string[]>([]);
 const creatingInspection = ref<boolean>(false);
 
-
-onMounted(async () => {
-  await loadDatasets();
-})
+const isMLWorkerConnected = computed(() => {
+  return state.workerStatus.connected;
+});
 
 function reset() {
   step.value = 1;
@@ -89,9 +87,7 @@ async function launchInspector() {
   try {
     creatingInspection.value = true;
 
-    await mlWorkerStore.checkExternalWorkerConnection();
-
-    if (!mlWorkerStore.isExternalWorkerConnected) {
+    if (!isMLWorkerConnected.value) {
       useMainStore().addNotification({
         content: 'ML Worker is not connected. Please start the ML Worker first and try again.',
         color: TYPE.ERROR,
@@ -115,6 +111,10 @@ async function launchInspector() {
     creatingInspection.value = false;
   }
 }
+
+onMounted(async () => {
+  await loadDatasets();
+})
 </script>
 
 <style scoped>
