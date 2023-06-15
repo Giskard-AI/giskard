@@ -44,11 +44,13 @@ class TextSlicer(BaseSlicer):
             raise NotImplementedError("Only single-feature slicing is implemented for now.")
         (feature,) = features
 
+        has_numeric_target = pd.api.types.is_numeric_dtype(self.dataset.df[target])
+
         # Make metadata slices
         metadata_slices = self.find_metadata_slices(feature, target)
 
         # Make top token slices
-        token_slices = self.find_token_based_slices(feature, target)
+        token_slices = self.find_token_based_slices(feature, target) if has_numeric_target else []
 
         return metadata_slices + token_slices
 
