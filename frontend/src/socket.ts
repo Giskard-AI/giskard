@@ -1,18 +1,22 @@
 import { reactive } from 'vue';
 import { Client } from '@stomp/stompjs';
+import { apiURL } from './env';
+import { httpUrlToWsUrl } from './utils';
 
 export const state = reactive({
-  workerStatus: {}
+  workerStatus: {
+    connected: false,
+  },
 });
 
-
 const client = new Client({
-  brokerURL: 'ws://localhost:9000/websocket',
+  brokerURL: httpUrlToWsUrl(apiURL) + '/websocket',
   onConnect: () => {
-    client.subscribe('/topic/worker-status', message =>
-      state.workerStatus = JSON.parse(message.body).connected
-    );
-  }
+    client.subscribe('/topic/worker-status', message => {
+      const data = JSON.parse(message.body);
+      state.workerStatus.connected = data.connected;
+    });
+  },
 });
 
 client.activate();
