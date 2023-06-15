@@ -30,7 +30,7 @@ def _default_overconfidence_threshold(model: BaseModel) -> float:
     return 1 / (3e-1 * (n - 2) + 2 - 1e-3 * (n - 2) ** 2)
 
 
-@test(name="overconfidence_rate", tags=["classification"])
+@test(name="Overconfidence Rate", tags=["classification"])
 def test_overconfidence_rate(
     model: BaseModel,
     dataset: Dataset,
@@ -96,7 +96,7 @@ def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.S
     return pd.Series(score_values, index=dataset.df.index)
 
 
-@test(name="underconfidence_rate", tags=["classification"])
+@test(name="Underconfidence Rate", tags=["classification"])
 def test_underconfidence_rate(
     model: BaseModel,
     dataset: Dataset,
@@ -110,7 +110,7 @@ def test_underconfidence_rate(
     probable labels have very similar probabilities. In this case, slight
     changes can make the model flip its predicted label. By default, we mark a
     prediction as underconfident when the second most probable prediction has a
-    probability which is only less than 5% smaller than the predicted label
+    probability which is only less than 10% smaller than the predicted label
     (`p_threshold=0.90`).
     We then calculate the rate of underconfident predictions as the number of
     underconfident samples divided by the total number of samples, and check
