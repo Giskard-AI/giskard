@@ -84,14 +84,19 @@ import { useCatalogStore } from "@/stores/catalog";
 import EditTestSuiteModal from "@/views/main/project/modals/EditTestSuiteModal.vue";
 import { api } from "@/api";
 import { useTestSuitesStore } from "@/stores/test-suites";
-import { useMLWorkerStore } from "@/stores/ml-worker";
 import ExportTestModalVue from "./modals/ExportTestModal.vue";
 import { debounce } from "lodash";
 import mixpanel from "mixpanel-browser";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { state } from "@/socket";
+
+const router = useRouter();
+const route = useRoute();
+
 
 const testSuitesStore = useTestSuitesStore();
-const mlWorkerStore = useMLWorkerStore();
+const { loadTestSuites, runTestSuite } = useTestSuiteStore();
+const { loadCatalog } = useCatalogStore();
 
 const props = defineProps<{
     projectId: number,
@@ -109,18 +114,13 @@ const {
     hasJobInProgress
 } = storeToRefs(useTestSuiteStore())
 
-onActivated(() => loadData());
-watch(() => props.suiteId, () => loadData());
-
-const { loadTestSuites, runTestSuite } = useTestSuiteStore();
-const { loadCatalog } = useCatalogStore();
-
-const router = useRouter();
-const route = useRoute();
-
 const openWorkerInstructions = ref(false);
 
-const displayWorkerInstructions = computed(() => !mlWorkerStore.isExternalWorkerConnected && openWorkerInstructions.value);
+const isMLWorkerConnected = computed(() => {
+    return state.workerStatus.connected;
+});
+
+const displayWorkerInstructions = computed(() => !isMLWorkerConnected.value && openWorkerInstructions.value);
 
 const hideHeader = computed(() => route.name === 'test-suite-configuration')
 
@@ -142,8 +142,7 @@ async function openRunTestSuite(compareMode: boolean) {
             }
         });
     } else {
-        await mlWorkerStore.checkExternalWorkerConnection();
-        if (!mlWorkerStore.isExternalWorkerConnected) {
+        if (!isMLWorkerConnected.value) {
             openWorkerInstructions.value = true;
             return;
         } else {
@@ -186,6 +185,9 @@ function handleRunTestSuite() {
     openRunTestSuite(false);
 }
 
+watch(() => props.suiteId, () => loadData());
+
+onActivated(() => loadData());
 </script>
 
 
