@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMainStore } from "@/stores/main";
 import { useRoute } from "vue-router/composables";
 import { apiURL } from "@/env";
