@@ -4,8 +4,6 @@ import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRouter } from 'vue-router/composables';
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
 import { InspectionDTO } from "@/generated-sources";
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
@@ -15,9 +13,7 @@ import { state } from "@/socket";
 
 const router = useRouter();
 
-const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
-const mlWorkerStore = useMLWorkerStore();
 
 interface Props {
   projectId: number;
@@ -27,8 +23,8 @@ const props = defineProps<Props>();
 
 const searchSession = ref("");
 
-const project = computed(() => {
-  return projectStore.project(props.projectId)
+const isMLWorkerConnected = computed(() => {
+  return state.workerStatus.connected;
 });
 
 const filteredSessions = computed(() => {
@@ -49,7 +45,6 @@ const filteredSessions = computed(() => {
   }));
 })
 
-const workerStatus = computed(() => state.workerStatus);
 
 async function showPastSessions() {
   debuggingSessionsStore.reload();
@@ -129,9 +124,6 @@ async function openInspection(projectId: string, inspectionId: string) {
 }
 
 onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
-  await mlWorkerStore.checkExternalWorkerConnection();
-
   if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
     await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
   } else {
@@ -142,7 +134,7 @@ onActivated(async () => {
 </script>
 
 <template>
-  <div v-if="mlWorkerStore.isExternalWorkerConnected" class="vertical-container">
+  <div v-if="isMLWorkerConnected" class="vertical-container">
     <v-container fluid class="vc" v-if="debuggingSessionsStore.debuggingSessions.length > 0">
       <v-row>
         <v-col cols="4">
