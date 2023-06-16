@@ -1,8 +1,7 @@
 """Performance tests"""
 import inspect
-
-
 from typing import Optional
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
@@ -18,17 +17,13 @@ from sklearn.metrics import (
 
 from giskard import test
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.test_result import TestResult
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.utils import check_slice_not_empty
-from giskard.models.base import BaseModel
-from .debug_slicing_functions import incorrect_rows_slicing_fn, nlargest_abs_err_rows_slicing_fn
 from giskard.ml_worker.testing.test_result import TestResult
+from giskard.ml_worker.testing.tests.debug_slicing_functions import incorrect_rows_slicing_fn, \
+    nlargest_abs_err_rows_slicing_fn
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
-from .debug_masks import incorrect_rows_mask, top_nper_abs_err_rows_mask, nlargest_abs_err_rows_mask
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
 
@@ -218,9 +213,8 @@ class AucTest(GiskardTest):
 
 @test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
 def test_auc(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-             debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
+        debug: bool = False):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
 
@@ -281,9 +275,9 @@ def test_auc(
 
 @test(name='F1', tags=['performance', 'classification', 'ground_truth'])
 def test_f1(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-            debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        ,
+        debug: bool = False):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
 
@@ -317,9 +311,9 @@ def test_f1(
 
 @test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
 def test_accuracy(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-                  debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        ,
+        debug: bool = False):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
 
@@ -386,9 +380,8 @@ def test_precision(
 
 @test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
 def test_recall(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-                debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
+        debug: bool = False):
     """
     Test if the model Recall is higher than a threshold for a given slice
 
@@ -404,6 +397,8 @@ def test_recall(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Recall
+        debug(bool):
+          If the test returns debug values
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -420,9 +415,9 @@ def test_recall(
 
 @test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
 def test_rmse(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-              debug_percent_rows: float = 0.3, debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        ,
+        debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model RMSE is lower than a threshold
 
@@ -455,7 +450,7 @@ def test_rmse(
 
 @test(name='MSE', tags=['performance', 'regression', 'ground_truth'])
 def test_mse(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
     """
     Test if the model mean squared error (MSE) is lower than a threshold.
@@ -488,9 +483,9 @@ def test_mse(
 
 @test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
 def test_mae(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-             debug_percent_rows: float = 0.3, debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        ,
+        debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model Mean Absolute Error is lower than a threshold
 
@@ -526,9 +521,9 @@ def test_mae(
 
 @test(name='R2', tags=['performance', 'regression', 'ground_truth'])
 def test_r2(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
-,
-            debug_percent_rows: float = 0.3, debug: bool = False):
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        ,
+        debug_percent_rows: float = 0.3, debug: bool = False):
     """
     Test if the model R-Squared is higher than a threshold
 

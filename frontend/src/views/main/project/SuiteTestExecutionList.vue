@@ -1,84 +1,38 @@
 <template>
-    <div class="d-flex flex-column gap-16">
-        <v-alert v-if="props.tests.length === 0" type="info" text>No test match the current filter</v-alert>
-        <SuiteTestExecutionCard v-for="({result, suiteTest}) in props.tests" :suite-test="suiteTest"
-                                :result="result" :compact="compact" :is-past-execution="isPastExecution"/>
-    </div>
+  <div class="d-flex flex-column gap-16">
+    <v-alert v-if="props.tests.length === 0" type="info" text>No test match the current filter</v-alert>
+    <SuiteTestExecutionCard v-for="({result, suiteTest}) in props.tests" :suite-test="suiteTest"
+                            :result="result" :compact="compact" :is-past-execution="isPastExecution"/>
+  </div>
 </template>
 
 <script setup lang="ts">
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
-import {Colors} from '@/utils/colors';
-import {$vfm} from 'vue-final-modal';
-import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import {api} from '@/api';
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import SuiteTestExecutionCard from "@/views/main/project/SuiteTestExecutionCard.vue";
-import {useRouter} from "vue-router/composables";
 
 const props = withDefaults(defineProps<{
-    tests: {
-        suiteTest: SuiteTestDTO,
-        result?: SuiteTestExecutionDTO
-    }[],
-    compact: boolean,
-    isPastExecution: boolean,
+  tests: {
+    suiteTest: SuiteTestDTO,
+    result?: SuiteTestExecutionDTO
+  }[],
+  compact: boolean,
+  isPastExecution: boolean,
   execution: TestSuiteExecutionDTO
 }>(), {
-    compact: false,
-    isPastExecution: false
+  compact: false,
+  isPastExecution: false
 });
 
 const testSuiteStore = useTestSuiteStore();
 const {suite} = storeToRefs(testSuiteStore);
-
-async function debugTest(result: SuiteTestExecutionDTO, suiteTest: SuiteTestDTO) {
-  console.log("Debugging");
-  let inputs: any[] = []; // FunctionInputDTO, ideally
-
-  function parseArguments(res, args) {
-    Object.keys(args).forEach(key => {
-      var parsed = JSON.parse(args[key]);
-      var params = [];
-      parseArguments(params, parsed.args);
-
-      res.push({
-        name: key,
-        value: parsed.value,
-        params: params
-      })
-    })
-  }
-  
-  parseArguments(inputs, result.arguments);
-
-  let model = inputs.filter(i => i.name == "model")[0].value;
-
-  let res = await api.runAdHocTest(testSuiteStore.projectId!, suiteTest.testUuid, inputs, true);
-  let dataset = res.result[0].result.outputDfUuid;
-
-  const debuggingSession = await api.prepareInspection({
-    datasetId: dataset,
-    modelId: model as string,
-    name: "Debugging session ..."
-  });
-
-  await router.push({
-    name: 'inspection',
-    params: {
-      projectId: testSuiteStore.projectId!,
-      inspectionId: debuggingSession.id
-    }
-  });
-}
 </script>
 
 <style scoped lang="scss">
 .gap-16 {
-    gap: 16px;
+  gap: 16px;
 }
 </style>
 

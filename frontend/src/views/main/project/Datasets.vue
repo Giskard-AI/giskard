@@ -1,7 +1,6 @@
 <template>
   <div class="vertical-container">
     <v-checkbox v-model="showDebugDatasets" label="Show debug datasets"></v-checkbox>
-    <v-container v-if="datasets.length > 0" fluid class="vc">
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
       <div class="mr-2">
@@ -15,7 +14,7 @@
         </v-btn>
       </div>
     </div>
-    <LoadingFullscreen v-if="isLoading" name="datasets" />
+    <LoadingFullscreen v-if="isLoading" name="datasets"/>
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
@@ -34,7 +33,9 @@
                                 @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
               </v-col>
-              <v-col cols="1" class="col-container" :title="f.originalSizeBytes | fileSize">{{ f.originalSizeBytes | fileSize }}</v-col>
+              <v-col cols="1" class="col-container" :title="f.originalSizeBytes | fileSize">
+                {{ f.originalSizeBytes | fileSize }}
+              </v-col>
               <v-col cols="2" class="col-container" :title="f.createdDate | date">{{ f.createdDate | date }}</v-col>
               <v-col cols="2" class="col-container" :title="f.target">{{ f.target }}</v-col>
               <v-col cols="1" class="col-container" :title="f.id"> {{ f.id }}</v-col>
@@ -64,7 +65,8 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
+    <v-container
+        v-if="projectArtifactsStore.datasets.length === 0 && apiAccessToken && apiAccessToken.id_token && !isLoading">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet
         below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
@@ -76,20 +78,21 @@
 </template>
 
 <script setup lang="ts">
-import { apiURL } from "@/env";
+import {apiURL} from "@/env";
 import {api} from "@/api";
-import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
+import {Role} from "@/enums";
+import {$vfm} from 'vue-final-modal';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { computed, onBeforeMount, onMounted,ref} from "vue";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import {useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
 import {useMainStore} from "@/stores/main";
-import {useProjectArtifactsStore} from "@/stores/project-artifacts";import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
-import { TYPE } from "vue-toastification";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
+import CodeSnippet from '@/components/CodeSnippet.vue';
+import {JWTToken} from "@/generated-sources";
+import {TYPE} from "vue-toastification";
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 

@@ -70,7 +70,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
         ds = dataset.copy()
         is_slicing_only = True
 
@@ -261,7 +261,8 @@ class Dataset(ColumnMetadataMixin):
             self,
             slicing_function: Union[SlicingFunction, SlicingFunctionType],
             row_level: bool = True,
-            get_mask: bool = False,cell_level=False,
+            get_mask: bool = False,
+            cell_level=False,
             column_name: Optional[str] = None
     ):
         """
@@ -295,7 +296,7 @@ class Dataset(ColumnMetadataMixin):
                                                 **{key: value for key, value in slicing_function.params.items() if
                                                    key != 'column_name'})
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
 
     @configured_validate_arguments
     def transform(
