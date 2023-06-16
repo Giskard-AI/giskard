@@ -1,38 +1,22 @@
 <template>
   <div>
-    <OverlayLoader :show="loading" absolute solid/>
-    <v-container>
+    <LoadingFullscreen v-show="loading" name="result" class="pb-6" />
+    <v-container v-show="!loading">
       <p v-if="textFeatureNames.length === 0" class="text-center">None</p>
       <div v-else>
         <v-row>
-          <v-col cols="5" v-if='textFeatureNames.length>1'>
+          <v-col cols="5" v-if='textFeatureNames.length > 1'>
             <p class="caption secondary--text text--lighten-2 my-1">Feature</p>
-            <v-select
-                dense
-                solo
-                v-model="selectedFeature"
-                :items="textFeatureNames"
-            ></v-select>
+            <v-select dense solo v-model="selectedFeature" :items="textFeatureNames"></v-select>
           </v-col>
           <v-col cols="5">
             <p class="caption secondary--text text--lighten-2 my-1">
               Classification Label
             </p>
-            <v-autocomplete
-                dense
-                solo
-                v-model="selectedLabel"
-                :items="classificationLabels"
-            ></v-autocomplete>
+            <v-autocomplete dense solo v-model="selectedLabel" :items="classificationLabels"></v-autocomplete>
           </v-col>
           <v-col cols="2" class="d-flex align-center">
-            <v-btn
-                tile
-                small
-                color="primary"
-                @click="getExplanation"
-                :disabled="submitted"
-            >
+            <v-btn tile small color="primary" @click="getExplanation" :disabled="submitted">
               <v-icon left>play_arrow</v-icon>
               Run
             </v-btn>
@@ -40,7 +24,9 @@
         </v-row>
         <div v-if="result != null">
           <p class="caption text-center mb-0">Word contribution (LIME values)</p>
-          <p class="result-paragraph">  <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph></p>
+          <p class="result-paragraph">
+            <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph>
+          </p>
         </div>
       </div>
       <p v-if="errorMsg" class="error--text">
@@ -51,12 +37,12 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from "vue";
+import { ref, watch } from "vue";
 import mixpanel from "mixpanel-browser";
 import { ExplainTextResponseDTO } from '@/generated-sources'
 import TextExplanationParagraph from './TextExplanationParagraph.vue';
-import {api} from "@/api";
-import OverlayLoader from "@/components/OverlayLoader.vue";
+import { api } from "@/api";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 
 
@@ -96,6 +82,7 @@ watch(() => [props.inputData, selectedFeature.value], () => {
   errorMsg.value = "";
 })
 
+
 async function getExplanation() {
   mixpanel.track('Run text explanation', {
     modelId: props.modelId,
@@ -106,14 +93,14 @@ async function getExplanation() {
       loading.value = true;
       errorMsg.value = "";
       result.value = await api.explainText(
-          props.modelId,
-          props.datasetId,
-          props.inputData,
-          selectedFeature.value
+        props.modelId,
+        props.datasetId,
+        props.inputData,
+        selectedFeature.value
       );
       submitted.value = true;
       max_weight.value = Math.max(...Object.values(result.value.weights).map(elt => Math.max(...elt)))
-      min_weight.value = Math.min(...Object.values(result.value.weights).map(elt => Math.min(...elt))) 
+      min_weight.value = Math.min(...Object.values(result.value.weights).map(elt => Math.min(...elt)))
 
     } catch (error) {
       result.value = null;

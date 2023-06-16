@@ -170,7 +170,7 @@ def _extract_series(actual_ds, reference_ds, column_name, feature_type):
     return actual_series, reference_series
 
 
-@test(name='Categorical drift (PSI)')
+@test(name="Categorical drift (PSI)")
 def test_drift_psi(
     actual_dataset: Dataset,
     reference_dataset: Dataset,
@@ -259,7 +259,7 @@ def test_drift_psi(
     )
 
 
-@test(name='Categorical drift (Chi-squared)')
+@test(name="Categorical drift (Chi-squared)")
 def test_drift_chi_square(
     actual_dataset: Dataset,
     reference_dataset: Dataset,
@@ -346,7 +346,7 @@ def test_drift_chi_square(
     )
 
 
-@test(name='Numerical drift (Kolmogorov-Smirnov)')
+@test(name="Numerical drift (Kolmogorov-Smirnov)")
 def test_drift_ks(
     actual_dataset: Dataset,
     reference_dataset: Dataset,
@@ -408,7 +408,7 @@ def test_drift_ks(
     )
 
 
-@test(name='Numerical drift (Earth mover\'s distance)')
+@test(name="Numerical drift (Earth mover's distance)")
 def test_drift_earth_movers_distance(
     actual_dataset: Dataset,
     reference_dataset: Dataset,
@@ -477,7 +477,7 @@ def test_drift_earth_movers_distance(
     )
 
 
-@test(name='Label drift (PSI)')
+@test(name="Label drift (PSI)")
 def test_drift_prediction_psi(
     model: BaseModel,
     actual_dataset: Dataset,
@@ -598,7 +598,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
     return messages
 
 
-@test(name='Label drift (Chi-squared)')
+@test(name="Label drift (Chi-squared)")
 def test_drift_prediction_chi_square(
     model: BaseModel,
     actual_dataset: Dataset,
@@ -702,7 +702,7 @@ def _test_series_drift_chi(
     return messages, chi_square, p_value, passed, output_data
 
 
-@test(name='Classification Probability drift (Kolmogorov-Smirnov)', tags=['classification'])
+@test(name="Classification Probability drift (Kolmogorov-Smirnov)", tags=["classification"])
 @validate_classification_label
 def test_drift_prediction_ks(
     model: BaseModel,
@@ -799,7 +799,7 @@ def _generate_message_ks(passed, result, threshold, data_type):
     return messages
 
 
-@test(name='Classification Probability drift (Earth mover\'s distance)', tags=['classification'])
+@test(name="Classification Probability drift (Earth mover's distance)", tags=["classification"])
 @validate_classification_label
 def test_drift_prediction_earth_movers_distance(
     model: BaseModel,

@@ -1,20 +1,116 @@
-<script setup lang="ts">
-import { computed, ref, onActivated, watch, onMounted } from "vue";
+<template>
+  <div v-if='mlWorkerStore.isExternalWorkerConnected' class='vertical-container'>
+    <v-container v-if='debuggingSessionsStore.debuggingSessions.length > 0' class='vc' fluid>
+      <v-row>
+        <v-col cols='4'>
+          <v-text-field v-show='debuggingSessionsStore.currentDebuggingSessionId === null'
+                        v-model='searchSession' append-icon='search' label='Search for a debugging session'
+                        outlined></v-text-field>
+        </v-col>
+        <v-col cols='8'>
+          <div class='d-flex justify-end'>
+            <v-btn v-if='debuggingSessionsStore.currentDebuggingSessionId !== null' class='mr-3' text
+                   @click='showPastSessions'>
+              <v-icon class='mr-2'>mdi-arrow-left</v-icon>
+              Back to all sessions
+            </v-btn>
+            <AddDebuggingSessionModal v-show='debuggingSessionsStore.currentDebuggingSessionId === null'
+                                      :projectId='projectId'
+                                      @createDebuggingSession='createDebuggingSession'></AddDebuggingSessionModal>
+          </div>
+        </v-col>
+      </v-row>
+
+      <v-expansion-panels v-if='debuggingSessionsStore.currentDebuggingSessionId === null'>
+        <v-row class='mr-12 ml-6 caption secondary--text text--lighten-3 pb-2'>
+          <v-col class='col-container' cols='3' title='Session name'>Session name</v-col>
+          <v-col class='col-container' cols='2' title='Created at'>Created at</v-col>
+          <v-col class='col-container' cols='3' title='Dataset'>Dataset</v-col>
+          <v-col class='col-container' cols='3' title='Model'>Model</v-col>
+          <v-col cols='1'></v-col>
+        </v-row>
+
+        <v-expansion-panel v-for='session in filteredSessions' :key='session.id'
+                           class='expansion-panel' @click.stop='openDebuggingSession(session.id, projectId)'>
+          <v-expansion-panel-header :disableIconRotate='true' class='grey lighten-5' tile>
+            <v-row class='px-2 py-1 align-center'>
+              <v-col :title='`${session.name} (ID: ${session.id})`' class='font-weight-bold' cols='3'>
+                <div class='pr-4'>
+                  <InlineEditText :text='session.name' @save='(name) => renameSession(session.id, name)'>
+                  </InlineEditText>
+                </div>
+              </v-col>
+              <v-col class='col-container' cols='2'>
+                <span :title='session.createdDate | date'>
+                  {{ session.createdDate | date }}
+                </span>
+              </v-col>
+              <v-col class='col-container' cols='3'>
+                <span
+                  :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`"
+                  @click.stop.prevent="copyText(session.dataset.id, 'Copied dataset ID to clipboard')">
+                  {{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}
+                </span>
+              </v-col>
+              <v-col class='col-container' cols='3'>
+                <span :title='`${session.model.name} (ID: ${session.model.id})`'
+                      @click.stop.prevent="copyText(session.model.id, 'Copied model ID to clipboard')">{{ session.model.name ? session.model.name : 'Unnamed model'
+                  }}</span>
+              </v-col>
+              <v-col cols='1'>
+                <v-card-actions>
+                  <v-btn icon @click.stop.prevent='deleteDebuggingSession(session)'>
+                    <v-icon color='accent'>delete</v-icon>
+                  </v-btn>
+                </v-card-actions>
+              </v-col>
+            </v-row>
+          </v-expansion-panel-header>
+        </v-expansion-panel>
+      </v-expansion-panels>
+      <div v-else>
+        <router-view />
+      </div>
+    </v-container>
+
+    <v-container v-else class='vc mt-6'>
+      <v-alert class='text-center'>
+        <p class='headline font-weight-medium grey--text text--darken-2'>You haven't created any debugging session for
+          this project. <br>Please create your first session to start debugging your model.</p>
+      </v-alert>
+      <AddDebuggingSessionModal :projectId='projectId'
+                                v-on:createDebuggingSession='createDebuggingSession'></AddDebuggingSessionModal>
+      <div class='d-flex justify-center mb-6'>
+        <img alt='A turtle using a magnifying glass' class='debugger-logo' src='@/assets/logo_debugger.png'
+             title='Debugger tab logo'>
+      </div>
+    </v-container>
+  </div>
+  <v-container v-else class='d-flex flex-column align-center'>
+    <h1 class='pt-16'>ML Worker is not connected</h1>
+    <StartWorkerInstructions></StartWorkerInstructions>
+  </v-container>
+</template>
+
+<script lang='ts' setup>
+import { computed, onActivated, ref, watch } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
-import { useRouter } from 'vue-router/composables';
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useMLWorkerStore } from "@/stores/ml-worker";
-import { useProjectStore } from "@/stores/project";
-import { InspectionDTO } from "@/generated-sources";
+import { useRoute, useRouter } from 'vue-router/composables';
+import { useMainStore } from '@/stores/main';
+import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
+import { useMLWorkerStore } from '@/stores/ml-worker';
+import { InspectionDTO } from '@/generated-sources';
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import ConfirmModal from './modals/ConfirmModal.vue';
-import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
+import { copyText } from '@/utils';
+import { TYPE } from 'vue-toastification';
 
 const router = useRouter();
+const route = useRoute();
 
-const projectStore = useProjectStore();
 const debuggingSessionsStore = useDebuggingSessionsStore();
 const mlWorkerStore = useMLWorkerStore();
 
@@ -24,11 +120,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const searchSession = ref("");
-
-const project = computed(() => {
-  return projectStore.project(props.projectId)
-});
+const searchSession = ref('');
 
 const filteredSessions = computed(() => {
 
@@ -46,7 +138,7 @@ const filteredSessions = computed(() => {
       model.id.toString().includes(search)
     );
   }));
-})
+});
 
 async function showPastSessions() {
   debuggingSessionsStore.reload();
@@ -61,9 +153,7 @@ async function showPastSessions() {
 }
 
 async function createDebuggingSession(debuggingSession: InspectionDTO) {
-  debuggingSessionsStore.reload();
-  debuggingSessionsStore.setCurrentDebuggingSessionId(debuggingSession.id);
-  await openInspection(props.projectId.toString(), debuggingSession.id.toString());
+  await openDebuggingSession(debuggingSession.id, props.projectId);
 }
 
 async function renameSession(id: number, name: string) {
@@ -101,6 +191,11 @@ function deleteDebuggingSession(debuggingSession: InspectionDTO) {
         await api.deleteInspection(debuggingSession.id);
         await debuggingSessionsStore.reload();
         close();
+        useMainStore().addNotification({
+          content: `The debugging session '${debuggingSession.name}' has been deleted.`,
+          color: TYPE.SUCCESS,
+          showProgress: false
+        });
       }
     }
   });
@@ -112,109 +207,48 @@ async function openDebuggingSession(debuggingSessionId: number, projectId: numbe
 }
 
 function resetSearchInput() {
-  searchSession.value = "";
+  searchSession.value = '';
 }
 
 async function openInspection(projectId: string, inspectionId: string) {
   await router.push({
     name: 'inspection',
     params: {
-      projectId,
-      inspectionId
+      id: projectId,
+      inspectionId: inspectionId
     }
   });
 }
 
-onActivated(async () => {
-  await projectStore.getProject({ id: props.projectId });
-  await mlWorkerStore.checkExternalWorkerConnection();
-
-  if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
-    await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
-  } else {
-    await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
+watch(() => debuggingSessionsStore.currentDebuggingSessionId, async (currentDebuggingSessionId) => {
+  if (currentDebuggingSessionId !== null) {
+    await openInspection(props.projectId.toString(), currentDebuggingSessionId.toString());
   }
 });
 
+
+watch(() => route.name, async (name) => {
+  if (name === 'project-debugger') {
+    await debuggingSessionsStore.reload();
+    resetSearchInput();
+    debuggingSessionsStore.setCurrentDebuggingSessionId(null);
+  }
+});
+
+onActivated(async () => {
+  await mlWorkerStore.checkExternalWorkerConnection();
+  await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
+
+  if (route.params.inspectionId !== undefined) {
+    debuggingSessionsStore.setCurrentDebuggingSessionId(parseInt(route.params.inspectionId));
+  }
+
+  if (debuggingSessionsStore.currentDebuggingSessionId !== null) {
+    await openInspection(props.projectId.toString(), debuggingSessionsStore.currentDebuggingSessionId.toString());
+  }
+});
 </script>
 
-<template>
-  <div v-if="mlWorkerStore.isExternalWorkerConnected" class="vertical-container">
-    <v-container fluid class="vc" v-if="debuggingSessionsStore.debuggingSessions.length > 0">
-      <v-row>
-        <v-col cols="4">
-          <v-text-field v-show="debuggingSessionsStore.currentDebuggingSessionId === null" label="Search for a debugging session" append-icon="search" outlined v-model="searchSession"></v-text-field>
-        </v-col>
-        <v-col cols="8">
-          <div class="d-flex justify-end">
-            <v-btn v-if="debuggingSessionsStore.currentDebuggingSessionId !== null" text @click="showPastSessions" class="mr-3">
-              <v-icon class="mr-2">mdi-arrow-left</v-icon>
-              Back to all sessions
-            </v-btn>
-            <AddDebuggingSessionModal v-show="debuggingSessionsStore.currentDebuggingSessionId === null" :projectId="projectId" @createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
-          </div>
-        </v-col>
-      </v-row>
-
-      <v-expansion-panels v-if="debuggingSessionsStore.currentDebuggingSessionId === null">
-        <v-row class="mr-12 ml-6 caption secondary--text text--lighten-3 pb-2">
-          <v-col cols="3" class="col-container" title="Session name">Session name</v-col>
-          <v-col cols="1" class="col-container" title="Session ID">Session ID</v-col>
-          <v-col cols="2" class="col-container" title="Created at">Created at</v-col>
-          <v-col cols="1" class="col-container" title="Dataset name">Dataset name</v-col>
-          <v-col cols="1" class="col-container" title="Dataset ID">Dataset ID</v-col>
-          <v-col cols="2" class="col-container" title="Model name">Model name</v-col>
-          <v-col cols="1" class="col-container" title="Model ID">Model ID</v-col>
-          <v-col cols="1"></v-col>
-        </v-row>
-
-        <v-expansion-panel v-for="session in filteredSessions" :key="session.id" @click.stop="openDebuggingSession(session.id, projectId)" class="expansion-panel">
-          <v-expansion-panel-header :disableIconRotate="true" class="grey lighten-5" tile>
-            <v-row class="px-2 py-1 align-center">
-              <v-col cols="3" class="font-weight-bold" :title="session.name">
-                <div class="pr-4">
-                  <InlineEditText :text="session.name" @save="(name) => renameSession(session.id, name)">
-                  </InlineEditText>
-                </div>
-              </v-col>
-              <v-col cols="1" class="col-container" :title="session.id">{{ session.id }}</v-col>
-              <v-col cols="2" class="col-container" :title="session.createdDate | date">{{ session.createdDate | date }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.name ? session.dataset.name : 'Unnamed dataset'">{{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}</v-col>
-
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.dataset.id }}</v-col>
-              <v-col cols="2" class="col-container" :title="session.model.name">{{ session.model.name }}</v-col>
-              <v-col cols="1" class="col-container" :title="session.dataset.id">{{ session.model.id }}</v-col>
-              <v-col cols="1">
-                <v-card-actions>
-                  <v-btn icon @click.stop="deleteDebuggingSession(session)" @click.stop.prevent>
-                    <v-icon color="accent">delete</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-col>
-            </v-row>
-          </v-expansion-panel-header>
-        </v-expansion-panel>
-      </v-expansion-panels>
-      <div v-else>
-        <router-view />
-      </div>
-    </v-container>
-
-    <v-container v-else class="vc mt-6">
-      <v-alert class="text-center">
-        <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any debugging session for this project. <br>Please create your first session to start debugging your model.</p>
-      </v-alert>
-      <AddDebuggingSessionModal :projectId="projectId" v-on:createDebuggingSession="createDebuggingSession"></AddDebuggingSessionModal>
-      <div class="d-flex justify-center mb-6">
-        <img src="@/assets/logo_debugger.png" class="debugger-logo" title="Debugger tab logo" alt="A turtle using a magnifying glass">
-      </div>
-    </v-container>
-  </div>
-  <v-container v-else class="d-flex flex-column vc fill-height">
-    <h1 class="pt-16">ML Worker is not connected</h1>
-    <StartWorkerInstructions></StartWorkerInstructions>
-  </v-container>
-</template>
 
 <style scoped>
 .debugger-logo {

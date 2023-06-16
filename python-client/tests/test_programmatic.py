@@ -116,6 +116,7 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     #     ).upload(client, "test_project_key")
     scan(german_credit_model, german_credit_data)
 
+
 @pytest.mark.skip(reason="For active testing")
 def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model: BaseModel):
     from giskard.testing import test_metamorphic_invariance, test_auc, test_diff_accuracy

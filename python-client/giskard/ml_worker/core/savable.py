@@ -35,7 +35,7 @@ class Artifact(Generic[SMT], ABC):
 
     @classmethod
     @abstractmethod
-    def load(cls, local_dir: Path, uuid: str, meta: SMT) -> 'Artifact':
+    def load(cls, local_dir: Path, uuid: str, meta: SMT) -> "Artifact":
         ...
 
     @classmethod
@@ -54,16 +54,16 @@ class Artifact(Generic[SMT], ABC):
             return posixpath.join("project", project_key, cls._get_name(), uuid)
 
     def _save_meta_locally(self, local_dir):
-        with open(Path(local_dir) / 'meta.yaml', 'w') as f:
+        with open(Path(local_dir) / "meta.yaml", "w") as f:
             yaml.dump(self.meta, f)
 
     @classmethod
     def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:
-        file = Path(local_dir) / 'meta.yaml'
+        file = Path(local_dir) / "meta.yaml"
         if not file.exists():
             return None
 
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
@@ -93,7 +93,7 @@ class Artifact(Generic[SMT], ABC):
         return self.meta.uuid
 
     @classmethod
-    def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> 'Artifact':
+    def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> "Artifact":
         """
         Downloads the artifact from the Giskard server or retrieves it from the local cache.
 
@@ -134,9 +134,8 @@ class Artifact(Generic[SMT], ABC):
 
 
 class RegistryArtifact(Artifact[SMT], ABC):
-
     def _save_locally(self, local_dir: Path):
-        with open(Path(local_dir) / 'data.pkl', 'wb') as f:
+        with open(Path(local_dir) / "data.pkl", "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
@@ -150,16 +149,16 @@ class RegistryArtifact(Artifact[SMT], ABC):
 
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: SMT):
-        _function: Optional['RegistryArtifact']
+        _function: Optional["RegistryArtifact"]
 
         if local_dir.exists():
-            with open(local_dir / 'data.pkl', 'rb') as f:
+            with open(local_dir / "data.pkl", "rb") as f:
                 _function = cloudpickle.load(f)
         else:
             try:
                 func = getattr(sys.modules[meta.module], meta.name)
 
-                if inspect.isclass(func) or hasattr(func, 'meta'):
+                if inspect.isclass(func) or hasattr(func, "meta"):
                     _function = func()
                 else:
                     _function = cls(func)

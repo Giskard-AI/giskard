@@ -14,17 +14,17 @@ logger = logging.getLogger(__name__)
 class TensorFlowModel(MLFlowBasedModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ):
         super().__init__(
             model=model,
@@ -36,7 +36,7 @@ class TensorFlowModel(MLFlowBasedModel):
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
             id=id,
-            **kwargs
+            **kwargs,
         )
 
     @classmethod

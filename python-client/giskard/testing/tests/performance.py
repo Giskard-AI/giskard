@@ -211,7 +211,7 @@ class AucTest(GiskardTest):
         return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold, debug=self.debug)
 
 
-@test(name='AUC', tags=['performance', 'classification', 'ground_truth'])
+@test(name="AUC", tags=["performance", "classification", "ground_truth"])
 def test_auc(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
         debug: bool = False):
@@ -252,10 +252,10 @@ def test_auc(
     else:
         predictions = _predictions.all_predictions
         non_declared_categories = set(predictions.columns) - set(targets.unique())
-        assert not len(
-            non_declared_categories
-        ), f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}. ' \
-           'ROC AUC score is not defined in that case.'
+        assert not len(non_declared_categories), (
+            f'Predicted classes don\'t exist in the dataset "{dataset.target}" column: {non_declared_categories}. '
+            "ROC AUC score is not defined in that case."
+        )
 
         metric = roc_auc_score(targets, predictions, multi_class="ovo")
 
@@ -273,7 +273,7 @@ def test_auc(
                       output_df=output_ds)
 
 
-@test(name='F1', tags=['performance', 'classification', 'ground_truth'])
+@test(name="F1", tags=["performance", "classification", "ground_truth"])
 def test_f1(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
         ,
@@ -309,7 +309,7 @@ def test_f1(
     return _test_classification_score(f1_score, model, dataset, threshold, debug)
 
 
-@test(name='Accuracy', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Accuracy", tags=["performance", "classification", "ground_truth"])
 def test_accuracy(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
         ,
@@ -344,7 +344,7 @@ def test_accuracy(
     return _test_accuracy_score(dataset, model, threshold, debug)
 
 
-@test(name='Precision', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Precision", tags=["performance", "classification", "ground_truth"])
 def test_precision(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
         debug: bool = False
@@ -378,7 +378,7 @@ def test_precision(
     return _test_classification_score(precision_score, model, dataset, threshold, debug)
 
 
-@test(name='Recall', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Recall", tags=["performance", "classification", "ground_truth"])
 def test_recall(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
         debug: bool = False):
@@ -413,7 +413,7 @@ def test_recall(
     return _test_classification_score(recall_score, model, dataset, threshold, debug)
 
 
-@test(name='RMSE', tags=['performance', 'regression', 'ground_truth'])
+@test(name="RMSE", tags=["performance", "regression", "ground_truth"])
 def test_rmse(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
         ,
@@ -448,7 +448,7 @@ def test_rmse(
                                   debug=debug)
 
 
-@test(name='MSE', tags=['performance', 'regression', 'ground_truth'])
+@test(name="MSE", tags=["performance", "regression", "ground_truth"])
 def test_mse(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
@@ -481,7 +481,7 @@ def test_mse(
     return _test_regression_score(_get_mse, model, dataset, threshold)
 
 
-@test(name='MAE', tags=['performance', 'regression', 'ground_truth'])
+@test(name="MAE", tags=["performance", "regression", "ground_truth"])
 def test_mae(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
         ,
@@ -519,7 +519,7 @@ def test_mae(
                                   debug=debug)
 
 
-@test(name='R2', tags=['performance', 'regression', 'ground_truth'])
+@test(name="R2", tags=["performance", "regression", "ground_truth"])
 def test_r2(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
         ,
@@ -555,7 +555,7 @@ def test_r2(
                                   debug=debug)
 
 
-@test(name='Accuracy difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Accuracy difference", tags=["performance", "classification", "ground_truth"])
 def test_diff_accuracy(
         model: BaseModel,
         actual_dataset: Dataset,
@@ -615,7 +615,7 @@ def test_diff_accuracy(
     )
 
 
-@test(name='F1 difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name="F1 difference", tags=["performance", "classification", "ground_truth"])
 def test_diff_f1(
         model: BaseModel,
         actual_dataset: Dataset,
@@ -675,7 +675,7 @@ def test_diff_f1(
     )
 
 
-@test(name='Precision difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Precision difference", tags=["performance", "classification", "ground_truth"])
 def test_diff_precision(
         model: BaseModel,
         actual_dataset: Dataset,
@@ -734,7 +734,7 @@ def test_diff_precision(
     )
 
 
-@test(name='Recall difference', tags=['performance', 'classification', 'ground_truth'])
+@test(name="Recall difference", tags=["performance", "classification", "ground_truth"])
 def test_diff_recall(
         model: BaseModel,
         actual_dataset: Dataset,
@@ -913,7 +913,7 @@ def test_diff_reference_actual_accuracy(
     )
 
 
-@test(name='RMSE difference', tags=['performance', 'regression', 'ground_truth'])
+@test(name="RMSE difference", tags=["performance", "regression", "ground_truth"])
 def test_diff_rmse(
         model: BaseModel,
         actual_dataset: Dataset,

@@ -1,6 +1,6 @@
 # 🔄 Define data transformations
 
-Transformations such as adding typos, switching words, or paraphrasing can help create more diverse and realistic training datases. This can enhance the model's resilience to noise and improve its performance on unseen examples.
+Transformations such as adding typos, switching words, or paraphrasing can help create more diverse and realistic training datasets. This can enhance the model's resilience to noise and improve its performance on unseen examples.
 
 Giskard enables you to **automatically** generate transformation functions to make your model more robust (see the [scan feature](../scan/index.rst)). We propose various transformation functions in the **Giskard catalog**, such as *adding typos* or *punctuation
 stripping*. Have a look at our [Transformation Function Catalog here](../../catalogs/transformation-function-catalog/index.rst)

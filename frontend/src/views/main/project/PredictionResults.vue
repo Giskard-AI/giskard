@@ -2,32 +2,25 @@
   <v-card class="mb-4" id="resultCard" outlined>
     <v-card-title>Result</v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
-      <OverlayLoader :show="loading" absolute solid no-fade/>
-      <v-row v-if="prediction && isClassification(predictionTask)">
-        <v-col
-            lg="8"
-            md="12"
-            sm="12"
-            xs="12"
-            v-if="
-            resultProbabilities && Object.keys(resultProbabilities).length > 0
-          "
-        >
+      <LoadingFullscreen v-show="loading" name="result" class="pb-6" />
+      <v-row v-if="prediction && isClassification(predictionTask) && !loading">
+        <v-col lg="8" md="12" sm="12" xs="12" v-if="resultProbabilities && Object.keys(resultProbabilities).length > 0
+          ">
           <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
-          <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize/>
+          <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize />
         </v-col>
         <v-col lg="4">
           <div class="mb-3">
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''"> 
-                  {{  abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
+                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''">
+                  {{ abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
                 </div>
               </template>
-              <span> {{ prediction}}</span>
+              <span> {{ prediction }}</span>
             </v-tooltip>
-              
+
           </div>
           <div>
             <div class="mb-2">
@@ -40,23 +33,23 @@
                     <div v-else>-</div>
                   </div>
                 </template>
-                <span>{{actual}}</span>
+                <span>{{ actual }}</span>
               </v-tooltip>
 
             </div>
             <div class="caption">
-                <div v-if="targetFeature">target: {{ targetFeature }}</div>
-                <div v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
-                    threshold:
-                    {{ model.threshold }}
-                </div>
+              <div v-if="targetFeature">target: {{ targetFeature }}</div>
+              <div v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
+                threshold:
+                {{ model.threshold }}
+              </div>
             </div>
           </div>
         </v-col>
       </v-row>
       <v-row>
       </v-row>
-      <v-row v-if="prediction && predictionTask === ModelType.REGRESSION">
+      <v-row v-if="prediction && predictionTask === ModelType.REGRESSION && !loading">
         <v-col lg="4">
           <div>Prediction</div>
           <div class="text-h6 success--text">
@@ -65,7 +58,7 @@
         </v-col>
         <v-col lg="4">
           <div>Actual <span v-show="isDefined(actual) && modified">(before modification)</span></div>
-          <div v-if="isDefined(actual)" class="text-h6">{{  actual | formatTwoDigits }}</div>
+          <div v-if="isDefined(actual)" class="text-h6">{{ actual | formatTwoDigits }}</div>
           <div v-else>-</div>
         </v-col>
         <v-col lg="4">
@@ -77,7 +70,9 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-if="!prediction && !errorMsg"><p>No data yet</p></v-col>
+        <v-col v-if="!prediction && !errorMsg && !loading">
+          <p>No data yet</p>
+        </v-col>
         <v-col v-if="errorMsg">
           <p class="error--text">
             {{ errorMsg }}
@@ -94,37 +89,37 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue, Watch} from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import ResultPopover from "@/components/ResultPopover.vue"
-import OverlayLoader from "@/components/OverlayLoader.vue";
-import {api} from "@/api";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import { api } from "@/api";
 import ECharts from "vue-echarts";
-import {use} from "echarts/core";
-import {BarChart} from "echarts/charts";
-import {CanvasRenderer} from "echarts/renderers";
-import {GridComponent} from "echarts/components";
-import {ModelDTO, ModelType} from "@/generated-sources";
-import {isClassification} from "@/ml-utils";
-import {abbreviateMiddle, maxLengthDisplayedCategory} from "@/results-utils";
+import { use } from "echarts/core";
+import { BarChart } from "echarts/charts";
+import { CanvasRenderer } from "echarts/renderers";
+import { GridComponent } from "echarts/components";
+import { ModelDTO, ModelType } from "@/generated-sources";
+import { isClassification } from "@/ml-utils";
+import { abbreviateMiddle, maxLengthDisplayedCategory } from "@/results-utils";
 import * as _ from "lodash";
-import {CanceledError} from "axios";
+import { CanceledError } from "axios";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: {OverlayLoader, ResultPopover}
+  components: { LoadingFullscreen, ResultPopover }
 })
 export default class PredictionResults extends Vue {
-  @Prop({required: true}) model!: ModelDTO;
-  @Prop({required: true}) datasetId!: string;
-  @Prop({required: true}) predictionTask!: ModelType;
+  @Prop({ required: true }) model!: ModelDTO;
+  @Prop({ required: true }) datasetId!: string;
+  @Prop({ required: true }) predictionTask!: ModelType;
   @Prop() targetFeature!: string;
   @Prop() modelFeatures!: string[];
   @Prop() classificationLabels!: string[];
   @Prop() inputData!: { [key: string]: string };
-  @Prop({default: false}) modified!: boolean;
-  @Prop({default: 250}) debounceTime!: number;
+  @Prop({ default: false }) modified!: boolean;
+  @Prop({ default: 250 }) debounceTime!: number;
 
 
   prediction: string | number | undefined = "";
@@ -135,7 +130,7 @@ export default class PredictionResults extends Vue {
   ModelType = ModelType;
   predCategoriesN = 5;
   controller?: AbortController;
-  sizeResultCard? = 0;
+  sizeResultCard?= 0;
 
   abbreviateMiddle = abbreviateMiddle;
 
@@ -143,11 +138,11 @@ export default class PredictionResults extends Vue {
     this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     await this.submitPrediction()
     window.addEventListener('resize', () => {
-        this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
+      this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
     })
   }
 
-  @Watch("inputData", {deep: true})
+  @Watch("inputData", { deep: true })
   private async onInputDataChange() {
     await this.debouncedSubmitPrediction();
   }
@@ -165,10 +160,10 @@ export default class PredictionResults extends Vue {
       try {
         this.loading = true;
         const predictionResult = (await api.predict(
-            this.model.id,
-            this.datasetId,
-            _.pick(this.inputData, this.modelFeatures),
-            this.controller
+          this.model.id,
+          this.datasetId,
+          _.pick(this.inputData, this.modelFeatures),
+          this.controller
         ))
         this.prediction = predictionResult.prediction;
         this.$emit("result", this.prediction);
@@ -176,8 +171,8 @@ export default class PredictionResults extends Vue {
         // Sort the object by value - solution based on:
         // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
         this.resultProbabilities = Object.entries(this.resultProbabilities)
-            .sort(([, v1], [, v2]) => +v2 - +v1)
-            .reduce((r, [k, v]) => ({...r, [k]: v}), {});
+          .sort(([, v1], [, v2]) => +v2 - +v1)
+          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
         this.errorMsg = "";
         this.loading = false;
       } catch (error) {
@@ -196,7 +191,7 @@ export default class PredictionResults extends Vue {
   }
 
 
-  get classColorPrediction(){
+  get classColorPrediction() {
     if (!this.isDefined(this.actual)) return 'info--text text--darken-2'
     else return this.isCorrectPrediction ? 'primary--text' : 'error--text'
   }
@@ -214,7 +209,7 @@ export default class PredictionResults extends Vue {
     else return undefined
   }
 
-  get maxLengthDisplayedCategory(){
+  get maxLengthDisplayedCategory() {
     return maxLengthDisplayedCategory(this.sizeResultCard);
   }
 
@@ -226,11 +221,11 @@ export default class PredictionResults extends Vue {
    * @param n number of entries to keep
    * @private
    */
-   private firstNSortedByKey(obj: Object, n: number) {
+  private firstNSortedByKey(obj: Object, n: number) {
 
     let listed = Object.entries(obj)
-        .sort(([,a],[,b]) => a-b)
-        .slice(-n);
+      .sort(([, a], [, b]) => a - b)
+      .slice(-n);
     return Object.fromEntries(listed)
   }
 
@@ -243,9 +238,9 @@ export default class PredictionResults extends Vue {
    * @param n number of slice to keep
    * @private
    */
-  private sliceLongCategoryName(obj, max_size){
-    let res = Object.fromEntries(Object.entries(obj).map(function(elt) {
-      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]),elt[1]]
+  private sliceLongCategoryName(obj, max_size) {
+    let res = Object.fromEntries(Object.entries(obj).map(function (elt) {
+      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]), elt[1]]
     }))
     return res
   }
@@ -254,10 +249,10 @@ export default class PredictionResults extends Vue {
     return !_.isNil(val);
   }
 
-  get chartInit(){
-      return {
-          renderer: 'svg'
-      }
+  get chartInit() {
+    return {
+      renderer: 'svg'
+    }
   }
 
   get chartOptions() {
@@ -283,9 +278,9 @@ export default class PredictionResults extends Vue {
             show: true,
             position: "right",
             formatter: (params) =>
-                params.value % 1 == 0
-                    ? params.value
-                    : params.value.toFixed(2).toLocaleString(),
+              params.value % 1 == 0
+                ? params.value
+                : params.value.toFixed(2).toLocaleString(),
           },
           data: Object.values(results),
         },
@@ -319,8 +314,8 @@ div.center-center {
 }
 
 div.caption {
-    font-size: 0.6875em !important;
-    line-height: 1rem !important;
+  font-size: 0.6875em !important;
+  line-height: 1rem !important;
 }
 
 #labels-container {
@@ -335,8 +330,9 @@ div.caption {
 .v-data-table tbody td {
   font-size: 10px !important;
 }
+
 .v-tooltip__content {
-        max-width: 400px !important;
-        overflow-wrap: anywhere;
-    }
+  max-width: 400px !important;
+  overflow-wrap: anywhere;
+}
 </style>

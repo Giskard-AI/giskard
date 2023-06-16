@@ -32,11 +32,11 @@ def _prediction_ratio(prediction, perturbed_prediction):
 
 @timer("Perturb and predict data")
 def _perturb_and_predict(
-        model: BaseModel,
-        ds: Dataset,
-        transformation_function: TransformationFunction,
-        output_proba=True,
-        classification_label=None,
+    model: BaseModel,
+    ds: Dataset,
+    transformation_function: TransformationFunction,
+    output_proba=True,
+    classification_label=None,
 ):
     fix_seed()
 

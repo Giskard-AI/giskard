@@ -7,7 +7,7 @@ class TestInputDTO(BaseModel):
     name: str
     value: str
     type: str
-    params: List['TestInputDTO'] = list()
+    params: List["TestInputDTO"] = list()
     is_alias: bool = False
 
 

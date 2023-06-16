@@ -17,13 +17,12 @@ class PrecookedModel(BaseModel):
         model_type: ModelType,
         feature_names: Optional[Iterable] = None,
         classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        **kwargs,
     ):
         self._data = data
         self._predictions = predictions
         super().__init__(
-            model_type=model_type, feature_names=feature_names, classification_labels=classification_labels,
-            **kwargs
+            model_type=model_type, feature_names=feature_names, classification_labels=classification_labels, **kwargs
         )
 
     @classmethod
