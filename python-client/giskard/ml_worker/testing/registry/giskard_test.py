@@ -129,7 +129,13 @@ class GiskardTestMethod(GiskardTest):
     def execute(self) -> Result:
         analytics.track("test:execute", {"test_name": self.meta.full_name})
 
-        return self.test_fn(**self.params)
+        try:
+            return self.test_fn(**self.params)
+        except TypeError as e:
+            # Check if the TypeError is for the unexpected argument 'debug'
+            if "unexpected keyword argument 'debug'" in str(e):
+                raise ValueError("This test does not support debugging mode at the moment.")
+            raise e
 
     def __repr__(self) -> str:
         if not self.is_initialized:
