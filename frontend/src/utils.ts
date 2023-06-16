@@ -2,7 +2,9 @@ import { UserDTO } from '@/generated-sources';
 import * as _ from 'lodash';
 import { Role } from '@/enums';
 import * as crypto from 'crypto-js';
+import { copyToClipboard } from '@/global-keys';
 import { useUserStore } from '@/stores/user';
+import { useMainStore } from '@/stores/main';
 
 export const getLocalToken = (): string | null => localStorage.getItem('token');
 
@@ -73,6 +75,13 @@ function stringHash(str: string) {
 export function pasterColor(str: string) {
   const hue = stringHash(str) % 360;
   return `hsl(${hue}, 70%, 90%)`;
+}
+
+export function copyText(text: string, description?: string) {
+  copyToClipboard(text);
+  if (description) {
+    useMainStore().addSimpleNotification(description);
+  }
 }
 
 export function httpUrlToWsUrl(url: string): string {

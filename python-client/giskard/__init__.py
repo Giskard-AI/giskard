@@ -19,12 +19,14 @@ from giskard.models.automodel import Model
 from . import demo
 from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
+from .utils.analytics_collector import analytics
 
 configure_logging()
 if sys.version_info >= (3, 8):
     from importlib import metadata as importlib_metadata
 else:
     import importlib_metadata
+
 
 def get_version() -> str:
     try:
@@ -36,21 +38,22 @@ def get_version() -> str:
 __version__: str = get_version()
 
 check_latest_giskard_version()
+analytics.track("Initialized giskard library")
 
 __all__ = [
-    'SingleTestResult',
-    'Project',
-    'Dataset',
-    'GiskardClient',
-    'test',
-    'Model',
-    'Suite',
-    'slicing_function',
-    'transformation_function',
-    'SuiteInput',
-    'SlicingFunction',
-    'scan',
-    'TestResult',
-    'GiskardTest',
-    "demo"
+    "SingleTestResult",
+    "Project",
+    "Dataset",
+    "GiskardClient",
+    "test",
+    "Model",
+    "Suite",
+    "slicing_function",
+    "transformation_function",
+    "SuiteInput",
+    "SlicingFunction",
+    "scan",
+    "TestResult",
+    "GiskardTest",
+    "demo",
 ]

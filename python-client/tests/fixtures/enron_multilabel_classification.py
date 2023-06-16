@@ -26,19 +26,19 @@ LABEL_CAT = 3
 
 
 idx_to_cat = {
-    1: 'REGULATION',
-    2: 'INTERNAL',
-    3: 'INFLUENCE',
-    4: 'INFLUENCE',
-    5: 'INFLUENCE',
-    6: 'CALIFORNIA CRISIS',
-    7: 'INTERNAL',
-    8: 'INTERNAL',
-    9: 'INFLUENCE',
-    10: 'REGULATION',
-    11: 'talking points',
-    12: 'meeting minutes',
-    13: 'trip reports',
+    1: "REGULATION",
+    2: "INTERNAL",
+    3: "INFLUENCE",
+    4: "INFLUENCE",
+    5: "INFLUENCE",
+    6: "CALIFORNIA CRISIS",
+    7: "INTERNAL",
+    8: "INTERNAL",
+    9: "INFLUENCE",
+    10: "REGULATION",
+    11: "talking points",
+    12: "meeting minutes",
+    13: "trip reports",
 }
 
 input_types = {
@@ -54,11 +54,11 @@ input_types = {
 
 # get_labels returns a dictionary representation of these labels.
 def get_labels(filename):
-    with open(filename + '.cats') as f:
+    with open(filename + ".cats") as f:
         labels = defaultdict(dict)
         line = f.readline()
         while line:
-            line = line.split(',')
+            line = line.split(",")
             top_cat, sub_cat, freq = int(line[0]), int(line[1]), int(line[2])
             labels[top_cat][sub_cat] = freq
             line = f.readline()
@@ -78,7 +78,7 @@ def enron_data_full() -> Dataset:
     logger.info("Fetching Enron Data")
     email_files = get_email_files()
 
-    columns_name = ['Target', 'Subject', 'Content', 'Week_day', 'Year', 'Month', 'Hour', 'Nb_of_forwarded_msg']
+    columns_name = ["Target", "Subject", "Content", "Week_day", "Year", "Month", "Hour", "Nb_of_forwarded_msg"]
 
     data_list = []
     for email_file in email_files:
@@ -88,28 +88,28 @@ def enron_data_full() -> Dataset:
         if LABEL_CAT in get_labels(email_file):
             sub_cat_dict = get_labels(email_file)[LABEL_CAT]
             target_int = max(sub_cat_dict, key=sub_cat_dict.get)
-            values_to_add['Target'] = str(idx_to_cat[target_int])
+            values_to_add["Target"] = str(idx_to_cat[target_int])
 
         # Features are metadata from the email object
-        filename = email_file + '.txt'
+        filename = email_file + ".txt"
         with open(filename) as f:
             message = email.message_from_string(f.read())
 
-            values_to_add['Subject'] = str(message['Subject'])
-            values_to_add['Content'] = str(message.get_payload())
+            values_to_add["Subject"] = str(message["Subject"])
+            values_to_add["Content"] = str(message.get_payload())
 
-            date_time_obj = parser.parse(message['Date'])
-            values_to_add['Week_day'] = date_time_obj.strftime("%A")
-            values_to_add['Year'] = date_time_obj.strftime("%Y")
-            values_to_add['Month'] = date_time_obj.strftime("%B")
-            values_to_add['Hour'] = int(date_time_obj.strftime("%H"))
+            date_time_obj = parser.parse(message["Date"])
+            values_to_add["Week_day"] = date_time_obj.strftime("%A")
+            values_to_add["Year"] = date_time_obj.strftime("%Y")
+            values_to_add["Month"] = date_time_obj.strftime("%B")
+            values_to_add["Hour"] = int(date_time_obj.strftime("%H"))
 
             # Count number of forwarded mails
             number_of_messages = 0
-            for line in message.get_payload().split('\n'):
-                if ('forwarded' in line.lower() or 'original' in line.lower()) and '--' in line:
+            for line in message.get_payload().split("\n"):
+                if ("forwarded" in line.lower() or "original" in line.lower()) and "--" in line:
                     number_of_messages += 1
-            values_to_add['Nb_of_forwarded_msg'] = number_of_messages
+            values_to_add["Nb_of_forwarded_msg"] = number_of_messages
 
         data_list.append(values_to_add)
 
@@ -119,7 +119,7 @@ def enron_data_full() -> Dataset:
     data_filtered = data[data["Target"].notnull()]
     data_filtered = data_filtered.head(150)  # Sample to make the scan faster
     data_filtered.Year = data_filtered.Year.astype(float)
-    return Dataset(df=data_filtered, target="Target", cat_columns=['Week_day', 'Month'])
+    return Dataset(df=data_filtered, target="Target", cat_columns=["Week_day", "Month"])
 
 
 @pytest.fixture()

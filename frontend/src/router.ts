@@ -100,7 +100,7 @@ export default new Router({
             {
               path: 'projects/:id',
               name: 'project-home',
-              redirect: 'projects/:id/catalog',
+              redirect: 'projects/:id/testing',
               component: () => import('./views/main/project/Project.vue'),
               props: route => {
                 return { id: Number(route.params.id) };

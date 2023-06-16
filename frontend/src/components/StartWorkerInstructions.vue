@@ -10,7 +10,7 @@
             </v-alert>
             <div>
                 <p>To connect a worker, install giskard library in any code environment of your choice with</p>
-                <CodeSnippet :codeContent="'pip install giskard'" />
+                <CodeSnippet codeContent='pip install "giskard>=2.0.0b" -U' />
                 <p class="mt-4 mb-4">then run</p>
                 <CodeSnippet :codeContent="codeContent" />
                 <p class="mt-4 mb-0">to connect to this Giskard server.</p>

@@ -29,14 +29,14 @@ def load_transformer_models(bert, special_tokens):
     """
     tokenizer = AutoTokenizer.from_pretrained(bert)
 
-    tokenizer.add_special_tokens({'additional_special_tokens': special_tokens})
+    tokenizer.add_special_tokens({"additional_special_tokens": special_tokens})
 
     transformer_model = TFAutoModel.from_pretrained(bert)
 
     return tokenizer, transformer_model
 
 
-def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model='', PATH_MODELS=''):
+def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model="", PATH_MODELS=""):
     """
     Get a model from scratch or if we have weights load it to the model.
 
@@ -51,16 +51,16 @@ def get_model(max_length, transformer_model, num_labels, rate=0.5, name_model=''
         - model, tensorflow.python.keras.engine.functional.Functional: the final model we'll train
     """
 
-    logging.info('Creating architecture...')
+    logging.info("Creating architecture...")
 
-    input_ids_in = tf.keras.layers.Input(shape=(max_length,), name='input_token', dtype='int32')
-    input_masks_in = tf.keras.layers.Input(shape=(max_length,), name='masked_token', dtype='int32')
+    input_ids_in = tf.keras.layers.Input(shape=(max_length,), name="input_token", dtype="int32")
+    input_masks_in = tf.keras.layers.Input(shape=(max_length,), name="masked_token", dtype="int32")
 
     embedding_layer = transformer_model(input_ids_in, attention_mask=input_masks_in)[0][:, 0, :]
-    output_layer = tf.keras.layers.Dropout(rate=rate, name='embedding_do_layer')(embedding_layer)
+    output_layer = tf.keras.layers.Dropout(rate=rate, name="embedding_do_layer")(embedding_layer)
     transf_out = tf.keras.layers.Flatten()(output_layer)
 
-    output = tf.keras.layers.Dense(num_labels, activation='sigmoid')(transf_out)
+    output = tf.keras.layers.Dense(num_labels, activation="sigmoid")(transf_out)
 
     model = tf.keras.Model(inputs=[input_ids_in, input_masks_in], outputs=output)
 
@@ -78,29 +78,37 @@ def get_inputs(tokenizer, sentences, max_length):
     Outputs:
         - inputs, list: list of ids and masks from the tokenizer
     """
-    inputs = tokenizer.batch_encode_plus(list(sentences), add_special_tokens=True, max_length=max_length,
-                                         padding='max_length',  return_attention_mask=True,
-                                         return_token_type_ids=True, truncation=True)
+    inputs = tokenizer.batch_encode_plus(
+        list(sentences),
+        add_special_tokens=True,
+        max_length=max_length,
+        padding="max_length",
+        return_attention_mask=True,
+        return_token_type_ids=True,
+        truncation=True,
+    )
 
-    ids = np.asarray(inputs['input_ids'], dtype='int32')
-    masks = np.asarray(inputs['attention_mask'], dtype='int32')
+    ids = np.asarray(inputs["input_ids"], dtype="int32")
+    masks = np.asarray(inputs["attention_mask"], dtype="int32")
 
     inputs = [ids, masks]
 
     return inputs
 
 
-pd.set_option('display.max_colwidth', None)
+pd.set_option("display.max_colwidth", None)
 
-models = {'complaints': 'comp_debiased_10'}
+models = {"complaints": "comp_debiased_10"}
 special_tokens = []
-max_length = {'complaints': 64}
-intent = 'complaints'
+max_length = {"complaints": 64}
+intent = "complaints"
 tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
 model = get_model(max_length.get(intent), transformer_model, num_labels=1, name_model=models.get(intent))
 
 
-@pytest.mark.skip(reason="Loading must be customised to take care of loading the TF and embedded huggingFace model correctly")
+@pytest.mark.skip(
+    reason="Loading must be customised to take care of loading the TF and embedded huggingFace model correctly"
+)
 def test_tf_auto_model_as_embedding_layer():
     data_dict = {
         "I’m not buying from this online shop ever again": 1,
@@ -115,24 +123,26 @@ def test_tf_auto_model_as_embedding_layer():
         "The app developers are muslim": 0,
         "The app developers are women": 0,
         "The app developers are transgender": 0,
-        "The app developers are homosexual": 0
+        "The app developers are homosexual": 0,
     }
 
     data = pd.DataFrame(columns=["text", "label"])
-    data.loc[:, 'text'] = data_dict.keys()
-    data.loc[:, 'label'] = data_dict.values()
+    data.loc[:, "text"] = data_dict.keys()
+    data.loc[:, "label"] = data_dict.values()
 
     def preprocessing_function(df):
-        sentences = df.loc[:, 'text'].astype(str).values
+        sentences = df.loc[:, "text"].astype(str).values
         inputs = get_inputs(tokenizer, list(sentences), max_length.get(intent))
         return inputs
 
-    my_model = TensorFlowModel(name="huggingface_model",
-                               model=model,
-                               feature_names=['text'],
-                               model_type="classification",
-                               classification_labels=['0', '1'],
-                               data_preprocessing_function=preprocessing_function)
+    my_model = TensorFlowModel(
+        name="huggingface_model",
+        model=model,
+        feature_names=["text"],
+        model_type="classification",
+        classification_labels=["0", "1"],
+        data_preprocessing_function=preprocessing_function,
+    )
 
     my_test_dataset = Dataset(data.head(), name="test dataset", target="label")
 

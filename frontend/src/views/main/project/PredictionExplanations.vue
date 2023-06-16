@@ -1,32 +1,14 @@
 <template>
   <div class="main">
-    <OverlayLoader :show="loading" solid absolute no-fade/>
-    <v-container class="text-center">
-      <v-row
-          v-if="
-          Object.keys(fullExplanations).length !== 0 &&
-          fullExplanations.constructor === Object
-        "
-      >
+    <LoadingFullscreen v-show="loading" name="explanation" class="pb-6" />
+    <v-container class="text-center" v-show="!loading">
+      <v-row v-if="Object.keys(fullExplanations).length !== 0 &&
+        fullExplanations.constructor === Object
+        ">
         <v-col>
-          <v-chart
-              v-if="predictionTask === ModelType.REGRESSION"
-              class="chart"
-              :option="chartOptionsRegression"
-              autoresize
-          />
-          <v-chart
-              v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length === 2"
-              class="chart"
-              :option="chartOptionsBinaryClassification"
-              autoresize
-          />
-          <v-chart
-              v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length > 2"
-              class="chart"
-              :option="chartOptionsMultiClassification"
-              autoresize
-          />
+          <v-chart v-if="predictionTask === ModelType.REGRESSION" class="chart" :option="chartOptionsRegression" autoresize />
+          <v-chart v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length === 2" class="chart" :option="chartOptionsBinaryClassification" autoresize />
+          <v-chart v-if="predictionTask === ModelType.CLASSIFICATION && classificationLabels.length > 2" class="chart" :option="chartOptionsMultiClassification" autoresize />
         </v-col>
       </v-row>
       <p v-if="errorMsg" class="error--text">
@@ -37,34 +19,34 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue, Watch} from "vue-property-decorator";
-import OverlayLoader from "@/components/OverlayLoader.vue";
-import {api} from "@/api";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import { api } from "@/api";
 import ECharts from "vue-echarts";
-import {use} from "echarts/core";
-import {BarChart} from "echarts/charts";
-import {CanvasRenderer} from "echarts/renderers";
-import {GridComponent} from "echarts/components";
+import { use } from "echarts/core";
+import { BarChart } from "echarts/charts";
+import { CanvasRenderer } from "echarts/renderers";
+import { GridComponent } from "echarts/components";
 import "echarts/lib/component/legend";
-import {ModelType} from "@/generated-sources";
+import { ModelType } from "@/generated-sources";
 import _ from "lodash";
-import {CanceledError} from "axios";
+import { CanceledError } from "axios";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);
 
 @Component({
-  components: {OverlayLoader},
+  components: { LoadingFullscreen },
 })
 export default class PredictionExplanations extends Vue {
-  @Prop({required: true}) modelId!: string;
-  @Prop({required: true}) datasetId!: string;
-  @Prop({required: true}) predictionTask!: string;
+  @Prop({ required: true }) modelId!: string;
+  @Prop({ required: true }) datasetId!: string;
+  @Prop({ required: true }) predictionTask!: string;
   @Prop() targetFeature!: string;
   @Prop() classificationLabels!: string[];
-  @Prop({default: {}}) inputData!: object;
+  @Prop({ default: {} }) inputData!: object;
   @Prop() modelFeatures!: string[];
-  @Prop({default: 250}) debounceTime!: number;
+  @Prop({ default: 250 }) debounceTime!: number;
 
 
   loading: boolean = false;
@@ -77,7 +59,7 @@ export default class PredictionExplanations extends Vue {
     await this.getExplanation()
   }
 
-  @Watch("inputData", {deep: true})
+  @Watch("inputData", { deep: true })
   private async onInputDataChange() {
     await this.debouncedGetExplanation();
   }
@@ -96,10 +78,10 @@ export default class PredictionExplanations extends Vue {
         this.loading = true;
         this.errorMsg = "";
         const explainResponse = await api.explain(
-            this.modelId,
-            this.datasetId,
-            _.pick(this.inputData, this.modelFeatures),
-            this.controller
+          this.modelId,
+          this.datasetId,
+          _.pick(this.inputData, this.modelFeatures),
+          this.controller
         )
         this.fullExplanations = explainResponse.explanations;
         this.loading = false;
@@ -138,9 +120,9 @@ export default class PredictionExplanations extends Vue {
             show: true,
             position: "right",
             formatter: (params) =>
-                params.value > 0.02
-                    ? params.value.toFixed(2).toLocaleString()
-                    : "",
+              params.value > 0.02
+                ? params.value.toFixed(2).toLocaleString()
+                : "",
           },
           labelLayout: {
             hideOverlap: true,
@@ -166,30 +148,30 @@ export default class PredictionExplanations extends Vue {
 
   get chartOptionsBinaryClassification() {
     const lastExplanations =
-        this.fullExplanations[Object.keys(this.fullExplanations)[Object.keys(this.fullExplanations).length - 1]];
+      this.fullExplanations[Object.keys(this.fullExplanations)[Object.keys(this.fullExplanations).length - 1]];
     return this.createSimpleExplanationChart(lastExplanations);
   }
 
   get chartOptionsMultiClassification() {
     const explanationSumByFeature: { [name: string]: number; } = _.reduce(
-        _.values(this.fullExplanations),
-        (acc, labelExplanations) => {
-          _.forOwn(labelExplanations, (featureName, explainValue) => {
-            acc[explainValue] = (acc[explainValue] || 0) + featureName;
-          });
-          return acc;
-        }, {});
+      _.values(this.fullExplanations),
+      (acc, labelExplanations) => {
+        _.forOwn(labelExplanations, (featureName, explainValue) => {
+          acc[explainValue] = (acc[explainValue] || 0) + featureName;
+        });
+        return acc;
+      }, {});
 
     // Array of features sorted by sum of SHAP explanations
     // Bonus: sort by feature name to guarantee same order if the explanation sum is the same
     const sortedTopFeatures: Array<string> = Object.entries(
-        explanationSumByFeature
+      explanationSumByFeature
     ).sort((a, b) => a[1] - b[1] || b[0].localeCompare(a[0])
     ).map(el => el[0])
     let chartSeries: object[] = [];
 
     for (const [className, explanation] of Object.entries(
-        this.fullExplanations
+      this.fullExplanations
     )) {
       // Guarantee that the explanation object follows the same feature order
       let explanationSortedByFeature: object = {}
@@ -209,7 +191,7 @@ export default class PredictionExplanations extends Vue {
             fontSize: "10",
           },
           formatter: (params) =>
-              params.value > 0.02 ? params.value.toFixed(2).toLocaleString() : "",
+            params.value > 0.02 ? params.value.toFixed(2).toLocaleString() : "",
         },
         labelLayout: {
           hideOverlap: true,
