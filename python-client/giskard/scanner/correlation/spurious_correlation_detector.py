@@ -1,14 +1,11 @@
 from dataclasses import dataclass
 import pandas as pd
 from sklearn.metrics import adjusted_mutual_info_score, mutual_info_score
-from scipy.stats import entropy
+from scipy import stats
 
 from ..common.examples import ExampleExtractor
-
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-
 from ..issues import Issue
-
 from ...slicing.slice_finder import SliceFinder
 from ..logger import logger
 from ...datasets.base import Dataset
@@ -46,7 +43,7 @@ class SpuriousCorrelationDetector(Detector):
         # Find slices
         sliced_cols = SliceFinder("tree").run(wdata, features, target=dataset.target)
 
-        measure_fn = self._get_measure_fn()
+        measure_fn, measure_name = self._get_measure_fn()
         issues = []
         for col, slices in sliced_cols.items():
             if not slices:
@@ -73,17 +70,24 @@ class SpuriousCorrelationDetector(Detector):
 
                 if metric_value > self.threshold:
                     predictions = dx[dx.feature > 0].prediction.value_counts(normalize=True)
-                    info = SpuriousCorrelationInfo(col, slice_fn, metric_value, predictions)
+                    info = SpuriousCorrelationInfo(col, slice_fn, metric_value, measure_name, predictions)
                     issues.append(SpuriousCorrelationIssue(model, dataset, "info", info))
 
         return issues
 
     def _get_measure_fn(self):
         if self.method == "theil":
-            return _theil_u
-        if self.method == "mutual_information":
-            return _mutual_information
+            return _theil_u, "Theil's U"
+        if self.method == "mutual_information" or self.method == "mi":
+            return _mutual_information, "Mutual information"
+        if self.method == "cramer":
+            return _cramer_v, "Cramer's V"
         raise ValueError(f"Unknown method `{self.method}`")
+
+
+def _cramer_v(x, y):
+    ct = pd.crosstab(x, y)
+    return stats.contingency.association(ct, method="cramer")
 
 
 def _mutual_information(x, y):
@@ -91,7 +95,7 @@ def _mutual_information(x, y):
 
 
 def _theil_u(x, y):
-    return mutual_info_score(x, y) / entropy(pd.Series(y).value_counts(normalize=True))
+    return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
 
 
 @dataclass
@@ -99,6 +103,7 @@ class SpuriousCorrelationInfo:
     feature: str
     slice_fn: SlicingFunction
     metric_value: float
+    metric_name: str
     predictions: pd.DataFrame
 
 
@@ -115,7 +120,7 @@ class SpuriousCorrelationIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return "Nominal association (Theil’s U)"
+        return f"Nominal association ({self.info.metric_name})"
 
     @property
     def deviation(self) -> str:
