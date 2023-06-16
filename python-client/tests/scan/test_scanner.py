@@ -65,7 +65,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
-    result = scanner.analyze(german_credit_model, german_credit_data)
+    result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
 
     assert isinstance(result, ScanResult)
     assert result.has_issues()
