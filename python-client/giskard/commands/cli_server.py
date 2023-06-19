@@ -403,7 +403,7 @@ def diagnose(local_dir):
     analytics.track("giskard-server:diagnose")
     out_dir = Path(local_dir)
     assert out_dir.is_dir(), "'output' should be an existing directory"
-    bits, stat = get_container().get_archive("/home/giskard/datadir/run", encode_stream=True)
+    bits, _ = get_container().get_archive("/home/giskard/datadir/run", encode_stream=True)
     from datetime import datetime
 
     now = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
