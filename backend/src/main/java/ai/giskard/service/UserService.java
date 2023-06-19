@@ -224,20 +224,21 @@ public class UserService {
      * @return
      */
     public Optional<User> updateUser(String login, String email, String displayName, String password) {
-        return userRepository.findOneWithRolesByLogin(login)
-            .map(user -> {
+        Optional<User> user = userRepository.findOneWithRolesByLogin(login)
+            .map(u -> {
                 if (displayName != null) {
-                    user.setDisplayName(displayName);
+                    u.setDisplayName(displayName);
                 }
                 if (email != null) {
-                    user.setEmail(email.toLowerCase());
+                    u.setEmail(email.toLowerCase());
                 }
                 if (password != null) {
-                    user.setPassword(passwordEncoder.encode(password));
+                    u.setPassword(passwordEncoder.encode(password));
                 }
-                log.debug("Changed Information for User: {}", user);
-                return user;
+                log.debug("Changed Information for User: {}", u);
+                return u;
             });
+        return user.map(userRepository::saveAndFlush);
     }
 
     public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {

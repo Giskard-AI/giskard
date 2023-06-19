@@ -7,7 +7,7 @@
         </router-link>
         <span>/</span>
         <router-link :to="{ name: 'project-properties', params: { id } }">
-          {{ project.name }}
+          {{ project.name }} ({{ project.key }})
         </router-link>
         <span v-show="currentTab !== null">
           <span>/</span>

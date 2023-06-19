@@ -341,7 +341,7 @@ def test_diff_rmse(model, data, threshold, expected_metric, actual_slices_size, 
 def test_f1_empty_slice(data, model, threshold, expected_metric, actual_slices_size, request):
     @slicing_function
     def my_slicing_function(row: pd.Series):
-        return row['age'] > 100
+        return row["age"] > 100
 
     with pytest.raises(ValueError, match="The sliced dataset in test_f1 is empty."):
         performance.test_f1(

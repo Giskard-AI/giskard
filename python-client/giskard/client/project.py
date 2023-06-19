@@ -4,9 +4,7 @@ from giskard.utils.analytics_collector import anonymize, analytics
 
 
 class Project:
-    def __init__(
-            self, session: BaseUrlSession, project_key: str, project_id: int
-    ) -> None:
+    def __init__(self, session: BaseUrlSession, project_key: str, project_id: int) -> None:
         self.project_key = project_key
         self._session = session
         self.url = self._session.base_url.replace("/api/v2/", "")

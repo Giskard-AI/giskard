@@ -135,20 +135,20 @@ def validate_model_loading_and_saving(model: BaseModel):
                 saved_meta = yaml.load(yaml_f, Loader=yaml.Loader)
 
             meta = ModelMeta(
-                name=saved_meta['name'],
-                model_type=SupportedModelTypes[saved_meta['model_type']],
-                feature_names=saved_meta['feature_names'],
-                classification_labels=saved_meta['classification_labels'],
-                classification_threshold=saved_meta['threshold'],
-                loader_module=saved_meta['loader_module'],
-                loader_class=saved_meta['loader_class'],
+                name=saved_meta["name"],
+                model_type=SupportedModelTypes[saved_meta["model_type"]],
+                feature_names=saved_meta["feature_names"],
+                classification_labels=saved_meta["classification_labels"],
+                classification_threshold=saved_meta["threshold"],
+                loader_module=saved_meta["loader_module"],
+                loader_class=saved_meta["loader_class"],
             )
 
             clazz = BaseModel.determine_model_class(meta, f)
 
             constructor_params = meta.__dict__
-            del constructor_params['loader_module']
-            del constructor_params['loader_class']
+            del constructor_params["loader_module"]
+            del constructor_params["loader_class"]
 
             loaded_model = clazz.load(f, **constructor_params)
 
@@ -243,7 +243,7 @@ def validate_label_with_target(
         if not set(target_values).issubset(set(classification_labels)):
             invalid_target_values = set(target_values) - set(classification_labels)
             raise ValueError(
-                f"Values {invalid_target_values} in \"{target_name}\" column are not declared in "
+                f'Values {invalid_target_values} in "{target_name}" column are not declared in '
                 f"classification_labels parameter {classification_labels}" + to_append
             )
 

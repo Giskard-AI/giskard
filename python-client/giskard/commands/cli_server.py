@@ -47,11 +47,6 @@ def server() -> None:
     """
 
 
-def update_options(fn):
-    fn = click.option("--version", "version", is_flag=False, default="", help="Version to update to.")(fn)
-    return fn
-
-
 def get_version(version=None):
     if version:
         current_settings = _get_settings() or {}
@@ -409,15 +404,15 @@ def diagnose(local_dir):
     logger.info(f"Wrote diagnose info to {out_file}")
 
 
-@server.command("update")
+@server.command("upgrade")
 @common_options
 @click.argument("version", required=False, default=None)
-def update(version):
+def upgrade(version):
     """\b
     Update Giskard Server. Uses the latest available version if not specified.
     """
     analytics.track(
-        "giskard-server:update",
+        "giskard-server:upgrade",
         {
             "version": version,
         },
@@ -434,7 +429,7 @@ def update(version):
     logger.info(f"Updating Giskard Server {installed_version} -> {version}")
     _pull_image(version)
     _write_settings({**_get_settings(), **{"version": version}})
-    logger.info(f"Giskard Server updated to {version}")
+    logger.info(f"Giskard Server upgraded to {version}")
 
 
 def read_version(version_str: str) -> Version:
