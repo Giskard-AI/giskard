@@ -1,5 +1,5 @@
 from giskard.push.contribution import contribution
-from giskard.push.prediction import overconfidence, borderline, stochasticity
+from giskard.push.prediction import overconfidence
 from giskard.push import Push
 from giskard.slicing.slice import QueryBasedSliceFunction
 from giskard.push.prediction import create_overconfidence_push, create_borderline_push
