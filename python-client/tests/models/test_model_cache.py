@@ -25,7 +25,7 @@ def test_model_prediction_is_cached_on_regression_model():
     prediction = wrapped_model.predict(wrapped_dataset)
     cached_prediction = wrapped_model.predict(wrapped_dataset)
 
-    assert called_indexes == list(wrapped_dataset.df.index), 'The  prediction should have been called once'
+    assert called_indexes == list(wrapped_dataset.df.index), "The  prediction should have been called once"
     assert list(prediction.raw) == [12.0, 1, 23, 4, 5, 6, 7, 8, 9, 10.0]
     assert list(prediction.raw) == list(cached_prediction.raw)
     assert list(prediction.raw_prediction) == list(cached_prediction.raw_prediction)
@@ -51,7 +51,7 @@ def test_model_prediction_is_cached_on_classification_model(german_credit_catboo
     model.predict(dataset)
     cached_prediction = model.predict(dataset)
 
-    assert predict_df.num_calls == 1, 'The prediction should have been called once'
+    assert predict_df.num_calls == 1, "The prediction should have been called once"
     assert (prediction.raw == cached_prediction.raw).all()
     assert (prediction.raw_prediction == cached_prediction.raw_prediction).all()
     assert list(prediction.prediction) == list(cached_prediction.prediction)
@@ -80,7 +80,7 @@ def test_predict_disabled_cache():
 
     assert called_indexes == list(wrapped_dataset.df.index) + list(
         wrapped_dataset.df.index
-    ), 'The prediction should have been called twice'
+    ), "The prediction should have been called twice"
     assert list(prediction.raw) == list(second_prediction.raw)
     assert list(prediction.raw_prediction) == list(second_prediction.raw_prediction)
     assert list(prediction.prediction) == list(second_prediction.prediction)
@@ -109,7 +109,7 @@ def test_predict_only_recompute_transformed_values():
 
     assert called_indexes == list(wrapped_dataset.df.index) + [
         1
-    ], 'The  prediction should have been called once for row 0 and twice of row 1'
+    ], "The  prediction should have been called once for row 0 and twice of row 1"
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
@@ -120,20 +120,20 @@ def test_predict_with_complex_dataset():
 
     def prediction_function(df: pd.DataFrame) -> np.ndarray:
         called_indexes.extend(df.index)
-        return np.array(df['foo'].values)
+        return np.array(df["foo"].values)
 
     wrapped_model = Model(prediction_function, model_type="regression")
 
     wrapped_dataset = Dataset(
         df=pd.DataFrame(
-            [{'foo': 42, 'bar': 'Hello world!', 'baz': True}, {'foo': 3.14, 'bar': 'This is a test', 'baz': False}]
+            [{"foo": 42, "bar": "Hello world!", "baz": True}, {"foo": 3.14, "bar": "This is a test", "baz": False}]
         )
     )
 
     prediction = wrapped_model.predict(wrapped_dataset)
 
     def replace_row_one(df: pd.DataFrame) -> pd.DataFrame:
-        df.loc[1, 'foo'] = 42
+        df.loc[1, "foo"] = 42
         return df
 
     transformed_dataset = wrapped_dataset.transform(replace_row_one, row_level=False)
@@ -141,7 +141,7 @@ def test_predict_with_complex_dataset():
 
     assert called_indexes == list(wrapped_dataset.df.index) + [
         1
-    ], 'The  prediction should have been called once for row 0 and twice of row 1'
+    ], "The  prediction should have been called once for row 0 and twice of row 1"
     assert list(prediction.raw) != list(second_prediction.raw)
     assert list(prediction.raw_prediction) != list(second_prediction.raw_prediction)
     assert list(prediction.prediction) != list(second_prediction.prediction)
@@ -156,7 +156,7 @@ def test_model_cache_multiple_index_type():
     assert list(int_idx.index) == list(int_cache.index)
     assert int_cache.isna().all()
 
-    str_idx = pd.Series(hashes, index=['Test', '42', 'Hello world!'])
+    str_idx = pd.Series(hashes, index=["Test", "42", "Hello world!"])
     str_cache = model_cache.read_from_cache(str_idx)
     assert list(str_idx.index) == list(str_cache.index)
     assert str_cache.isna().all()

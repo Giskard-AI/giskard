@@ -2,7 +2,7 @@ import io
 import logging
 import threading
 
-logger_one = logging.getLogger('shrubbery')
+logger_one = logging.getLogger("shrubbery")
 logger_two = logging.getLogger(__name__)
 
 

@@ -111,14 +111,14 @@ def wrap_model(
         )
     else:
         raise ValueError(
-            'We could not infer your model library. We currently only support functions or models from:'
-            '\n- sklearn'
-            '\n- catboost'
-            '\n- pytorch'
-            '\n- tensorflow'
-            '\n- huggingface'
-            '\n- langchain'
-            '\nWe recommend that you create your own wrapper using our documentation page: https://giskard.readthedocs.io/en/latest/guides/custom-wrapper'
+            "We could not infer your model library. We currently only support functions or models from:"
+            "\n- sklearn"
+            "\n- catboost"
+            "\n- pytorch"
+            "\n- tensorflow"
+            "\n- huggingface"
+            "\n- langchain"
+            "\nWe recommend that you create your own wrapper using our documentation page: https://giskard.readthedocs.io/en/latest/guides/custom-wrapper"
         )
 
 

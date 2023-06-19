@@ -1,6 +1,9 @@
 from typing import Sequence
-import numpy as np
 import pandas as pd
+
+from ...testing.tests.calibration import _default_overconfidence_threshold
+
+from ...testing.tests.calibration import _calculate_overconfidence_score
 
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
@@ -29,18 +32,8 @@ class OverconfidenceDetector(LossBasedDetector):
         return super().run(model, dataset)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-        true_target = dataset.df.loc[:, dataset.target].values
-        pred = model.predict(dataset)
-        label2id = {label: n for n, label in enumerate(model.meta.classification_labels)}
-
-        # Empirical cost associated to overconfidence
-        p_max = pred.probabilities
-        p_true_label = np.array([pred.raw[n, label2id[label]] for n, label in enumerate(true_target)])
-
-        loss_values = p_max - p_true_label
-        mask = loss_values > 0
-
-        return pd.DataFrame({self.LOSS_COLUMN_NAME: loss_values[mask]}, index=dataset.df.index[mask])
+        loss = _calculate_overconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)
+        return loss[loss[self.LOSS_COLUMN_NAME] > 0]
 
     def _find_issues(
         self,
@@ -86,13 +79,9 @@ class OverconfidenceDetector(LossBasedDetector):
                             loss_values=meta[self.LOSS_COLUMN_NAME],
                             fail_idx=fail_idx,
                             threshold=self.threshold,
+                            p_threshold=p_threshold,
                         ),
                     )
                 )
 
         return issues
-
-
-def _default_overconfidence_threshold(model: BaseModel) -> float:
-    n = len(model.meta.classification_labels)
-    return 1 / (3e-1 * (n - 2) + 2 - 1e-3 * (n - 2) ** 2)

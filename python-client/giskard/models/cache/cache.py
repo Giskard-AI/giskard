@@ -10,7 +10,7 @@ import pandas as pd
 from giskard.core.core import SupportedModelTypes
 from giskard.settings import settings
 
-NaN = float('NaN')
+NaN = float("NaN")
 
 CACHE_CSV_FILENAME = "giskard-model-cache.csv"
 

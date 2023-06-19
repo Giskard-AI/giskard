@@ -157,12 +157,15 @@ class GiskardClient:
             column_types=res["columnTypes"],
             column_dtypes=res["columnDtypes"],
             number_of_rows=res["numberOfRows"],
-            category_features=res["categoryFeatures"]
+            category_features=res["categoryFeatures"],
         )
 
     def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
-        class_label_dtype = None if (not meta.classification_labels or not len(meta.classification_labels)) else type(
-            meta.classification_labels[0]).__name__
+        class_label_dtype = (
+            None
+            if (not meta.classification_labels or not len(meta.classification_labels))
+            else type(meta.classification_labels[0]).__name__
+        )
 
         self._session.post(
             f"project/{project_key}/models",
@@ -258,7 +261,7 @@ class GiskardClient:
                 "originalSizeBytes": original_size_bytes,
                 "compressedSizeBytes": compressed_size_bytes,
                 "numberOfRows": meta.number_of_rows,
-                "categoryFeatures": meta.category_features
+                "categoryFeatures": meta.category_features,
             },
         )
         analytics.track(
@@ -279,7 +282,7 @@ class GiskardClient:
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
         json = self._session.put(endpoint, json=meta.to_json()).json()
-        return meta if json is None or 'uuid' not in json else meta.from_json(json)
+        return meta if json is None or "uuid" not in json else meta.from_json(json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())

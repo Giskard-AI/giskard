@@ -61,12 +61,12 @@ class ScanResult:
         with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
             js_lib = f.read()
 
-        return f'''<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
+        return f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
 <script>
 {js_lib}
 (function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
 </script>
-'''
+"""
 
     def to_html(self, filename=None):
         html = self._repr_html_()
@@ -119,9 +119,5 @@ class ScanResult:
                     pass
         analytics.track(
             "scan:generate_test_suite",
-            {
-                "suite_name": anonymize(name),
-                "tests_cnt": len(suite.tests),
-                **tests_cnt
-            },
+            {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )

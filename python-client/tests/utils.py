@@ -6,7 +6,7 @@ import requests_mock
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
 
-resource_dir: Path = Path.home() / '.giskard'
+resource_dir: Path = Path.home() / ".giskard"
 
 headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
 
@@ -50,16 +50,21 @@ class MockedClient:
             self.mocked_requests.register_uri(requests_mock.POST, api_pattern, json={})
             self.mocked_requests.register_uri(requests_mock.PUT, api_pattern, json={})
 
-        self.mocked_requests.register_uri(requests_mock.GET,
-                                          'http://giskard-host:12345/api/v2/project?key=test_project_key',
-                                          json={'key': 'test_project_key', 'id': 1})
-        self.mocked_requests.register_uri(requests_mock.GET, self.ml_worker_connect_url_pattern,
-                                          json={
-                                              "externalMlWorkerEntrypointPort": 40051,
-                                              "externalMlWorkerEntrypointHost": None,
-                                              "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
-                                              "keyId": "fh1sjr7h"}
-                                          )
+        self.mocked_requests.register_uri(
+            requests_mock.GET,
+            "http://giskard-host:12345/api/v2/project?key=test_project_key",
+            json={"key": "test_project_key", "id": 1},
+        )
+        self.mocked_requests.register_uri(
+            requests_mock.GET,
+            self.ml_worker_connect_url_pattern,
+            json={
+                "externalMlWorkerEntrypointPort": 40051,
+                "externalMlWorkerEntrypointHost": None,
+                "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
+                "keyId": "fh1sjr7h",
+            },
+        )
 
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"
@@ -82,13 +87,16 @@ def verify_model_upload(my_model, my_data):
         m.register_uri(requests_mock.POST, artifact_url_pattern)
         m.register_uri(requests_mock.POST, models_url_pattern)
         m.register_uri(requests_mock.GET, settings_url_pattern)
-        m.register_uri(requests_mock.GET, ml_worker_connect_url_pattern,
-                       json={
-                           "externalMlWorkerEntrypointPort": 40051,
-                           "externalMlWorkerEntrypointHost": None,
-                           "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
-                           "keyId": "fh1sjr7h"}
-                       )
+        m.register_uri(
+            requests_mock.GET,
+            ml_worker_connect_url_pattern,
+            json={
+                "externalMlWorkerEntrypointPort": 40051,
+                "externalMlWorkerEntrypointHost": None,
+                "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
+                "keyId": "fh1sjr7h",
+            },
+        )
 
         url = "http://giskard-host:12345"
         token = "SECRET_TOKEN"

@@ -43,8 +43,8 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     df.reviewText = df.reviewText.apply(lambda x: x.replace("\x00", ""))
 
     # Extract numbers of helpful and total votes.
-    df['helpful_ratings'] = df.helpful.apply(lambda x: x[0])
-    df['total_ratings'] = df.helpful.apply(lambda x: x[1])
+    df["helpful_ratings"] = df.helpful.apply(lambda x: x[0])
+    df["total_ratings"] = df.helpful.apply(lambda x: x[1])
 
     # Filter unreasonable comments.
     df = df[df.total_ratings > 3]
@@ -53,15 +53,16 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     df[TARGET_COLUMN_NAME] = np.where((df.helpful_ratings / df.total_ratings) > TARGET_THRESHOLD, 1, 0).astype(int)
 
     # Delete columns we don't need anymore.
-    df.drop(columns=["helpful", 'helpful_ratings', 'total_ratings'], inplace=True)
+    df.drop(columns=["helpful", "helpful_ratings", "total_ratings"], inplace=True)
     return df
 
 
 @pytest.fixture()
 def amazon_review_data() -> Dataset:
     raw_data = preprocess_data(download_data(nrows=5000))
-    wrapped_data = Dataset(raw_data,
-                           name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"})
+    wrapped_data = Dataset(
+        raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
+    )
     return wrapped_data
 
 
@@ -73,7 +74,7 @@ def make_lowercase(x):
 
 def remove_punctuation(x):
     """Remove punctuation from input string."""
-    x.apply(lambda row: row.translate(str.maketrans('', '', string.punctuation)))
+    x.apply(lambda row: row.translate(str.maketrans("", "", string.punctuation)))
     return x
 
 
@@ -94,27 +95,30 @@ def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
     y = amazon_review_data.df[TARGET_COLUMN_NAME]
 
     # Define and fit pipeline.
-    vectorizer = TfidfVectorizer(tokenizer=tokenizer, stop_words='english', ngram_range=(1, 1), min_df=0.01)
+    vectorizer = TfidfVectorizer(tokenizer=tokenizer, stop_words="english", ngram_range=(1, 1), min_df=0.01)
 
-    preprocessor = Pipeline(steps=[
-        ("lowercase", FunctionTransformer(make_lowercase)),
-        ("punctuation", FunctionTransformer(remove_punctuation)),
-        ("vectorizer", vectorizer)
-    ])
+    preprocessor = Pipeline(
+        steps=[
+            ("lowercase", FunctionTransformer(make_lowercase)),
+            ("punctuation", FunctionTransformer(remove_punctuation)),
+            ("vectorizer", vectorizer),
+        ]
+    )
 
-    pipeline = Pipeline(steps=[
-        ("preprocessor", preprocessor),
-        ("estimator", LogisticRegression(random_state=RANDOM_SEED))
-    ])
+    pipeline = Pipeline(
+        steps=[("preprocessor", preprocessor), ("estimator", LogisticRegression(random_state=RANDOM_SEED))]
+    )
 
     pipeline.fit(x, y)
 
     # Wrap pipeline.
-    wrapped_model = SKLearnModel(model=pipeline,
-                                 model_type="classification",
-                                 feature_names=[FEATURE_COLUMN_NAME],
-                                 name="review_helpfulness_predictor",
-                                 classification_threshold=0.5,
-                                 classification_labels=[0, 1])
+    wrapped_model = SKLearnModel(
+        model=pipeline,
+        model_type="classification",
+        feature_names=[FEATURE_COLUMN_NAME],
+        name="review_helpfulness_predictor",
+        classification_threshold=0.5,
+        classification_labels=[0, 1],
+    )
 
     return wrapped_model
