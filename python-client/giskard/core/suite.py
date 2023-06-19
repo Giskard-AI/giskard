@@ -33,7 +33,7 @@ class TestSuiteResult(tuple):
         tests_results = "".join(
             [
                 f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value in self[1]
+                for key, value, _ in self[1]
             ]
         )
         return """
