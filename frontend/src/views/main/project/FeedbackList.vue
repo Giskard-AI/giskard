@@ -1,5 +1,10 @@
 <template>
   <div>
+    <v-toolbar flat dense class="text--lighten-2">
+      <v-toolbar-title class="font-weight-medium">
+        Feedback
+      </v-toolbar-title>
+    </v-toolbar>
     <v-container fluid class="vc" v-if="feedbacks.length > 0">
       <v-toolbar flat dense light class="mt-2 blue-grey lighten-5">
         <v-select dense solo hide-details clearable class="mx-2 flex-1" :items="existingModels" v-model="modelFilter" placeholder="Model"></v-select>
@@ -253,5 +258,11 @@ div.v-input.flex-1 {
 #feedback-button {
   background-color: rgba(49, 110, 62, 0.2);
   cursor: default;
+}
+
+::v-deep .v-toolbar__content {
+  padding-left: 4px !important;
+  display: inline-flex;
+  flex-direction: column;
 }
 </style>
