@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 giskard_settings_path = settings.home_dir / "server-settings.yml"
 IMAGE_NAME = "docker.io/giskardai/giskard"
 
+
 def create_docker_client() -> DockerClient:
     try:
         return docker.from_env()
@@ -91,28 +92,25 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
             return None
 
 
-def _backend_ready(endpoint) -> bool:
+def _is_backend_ready(endpoint) -> bool:
     try:
         response = requests.get(endpoint)
-
-        if response.status_code != 200:
-            return False
-
-        return "UP" == response.json()['components']['readinessState']['status']
-    except OSError:
-        return False
-    except KeyError:
+        response.raise_for_status()
+        return "UP" == response.json()["status"]
+    except KeyboardInterrupt:
+        raise click.Abort()
+    except BaseException:
         return False
 
 
-def _await_backend_ready(port: int):
+def _wait_backend_ready(port: int):
     endpoint = f"http://localhost:{port}/management/health"
     backoff_time = 2
     up = False
 
     while not up:
         time.sleep(backoff_time)
-        up = _backend_ready(endpoint)
+        up = _is_backend_ready(endpoint)
 
 
 def _start(attached=False, version=None):
@@ -140,7 +138,7 @@ def _start(attached=False, version=None):
         )
     container.start()
 
-    _await_backend_ready(port)
+    _wait_backend_ready(port)
 
     logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
 
