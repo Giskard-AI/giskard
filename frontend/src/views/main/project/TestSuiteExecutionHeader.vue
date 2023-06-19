@@ -7,7 +7,7 @@
           <h4 v-if='!props.execution' class='text-alert'>
             No execution has been performed yet!
           </h4>
-          <h4 v-else-if='props.execution.result === TestResult.ERROR' class='text-alert d-flex'>
+          <h4 v-else-if='props.execution.result === TestResult.ERROR' class='text-alert d-flex flex-wrap'>
             An error occurred during the execution. Executed <strong class='ml-2'>{{
               timeSince(execution.executionDate)
             }}</strong>
@@ -20,8 +20,7 @@
             <span v-if='successRatio.failed > 0 && successRatio.passed > 0'>, </span>
             <span v-if='successRatio.passed > 0'>{{ plurialize('test', successRatio.passed) }} passed</span>
             <span v-if='successRatio.failed > 0 || successRatio.passed > 0'>. </span>
-            Executed
-            <span class='ml-2'>{{ timeSince(execution.executionDate) }}</span>
+            <span>Executed {{ timeSince(execution.executionDate) }}</span>
             <v-spacer />
             <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
                    @click='openLogs'>execution logs
