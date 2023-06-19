@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar flat v-show="projects.length > 0">
-      <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">Projects</v-toolbar-title>
+      <v-toolbar-title class="font-weight-medium">Projects</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
         <v-icon right>refresh</v-icon>
