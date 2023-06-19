@@ -53,7 +53,7 @@ def get_model_properties(model):
         return {}
 
     inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
-    feature_names = [anonymize(n) for n in model.meta.feature_names]
+    feature_names = [anonymize(n) for n in model.meta.feature_names] if model.meta.feature_names else None
 
     return {
         "model_id": str(model.id),

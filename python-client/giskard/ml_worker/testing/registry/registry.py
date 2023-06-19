@@ -89,7 +89,7 @@ class GiskardTestRegistry:
         if meta.uuid not in self._tests:
             self.add_func(meta)
             full_name = f"{meta.full_name} ({meta.uuid})" if hasattr(meta, "full_name") else f"{meta.uuid}"
-            logger.info(f"Registered test function: {full_name}")
+            logger.debug(f"Registered test function: {full_name}")
 
     def add_func(self, meta: SavableMeta):
         self._tests[meta.uuid] = meta

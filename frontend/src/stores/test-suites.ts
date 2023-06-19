@@ -25,8 +25,8 @@ export const useTestSuitesStore = defineStore('testSuites', {
     },
     async reloadComplete() {
       if (this.projectId !== null) {
+        await this.loadTestSuites(this.projectId);
         await this.loadTestSuiteComplete(this.projectId);
-        await this.reload();
       }
     },
     async loadTestSuites(projectId: number) {

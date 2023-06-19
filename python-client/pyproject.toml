@@ -80,7 +80,6 @@ doc = [
     "sphinx-copybutton>=0.5.2",
     "sphinx-click>=4.4.0",
     "nbsphinx>=0.9.2",
-    "sphinx-favicon>=1.0.1",
 ]
 
 [tool.setuptools.packages.find]
@@ -159,9 +158,10 @@ llm = [
     "transformers",
     "torch",
     "langchain",
-    "datasets",
     "evaluate",
-    "bert_score",
+#    pdm lock -G:all doesn't work without fixing these two versions
+    "datasets>=2.13.0",
+    "bert-score>=0.3.13",
 ]
 server = [
     "tenacity>=4.11.0",
