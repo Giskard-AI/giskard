@@ -1,18 +1,15 @@
 <template>
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
-      <v-toolbar-title class="mt-4">
+      <v-toolbar-title class="mt-4 text-body-1">
         <router-link to="/main/projects">
           Projects
         </router-link>
-        <span>/</span>
+        <span class="font-weight-bold">/</span>
         <router-link :to="{ name: 'project-properties', params: { id } }">
           {{ project.name }} ({{ project.key }})
         </router-link>
-        <span v-show="currentTab !== null">
-          <span>/</span>
-          {{ currentTabString }}
-        </span>
+        <span class="font-weight-bold">/</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
@@ -141,10 +138,6 @@ const currentTab = ref<string | null>(null);
 
 const userProfile = computed(() => {
   return userStore.userProfile;
-})
-
-const currentTabString = computed(() => {
-  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
 })
 
 
