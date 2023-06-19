@@ -1,40 +1,40 @@
 <template>
-    <div class="d-flex w100 align-start">
-        <v-alert prominent :icon="testResultStyle.icon" text :color="testResultStyle.color"
-                 class="flex-grow-1">
-            <v-row align="center">
-              <v-col class="grow d-flex">
-                <h4 v-if="!props.execution" class="text-alert">
-                  No execution has been performed yet!
-                </h4>
-                <h4 v-else-if="props.execution.result === TestResult.ERROR" class="text-alert d-flex">
-                  An error occurred during the execution. Executed <strong class="ml-2">{{
-                    timeSince(execution.executionDate)
-                  }}</strong>
-                </h4>
-                <h4 v-else class="text-alert">Test suite
-                  {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
-                  <span class="ml-1" v-if="successRatio.error > 0">{{ plurialize('test', successRatio.error) }} with error</span>
-                  <span
-                      v-if="successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)">, </span>
-                  <span class="ml-1" v-if="successRatio.failed > 0">{{
-                      plurialize('test', successRatio.failed)
-                    }} failed</span>
-                  <span v-if="successRatio.failed > 0 && successRatio.passed > 0">, </span>
-                  <span class="ml-1" v-if="successRatio.passed > 0">{{
-                      plurialize('test', successRatio.passed)
-                    }} passed</span>
-                  <span
-                      v-if="successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0">. </span>
-                  <span class="ml-1">Executed {{ timeSince(execution.executionDate) }}</span>
-                </h4>
-                <v-spacer/>
-                <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
-                       @click="openLogs">execution logs
-                </v-btn>
-              </v-col>
-            </v-row>
-        </v-alert>
+    <div class='d-flex w100 align-start'>
+      <v-alert prominent :icon='testResultStyle.icon' text :color='testResultStyle.color'
+               class='flex-grow-1'>
+        <v-row align='center'>
+          <v-col class='grow d-flex'>
+            <h4 v-if='!props.execution' class='text-alert'>
+              No execution has been performed yet!
+            </h4>
+            <h4 v-else-if='props.execution.result === TestResult.ERROR' class='text-alert'>
+              An error occurred during the execution. Executed <strong>{{
+                timeSince(execution.executionDate)
+              }}</strong>
+            </h4>
+            <h4 v-else class='text-alert'>Test suite
+              {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
+              <span v-if='successRatio.error > 0'>{{ plurialize('test', successRatio.error) }} with error</span>
+              <span
+                v-if='successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)'>, </span>
+              <span v-if='successRatio.failed > 0'>{{
+                  plurialize('test', successRatio.failed)
+                }} failed</span>
+              <span v-if='successRatio.failed > 0 && successRatio.passed > 0'>, </span>
+              <span v-if='successRatio.passed > 0'>{{
+                  plurialize('test', successRatio.passed)
+                }} passed</span>
+              <span
+                v-if='successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0'>. </span>
+              <span>Executed {{ timeSince(execution.executionDate) }}</span>
+            </h4>
+            <v-spacer />
+            <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
+                   @click='openLogs'>execution logs
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-alert>
     </div>
 </template>
 
