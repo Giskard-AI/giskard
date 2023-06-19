@@ -3,7 +3,7 @@
     <v-alert :color='testResultStyle.color' :icon='testResultStyle.icon' class='flex-grow-1' prominent
              text>
       <v-row align='center'>
-        <v-col class='grow'>
+        <v-col class='grow d-flex flex-wrap'>
           <h4 v-if='!props.execution' class='text-alert'>
             No execution has been performed yet!
           </h4>
@@ -11,21 +11,20 @@
             An error occurred during the execution. Executed <strong class='ml-2'>{{
               timeSince(execution.executionDate)
             }}</strong>
-            <v-spacer />
-            <v-btn color='error' small @click='openLogs'>execution logs.</v-btn>
           </h4>
-          <h4 v-else class='text-alert d-flex flex-wrap'>Test suite
+          <h4 v-else class='text-alert'>Test suite
             {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
             <span v-if='successRatio.failed > 0'>{{ plurialize('test', successRatio.failed) }} failed</span>
             <span v-if='successRatio.failed > 0 && successRatio.passed > 0'>, </span>
             <span v-if='successRatio.passed > 0'>{{ plurialize('test', successRatio.passed) }} passed</span>
             <span v-if='successRatio.failed > 0 || successRatio.passed > 0'>. </span>
             <span>Executed {{ timeSince(execution.executionDate) }}</span>
-            <v-spacer />
-            <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
-                   @click='openLogs'>execution logs
-            </v-btn>
           </h4>
+          <v-spacer />
+          <v-btn v-if='props.execution' :color="props.execution.result === TestResult.PASSED ? 'primary' : 'error'"
+                 small
+                 @click='openLogs'>execution logs
+          </v-btn>
         </v-col>
       </v-row>
     </v-alert>
