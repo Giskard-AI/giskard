@@ -1,12 +1,12 @@
 <template>
   <div class="test-container">
-    <div class="d-flex flex-row align-center test-card-header">
-            <span class="test-name text-black">
-                Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
-                <span v-if="transformationFunction"> to {{
+    <div class="d-flex flex-row flex-wrap align-center test-card-header">
+      <span class='test-name text-black'>
+          Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
+          <span v-if='transformationFunction'> to {{
                     transformationFunction.displayName ?? transformationFunction.name
                   }}</span>
-                <span v-if="slicingFunction"> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
+                <span v-if='slicingFunction'> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
       <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
           <div class="d-flex flex-row gap-4">
@@ -25,17 +25,24 @@
           <v-icon>done</v-icon>
           Passed
         </v-chip>
-        <v-chip v-else small :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label>
+        <v-chip v-else :color="Colors.FAIL_SURFACE" :text-color="Colors.ON_FAIL_SURFACE" label small>
           <v-icon small>close</v-icon>
           Failed
         </v-chip>
-        <v-btn color="primary" outlined small @click="debugTest(result)">
-          <v-icon small>info</v-icon>
-          Debug
-        </v-btn>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <div v-on="on">
+              <v-btn color="primary" @click="debugTest(result)" outlined small>
+                <v-icon small>info</v-icon>
+                Debug
+              </v-btn>
+            </div>
+          </template>
+          <span>Coming soon</span>
+        </v-tooltip>
       </div>
     </div>
-    <div class="d-flex flex-row align-end test-card-footer">
+    <div class="d-flex flex-row flex-wrap align-end test-card-footer">
       <div v-for="({ name, value, type }) in orderedParams" class="d-flex flex-column">
         <span class="text-input-name">{{ name }}</span>
         <span :class="['BaseModel', 'Dataset'].includes(type) ? 'text-input-value' : 'text-input-value-code'">{{
@@ -43,30 +50,30 @@
           }}</span>
       </div>
       <div class="flex-grow-1"/>
-      <v-btn v-if="!isPastExecution" text small @click="editTests" color="rgba(0, 0, 0, 0.6)">
-        <v-icon small class="mr-1">settings</v-icon>
+      <v-btn v-if="!isPastExecution" color="rgba(0, 0, 0, 0.6)" small text @click="editTests">
+        <v-icon class="mr-1" small>settings</v-icon>
         Edit parameters
       </v-btn>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 
 import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
-import {computed} from "vue";
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
-import {Colors} from "@/utils/colors";
-import {$vfm} from "vue-final-modal";
-import SuiteTestInfoModal from "@/views/main/project/modals/SuiteTestInfoModal.vue";
-import {useTestSuiteStore} from "@/stores/test-suite";
+import {computed} from 'vue';
+import {storeToRefs} from 'pinia';
+import {useCatalogStore} from '@/stores/catalog';
+import {Colors} from '@/utils/colors';
+import {$vfm} from 'vue-final-modal';
+import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
+import {useTestSuiteStore} from '@/stores/test-suite';
 import {api} from "@/api";
 import router from "@/router";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 
-const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore())
-const {models, datasets} = storeToRefs(useTestSuiteStore())
+const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
+const {models, datasets} = storeToRefs(useTestSuiteStore());
 
 const testSuiteStore = useTestSuiteStore();
 const debuggingSessionStore = useDebuggingSessionsStore();
@@ -79,7 +86,7 @@ const props = defineProps<{
 }>();
 
 const params = computed(() => props.isPastExecution && props.result
-    ? props.result?.inputs
+  ? props.result?.inputs
     : Object.values(props.suiteTest.functionInputs)
         .filter(input => !input.isAlias)
         .reduce((r, input) => ({...r, [input.name]: input.value}), {}))
@@ -178,7 +185,7 @@ async function debugTest(result: SuiteTestExecutionDTO) {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .test-container {
   border-radius: 4px 4px 4px 4px;
   -webkit-border-radius: 4px 4px 4px 4px;
