@@ -103,14 +103,20 @@ def _is_backend_ready(endpoint) -> bool:
         return False
 
 
-def _wait_backend_ready(port: int):
+def _wait_backend_ready(port: int) -> bool:
     endpoint = f"http://localhost:{port}/management/health"
     backoff_time = 2
+    max_duration_second = 3 * 60
+    started_time = time.time()
     up = False
 
-    while not up:
+    while not up or time.time() - started_time > max_duration_second:
         time.sleep(backoff_time)
         up = _is_backend_ready(endpoint)
+        click.echo(".", nl=False)
+
+    click.echo(".")
+    return up
 
 
 def _start(attached=False, version=None):
@@ -138,9 +144,15 @@ def _start(attached=False, version=None):
         )
     container.start()
 
-    _wait_backend_ready(port)
+    up = _wait_backend_ready(port)
 
-    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+    if up:
+        logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+    else:
+        logger.warning(
+            "Giskard backend takes unusually long time to start, please check the logs with `giskard server "
+            "logs backend"
+        )
 
 
 def _check_downloaded(version: str):
