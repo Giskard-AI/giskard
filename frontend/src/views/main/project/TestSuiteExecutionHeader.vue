@@ -11,8 +11,6 @@
                   An error occurred during the execution. Executed <strong class="ml-2">{{
                     timeSince(execution.executionDate)
                   }}</strong>
-                  <v-spacer/>
-                  <v-btn color="error" small @click="openLogs">execution logs.</v-btn>
                 </h4>
                 <h4 v-else class="text-alert">Test suite
                   {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
@@ -29,7 +27,6 @@
                   <span
                       v-if="successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0">. </span>
                   <span class="ml-1">Executed {{ timeSince(execution.executionDate) }}</span>
-
                 </h4>
                 <v-spacer/>
                 <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
