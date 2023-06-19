@@ -4,8 +4,8 @@
       <span class='test-name text-black'>
           Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
           <span v-if='transformationFunction'> to {{
-                    transformationFunction.displayName ?? transformationFunction.name
-                  }}</span>
+              transformationFunction.displayName ?? transformationFunction.name
+            }}</span>
                 <span v-if='slicingFunction'> on slice {{ slicingFunction.displayName ?? slicingFunction.name }}</span>
             </span>
       <!-- TODO: Add tag to the test suite level (https://github.com/Giskard-AI/giskard/issues/1034)
@@ -32,7 +32,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <div v-on="on">
-              <v-btn color="primary" @click="debugTest(result)" outlined small>
+              <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="result.passed">
                 <v-icon small>info</v-icon>
                 Debug
               </v-btn>
@@ -86,7 +86,7 @@ const props = defineProps<{
 }>();
 
 const params = computed(() => props.isPastExecution && props.result
-  ? props.result?.inputs
+    ? props.result?.inputs
     : Object.values(props.suiteTest.functionInputs)
         .filter(input => !input.isAlias)
         .reduce((r, input) => ({...r, [input.name]: input.value}), {}))
