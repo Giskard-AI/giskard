@@ -95,7 +95,6 @@ class BaseModel(ABC):
     """
 
     should_save_model_class = False
-    id: uuid.UUID
     _cache: ModelCache
 
     @configured_validate_arguments
