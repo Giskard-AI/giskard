@@ -180,7 +180,7 @@ def test_disparate_impact(
     dataset: Dataset,
     protected_slicing_function: SlicingFunction,
     unprotected_slicing_function: SlicingFunction,
-    positive_outcome: Union[str, float],
+    positive_outcome: str,
     slicing_function: Optional[SlicingFunction] = None,
     min_threshold: float = 0.8,
     max_threshold: float = 1.25,
