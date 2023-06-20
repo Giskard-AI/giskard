@@ -230,14 +230,20 @@ class Suite:
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
                 res.append((test_partial.test_name, result))
                 if verbose:
-                    print("""Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params,
-                                                                              result))
-            except Exception:
+                    print(
+                        """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
+                    )
+            except BaseException as e:  # noqa SONAR
                 error = traceback.format_exc()
-                logging.error(error)
-                res.append((test_partial.test_name,
-                            TestResult(passed=False, is_error=True,
-                                       messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)])))
+                logging.exception("An error happened during test execution")
+                res.append(
+                    (
+                        test_partial.test_name,
+                        TestResult(
+                            passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
+                        ),
+                    )
+                )
 
         result = single_binary_result([result for name, result in res])
 
