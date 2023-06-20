@@ -1,12 +1,12 @@
-import logging
-from unittest import mock
-
-import pandas as pd
 import pytest
+import logging
+import pandas as pd
+from unittest import mock
 
 from giskard import Dataset
 from giskard.scanner.issues import Issue
 from giskard.scanner.performance import PerformanceBiasDetector
+from giskard.scanner.performance.performance_bias_detector import _calculate_slice_metrics
 
 
 def test_performance_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, caplog):
@@ -65,3 +65,51 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     issues = detector.run(enron_model, dataset)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
+
+
+def test_calculate_slice_metrics():
+    # Create a mock model and dataset
+    model = mock.MagicMock()
+    dataset = Dataset(pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6]}), target="y")
+
+    def metric(model, dataset):
+        if len(dataset) == 2:  # slice
+            return mock.MagicMock(value=0.4, affected_samples=11, raw_values=None)
+
+        return mock.MagicMock(value=0.46, affected_samples=32, raw_values=None)
+
+    metric.greater_is_better = True
+
+    # Without p-value
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] > 1)
+
+    assert sliced_dataset.df.y.tolist() == [5, 6]
+    assert slice_metric.value == 0.4
+    assert slice_metric.affected_samples == 11
+    assert pvalue is None
+
+    # With p-value
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
+        model, dataset, metric, lambda df: df["x"] > 1, with_pvalue=True
+    )
+
+    assert sliced_dataset.df.y.tolist() == [5, 6]
+    assert slice_metric.value == 0.4
+    assert slice_metric.affected_samples == 11
+    assert pvalue == pytest.approx(0.80, abs=0.01)
+
+    # For regression
+    def metric(model, dataset):
+        if len(dataset) == 2:  # slice
+            return mock.MagicMock(value=0.4, affected_samples=5, raw_values=[1, 2, 3, 1, 2])
+
+        return mock.MagicMock(value=0.46, affected_samples=7, raw_values=[2, 2, 2, 1, 2, 2, 2])
+
+    metric.greater_is_better = True
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
+        model, dataset, metric, lambda df: df["x"] > 1, with_pvalue=True
+    )
+
+    assert sliced_dataset.df.y.tolist() == [5, 6]
+    assert slice_metric.value == 0.4
+    assert pvalue == pytest.approx(0.44, abs=0.01)
