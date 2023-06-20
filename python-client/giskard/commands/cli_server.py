@@ -150,8 +150,8 @@ def _start(attached=False, version=None):
         logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
     else:
         logger.warning(
-            "Giskard backend takes unusually long time to start, please check the logs with `giskard server "
-            "logs backend"
+            "Giskard backend takes unusually long time to start, "
+            "please check the logs with `giskard server logs backend`"
         )
 
 
