@@ -187,13 +187,13 @@ class MetadataSliceFunction(SlicingFunction):
         self.query = query
         self.feature = feature
         self.provider = provider
-        self.meta = DatasetProcessFunctionMeta(type='SLICE')
+        self.meta = DatasetProcessFunctionMeta(type="SLICE")
         self.meta.uuid = get_object_uuid(query)
         self.meta.code = str(self)
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = 'Automatically generated slicing function'
+        self.meta.doc = "Automatically generated slicing function"
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         metadata = dataset.column_meta[self.feature, self.provider]

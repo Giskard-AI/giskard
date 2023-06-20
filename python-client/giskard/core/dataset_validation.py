@@ -39,7 +39,7 @@ def _check_hashability(df):
     Raises:
     TypeError: If any column containing object types in the input DataFrame is not hashable.
     """
-    df_objects = df.select_dtypes(include='object')
+    df_objects = df.select_dtypes(include="object")
     non_hashable_cols = []
     for col in df_objects.columns:
         if not isinstance(df[col].iat[0], Hashable):

@@ -50,21 +50,21 @@
         <v-card outlined tile class="grey lighten-5 project" :class="[{ 'info': hover }]" v-show="creatorFilter === 0 || creatorFilter === 1 && p.owner.id === userProfile.id || creatorFilter === 2 && p.owner.id !== userProfile.id" @click="updateCurrentProject(p.id)" link>
           <v-row class="pa-2">
             <v-col cols=2>
-              <div class="subtitle-2 primary--text text--darken-1">{{ p.name }}</div>
+              <span class="subtitle-2 primary--text text--darken-1">{{ p.name }}</span>
             </v-col>
             <v-col cols=2>
-              <div>{{ p.key }}</div>
+              <span @click.stop.prevent="copyText(p.key, 'Copied project key')">{{ p.key }}</span>
             </v-col>
             <v-col cols=4>
-              <div>{{ p.description || "-" }}</div>
+              <span>{{ p.description || "-" }}</span>
             </v-col>
             <v-col cols=2>
-              <div :class="{ 'font-weight-bold': p.owner.id === userProfile.id }">
+              <span :class="{ 'font-weight-bold': p.owner.id === userProfile.id }">
                 {{ p.owner.user_id === userProfile.user_id ? "me" : (p.owner.displayName || p.owner.user_id) }}
-              </div>
+              </span>
             </v-col>
             <v-col cols=2>
-              <div>{{ p.createdDate | date }}</div>
+              <span>{{ p.createdDate | date }}</span>
             </v-col>
           </v-row>
           <v-divider></v-divider>
@@ -107,7 +107,7 @@
     <v-dialog v-model="openPrepareDialog" width="500" persistent>
       <v-card>
         <ValidationObserver ref="dialogForm">
-          <v-form @submit.prevent="ImportIfNoConflictKey()">
+          <v-form @submit.prevent="importIfNoConflictKey()">
             <v-card-text>
               <div class="title">Set new key for the imported project</div>
               <ValidationProvider ref="validatorNewKey" name="Name" mode="eager" rules="required" v-slot="{ errors }">
@@ -175,19 +175,20 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from "vue";
-import {ValidationObserver} from "vee-validate";
-import {Role} from "@/enums";
-import {PostImportProjectDTO, ProjectPostDTO} from "@/generated-sources";
-import {toSlug} from "@/utils";
-import {useRoute, useRouter} from "vue-router/composables";
+import { computed, onMounted, ref, watch } from "vue";
+import { ValidationObserver } from "vee-validate";
+import { Role } from "@/enums";
+import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
+import { toSlug } from "@/utils";
+import { useRoute, useRouter } from "vue-router/composables";
 import moment from "moment";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {api} from "@/api";
+import { useUserStore } from "@/stores/user";
+import { useProjectStore } from "@/stores/project";
+import { api } from "@/api";
 import mixpanel from "mixpanel-browser";
-import {useTestSuitesStore} from "@/stores/test-suites";
-import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import { useTestSuitesStore } from "@/stores/test-suites";
+import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
+import { copyText } from "@/utils";
 
 const route = useRoute();
 const router = useRouter();
@@ -211,17 +212,9 @@ const loginsCurrentInstance = ref<string[]>([]);
 const loginsImportedProject = ref<string[]>([]);
 const mapLogins = ref<{ [key: string]: string }>({});
 const preparingImport = ref<boolean>(false);
-const defaultRoute: string = 'project-catalog';
-
 // template ref
 const dialogForm = ref<InstanceType<typeof ValidationObserver> | null>(null);
 const file = ref<File | null>(null);
-
-onMounted(async () => {
-  const f = route.query.f ? route.query.f[0] || '' : '';
-  creatorFilter.value = parseInt(f) || 0;
-  await loadProjects();
-})
 
 // computed
 const userProfile = computed(() => {
@@ -246,6 +239,17 @@ const projects = computed(() => {
 })
 
 // functions
+function clearAndCloseDialog() {
+  dialogForm.value?.reset();
+  openCreateDialog.value = false;
+  openImportDialog.value = false;
+  openPrepareDialog.value = false;
+  newProjectName.value = '';
+  newProjectKey.value = '';
+  newProjectDesc.value = '';
+  projectCreateError.value = '';
+}
+
 async function loadProjects() {
   await projectStore.getProjects();
 }
@@ -276,7 +280,7 @@ async function prepareImport() {
     .finally(() => preparingImport.value = false);
 }
 
-async function ImportIfNoConflictKey() {
+async function importIfNoConflictKey() {
   if (!file.value) {
     return;
   }
@@ -310,17 +314,6 @@ async function ImportIfNoConflictKey() {
   }
 }
 
-function clearAndCloseDialog() {
-  dialogForm.value?.reset();
-  openCreateDialog.value = false;
-  openImportDialog.value = false;
-  openPrepareDialog.value = false;
-  newProjectName.value = '';
-  newProjectKey.value = '';
-  newProjectDesc.value = '';
-  projectCreateError.value = '';
-}
-
 async function submitNewProject() {
   if (!newProjectName.value) {
     return;
@@ -344,17 +337,23 @@ async function submitNewProject() {
   }
 }
 
+async function updateCurrentProject(projectId: number) {
+  projectStore.setCurrentProjectId(projectId);
+  await testSuitesStore.loadTestSuites(projectId);
+  await debuggingSessionsStore.loadDebuggingSessions(projectId);
+  await router.push({ name: 'project-home', params: { id: projectId.toString() } });
+}
+
 // watchers
 watch(() => newProjectName.value, (value) => {
   newProjectKey.value = toSlug(value);
 })
 
-async function updateCurrentProject(projectId: number) {
-  projectStore.setCurrentProjectId(projectId);
-  await testSuitesStore.loadTestSuites(projectId);
-  await debuggingSessionsStore.loadDebuggingSessions(projectId);
-  await router.push({ name: defaultRoute, params: { id: projectId.toString() } });
-}
+onMounted(async () => {
+  const f = route.query.f ? route.query.f[0] || '' : '';
+  creatorFilter.value = parseInt(f) || 0;
+  await loadProjects();
+})
 </script>
 
 <style>

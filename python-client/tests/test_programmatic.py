@@ -116,6 +116,7 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     #     ).upload(client, "test_project_key")
     scan(german_credit_model, german_credit_data)
 
+
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #     from giskard.client.giskard_client import GiskardClient
 #     client = GiskardClient("http://localhost:9000",

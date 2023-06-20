@@ -27,7 +27,7 @@ plugins_root = find_plugin_location()
 
 
 def get_object_uuid(obj) -> str:
-    if hasattr(obj, 'meta') and hasattr(obj.meta, 'uuid'):
+    if hasattr(obj, "meta") and hasattr(obj.meta, "uuid"):
         return obj.meta.uuid
     obj_hash = hashlib.sha512(cloudpickle.dumps(obj)).hexdigest()
     return str(uuid.uuid5(uuid.NAMESPACE_OID, obj_hash))
@@ -89,7 +89,7 @@ class GiskardTestRegistry:
         if meta.uuid not in self._tests:
             self.add_func(meta)
             full_name = f"{meta.full_name} ({meta.uuid})" if hasattr(meta, "full_name") else f"{meta.uuid}"
-            logger.info(f"Registered test function: {full_name}")
+            logger.debug(f"Registered test function: {full_name}")
         return meta
 
     def add_func(self, meta: SavableMeta):
@@ -107,17 +107,17 @@ def new_getfile(object, _old_getfile=inspect.getfile):
         return _old_getfile(object)
 
     # Lookup by parent module (as in current inspect)
-    if hasattr(object, '__module__'):
+    if hasattr(object, "__module__"):
         object_ = sys.modules.get(object.__module__)
-        if hasattr(object_, '__file__'):
+        if hasattr(object_, "__file__"):
             return object_.__file__
 
     # If parent module is __main__, lookup by methods (NEW)
     for name, member in inspect.getmembers(object):
-        if inspect.isfunction(member) and object.__qualname__ + '.' + member.__name__ == member.__qualname__:
+        if inspect.isfunction(member) and object.__qualname__ + "." + member.__name__ == member.__qualname__:
             return inspect.getfile(member)
 
-    raise TypeError('Source for {!r} not found'.format(object))
+    raise TypeError("Source for {!r} not found".format(object))
 
 
 # Override getfile to have it working over Jupyter Notebook files

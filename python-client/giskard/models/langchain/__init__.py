@@ -22,7 +22,9 @@ class LangchainModel(MLFlowBasedModel):
         classification_labels: Optional[Iterable] = None,
         **kwargs,
     ) -> None:
-        assert model_type == SupportedModelTypes.TEXT_GENERATION, 'LangchainModel only support text_generation ModelType'
+        assert (
+            model_type == SupportedModelTypes.TEXT_GENERATION
+        ), "LangchainModel only support text_generation ModelType"
 
         super().__init__(
             model=model,
@@ -44,14 +46,14 @@ class LangchainModel(MLFlowBasedModel):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict('records')]
+        return [self.model.predict(**data) for data in df.to_dict("records")]
 
     def rewrite_prompt(self, template, input_variables=None, **kwargs):
         from langchain import LLMChain
 
         update = dict(template=template)
         if input_variables is not None:
-            update['input_variables'] = input_variables
+            update["input_variables"] = input_variables
 
         new_prompt = self.model.prompt.copy(update=update)
         chain = LLMChain(llm=self.model.llm, prompt=new_prompt)

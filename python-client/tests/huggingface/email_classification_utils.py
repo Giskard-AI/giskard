@@ -19,4 +19,4 @@ def get_email_files():
         file = tarfile.open(fileobj=response.raw, mode="r|gz")
         os.makedirs(out_path, exist_ok=True)
         file.extractall(path=out_path)
-    return [f.replace('.cats', '') for f in glob.glob(str(enron_path) + '/*/*.cats')]
+    return [f.replace(".cats", "") for f in glob.glob(str(enron_path) + "/*/*.cats")]

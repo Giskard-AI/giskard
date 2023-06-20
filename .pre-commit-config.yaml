@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/ambv/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        files: '^.*\.py$'
+        args:
+          - "--config"
+          - "python-client/pyproject.toml"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.272
+    hooks:
+      - id: ruff
+        files: '^.*\.py$'
+        args:
+          - "--config"
+          - "python-client/pyproject.toml"
+          - "--fix"
+          - "--exit-non-zero-on-fix"

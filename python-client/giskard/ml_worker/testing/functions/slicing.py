@@ -4,7 +4,7 @@ import pandas as pd
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 
 
-@slicing_function(name='Short comment', tags=["text"], cell_level=True)
+@slicing_function(name="Short comment", tags=["text"], cell_level=True)
 def short_comment_slicing_fn(text: str, max_words: int = 5) -> bool:
     """
     Filter the rows where the specified 'column_name' contains a short comment, defined as one with at most 'max_words'.
@@ -63,14 +63,14 @@ def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, 
 
 def _sentiment_analysis(x, column_name, threshold, model, emotion):
     from transformers import pipeline
+
     sentiment_pipeline = pipeline("sentiment-analysis", model=model)
     # Limit text to 512 characters
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
-    return x.iloc[list(
-        map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+    return x.iloc[list(map(lambda s: s["label"] == emotion and s["score"] >= threshold, sentiment_pipeline(sentences)))]
 
 
-@slicing_function(name='Outlier Filter', tags=['number'], cell_level=True)
+@slicing_function(name="Outlier Filter", tags=["number"], cell_level=True)
 def outlier_filter(value: float, lower_bound: float, upper_bound: float) -> bool:
     """
     Filter rows where the specified column values fall outside the specified range.

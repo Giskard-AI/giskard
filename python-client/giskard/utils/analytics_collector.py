@@ -53,7 +53,7 @@ def get_model_properties(model):
         return {}
 
     inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
-    feature_names = [anonymize(n) for n in model.meta.feature_names]
+    feature_names = [anonymize(n) for n in model.meta.feature_names] if model.meta.feature_names else None
 
     return {
         "model_id": str(model.id),
@@ -149,6 +149,8 @@ class GiskardAnalyticsCollector:
                 "giskard_version": self.giskard_version,
                 "python_version": platform.python_version(),
                 "environment": self.environment,
+                # only for aggregated stats: city, country, region. IP itself isn't stored
+                "ip": self.ip,
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
@@ -176,8 +178,6 @@ class GiskardAnalyticsCollector:
                     "$os": platform.system(),
                     "os-full": platform.platform(aliased=True),
                 },
-                # only for aggregated stats: city, country, region. IP itself isn't stored
-                meta={"$ip": self.ip},
             )
 
     @staticmethod

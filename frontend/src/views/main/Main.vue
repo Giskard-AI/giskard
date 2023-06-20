@@ -20,15 +20,15 @@
               <div v-on="on">
                 <v-list-item :disabled="true">
                   <v-list-item-content>
-                    <v-icon>mdi-book-open-page-variant-outline</v-icon>
-                    <div class="caption">Catalog</div>
+                    <v-icon>mdi-list-status</v-icon>
+                    <div class="caption">Testing</div>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
                 <v-list-item :disabled="true">
                   <v-list-item-content>
-                    <v-icon>mdi-list-status</v-icon>
-                    <div class="caption">Testing</div>
+                    <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                    <div class="caption">Catalog</div>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
@@ -52,17 +52,17 @@
           </v-tooltip>
 
           <div v-else @click="resetStates">
-            <v-list-item :to="{ name: 'project-catalog', params: { id: currentProjectId } }" value="catalog">
-              <v-list-item-content>
-                <v-icon>mdi-book-open-page-variant-outline</v-icon>
-                <div class="caption">Catalog</div>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider />
             <v-list-item :to="{ name: 'project-testing', params: { id: currentProjectId } }" value="testing">
               <v-list-item-content>
                 <v-icon>mdi-list-status</v-icon>
                 <div class="caption">Testing</div>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :to="{ name: 'project-catalog', params: { id: currentProjectId } }" value="catalog">
+              <v-list-item-content>
+                <v-icon>mdi-book-open-page-variant-outline</v-icon>
+                <div class="caption">Catalog</div>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
