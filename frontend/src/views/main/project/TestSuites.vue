@@ -123,29 +123,31 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "@/api";
-import { apiURL } from "@/env";
-import { computed, onActivated, ref } from "vue";
+import { api } from '@/api';
+import { apiURL } from '@/env';
+import { computed, onActivated, ref } from 'vue';
 import router from '@/router';
-import { useMainStore } from "@/stores/main";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { TYPE } from "vue-toastification";
+import { useMainStore } from '@/stores/main';
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { TYPE } from 'vue-toastification';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from "vue-final-modal";
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import mixpanel from "mixpanel-browser";
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import mixpanel from 'mixpanel-browser';
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
-import { useProjectStore } from "@/stores/project";
+import { JWTToken, TestResult } from '@/generated-sources';
+import { useProjectStore } from '@/stores/project';
+import { useProjectArtifactsStore } from '@/stores/project-artifacts';
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
+const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = defineProps<{
   projectId: number
 }>();
 
-const searchSession = ref("");
+const searchSession = ref('');
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
