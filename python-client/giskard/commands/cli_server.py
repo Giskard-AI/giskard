@@ -110,7 +110,7 @@ def _wait_backend_ready(port: int) -> bool:
     started_time = time.time()
     up = False
 
-    while not up or time.time() - started_time > max_duration_second:
+    while not up and time.time() - started_time <= max_duration_second:
         time.sleep(backoff_time)
         up = _is_backend_ready(endpoint)
         click.echo(".", nl=False)
