@@ -99,7 +99,7 @@ def _is_backend_ready(endpoint) -> bool:
         return "UP" == response.json()["status"]
     except KeyboardInterrupt:
         raise click.Abort()
-    except BaseException:
+    except BaseException:  # noqa NOSONAR
         return False
 
 
