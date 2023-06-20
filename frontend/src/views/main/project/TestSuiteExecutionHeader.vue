@@ -3,7 +3,7 @@
       <v-alert prominent :icon='testResultStyle.icon' text :color='testResultStyle.color'
                class='flex-grow-1'>
         <v-row align='center'>
-          <v-col class='grow d-flex'>
+          <v-col class='grow d-flex flex-wrap'>
             <h4 v-if='!props.execution' class='text-alert'>
               No execution has been performed yet!
             </h4>
@@ -29,7 +29,8 @@
               <span>Executed {{ timeSince(execution.executionDate) }}</span>
             </h4>
             <v-spacer />
-            <v-btn :color="props.execution?.result === TestResult.PASSED ? 'primary' : 'error'" small
+            <v-btn v-if='props.execution' :color="props.execution.result === TestResult.PASSED ? 'primary' : 'error'"
+                   small
                    @click='openLogs'>execution logs
             </v-btn>
           </v-col>
@@ -38,7 +39,7 @@
     </div>
 </template>
 
-<script setup lang="ts">
+<script lang='ts' setup>
 
 import { SuiteTestDTO, SuiteTestExecutionDTO, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
 import { computed } from 'vue';
@@ -61,33 +62,33 @@ const props = defineProps<{
   tryMode: boolean
 }>();
 
-const {suite, projectId} = storeToRefs(useTestSuiteStore());
+const { suite, projectId } = storeToRefs(useTestSuiteStore());
 
 const testResultStyle = computed(() => {
-    if (!props.execution) {
-        return {
-            icon: 'block',
-            color: 'dark-grey'
-        }
-    }
-    switch (props.execution.result) {
-        case TestResult.PASSED:
-            return {
-                icon: 'done',
-                color: Colors.PASS
-            }
-        case TestResult.FAILED:
-            return {
-                icon: 'close',
-                color: Colors.FAIL
-            }
-        default:
-            return {
-                icon: 'error',
-                color: Colors.FAIL
-            }
-    }
-})
+  if (!props.execution) {
+    return {
+      icon: 'block',
+      color: 'dark-grey'
+    };
+  }
+  switch (props.execution.result) {
+    case TestResult.PASSED:
+      return {
+        icon: 'done',
+        color: Colors.PASS
+      };
+    case TestResult.FAILED:
+      return {
+        icon: 'close',
+        color: Colors.FAIL
+      };
+    default:
+      return {
+        icon: 'error',
+        color: Colors.FAIL
+      };
+  }
+});
 
 const successRatio = computed(() => ({
   passed: executedTests.value.filter(({ result }) => result!.status === TestResult.PASSED).length,
@@ -96,7 +97,7 @@ const successRatio = computed(() => ({
 }))
 
 const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
-    : props.tests.filter(({result}) => result !== undefined));
+  : props.tests.filter(({ result }) => result !== undefined));
 
 function openLogs() {
   $vfm.show({
@@ -115,19 +116,19 @@ function openLogs() {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang='scss' scoped>
 .clickable {
-    cursor: pointer;
-    text-decoration: underline;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .text-alert {
-    font-style: normal;
-    font-weight: 500;
-    font-size: 1em;
-    line-height: 24px;
-    letter-spacing: 0.005em;
-    font-feature-settings: 'liga' off;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 1em;
+  line-height: 24px;
+  letter-spacing: 0.005em;
+  font-feature-settings: 'liga' off;
 }
 </style>
 
