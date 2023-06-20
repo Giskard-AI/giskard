@@ -1,43 +1,47 @@
 <template>
-    <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content" v-on="$listeners">
-        <div class="text-center">
-            <v-card class="modal-card">
-                <v-card-title>
-                    {{ suiteTest.test.displayName ?? suiteTest.test.name }}
-                </v-card-title>
-                <v-card-text class="card-content">
-                    <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
-                    <div class="d-flex align-center">
-                        <p class="text-h6 pt-4">Inputs</p>
-                    </div>
-                    <TestInputListSelector v-if="suiteTest.test.args" :test-inputs="suiteTest.functionInputs" :test="testFunctionsByUuid[suiteTest.testUuid]" :model-value="editedInputs" :project-id="projectId" :inputs="inputType" :doc="doc" @invalid="i => invalid = i" @result="v => result = v" />
-                    <v-row>
-                        <v-col>
-                            <v-expansion-panels flat @change="resizeEditor">
-                                <v-expansion-panel>
-                                    <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
-                                    <v-expansion-panel-content class="pa-0">
-                                        <CodeSnippet :codeContent="suiteTest.test.code" :language="'python'"></CodeSnippet>
-                                    </v-expansion-panel-content>
-                                </v-expansion-panel>
-                            </v-expansion-panels>
-                        </v-col>
-                    </v-row>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer />
-                    <v-btn color="error" text @click="() => removeTest(close)" class="pr-2">
-                        <v-icon>delete</v-icon>
-                        Remove test
-                    </v-btn>
-                    <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
-                        <v-icon>save</v-icon>
-                        Save
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </div>
-    </vue-final-modal>
+  <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content"
+                   v-on="$listeners">
+    <div class="text-center">
+      <v-card class="modal-card">
+        <v-card-title>
+          {{ suiteTest.test.displayName ?? suiteTest.test.name }}
+        </v-card-title>
+        <v-card-text class="card-content">
+          <pre class="test-doc caption pt-5">{{ doc.body }}</pre>
+          <div class="d-flex align-center">
+            <p class="text-h6 pt-4">Inputs</p>
+          </div>
+          <TestInputListSelector v-if="suiteTest.test.args" :test-inputs="suiteTest.functionInputs"
+                                 :test="testFunctionsByUuid[suiteTest.testUuid]" :model-value="editedInputs"
+                                 :project-id="projectId" :inputs="inputType" :doc="doc" @invalid="i => invalid = i"
+                                 @result="v => result = v"/>
+          <v-row>
+            <v-col>
+              <v-expansion-panels flat @change="resizeEditor">
+                <v-expansion-panel>
+                  <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
+                  <v-expansion-panel-content class="pa-0">
+                    <CodeSnippet :codeContent="suiteTest.test.code" :language="'python'"></CodeSnippet>
+                  </v-expansion-panel-content>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="error" text @click="() => removeTest(close)" class="pr-2">
+            <v-icon>delete</v-icon>
+            Remove test
+          </v-btn>
+          <v-btn color="primary" @click="() => saveEditedInputs(close)" :disabled="invalid">
+            <v-icon>save</v-icon>
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </div>
+  </vue-final-modal>
 </template>
 
 <script setup lang="ts">
@@ -103,16 +107,16 @@ async function saveEditedInputs(close) {
   await reload();
   close();
 
-    mixpanel.track('Edit test inputs of test suite', {
-        suiteId: suite.value!.id,
-        projectKey: suite.value!.projectKey,
-        testUuid: props.suiteTest.testUuid,
-        testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name,
-        inputs: Object.values(result.value).map(({value, ...data}) => ({
-            ...data,
-            value: anonymize(value)
-        }))
-    });
+  mixpanel.track('Edit test inputs of test suite', {
+    suiteId: suite.value!.id,
+    projectKey: suite.value!.projectKey,
+    testUuid: props.suiteTest.testUuid,
+    testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name,
+    inputs: Object.values(result.value).map(({value, ...data}) => ({
+      ...data,
+      value: anonymize(value)
+    }))
+  });
 }
 
 const inputType = computed(() => chain(sortedArguments.value)
@@ -120,6 +124,32 @@ const inputType = computed(() => chain(sortedArguments.value)
     .mapValues('type')
     .value()
 );
+
+async function removeTest(close) {
+  await $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: 'Remove test',
+      text: `Are you sure that you want to remove this test from the test suite?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(closeConfirm) {
+        await api.removeTest(suite.value!.projectKey!, suite.value!.id!, props.suiteTest.id!);
+        await useTestSuiteStore().reload();
+        closeConfirm();
+        close();
+
+        mixpanel.track('Removed test form test suite', {
+          suiteId: suite.value!.id,
+          projectKey: suite.value!.projectKey,
+          testUuid: props.suiteTest.testUuid,
+          testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name
+        });
+      }
+    }
+  });
+}
 
 </script>
 
@@ -140,7 +170,8 @@ const inputType = computed(() => chain(sortedArguments.value)
 
 .modal-card {
   max-height: 80vh;
-  min-width: 72rem;display: flex;
+  min-width: 72rem;
+  display: flex;
   flex-direction: column;
 }
 
