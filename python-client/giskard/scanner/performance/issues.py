@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import lru_cache
+from typing import Optional
 
 from .metrics import PerformanceMetric
 from ..common.examples import ExampleExtractor
@@ -16,6 +17,7 @@ class PerformanceIssueInfo:
     metric: PerformanceMetric
     metric_value_reference: float
     metric_value_slice: float
+    p_value: Optional[float]
     slice_fn: SlicingFunction
     slice_size: int
     threshold: float
