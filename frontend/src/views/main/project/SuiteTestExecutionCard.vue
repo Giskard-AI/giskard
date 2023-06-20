@@ -29,17 +29,10 @@
           <v-icon small>close</v-icon>
           Failed
         </v-chip>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <div v-on="on">
-              <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="result.passed">
-                <v-icon small>info</v-icon>
-                Debug
-              </v-btn>
-            </div>
-          </template>
-          <span>Coming soon</span>
-        </v-tooltip>
+        <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="result.passed">
+          <v-icon small>info</v-icon>
+          Debug
+        </v-btn>
       </div>
     </div>
     <div class="d-flex flex-row flex-wrap align-end test-card-footer">
