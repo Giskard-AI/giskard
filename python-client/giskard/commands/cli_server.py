@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -91,6 +92,33 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
             return None
 
 
+def _is_backend_ready(endpoint) -> bool:
+    try:
+        response = requests.get(endpoint)
+        response.raise_for_status()
+        return "UP" == response.json()["status"]
+    except KeyboardInterrupt:
+        raise click.Abort()
+    except BaseException:  # noqa NOSONAR
+        return False
+
+
+def _wait_backend_ready(port: int) -> bool:
+    endpoint = f"http://localhost:{port}/management/health"
+    backoff_time = 2
+    max_duration_second = 3 * 60
+    started_time = time.time()
+    up = False
+
+    while not up and time.time() - started_time <= max_duration_second:
+        time.sleep(backoff_time)
+        up = _is_backend_ready(endpoint)
+        click.echo(".", nl=False)
+
+    click.echo(".")
+    return up
+
+
 def _start(attached=False, version=None):
     logger.info("Starting Giskard Server")
 
@@ -115,7 +143,16 @@ def _start(attached=False, version=None):
             volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
         )
     container.start()
-    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+
+    up = _wait_backend_ready(port)
+
+    if up:
+        logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+    else:
+        logger.warning(
+            "Giskard backend takes unusually long time to start, "
+            "please check the logs with `giskard server logs backend`"
+        )
 
 
 def _check_downloaded(version: str):
@@ -366,7 +403,7 @@ def diagnose(local_dir):
     analytics.track("giskard-server:diagnose")
     out_dir = Path(local_dir)
     assert out_dir.is_dir(), "'output' should be an existing directory"
-    bits, stat = get_container().get_archive("/home/giskard/datadir/run", encode_stream=True)
+    bits, _ = get_container().get_archive("/home/giskard/datadir/run", encode_stream=True)
     from datetime import datetime
 
     now = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
