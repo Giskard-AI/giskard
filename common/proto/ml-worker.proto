@@ -395,29 +395,6 @@ message GenerateQueryBasedSliceResponse{
   string id = 1;
 }
 
-message SuggestFilterRequest {
-  ArtifactRef model = 1;
-  ArtifactRef dataset = 2;
-  uint64 rowidx = 3;
-}
-
-message Push {
-  string key = 1;
-  string value = 2;
-  string push_title = 3;
-  string perturbation_value = 4;
-  repeated PushDetails push_details = 5;
-}
-
-message PushDetails {
-  string action = 1;
-  string explanation = 2;
-  string button = 3;
-}
-
-message SuggestFilterResponse {
-  repeated Push pushes = 1;
-}
 enum PushKind {
   Invalid = 0;
   Perturbation = 1;
