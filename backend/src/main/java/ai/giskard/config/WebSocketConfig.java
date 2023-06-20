@@ -9,6 +9,8 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import tech.jhipster.config.JHipsterProperties;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -29,10 +31,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         CorsConfiguration config = jHipsterProperties.getCors();
+        List<String> allowedOrigins = config.getAllowedOrigins();
 
-        if (!CollectionUtils.isEmpty(config.getAllowedOrigins()) || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
-            registry.addEndpoint("/websocket")
-                .setAllowedOrigins(config.getAllowedOrigins().toArray(String[]::new));
+        if (!CollectionUtils.isEmpty(allowedOrigins)) {
+            registry
+                .addEndpoint("/websocket")
+                .setAllowedOrigins(allowedOrigins.toArray(String[]::new));
         } else {
             registry.addEndpoint("/websocket");
         }
