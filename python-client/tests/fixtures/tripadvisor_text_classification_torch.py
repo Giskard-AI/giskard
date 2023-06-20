@@ -1,27 +1,22 @@
 import os
 import re
-import logging
 import string
-import random
 from typing import Union, List
 from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
-import nltk
 import torch
 import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
+from giskard import models
 from giskard import Dataset, Model
 from tests.url_utils import fetch_from_ftp
 
-logger = logging.getLogger(__name__)
-nltk.download("stopwords")
 
 # Data
 DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "tripadvisor_reviews_dataset", "{}")
@@ -29,20 +24,11 @@ DATA_PATH = Path.home() / ".giskard" / "tripadvisor_reviews_dataset"
 DATA_FILE_NAME = "tripadvisor_hotel_reviews.csv"
 
 # Constants
-STOP_WORDS = set(stopwords.words("english"))
 PRETRAINED_WEIGHTS_NAME = "distilbert-base-uncased"
 TEXT_COLUMN_NAME = "Review"
 TARGET_COLUMN_NAME = "label"
 RANDOM_SEED = 0
 MAX_NUM_ROWS = 500
-
-# Set random seed
-random.seed(RANDOM_SEED)
-np.random.seed(RANDOM_SEED)
-torch.manual_seed(RANDOM_SEED)
-torch.cuda.manual_seed_all(RANDOM_SEED)
-
-# Load dataset
 
 
 def create_label(x: int) -> int:
@@ -111,11 +97,10 @@ def remove_punctuation(text: str) -> str:
     return text
 
 
-text_cleaner = TextCleaner()
-
-
 def text_preprocessor(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess text."""
+    text_cleaner = TextCleaner()
+
     # Remove emoji.
     df[TEXT_COLUMN_NAME] = df[TEXT_COLUMN_NAME].apply(lambda x: remove_emoji(x))
 
@@ -142,9 +127,6 @@ def load_dataset() -> pd.DataFrame:
     return df
 
 
-# Model creation
-
-
 @dataclass
 class Config:
     """Configuration of Distill-BERT model."""
@@ -158,15 +140,6 @@ class Config:
     return_tensors = "pt"
 
 
-# Load tokenizer.
-tokenizer = DistilBertTokenizer.from_pretrained(PRETRAINED_WEIGHTS_NAME)
-
-# Load model.
-model = DistilBertForSequenceClassification.from_pretrained(
-    PRETRAINED_WEIGHTS_NAME, num_labels=3, output_attentions=False, output_hidden_states=False
-).to(Config.device)
-
-
 def create_dataloader(df: pd.DataFrame) -> DataLoader:
     """Create dataloader object with input data."""
 
@@ -175,6 +148,9 @@ def create_dataloader(df: pd.DataFrame) -> DataLoader:
         input_ids = encoded_data["input_ids"]
         attention_masks = encoded_data["attention_mask"]
         return TensorDataset(input_ids, attention_masks)
+
+    # Load tokenizer.
+    tokenizer = DistilBertTokenizer.from_pretrained(PRETRAINED_WEIGHTS_NAME)
 
     # Tokenize data.
     encoded_data = tokenizer.batch_encode_plus(
@@ -217,6 +193,9 @@ class CustomWrapper(Model):
 
     def model_predict(self, df: pd.DataFrame) -> np.ndarray:
         """Perform inference using overwritten prediction logic."""
+        # Set random seed
+        models.fix_seed(RANDOM_SEED)
+
         cleaned_df = text_preprocessor(df)
         data_loader = create_dataloader(cleaned_df)
         predicted_probabilities = infer_predictions(self.model, data_loader)
@@ -228,15 +207,17 @@ def tripadvisor_data() -> Dataset:
     # Download dataset
     df = load_dataset()
     return Dataset(
-        df,
-        name="trip_advisor_reviews_sentiment",
-        target=TARGET_COLUMN_NAME,
-        column_types={TEXT_COLUMN_NAME: "text"},
+        df, name="trip_advisor_reviews_sentiment", target=TARGET_COLUMN_NAME, column_types={TEXT_COLUMN_NAME: "text"}
     )
 
 
 @pytest.fixture()
 def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
+    # Load model.
+    model = DistilBertForSequenceClassification.from_pretrained(
+        PRETRAINED_WEIGHTS_NAME, num_labels=3, output_attentions=False, output_hidden_states=False
+    ).to(Config.device)
+
     return CustomWrapper(
         model,
         model_type="classification",
