@@ -155,7 +155,7 @@ def _test_metamorphic(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
     )
 
-    passed_idx, _ = _compare_prediction(results_df, model.meta.model_type, direction, output_sensitivity)
+    passed_idx, failed_idx = _compare_prediction(results_df, model.meta.model_type, direction, output_sensitivity)
     passed_ratio = len(passed_idx) / modified_rows_count if modified_rows_count != 0 else 1
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
