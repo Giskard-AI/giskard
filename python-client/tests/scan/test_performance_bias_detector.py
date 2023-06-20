@@ -1,5 +1,6 @@
 import pytest
 import logging
+import numpy as np
 import pandas as pd
 from unittest import mock
 
@@ -67,6 +68,25 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     assert all([isinstance(issue, Issue) for issue in issues])
 
 
+def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
+    # By default, it does not use the statistical significance
+    detector = PerformanceBiasDetector()
+
+    issues = detector.run(titanic_model, titanic_dataset)
+    assert len(issues) == 8
+
+    # Setting alpha enables the Benjamini–Hochberg procedure
+    detector = PerformanceBiasDetector(alpha=0.10)
+
+    issues = detector.run(titanic_model, titanic_dataset)
+    assert len(issues) == 3
+
+    detector = PerformanceBiasDetector(alpha=1e-10)
+
+    issues = detector.run(titanic_model, titanic_dataset)
+    assert len(issues) == 2
+
+
 def test_calculate_slice_metrics():
     # Create a mock model and dataset
     model = mock.MagicMock()
@@ -97,6 +117,18 @@ def test_calculate_slice_metrics():
     assert slice_metric.value == 0.4
     assert slice_metric.affected_samples == 11
     assert pvalue == pytest.approx(0.80, abs=0.01)
+
+    def metric(model, dataset):
+        if len(dataset) == 2:  # slice
+            return mock.MagicMock(value=0.4, affected_samples=0, raw_values=None)
+
+        return mock.MagicMock(value=0.46, affected_samples=32, raw_values=None)
+
+    metric.greater_is_better = True
+
+    # If the contingency table contains zeros, it will give p-value = NaN
+    _, _, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] > 1, True)
+    assert np.isnan(pvalue)
 
     # For regression
     def metric(model, dataset):
