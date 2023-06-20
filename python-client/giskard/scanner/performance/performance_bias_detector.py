@@ -251,10 +251,10 @@ def _calculate_slice_metrics(model, dataset, metric, slice_fn, with_pvalue=False
             )
         else:
             # otherwise, this must be classification scores, so we perform a G-test
-            slice_x_cnt = int(round(slice_metric.value * slice_metric.affected_samples))
+            slice_x_cnt = round(slice_metric.value * slice_metric.affected_samples)
             slice_y_cnt = slice_metric.affected_samples - slice_x_cnt
 
-            comp_x_cnt = int(round(comp_metric.value * comp_metric.affected_samples))
+            comp_x_cnt = round(comp_metric.value * comp_metric.affected_samples)
             comp_y_cnt = comp_metric.affected_samples - comp_x_cnt
 
             ctable = [[slice_x_cnt, slice_y_cnt], [comp_x_cnt, comp_y_cnt]]
