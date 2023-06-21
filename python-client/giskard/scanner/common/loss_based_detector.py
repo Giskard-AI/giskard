@@ -20,7 +20,13 @@ class LossBasedDetector(Detector):
     MAX_DATASET_SIZE = 10_000_000
     LOSS_COLUMN_NAME = "__gsk__loss"
 
+    _needs_target = True
+
     def run(self, model: BaseModel, dataset: Dataset):
+        if self._needs_target and dataset.target is None:
+            logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
+            return []
+
         logger.info(f"{self.__class__.__name__}: Running")
 
         # Check if we have enough data to run the scan
