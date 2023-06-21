@@ -217,6 +217,7 @@ message TestMessage{
 
 message SingleTestResult{
   bool passed = 13;
+  bool is_error = 23;
   repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
