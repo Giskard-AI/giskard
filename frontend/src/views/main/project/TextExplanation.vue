@@ -23,7 +23,7 @@
           </v-col>
         </v-row>
         <div v-if="result != null">
-          <p class="caption text-center mb-0">Word contribution (LIME values)</p>
+          <p class='caption text-center mb-0'>Word contribution (shap values)</p>
           <p class="result-paragraph">
             <TextExplanationParagraph :weights="result.weights[selectedLabel]" :words="result.words" :max_weight="max_weight" :min_weight="min_weight"></TextExplanationParagraph>
           </p>
@@ -37,13 +37,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
-import mixpanel from "mixpanel-browser";
-import { ExplainTextResponseDTO } from '@/generated-sources'
+import { ref, watch } from 'vue';
+import mixpanel from 'mixpanel-browser';
+import { ExplainTextResponseDTO } from '@/generated-sources';
 import TextExplanationParagraph from './TextExplanationParagraph.vue';
-import { api } from "@/api";
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-
+import { api } from '@/api';
+import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
 
 
 interface Props {
