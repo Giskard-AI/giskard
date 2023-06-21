@@ -130,10 +130,10 @@ import { useMainStore } from "@/stores/main";
 import { useProjectStore } from "@/stores/project";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
 import { useTestSuitesStore } from "@/stores/test-suites";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
-import { state } from "@/socket";
+import { state, client } from "@/socket";
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -193,6 +193,14 @@ watch(() => route.name, async (name) => {
 })
 
 watch(() => state, () => { })
+
+onMounted(() => {
+  client.activate();
+})
+
+onUnmounted(() => {
+  client.deactivate();
+})
 </script>
 
 <style scoped>

@@ -11,7 +11,7 @@ export const state = reactive({
   },
 });
 
-const client = new Client({
+export const client = new Client({
   brokerURL: httpUrlToWsUrl(apiURL) + '/websocket',
   onConnect: () => {
     client.subscribe('/topic/worker-status', message => {
@@ -35,5 +35,3 @@ const client = new Client({
     });
   },
 });
-
-client.activate();
