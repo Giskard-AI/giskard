@@ -151,6 +151,7 @@ dependencies = [
     "chardet", # text metadata
     "jinja2>=3", # scan template (temporary)
     "requests-toolbelt>=0.9.1",
+    "detoxify>=0.5.0",
 ]
 
 [project.optional-dependencies]
@@ -162,6 +163,7 @@ llm = [
 #    pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
+    "detoxify"
 ]
 server = [
     "tenacity>=4.11.0",
