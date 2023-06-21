@@ -82,12 +82,15 @@
 
                                 <div>
                                     <v-row>
-                                        <v-col>
-                                            <span class="input-name">Dataset: <span class="input-type">BaseDataset</span></span>
-                                        </v-col>
-                                        <v-col class="input-selector-column">
-                                            <DatasetSelector :project-id="projectId" label="Dataset" :return-object="false" :value.sync="selectedDataset" />
-                                        </v-col>
+                                      <v-col>
+                                        <span class='input-name'>Dataset: <span
+                                          class='input-type'>BaseDataset</span></span>
+                                      </v-col>
+                                      <v-col class='input-selector-column'>
+                                        <DatasetSelector :project-id='projectId' label='Dataset'
+                                                         :return-object='false' :value.sync='selectedDataset'
+                                                         :filter='datasetFilter' />
+                                      </v-col>
                                     </v-row>
                                 </div>
 
@@ -169,6 +172,7 @@ import { alphabeticallySorted } from '@/utils/comparators';
 import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
+import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
 
 let props = defineProps<{
   projectId: number,
@@ -183,30 +187,33 @@ const selected = ref<SlicingFunctionDTO | null>(null);
 const sliceResult = ref<DatasetProcessingResultDTO | null>(null);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
-let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
+let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({});
 
 const panel = ref<number[]>([0]);
 
 const hasGiskardFilters = computed(() => {
-    return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
-})
+  return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined;
+});
+
+const datasetFilter = computed(() =>
+  selected.value ? dataset => DatasetProcessFunctionUtils.canApply(selected.value!, dataset) : () => true);
 
 const filteredTestFunctions = computed(() => {
-    return chain(slicingFunctions.value)
-        .filter((func) => {
-            const keywords = searchFilter.value.split(' ')
-                .map(keyword => keyword.trim().toLowerCase())
-                .filter(keyword => keyword !== '');
+  return chain(slicingFunctions.value)
+    .filter((func) => {
+      const keywords = searchFilter.value.split(' ')
+        .map(keyword => keyword.trim().toLowerCase())
+        .filter(keyword => keyword !== '');
 
-            return keywords.filter(keyword =>
-                func.name.toLowerCase().includes(keyword)
-                || func.doc?.toLowerCase()?.includes(keyword)
-                || func.displayName?.toLowerCase()?.includes(keyword)
-            ).length === keywords.length;
-        })
-        .sortBy(t => t.displayName ?? t.name)
-        .value();
-})
+      return keywords.filter(keyword =>
+        func.name.toLowerCase().includes(keyword)
+        || func.doc?.toLowerCase()?.includes(keyword)
+        || func.displayName?.toLowerCase()?.includes(keyword)
+      ).length === keywords.length;
+    })
+    .sortBy(t => t.displayName ?? t.name)
+    .value();
+});
 
 onActivated(async () => {
     if (slicingFunctions.value.length > 0) {
