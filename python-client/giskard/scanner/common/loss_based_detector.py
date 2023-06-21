@@ -4,13 +4,12 @@ import pandas as pd
 from typing import Sequence
 from abc import abstractmethod
 
+from ...slicing.slice_finder import SliceFinder
+
 from ..registry import Detector
 
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
-from ...slicing.utils import get_slicer
-from ...slicing.text_slicer import TextSlicer
-from ...slicing.category_slicer import CategorySlicer
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ..logger import logger
 from ..issues import Issue
@@ -21,7 +20,13 @@ class LossBasedDetector(Detector):
     MAX_DATASET_SIZE = 10_000_000
     LOSS_COLUMN_NAME = "__gsk__loss"
 
+    _needs_target = True
+
     def run(self, model: BaseModel, dataset: Dataset):
+        if self._needs_target and dataset.target is None:
+            logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
+            return []
+
         logger.info(f"{self.__class__.__name__}: Running")
 
         # Check if we have enough data to run the scan
@@ -48,8 +53,7 @@ class LossBasedDetector(Detector):
         # Find slices
         logger.info(f"{self.__class__.__name__}: Finding data slices")
         start = perf_counter()
-        dataset_to_slice = dataset.select_columns(model.meta.feature_names) if model.meta.feature_names else dataset
-        slices = self._find_slices(dataset_to_slice, meta)
+        slices = self._find_slices(model, dataset, meta)
         elapsed = perf_counter() - start
         logger.info(
             f"{self.__class__.__name__}: {len(slices)} slices found (took {datetime.timedelta(seconds=elapsed)})"
@@ -70,7 +74,9 @@ class LossBasedDetector(Detector):
     def _numerical_slicer_method(self):
         return "tree"
 
-    def _find_slices(self, dataset: Dataset, meta: pd.DataFrame):
+    def _find_slices(self, model: BaseModel, dataset: Dataset, meta: pd.DataFrame):
+        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
+
         df_with_meta = dataset.df.join(meta, how="right")
 
         column_types = dataset.column_types.copy()
@@ -85,28 +91,10 @@ class LossBasedDetector(Detector):
         # For performance
         dataset_with_meta.load_metadata_from_instance(dataset.column_meta)
 
-        # Columns by type
-        cols_by_type = {
-            type_val: [col for col, col_type in dataset.column_types.items() if col_type == type_val]
-            for type_val in ["numeric", "category", "text"]
-        }
-
-        # Numerical features
-        slicer = get_slicer(self._numerical_slicer_method, dataset_with_meta, self.LOSS_COLUMN_NAME)
-
-        slices = []
-        for col in cols_by_type["numeric"]:
-            slices.extend(slicer.find_slices([col]))
-
-        # Categorical features
-        slicer = CategorySlicer(dataset_with_meta, target=self.LOSS_COLUMN_NAME)
-        for col in cols_by_type["category"]:
-            slices.extend(slicer.find_slices([col]))
-
-        # Text features
-        slicer = TextSlicer(dataset_with_meta, target=self.LOSS_COLUMN_NAME, slicer=self._numerical_slicer_method)
-        for col in cols_by_type["text"]:
-            slices.extend(slicer.find_slices([col]))
+        # Find slices
+        sf = SliceFinder(numerical_slicer=self._numerical_slicer_method)
+        sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME)
+        slices = sum(sliced.values(), start=[])
 
         # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger)
         slices = [s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset_with_meta.slice(s))]
