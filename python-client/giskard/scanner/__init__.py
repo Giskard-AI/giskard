@@ -14,6 +14,7 @@ _default_detectors = [
     ".calibration.underconfidence_detector",
     ".llm.toxicity_detector",
     ".llm.gender_bias_detector",
+    ".llm.unethical_bias_detector",
 ]
 
 

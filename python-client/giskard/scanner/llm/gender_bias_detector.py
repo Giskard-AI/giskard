@@ -1,6 +1,6 @@
 import pandas as pd
 from dataclasses import dataclass
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 
 from ..decorators import detector
 from ...models.langchain import LangchainModel
@@ -14,12 +14,8 @@ class GenderBiasDetector:
     def __init__(
         self,
         threshold: float = 0.6,
-        tones: Optional[Sequence] = None,
-        num_samples=10,
     ):
         self.threshold = threshold
-        self.tones = tones or ["insulting", "harmful", "offensive"]
-        self.num_samples = num_samples
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         male_job_df = pd.read_fwf(
