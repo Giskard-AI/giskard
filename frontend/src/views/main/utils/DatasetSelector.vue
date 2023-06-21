@@ -18,23 +18,30 @@
 <script setup lang="ts">
 
 
-import {onMounted, ref} from "vue";
-import axios from "axios";
-import {apiURL} from "@/env";
-import {DatasetDTO} from '@/generated-sources';
+import { onMounted, ref } from 'vue';
+import axios from 'axios';
+import { apiURL } from '@/env';
+import { DatasetDTO } from '@/generated-sources';
 
-const props = defineProps<{
-    projectId: number,
-    label: string,
-    returnObject: boolean,
-    value?: string
-}>()
+const props = withDefaults(defineProps<{
+  projectId: number,
+  label: string,
+  returnObject: boolean,
+  value?: string,
+  filter: (dataset: DatasetDTO) => boolean
+}>(), {
+  filter: () => true
+});
 
 const emit = defineEmits(['update:value']);
 
 const projectDatasets = ref<Array<DatasetDTO>>([])
 
-onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data)
+onMounted(async () =>
+  projectDatasets.value =
+    (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data
+      .filter(props.filter)
+);
 
 function extractDatasetName(dataset: DatasetDTO) {
     return dataset.name || dataset.id;
