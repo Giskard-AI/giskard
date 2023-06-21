@@ -79,7 +79,7 @@ class GenderBiasDetector:
         return issues
 
     def _string_to_regex(self, word):
-        return f" {word}$|^{word.title()} | {word} | {word.title()} |\W{word}\W|\W{word.title()}\W"
+        return rf" {word}$|^{word.title()} | {word} | {word.title()} |\W{word}\W|\W{word.title()}\W"
 
     def _compute_gender_bias_score(self, sentences: List[str]):
         output = pd.DataFrame(sentences, columns=["output"])
