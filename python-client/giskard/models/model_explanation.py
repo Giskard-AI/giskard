@@ -71,7 +71,7 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
 
         shap_values = text_explainer(pd.Series([text_document]))
 
-        return shap_values[0].data, shap_values[0].values
+        return shap_values[0].data, [shap_values[0].values[:, i] for i in range(shap_values[0].values.shape[1])]
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
