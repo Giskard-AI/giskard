@@ -341,6 +341,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         if request.column_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
+
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.meta.feature_names:

@@ -1,9 +1,10 @@
 import logging
-import numpy as np
-import pandas as pd
 import warnings
 from itertools import groupby
 from typing import Callable, Dict, List, Any
+
+import numpy as np
+import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import timer
@@ -63,23 +64,14 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
     try:
-        import eli5
-        from eli5.lime import TextExplainer
+        text_explainer = shap.Explainer(
+            text_explanation_prediction_wrapper(model.predict_df, input_df, text_column),
+            shap.maskers.Text(tokenizer=r"\W+"),
+        )
 
-        text_explainer = TextExplainer(random_state=42, n_samples=n_samples)
-        prediction_function = text_explanation_prediction_wrapper(model.predict_df, input_df, text_column)
-        text_explain_attempts = 10
-        for i in range(text_explain_attempts):
-            try:
-                text_explainer.fit(text_document, prediction_function)
-                break
-            except ZeroDivisionError:
-                logger.warning(f"Failed to fit text explainer {i}")
+        shap_values = text_explainer(pd.Series([text_document]))
 
-        text_explainer.show_prediction(target_names=model.meta.classification_labels)
-        exp = text_explainer.explain_prediction(target_names=model.meta.classification_labels)
-        exp = eli5.formatters.html.prepare_weighted_spans(exp.targets)
-        return get_list_words_weights(exp)
+        return shap_values[0].data, shap_values[0].values
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
