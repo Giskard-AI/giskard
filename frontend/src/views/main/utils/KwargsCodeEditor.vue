@@ -1,6 +1,6 @@
 <template>
     <div class="mt-1 editor-container">
-        <MonacoEditor ref="editor" :value="props.value" @change="onInput" class='editor' language='python' style="height: 300px" :options="monacoOptions" />
+        <MonacoEditor ref="editor" :value="props.value" @change="onInput" class='editor' language='python' style="height: 150px" :options="monacoOptions" />
     </div>
 </template>
 
