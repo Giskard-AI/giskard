@@ -233,9 +233,9 @@ class Suite:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
                     )
-            except BaseException as e:  # noqa NOSONAR
+            except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution", e)
+                logging.exception("An error happened during test execution")
                 res.append(
                     (
                         test_partial.test_name,
