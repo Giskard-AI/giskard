@@ -461,22 +461,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "eli5"
-version = "0.13.0"
-requires_python = ">=3.6"
-summary = "Debug machine learning classifiers and explain their predictions"
-dependencies = [
-    "attrs>17.1.0",
-    "graphviz",
-    "jinja2>=3.0.0",
-    "numpy>=1.9.0",
-    "scikit-learn>=0.20",
-    "scipy",
-    "six",
-    "tabulate>=0.7.7",
-]
-
-[[package]]
 name = "entrypoints"
 version = "0.4"
 requires_python = ">=3.6"
@@ -2798,7 +2782,7 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:6db9d017241a0583b3add97177147d03f65bef300818b10415af53800ffbfef4"
+content_hash = "sha256:307b65b41affd9de7aa04b31a3ae02eba383d867e184a396f78f5d316c497756"
 
 [metadata.files]
 "absl-py 1.4.0" = [
@@ -3393,9 +3377,6 @@ content_hash = "sha256:6db9d017241a0583b3add97177147d03f65bef300818b10415af53800
 "dparse 0.6.2" = [
     {url = "https://files.pythonhosted.org/packages/43/62/559227d7f72319055f6970a87677fb8cb24390e61f6dc33ba416f625b15a/dparse-0.6.2.tar.gz", hash = "sha256:d45255bda21f998bc7ddf2afd5e62505ba6134756ba2d42a84c56b0826614dfe"},
     {url = "https://files.pythonhosted.org/packages/7e/e3/9e761c7ed18147ea411a74209068cc57a631a7c5d51709941af9b9e52e3e/dparse-0.6.2-py3-none-any.whl", hash = "sha256:8097076f1dd26c377f30d4745e6ec18fef42f3bf493933b842ac5bafad8c345f"},
-]
-"eli5 0.13.0" = [
-    {url = "https://files.pythonhosted.org/packages/b5/30/3be87d2a7ca12a6ec45b8a5f6fd10be9992cc4b239dfb029c80091add477/eli5-0.13.0.tar.gz", hash = "sha256:ec8459eaaf09d66743c53a7bdb115c6cda7e533d7a5d02a5a8bb717ee843eb37"},
 ]
 "entrypoints 0.4" = [
     {url = "https://files.pythonhosted.org/packages/35/a8/365059bbcd4572cbc41de17fd5b682be5868b218c3c5479071865cab9078/entrypoints-0.4-py3-none-any.whl", hash = "sha256:f174b5ff827504fd3cd97cc3f8649f3693f51538c7e4bdf3ef002c8429d42f9f"},
