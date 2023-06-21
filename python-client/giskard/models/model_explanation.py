@@ -1,6 +1,5 @@
 import logging
 import warnings
-from itertools import groupby
 from typing import Callable, Dict, List, Any
 
 import numpy as np
@@ -75,24 +74,6 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
-
-
-def get_list_words_weights(exp):
-    list_words = []
-    document = exp[0][0].doc_weighted_spans.document
-    for k, g in groupby(document, str.isalnum):
-        list_words.append("".join(g))
-    list_weights = []
-    for target in exp:
-        current_weights = []
-        t = target[0]
-        i = 0
-        for word in list_words:
-            weight = t.char_weights[i]
-            current_weights.append(weight)
-            i += len(word)
-        list_weights.append(current_weights)
-    return (list_words, list_weights)
 
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
