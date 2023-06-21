@@ -42,7 +42,7 @@ RUN WHEEL=$(ls python-client/dist/giskard*.whl) && python-client/.venv-prod/bin/
 FROM python:3.10-slim
 ENV SPRING_PROFILES_ACTIVE=prod
 ARG DEBIAN_FRONTEND=noninteractive
-ARG POSTGRES_VERSION=15
+ARG POSTGRES_VERSION=13
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends wget gnupg nginx openjdk-17-jre-headless supervisor git gettext-base
