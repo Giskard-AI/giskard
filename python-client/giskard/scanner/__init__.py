@@ -13,6 +13,7 @@ _default_detectors = [
     ".calibration.overconfidence_detector",
     ".calibration.underconfidence_detector",
     ".llm.toxicity_detector",
+    ".llm.gender_bias_detector",
 ]
 
 
