@@ -133,6 +133,7 @@ import { useTestSuitesStore } from "@/stores/test-suites";
 import { computed, ref, watch } from "vue";
 import { useRoute } from 'vue-router/composables';
 import moment from "moment/moment";
+import { state } from "@/socket";
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -150,7 +151,6 @@ if (mainStore.license) {
     warningMessage.value = `Your license expires in ${dif} days`
   }
 }
-
 
 const hasAdminAccess = computed(() => {
   return userStore.hasAdminAccess;
@@ -191,6 +191,8 @@ watch(() => route.name, async (name) => {
     projectStore.setCurrentProjectId(null);
   }
 })
+
+watch(() => state, () => { })
 </script>
 
 <style scoped>
