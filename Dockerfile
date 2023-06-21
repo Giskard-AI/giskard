@@ -47,7 +47,7 @@ RUN apt-get update && \
     apt-get -y install wget gnupg nginx openjdk-17-jre-headless supervisor git gettext-base
 
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
     apt-get update && \
     apt-get install -y postgresql-13
 
