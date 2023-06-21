@@ -240,7 +240,6 @@ def _calculate_slice_metrics(model, dataset, metric, slice_fn, with_pvalue=False
     # Perform statistical tests
     complementary_dataset = dataset.slice(lambda df: df[~df.index.isin(sliced_dataset.df.index)], row_level=False)
     comp_metric = metric(model, complementary_dataset)
-    pvalue = None
 
     try:
         # If we have raw values for the metric, we perform a standard t-test
