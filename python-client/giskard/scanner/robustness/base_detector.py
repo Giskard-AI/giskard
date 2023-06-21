@@ -82,7 +82,7 @@ class BaseTextPerturbationDetector(Detector):
             # Select a random subset of the changed records
             if len(changed_idx) > num_samples:
                 rng = np.random.default_rng(747)
-                changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples)]
+                changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples, replace=False)]
 
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
