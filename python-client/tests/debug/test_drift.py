@@ -1,11 +1,7 @@
-from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
-    test_drift_prediction_chi_square, test_drift_prediction_psi
-from giskard.datasets.base import Dataset
-from collections import Counter
-
 import numpy as np
 import pandas as pd
 import pytest
+from collections import Counter
 
 from giskard.datasets.base import Dataset
 from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \

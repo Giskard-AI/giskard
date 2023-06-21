@@ -8,7 +8,6 @@ from typing import Callable, Dict, List, Any
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
-from giskard.models.base import BaseModel
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap  # noqa

@@ -1,7 +1,3 @@
-from giskard.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
-from giskard.ml_worker.testing.registry.slicing_function import slicing_function
-
-import pytest
 import pandas as pd
 import pytest
 

@@ -1,7 +1,6 @@
 """Statistical tests"""
 import numbers
 import numpy as np
-import pandas as pd
 import inspect
 from typing import Optional
 
@@ -12,7 +11,6 @@ from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
-from typing import Union
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
