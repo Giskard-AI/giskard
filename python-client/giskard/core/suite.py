@@ -235,7 +235,7 @@ class Suite:
                     )
             except BaseException as e:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution")
+                logging.exception("An error happened during test execution", e)
                 res.append(
                     (
                         test_partial.test_name,
