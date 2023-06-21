@@ -28,12 +28,9 @@ class GiskardEvaluator(ModelEvaluator):
     def evaluate(
             self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
     ):
-        self.model_type = model_type
         self.client = MlflowClient()
-        self.dataset = dataset
         self.run_id = run_id
-        self.X = dataset.features_data
-        self.y = dataset.labels_data
+        self.evaluator_config = evaluator_config
 
         if isinstance(dataset.features_data, pd.DataFrame):
             data = dataset.features_data.copy()
@@ -44,7 +41,7 @@ class GiskardEvaluator(ModelEvaluator):
         else:
             raise ValueError("Only pd.DataFrame are currently supported in Giskard.")
 
-        cl = evaluator_config["classification_labels"] if "classification_labels" in evaluator_config else None
+        cl = evaluator_config["classification_labels"] if "classification_labels" in self.evaluator_config else None
         giskard_model = GiskardModel(model=model,
                                      model_type=gsk_model_types[model_type],
                                      feature_names=dataset.feature_names,
