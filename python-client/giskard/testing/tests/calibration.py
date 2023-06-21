@@ -81,7 +81,10 @@ def test_overconfidence_rate(
     rate = (overconfidence_score[overconfidence_score > 0].dropna() > p_threshold).mean()
     passed = rate < threshold
 
-    return TestResult(passed=passed, metric=rate)
+    return TestResult(
+        passed=bool(passed),
+        metric=rate,
+    )
 
 
 def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -144,4 +147,7 @@ def test_underconfidence_rate(
     rate = (underconfidence_score.dropna() > p_threshold).mean()
     passed = rate < threshold
 
-    return TestResult(passed=passed, metric=rate)
+    return TestResult(
+        passed=bool(passed),
+        metric=rate,
+    )
