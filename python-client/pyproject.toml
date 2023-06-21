@@ -92,6 +92,9 @@ giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
 [project.scripts]
 giskard = "giskard.cli:cli"
 
+[project.entry-points."mlflow.model_evaluator"]
+giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
+
 [project.urls]
 "Homepage" = "https://giskard.ai"
 "Source Code" = "https://github.com/Giskard-AI/giskard"
