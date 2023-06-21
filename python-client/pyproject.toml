@@ -169,7 +169,6 @@ server = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "eli5>=0.12.0",
     "ipython", # eli5.show_prediction doesn't work without ipython
     "grpcio>=1.39.0,<=1.51.1",
     "grpcio-status>=1.16.0,<=1.51.1",
