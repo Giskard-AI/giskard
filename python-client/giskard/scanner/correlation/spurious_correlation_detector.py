@@ -36,12 +36,14 @@ class SpuriousCorrelationDetector(Detector):
 
         # Prepare dataset for slicing
         df = dataset.df.copy()
-        df[dataset.target] = pd.Categorical(df[dataset.target])
-        wdata = Dataset(df, column_types=dataset.column_types)
+        if dataset.target is not None:
+            df.drop(columns=dataset.target, inplace=True)
+        df["__gsk__target"] = pd.Categorical(ds_predictions)
+        wdata = Dataset(df, target="__gsk__target", column_types=dataset.column_types)
         wdata.load_metadata_from_instance(dataset.column_meta)
 
         # Find slices
-        sliced_cols = SliceFinder("tree").run(wdata, features, target=dataset.target)
+        sliced_cols = SliceFinder("tree").run(wdata, features, target=wdata.target)
 
         measure_fn, measure_name = self._get_measure_fn()
         issues = []
