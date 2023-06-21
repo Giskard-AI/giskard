@@ -15,6 +15,7 @@ _default_detectors = [
     ".llm.toxicity_detector",
     ".llm.gender_bias_detector",
     ".llm.unethical_bias_detector",
+    ".llm.minority_bias_detector",
 ]
 
 
