@@ -44,8 +44,12 @@ ENV SPRING_PROFILES_ACTIVE=prod
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y \
-    postgresql nginx openjdk-17-jre-headless supervisor git gettext-base
+    apt-get -y install wget gnupg nginx openjdk-17-jre-headless supervisor git gettext-base
+
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    apt-get update && \
+    apt-get install -y postgresql-13
 
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
     SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/postgres \
