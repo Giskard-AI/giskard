@@ -8,9 +8,14 @@
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end">
-                            <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
+
+                            <v-btn class="primaryLightBtn ml-2" color="primaryLight" @click="createTestSuite">
                                 <v-icon left>add</v-icon>
                                 New test suite
+                            </v-btn>
+                            <v-btn color="primary" class="ml-2" @click="openUploadDialog">
+                                Upload with API
+                                <v-icon right>mdi-application-braces-outline</v-icon>
                             </v-btn>
                         </div>
                     </v-col>
@@ -85,10 +90,17 @@
             <v-alert class="text-center">
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
             </v-alert>
-            <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
-                <v-icon>add</v-icon>
-                Create a new test suite
-            </v-btn>
+            <div>
+                <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
+                    <v-icon>add</v-icon>
+                    Create a new test suite
+                </v-btn>
+                <span class="mx-4 font-weight-medium grey--text text--darken-2">OR</span>
+                <v-btn color="primary" @click="openUploadDialog">
+                    Upload with API
+                    <v-icon right>mdi-application-braces-outline</v-icon>
+                </v-btn>
+            </div>
             <div class="d-flex justify-center mb-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
             </div>
@@ -131,6 +143,7 @@ import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import mixpanel from "mixpanel-browser";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import { JWTToken } from "@/generated-sources";
+import UploadTestSuiteModal from "./modals/UploadTestSuiteModal.vue";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -180,6 +193,16 @@ const latestExecutions = computed(() => {
     const executions = filteredSuites.value.map(suite => suite.executions);
     return executions.map(executionsSuite => executionsSuite.length === 0 ? null : executionsSuite[0]);
 });
+
+function openUploadDialog() {
+    $vfm.show({
+        component: UploadTestSuiteModal,
+        bind: {
+            apiAccessToken: apiAccessToken,
+            projectKey: project.value!.key
+        },
+    });
+}
 
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
