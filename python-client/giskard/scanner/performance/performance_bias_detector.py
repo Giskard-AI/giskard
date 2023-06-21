@@ -216,9 +216,9 @@ class IssueFinder:
                     metric=metric,
                     metric_value_slice=slice_metric.value,
                     metric_value_reference=ref_metric.value,
-                    p_value=p_value,
                     slice_size=len(sliced_dataset),
                     threshold=self.threshold,
+                    p_value=p_value,
                 )
 
                 issues.append(PerformanceIssue(model, dataset, level=level, info=issue_info))

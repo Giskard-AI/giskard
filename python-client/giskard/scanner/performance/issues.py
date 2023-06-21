@@ -17,10 +17,10 @@ class PerformanceIssueInfo:
     metric: PerformanceMetric
     metric_value_reference: float
     metric_value_slice: float
-    p_value: Optional[float]
     slice_fn: SlicingFunction
     slice_size: int
     threshold: float
+    p_value: Optional[float] = None
 
     @property
     def metric_rel_delta(self):
