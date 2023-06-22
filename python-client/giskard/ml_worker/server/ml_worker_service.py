@@ -492,6 +492,62 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
+    def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
+        try:
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+            dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
+        except ValueError as e:
+            if "unsupported pickle protocol" in str(e):
+                raise ValueError(
+                    "Unable to unpickle object, "
+                    "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                    "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                    f"\nOriginal Error: {e}"
+                ) from e
+            raise e
+        except ModuleNotFoundError as e:
+            raise GiskardException(
+                f"Failed to import '{e.name}'. "
+                f"Make sure it's installed in the ML Worker environment."
+                "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
+            ) from e
+        from giskard.push.contribution import create_contribution_push
+        from giskard.push.perturbation import create_perturbation_push
+        from giskard.push.prediction import create_overconfidence_push
+        from giskard.push.prediction import create_borderline_push
+
+        contribs = create_contribution_push(model, dataset, request.rowidx)
+        perturbs = create_perturbation_push(model, dataset, request.rowidx)
+        overconf = create_overconfidence_push(model, dataset, request.rowidx)
+        borderl = create_borderline_push(model, dataset, request.rowidx)
+
+        if contribs is not None:
+            contrib_grpc = contribs.to_grpc()
+        else:
+            contrib_grpc = None
+
+        if perturbs is not None:
+            perturb_grpc = perturbs.to_grpc()
+        else:
+            perturb_grpc = None
+
+        if overconf is not None:
+            overconf_grpc = overconf.to_grpc()
+        else:
+            overconf_grpc = None
+
+        if borderl is not None:
+            borderl_grpc = borderl.to_grpc()
+        else:
+            borderl_grpc = None
+
+        return ml_worker_pb2.SuggestFilterResponse(
+            contribution=contrib_grpc,
+            perturbation=perturb_grpc,
+            overconfidence=overconf_grpc,
+            borderline=borderl_grpc,
+        )
+
     @staticmethod
     def map_suite_input(i: ml_worker_pb2.SuiteInput):
         if i.type == "Model" and i.model_meta is not None:
