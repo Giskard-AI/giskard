@@ -46,10 +46,13 @@ class ScanResult:
             issues=self.issues,
             issues_by_group=issues_by_group,
             num_major_issues={
-                group: len([i for i in issues if i.is_major]) for group, issues in issues_by_group.items()
+                group: len([i for i in issues if i.level == "major"]) for group, issues in issues_by_group.items()
             },
             num_medium_issues={
-                group: len([i for i in issues if not i.is_major]) for group, issues in issues_by_group.items()
+                group: len([i for i in issues if i.level == "medium"]) for group, issues in issues_by_group.items()
+            },
+            num_info_issues={
+                group: len([i for i in issues if i.level == "info"]) for group, issues in issues_by_group.items()
             },
         )
 

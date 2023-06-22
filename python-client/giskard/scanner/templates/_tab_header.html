@@ -20,15 +20,16 @@
             class="group-[.active]:bg-zinc-800 group-[.active]:border-b-zinc-800 group-[.active]:border-gray-500 border-l px-3 py-2 border-r border-t border-b border-gray-600 border-b-gray-500 h-11">
             {{ group}}
             {% if issues | length > 0 %}
-            {% if num_major_issues[group] > 0 %}
-            <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-red-400">
+                {% if num_major_issues[group] > 0 %}
+                <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-red-400">
+                {% elif num_medium_issues[group] > 0 %}
+                <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-amber-200 text-amber-900">
                 {% else %}
-                <span
-                    class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-amber-200 text-amber-900">
-                    {% endif %}
+                <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-blue-300 text-blue-900">
+                {% endif %}
                     {{ issues | length }}
                 </span>
-                {% endif %}
+            {% endif %}
         </div>
     </div>
     {% endfor %}

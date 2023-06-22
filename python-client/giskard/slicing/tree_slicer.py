@@ -1,13 +1,17 @@
 import logging
 import numpy as np
+import pandas as pd
 from scipy import stats
 from typing import Optional, Sequence
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree as SklearnTree
 from sklearn.model_selection import GridSearchCV
 
 from .base import BaseSlicer
 from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_slices_from_tree(tree: SklearnTree, feature_names: Optional[Sequence] = None):
@@ -54,36 +58,43 @@ class DecisionTreeSlicer(BaseSlicer):
         if len(data) < min_samples:
             return []
 
-        criterion = self._choose_tree_criterion(data.loc[:, target].values)
+        if pd.api.types.is_numeric_dtype(data[target]):
+            logger.debug("Target is numeric, using regression tree.")
+            criterion = self._choose_tree_criterion(data.loc[:, target].values)
+            logger.debug(f"Using `{criterion}` criterion.")
 
-        logging.debug(f"Using `{criterion}` criterion")
+            data_var = data.loc[:, target].var()
 
-        data_var = data.loc[:, target].var()
+            dt = DecisionTreeRegressor(
+                criterion=criterion,
+                splitter="best",
+                min_samples_leaf=min_samples,
+                max_leaf_nodes=20,
+            )
+            gs = GridSearchCV(
+                dt,
+                {
+                    # impurity in this case refers to the regression criterion
+                    "min_impurity_decrease": np.linspace(data_var / 100, data_var / 10, 10)
+                },
+            )
+        else:
+            logger.debug("Target is not numeric, using a classification tree.")
+            dt = DecisionTreeClassifier(
+                criterion="gini",
+                splitter="best",
+                min_samples_leaf=min_samples,
+                max_leaf_nodes=20,
+            )
+            gs = GridSearchCV(dt, {"min_impurity_decrease": np.linspace(0.001, 0.1, 10)})
 
-        dt = DecisionTreeRegressor(
-            criterion=criterion,
-            splitter="best",
-            min_samples_leaf=min_samples,
-            max_leaf_nodes=20,
-        )
-        gs = GridSearchCV(
-            dt,
-            {
-                # impurity in this case refers to the regression criterion
-                "min_impurity_decrease": np.linspace(data_var / 100, data_var / 10, 10)
-            },
-        )
         gs.fit(data.loc[:, features], data.loc[:, target])
         dt = gs.best_estimator_
 
         # Need at least a split, otherwise return now.
         if dt.tree_.node_count < 2:
-            logging.debug("No split found, stopping now.")
+            logger.debug("No split found, stopping now.")
             return []
-
-        # Debugging info
-        corr = stats.pearsonr(data.loc[:, target], dt.predict(data.loc[:, features]))[0]
-        logging.debug(f"Decision tree target correlation: {corr:.2f}")
 
         # Make test slices
         slice_candidates = make_slices_from_tree(dt.tree_, features)

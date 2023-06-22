@@ -1,8 +1,19 @@
+from dataclasses import dataclass
+import numpy as np
 import sklearn.metrics
+from typing import Optional
 from abc import ABC, ABCMeta, abstractmethod
 
 from ...models.base import BaseModel
 from ...datasets.base import Dataset
+
+
+@dataclass
+class MetricResult:
+    metric: "PerformanceMetric"
+    value: float
+    affected_samples: int
+    raw_values: Optional[np.ndarray] = None
 
 
 class PerformanceMetric(ABC):
@@ -10,30 +21,35 @@ class PerformanceMetric(ABC):
     greater_is_better = True
 
     @abstractmethod
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
         ...
 
 
 class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
         if not model.is_classification:
             raise ValueError(f"Metric '{self.name}' is only defined for classification models.")
 
-        y_true = dataset.df[dataset.target]
-        y_pred = model.predict(dataset).prediction
+        y_true = np.asarray(dataset.df[dataset.target])
+        y_pred = np.asarray(model.predict(dataset).prediction)
 
-        return self._calculate_metric(y_true, y_pred, model)
+        value = self._calculate_metric(y_true, y_pred, model)
+        num_affected = self._calculate_affected_samples(y_true, y_pred, model)
+        return MetricResult(self, value, num_affected)
 
     @abstractmethod
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel) -> float:
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> MetricResult:
         ...
+
+    def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
+        return len(y_true)
 
 
 class Accuracy(ClassificationPerformanceMetric):
     name = "Accuracy"
     greater_is_better = True
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         return sklearn.metrics.accuracy_score(y_true, y_pred)
 
 
@@ -41,14 +57,14 @@ class BalancedAccuracy(ClassificationPerformanceMetric):
     name = "Balanced Accuracy"
     greater_is_better = True
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         return sklearn.metrics.balanced_accuracy_score(y_true, y_pred)
 
 
 class SklearnClassificationScoreMixin:
     _sklearn_metric: str
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         metric_fn = getattr(sklearn.metrics, self._sklearn_metric)
         if model.is_binary_classification:
             return metric_fn(
@@ -67,11 +83,26 @@ class F1Score(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     greater_is_better = True
     _sklearn_metric = "f1_score"
 
+    def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
+        if model.is_binary_classification:
+            # F1 score will not be affected by true negatives
+            neg = model.meta.classification_labels[0]
+            tn = ((y_true == neg) & (y_pred == neg)).sum()
+            return len(y_true) - tn
+
+        return len(y_true)
+
 
 class Precision(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     name = "Precision"
     greater_is_better = True
     _sklearn_metric = "precision_score"
+
+    def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
+        if model.is_binary_classification:
+            return (y_pred == model.meta.classification_labels[1]).sum()
+
+        return len(y_true)
 
 
 class Recall(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
@@ -79,45 +110,51 @@ class Recall(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     greater_is_better = True
     _sklearn_metric = "recall_score"
 
+    def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
+        if model.is_binary_classification:
+            return (y_true == model.meta.classification_labels[1]).sum()
+
+        return len(y_true)
+
 
 class AUC(PerformanceMetric):
     name = "ROC AUC"
     greater_is_better = True
 
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
         y_true = dataset.df[dataset.target]
         if model.is_binary_classification:
             y_score = model.predict(dataset).raw[:, 1]
         else:
             y_score = model.predict(dataset).all_predictions
 
-        return sklearn.metrics.roc_auc_score(
-            y_true,
-            y_score,
-            multi_class="ovo",
-            labels=model.meta.classification_labels,
+        value = sklearn.metrics.roc_auc_score(
+            y_true, y_score, multi_class="ovo", labels=model.meta.classification_labels
         )
+
+        return MetricResult(self, value, len(y_true))
 
 
 class RegressionPerformanceMetric(PerformanceMetric):
-    def __call__(self, model: BaseModel, dataset: Dataset) -> float:
+    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
         if not model.is_regression:
             raise ValueError(f"Metric '{self.name}' is only defined for regression models.")
 
         y_true = dataset.df[dataset.target]
         y_pred = model.predict(dataset).prediction
 
-        return self._calculate_metric(y_true, y_pred, model)
+        value = self._calculate_metric(y_true, y_pred, model)
+        return MetricResult(self, value, len(y_true))
 
     @abstractmethod
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel) -> float:
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> float:
         ...
 
 
 class SklearnRegressionScoreMixin:
     _sklearn_metric: str
 
-    def _calculate_metric(self, y_true, y_pred, model: BaseModel):
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         metric_fn = getattr(sklearn.metrics, self._sklearn_metric)
         return metric_fn(y_true, y_pred)
 

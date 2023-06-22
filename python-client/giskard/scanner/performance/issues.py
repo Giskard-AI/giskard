@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import lru_cache
+from typing import Optional
 
 from .metrics import PerformanceMetric
 from ..common.examples import ExampleExtractor
@@ -19,6 +20,7 @@ class PerformanceIssueInfo:
     slice_fn: SlicingFunction
     slice_size: int
     threshold: float
+    p_value: Optional[float] = None
 
     @property
     def metric_rel_delta(self):
