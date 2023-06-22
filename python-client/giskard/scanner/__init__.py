@@ -12,6 +12,7 @@ _default_detectors = [
     ".stochasticity.stochasticity_detector",
     ".calibration.overconfidence_detector",
     ".calibration.underconfidence_detector",
+    ".correlation.spurious_correlation_detector",
     ".llm.toxicity_detector",
     ".llm.gender_bias_detector",
     ".llm.unethical_bias_detector",
