@@ -92,8 +92,8 @@ class MinorityBiasDetector:
                 }
             )
 
-        info = LLMExamplesInfo(examples)
-        issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
+            info = LLMExamplesInfo(examples)
+            issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
         return issues
 
