@@ -67,10 +67,13 @@ def _compare_prediction(results_df, prediction_task, direction, output_sensitivi
         elif prediction_task == SupportedModelTypes.TEXT_GENERATION:
             try:
                 import evaluate
+                scorer = evaluate.load("bertscore")
             except ImportError as err:
                 raise LLMImportError() from err
+            except FileNotFoundError as err:
+                raise LLMImportError("Your version of evaluate does not support 'bertscore'. "
+                                     "Please use 'pip install -U evaluate' to upgrade it") from err
 
-            scorer = evaluate.load("bertscore")
             score = scorer.compute(
                 predictions=results_df["perturbed_prediction"].values,
                 references=results_df["prediction"].values,
