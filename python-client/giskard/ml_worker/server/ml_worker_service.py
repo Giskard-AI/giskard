@@ -335,7 +335,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
-        n_samples = 500 if request.n_samples <= 0 else request.n_samples
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
@@ -346,11 +345,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.meta.feature_names:
             input_df = input_df[model.meta.feature_names]
-        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
-        map_features_weight = dict(
-            zip(model.meta.classification_labels, list_weights)) if model.is_classification else {
-            'WEIGHTS': list_weights
-        }
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
+        map_features_weight = (
+            dict(zip(model.meta.classification_labels, list_weights))
+            if model.is_classification
+            else {"WEIGHTS": list_weights}
+        )
         return ml_worker_pb2.ExplainTextResponse(
             weights={
                 str(k): ml_worker_pb2.ExplainTextResponse.WeightsPerFeature(

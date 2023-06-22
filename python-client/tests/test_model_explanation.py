@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from giskard.models.base import BaseModel
 from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 
 
@@ -57,6 +57,6 @@ def test_explain_text(enron_test_data, enron_model):
     df = enron_test_data.df.dropna()
     sample = df.head(1)
     result = explain_text(
-        model=enron_model, input_df=sample, text_column="Content", text_document=sample["Content"].iloc[0], n_samples=10
+        model=enron_model, input_df=sample, text_column="Content", text_document=sample["Content"].iloc[0]
     )
     assert result

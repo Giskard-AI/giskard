@@ -26,7 +26,6 @@ public class ApplicationProperties {
     private int maxInboundMLWorkerMessageMB = 1024;
     private Double borderLineThreshold;
     private Double regressionThreshold;
-    private int limeNumberSamples;
     private Path home;
     private int externalWorkerHeartbeatIntervalSeconds;
     private String auth;

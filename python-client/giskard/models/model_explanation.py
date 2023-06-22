@@ -61,7 +61,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 
 
 @timer()
-def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str, n_samples: int):
+def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str):
     try:
         text_explainer = shap.Explainer(
             text_explanation_prediction_wrapper(model.predict_df, input_df, text_column),
@@ -70,9 +70,11 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
 
         shap_values = text_explainer(pd.Series([text_document]))
 
-        return (shap_values[0].data, [shap_values[0].values[:, i] for i in
-                                      range(shap_values[0].values.shape[1])]) if model.is_classification else (
-            shap_values[0].data, shap_values[0].values)
+        return (
+            (shap_values[0].data, [shap_values[0].values[:, i] for i in range(shap_values[0].values.shape[1])])
+            if model.is_classification
+            else (shap_values[0].data, shap_values[0].values)
+        )
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
