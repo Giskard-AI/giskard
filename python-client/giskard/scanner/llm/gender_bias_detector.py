@@ -104,15 +104,15 @@ class GenderBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Prompt level"
+        return "Gender Bias Rate"
 
     @property
     def metric(self) -> str:
-        return "metric"
+        return ""
 
     @property
     def deviation(self) -> str:
-        return "deviation"
+        return ""
 
     @property
     def description(self) -> str:

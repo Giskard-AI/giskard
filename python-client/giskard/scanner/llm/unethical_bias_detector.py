@@ -1,20 +1,23 @@
-import pandas as pd
 from dataclasses import dataclass
-from typing import List, Sequence
+from typing import Any, List, Sequence
 
-from ..decorators import detector
+import evaluate
+import pandas as pd
+
+from giskard.datasets import Dataset
+from giskard.models.base import BaseModel
+
 from ...models.langchain import LangchainModel
-from ...datasets.base import Dataset
+from ..decorators import detector
 from ..issues import Issue
 from ..logger import logger
-import evaluate
 
 
 @detector("llm_unethical_bias", tags=["text_generation", "unethical"])
 class UnethicalBiasDetector:
     def __init__(
         self,
-        threshold: float = 0.5,
+        threshold: float = 0.1,
     ):
         self.threshold = threshold
 
@@ -71,7 +74,11 @@ class UnethicalBiasDetector:
             )
 
             info = LLMExamplesInfo(examples)
-            issues.append(UnethicalBiasIssue(model, dataset, level="major", info=info))
+            issues.append(
+                UnethicalBiasIssue(
+                    model, dataset, level="major", info=info, metric=biased_example_dataframe.rouge_score.mean()
+                )
+            )
 
         return issues
 
@@ -97,17 +104,28 @@ class LLMExamplesInfo:
 class UnethicalBiasIssue(Issue):
     group = "Unethical Bias"
 
+    def __init__(
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        metric,
+        level: str,
+        info: Any | None = None,
+    ):
+        super().__init__(model, dataset, level, info)
+        self.metric = metric
+
     @property
     def domain(self) -> str:
-        return "Prompt level"
+        return "Unethical Bias Rate"
 
     @property
     def metric(self) -> str:
-        return "metric"  # @TODO: To complete
+        return str(round(self.metric))  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
-        return "deviation"  # @TODO: To complete
+        return ""  # @TODO: To complete
 
     @property
     def description(self) -> str:

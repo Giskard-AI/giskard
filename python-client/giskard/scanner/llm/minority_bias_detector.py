@@ -116,15 +116,15 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Prompt level"
+        return "Minority Bias Rate"
 
     @property
     def metric(self) -> str:
-        return "metric"  # @TODO: To complete
+        return ""  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
-        return "deviation"  # @TODO: To complete
+        return ""  # @TODO: To complete
 
     @property
     def description(self) -> str:
