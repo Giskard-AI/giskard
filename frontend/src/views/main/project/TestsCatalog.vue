@@ -92,7 +92,8 @@
                                         :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
                 <div class='d-flex'>
                   <v-spacer></v-spacer>
-                  <v-btn class='primaryLightBtn' color='primaryLight' small width='100' @click='runTest'>
+                  <v-btn :loading='testRunning' class='primaryLightBtn' color='primaryLight' small width='100'
+                         @click='runTest'>
                     Run
                   </v-btn>
                 </div>
@@ -146,17 +147,18 @@ import { alphabeticallySorted } from '@/utils/comparators';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
 
-let props = defineProps<{
+const props = defineProps<{
   projectId: number,
   suiteId?: number
 }>();
 
 
 const searchFilter = ref<string>('');
-let { testFunctions } = storeToRefs(useCatalogStore());
-let selected = ref<TestFunctionDTO | null>(null);
-let testArguments = ref<{ [name: string]: FunctionInputDTO }>({});
-let testResult = ref<TestTemplateExecutionResultDTO | null>(null);
+const { testFunctions } = storeToRefs(useCatalogStore());
+const selected = ref<TestFunctionDTO | null>(null);
+const testArguments = ref<{ [name: string]: FunctionInputDTO }>({});
+const testRunning = ref<boolean>(false);
+const testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
 
@@ -203,12 +205,18 @@ const selectedTestUsage = computed(() => {
 
 async function runTest() {
   testResult.value = null;
-  mixpanel.track('Run test from Catalog', {
-    testName: selected.value!.name,
-    inputs: anonymize(Object.values(testArguments.value))
-  });
+  testRunning.value = true;
 
-  testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
+  try {
+    mixpanel.track('Run test from Catalog', {
+      testName: selected.value!.name,
+      inputs: anonymize(Object.values(testArguments.value))
+    });
+
+    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
+  } finally {
+    testRunning.value = false;
+  }
 }
 
 
