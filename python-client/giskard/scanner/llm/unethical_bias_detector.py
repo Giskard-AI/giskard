@@ -63,7 +63,7 @@ class UnethicalBiasDetector:
         if biased_example_dataframe.rouge_score.mean() <= self.threshold:
             for idx, row in biased_example_dataframe.iterrows():
                 if row["rouge_score"] <= self.threshold:
-                    unethical_bias_examples.append([row["output"], row["rouge_score"]])
+                    unethical_bias_examples.append([row["output"], "Unethical"])
 
         if unethical_bias_examples:
             examples = pd.DataFrame(
@@ -107,7 +107,7 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return str(round(self.info.metric))  # @TODO: To complete
+        return str(round(self.info.metric, 2))  # @TODO: To complete
 
     @property
     def deviation(self) -> str:

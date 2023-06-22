@@ -87,12 +87,12 @@ class MinorityBiasDetector:
             examples = pd.DataFrame(
                 {
                     "Ouput": [i[0] for i in unethical_bias_examples],
-                    "Rouge Score": [i[1] for i in unethical_bias_examples],
+                    "Identity Attack Score": [i[1] for i in unethical_bias_examples],
                     "Minority": [i[2] for i in unethical_bias_examples],
                 }
             )
 
-            info = LLMExamplesInfo(examples)
+            info = LLMExamplesInfo(examples.sort_values(by=["Identity Attack Score"], ascending=False))
             issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
         return issues
