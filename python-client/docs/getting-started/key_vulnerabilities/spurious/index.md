@@ -8,13 +8,11 @@ Several factors can contribute to the occurrence of performance bias in machine 
 
 1. **Confounding Variables**: Spurious correlations may arise when there are confounding variables that influence both the predicted variable and the feature being considered. These variables can create an illusion of correlation between the feature and the prediction, even though they are not causally related to each other. It is important to carefully examine and account for confounding variables to avoid mistaking their effects for genuine correlations.
 
-2. **Noise**: Spurious correlations can occur due to data noise or anomalies that are unrelated to the underlying problem. This noise may result from errors in data collection, measurement biases, data preprocessing issues, or other data-specific factors. If the model learns to exploit these anomalies, it can mistakenly identify them as meaningful correlations.
+2. **Data Noise**: Spurious correlations can occur due to data noise or anomalies that are unrelated to the underlying problem. This noise may result from errors in data collection, measurement biases, data preprocessing issues, or other data-specific factors. If the model learns to exploit these anomalies, it can mistakenly identify them as meaningful correlations.
 
-3. **Sampling Bias**: If the training data is not representative of the target population or the real-world distribution, the model's performance can be biased. Sampling bias can occur when certain groups or segments are over- or underrepresented in the training data, leading to poor performance on the underrepresented groups.
+3. **Random Chance**: In some cases, spurious correlations can occur purely by chance. When working with large datasets or a large number of features, the likelihood of finding coincidental correlations increases. These correlations are not meaningful but are simply random occurrences that can mislead model predictions. This can happen with time-series data, where spurious correlations can emerge due to the presence of similar trends or seasonality.
 
-4. **Random Chance**: In some cases, spurious correlations can occur purely by chance. When working with large datasets or a large number of features, the likelihood of finding coincidental correlations increases. These correlations are not meaningful but are simply random occurrences that can mislead model predictions. This can happen with time-series data, where spurious correlations can emerge due to the presence of similar trends or seasonality.
-
-5. **Feature overfitting**: If the model has a large number of features relative to the available data, it may overfit the training examples. Overfitting occurs when the model learns specific patterns and noise present in the training data, including spurious correlations. As a result, the model fails to generalize well to new, unseen data, leading to unreliable predictions.
+4. **Feature Overfitting**: If the model has a large number of features relative to the available data, it may overfit the training examples. Overfitting occurs when the model learns specific patterns and noise present in the training data, including spurious correlations. As a result, the model fails to generalize well to new, unseen data, leading to unreliable predictions.
 
 ## Addressing Spurious correlation
 
