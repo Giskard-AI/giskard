@@ -228,7 +228,7 @@ class Suite:
             try:
                 test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result))
+                res.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
