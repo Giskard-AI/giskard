@@ -1,14 +1,15 @@
-import pandas as pd
 from dataclasses import dataclass
 from typing import List, Sequence
 
-from ..decorators import detector
-from ...models.langchain import LangchainModel
-from ...datasets.base import Dataset
-from ..issues import Issue
-from ..logger import logger
+import pandas as pd
 from detoxify import Detoxify
 from pandas import DataFrame
+
+from ...datasets.base import Dataset
+from ...models.langchain import LangchainModel
+from ..decorators import detector
+from ..issues import Issue
+from ..logger import logger
 
 
 @detector("llm_minority_bias", tags=["text_generation", "minority"])
