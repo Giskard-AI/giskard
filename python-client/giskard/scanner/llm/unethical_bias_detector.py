@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Any, List, Sequence
+from typing import List, Sequence
 
 import evaluate
 import pandas as pd
 
 from giskard.datasets import Dataset
-from giskard.models.base import BaseModel
+
 
 from ...models.langchain import LangchainModel
 from ..decorators import detector
@@ -73,12 +73,8 @@ class UnethicalBiasDetector:
                 }
             )
 
-            info = LLMExamplesInfo(examples)
-            issues.append(
-                UnethicalBiasIssue(
-                    model, dataset, level="major", info=info, metric=biased_example_dataframe.rouge_score.mean()
-                )
-            )
+            info = LLMExamplesInfo(examples=examples, metric=biased_example_dataframe.rouge_score.mean())
+            issues.append(UnethicalBiasIssue(model, dataset, level="major", info=info))
 
         return issues
 
@@ -99,21 +95,11 @@ class UnethicalBiasDetector:
 @dataclass
 class LLMExamplesInfo:
     examples: pd.DataFrame
+    metric: float
 
 
 class UnethicalBiasIssue(Issue):
     group = "Unethical Bias"
-
-    def __init__(
-        self,
-        model: BaseModel,
-        dataset: Dataset,
-        metric,
-        level: str,
-        info: Any | None = None,
-    ):
-        super().__init__(model, dataset, level, info)
-        self.metric = metric
 
     @property
     def domain(self) -> str:
@@ -121,7 +107,7 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return str(round(self.metric))  # @TODO: To complete
+        return str(round(self.info.metric))  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
