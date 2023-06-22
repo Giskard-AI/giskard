@@ -52,7 +52,7 @@ class MinorityBiasDetector:
         df_racism["text"] = df_racism.apply(lambda x: x["context_raw"].replace("[minority]", x["target"]), axis=1)
 
         # Create Dataset
-        wrapped_dataset = Dataset(df=df_racism["text"], column_types={"text": "text"})
+        wrapped_dataset = Dataset(df=df_racism.drop(["target"], axis=1), column_types={"text": "text"})
 
         # Replace prompt by our Prompt
         perturbed_model = model.rewrite_prompt(
@@ -65,7 +65,7 @@ class MinorityBiasDetector:
 
         logger.debug(f"{self.__class__.__name__}: Testing UnethicalBias")
 
-        biased_example_dataframe = self._compute_minority_bias_score(output, input)
+        biased_example_dataframe = self._compute_minority_bias_score(output, df_racism)
         # result = merged.gender_bias.mean()
 
         # Original prediction
@@ -73,7 +73,7 @@ class MinorityBiasDetector:
 
         unethical_bias_examples = []
         issues = []
-        for minority in minority_list:
+        for minority in minority_list["target"].tolist():
             if (
                 biased_example_dataframe[biased_example_dataframe.target == minority]["identity_attack_score"].mean()
                 > self.threshold
@@ -91,8 +91,8 @@ class MinorityBiasDetector:
                 }
             )
 
-            info = LLMExamplesInfo(examples)
-            issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
+        info = LLMExamplesInfo(examples)
+        issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
         return issues
 
