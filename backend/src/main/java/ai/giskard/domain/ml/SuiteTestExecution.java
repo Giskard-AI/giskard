@@ -9,10 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,7 +46,8 @@ public class SuiteTestExecution extends BaseEntity {
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Integer> referenceSlicesSize;
 
-    private boolean passed;
+    @Enumerated(EnumType.STRING)
+    private TestResult status;
 
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
@@ -87,7 +85,9 @@ public class SuiteTestExecution extends BaseEntity {
         this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
-        this.passed = message.getPassed();
+        this.status = message.getIsError()
+            ? TestResult.ERROR : message.getPassed()
+            ? TestResult.PASSED : TestResult.FAILED;
         this.metric = message.getMetric();
         this.actualSlicesSize = message.getActualSlicesSizeList();
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
