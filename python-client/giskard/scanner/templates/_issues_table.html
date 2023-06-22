@@ -16,6 +16,8 @@
                 {% include "_issues/stochasticity.html" %}
             {% elif issue.__class__.__name__ == 'LLMToxicityIssue' %}
                 {% include "_issues/llm_toxicity.html" %}
+            {% elif issue.__class__.__name__ == 'SpuriousCorrelationIssue' %}
+                {% include "_issues/spurious_correlation.html" %}
             {% else %}
                 {% include "_issues/default.html" %}
             {% endif %}

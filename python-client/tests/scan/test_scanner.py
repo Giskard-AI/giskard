@@ -65,7 +65,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
-    result = scanner.analyze(german_credit_model, german_credit_data)
+    result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
 
     assert isinstance(result, ScanResult)
     assert result.has_issues()
@@ -76,6 +76,16 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
     with pytest.raises(RuntimeError):
         scanner.analyze(german_credit_model, german_credit_data)
+
+
+def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
+    scanner = Scanner()
+    no_target_dataset = Dataset(titanic_dataset.df, target=None)
+    result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
+
+    assert isinstance(result, ScanResult)
+    assert result.has_issues()
+    assert result.to_html()
 
 
 def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):

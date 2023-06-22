@@ -72,7 +72,7 @@ def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
-        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and validate_ds.target is not None:
             validate_order_classifcation_labels(model, validate_ds)
 
 

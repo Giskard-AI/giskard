@@ -7,17 +7,25 @@
           <h4 v-if='!props.execution' class='text-alert'>
             No execution has been performed yet!
           </h4>
-          <h4 v-else-if='props.execution.result === TestResult.ERROR' class='text-alert d-flex flex-wrap'>
-            An error occurred during the execution. Executed <strong class='ml-2'>{{
+          <h4 v-else-if='props.execution.result === TestResult.ERROR' class='text-alert'>
+            An error occurred during the execution. Executed <strong>{{
               timeSince(execution.executionDate)
             }}</strong>
           </h4>
           <h4 v-else class='text-alert'>Test suite
             {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
-            <span v-if='successRatio.failed > 0'>{{ plurialize('test', successRatio.failed) }} failed</span>
+            <span v-if='successRatio.error > 0'>{{ plurialize('test', successRatio.error) }} with error</span>
+            <span
+              v-if='successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)'>, </span>
+            <span v-if='successRatio.failed > 0'>{{
+                plurialize('test', successRatio.failed)
+              }} failed</span>
             <span v-if='successRatio.failed > 0 && successRatio.passed > 0'>, </span>
-            <span v-if='successRatio.passed > 0'>{{ plurialize('test', successRatio.passed) }} passed</span>
-            <span v-if='successRatio.failed > 0 || successRatio.passed > 0'>. </span>
+            <span v-if='successRatio.passed > 0'>{{
+                plurialize('test', successRatio.passed)
+              }} passed</span>
+            <span
+              v-if='successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0'>. </span>
             <span>Executed {{ timeSince(execution.executionDate) }}</span>
           </h4>
           <v-spacer />
@@ -83,8 +91,9 @@ const testResultStyle = computed(() => {
 });
 
 const successRatio = computed(() => ({
-  passed: executedTests.value.filter(({ result }) => result!.passed).length,
-  failed: executedTests.value.filter(({ result }) => !result!.passed).length
+  passed: executedTests.value.filter(({ result }) => result!.status === TestResult.PASSED).length,
+  failed: executedTests.value.filter(({ result }) => result!.status === TestResult.FAILED).length,
+  error: executedTests.value.filter(({ result }) => result!.status === TestResult.ERROR).length
 }));
 
 const executedTests = computed(() => !props.execution || props.execution.result === TestResult.ERROR ? []
