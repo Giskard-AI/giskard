@@ -2,6 +2,7 @@
 import itertools
 import operator
 import re
+import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Callable, Sequence, List, Dict
@@ -9,10 +10,9 @@ from typing import Callable, Sequence, List, Dict
 import numpy as np
 import pandas as pd
 
-from ..utils.display import format_number
-from giskard.ml_worker.generated.ml_worker_pb2  import DatasetProcessFunctionMeta, DatasetProcessFunctionType
-from ..ml_worker.testing.registry.registry import get_object_uuid
+from giskard.ml_worker.generated.ml_worker_pb2 import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..utils.display import format_number
 
 
 def escape(value) -> str:
@@ -292,10 +292,10 @@ class QueryBasedSliceFunction(SlicingFunction):
         super().__init__(None, row_level=False, cell_level=False)
         self.query = query
         self.meta = DatasetProcessFunctionMeta(type="SLICE", process_type=DatasetProcessFunctionType.CLAUSES)
-        self.meta.uuid = get_object_uuid(query)
         self.meta.clauses = self.query.to_clauses()
         self.meta.code = ""
         self.meta.name = str(self)
+        self.meta.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, self.meta.name))
         # self.meta.display_name = str(self)
         # self.meta.tags = ["pickle", "scan"]
         self.meta.doc = "Automatically generated slicing function"
