@@ -22,7 +22,9 @@ class ExampleExtractor:
         examples = dataset.df.copy()
 
         # Keep only interesting columns
-        cols_to_show = issue.features + [issue.dataset.target]
+        cols_to_show = issue.features
+        if issue.dataset.target is not None:
+            cols_to_show += [issue.dataset.target]
         examples = examples.loc[:, cols_to_show]
 
         # If metadata slice, add the metadata column
@@ -54,7 +56,10 @@ class ExampleExtractor:
             else:
                 pred_examples = model_pred.prediction
 
-            examples[f"Predicted `{issue.dataset.target}`"] = pred_examples
+            predicted_label = "Predicted"
+            if issue.dataset.target is not None:
+                predicted_label += f" `{issue.dataset.target}`"
+            examples[predicted_label] = pred_examples
 
         n = min(len(examples), n)
         if n > 0:

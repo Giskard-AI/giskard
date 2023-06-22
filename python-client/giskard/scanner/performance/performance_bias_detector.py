@@ -1,3 +1,4 @@
+import scipy
 import numpy as np
 import pandas as pd
 from sklearn import metrics
@@ -16,18 +17,42 @@ from ..logger import logger
 from ...client.python_utils import warning
 
 
-@detector(name="performance_bias", tags=["performance_bias", "classification", "regression"])
+@detector(name="performance_bias", tags=["performance_bias", "performance", "classification", "regression"])
 class PerformanceBiasDetector(LossBasedDetector):
     def __init__(
         self,
         metrics: Optional[Sequence] = None,
         loss: Union[Optional[str], Callable[[BaseModel, Dataset], np.ndarray]] = None,
         threshold: float = 0.05,
+        alpha: Optional[float] = None,
         method: str = "tree",
     ):
+        """Performance bias detector.
+
+        Parameters
+        ----------
+        metrics : Sequence, optional
+            List of metrics to use for the bias detection. If not provided, the default metrics for the model type
+            will be used. Available metrics are: `accuracy`, `balanced_accuracy`, `auc`, `f1`, `precision`, `recall`,
+            `mse`, `mae`.
+        loss : str or callable, optional
+            Loss function to use for the slice search. If not provided, will use `log_loss` for classification models
+            and `mse` for regression models.
+        threshold : float, optional
+            Threshold for the deviation of metrics between slices and the overall dataset. If the deviation is larger
+            than the threshold, an issue will be reported.
+        alpha : float, optional
+            Experimental: false discovery rate for issue detection. If a value is provided, false discovery rate will be
+            controlled with a Benjamini–Hochberg procedure, and only statistically significant issues will be reported.
+            This is disabled by default because only a subset of metrics are currently supported.
+        method : str, optional
+            The slicing method used to find the data slices. Available methods are: `tree`, `bruteforce`, `optimal`,
+            `multiscale`. Default is `tree`.
+        """
         self.metrics = metrics
         self.threshold = threshold
         self.method = method
+        self.alpha = alpha
         self.loss = loss
 
     @property
@@ -73,15 +98,11 @@ class PerformanceBiasDetector(LossBasedDetector):
         return pd.DataFrame({"__gsk__loss": loss_values}, index=dataset.df.index)
 
     def _find_issues(
-        self,
-        slices: Sequence[SlicingFunction],
-        model: BaseModel,
-        dataset: Dataset,
-        meta: pd.DataFrame,
+        self, slices: Sequence[SlicingFunction], model: BaseModel, dataset: Dataset, meta: pd.DataFrame
     ) -> Sequence[PerformanceIssue]:
         # Use a precooked model to speed up the tests
         precooked = PrecookedModel.from_model(model, dataset)
-        detector = IssueFinder(self.metrics, self.threshold)
+        detector = IssueFinder(self.metrics, self.threshold, self.alpha)
         issues = detector.detect(precooked, dataset, slices)
 
         # Restore the original model
@@ -92,9 +113,10 @@ class PerformanceBiasDetector(LossBasedDetector):
 
 
 class IssueFinder:
-    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.1):
+    def __init__(self, metrics: Optional[Sequence] = None, threshold: float = 0.1, alpha: Optional[float] = 0.10):
         self.metrics = metrics
         self.threshold = threshold
+        self.alpha = alpha
 
     def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
         logger.info(f"PerformanceBiasDetector: Testing {len(slices)} slices for performance issues.")
@@ -104,9 +126,21 @@ class IssueFinder:
         metrics = [get_metric(m) for m in metrics]
 
         issues = []
+        p_values = []
 
         for metric in metrics:
-            issues.extend(self._detect_for_metric(model, dataset, slices, metric))
+            issues_, p_values_ = self._detect_for_metric(model, dataset, slices, metric)
+            issues.extend(issues_)
+            p_values.extend(p_values_)
+
+        # EXPERIMENTAL: Benjamini–Hochberg procedure to control false detection rate.
+        if self.alpha is not None:
+            p_values = np.array(p_values)
+            p_values_rank = p_values.argsort() + 1
+            p_value_threshold = p_values[p_values <= p_values_rank / len(p_values) * self.alpha].max()
+            logger.info(f"PerformanceBiasDetector: Benjamini–Hocheberg p-value threshold is {p_value_threshold:.3e}")
+            issues = [issue for issue in issues if issue.info.p_value <= p_value_threshold]
+            logger.info(f"PerformanceBiasDetector: Kept {len(issues)} significant issues out of {len(p_values)}.")
 
         # Group issues by slice and keep only the most critical
         issues_by_slice = defaultdict(list)
@@ -119,24 +153,49 @@ class IssueFinder:
 
     def _get_default_metrics(self, model: BaseModel, dataset: Dataset):
         if model.is_classification:
-            metrics = ["f1", "precision", "recall"]
+            metrics = ["precision", "recall"]
             metrics.append("balanced_accuracy" if _is_unbalanced_target(dataset.df[dataset.target]) else "accuracy")
             return metrics
 
         return ["mse", "mae"]
 
     def _detect_for_metric(
-        self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction], metric: PerformanceMetric
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        slices: Sequence[SlicingFunction],
+        metric: PerformanceMetric,
     ):
         # Calculate the metric on the reference dataset
-        ref_metric_val = metric(model, dataset)
+        ref_metric = metric(model, dataset)
 
         # Now we calculate the metric on each slice and compare it to the reference
         issues = []
+        p_values = []
+        compute_pvalue = self.alpha is not None
         for slice_fn in slices:
-            sliced_dataset = dataset.slice(slice_fn)
-            metric_val = metric(model, sliced_dataset)
-            relative_delta = (metric_val - ref_metric_val) / ref_metric_val
+            sliced_dataset, slice_metric, p_value = _calculate_slice_metrics(
+                model, dataset, metric, slice_fn, with_pvalue=compute_pvalue
+            )
+
+            # If we do not have enough samples, skip the slice
+            if not compute_pvalue and slice_metric.affected_samples < 20:
+                logger.info(
+                    f"PerformanceBiasDetector: Skipping slice {slice_fn} because metric was estimated on < 20 samples."
+                )
+                continue
+
+            # If the p-value could not be estimated, skip the slice
+            if compute_pvalue and p_value is not None and np.isnan(p_value):
+                logger.info(
+                    f"PerformanceBiasDetector: Skipping slice {slice_fn} since the p-value could not be estimated."
+                )
+                continue
+
+            p_values.append(p_value)
+
+            # Calculate the relative delta
+            relative_delta = (slice_metric.value - ref_metric.value) / ref_metric.value
 
             if metric.greater_is_better:
                 is_issue = relative_delta < -self.threshold
@@ -144,7 +203,9 @@ class IssueFinder:
                 is_issue = relative_delta > self.threshold
 
             logger.info(
-                f"PerformanceBiasDetector: Testing slice {slice_fn}\t{metric.name} = {metric_val:.3f} (global {ref_metric_val:.3f}) Δm = {relative_delta:.3f}\tis_issue = {is_issue}"
+                f"PerformanceBiasDetector: Testing slice {slice_fn}\t{metric.name} = {slice_metric.value:.3f} "
+                f"(global {ref_metric.value:.3f}) Δm = {relative_delta:.3f}"
+                f"\tis_issue = {is_issue}"
             )
 
             if is_issue:
@@ -153,23 +214,52 @@ class IssueFinder:
                 issue_info = PerformanceIssueInfo(
                     slice_fn=slice_fn,
                     metric=metric,
-                    metric_value_slice=metric_val,
-                    metric_value_reference=ref_metric_val,
+                    metric_value_slice=slice_metric.value,
+                    metric_value_reference=ref_metric.value,
                     slice_size=len(sliced_dataset),
                     threshold=self.threshold,
+                    p_value=p_value,
                 )
 
-                issues.append(
-                    PerformanceIssue(
-                        model,
-                        dataset,
-                        level=level,
-                        info=issue_info,
-                    )
-                )
+                issues.append(PerformanceIssue(model, dataset, level=level, info=issue_info))
 
-        return issues
+        return issues, p_values
 
 
 def _is_unbalanced_target(classes: pd.Series):
     return (classes.value_counts() / classes.count()).std() > 0.2
+
+
+def _calculate_slice_metrics(model, dataset, metric, slice_fn, with_pvalue=False):
+    sliced_dataset = dataset.slice(slice_fn)
+    slice_metric = metric(model, sliced_dataset)
+
+    if not with_pvalue:
+        return sliced_dataset, slice_metric, None
+
+    # Perform statistical tests
+    complementary_dataset = dataset.slice(lambda df: df[~df.index.isin(sliced_dataset.df.index)], row_level=False)
+    comp_metric = metric(model, complementary_dataset)
+
+    try:
+        # If we have raw values for the metric, we perform a standard t-test
+        if slice_metric.raw_values is not None:
+            alternative = "less" if metric.greater_is_better else "greater"
+            _, pvalue = scipy.stats.ttest_ind(
+                slice_metric.raw_values, comp_metric.raw_values, equal_var=False, alternative=alternative
+            )
+        else:
+            # otherwise, this must be classification scores, so we perform a G-test
+            slice_x_cnt = round(slice_metric.value * slice_metric.affected_samples)
+            slice_y_cnt = slice_metric.affected_samples - slice_x_cnt
+
+            comp_x_cnt = round(comp_metric.value * comp_metric.affected_samples)
+            comp_y_cnt = comp_metric.affected_samples - comp_x_cnt
+
+            ctable = [[slice_x_cnt, slice_y_cnt], [comp_x_cnt, comp_y_cnt]]
+
+            pvalue = scipy.stats.chi2_contingency(ctable, lambda_="log-likelihood")[1]
+    except ValueError:
+        pvalue = np.nan
+
+    return sliced_dataset, slice_metric, pvalue

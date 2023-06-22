@@ -587,6 +587,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
     elif isinstance(result, TestResult):
         return ml_worker_pb2.SingleTestResult(
             passed=bool(result.passed),
+            is_error=result.is_error,
             messages=[
                 ml_worker_pb2.TestMessage(
                     type=ml_worker_pb2.TestMessageType.ERROR
