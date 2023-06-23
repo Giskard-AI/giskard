@@ -78,30 +78,38 @@
                                  'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
                                  'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
                              }"
-                                    @change="onValuePerturbation(c)"
-                                    required
-                            >
-                                <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
-                            </select>
-                            <div class="d-flex flex-column">
-                                <FeedbackPopover
-                                        v-if="!isMiniMode"
-                                        :inputLabel="c.name"
-                                        :inputValue="inputData[c.name]"
-                                        :originalValue="originalData[c.name]"
-                                        :inputType="c.type"
-                                        @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
-                                />
-                                <TransformationPopover
-                                        v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
-                                        :column="c.name" :column-type="c.type"/>
-                            </div>
-                        </div>
-                        <div class="py-1 d-flex" v-else>
-                            <label class="info--text">{{ c.name }}</label>
-                            <span>{{ inputData[c.name] }}</span>
-                        </div>
-                    </ValidationProvider>
+                              @change="onValuePerturbation(c)"
+                              required
+                      >
+                        <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
+                      </select>
+                      <div class="d-flex flex-column">
+                        <FeedbackPopover
+                            v-if="!isMiniMode"
+                            :inputLabel="c.name"
+                            :inputValue="inputData[c.name]"
+                            :originalValue="originalData[c.name]"
+                            :inputType="c.type"
+                            @submit="$emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', arguments[0])"
+                        />
+                        <TransformationPopover
+                            v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
+                            :column="c.name" :column-type="c.type"/>
+                        <PushPopover
+                            type="contribution"
+                            :column="c.name"
+                        />
+                        <PushPopover
+                            type="perturbation"
+                            :column="c.name"
+                        />
+                      </div>
+                    </div>
+                    <div class="py-1 d-flex" v-else>
+                      <label class="info--text">{{ c.name }}</label>
+                      <span>{{ inputData[c.name] }}</span>
+                    </div>
+                  </ValidationProvider>
                 </div>
               </v-form>
             </v-card-text>
@@ -196,12 +204,14 @@ import {anonymize} from "@/utils";
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
+import PushPopover from "@/components/PushPopover.vue";
 
 @Component({
-    components: {
-        TransformationPopover,
-        OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
-    }
+  components: {
+    PushPopover,
+    TransformationPopover,
+    OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
+  }
 })
 export default class Inspector extends Vue {
     @Prop({required: true}) model!: ModelDTO

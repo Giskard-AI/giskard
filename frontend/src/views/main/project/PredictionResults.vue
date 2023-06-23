@@ -1,6 +1,9 @@
 <template>
   <v-card class="mb-4" id="resultCard" outlined>
-    <v-card-title>Result</v-card-title>
+    <v-card-title>Result
+      <PushPopover type="overconfidence"/>
+      <PushPopover type="borderline"/>
+    </v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
       <LoadingFullscreen v-show="loading" name="result" class="pb-6" />
       <v-row v-if="prediction && isClassification(predictionTask) && !loading">
@@ -102,7 +105,8 @@ import { ModelDTO, ModelType } from "@/generated-sources";
 import { isClassification } from "@/ml-utils";
 import { abbreviateMiddle, maxLengthDisplayedCategory } from "@/results-utils";
 import * as _ from "lodash";
-import { CanceledError } from "axios";
+import {CanceledError} from "axios";
+import PushPopover from "@/components/PushPopover.vue";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 Vue.component("v-chart", ECharts);

@@ -24,6 +24,7 @@ service MLWorker {
   rpc stopWorker(google.protobuf.Empty) returns (google.protobuf.Empty) {}
   rpc getCatalog(google.protobuf.Empty) returns (CatalogResponse) {}
   rpc generateQueryBasedSlicingFunction(GenerateQueryBasedSliceRequest) returns (GenerateQueryBasedSliceResponse) {}
+  rpc suggestFilter(SuggestFilterRequest) returns (SuggestFilterResponse) {}
 }
 
 message MLWorkerInfoRequest{
@@ -392,4 +393,63 @@ message GenerateQueryBasedSliceRequest{
 
 message GenerateQueryBasedSliceResponse{
   string id = 1;
+}
+
+enum PushKind {
+  Invalid = 0;
+  Perturbation = 1;
+  Contribution = 2;
+  Overconfidence = 3;
+  Borderline = 4;
+}
+
+enum CallToActionKind {
+  None = 0;
+  CreateSlice = 1;
+  CreateTest = 2;
+  CreatePerturbation = 3;
+  SavePerturbation = 4;
+  CreateRobustnessTest = 5;
+  CreateSliceOpenDebugger = 6;
+  OpenDebuggerBorderline = 7;
+  AddTestToCatalog = 8;
+  SaveExample = 9;
+  OpenDebuggerOverconfidence = 10;
+}
+
+message SuggestFilterRequest {
+  ArtifactRef model = 1;
+  ArtifactRef dataset = 2;
+  uint64 rowidx = 3;
+  CallToActionKind cta_kind = 4;
+  PushKind push_kind = 5;
+  string project_key = 6;
+}
+
+message PushUploadRequest {
+  uint32 push_index = 1;
+  uint32 push_detail_index = 2;
+}
+
+message Push {
+  PushKind kind = 1;
+  string key = 2;
+  string value = 3;
+  string push_title = 4;
+  string perturbation_value = 5;
+  repeated PushDetails push_details = 6;
+}
+
+message PushDetails {
+  string action = 1;
+  string explanation = 2;
+  string button = 3;
+  CallToActionKind cta = 4;
+}
+
+message SuggestFilterResponse {
+  optional Push perturbation = 1;
+  optional Push contribution = 2;
+  optional Push overconfidence = 3;
+  optional Push borderline = 4;
 }

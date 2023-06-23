@@ -13,6 +13,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.jobs.JobState' : 'JobState',
     'ai.giskard.jobs.JobType' : 'JobType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
+    'ai.giskard.web.dto.ApplyPushDTO' : 'ApplyPushDTO',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
@@ -72,6 +73,8 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
+    'ai.giskard.web.dto.PushDetailsDTO' : 'PushDetailsDTO',
+    'ai.giskard.web.dto.PushDTO' : 'PushDTO',
     'ai.giskard.web.dto.RequiredInputDTO' : 'RequiredInputDTO',
     'ai.giskard.web.dto.RowFilterDTO' : 'RowFilterDTO',
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
@@ -109,6 +112,7 @@ export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/jobs/job-state';
 export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/service/ee/feature-flag';
+export * from './ai/giskard/web/dto/apply-push-dto';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/comparison-clause-dto';
@@ -164,6 +168,8 @@ export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/prepare-import-project-dto';
+export * from './ai/giskard/web/dto/push-details-dto';
+export * from './ai/giskard/web/dto/push-dto';
 export * from './ai/giskard/web/dto/required-input-dto';
 export * from './ai/giskard/web/dto/row-filter-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';

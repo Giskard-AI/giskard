@@ -141,7 +141,8 @@ import { storeToRefs } from "pinia";
 import { useInspectionStore } from "@/stores/inspection";
 import { $vfm } from "vue-final-modal";
 import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
-import { confirm } from "@/utils/confirmation.utils";
+import {confirm} from "@/utils/confirmation.utils";
+import {usePushStore} from "@/stores/push";
 
 interface CreatedFeedbackCommonDTO {
   targetFeature?: string | null;
@@ -239,6 +240,11 @@ function next() {
     debouncedUpdateRow();
   }
 }
+
+watch(() => rowNb.value, async (newValue, oldValue) => {
+  const pushStore = usePushStore();
+  await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, newValue);
+});
 
 async function submitGeneralFeedback() {
   const newFeedback: CreateFeedbackDTO = {
