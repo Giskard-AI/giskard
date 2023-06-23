@@ -5,7 +5,7 @@
       <span class='test-name'>Test {{ test_name }}</span>
       <div class='spacer'></div>
       {% if result.metric is not none %}
-      <span class='metric'>Measured <b>Metric = {{result.metric|round(5)}}</b></span>
+      <span class='metric'>Measured <strong>Metric = {{result.metric|round(5)}}</strong></span>
       {% endif %}
       <span class='test-result'>
       {% if result.passed %}
