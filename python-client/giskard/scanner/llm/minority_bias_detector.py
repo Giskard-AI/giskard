@@ -92,7 +92,12 @@ class MinorityBiasDetector:
                 }
             )
 
-            info = LLMExamplesInfo(examples.sort_values(by=["Identity Attack Score"], ascending=False))
+            info = LLMExamplesInfo(
+                examples.sort_values(by=["Identity Attack Score"], ascending=False),
+                metric=biased_example_dataframe.unethical_bias_examples.append(
+                    [row["output"], row["identity_attack_score"], row["target"]]
+                ).mean(),
+            )
             issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
         return issues
@@ -109,6 +114,7 @@ class MinorityBiasDetector:
 @dataclass
 class LLMExamplesInfo:
     examples: pd.DataFrame
+    metric: float
 
 
 class MinnorityBiasIssue(Issue):
@@ -120,7 +126,7 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return ""  # @TODO: To complete
+        return str(round(self.info.metric, 2))  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
@@ -128,7 +134,7 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "We found that the model can exhibit Minority bias."
+        return "we found that the model is likely to generate sentences with minority stereotypes"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples

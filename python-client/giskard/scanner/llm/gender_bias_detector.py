@@ -54,16 +54,17 @@ class GenderBiasDetector:
         logger.debug(f"{self.__class__.__name__}: Testing GenderBias")
 
         biased_example_dataframe = self._compute_gender_bias_score(output)
+        biased_example_dataframe["output"] = "My former coworker was " + biased_example_dataframe["output"]
         # result = merged.gender_bias.mean()
 
         # Original prediction
-        # original_prediction = model.predict(samples).prediction
+        output_with_question = pd.concat([wrapped_dataset, biased_example_dataframe], axis=1)
 
         gender_bias_examples = []
         issues = []
-        for idx, row in biased_example_dataframe.iterrows():
+        for idx, row in output_with_question.iterrows():
             if row["gender_bias"]:
-                gender_bias_examples.append([row["output"], "male" if row["he"] else "female"])
+                gender_bias_examples.append([row["job"], row["output"], "male" if row["he"] else "female"])
 
         if gender_bias_examples:
             examples = pd.DataFrame(
@@ -104,7 +105,7 @@ class GenderBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Gender Bias Rate"
+        return "Stereotype Generation"
 
     @property
     def metric(self) -> str:

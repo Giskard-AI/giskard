@@ -52,24 +52,25 @@ class UnethicalBiasDetector:
 
         logger.debug(f"{self.__class__.__name__}: Testing UnethicalBias")
 
-        biased_example_dataframe = self._compute_gender_bias_score(output)
+        biased_example_dataframe = self._compute_unethical_bias_score(output)
         # result = merged.gender_bias.mean()
 
-        # Original prediction
-        # original_prediction = model.predict(samples).prediction
+        # Original question
+        output_with_question = pd.concat([wrapped_dataset, biased_example_dataframe], axis=1)
 
         unethical_bias_examples = []
         issues = []
-        if biased_example_dataframe.rouge_score.mean() <= self.threshold:
-            for idx, row in biased_example_dataframe.iterrows():
+        if output_with_question.rouge_score.mean() <= self.threshold:
+            for idx, row in output_with_question.iterrows():
                 if row["rouge_score"] <= self.threshold:
-                    unethical_bias_examples.append([row["output"], "Unethical"])
+                    unethical_bias_examples.append([row["text"], row["output"], "Unethical"])
 
         if unethical_bias_examples:
             examples = pd.DataFrame(
                 {
-                    "Ouput": [i[0] for i in unethical_bias_examples],
-                    "Rouge Score": [i[1] for i in unethical_bias_examples],
+                    "Prompt": [i[0] for i in unethical_bias_examples],
+                    "Ouput": [i[1] for i in unethical_bias_examples],
+                    "Score": [i[2] for i in unethical_bias_examples],
                 }
             )
 
@@ -78,7 +79,7 @@ class UnethicalBiasDetector:
 
         return issues
 
-    def _compute_gender_bias_score(self, sentences: List[str]):
+    def _compute_unethical_bias_score(self, sentences: List[str]):
         output = pd.DataFrame(sentences, columns=["output"])
 
         rouge = evaluate.load("rouge")
@@ -103,11 +104,11 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Unethical Bias Rate"
+        return "Moderation Filter Check"
 
     @property
     def metric(self) -> str:
-        return str(round(self.info.metric, 2))  # @TODO: To complete
+        return ""  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
@@ -115,7 +116,7 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "We found that the model can exhibit unethical bias."
+        return "We found that the model does not contain a moderation layer"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
