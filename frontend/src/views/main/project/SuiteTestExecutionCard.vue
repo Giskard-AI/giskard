@@ -16,7 +16,7 @@
               </v-chip>
           </div>
       -->
-      <div class='flex-grow-1' />
+      <div class='flex-grow-1'/>
       <div v-if='result' :class='`d-flex flex-row align-center gap-8 test-${result.status.toLowerCase()}`'>
                 <span v-if='result.metric' class='metric'>Measured <strong>Metric = {{
                     result.metric
@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status].capitalized }}
         </v-chip>
-        <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="result.passed">
+        <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="!canBeDebugged">
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -40,7 +40,7 @@
             value
           }}</span>
       </div>
-      <div class='flex-grow-1' />
+      <div class='flex-grow-1'/>
       <v-btn v-if='!isPastExecution' color='rgba(0, 0, 0, 0.6)' small text @click='editTests'>
         <v-icon class='mr-1' small>settings</v-icon>
         Edit parameters
@@ -54,7 +54,6 @@ import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
 import {computed} from 'vue';
 import {storeToRefs} from 'pinia';
 import {useCatalogStore} from '@/stores/catalog';
-import {Colors} from '@/utils/colors';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
 import {useTestSuiteStore} from '@/stores/test-suite';
@@ -63,7 +62,7 @@ import router from "@/router";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import mixpanel from 'mixpanel-browser';
-import { TEST_RESULT_DATA } from '@/utils/tests.utils';
+import {TEST_RESULT_DATA} from '@/utils/tests.utils';
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -79,10 +78,10 @@ const props = defineProps<{
 }>();
 
 const params = computed(() => props.isPastExecution && props.result
-  ? props.result?.inputs
-  : Object.values(props.suiteTest.functionInputs)
-    .filter(input => !input.isAlias)
-    .reduce((r, input) => ({ ...r, [input.name]: input.value }), {}));
+    ? props.result?.inputs
+    : Object.values(props.suiteTest.functionInputs)
+        .filter(input => !input.isAlias)
+        .reduce((r, input) => ({...r, [input.name]: input.value}), {}));
 
 function mapValue(value: string, type: string): string {
   if (type === 'SlicingFunction') {
@@ -102,13 +101,13 @@ function mapValue(value: string, type: string): string {
 }
 
 const orderedParams = computed(() => params.value ? props.suiteTest.test.args
-    .filter(({ name }) => params.value!.hasOwnProperty(name))
-    .map(({ name, type }) => ({
-      name: name.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-      value: mapValue(params.value[name], type),
-      type
-    }))
-  : []);
+        .filter(({name}) => params.value!.hasOwnProperty(name))
+        .map(({name, type}) => ({
+          name: name.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+          value: mapValue(params.value[name], type),
+          type
+        }))
+    : []);
 
 const slicingFunction = computed(() => {
   const uuid = params.value ? params.value['slicing_function'] : undefined;
@@ -183,12 +182,16 @@ function openLogs() {
   $vfm.show({
     component: ExecutionLogsModal,
     bind: {
-      logs: errors.value.map(({ text }) => text).join('\n')
+      logs: errors.value.map(({text}) => text).join('\n')
     }
   });
 
   mixpanel.track('Open test error logs');
 }
+
+const canBeDebugged = computed(() => {
+  return !(props.result?.status == "PASSED") && props.suiteTest.test.args.filter(arg => arg.name === 'debug' && arg.type === 'bool').length > 0;
+});
 </script>
 
 <style lang='scss' scoped>
