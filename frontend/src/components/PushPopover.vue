@@ -7,7 +7,7 @@
             <v-badge bottom overlap color="transparent">
               <v-icon size="18">mdi-auto-fix</v-icon>
               <template v-slot:badge>
-                <v-icon color="primary" class="mt-n1 ml-n2">{{ icon }}</v-icon>
+                <v-icon color="primary" class="mt-n1 ml-n2" style="height: 6px;" small>{{ icon }}</v-icon>
               </template>
             </v-badge>
           </v-btn>
@@ -51,23 +51,29 @@
     </v-card>
 
   </v-menu>
-  <!--  <div v-else style="width: 30px"></div>-->
 </template>
 
 <script setup lang="ts">
+
+//////// TODO BEFORE MERGE:
+// - Add a mixpanel event when the menu is opened (with the push type?)
+// - Add a mixpanel event when a CTA is clicked (with the CTA type?)
+
 import {computed, ref} from 'vue';
 import {usePushStore} from "@/stores/push";
 
 const pushStore = usePushStore();
-// const value = ref<PushDTO | undefined>(undefined);
+
 const props = defineProps({
   type: String,
   column: String,
 });
+
 const opened = ref<boolean>(false);
 const value = computed(() => {
   return pushStore.current;
 });
+
 const show = computed(() => {
   switch (props.type) {
     case "contribution":
@@ -96,13 +102,11 @@ const push = computed(() => {
       return false;
   }
 })
-// watch(() => props.suggestion, () => {
-//   value.value = props.suggestion ? props.suggestion.filter((s) => s.key == props.column)[0] : undefined;
-// });
-//
+
 // async function dbg_GetSuggestion() {
 //   await api.applyPush(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0, 0, 1)
 // }
+
 const icon = computed(() => {
   switch (props.type) {
     case "contribution":
