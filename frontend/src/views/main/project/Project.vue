@@ -83,7 +83,7 @@
     </v-dialog>
 
     <!-- Quick start dialog -->
-    <v-dialog v-model="openQuickStart" width="80vw">
+    <!-- <v-dialog v-model="openQuickStart" width="80vw">
       <v-card flat>
         <v-card-title flat>
           Quick start guide
@@ -95,7 +95,7 @@
         </v-card-title>
         <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
@@ -136,7 +136,7 @@ const props = defineProps<Props>();
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
-const openQuickStart = ref<boolean>(false);
+// const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
 const userProfile = computed(() => {
@@ -212,9 +212,9 @@ onMounted(async () => {
   updateCurrentTab();
   await projectArtifactsStore.setProjectId(props.id, false);
 
-  if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
-    openQuickStart.value = true;
-  }
+  // if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
+  //   openQuickStart.value = true;
+  // }
 })
 </script>
 
