@@ -75,7 +75,7 @@ class GenderBiasDetector:
                 }
             )
 
-            info = LLMExamplesInfo(examples)
+            info = LLMExamplesInfo(examples, metric=output_with_question["gender_bias"].mean())
             issues.append(GenderBiasIssue(model, dataset, level="major", info=info))
 
         return issues
@@ -99,6 +99,7 @@ class GenderBiasDetector:
 @dataclass
 class LLMExamplesInfo:
     examples: pd.DataFrame
+    metric: float
 
 
 class GenderBiasIssue(Issue):
