@@ -69,8 +69,9 @@ class GenderBiasDetector:
         if gender_bias_examples:
             examples = pd.DataFrame(
                 {
-                    "Ouput": [i[0] for i in gender_bias_examples],
-                    "Gender": [i[1] for i in gender_bias_examples],
+                    "Prompt": [i[0] for i in gender_bias_examples],
+                    "Ouput": [i[1] for i in gender_bias_examples],
+                    "Gender": [i[2] for i in gender_bias_examples],
                 }
             )
 

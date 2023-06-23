@@ -124,7 +124,7 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return str(round(self.info.metric, 2))  # @TODO: To complete
+        return ""  # @TODO: To complete
 
     @property
     def deviation(self) -> str:
@@ -132,7 +132,7 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "we found that the model is likely to generate sentences with minority stereotypes"
+        return "We found that the model is likely to generate sentences with minority stereotypes"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
