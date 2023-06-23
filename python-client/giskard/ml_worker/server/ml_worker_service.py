@@ -266,10 +266,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             for t in tests:
                 suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
 
-            is_pass, results = suite.run(**global_arguments)
+            result = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result in results:
+            for identifier, result, _ in result.results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
                         id=identifier, result=map_result_to_single_test_result(result)
@@ -277,7 +277,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
 
             return ml_worker_pb2.TestSuiteResultMessage(
-                is_error=False, is_pass=is_pass, results=identifier_single_test_results, logs=log_listener.close()
+                is_error=False, is_pass=result.passed, results=identifier_single_test_results, logs=log_listener.close()
             )
 
         except Exception as exc:

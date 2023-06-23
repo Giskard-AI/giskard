@@ -227,6 +227,10 @@ class Suite:
 
             try:
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
+
+                if isinstance(result, bool):
+                    result = TestResult(passed=result)
+
                 results.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
