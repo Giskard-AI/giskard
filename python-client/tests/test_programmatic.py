@@ -15,13 +15,11 @@ def _test_a_greater_b(a: int, b: int):
 
 
 def test_a_greater_b_fail():
-    passed, _ = Suite().add_test(_test_a_greater_b(1, 2)).run()
-    assert not passed
+    assert not Suite().add_test(_test_a_greater_b(1, 2)).run().passed
 
 
 def test_a_greater_b_pass():
-    passed, _ = Suite().add_test(_test_a_greater_b(2, 1)).run()
-    assert passed
+    assert Suite().add_test(_test_a_greater_b(2, 1)).run().passed
 
 
 def test_missing_arg():
@@ -40,8 +38,7 @@ def test_missing_arg_one_global():
 
 
 def test_all_global():
-    passed, _ = Suite().add_test(_test_a_greater_b()).run(a=2, b=1)
-    assert passed
+    assert Suite().add_test(_test_a_greater_b()).run(a=2, b=1).passed
 
 
 def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
@@ -49,7 +46,8 @@ def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
         Suite()
         .add_test(test_auc(threshold=0.2))
         .add_test(test_f1(threshold=0.2))
-        .run(dataset=german_credit_data, model=german_credit_model)[0]
+        .run(dataset=german_credit_data, model=german_credit_model)
+        .passed
     )
 
 
@@ -59,7 +57,8 @@ def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
         .add_test(test_auc())
         .add_test(test_f1())
         .add_test(_test_a_greater_b())
-        .run(dataset=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)[0]
+        .run(dataset=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)
+        .passed
     )
 
 
@@ -73,7 +72,8 @@ def test_shared_input(german_credit_model: BaseModel, german_credit_data: Datase
         .add_test(test_auc(dataset=shared_input, threshold=0.2))
         .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .add_test(test_diff_f1(threshold=0.2, actual_dataset=shared_input))
-        .run(model=german_credit_model, dataset=german_credit_data, reference_dataset=last_half)[0]
+        .run(model=german_credit_model, dataset=german_credit_data, reference_dataset=last_half)
+        .passed
     )
 
 
@@ -96,8 +96,8 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
         )
     )
 
-    assert result[0]
-    assert len(result[1]) == 3
+    assert result.passed
+    assert len(result.results) == 3
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
@@ -106,7 +106,8 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
     assert (
         Suite()
         .add_test(test_auc(dataset=shared_input, threshold=0.2))
-        .run(model=german_credit_model, dataset=german_credit_data)[0]
+        .run(model=german_credit_model, dataset=german_credit_data)
+        .passed
     )
 
 
@@ -117,17 +118,21 @@ def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseM
     def empty_slice(x):
         return x.iloc[[]]
 
-    result = Suite().add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice)) \
-        .add_test(test_f1(dataset=shared_input, threshold=0.2)) \
+    result = (
+        Suite()
+        .add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice))
+        .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)
+    )
 
-    assert result[0] is False
-    assert result[1][0][1].passed is False
-    assert result[1][0][1].is_error is True
-    assert result[1][0][1].messages[0].type is TestMessageLevel.ERROR
-    assert 'The sliced dataset in test_f1 is empty.' in result[1][0][1].messages[0].text
-    assert result[1][1][1].passed is True
-    assert result[1][1][1].is_error is False
+    assert result.passed is False
+    results = result.results
+    assert results[0][1].passed is False
+    assert results[0][1].is_error is True
+    assert results[0][1].messages[0].type is TestMessageLevel.ERROR
+    assert "The sliced dataset in test_f1 is empty." in results[0][1].messages[0].text
+    assert results[1][1].passed is True
+    assert results[1][1].is_error is False
 
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):

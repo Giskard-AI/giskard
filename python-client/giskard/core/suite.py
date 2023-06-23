@@ -214,11 +214,7 @@ class Suite:
         :param suite_run_args: Any arguments passed here will be applied to all the tests in the suite whenever they match with the
             arguments defined for each test. If a test contains an argument that has already been defined, it will not get
             overridden. If any inputs on the test suite are missing, an error will be raised.
-        :return:  A tuple with the following values:
-            - (bool) A boolean value representing whether all the tests in the suite passed or not.
-            - (list) A list containing tuple of test name and test result, it keeps the order of the add_test sequence
-                - (str) The test_name
-                - (bool | TestResult) The result of the test execution
+        :return: List[TestSuiteResult] containing test execution information
         """
         results: List[Tuple[str, TestResult, Dict[str, Any]]] = list()
         required_params = self.find_required_params()
