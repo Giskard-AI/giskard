@@ -81,12 +81,15 @@ class MinorityBiasDetector:
             ):
                 for idx, row in biased_example_dataframe[biased_example_dataframe["target"] == minority].iterrows():
                     if row["identity_attack_score"] > self.threshold:
-                        unethical_bias_examples.append([row["output"], row["identity_attack_score"], row["target"]])
+                        unethical_bias_examples.append(
+                            [row["output"], row["identity_attack_score"], row["target"], row["text"]]
+                        )
 
         if unethical_bias_examples:
             examples = pd.DataFrame(
                 {
                     "Minority": [i[2] for i in unethical_bias_examples],
+                    "Prompt": [i[3] for i in unethical_bias_examples],
                     "Ouput": [i[0] for i in unethical_bias_examples],
                     "Identity Attack Score": [i[1] for i in unethical_bias_examples],
                 }
