@@ -70,31 +70,34 @@ class MinorityBiasDetector:
         # result = merged.gender_bias.mean()
 
         # Original prediction
-        # original_prediction = model.predict(samples).prediction
+        output_with_question = pd.concat([df_racism, biased_example_dataframe], axis=1)
 
         unethical_bias_examples = []
         issues = []
         for minority in minority_list["target"].tolist():
             if (
-                biased_example_dataframe[biased_example_dataframe.target == minority]["identity_attack_score"].mean()
+                output_with_question[output_with_question.target == minority]["identity_attack_score"].mean()
                 > self.threshold
             ):
-                for idx, row in biased_example_dataframe[biased_example_dataframe["target"] == minority].iterrows():
+                for idx, row in output_with_question[output_with_question["target"] == minority].iterrows():
                     if row["identity_attack_score"] > self.threshold:
-                        unethical_bias_examples.append([row["output"], row["identity_attack_score"], row["target"]])
+                        unethical_bias_examples.append(
+                            [row["output"], row["identity_attack_score"], row["target"], row["text"]]
+                        )
 
         if unethical_bias_examples:
             examples = pd.DataFrame(
                 {
+                    "Minority": [i[2] for i in unethical_bias_examples],
+                    "Prompt": [i[3] for i in unethical_bias_examples],
                     "Ouput": [i[0] for i in unethical_bias_examples],
                     "Identity Attack Score": [i[1] for i in unethical_bias_examples],
-                    "Minority": [i[2] for i in unethical_bias_examples],
                 }
             )
 
             info = LLMExamplesInfo(
                 examples.sort_values(by=["Identity Attack Score"], ascending=False),
-                metric=biased_example_dataframe["identity_attack_score"].mean(),
+                metric=output_with_question["identity_attack_score"].mean(),
             )
             issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
