@@ -30,7 +30,7 @@ class ScanResult:
         from html import escape
 
         env = Environment(
-            loader=PackageLoader("giskard.scanner", "templates"),
+            loader=PackageLoader("giskard", "templates"),
             autoescape=select_autoescape(),
         )
         env.filters["pluralize"] = pluralize
@@ -61,7 +61,7 @@ class ScanResult:
 
         from pathlib import Path
 
-        with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
+        with Path(__file__).parent.parent.joinpath("templates", "static", "external.js").open("r") as f:
             js_lib = f.read()
 
         return f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>

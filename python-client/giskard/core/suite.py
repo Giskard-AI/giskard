@@ -2,7 +2,7 @@ import inspect
 import logging
 import traceback
 from dataclasses import dataclass
-from typing import List, Any, Union, Dict, Mapping, Optional
+from typing import List, Any, Union, Dict, Mapping, Optional, Tuple
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
@@ -20,31 +20,33 @@ logger = logging.getLogger(__name__)
 suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
 
 
-class TestSuiteResult(tuple):
-    """
-    Represents the result of a test suite, derived from the tuple class.
+class TestSuiteResult:
+    def __init__(self, passed: bool, results: List[Tuple[str, TestResult]]):
+        self.passed = passed
+        self.results = results
 
-    Methods:
-        _repr_html_(): Returns an HTML representation of all the tests result contained in the test suite.
-
-    """
+    def __repr__(self):
+        return f"<TestSuiteResult ({'passed' if self.passed else 'failed'})>"
 
     def _repr_html_(self):
-        passed = self[0]
-        tests_results = "".join(
-            [
-                f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value in self[1]
-            ]
+        from jinja2 import Environment, PackageLoader, select_autoescape
+        from ..scanner.visualization.custom_jinja import pluralize, format_metric
+
+        env = Environment(
+            loader=PackageLoader("giskard", "templates"),
+            autoescape=select_autoescape(),
         )
-        return """
-               <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
-               {3}
-               """.format(
-            "green" if passed else "red",
-            "\u2713" if passed else "\u00D7",
-            "succeed" if passed else "failed",
-            tests_results,
+        env.filters["pluralize"] = pluralize
+        env.filters["format_metric"] = format_metric
+
+        tpl = env.get_template("suite_results.html")
+
+        return tpl.render(
+            passed=self.passed,
+            test_results=self.results,
+            num_passed_tests=len([res for _, res in self.results if res.passed]),
+            num_failled_tests=len([res for _, res in self.results if not res.passed and not res.is_error]),
+            num_error_tests=len([res for _, res in self.results if res.is_error]),
         )
 
 
@@ -218,7 +220,7 @@ class Suite:
                 - (str) The test_name
                 - (bool | TestResult) The result of the test execution
         """
-        res: List[(str, Union[bool, TestResult])] = list()
+        results: List[Tuple[str, TestResult]] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -228,7 +230,7 @@ class Suite:
             try:
                 test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result))
+                results.append((test_partial.test_name, result))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
@@ -236,7 +238,7 @@ class Suite:
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
                 logging.exception("An error happened during test execution")
-                res.append(
+                results.append(
                     (
                         test_partial.test_name,
                         TestResult(
@@ -245,13 +247,14 @@ class Suite:
                     )
                 )
 
-        result = single_binary_result([result for name, result in res])
+        passed = single_binary_result([result for name, result in results])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
-        logger.info(f"result: {'success' if result else 'failed'}")
-        for test_name, r in res:
+        logger.info(f"result: {'success' if passed else 'failed'}")
+        for test_name, r in results:
             logger.info(f"{test_name}: {format_test_result(r)}")
-        return TestSuiteResult((result, res))
+
+        return TestSuiteResult(passed, results)
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
