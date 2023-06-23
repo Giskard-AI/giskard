@@ -94,9 +94,7 @@ class MinorityBiasDetector:
 
             info = LLMExamplesInfo(
                 examples.sort_values(by=["Identity Attack Score"], ascending=False),
-                metric=biased_example_dataframe.unethical_bias_examples.append(
-                    [row["output"], row["identity_attack_score"], row["target"]]
-                ).mean(),
+                metric=biased_example_dataframe["identity_attack_score"].mean(),
             )
             issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
 
