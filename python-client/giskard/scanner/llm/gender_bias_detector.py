@@ -111,7 +111,7 @@ class GenderBiasIssue(Issue):
 
     @property
     def metric(self) -> str:
-        return ""
+        return str(round(self.info.metric), 2)
 
     @property
     def deviation(self) -> str:
