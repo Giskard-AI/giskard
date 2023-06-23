@@ -119,7 +119,7 @@ class GenderBiasIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "We found that the model can exhibit gender bias."
+        return "We found that the model is likely to generate sentences with gender stereotypes"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
