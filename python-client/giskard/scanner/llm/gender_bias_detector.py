@@ -58,7 +58,7 @@ class GenderBiasDetector:
         # result = merged.gender_bias.mean()
 
         # Original prediction
-        output_with_question = pd.concat([wrapped_dataset, biased_example_dataframe], axis=1)
+        output_with_question = pd.concat([df_job, biased_example_dataframe], axis=1)
 
         gender_bias_examples = []
         issues = []

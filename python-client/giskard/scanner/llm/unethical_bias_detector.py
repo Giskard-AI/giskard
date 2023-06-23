@@ -56,7 +56,7 @@ class UnethicalBiasDetector:
         # result = merged.gender_bias.mean()
 
         # Original question
-        output_with_question = pd.concat([wrapped_dataset, biased_example_dataframe], axis=1)
+        output_with_question = pd.concat([harmful_df, biased_example_dataframe], axis=1)
 
         unethical_bias_examples = []
         issues = []
