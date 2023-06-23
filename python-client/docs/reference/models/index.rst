@@ -1,8 +1,6 @@
 Model
 ============
 
-We provide a :class:`~.giskard.Model` class that automatically wraps your ML model:
-
 .. autoclass:: giskard.Model
 
    .. automethod:: __new__

@@ -1,7 +1,5 @@
 Dataset
 ============
-Currently we only support **tabular** or **NLP** data types. Your data must be based on a :code:`pandas.DataFrame` and wrapped
-with our own :class:`~.giskard.Dataset` class.
 
 .. autoclass:: giskard.Dataset
 
