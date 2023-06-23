@@ -122,7 +122,7 @@ class MinnorityBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Minority Bias Rate"
+        return "Stereotype Generation"
 
     @property
     def metric(self) -> str:
