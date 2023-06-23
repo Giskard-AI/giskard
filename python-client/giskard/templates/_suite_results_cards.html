@@ -1,11 +1,11 @@
 <div class='card-container'>
-  {% for test_name, result in test_results %}
+  {% for test_name, result, params in test_results %}
   <div class='test-card test-card-{% if passed %}passed{% elif result.is_error %}error{% else %}failed{% endif %}'>
     <div class='test-card-row'>
       <span class='test-name'>Test {{ test_name }}</span>
       <div class='spacer'></div>
       {% if result.metric is not none %}
-      <span class='metric'>Measured <b>Metric = {{result.metric}}</b></span>
+      <span class='metric'>Measured <b>Metric = {{result.metric|round(5)}}</b></span>
       {% endif %}
       <span class='test-result'>
       {% if result.passed %}
@@ -28,7 +28,12 @@
     </span>
     </div>
     <div class='test-card-row'>
-
+      {% for param_name, param_value in params.items() %}
+      <div class='param'>
+        <span>{{param_name}}</span>
+        <span class='param-value'>{{param_value}}</span>
+      </div>
+      {% endfor %}
     </div>
   </div>
   {% endfor %}

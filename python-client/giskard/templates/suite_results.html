@@ -5,6 +5,7 @@
         border-radius: 4px;
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .test-result {
@@ -58,7 +59,12 @@
         background: #fff;
     }
 
-    .test-card .test-name {
+    .param {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .test-card .test-name, .test-card .param-value {
         color: #000
     }
 
@@ -67,6 +73,7 @@
         display: flex;
         gap: 20px;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .test-card-row:last-child {
@@ -75,6 +82,10 @@
 
     .spacer {
         flex-grow: 1;
+    }
+
+    .test-card {
+        color: rgb(98, 98, 98);
     }
 
     .test-card-failed .metric {

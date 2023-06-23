@@ -21,7 +21,7 @@ suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, Slic
 
 
 class TestSuiteResult:
-    def __init__(self, passed: bool, results: List[Tuple[str, TestResult]]):
+    def __init__(self, passed: bool, results: List[Tuple[str, TestResult, Dict[str, Any]]]):
         self.passed = passed
         self.results = results
 
@@ -44,9 +44,9 @@ class TestSuiteResult:
         return tpl.render(
             passed=self.passed,
             test_results=self.results,
-            num_passed_tests=len([res for _, res in self.results if res.passed]),
-            num_failled_tests=len([res for _, res in self.results if not res.passed and not res.is_error]),
-            num_error_tests=len([res for _, res in self.results if res.is_error]),
+            num_passed_tests=len([res for _, res, _ in self.results if res.passed]),
+            num_failled_tests=len([res for _, res, _ in self.results if not res.passed and not res.is_error]),
+            num_error_tests=len([res for _, res, _ in self.results if res.is_error]),
         )
 
 
@@ -220,17 +220,18 @@ class Suite:
                 - (str) The test_name
                 - (bool | TestResult) The result of the test execution
         """
-        results: List[Tuple[str, TestResult]] = list()
+        results: List[Tuple[str, TestResult, Dict[str, Any]]] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, suite_run_args)
+
             try:
-                test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                results.append((test_partial.test_name, result))
+                results.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
@@ -244,15 +245,16 @@ class Suite:
                         TestResult(
                             passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
                         ),
+                        test_params,
                     )
                 )
 
-        passed = single_binary_result([result for name, result in results])
+        passed = single_binary_result([result for name, result, params in results])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if passed else 'failed'}")
-        for test_name, r in results:
-            logger.info(f"{test_name}: {format_test_result(r)}")
+        for test_name, r, params in results:
+            logger.info(f"{test_name} ({params}): {format_test_result(r)}")
 
         return TestSuiteResult(passed, results)
 
