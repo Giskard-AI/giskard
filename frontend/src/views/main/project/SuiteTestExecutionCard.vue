@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status].capitalized }}
         </v-chip>
-        <v-btn color="primary" @click="debugTest(result)" outlined small :disabled="!canBeDebugged">
+        <v-btn color="primary" @click="debugTest" outlined small :disabled="!canBeDebugged">
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -141,7 +141,7 @@ async function editTests() {
   });
 }
 
-async function debugTest(result: SuiteTestExecutionDTO) {
+async function debugTest() {
   console.log("Debugging");
   let inputs: any[] = []; // FunctionInputDTO, ideally
 
@@ -159,7 +159,7 @@ async function debugTest(result: SuiteTestExecutionDTO) {
     })
   }
 
-  parseArguments(inputs, result.arguments);
+  parseArguments(inputs, props.result?.arguments);
 
   let model = inputs.filter(i => i.name == "model")[0].value;
 
