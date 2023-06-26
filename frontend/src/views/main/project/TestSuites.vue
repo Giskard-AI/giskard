@@ -106,23 +106,71 @@
             </div>
         </v-container>
         <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
-            <div class="d-flex mb-6">
-                <v-spacer></v-spacer>
+            <div class="mt-2">
+                <div class="d-flex justify-center">
+                    <p class="text-body-1">There are no artifacts (datasets and models) in this project yet. Choose an option below to upload them and create a test suite.</p>
+                </div>
 
-                <div class="mr-2">
-                    <v-btn @click="refresh">
-                        Reload
-                        <v-icon right>refresh</v-icon>
-                    </v-btn>
-                    <v-btn v-if="projectArtifactsStore.datasets.length > 0" color="primary" class="ml-2" @click="">
-                        Upload with API
-                        <v-icon right>mdi-application-braces-outline</v-icon>
-                    </v-btn>
+                <div class="d-flex justify-center mt-2">
+                    <v-btn-toggle v-model="toggleSnippetType" borderless color="primary">
+                        <v-btn value="demo" class="py-5 px-4">
+                            <span>Upload demo test suite</span>
+                        </v-btn>
+                        <v-btn value="custom" class="py-5 px-4">
+                            <span>Upload test suite from your model</span>
+                        </v-btn>
+                    </v-btn-toggle>
                 </div>
             </div>
-            <p class="font-weight-medium secondary--text">There are no artifacts (datasets and models) in this project yet. Follow the code snippet below to upload them and create a test suite 👇</p>
-            <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-            <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
+
+            <div v-if="toggleSnippetType === 'demo'" class="mt-10 mb-6">
+                <p class="text-center font-weight-medium">Follow the code snippet below to upload a demo test suite to the current project 👇</p>
+                <div class="mt-6 mb-6">
+                    <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                </div>
+                <p class="text-center">To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
+            </div>
+            <div v-else-if="toggleSnippetType === 'custom'" class="mt-10 mb-6 d-flex justify-center">
+                <div>
+                    <p class="font-weight-medium text-center">To upload a test suite from your model, follow these 3 steps:</p>
+                    <v-card max-width="500" class="my-6" outlined>
+                        <v-card-title class="font-weight-medium">
+                            <span>1. Wrap your dataset</span>
+                            <v-spacer></v-spacer>
+                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
+                                OPEN
+                                <v-icon right>mdi-open-in-new</v-icon>
+                            </v-btn>
+                        </v-card-title>
+                    </v-card>
+
+                    <v-card max-width="500" class="my-6" outlined>
+                        <v-card-title class="font-weight-medium">
+                            <span>2. Wrap your model</span>
+                            <v-spacer></v-spacer>
+                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
+                                OPEN
+                                <v-icon right>mdi-open-in-new</v-icon>
+                            </v-btn>
+                        </v-card-title>
+                    </v-card>
+
+                    <v-card max-width="500" class="my-6" outlined>
+                        <v-card-title class="font-weight-medium">
+                            <span>3. Upload suite from scan</span>
+                            <v-spacer></v-spacer>
+                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
+                                OPEN
+                                <v-icon right>mdi-open-in-new</v-icon>
+                            </v-btn>
+                        </v-card-title>
+                    </v-card>
+                    <p class="text-center">Or check the <a href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">test suite documentation</a>.</p>
+                </div>
+            </div>
+            <div v-else class="d-flex justify-center my-6">
+                <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+            </div>
         </v-container>
     </div>
 </template>
@@ -154,32 +202,70 @@ const props = defineProps<{
 }>();
 
 const searchSession = ref("");
+const toggleSnippetType = ref<string>("");
 const apiAccessToken = ref<JWTToken | null>(null);
 
-const codeContent = computed(() =>
-    `import giskard
+// const codeContent = computed(() =>
+//     `import giskard
 
-# for demo purposes only 🛳️. Replace with your dataframe creation
-original_model, original_df = giskard.demo.titanic()
+// # for demo purposes only 🛳️. Replace with your dataframe creation
+// original_model, original_df = giskard.demo.titanic()
+
+// # Create a Giskard client
+// token = "${apiAccessToken.value?.id_token}"
+// client = giskard.GiskardClient(
+//     url="${apiURL}",  # URL of your Giskard instance
+//     token=token
+// )
+
+// # Wrap your model and dataset with Giskard 🎁
+// giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
+// giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
+
+// # Scan your model for potential issues 🕵️
+// results = giskard.scan(giskard_model, giskard_dataset)
+
+// # Upload an automatically created test suite to the current project ✉️
+// results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
+// `
+// );
+
+const codeContent = computed(() => {
+    return `import giskard
+
+# Replace this with your own data & model creation.
+df = giskard.demo.titanic_df()
+data_preprocessing_function, clf = giskard.demo.titanic_pipeline()
+
+# Wrap your Pandas DataFrame
+giskard_dataset = giskard.Dataset(df=df,
+                                  target="Survived",
+                                  name="Titanic dataset",
+                                  cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+# Wrap your model
+def prediction_function(df):
+    preprocessed_df = data_preprocessing_function(df)
+    return clf.predict_proba(preprocessed_df)
+
+giskard_model = giskard.Model(model=prediction_function,
+                              model_type="classification",
+                              name="Titanic model",
+                              classification_labels=clf.classes_,
+                              feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'])
+
+# Then apply the scan
+results = giskard.scan(giskard_model, giskard_dataset)
 
 # Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
-
-# Wrap your model and dataset with Giskard 🎁
-giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
-giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
-
-# Scan your model for potential issues 🕵️
-results = giskard.scan(giskard_model, giskard_dataset)
+token = "${apiAccessToken.value?.id_token}" # API Access Token
+client = giskard.GiskardClient(url="${apiURL}",  # URL of your Giskard instance
+                               token=token)
 
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-);
+})
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -318,8 +404,9 @@ onActivated(async () => {
 
 <style scoped>
 .test-suite-logo {
-    width: min(17.5vw, 150px);
+    height: max(50vh, 150px);
     margin-top: 2rem;
+
 }
 
 .expansion-panel {
