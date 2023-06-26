@@ -61,7 +61,7 @@ watch(() => [props.inputData, selectedFeature.value], () => {
   submitted.value = false;
   result.value = null;
   errorMsg.value = '';
-});
+}, { deep: true });
 
 
 async function getExplanation() {

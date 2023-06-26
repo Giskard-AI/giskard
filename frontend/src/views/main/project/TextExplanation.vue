@@ -78,8 +78,8 @@ watch(() => props.classificationResult, (value) => {
 watch(() => [props.inputData, selectedFeature.value], () => {
   submitted.value = false;
   result.value = null;
-  errorMsg.value = "";
-})
+  errorMsg.value = '';
+}, { deep: true })
 
 
 async function getExplanation() {
