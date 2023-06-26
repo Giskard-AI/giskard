@@ -85,6 +85,12 @@
                 Your model seems to exhibit offensive behaviour when we use adversarial “Do Anything Now” (DAN)
                 prompts.
             </p>
+            {% elif issues[0].__class__.__name__ == "SpuriousCorrelationIssue" %}
+            <p>
+                We found potential spurious correlations between your data and the model predictions. Spurious
+                correlations may occur when the model overfits on relations that are not causal. We recommend that you
+                verify the causal relationship between the detected data slices and the target variable.
+            </p>
             {% else %}
             <p>Found issues for {{ issues[0].group }}</p>
             {% endif %}
@@ -100,6 +106,10 @@
         {% if num_medium_issues[group] > 0 %}
         <span class="text-xs border rounded px-1 uppercase text-amber-200 border-amber-200">{{num_medium_issues[group]}}
             medium</span>
+        {% endif %}
+        {% if num_info_issues[group] > 0 %}
+        <span class="text-xs border rounded px-1 uppercase text-blue-200 border-blue-200">{{num_info_issues[group]}}
+            info</span>
         {% endif %}
     </div>
 
