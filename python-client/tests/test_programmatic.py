@@ -3,7 +3,8 @@ import pytest
 from giskard import test, scan
 from giskard.core.suite import Suite, SuiteInput
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.ml_worker.testing.test_result import TestMessageLevel
 from giskard.models.base import BaseModel
 from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
 
@@ -107,6 +108,26 @@ def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: Ba
         .add_test(test_auc(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)[0]
     )
+
+
+def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseModel):
+    shared_input = SuiteInput("dataset", Dataset)
+
+    @slicing_function(row_level=False)
+    def empty_slice(x):
+        return x.iloc[[]]
+
+    result = Suite().add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice)) \
+        .add_test(test_f1(dataset=shared_input, threshold=0.2)) \
+        .run(model=german_credit_model, dataset=german_credit_data)
+
+    assert result[0] is False
+    assert result[1][0][1].passed is False
+    assert result[1][0][1].is_error is True
+    assert result[1][0][1].messages[0].type is TestMessageLevel.ERROR
+    assert 'The sliced dataset in test_f1 is empty.' in result[1][0][1].messages[0].text
+    assert result[1][1][1].passed is True
+    assert result[1][1][1].is_error is False
 
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):

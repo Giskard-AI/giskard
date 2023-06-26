@@ -5,28 +5,37 @@ import {
     JobState,
     ModelDTO,
     RequiredInputDTO,
+    TestResult,
     TestSuiteDTO,
     TestSuiteExecutionDTO
 } from '@/generated-sources';
-import {defineStore} from 'pinia';
-import {api} from '@/api';
-import {chain} from 'lodash';
-import {trackJob} from '@/utils/job-utils';
-import {useMainStore} from '@/stores/main';
+import { defineStore } from 'pinia';
+import { api } from '@/api';
+import { chain } from 'lodash';
+import { trackJob } from '@/utils/job-utils';
+import { useMainStore } from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
-import {TYPE} from "vue-toastification";
-import {anonymize} from "@/utils";
+import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
+import { TYPE } from 'vue-toastification';
+import { anonymize } from '@/utils';
+
+
+function resultHasStatus(status: TestResult, result?): boolean {
+    return result !== undefined && result.status === status;
+}
 
 export const statusFilterOptions = [{
     label: 'All',
     filter: (_) => true
 }, {
     label: 'Passed',
-    filter: (result) => result !== undefined && result.passed
+    filter: (result) => resultHasStatus(TestResult.PASSED, result)
 }, {
     label: 'Failed',
-    filter: (result) => result !== undefined && !result.passed
+    filter: (result) => resultHasStatus(TestResult.FAILED, result)
+}, {
+    label: 'Error',
+    filter: (result) => resultHasStatus(TestResult.ERROR, result)
 }, {
     label: 'Not executed',
     filter: (result) => result === undefined

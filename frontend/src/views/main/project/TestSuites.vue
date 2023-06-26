@@ -48,8 +48,15 @@
                                     <div class="d-flex flex-column">
                                         <span class="font-weight-bold">{{ suite.suite.tests.length }} tests in total</span>
                                         <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
-                                            <span class="passed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === true).length }} passing</span>
-                                            <span class="failed-tests">{{ latestExecutions[index]?.results?.filter(result => result.passed === false).length }} failing</span>
+                                          <span class="passed-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.PASSED).length
+                                            }} passing</span>
+                                          <span class="failed-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.FAILED).length
+                                            }} failing</span>
+                                          <span class="error-tests">{{
+                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.ERROR).length
+                                            }} with error</span>
                                         </div>
                                     </div>
                                 </v-col>
@@ -121,31 +128,31 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "@/api";
-import { apiURL } from "@/env";
-import { computed, onActivated, ref, watch } from "vue";
+import { api } from '@/api';
+import { apiURL } from '@/env';
+import { computed, onActivated, ref } from 'vue';
 import router from '@/router';
-import { useMainStore } from "@/stores/main";
-import { useProjectStore } from "@/stores/project";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import { TYPE } from "vue-toastification";
+import { useMainStore } from '@/stores/main';
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { TYPE } from 'vue-toastification';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from "vue-final-modal";
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import mixpanel from "mixpanel-browser";
+import { $vfm } from 'vue-final-modal';
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import mixpanel from 'mixpanel-browser';
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
+import { JWTToken, TestResult } from '@/generated-sources';
+import { useProjectStore } from '@/stores/project';
+import { useProjectArtifactsStore } from '@/stores/project-artifacts';
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = defineProps<{
-    projectId: number
+  projectId: number
 }>();
 
-const searchSession = ref("");
+const searchSession = ref('');
 const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
@@ -317,13 +324,18 @@ onActivated(async () => {
 }
 
 .passed-tests {
-    margin-top: 0.25rem;
-    color: #66AD5B;
+  margin-top: 0.25rem;
+  color: #66AD5B;
 }
 
 .failed-tests {
-    margin-top: 0.25rem;
-    color: #EB5E59;
+  margin-top: 0.25rem;
+  color: #EB5E59;
+}
+
+.error-tests {
+  margin-top: 0.25rem;
+  color: #ebba59;
 }
 
 ::v-deep .v-toolbar__content {

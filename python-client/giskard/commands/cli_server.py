@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse
@@ -40,7 +41,9 @@ For an easy installation of Docker you can execute:
         exit(1)
 
 
-@click.group("server", help="Giskard UI management", context_settings={"show_default": True})
+@click.group(
+    "server", help="Giskard UI management", context_settings={"show_default": True}
+)
 def server() -> None:
     """
     Giskard UI management
@@ -85,10 +88,39 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
         return create_docker_client().containers.get(name)
     except NotFound:
         if quit_if_not_exists:
-            logger.error(f"Container {name} could not be found. Run `giskard server start` to create the container")
+            logger.error(
+                f"Container {name} could not be found. Run `giskard server start` to create the container"
+            )
             raise click.Abort()
         else:
             return None
+
+
+def _is_backend_ready(endpoint) -> bool:
+    try:
+        response = requests.get(endpoint)
+        response.raise_for_status()
+        return "UP" == response.json()["status"]
+    except KeyboardInterrupt:
+        raise click.Abort()
+    except BaseException:  # noqa NOSONAR
+        return False
+
+
+def _wait_backend_ready(port: int) -> bool:
+    endpoint = f"http://localhost:{port}/management/health"
+    backoff_time = 2
+    max_duration_second = 3 * 60
+    started_time = time.time()
+    up = False
+
+    while not up and time.time() - started_time <= max_duration_second:
+        time.sleep(backoff_time)
+        up = _is_backend_ready(endpoint)
+        click.echo(".", nl=False)
+
+    click.echo(".")
+    return up
 
 
 def _start(attached=False, version=None):
@@ -115,7 +147,18 @@ def _start(attached=False, version=None):
             volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
         )
     container.start()
-    logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+
+    up = _wait_backend_ready(port)
+
+    if up:
+        logger.info(
+            f"Giskard Server {version} started. You can access it at http://localhost:{port}"
+        )
+    else:
+        logger.warning(
+            "Giskard backend takes unusually long time to start, "
+            "please check the logs with `giskard server logs backend`"
+        )
 
 
 def _check_downloaded(version: str):
@@ -147,13 +190,17 @@ def _fetch_latest_tag() -> str:
     """
     Returns: the latest tag from the Docker Hub API. Format: vX.Y.Z
     """
-    response = requests.get("https://hub.docker.com/v2/namespaces/giskardai/repositories/giskard/tags?page_size=10")
+    response = requests.get(
+        "https://hub.docker.com/v2/namespaces/giskardai/repositories/giskard/tags?page_size=10"
+    )
     response.raise_for_status()
     json_response = response.json()
     latest_tag = "latest"
     latest = next(i for i in json_response["results"] if i["name"] == latest_tag)
     latest_version_image = next(
-        i for i in json_response["results"] if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))
+        i
+        for i in json_response["results"]
+        if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))
     )
 
     tag = latest_version_image["name"]
@@ -189,7 +236,9 @@ def _expose(token):
     container = get_container()
     if container:
         if container.status != "running":
-            print("Error: Giskard server is not running. Please start it using `giskard server start`")
+            print(
+                "Error: Giskard server is not running. Please start it using `giskard server start`"
+            )
             raise click.Abort()
     else:
         raise click.Abort()
@@ -200,14 +249,20 @@ def _expose(token):
     if token:
         ngrok.set_auth_token(token)
 
-    http_tunnel = ngrok.connect(19000, "http", pyngrok_config=None if token else PyngrokConfig(region="us"))
-    tcp_tunnel = ngrok.connect(40051, "tcp", pyngrok_config=None if token else PyngrokConfig(region="eu"))
+    http_tunnel = ngrok.connect(
+        19000, "http", pyngrok_config=None if token else PyngrokConfig(region="us")
+    )
+    tcp_tunnel = ngrok.connect(
+        40051, "tcp", pyngrok_config=None if token else PyngrokConfig(region="eu")
+    )
 
     # Only split the last ':' in case the URL contains a port
     tcp_addr = urlparse(tcp_tunnel.public_url)
 
     print("Giskard Server is now exposed to the internet.")
-    print("You can now upload objects to the Giskard Server using the following client: \n")
+    print(
+        "You can now upload objects to the Giskard Server using the following client: \n"
+    )
 
     print(
         f"""token=...
@@ -239,7 +294,9 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
     default=False,
     help="Starts the server and attaches to it, displaying logs in console.",
 )
-@click.option("--version", "version", required=False, help="Version of Giskard server to start")
+@click.option(
+    "--version", "version", required=False, help="Version of Giskard server to start"
+)
 @common_options
 def start(attached, version):
     """\b
@@ -277,8 +334,18 @@ def stop():
 
 
 @server.command("restart")
-@click.argument("service", type=click.Choice(["backend", "frontend", "worker", "db"]), required=False)
-@click.option("--hard", "hard", is_flag=True, default=False, help="Hard restart. Restarts the whole container")
+@click.argument(
+    "service",
+    type=click.Choice(["backend", "frontend", "worker", "db"]),
+    required=False,
+)
+@click.option(
+    "--hard",
+    "hard",
+    is_flag=True,
+    default=False,
+    help="Hard restart. Restarts the whole container",
+)
 @common_options
 def restart(service, hard):
     """\b
@@ -306,8 +373,12 @@ def restart(service, hard):
                 logger.info(f"Container {container.name} restarted")
         else:
             if service:
-                logger.info(f"Restarting service {service} in {container.name} container")
-                command = f"supervisorctl -c /opt/giskard/supervisord.conf restart {service}"
+                logger.info(
+                    f"Restarting service {service} in {container.name} container"
+                )
+                command = (
+                    f"supervisorctl -c /opt/giskard/supervisord.conf restart {service}"
+                )
             else:
                 logger.info(f"Restarting all services in {container.name} container")
                 command = "supervisorctl -c /opt/giskard/supervisord.conf restart all"
@@ -316,9 +387,27 @@ def restart(service, hard):
 
 
 @server.command("logs")
-@click.argument("service", type=click.Choice(["backend", "frontend", "worker", "db"]), required=False)
-@click.option("--lines", "-l", "nb_lines", default=300, type=click.IntRange(0), help="Number of log lines to show")
-@click.option("--follow", "-f", "follow", is_flag=True, default=False, help="Follow the logs stream")
+@click.argument(
+    "service",
+    type=click.Choice(["backend", "frontend", "worker", "db"]),
+    required=False,
+)
+@click.option(
+    "--lines",
+    "-l",
+    "nb_lines",
+    default=300,
+    type=click.IntRange(0),
+    help="Number of log lines to show",
+)
+@click.option(
+    "--follow",
+    "-f",
+    "follow",
+    is_flag=True,
+    default=False,
+    help="Follow the logs stream",
+)
 @common_options
 def logs(service, nb_lines, follow):
     """\b
@@ -366,11 +455,15 @@ def diagnose(local_dir):
     analytics.track("giskard-server:diagnose")
     out_dir = Path(local_dir)
     assert out_dir.is_dir(), "'output' should be an existing directory"
-    bits, stat = get_container().get_archive("/home/giskard/datadir/run", encode_stream=True)
+    bits, _ = get_container().get_archive(
+        "/home/giskard/datadir/run", encode_stream=True
+    )
     from datetime import datetime
 
     now = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    out_file = out_dir / f"giskard-diagnose-{get_version().replace('.', '_')}-{now}.tar.gz"
+    out_file = (
+        out_dir / f"giskard-diagnose-{get_version().replace('.', '_')}-{now}.tar.gz"
+    )
     with open(out_file, "wb") as f:
         for chunk in bits:
             f.write(chunk)
@@ -421,7 +514,9 @@ def status():
     analytics.track("giskard-server:status")
     app_settings = _get_settings()
     if not app_settings:
-        logger.info("Giskard Server is not installed. Install using `giskard server start`")
+        logger.info(
+            "Giskard Server is not installed. Install using `giskard server start`"
+        )
         return
     else:
         version = app_settings["version"]
@@ -437,13 +532,21 @@ def status():
     if container:
         if container.status == "running":
             logger.info(f"Container {container.name} status:")
-            print(get_container().exec_run("supervisorctl -c /opt/giskard/supervisord.conf").output.decode())
+            print(
+                get_container()
+                .exec_run("supervisorctl -c /opt/giskard/supervisord.conf")
+                .output.decode()
+            )
         else:
-            logger.info(f"Container {container.name} isn't running ({container.status})")
+            logger.info(
+                f"Container {container.name} isn't running ({container.status})"
+            )
 
 
 @server.command("clean")
-@click.option("--data", "delete_data", is_flag=True, help="Delete user data (giskard-home volume)")
+@click.option(
+    "--data", "delete_data", is_flag=True, help="Delete user data (giskard-home volume)"
+)
 @common_options
 def clean(delete_data):
     """\b
