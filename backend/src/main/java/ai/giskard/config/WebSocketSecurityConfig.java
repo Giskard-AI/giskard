@@ -44,22 +44,21 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-
-                    List<String> jwtHeaders = accessor.getNativeHeader("jwt");
-                    if (jwtHeaders == null || jwtHeaders.size() == 0 || !StringUtils.hasText(jwtHeaders.get(0))) {
-                        log.warn("Missing JWT token");
-                        throw new AccessDeniedException("Missing JWT token");
-                    } else if (!tokenProvider.validateToken(jwtHeaders.get(0))) {
-                        log.warn("Invalid JWT token");
-                        throw new AccessDeniedException("Invalid JWT token");
-                    } else {
-                        if (licenseService.hasFeature(FeatureFlag.AUTH)) {
-                            Authentication authentication = tokenProvider.getAuthentication(jwtHeaders.get(0));
-                            accessor.setUser(authentication);
-                        } else {
-                            accessor.setUser(getDummyAuthentication());
+                    if (licenseService.hasFeature(FeatureFlag.AUTH)) {
+                        List<String> jwtHeaders = accessor.getNativeHeader("jwt");
+                        if (jwtHeaders == null || jwtHeaders.size() == 0 || !StringUtils.hasText(jwtHeaders.get(0))) {
+                            log.warn("Missing JWT token");
+                            throw new AccessDeniedException("Missing JWT token");
+                        } else if (!tokenProvider.validateToken(jwtHeaders.get(0))) {
+                            log.warn("Invalid JWT token");
+                            throw new AccessDeniedException("Invalid JWT token");
                         }
+                        Authentication authentication = tokenProvider.getAuthentication(jwtHeaders.get(0));
+                        accessor.setUser(authentication);
+                    } else {
+                        accessor.setUser(getDummyAuthentication());
                     }
+
                 }
                 return message;
             }
