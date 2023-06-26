@@ -1,5 +1,6 @@
 package ai.giskard.web.dto.ml;
 
+import ai.giskard.domain.ml.TestResult;
 import ai.giskard.web.dto.SuiteTestDTO;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class SuiteTestExecutionDTO {
     private List<TestResultMessageDTO> messages;
     private List<Integer> actualSlicesSize;
     private List<Integer> referenceSlicesSize;
-    private boolean passed;
+    private TestResult status;
     private List<Integer> partialUnexpectedIndexList;
     private List<Integer> unexpectedIndexList;
     private Integer missingCount;
