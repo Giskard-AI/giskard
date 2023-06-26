@@ -23,7 +23,6 @@ public class SuiteTestExecution extends BaseEntity {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JsonIgnore
     private SuiteTest test;
 
     @ManyToOne
