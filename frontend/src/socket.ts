@@ -19,7 +19,7 @@ export const client = new Client({
       console.error(`Failed to establish websocket connection: ${frame.headers.message}`)
     }
   },
-  // connectHeaders: {jwt: jwtToken},
+  connectHeaders: {jwt: jwtToken},
   brokerURL: httpUrlToWsUrl(apiURL) + '/websocket',
   onConnect: () => {
     client.subscribe('/topic/worker-status', message => {
