@@ -16,12 +16,12 @@ from giskard.ml_worker.testing.utils import check_slice_not_empty
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
 def test_right_label(
-    model: BaseModel,
-    dataset: Dataset,
-    classification_label: str,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.5,
-    debug: bool = False
+        model: BaseModel,
+        dataset: Dataset,
+        classification_label: str,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: float = 0.5,
+        debug: bool = False
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -84,14 +84,14 @@ def test_right_label(
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
 def test_output_in_range(
-    model: BaseModel,
-    dataset: Dataset,
-    slicing_function: Optional[SlicingFunction] = None,
-    classification_label: Optional[str] = None,
-    min_range: float = 0.3,
-    max_range: float = 0.7,
-    threshold: float = 0.5,
-    debug: bool = False
+        model: BaseModel,
+        dataset: Dataset,
+        slicing_function: Optional[SlicingFunction] = None,
+        classification_label: Optional[str] = None,
+        min_range: float = 0.3,
+        max_range: float = 0.7,
+        threshold: float = 0.5,
+        debug: bool = False
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -174,15 +174,15 @@ def test_output_in_range(
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(
-    model: BaseModel,
-    dataset: Dataset,
-    protected_slicing_function: SlicingFunction,
-    unprotected_slicing_function: SlicingFunction,
-    positive_outcome: str,
-    slicing_function: Optional[SlicingFunction] = None,
-    min_threshold: float = 0.8,
-    max_threshold: float = 1.25,
-    debug: bool = False,
+        model: BaseModel,
+        dataset: Dataset,
+        protected_slicing_function: SlicingFunction,
+        unprotected_slicing_function: SlicingFunction,
+        positive_outcome: str,
+        slicing_function: Optional[SlicingFunction] = None,
+        min_threshold: float = 0.8,
+        max_threshold: float = 1.25,
+        debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
