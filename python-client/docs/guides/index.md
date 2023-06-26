@@ -5,17 +5,17 @@
 :maxdepth: 1
 :hidden:
 
-   installation_library/index
-   wrap_dataset/index
-   wrap_model/index
-   scan/index
-   slice/index
-   transformation/index
-   test-suite/index
-   cicd/index
-   installation_app/index
-   upload/index
-   FAQ/index
+installation_library/index
+wrap_dataset/index
+wrap_model/index
+scan/index
+slice/index
+transformation/index
+test-suite/index
+cicd/index
+installation_app/index
+upload/index
+FAQ/index
 ```
 
 ::::::{grid} 1 1 2 2
