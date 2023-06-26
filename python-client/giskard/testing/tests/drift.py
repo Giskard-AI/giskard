@@ -808,7 +808,6 @@ def test_drift_prediction_earth_movers_distance(
     slicing_function: Optional[SlicingFunction] = None,
     classification_label: Optional[str] = None,
     threshold: float = 0.2,
-    debug: bool = False
 ) -> TestResult:
     """
     Test if the Earth Mover’s Distance value between the reference and actual datasets is
