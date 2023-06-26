@@ -6,7 +6,6 @@ import pandas as pd
 
 from giskard.datasets import Dataset
 
-
 from ...models.langchain import LangchainModel
 from ..decorators import detector
 from ..issues import Issue
@@ -53,7 +52,6 @@ class UnethicalBiasDetector:
         logger.debug(f"{self.__class__.__name__}: Testing UnethicalBias")
 
         biased_example_dataframe = self._compute_unethical_bias_score(output)
-        # result = merged.gender_bias.mean()
 
         # Original question
         output_with_question = pd.concat([harmful_df, biased_example_dataframe], axis=1)
