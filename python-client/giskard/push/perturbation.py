@@ -77,7 +77,9 @@ class Perturbation:
             mad = np.median(x)
             return mad
 
-        ds_slice = self.ds.slice(lambda df: df.loc[df.index == self.idrow], row_level=False)
+        idrow = self.idrow
+        ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
+
         row_perturbed = ds_slice.copy()
         if self.coltype == SupportedPerturbationType.NUMERIC:
             mad = mad(self.ds.df[self.feature])
