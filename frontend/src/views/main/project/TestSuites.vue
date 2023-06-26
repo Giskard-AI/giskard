@@ -114,12 +114,12 @@
         </v-container>
         <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
             <div class="mt-2">
-                <div class="d-flex justify-center">
-                    <p class="text-body-1">There are no artifacts (datasets and models) in this project yet. Choose an option below to upload them and create a test suite.</p>
-                </div>
+                <v-alert class='text-center mt-6' v-if="toggleSnippetType === undefined">
+                    <p class='headline font-weight-medium grey--text text--darken-2'>There are no artifacts (datasets and models) in this project yet. <br>Choose an option below to upload them and create a test suite.</p>
+                </v-alert>
 
                 <div class="d-flex justify-center mt-2">
-                    <v-btn-toggle v-model="toggleSnippetType" borderless color="primary">
+                    <v-btn-toggle v-model="toggleSnippetType" color="primary">
                         <v-btn value="demo" class="py-5 px-4">
                             <span>Upload demo test suite</span>
                         </v-btn>
@@ -131,7 +131,8 @@
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-10 mb-6">
-                <p class="text-center font-weight-medium">Follow the code snippet below to upload a demo test suite to the current project 👇</p>
+                <!-- <p class="text-center font-weight-medium">Follow the code snippet below to upload a demo test suite to the current project 👇</p> -->
+                <p class="text-center font-weight-medium">Execute the following Python code to upload a demo test suite to the current project 👇</p>
                 <div class="mt-6 mb-6">
                     <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
                 </div>
@@ -209,7 +210,7 @@ const props = defineProps<{
 }>();
 
 const searchSession = ref("");
-const toggleSnippetType = ref<string>("");
+const toggleSnippetType = ref<string | undefined>(undefined);
 const apiAccessToken = ref<JWTToken | null>(null);
 
 // const codeContent = computed(() =>
