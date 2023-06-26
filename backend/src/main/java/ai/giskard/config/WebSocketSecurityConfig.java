@@ -49,7 +49,7 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     if (licenseService.hasFeature(FeatureFlag.AUTH)) {
                         List<String> jwtHeaders = accessor.getNativeHeader("jwt");
-                        if (jwtHeaders == null || jwtHeaders.size() == 0 || !StringUtils.hasText(jwtHeaders.get(0))) {
+                        if (jwtHeaders == null || jwtHeaders.isEmpty() || !StringUtils.hasText(jwtHeaders.get(0))) {
                             log.warn("Missing JWT token");
                             throw new AccessDeniedException("Missing JWT token");
                         } else if (!tokenProvider.validateToken(jwtHeaders.get(0))) {
