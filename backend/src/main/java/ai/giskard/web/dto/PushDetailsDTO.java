@@ -1,6 +1,7 @@
 package ai.giskard.web.dto;
 
 
+import ai.giskard.worker.CallToActionKind;
 import ai.giskard.worker.PushDetails;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.AllArgsConstructor;
@@ -17,8 +18,9 @@ public class PushDetailsDTO {
     public String action;
     public String explanation;
     public String button;
+    public CallToActionKind kind;
 
     public static PushDetailsDTO fromGrpc(PushDetails details) {
-        return new PushDetailsDTO(details.getAction(), details.getExplanation(), details.getButton());
+        return new PushDetailsDTO(details.getAction(), details.getExplanation(), details.getButton(), details.getCta());
     }
 }

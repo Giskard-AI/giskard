@@ -5,6 +5,7 @@ import {api} from "@/api";
 interface State {
     pushes: { [modelId: string]: { [datasetId: string]: { [rowNb: number]: Pushes } } };
     current: Pushes | undefined;
+    identifier: PushIdentifier | undefined;
 }
 
 interface Pushes {
@@ -14,10 +15,17 @@ interface Pushes {
     overconfidence: PushDTO
 }
 
+interface PushIdentifier {
+    modelId: string,
+    datasetId: string,
+    rowNb: number
+}
+
 export const usePushStore = defineStore('push', {
     state: (): State => ({
         pushes: {},
-        current: undefined
+        current: undefined,
+        identifier: undefined
     }),
     getters: {},
     actions: {
@@ -29,25 +37,18 @@ export const usePushStore = defineStore('push', {
                 this.pushes[modelId][datasetId] = {};
             }
 
-            if (this.pushes[modelId][datasetId][rowNb]) {
-                this.current = this.pushes[modelId][datasetId][rowNb];
-                return this.pushes[modelId][datasetId][rowNb];
+            if (!this.pushes[modelId][datasetId][rowNb]) {
+                // @ts-ignore
+                this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb);
             }
 
-            // @ts-ignore
-            this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb);
             this.current = this.pushes[modelId][datasetId][rowNb];
+            this.identifier = {modelId, datasetId, rowNb};
             return this.pushes[modelId][datasetId][rowNb];
         },
-        getPushSuggestions(modelId: string, datasetId: string, rowNb: number) {
-            if (!this.pushes[modelId]) {
-                this.pushes[modelId] = {};
-            }
-            if (!this.pushes[modelId][datasetId]) {
-                this.pushes[modelId][datasetId] = {};
-            }
-
-            return this.pushes[modelId][datasetId][rowNb];
+        async applyPush(pushKind: string, ctaKind: string) {
+            let result = await api.applyPush(this.identifier!.modelId, this.identifier!.datasetId, this.identifier!.rowNb, pushKind, ctaKind);
+            console.log(result);
         }
     }
 })

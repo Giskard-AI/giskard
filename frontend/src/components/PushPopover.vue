@@ -34,14 +34,9 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-tooltip top>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn small text color="primary" disabled v-bind="attrs" v-on="on">
-                      {{ detail.button }}
-                    </v-btn>
-                  </template>
-                  This action will be available in Giskard 2.1
-                </v-tooltip>
+                <v-btn small text color="primary" @click="applyCta(detail.kind)">
+                  {{ detail.button }}
+                </v-btn>
               </v-list-item-action>
             </v-list-item>
             <v-divider/>
@@ -103,10 +98,6 @@ const push = computed(() => {
   }
 })
 
-// async function dbg_GetSuggestion() {
-//   await api.applyPush(props.modelId ?? "", props.datasetId ?? "", props.rowNb ?? 0, 0, 1)
-// }
-
 const icon = computed(() => {
   switch (props.type) {
     case "contribution":
@@ -121,6 +112,11 @@ const icon = computed(() => {
       return "mdi-bug";
   }
 });
+
+async function applyCta(kind: string) {
+  // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
+  await pushStore.applyPush(props.type, kind);
+}
 </script>
 
 <style scoped>

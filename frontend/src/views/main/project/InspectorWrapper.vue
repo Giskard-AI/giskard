@@ -10,36 +10,36 @@
             <h3> Debugging session </h3>
             <div class="d-flex">
               <div> Id</div>
-              <v-spacer />
+              <v-spacer/>
               <div> {{ inspection.id }}</div>
             </div>
             <div class="d-flex">
               <div> Name</div>
-              <v-spacer />
+              <v-spacer/>
               <div class="pl-5"> {{ inspection.name || "-" }}</div>
             </div>
-            <br />
+            <br/>
             <h3> Model </h3>
             <div class="d-flex">
               <div> Id</div>
-              <v-spacer />
+              <v-spacer/>
               <div> {{ inspection.model.id }}</div>
             </div>
             <div class="d-flex">
               <div> Name</div>
-              <v-spacer />
+              <v-spacer/>
               <div class="pl-5"> {{ inspection.model.name }}</div>
             </div>
-            <br />
+            <br/>
             <h3> Dataset </h3>
             <div class="d-flex">
               <div> Id</div>
-              <v-spacer />
+              <v-spacer/>
               <div> {{ inspection.dataset.id }}</div>
             </div>
             <div class="d-flex pb-3">
               <div> Name</div>
-              <v-spacer />
+              <v-spacer/>
               <div class="pl-5"> {{ inspection.dataset.name }}</div>
             </div>
           </v-tooltip>
@@ -58,8 +58,10 @@
           <span class='caption grey--text' v-if="totalRows > 0">
             Entry #{{ totalRows === 0 ? 0 : rowNb + 1 }} / {{ totalRows }}
           </span>
-          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text' style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
-          <v-chip class="ml-2" outlined link :color="inspection.sample ? 'purple' : 'primary'" @click="handleSwitchSample" x-small>
+          <span v-show="originalData && isDefined(originalData['Index'])" class='caption grey--text'
+                style='margin-left: 15px'>Row Index {{ originalData['Index'] + 1 }}</span>
+          <v-chip class="ml-2" outlined link :color="inspection.sample ? 'purple' : 'primary'"
+                  @click="handleSwitchSample" x-small>
             {{ inspection.sample ? 'Sample' : 'Whole' }} data
           </v-chip>
         </v-toolbar>
@@ -67,17 +69,24 @@
       <v-col lg="6" sm="12" class="pl-4">
         <v-row no-gutters align="center">
           <v-col cols="8" class="pb-4">
-            <SlicingFunctionSelector label="Slice to apply" :project-id="projectId" :full-width="false" :icon="true" class="mr-3" :allow-no-code-slicing="true" @onChanged="processDataset" :value.sync="selectedSlicingFunction.uuid" :args.sync="selectedSlicingFunction.params" :dataset="inspection.dataset" />
+            <SlicingFunctionSelector label="Slice to apply" :project-id="projectId" :full-width="false" :icon="true"
+                                     class="mr-3" :allow-no-code-slicing="true" @onChanged="processDataset"
+                                     :value.sync="selectedSlicingFunction.uuid"
+                                     :args.sync="selectedSlicingFunction.params" :dataset="inspection.dataset"/>
           </v-col>
           <v-col cols="4" class="d-flex pl-2">
-            <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels" :model-type="inspection.model.modelType" @input="f => filter = f" />
+            <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
+                              :model-type="inspection.model.modelType" @input="f => filter = f"/>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
-    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' :transformationModifications="modifications" class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" />
+    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model'
+               :originalData='originalData' :transformationModifications="modifications" class='px-0'
+               @reset='resetInput' @submitValueFeedback='submitValueFeedback'
+               @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0"/>
     <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
-      No data matches the selected filter.<br />
+      No data matches the selected filter.<br/>
       In order to show data, please refine the filter's criteria.
     </v-alert>
 
@@ -85,7 +94,8 @@
     <!-- For general feedback -->
     <v-tooltip left>
       <template v-slot:activator='{ on, attrs }'>
-        <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
+        <v-btn :class="feedbackPopupToggle ? 'secondary' : 'primary'" bottom fab fixed class="zindex-10" right
+               v-bind='attrs' @click='feedbackPopupToggle = !feedbackPopupToggle' v-on='on'>
           <v-icon v-if='feedbackPopupToggle'>mdi-close</v-icon>
           <v-icon v-else>mdi-message-plus</v-icon>
         </v-btn>
@@ -102,13 +112,15 @@
           <v-radio label='No' value='no'></v-radio>
           <v-radio label='Other' value='other'></v-radio>
         </v-radio-group>
-        <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined placeholder='Why?' rows='2'></v-textarea>
+        <v-textarea v-model='feedback' :disabled='feedbackSubmitted' hide-details no-resize outlined placeholder='Why?'
+                    rows='2'></v-textarea>
       </v-card-text>
       <p v-if='feedbackError' class='caption error--text mb-0'>{{ feedbackError }}</p>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn :disabled='feedbackSubmitted' light small text @click='clearFeedback'>Cancel</v-btn>
-        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small @click='submitGeneralFeedback'>
+        <v-btn :disabled='!(feedback && feedbackChoice) || feedbackSubmitted' class='mx-1' color='white' light small
+               @click='submitGeneralFeedback'>
           Send
         </v-btn>
         <v-icon v-show='feedbackSubmitted' color='white'>mdi-check</v-icon>
@@ -119,8 +131,8 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { api } from '@/api';
+import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
+import {api} from '@/api';
 import Inspector from './Inspector.vue';
 import Mousetrap from 'mousetrap';
 import {
@@ -136,10 +148,10 @@ import mixpanel from "mixpanel-browser";
 import _ from "lodash";
 import InspectionFilter from './InspectionFilter.vue';
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { storeToRefs } from "pinia";
-import { useInspectionStore } from "@/stores/inspection";
-import { $vfm } from "vue-final-modal";
+import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useInspectionStore} from "@/stores/inspection";
+import {$vfm} from "vue-final-modal";
 import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
 import {confirm} from "@/utils/confirmation.utils";
 import {usePushStore} from "@/stores/push";
@@ -200,7 +212,7 @@ const percentRegressionUnit = ref(true);
 
 const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
 const canNext = computed(() => rowNb.value < totalRows.value - 1);
-const { transformationFunctions } = storeToRefs(useInspectionStore());
+const {transformationFunctions} = storeToRefs(useInspectionStore());
 
 function commonFeedbackData(): CreatedFeedbackCommonDTO {
   return {
@@ -242,6 +254,7 @@ function next() {
 }
 
 watch(() => rowNb.value, async (newValue, oldValue) => {
+  console.log("RowNb changed");
   const pushStore = usePushStore();
   await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, newValue);
 });
@@ -299,7 +312,7 @@ watch(() => [
   shuffleMode.value,
   percentRegressionUnit.value,
   dataProcessingResult.value
-], async (nv, ov) => applyFilter(nv, ov), { deep: true, immediate: false });
+], async (nv, ov) => applyFilter(nv, ov), {deep: true, immediate: false});
 
 async function updateRow(forceFetch) {
   await fetchRows(rowNb.value, forceFetch);
@@ -316,13 +329,13 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
   const newPage = Math.floor(rowIdxInResults / itemsPerPage);
   if ((rowIdxInResults > 0 && remainder === 0) || forceFetch) {
     const result = await api.getDatasetRows(inspection.value!.dataset.id,
-      newPage * itemsPerPage, itemsPerPage, {
-      filter: {
-        ...filter.value,
-        inspectionId: props.inspectionId
-      },
-      removeRows: dataProcessingResult.value?.filteredRows
-    }, inspection.value!.sample, shuffleMode.value)
+        newPage * itemsPerPage, itemsPerPage, {
+          filter: {
+            ...filter.value,
+            inspectionId: props.inspectionId
+          },
+          removeRows: dataProcessingResult.value?.filteredRows
+        }, inspection.value!.sample, shuffleMode.value)
     rows.value = result.content;
     numberOfRows.value = result.totalItems;
   }
@@ -334,7 +347,7 @@ function assignCurrentRow(forceFetch: boolean) {
   loadingData.value = true;
 
   inputData.value = rows.value[rowIdxInPage.value];
-  originalData.value = { ...inputData.value }; // deep copy to avoid caching mechanisms
+  originalData.value = {...inputData.value}; // deep copy to avoid caching mechanisms
   dataErrorMsg.value = '';
   loadingData.value = false;
   totalRows.value = numberOfRows.value;
@@ -366,7 +379,7 @@ async function doSubmitFeedback(payload: CreateFeedbackDTO) {
 
 const transformationPipeline = computed(() => Object.values(transformationFunctions.value))
 
-watch(() => transformationPipeline.value, processDataset, { deep: true })
+watch(() => transformationPipeline.value, processDataset, {deep: true})
 
 watch(() => props.inspectionId, async (nv, ov) => {
   if (nv !== ov) {
@@ -376,7 +389,7 @@ watch(() => props.inspectionId, async (nv, ov) => {
 
 async function processDataset() {
   const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]
-    .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
+      .filter(callable => !!callable.uuid) as Array<ParameterizedCallableDTO>;
 
   loadingProcessedDataset.value = true;
   dataProcessingResult.value = await api.datasetProcessing(props.projectId, inspection.value!.dataset.id, pipeline, inspection.value!.sample)
