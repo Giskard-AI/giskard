@@ -196,5 +196,7 @@ onMounted(async () => {
 
 .modal-card {
   min-width: 50vw;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 </style>

@@ -52,8 +52,14 @@ def get_model_properties(model):
     if model is None:
         return {}
 
-    inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
-    feature_names = [anonymize(n) for n in model.meta.feature_names] if model.meta.feature_names else None
+    inner_model_class = (
+        fullname(model.model) if isinstance(model, WrapperModel) else None
+    )
+    feature_names = (
+        [anonymize(n) for n in model.meta.feature_names]
+        if model.meta.feature_names
+        else None
+    )
 
     return {
         "model_id": str(model.id),
@@ -68,7 +74,11 @@ def get_dataset_properties(dataset):
     if dataset is None:
         return {}
 
-    column_types = {anonymize(k): v for k, v in dataset.column_types.items()} if dataset.column_types else {}
+    column_types = (
+        {anonymize(k): v for k, v in dataset.column_types.items()}
+        if dataset.column_types
+        else {}
+    )
     column_dtypes = {anonymize(k): v for k, v in dataset.column_dtypes.items()}
 
     return {
@@ -121,7 +131,11 @@ class GiskardAnalyticsCollector:
     @staticmethod
     @analytics_method
     def configure_mixpanel() -> Mixpanel:
-        is_dev_mode = os.environ.get("GISKARD_DEV_MODE", "n").lower() in ["yes", "true", "1"]
+        is_dev_mode = os.environ.get("GISKARD_DEV_MODE", "n").lower() in [
+            "yes",
+            "true",
+            "1",
+        ]
 
         return Mixpanel(
             GiskardAnalyticsCollector.dev_mp_project_key
@@ -158,7 +172,10 @@ class GiskardAnalyticsCollector:
                 merged_props = {**merged_props, **self.server_info}
 
             self.mp.track(
-                distinct_id=self.distinct_user_id, event_name=event_name, properties=dict(merged_props), meta=meta
+                distinct_id=self.distinct_user_id,
+                event_name=event_name,
+                properties=dict(merged_props),
+                meta=meta,
             )
 
     def initialize_giskard_version(self):
@@ -201,7 +218,14 @@ class GiskardAnalyticsCollector:
             if self.ip:
                 return
             try:
-                self.ip = requests.get("https://api64.ipify.org/?format=json").json().get("ip", "unknown")
+                self.ip = (
+                    requests.get(
+                        "http://ip-api.com/json",  # noqa NOSONAR - we don't care about security here
+                        timeout=(2, 2),
+                    )
+                    .json()
+                    .get("ip", "unknown")
+                )
             except:  # noqa NOSONAR
                 self.ip = "unknown"
 

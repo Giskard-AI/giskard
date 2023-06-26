@@ -1,4 +1,4 @@
-import {TestResult} from "@/generated-sources";
+import { TestResult } from '@/generated-sources';
 
 function testStatusToColor(status: TestResult) {
     switch (status) {
@@ -13,19 +13,7 @@ function testStatusToColor(status: TestResult) {
     }
 }
 
-function testStatusToIcon(status: TestResult){
-    switch (status) {
-        case TestResult.PASSED:
-            return 'fa-check';
-        case TestResult.FAILED:
-            return 'fa-xmark';
-        case TestResult.ERROR:
-            return 'fa-exclamation-triangle';
-        default:
-            return '';
-    }
-}
 
 export {
-    testStatusToColor, testStatusToIcon
+    testStatusToColor
 }
