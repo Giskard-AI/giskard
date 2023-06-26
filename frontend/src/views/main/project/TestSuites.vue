@@ -119,15 +119,6 @@
                 </v-alert>
 
                 <div class="d-flex justify-center mt-2">
-                    <!-- <v-btn-toggle v-model="toggleSnippetType" color="primary">
-                        <v-btn value="demo" class="py-5 px-4">
-                            <span>Upload demo test suite</span>
-                        </v-btn>
-                        <v-btn value="custom" class="py-5 px-4">
-                            <span>Upload test suite from your model</span>
-                        </v-btn>
-                    </v-btn-toggle> -->
-
                     <v-card width="275" outlined :class="{
                         'mx-2': true,
                         'active-option': toggleSnippetType === 'demo',
@@ -150,7 +141,6 @@
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-10 mb-6">
-                <!-- <p class="text-center font-weight-medium">Follow the code snippet below to upload a demo test suite to the current project 👇</p> -->
                 <p class="text-center font-weight-medium">Execute the following Python code to upload a demo test suite to the current project 👇</p>
                 <div class="mt-6 mb-6">
                     <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
@@ -170,7 +160,6 @@
                             </v-btn>
                         </v-card-title>
                     </v-card>
-
                     <v-card max-width="500" class="my-6" outlined>
                         <v-card-title class="font-weight-medium">
                             <span>2. Wrap your model</span>
@@ -232,31 +221,6 @@ const searchSession = ref("");
 const toggleSnippetType = ref<string | undefined>(undefined);
 const apiAccessToken = ref<JWTToken | null>(null);
 
-// const codeContent = computed(() =>
-//     `import giskard
-
-// # for demo purposes only 🛳️. Replace with your dataframe creation
-// original_model, original_df = giskard.demo.titanic()
-
-// # Create a Giskard client
-// token = "${apiAccessToken.value?.id_token}"
-// client = giskard.GiskardClient(
-//     url="${apiURL}",  # URL of your Giskard instance
-//     token=token
-// )
-
-// # Wrap your model and dataset with Giskard 🎁
-// giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
-// giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
-
-// # Scan your model for potential issues 🕵️
-// results = giskard.scan(giskard_model, giskard_dataset)
-
-// # Upload an automatically created test suite to the current project ✉️
-// results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
-// `
-// );
-
 const codeContent = computed(() => {
     return `import giskard
 
@@ -292,7 +256,7 @@ client = giskard.GiskardClient(url="${apiURL}",  # URL of your Giskard instance
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-})
+});
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -469,7 +433,6 @@ onActivated(async () => {
 
 .active-option {
     border: 2px solid #087038;
-    /* make background color with the border color + opacity */
     background-color: rgba(8, 112, 56, 0.07)
 }
 
