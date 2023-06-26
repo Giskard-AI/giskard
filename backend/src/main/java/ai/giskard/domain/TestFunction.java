@@ -1,6 +1,7 @@
 package ai.giskard.domain;
 
 import ai.giskard.domain.ml.SuiteTest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class TestFunction extends Callable implements Serializable {
 
     @OneToMany(mappedBy = "testFunction", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<SuiteTest> suiteTests;
 
 }
