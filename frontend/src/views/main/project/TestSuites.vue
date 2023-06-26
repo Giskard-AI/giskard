@@ -119,14 +119,33 @@
                 </v-alert>
 
                 <div class="d-flex justify-center mt-2">
-                    <v-btn-toggle v-model="toggleSnippetType" color="primary">
+                    <!-- <v-btn-toggle v-model="toggleSnippetType" color="primary">
                         <v-btn value="demo" class="py-5 px-4">
                             <span>Upload demo test suite</span>
                         </v-btn>
                         <v-btn value="custom" class="py-5 px-4">
                             <span>Upload test suite from your model</span>
                         </v-btn>
-                    </v-btn-toggle>
+                    </v-btn-toggle> -->
+
+                    <v-card width="275" outlined :class="{
+                        'mx-2': true,
+                        'active-option': toggleSnippetType === 'demo',
+                        'option-card': true,
+                        'd-flex': true,
+                        'align-center': true
+                    }" @click="toggleSnippetType = 'demo'">
+                        <v-card-text class="text-center text-body-1">Upload demo test suite</v-card-text>
+                    </v-card>
+                    <v-card width="275" outlined :class="{
+                        'mx-2': true,
+                        'active-option': toggleSnippetType === 'custom',
+                        'option-card': true,
+                        'd-flex': true,
+                        'align-center': true
+                    }" @click="toggleSnippetType = 'custom'">
+                        <v-card-text class="text-center text-body-1">Upload test suite from your model</v-card-text>
+                    </v-card>
                 </div>
             </div>
 
@@ -442,5 +461,20 @@ onActivated(async () => {
 .error-tests {
     margin-top: 0.25rem;
     color: #ebba59;
+}
+
+.option-card {
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.active-option {
+    border: 2px solid #087038;
+    /* make background color with the border color + opacity */
+    background-color: rgba(8, 112, 56, 0.07)
+}
+
+.active-option .v-card__text {
+    color: #087038;
+    font-weight: 600;
 }
 </style>
