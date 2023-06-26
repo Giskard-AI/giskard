@@ -43,6 +43,9 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                if (accessor == null){
+                    throw new AccessDeniedException("Failed to read STOMP headers");
+                }
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     if (licenseService.hasFeature(FeatureFlag.AUTH)) {
                         List<String> jwtHeaders = accessor.getNativeHeader("jwt");
