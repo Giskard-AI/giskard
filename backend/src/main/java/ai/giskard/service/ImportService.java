@@ -25,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -81,6 +83,7 @@ public class ImportService {
     }
 
     private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject) {
+        // TODO: Update model and dataset id in inputs
         testSuites.forEach(suite -> {
             suite.setProject(savedProject);
 
@@ -124,6 +127,17 @@ public class ImportService {
         }
     }
 
+    private void copyFilesToGlobalFolder(Path metadataTmpDirectory, Set<UUID> ids, String folderName) throws IOException {
+        Path sourceDir = metadataTmpDirectory.resolve("global").resolve(folderName);
+        Path targetDir = locationService.giskardHome().resolve("global").resolve(folderName);
+
+        for (UUID id : ids) {
+            if (!Files.exists(targetDir.resolve(id.toString()))) {
+                Files.move(sourceDir.resolve(id.toString()), targetDir.resolve(id.toString()));
+            }
+        }
+    }
+
     Project importProject(Map<String, String> importedUsersToCurrent, String metadataDirectory, String projectKey, String userNameOwner) throws IOException {
         Path pathMetadataDirectory = Paths.get(metadataDirectory);
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
@@ -151,7 +165,29 @@ public class ImportService {
         // Once everything is remapped, at this stage we want to save the files into appropriate folders
         copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdModel, "models");
         copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdDataset, "datasets");
+        copyFilesToGlobalFolder(pathMetadataDirectory, findTests(project), "tests");
+        copyFilesToGlobalFolder(pathMetadataDirectory, findReferencedEntities(project, "SlicingFunction"), "slices");
+        copyFilesToGlobalFolder(pathMetadataDirectory, findReferencedEntities(project, "TransformationFunction"), "transformations");
 
         return projectRepository.save(savedProject);
     }
+
+    private Set<UUID> findTests(Project project) {
+        return project.getTestSuites().stream()
+            .flatMap(testSuite -> testSuite.getTests().stream())
+            .map(suiteTest -> suiteTest.getTestFunction().getUuid())
+            .collect(Collectors.toSet());
+    }
+
+    private Set<UUID> findReferencedEntities(Project project, String type) {
+        return project.getTestSuites().stream()
+            .flatMap(testSuite -> Stream.concat(
+                testSuite.getTests().stream()
+                    .flatMap(suiteTest -> suiteTest.getFunctionInputs().stream()),
+                testSuite.getFunctionInputs().stream()
+            ).filter(functionInput -> !functionInput.isAlias() && type.equals(functionInput.getType())))
+            .map(functionInput -> UUID.fromString(functionInput.getValue()))
+            .collect(Collectors.toSet());
+    }
+
 }

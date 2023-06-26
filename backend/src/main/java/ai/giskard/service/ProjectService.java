@@ -63,7 +63,6 @@ public class ProjectService {
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
 
-
     /**
      * Update project
      *
@@ -147,11 +146,12 @@ public class ProjectService {
 
             // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
             try {
-
                 FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
             } catch (IOException e) {
                 throw new GiskardRuntimeException("Error while copying your project for export", e);
             }
+
+            // TODO: copy global tests/slices/transformations
 
             // Zip the project and send it as bytes to the Frontend
             projectZipPath = locationService.resolvedTmpPath().resolve(String.format("%s.zip", project.getKey()));
