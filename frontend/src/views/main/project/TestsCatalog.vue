@@ -92,10 +92,31 @@
                                         :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
                 <div class='d-flex'>
                   <v-spacer></v-spacer>
-                  <v-btn :loading='testRunning' class='primaryLightBtn' color='primaryLight' small width='100'
-                         @click='runTest'>
-                    Run
-                  </v-btn>
+                  <v-menu offset-y>
+                    <template v-slot:activator='{ on, attrs }'>
+                      <v-btn class='primaryLightBtn' v-bind='attrs' color='primaryLight' small width='100'
+                             :loading='testRunning' @click='() => runTest(true)'>
+                        <v-icon>arrow_right</v-icon>
+                        <span class='pe-2'>Run</span>
+                        <v-icon class='ps-2 primary-left-border' v-on='on' @click.stop>mdi-menu-down</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item>
+                        <v-tooltip bottom>
+                          <template v-slot:activator='{ on, attrs }'>
+                            <v-btn color='secondary' text v-bind='attrs'
+                                   @click='() => runTest(false)'
+                                   v-on='on' :loading='testRunning'>
+                              <v-icon>science</v-icon>
+                              Run on whole dataset
+                            </v-btn>
+                          </template>
+                          <span>By default we try the test on a sample to fasten execution.</span>
+                        </v-tooltip>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
                 <TestExecutionResultBadge v-if='testResult' :result='testResult' class='mt-4' />
               </div>
@@ -203,17 +224,18 @@ const selectedTestUsage = computed(() => {
 });
 
 
-async function runTest() {
+async function runTest(sample: boolean) {
   testResult.value = null;
   testRunning.value = true;
 
   try {
     mixpanel.track('Run test from Catalog', {
       testName: selected.value!.name,
-      inputs: anonymize(Object.values(testArguments.value))
+      inputs: anonymize(Object.values(testArguments.value)),
+      sample
     });
 
-    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value));
+    testResult.value = await api.runAdHocTest(props.projectId, selected.value!.uuid, Object.values(testArguments.value), sample);
   } finally {
     testRunning.value = false;
   }
@@ -334,5 +356,9 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .list-test-name {
   font-weight: 500;
+}
+
+.primary-left-border {
+  border-left: 1px solid #087038;
 }
 </style>
