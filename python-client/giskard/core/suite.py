@@ -34,7 +34,7 @@ class TestSuiteResult(tuple):
         tests_results = "".join(
             [
                 f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value, _ in self[1]
+                for key, value in self[1]
             ]
         )
         return """
@@ -218,7 +218,7 @@ class Suite:
                 - (str) The test_name
                 - (bool | TestResult) The result of the test execution
         """
-        res: List[(str, Union[bool, TestResult], Dict[str, Any])] = list()
+        res: List[(str, Union[bool, TestResult])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -228,7 +228,7 @@ class Suite:
             try:
                 test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result, test_params))
+                res.append((test_partial.test_name, result))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
@@ -245,11 +245,11 @@ class Suite:
                     )
                 )
 
-        result = single_binary_result([result for name, result, params in res])
+        result = single_binary_result([result for name, result in res])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if result else 'failed'}")
-        for test_name, r, a in res:
+        for test_name, r in res:
             logger.info(f"{test_name}: {format_test_result(r)}")
         return TestSuiteResult((result, res))
 
