@@ -31,6 +31,7 @@ def create_docker_client() -> DockerClient:
     try:
         return docker.from_env()
     except DockerException as e:
+        analytics.track("giskard-server:start:fail-docker", {"error": str(e)})
         logger.exception(
             """Failed to connect to Docker. Giskard requires Docker to be installed. If Docker is installed, please run it. Otherwise, please install it.
 For an easy installation of Docker you can execute:
@@ -462,7 +463,7 @@ def diagnose(local_dir):
 
     now = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     out_file = (
-        out_dir / f"giskard-diagnose-{get_version().replace('.', '_')}-{now}.tar.gz"
+            out_dir / f"giskard-diagnose-{get_version().replace('.', '_')}-{now}.tar.gz"
     )
     with open(out_file, "wb") as f:
         for chunk in bits:
@@ -591,7 +592,7 @@ def clean(delete_data):
     "token",
     required=False,
     help="In case you have an ngrok account, you can use a token "
-    "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
+         "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
 )
 @common_options
 def expose(token):
