@@ -1,5 +1,5 @@
 import {reactive} from 'vue';
-import {Client} from '@stomp/stompjs';
+import {Client, Frame} from '@stomp/stompjs';
 import {apiURL} from './env';
 import {getLocalToken, httpUrlToWsUrl} from './utils';
 import {useMainStore} from './stores/main';
@@ -12,7 +12,14 @@ export const state = reactive({
 });
 let jwtToken = getLocalToken() || "";
 export const client = new Client({
-  connectHeaders: {jwt: jwtToken},
+  onStompError: async (frame: Frame) => {
+    if (frame.headers.message.includes('AccessDeniedException')) {
+      await client.deactivate()
+      useMainStore().addNotification({content: "Failed to establish websocket connection.", color: TYPE.ERROR});
+      console.error(`Failed to establish websocket connection: ${frame.headers.message}`)
+    }
+  },
+  // connectHeaders: {jwt: jwtToken},
   brokerURL: httpUrlToWsUrl(apiURL) + '/websocket',
   onConnect: () => {
     client.subscribe('/topic/worker-status', message => {
