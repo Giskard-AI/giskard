@@ -46,7 +46,7 @@ public class AsyncConfiguration implements AsyncConfigurer {
         return new SimpleAsyncUncaughtExceptionHandler();
     }
 
-    @Bean
+    @Bean(name = "giskardTaskScheduler")
     public TaskScheduler getTaskScheduler() {
         log.debug("Creating Async Task Scheduler");
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
