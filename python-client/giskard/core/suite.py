@@ -3,7 +3,7 @@ import logging
 import traceback
 from dataclasses import dataclass
 from functools import singledispatchmethod
-from typing import List, Any, Union, Dict, Mapping, Optional
+from typing import List, Any, Union, Dict, Optional
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
@@ -132,7 +132,7 @@ class ModelInput(SuiteInput):
 @dataclass
 class TestPartial:
     giskard_test: GiskardTest
-    provided_inputs: Mapping[str, Any]
+    provided_inputs: Dict[str, Any]
     test_name: Union[int, str]
 
 
@@ -172,6 +172,24 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
     else:
         return TestInputDTO(name=pname, value=str(p), type=ptype)
+
+
+def _generate_test_partial(test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> TestPartial:
+    if isinstance(test_fn, GiskardTestMethod):
+        params = {k: v for k, v in test_fn.params.items() if v is not None}
+    elif isinstance(test_fn, GiskardTest):
+        params = {
+            k: test_fn.__dict__[k]
+            for k, v in inspect.signature(test_fn.__init__).parameters.items()
+            if test_fn.__dict__[k] is not None
+        }
+    else:
+        test_fn = GiskardTestMethod(test_fn)
+
+    if test_name is None:
+        test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
+
+    return TestPartial(test_fn, params, test_name)
 
 
 class Suite:
@@ -319,21 +337,7 @@ class Suite:
             Suite: The current instance of the test suite to allow chained calls.
 
         """
-        if isinstance(test_fn, GiskardTestMethod):
-            params = {k: v for k, v in test_fn.params.items() if v is not None}
-        elif isinstance(test_fn, GiskardTest):
-            params = {
-                k: test_fn.__dict__[k]
-                for k, v in inspect.signature(test_fn.__init__).parameters.items()
-                if test_fn.__dict__[k] is not None
-            }
-        else:
-            test_fn = GiskardTestMethod(test_fn)
-
-        if test_name is None:
-            test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
-
-        self.tests.append(TestPartial(test_fn, params, test_name))
+        self.tests.append(_generate_test_partial(test_fn, test_name, **params))
 
         return self
 
@@ -368,6 +372,16 @@ class Suite:
     def _remove_test_by_reference(self, giskard_test: GiskardTest):
         self.tests = [test for test in self.tests if test.giskard_test.meta.uuid != giskard_test.meta.uuid]
         return self
+
+    def update_test_params(self, index: int, **params):
+        test = self.tests[index]
+        inputs = test.provided_inputs.copy()
+        inputs.update(**params)
+        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **inputs)
+
+    def replace_test_params(self, index: int, **params):
+        test = self.tests[index]
+        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **params)
 
     def find_required_params(self):
         res = dict()
