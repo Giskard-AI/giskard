@@ -731,7 +731,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         super().save(local_path)
 
     def save_model(self, local_path, mlflow_meta):
-        mlflow.pyfunc.save_model(local_path, mlflow_model=mlflow)
+        mlflow.pyfunc.save_model(local_path, mlflow_model=mlflow_meta)
 
     @classmethod
     def load_model(cls, local_dir):
