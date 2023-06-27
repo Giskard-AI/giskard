@@ -3,7 +3,7 @@
     <v-container class="main-container vc" v-else-if="hasTest">
         <div class="d-flex">
         </div>
-        <TestSuiteExecutionHeader :execution="execution" :tests="filteredTest" :compact="false"/>
+        <TestSuiteExecutionHeader :execution='execution' :tests='filteredTest' :compact='false' :try-mode='tryMode' />
         <SuiteTestExecutionList :tests="filteredTest" :compact="false" :is-past-execution="isPastExecution"/>
     </v-container>
     <v-container v-else class="d-flex flex-column vc fill-height">
@@ -19,23 +19,23 @@
 
 <script setup lang="ts">
 
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {TestSuiteExecutionDTO} from '@/generated-sources';
-import {computed, onMounted, watch} from 'vue';
-import {chain} from 'lodash';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { TestSuiteExecutionDTO } from '@/generated-sources';
+import { computed, onMounted, watch } from 'vue';
+import { chain } from 'lodash';
+import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import {TestsUtils} from "@/utils/tests.utils";
+import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
+import { TestsUtils } from '@/utils/tests.utils';
 
 const props = withDefaults(defineProps<{
-    execution?: TestSuiteExecutionDTO,
-    isPastExecution: boolean,
-    tryMode?: boolean
+  execution?: TestSuiteExecutionDTO,
+  isPastExecution: boolean,
+  tryMode?: boolean
 }>(), {
-    tryMode: false
+  tryMode: false
 });
 
 const testSuiteStore = useTestSuiteStore();

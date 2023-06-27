@@ -42,10 +42,15 @@ RUN WHEEL=$(ls python-client/dist/giskard*.whl) && python-client/.venv-prod/bin/
 FROM python:3.10-slim
 ENV SPRING_PROFILES_ACTIVE=prod
 ARG DEBIAN_FRONTEND=noninteractive
+ARG POSTGRES_VERSION=13
 
 RUN apt-get update && \
-    apt-get install -y \
-    postgresql nginx openjdk-17-jre-headless supervisor git gettext-base
+    apt-get -y install --no-install-recommends wget gnupg nginx openjdk-17-jre-headless supervisor git gettext-base
+
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+    sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-${POSTGRES_VERSION}
 
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
     SPRING_LIQUIBASE_URL=jdbc:postgresql://localhost:5432/postgres \
@@ -56,7 +61,7 @@ ENV SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/postgres \
 
 ENV VENV_PATH=$GSK_DIST_PATH/internal-mlworker-venv
 
-ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/13/bin:$PATH" \
+ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/${POSTGRES_VERSION}/bin:$PATH" \
     PGDATA=$GSK_HOME/database \
     GISKARD_HOME=$GSK_HOME
 

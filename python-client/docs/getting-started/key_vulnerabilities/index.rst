@@ -13,5 +13,6 @@ Before testing Machine Learning models, it's crucial to have a comprehensive und
    ethics/index
    data_leakage/index
    stochasticity/index
+   spurious/index
 
 By conducting a `Giskard scan <../../guides/scan/index.rst>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.

@@ -36,9 +36,18 @@
                     issue.info.metric.name|lower }}.    
             </p>
         </div>
+        
         <h4 class="font-bold mt-4 text-sm">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
             {{ issue.examples(3).to_html(justify="left", notebook=True) | safe }}
         </div>
+        
+        {% if issue.info.p_value is not none %}
+        <h4 class="font-bold mt-4 text-sm">Significance</h4>
+        <p class="text-sm my-2">
+            The hypothesis that the <em>{{ issue.info.metric.name }}</em> on the data slice was different with respect
+            to the rest of the data was asserted with p-value = {{ issue.info.p_value|format_metric }}.
+        </p>
+        {% endif %}
     </td>
 </tr>
