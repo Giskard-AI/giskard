@@ -2,6 +2,8 @@ from giskard.core.core import SupportedModelTypes
 
 from ..push import BorderlinePush, OverconfidencePush
 
+from giskard.testing.tests.calibration import _default_overconfidence_threshold
+
 
 def create_overconfidence_push(model, ds, idrow):
     values = ds.df.loc[[idrow]]
@@ -17,7 +19,9 @@ def create_overconfidence_push(model, ds, idrow):
         training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
         prediction_proba = model_prediction_results.all_predictions[prediction].values
 
-        if training_label != prediction and prediction_proba >= 1.5 * training_label_proba:
+        if training_label != prediction and (
+            prediction_proba - training_label_proba
+        ) >= _default_overconfidence_threshold(model):
             # if training_label != prediction and prediction_proba >= 2* training_label_proba:
             # res = Push(push_type="contribution_wrong", feature=el,
             #            value=values[el],
@@ -32,21 +36,21 @@ def create_borderline_push(model, ds, idrow):
         row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
         model_prediction_results = model.predict(row_slice)
         all_predictions = model_prediction_results.all_predictions
-        diff, max, second = _var_rate(all_predictions)
+        diff, max, second = _var(all_predictions)
         values = ds.df.loc[[idrow]]
         training_label = values[ds.target].values[0]
         training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
 
-        if diff <= 0.2:
+        if diff <= 0.1:
             return BorderlinePush(max, second, training_label, training_label_proba, row_slice)
 
 
-def _var_rate(x):
+def _var(x):
     row_as_list = x.values.flatten().tolist()
     max_val = max(row_as_list)
     row_as_list.remove(max_val)
     second_max_val = max(row_as_list)
-    diff = 2 * abs(max_val - second_max_val) / (max_val + second_max_val)
+    diff = max_val - second_max_val
     # diff = abs(max_val - second_max_val)/second_max_val
     # diff = abs(max_val - second_max_val)
     return diff, max_val, second_max_val
