@@ -53,7 +53,7 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final FileLocationService locationService;
-    private final TaskScheduler taskScheduler;
+    private final TaskScheduler giskardTaskScheduler;
     private final ImportService importService;
     private final TestSuiteService testSuiteService;
 
@@ -196,7 +196,7 @@ public class ProjectService {
     }
 
     private void scheduleTemporaryDirectoryDeletion(Path pathToTimestampDirectory) {
-        taskScheduler.schedule(() -> {
+        giskardTaskScheduler.schedule(() -> {
             if (!Files.exists(pathToTimestampDirectory)) {
                 return;
             }
