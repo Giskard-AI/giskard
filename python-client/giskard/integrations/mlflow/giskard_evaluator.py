@@ -51,12 +51,15 @@ class GiskardEvaluator(ModelEvaluator):
 
         # log html scan result
         with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-            self.client.log_text(self.run_id, results.to_html(), f.name.split("/")[-1])
+            scan_results_filename = f.name.split("/")[-1]
+            results.to_html(scan_results_filename)
+            self.client.log_artifact(self.run_id, scan_results_filename)
 
         # log metrics resulting from scan
         test_suite = results.generate_test_suite("scan test suite")
         test_suite_results = test_suite.run()
         for test_result in test_suite_results[1]:
             test_name = test_result[0]
-            test_name = re.sub(r'\W+', '', test_name)
+            test_name.replace("data slice", "data slice:")
+            test_name = re.sub(r'[^A-Za-z0-9_\-. /]+', '', test_name)
             self.client.log_metric(self.run_id, test_name, test_result[1].metric)
