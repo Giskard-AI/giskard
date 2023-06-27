@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+
 {% block head %}
 <style>{% include "static/style.css" %}</style>
 {% endblock %}
@@ -12,7 +14,10 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
 <script type="text/javascript">
-    {% include "static/internal.js" %}
+{% include "static/internal.js" %}
 </script>
 {% endblock %}
