@@ -117,15 +117,18 @@ def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseM
     def empty_slice(x):
         return x.iloc[[]]
 
-    result = Suite().add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice)) \
-        .add_test(test_f1(dataset=shared_input, threshold=0.2)) \
+    result = (
+        Suite()
+        .add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice))
+        .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)
+    )
 
     assert result[0] is False
     assert result[1][0][1].passed is False
     assert result[1][0][1].is_error is True
     assert result[1][0][1].messages[0].type is TestMessageLevel.ERROR
-    assert 'The sliced dataset in test_f1 is empty.' in result[1][0][1].messages[0].text
+    assert "The sliced dataset in test_f1 is empty." in result[1][0][1].messages[0].text
     assert result[1][1][1].passed is True
     assert result[1][1][1].is_error is False
 
@@ -137,6 +140,65 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     #     ).upload(client, "test_project_key")
     scan(german_credit_model, german_credit_data)
 
+
+def test_remove_by_id():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "AUC"
+    assert suite.tests[2].test_name == "Diff F1"
+
+    suite.remove_test(1)
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "Diff F1"
+
+    suite.remove_test(-1)
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_name == "F1"
+
+
+def test_remove_by_name():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "AUC"
+    assert suite.tests[2].test_name == "Diff F1"
+
+    suite.remove_test("AUC")
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "Diff F1"
+
+    suite.remove_test("AUC")
+    assert len(suite.tests) == 2
+
+    suite.remove_test("Diff F1")
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_name == "F1"
+
+
+def test_remove_by_reference():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "AUC"
+    assert suite.tests[2].test_name == "Diff F1"
+
+    suite.remove_test(test_auc)
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[1].test_name == "Diff F1"
+
+    suite.remove_test(test_auc)
+    assert len(suite.tests) == 2
+
+    suite.remove_test(test_diff_f1)
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_name == "F1"
 
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #     from giskard.client.giskard_client import GiskardClient

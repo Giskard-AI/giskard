@@ -2,6 +2,7 @@ import inspect
 import logging
 import traceback
 from dataclasses import dataclass
+from functools import singledispatchmethod
 from typing import List, Any, Union, Dict, Mapping, Optional
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
@@ -183,7 +184,6 @@ class Suite:
             An integer identifying the suite.
         tests : List[TestPartial]
             A list of TestPartial objects representing the test cases in the suite.
-        suite_params : Mapping[str, SuiteInput]
             A mapping of suite parameters with their corresponding SuiteInput objects.
         name : str
             A string representing the name of the suite.
@@ -191,7 +191,6 @@ class Suite:
 
     id: int
     tests: List[TestPartial]
-    suite_params: Mapping[str, SuiteInput]
     name: str
 
     def __init__(self, name=None) -> None:
@@ -200,8 +199,7 @@ class Suite:
 
         :param name: The name of the test suite.
         """
-        self.suite_params = {}
-        self.tests = []
+        self.tests = list()
         self.name = name
 
     def run(self, verbose: bool = True, **suite_run_args):
@@ -339,8 +337,27 @@ class Suite:
 
         return self
 
+    @singledispatchmethod
+    def remove_test(self, arg):
+        raise NotImplementedError("To remove a test from the suite please pass its index, its name or its reference")
+
+    @remove_test.register
+    def _remove_test_by_idx(self, idx: int):
+        self.tests.pop(idx)
+        return self
+
+    @remove_test.register
+    def _remove_test_by_name(self, test_name: str):
+        self.tests = [test for test in self.tests if test.test_name != test_name]
+        return self
+
+    @remove_test.register
+    def _remove_test_by_reference(self, giskard_test: GiskardTest):
+        self.tests = [test for test in self.tests if test.giskard_test.meta.uuid != giskard_test.meta.uuid]
+        return self
+
     def find_required_params(self):
-        res = {}
+        res = dict()
 
         for test_partial in self.tests:
             if isinstance(test_partial.giskard_test, GiskardTestMethod):
