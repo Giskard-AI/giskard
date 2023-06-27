@@ -2,6 +2,7 @@ name: Nightly Python test
 on:
   schedule:
     - cron: '0 1 * * *' # Always run at 1:00 a.m.
+  workflow_dispatch:
 
 jobs:
   full-python-test:
