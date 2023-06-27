@@ -150,36 +150,39 @@
             <div v-else-if="toggleSnippetType === 'custom'" class="mt-10 mb-6 d-flex justify-center">
                 <div>
                     <p class="font-weight-medium text-center">To upload a test suite from your model, follow these 3 steps:</p>
-                    <v-card max-width="500" class="my-6" outlined>
+                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
-                            <span>1. Wrap your dataset</span>
+                            <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
+                            <span>Wrap your dataset</span>
                             <v-spacer></v-spacer>
-                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
-                                OPEN
-                                <v-icon right>mdi-open-in-new</v-icon>
-                            </v-btn>
+                            <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
+                        <v-card-text>
+                            Small description for wrap your dataset
+                        </v-card-text>
                     </v-card>
-                    <v-card max-width="500" class="my-6" outlined>
+                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
-                            <span>2. Wrap your model</span>
+                            <v-icon class="mr-2" color="primary">mdi-numeric-2-circle-outline</v-icon>
+                            <span>Wrap your model</span>
                             <v-spacer></v-spacer>
-                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
-                                OPEN
-                                <v-icon right>mdi-open-in-new</v-icon>
-                            </v-btn>
+                            <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
+                        <v-card-text>
+                            Small description for wrap your model
+                        </v-card-text>
                     </v-card>
 
-                    <v-card max-width="500" class="my-6" outlined>
+                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
-                            <span>3. Upload suite from scan</span>
+                            <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
+                            <span>Upload suite from scan</span>
                             <v-spacer></v-spacer>
-                            <v-btn class="primary ml-2" href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
-                                OPEN
-                                <v-icon right>mdi-open-in-new</v-icon>
-                            </v-btn>
+                            <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
+                        <v-card-text>
+                            Small description for upload suite from scan
+                        </v-card-text>
                     </v-card>
                     <p class="text-center">Or check the <a href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">test suite documentation</a>.</p>
                 </div>
@@ -439,5 +442,16 @@ onActivated(async () => {
 .active-option .v-card__text {
     color: #087038;
     font-weight: 600;
+}
+
+.card-step:hover {
+    cursor: pointer;
+    /* change background color with animation */
+    transition: background-color 0.5s ease;
+    background-color: rgba(8, 112, 56, 0.07);
+}
+
+.card-step:hover .v-icon {
+    color: #087038;
 }
 </style>
