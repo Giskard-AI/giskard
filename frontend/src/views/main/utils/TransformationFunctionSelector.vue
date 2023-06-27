@@ -1,19 +1,20 @@
 <template>
     <div class="d-flex" :class="{w100: fullWidth}">
         <v-select
-            clearable
-            :outlined="fullWidth"
-            class="slice-function-selector"
-            :label="label"
-            :value="value"
-            :items="availableTransformation"
-            :item-text="extractName"
-            item-value="uuid"
-            :return-object="false"
-            @input="onInput"
-            :dense="fullWidth"
-            hide-details
-            :prepend-inner-icon="icon ? 'mdi-magic-staff' : null"
+          attach
+          clearable
+          :outlined='fullWidth'
+          class='slice-function-selector'
+          :label='label'
+          :value='value'
+          :items='availableTransformation'
+          :item-text='extractName'
+          item-value='uuid'
+          :return-object='false'
+          @input='onInput'
+          :dense='fullWidth'
+          hide-details
+          :prepend-inner-icon="icon ? 'mdi-magic-staff' : null"
         ></v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
@@ -24,23 +25,23 @@
 <script setup lang="ts">
 
 
-import {FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
-import {storeToRefs} from "pinia";
-import {useCatalogStore} from "@/stores/catalog";
-import {computed} from "vue";
-import {$vfm} from "vue-final-modal";
-import FunctionInputsModal from "@/views/main/project/modals/FunctionInputsModal.vue";
-import {chain} from "lodash";
+import { FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
+import { storeToRefs } from 'pinia';
+import { useCatalogStore } from '@/stores/catalog';
+import { computed } from 'vue';
+import { $vfm } from 'vue-final-modal';
+import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal.vue';
+import { chain } from 'lodash';
 
 const props = withDefaults(defineProps<{
-    projectId?: number,
-    label: string,
-    fullWidth: boolean,
-    value?: string,
-    args?: Array<FunctionInputDTO>,
-    icon: boolean,
-    columnType?: string,
-    columnName?: string
+  projectId?: number,
+  label: string,
+  fullWidth: boolean,
+  value?: string,
+  args?: Array<FunctionInputDTO>,
+  icon: boolean,
+  columnType?: string,
+  columnName?: string
 }>(), {
     fullWidth: true,
     icon: false
