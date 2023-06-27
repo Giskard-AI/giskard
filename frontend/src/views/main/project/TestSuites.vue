@@ -190,7 +190,6 @@
                             Small description for upload suite from scan
                         </v-card-text>
                     </v-card>
-                    <p class="text-center">Or check the <a href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">test suite documentation</a>.</p>
                 </div>
             </div>
             <div v-else class="d-flex justify-center my-6">
