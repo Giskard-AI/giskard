@@ -65,7 +65,6 @@ html_favicon = "favicon.ico"
 html_theme = "furo"
 html_static_path = ["_static"]
 
-
 html_css_files = ["css/custom.css"]
 html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js"]
 
@@ -101,9 +100,9 @@ html_theme_options = {
     "navigation_with_keys": True,
     "top_of_page_button": "edit",
     "source_repository": "https://github.com/Giskard-AI/giskard",
-    "source_branch": "feature/sphinx-documentation",
+    "source_branch": "main",
     "source_directory": "python-client/docs/",
-    "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/feature/sphinx-documentation/python-client/docs/{filename}",
+    "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/main/python-client/docs/{filename}",
 }
 
 add_function_parentheses = False
