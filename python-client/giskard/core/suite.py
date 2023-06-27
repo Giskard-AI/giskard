@@ -374,14 +374,40 @@ class Suite:
         return self
 
     def update_test_params(self, index: int, **params):
+        """
+        Update a test from the suite.
+
+        Args:
+            index (int): The index of the test to be updated
+            **params: The params to be added/updated to the current one
+
+        Returns:
+            Suite: The current instance of the test suite to allow chained calls.
+
+        """
         test = self.tests[index]
         inputs = test.provided_inputs.copy()
         inputs.update(**params)
         self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **inputs)
 
+        return self
+
     def replace_test_params(self, index: int, **params):
+        """
+        Replace the test parameters from a test.
+
+        Args:
+            index (int): The index of the test to be updated
+            **params: The params to be set
+
+        Returns:
+            Suite: The current instance of the test suite to allow chained calls.
+
+        """
         test = self.tests[index]
         self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **params)
+
+        return self
 
     def find_required_params(self):
         res = dict()
