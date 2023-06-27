@@ -1,5 +1,7 @@
 package ai.giskard.web.dto;
 
+import ai.giskard.worker.CallToActionKind;
+import ai.giskard.worker.PushKind;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,6 @@ public class ApplyPushDTO {
     private UUID modelId;
     private UUID datasetId;
     private int rowIdx;
-    private int kind;
-    private int pushIdx;
+    private PushKind pushKind;
+    private CallToActionKind ctaKind;
 }

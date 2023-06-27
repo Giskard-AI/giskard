@@ -9,10 +9,10 @@ from typing import Callable, Sequence, List, Dict
 import numpy as np
 import pandas as pd
 
-from ..utils.display import format_number
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..utils.display import format_number
 
 
 def escape(value) -> str:
@@ -218,6 +218,9 @@ class Query:
     def __init__(self, clauses, optimize=False):
         self.clauses = defaultdict(list)
         for clause in clauses:
+            # if clause.value is an int64, convert it to an int
+            if isinstance(clause.value, np.int64):
+                clause.value = int(clause.value)
             self.clauses[clause.column].append(clause)
 
         if optimize:

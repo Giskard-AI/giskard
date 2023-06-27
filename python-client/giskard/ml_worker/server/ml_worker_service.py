@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 import os
 import platform
 import sys
@@ -11,6 +10,7 @@ from pathlib import Path
 
 import google
 import grpc
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -39,6 +39,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.path_utils import model_path, dataset_path
+from ml_worker_pb2 import PushKind, CallToActionKind
 
 logger = logging.getLogger(__name__)
 
@@ -541,8 +542,28 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         else:
             borderl_grpc = None
 
-        if request.cta_kind > 0:
-            print("CTA kind is not supported yet")
+        if request.cta_kind > 0 and request.push_kind > 0:
+            if request.push_kind == PushKind.Perturbation:
+                push = perturbs
+            elif request.push_kind == PushKind.Contribution:
+                push = contribs
+            elif request.push_kind == PushKind.Overconfidence:
+                push = overconf
+            elif request.push_kind == PushKind.Borderline:
+                push = borderl
+            else:
+                raise ValueError("Invalid push kind")
+
+            logger.info("Handling push kind: " + str(request.push_kind) + " with cta kind: " + str(request.cta_kind))
+
+            # Upload related object depending on CTA type
+            # if cta kind is CreateSlice or CreateSliceOpenDebugger
+            if request.cta_kind == CallToActionKind.CreateSlice \
+                    or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger:
+                logger.info("Uploading slicing function")
+                push.slicing_function.meta.tags.append("generated")
+                uuid = push.slicing_function.upload(self.client)
+                logger.info(f"Uploaded slicing function with uuid: {uuid}")
 
         return ml_worker_pb2.SuggestFilterResponse(
             contribution=contrib_grpc,

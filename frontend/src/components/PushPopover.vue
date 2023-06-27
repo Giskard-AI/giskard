@@ -115,7 +115,7 @@ const icon = computed(() => {
 
 async function applyCta(kind: string) {
   // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
-  await pushStore.applyPush(props.type, kind);
+  await pushStore.applyPush(push.value!.kind, kind);
 }
 </script>
 

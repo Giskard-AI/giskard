@@ -78,8 +78,8 @@ public class PushController {
             modelRef,
             datasetRef,
             applyPushDTO.getRowIdx(),
-            applyPushDTO.getPushIdx(),
-            applyPushDTO.getKind()
+            applyPushDTO.getPushKind(),
+            applyPushDTO.getCtaKind()
         );
     }
 }
