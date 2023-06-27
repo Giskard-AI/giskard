@@ -176,20 +176,23 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
 
 def _generate_test_partial(test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
-        params = {k: v for k, v in test_fn.params.items() if v is not None}
+        actual_params = {k: v for k, v in test_fn.params.items() if v is not None}
     elif isinstance(test_fn, GiskardTest):
-        params = {
+        actual_params = {
             k: test_fn.__dict__[k]
             for k, v in inspect.signature(test_fn.__init__).parameters.items()
             if test_fn.__dict__[k] is not None
         }
     else:
+        actual_params = dict()
         test_fn = GiskardTestMethod(test_fn)
+
+    actual_params.update(params)
 
     if test_name is None:
         test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
 
-    return TestPartial(test_fn, params, test_name)
+    return TestPartial(test_fn, actual_params, test_name)
 
 
 class Suite:
@@ -389,23 +392,6 @@ class Suite:
         inputs = test.provided_inputs.copy()
         inputs.update(**params)
         self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **inputs)
-
-        return self
-
-    def replace_test_params(self, index: int, **params):
-        """
-        Replace the test parameters from a test.
-
-        Args:
-            index (int): The index of the test to be updated
-            **params: The params to be set
-
-        Returns:
-            Suite: The current instance of the test suite to allow chained calls.
-
-        """
-        test = self.tests[index]
-        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **params)
 
         return self
 

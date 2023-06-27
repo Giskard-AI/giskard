@@ -200,6 +200,17 @@ def test_remove_by_reference():
     assert len(suite.tests) == 1
     assert suite.tests[0].test_name == "F1"
 
+
+def test_update_params():
+    suite = Suite().add_test(_test_a_greater_b(1, 2))
+
+    passed, _ = suite.run()
+    assert not passed
+
+    suite.update_test_params(0, a=3)
+    passed, _ = suite.run()
+    assert passed
+
 # def test_save_suite_real(german_credit_data: Dataset, german_credit_model: BaseModel):
 #     from giskard.client.giskard_client import GiskardClient
 #     client = GiskardClient("http://localhost:9000",
