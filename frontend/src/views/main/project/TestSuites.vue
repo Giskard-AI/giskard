@@ -140,7 +140,7 @@
                 </div>
             </div>
 
-            <div v-if="toggleSnippetType === 'demo'" class="mt-10 mb-6">
+            <div v-if="toggleSnippetType === 'demo'" class="mt-16 mb-6">
                 <p class="text-center font-weight-medium">Execute the following Python code to upload a demo test suite to the current project 👇</p>
                 <div class="mt-6 mb-6">
                     <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
@@ -438,6 +438,12 @@ onActivated(async () => {
 
 .option-card {
     border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.option-card:hover {
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .option-card .v-card__text {
