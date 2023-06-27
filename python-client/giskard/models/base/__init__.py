@@ -100,13 +100,13 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -502,16 +502,16 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model: Any,
-        model_type: ModelType,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model: Any,
+            model_type: ModelType,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -729,6 +729,16 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
+
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        mlflow.pyfunc.save_model(local_path)
+
+    @classmethod
+    def load_model(cls, local_dir):
+        mlflow.pyfunc.load_model(local_dir)
+
+    def model_predict(self, df):
+        return self.model.predict(df)
 
 
 class CloudpickleBasedModel(WrapperModel, ABC):
