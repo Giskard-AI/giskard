@@ -730,8 +730,8 @@ class MLFlowBasedModel(WrapperModel, ABC):
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
 
-    def save_model(self, local_path: Union[str, Path]) -> None:
-        mlflow.pyfunc.save_model(local_path)
+    def save_model(self, local_path, mlflow_meta):
+        mlflow.pyfunc.save_model(local_path, mlflow_model=mlflow)
 
     @classmethod
     def load_model(cls, local_dir):
