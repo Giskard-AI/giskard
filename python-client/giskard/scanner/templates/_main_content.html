@@ -13,45 +13,57 @@
             <p>
                 We found some data slices in your dataset on which your model performance is lower than average.
                 Performance bias may happen for different reasons:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>Not enough examples in the low-performing data slice in the training set</li>
                 <li>Wrong labels in the training set in the low-performing data slice</li>
                 <li>Drift between your training set and test set</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/performance_bias/index.html" target="_blank">guide on performance bias.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "RobustnessIssue" %}
             <p>
                 Your model seems to be sensitive to small perturbations in the input data. These perturbations can
                 include adding typos, changing word order, or turning text into uppercase or lowercase. This happens
                 when:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>There is not enough diversity in the training data</li>
                 <li>Overreliance on spurious correlations like the presence of specific word</li>
                 <li>Use of complex models with large number of parameters that tend to overfit the training data</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/robustness/index.html" target="_blank">guide on robustness issues.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "OverconfidenceIssue" %}
             <p>
                 We found some data slices in your dataset containing significant number of overconfident predictions.
                 Overconfident predictions are rows that are incorrect but are predicted with high probabilities or
                 confidence scores. This happens when:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>There are not enough examples in the overconfident data slice in the training set</li>
                 <li>Wrongly labeled examples in the training set in the overconfident data slice</li>
                 <li>For imbalanced datasets, the model may assign high probabilities to predictions of the majority
                     class</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/overconfidence/index.html" target="_blank">guide on overconfidence issues.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "UnderconfidenceIssue" %}
             <p>
                 We found some data slices in your dataset containing significant number of underconfident predictions.
                 Underconfident predictions refer to situations where the predicted label has a probability that is
                 very close to the probability of the next highest probability label. This happens when:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>There are not enough examples in the training set for the underconfident data slice</li>
                 <li>The model is too simple and struggles to capture the complexity of the underlying data</li>
                 <li>The underconfident data slice contains inherent noise or overlapping feature distributions</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/underconfidence/index.html" target="_blank">guide on underconfidence issues.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "EthicalIssue" %}
             <p>
@@ -59,26 +71,35 @@
                 These perturbations can include switching some words from feminine to masculine, countries or
                 nationalities.
                 This happens when:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>Underrepresentation of certain demographic groups in the training data</li>
                 <li>Data is reflecting some structural biases and societal prejudices</li>
                 <li>Use of complex models with large number of parameters that tend to overfit the training data</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/ethics/index.html" target="_blank">guide on unethical behaviour.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "DataLeakageIssue" %}
             <p>
                 Your model seems to present some data leakage. The model provides different results depending on whether
                 it is computing on a single data point or the entire dataset. This happens when:
+            </p>
             <ul class="list-disc ml-4 my-1">
                 <li>Preprocessing steps, such as scaling, missing value imputation, or outlier handling, are fitted
                     inside the prediction pipeline</li>
                 <li>Train-test splitting is done after preprocessing or feature selection</li>
             </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/data_leakage/index.html" target="_blank">guide on data leakage.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "StochasticityIssue" %}
             <p>
                 Your model seems to present some stochastic behaviour. The model provides different results at each
                 execution. This may happen when some stochastic training process is included in the prediction pipeline.
+            </p>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/stochasticity/index.html" target="_blank">guide on stochasticity issues.</a>
             </p>
             {% elif issues[0].__class__.__name__ == "LLMToxicityIssue" %}
             <p>
@@ -87,9 +108,15 @@
             </p>
             {% elif issues[0].__class__.__name__ == "SpuriousCorrelationIssue" %}
             <p>
-                We found potential spurious correlations between your data and the model predictions. Spurious
-                correlations may occur when the model overfits on relations that are not causal. We recommend that you
-                verify the causal relationship between the detected data slices and the target variable.
+                We found some potential spurious correlations between your data and the model predictions. Some data slices are highly correlated with your predictions. This happens when:
+            </p>
+            <ul class="list-disc ml-4 my-1">
+                <li>Data leakage: one of the feature is indirectly linked with the target variable</li>
+                <li>Overfitting: the model learns specific noisy patterns of the training data, including coincidental correlations that are not causal</li>
+                <li>Data noise: the training set contains anomalies that are unrelated to the underlying problem (data collection, measurement biases, data preprocessing issues, etc.)</li>
+            </ul>
+            <p class="mt-1">
+                To learn more about causes and solutions, check our <a href="https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/spurious/index.html" target="_blank">guide on spurious correlation.</a>
             </p>
             {% else %}
             <p>Found issues for {{ issues[0].group }}</p>

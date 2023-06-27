@@ -2,7 +2,7 @@
   <div>
     <vue-final-modal v-slot="{ close }" classes="modal-container" content-class="modal-content" v-bind="$attrs"
                      v-on="$listeners">
-      <div v-if="mlWorkerStore.isExternalWorkerConnected" class="text-center">
+      <div v-if="isMLWorkerConnected" class="text-center">
 
         <v-card>
           <v-card-title>
@@ -98,10 +98,8 @@ import {FunctionInputDTO, RequiredInputDTO} from '@/generated-sources';
 import {useRouter} from 'vue-router/composables';
 import {chain} from 'lodash';
 import {TYPE} from "vue-toastification";
-import {useMLWorkerStore} from "@/stores/ml-worker";
+import { state } from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-
-const mlWorkerStore = useMLWorkerStore();
 
 const props = defineProps<{
   projectId: number,
@@ -125,6 +123,9 @@ const testSuiteInputs = ref<{
   }
 }[]>([]);
 
+const isMLWorkerConnected = computed(() => {
+    return state.workerStatus.connected;
+});
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   ...props.inputs[name],
@@ -158,7 +159,6 @@ function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
 }
 
 onMounted(async () => {
-  await mlWorkerStore.checkExternalWorkerConnection();
   testSuiteInputs.value = props.compareMode ? [{
     globalInput: createInputs(globalInputs.value),
     sharedInputs: createInputs(sharedInputs.value),
