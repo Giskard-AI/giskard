@@ -2,6 +2,8 @@ import asyncio
 import logging
 import os
 import platform
+import posixpath
+import shutil
 import sys
 import tempfile
 import time
@@ -16,6 +18,8 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
+
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -38,7 +42,7 @@ from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.path_utils import model_path, dataset_path
+from giskard.path_utils import model_path, dataset_path, projects_dir
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +79,20 @@ def map_function_meta(callable_type):
         for test in tests_registry.get_all().values()
         if test.type == callable_type
     }
+
+
+def log_artifact_local(local_file, artifact_path=None):
+    verify_artifact_path(artifact_path)
+
+    file_name = os.path.basename(local_file)
+
+    paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
+    artifact_file = posixpath.join("/", *paths)
+    Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
+
+    # FIXME: Artifacts of the project not yet shown
+    logging.info(f"Logging artifact locally from {local_file} to {artifact_file}")
+    shutil.copy(local_file, artifact_file)
 
 
 def map_dataset_process_function_meta(callable_type):
@@ -429,15 +447,25 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             dir = Path(f)
             predictions_csv = get_file_name("predictions", "csv", request.dataset.sample)
             results.to_csv(index=False, path_or_buf=dir / predictions_csv)
-            self.ml_worker.tunnel.client.log_artifact(
-                dir / predictions_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
-            )
+            if self.ml_worker.tunnel:
+                self.ml_worker.tunnel.client.log_artifact(
+                    dir / predictions_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
+                )
+            else:
+                log_artifact_local(
+                    dir / predictions_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
+                )
 
             calculated_csv = get_file_name("calculated", "csv", request.dataset.sample)
             calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
-            self.ml_worker.tunnel.client.log_artifact(
-                dir / calculated_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
-            )
+            if self.ml_worker.tunnel:
+                self.ml_worker.tunnel.client.log_artifact(
+                    dir / calculated_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
+                )
+            else:
+                log_artifact_local(
+                    dir / calculated_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
+                )
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
