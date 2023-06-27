@@ -147,10 +147,10 @@
                 </div>
                 <p class="text-center">To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
             </div>
-            <div v-else-if="toggleSnippetType === 'custom'" class="mt-10 mb-6 d-flex justify-center">
+            <div v-else-if="toggleSnippetType === 'custom'" class="mt-16 mb-6 d-flex justify-center">
                 <div>
                     <p class="font-weight-medium text-center">To upload a test suite from your model, follow these 3 steps:</p>
-                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
+                    <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
                             <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
                             <span>Wrap your dataset</span>
@@ -161,7 +161,11 @@
                             Small description for wrap your dataset
                         </v-card-text>
                     </v-card>
-                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
+                    <div class="d-flex justify-center">
+                        <div class="dashed-vertical-line"></div>
+                    </div>
+
+                    <v-card max-width="500" class="my-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
                             <v-icon class="mr-2" color="primary">mdi-numeric-2-circle-outline</v-icon>
                             <span>Wrap your model</span>
@@ -172,8 +176,10 @@
                             Small description for wrap your model
                         </v-card-text>
                     </v-card>
-
-                    <v-card max-width="500" class="my-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
+                    <div class="d-flex justify-center">
+                        <div class="dashed-vertical-line"></div>
+                    </div>
+                    <v-card max-width="500" class="mt-4 mb-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
                             <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
                             <span>Upload suite from scan</span>
@@ -431,7 +437,11 @@ onActivated(async () => {
 }
 
 .option-card {
-    border: 1px solid rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.option-card .v-card__text {
+    font-weight: 600;
 }
 
 .active-option {
@@ -453,5 +463,12 @@ onActivated(async () => {
 
 .card-step:hover .v-icon {
     color: #087038;
+}
+
+.dashed-vertical-line {
+    display: inline-block;
+    border-left: 2px dashed rgba(0, 0, 0, 0.2);
+    height: 50px;
+    margin: 0 auto;
 }
 </style>
