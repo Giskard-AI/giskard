@@ -54,9 +54,9 @@ def test_multiclass_classification_metrics(num_classes, metric, reference_metric
         df=pd.DataFrame({"demo": np.ones(correct_prob.shape[0]), "label": correct_prob.argmax(axis=-1)}), target="label"
     )
 
-    assert metric(correct_model, dataset) == approx(1.0)
-    assert metric(wrong_model, dataset) == approx(0.0)
-    assert metric(random_model, dataset) == approx(
+    assert metric(correct_model, dataset).value == approx(1.0)
+    assert metric(wrong_model, dataset).value == approx(0.0)
+    assert metric(random_model, dataset).value == approx(
         reference_metric(correct_prob.argmax(axis=-1), model_prob.argmax(axis=-1), **reference_kwargs)
     )
 
@@ -72,4 +72,4 @@ def test_auc_metric():
     dataset = Dataset(df=pd.DataFrame({"demo": np.ones(y_true.shape[0]), "label": y_true}), target="label")
     expected = approx(sklearn.metrics.roc_auc_score(y_true, model_prob, multi_class="ovo"))
 
-    assert metrics.AUC()(model, dataset) == expected
+    assert metrics.AUC()(model, dataset).value == expected
