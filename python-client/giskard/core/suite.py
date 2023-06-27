@@ -21,13 +21,7 @@ suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, Slic
 
 
 class TestSuiteResult(tuple):
-    """
-    Represents the result of a test suite, derived from the tuple class.
-
-    Methods:
-        _repr_html_(): Returns an HTML representation of all the tests result contained in the test suite.
-
-    """
+    """Represents the result of a test suite."""
 
     def _repr_html_(self):
         passed = self[0]
@@ -195,28 +189,36 @@ class Suite:
     name: str
 
     def __init__(self, name=None) -> None:
-        """
-        Create a new Test Suite instance with a given name.
+        """Create a new Test Suite instance with a given name.
 
-        :param name: The name of the test suite.
+        Parameters
+        ----------
+        name : str, optional
+            The name of the test suite.
         """
         self.suite_params = {}
         self.tests = []
         self.name = name
 
     def run(self, verbose: bool = True, **suite_run_args):
-        """
-        Execute all the tests that have been added to the test suite through the `add_test` method.
+        """Execute all the tests that have been added to the test suite through the `add_test` method.
 
-        :param verbose: If set to True, the execution information for each test will be displayed. Defaults to False.
-        :param suite_run_args: Any arguments passed here will be applied to all the tests in the suite whenever they match with the
-            arguments defined for each test. If a test contains an argument that has already been defined, it will not get
-            overridden. If any inputs on the test suite are missing, an error will be raised.
-        :return:  A tuple with the following values:
-            - (bool) A boolean value representing whether all the tests in the suite passed or not.
-            - (list) A list containing tuple of test name and test result, it keeps the order of the add_test sequence
-                - (str) The test_name
-                - (bool | TestResult) The result of the test execution
+        Parameters
+        ----------
+        verbose : bool
+            If set to `True`, the execution information for each test will be displayed. Defaults to `False`.
+        **suite_run_args : dict, optional
+            Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not
+            get overridden. If any inputs on the test suite are missing, an error will be raised.
+
+        Returns
+        -------
+        (passed, test_results) : tuple
+            A tuple with the following values:
+            - A boolean value representing whether all the tests in the suite passed or not.
+            - A list containing tuples of test name (`str`) and test result (`bool` or `TestResult`), it keeps the
+            order of the `add_test` sequence.
         """
         res: List[(str, Union[bool, TestResult])] = list()
         required_params = self.find_required_params()

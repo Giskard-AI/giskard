@@ -7,6 +7,21 @@
 @tailwind components;
 @tailwind utilities;
 
+
+p a {
+    text-decoration: underline;
+}
+
+/* Special styles for tab headers */
+.tab-header {
+    min-width: 3rem;
+}
+
+.active.tab-header {
+    min-width: fit-content;
+}
+
+/* Pandas DataFrame table */
 table.dataframe {
     width: 100%;
     max-width: 100%;

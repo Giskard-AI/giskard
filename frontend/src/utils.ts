@@ -83,3 +83,11 @@ export function copyText(text: string, description?: string) {
     useMainStore().addSimpleNotification(description);
   }
 }
+
+export function httpUrlToWsUrl(url: string): string {
+  return url.replace(/(http)(s)?\:\/\//, 'ws$2://');
+}
+
+export function wsUrlToHttpUrl(url: string): string {
+  return url.replace(/(ws)(s)?\:\/\//, 'http$2://');
+}
