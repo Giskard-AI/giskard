@@ -60,6 +60,6 @@ class GiskardEvaluator(ModelEvaluator):
         test_suite_results = test_suite.run()
         for test_result in test_suite_results[1]:
             test_name = test_result[0]
-            test_name.replace("data slice", "data slice:")
             test_name = re.sub(r'[^A-Za-z0-9_\-. /]+', '', test_name)
+            test_name = test_name.replace("data slice", "data slice -")
             self.client.log_metric(self.run_id, test_name, test_result[1].metric)
