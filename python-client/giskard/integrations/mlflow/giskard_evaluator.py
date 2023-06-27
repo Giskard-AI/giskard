@@ -15,6 +15,25 @@ gsk_model_types = {
     "regressor": SupportedModelTypes.REGRESSION
 }
 
+alphanumeric_map = {
+    ">=": "greater than or equal to",
+    ">": "greater than",
+    "<=": "less than or equal to",
+    "<": "less than",
+    "==": "equal to",
+    "=": "equal to",
+    "!=": "different of",
+}
+
+
+def process_text(some_string):
+    for k, v in alphanumeric_map.items():
+        some_string = some_string.replace(k, v)
+    some_string = some_string.replace("data slice", "data slice -")
+    some_string = re.sub(r'[^A-Za-z0-9_\-. /]+', '', some_string)
+
+    return some_string
+
 
 class GiskardModel(Model):
     def model_predict(self, df):
@@ -60,6 +79,5 @@ class GiskardEvaluator(ModelEvaluator):
         test_suite_results = test_suite.run()
         for test_result in test_suite_results[1]:
             test_name = test_result[0]
-            test_name = re.sub(r'[^A-Za-z0-9_\-. /]+', '', test_name)
-            test_name = test_name.replace("data slice", "data slice -")
+            test_name = process_text(test_name)
             self.client.log_metric(self.run_id, test_name, test_result[1].metric)
