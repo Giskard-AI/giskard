@@ -339,6 +339,19 @@ class Suite:
 
     @singledispatchmethod
     def remove_test(self, arg):
+        """
+        Remove a test from the suite.
+
+        Args:
+            arg (int|str|GiskardTest):
+                If int: remove the test by index.
+                If str: remove the test by name passed during the add_test method
+                If GiskardTest: remove the test(s) by reference
+
+        Returns:
+            Suite: The current instance of the test suite to allow chained calls.
+
+        """
         raise NotImplementedError("To remove a test from the suite please pass its index, its name or its reference")
 
     @remove_test.register
