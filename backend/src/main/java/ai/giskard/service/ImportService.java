@@ -85,7 +85,6 @@ public class ImportService {
     private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject,
                                       Map<UUID, UUID> mapFormerNewIdModel,
                                       Map<UUID, UUID> mapFormerNewIdDataset) {
-        // TODO: Update model and dataset id in inputs
         testSuites.forEach(suite -> {
             suite.setProject(savedProject);
 
