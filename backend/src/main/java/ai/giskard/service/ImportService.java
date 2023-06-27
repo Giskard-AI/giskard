@@ -1,17 +1,14 @@
 package ai.giskard.service;
 
-import ai.giskard.domain.Feedback;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.repository.ml.ModelRepository;
-import ai.giskard.repository.ml.TestSuiteRepository;
+import ai.giskard.repository.ml.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +32,9 @@ public class ImportService {
     private final FeedbackRepository feedbackRepository;
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
+    private final TestFunctionRepository testFunctionRepository;
+    private final SlicingFunctionRepository slicingFunctionRepository;
+    private final TransformationFunctionRepository transformationFunctionRepository;
     private final UserRepository userRepository;
     private final FileLocationService locationService;
     private final TestSuiteService testSuiteService;
@@ -82,7 +82,9 @@ public class ImportService {
         });
     }
 
-    private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject) {
+    private void saveImportTestSuites(List<TestSuite> testSuites, Project savedProject,
+                                      Map<UUID, UUID> mapFormerNewIdModel,
+                                      Map<UUID, UUID> mapFormerNewIdDataset) {
         // TODO: Update model and dataset id in inputs
         testSuites.forEach(suite -> {
             suite.setProject(savedProject);
@@ -94,8 +96,29 @@ public class ImportService {
                 execution.getResults().forEach(suiteTestExecution -> suiteTestExecution.setExecution(execution));
             });
 
+            Stream.of(
+                    suite.getTests().stream()
+                        .flatMap(suiteTest -> suiteTest.getFunctionInputs().stream()),
+                    suite.getFunctionInputs().stream(),
+                    suite.getExecutions().stream()
+                        .flatMap(testSuiteExecution -> testSuiteExecution.getInputs().stream())
+                )
+                .reduce(Stream::concat)
+                .orElseGet(Stream::empty)
+                .filter(functionInput -> !functionInput.isAlias())
+                .forEach(functionInput -> replaceFunctionInputValues(mapFormerNewIdModel, mapFormerNewIdDataset, functionInput));
+
             testSuiteRepository.save(suite);
         });
+    }
+
+    private static void replaceFunctionInputValues(Map<UUID, UUID> mapFormerNewIdModel, Map<UUID, UUID> mapFormerNewIdDataset, FunctionInput functionInput) {
+        switch (functionInput.getType()) {
+            case "BaseModel" ->
+                functionInput.setValue(mapFormerNewIdModel.get(UUID.fromString(functionInput.getValue())).toString());
+            case "Dataset" ->
+                functionInput.setValue(mapFormerNewIdDataset.get(UUID.fromString(functionInput.getValue())).toString());
+        }
     }
 
     private Project saveImportProject(Project project, String userNameOwner, String projectKey, Map<String, String> importedUsersToCurrent) {
@@ -129,7 +152,7 @@ public class ImportService {
 
     private void copyFilesToGlobalFolder(Path metadataTmpDirectory, Set<UUID> ids, String folderName) throws IOException {
         Path sourceDir = metadataTmpDirectory.resolve("global").resolve(folderName);
-        Path targetDir = locationService.giskardHome().resolve("global").resolve(folderName);
+        Path targetDir = locationService.globalPath().resolve(folderName);
 
         for (UUID id : ids) {
             if (!Files.exists(targetDir.resolve(id.toString()))) {
@@ -150,6 +173,12 @@ public class ImportService {
         });
         List<Dataset> datasets = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Dataset.class.getSimpleName()).toFile(), new TypeReference<>() {
         });
+        List<TestFunction> testFunctions = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, TestFunction.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<SlicingFunction> slicingFunctions = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, SlicingFunction.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
+        List<TransformationFunction> transformationFunctions = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, TransformationFunction.class.getSimpleName()).toFile(), new TypeReference<>() {
+        });
         List<Feedback> feedbacks = mapper.readValue(locationService.resolvedMetadataPath(pathMetadataDirectory, Feedback.class.getSimpleName()).toFile(), new TypeReference<>() {
         });
         List<TestSuite> testSuites = mapper.readValue(testSuiteService.resolvedMetadataPath(pathMetadataDirectory, TestSuite.class.getSimpleName()).toFile(), new TypeReference<>() {
@@ -159,12 +188,18 @@ public class ImportService {
         // Save new objects in memory
         Map<UUID, UUID> mapFormerNewIdModel = saveImportModel(models, savedProject);
         Map<UUID, UUID> mapFormerNewIdDataset = saveImportDataset(datasets, savedProject);
+
+        testFunctionRepository.saveAllIfNotExists(testFunctions);
+        slicingFunctionRepository.saveAllIfNotExists(slicingFunctions);
+        transformationFunctionRepository.saveAllIfNotExists(transformationFunctions);
+
         saveImportFeedback(feedbacks, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset, importedUsersToCurrent);
-        saveImportTestSuites(testSuites, savedProject);
+        saveImportTestSuites(testSuites, savedProject, mapFormerNewIdModel, mapFormerNewIdDataset);
 
         // Once everything is remapped, at this stage we want to save the files into appropriate folders
         copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdModel, "models");
         copyFilesToProjectFolder(savedProject, pathMetadataDirectory, mapFormerNewIdDataset, "datasets");
+
         copyFilesToGlobalFolder(pathMetadataDirectory, findTests(project), "tests");
         copyFilesToGlobalFolder(pathMetadataDirectory, findReferencedEntities(project, "SlicingFunction"), "slices");
         copyFilesToGlobalFolder(pathMetadataDirectory, findReferencedEntities(project, "TransformationFunction"), "transformations");
