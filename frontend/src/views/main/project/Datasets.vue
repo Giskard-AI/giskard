@@ -72,7 +72,7 @@
         </v-btn>
       </div>
       <div class="d-flex justify-center mb-6">
-        <img src="@/assets/logo_test_suite.png" class="datasets-logo" title="Datasets tab logo" alt="A turtle checking a to-do list">
+        <img src="@/assets/logo_datasets.png" class="datasets-logo" title="Datasets tab logo" alt="A turtle typing too fast on a laptop">
       </div>
       <div class="d-flex justify-center mt-6">
         <v-btn small @click="reloadDatasets" plain>
