@@ -743,7 +743,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
 
     @classmethod
     def load_model(cls, local_dir):
-        mlflow.pyfunc.load_model(local_dir)
+        return mlflow.pyfunc.load_model(local_dir)
 
     def model_predict(self, df):
         return self.model.predict(df)
