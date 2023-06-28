@@ -156,13 +156,13 @@
                 </div>
             </div>
 
-            <div v-if="toggleSnippetType === 'demo'" class="mt-16 mb-6">
+            <div v-if="toggleSnippetType === 'demo'" class="mt-12 mb-6">
                 <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
                 <div class="mt-6 mb-6">
                     <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
                 </div>
             </div>
-            <div v-else-if="toggleSnippetType === 'custom'" class="mt-16 mb-6 d-flex justify-center">
+            <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
                 <div>
                     <p class="text-center">To upload a <span class="font-weight-bold">test suite from your own model</span>, follow these steps:</p>
                     <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
