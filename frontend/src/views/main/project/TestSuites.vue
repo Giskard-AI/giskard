@@ -158,7 +158,7 @@
                             <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
                         <v-card-text>
-                            Small description for wrap your dataset
+                            To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your training, testing, golden, or production dataset.
                         </v-card-text>
                     </v-card>
                     <div class="d-flex justify-center">
@@ -173,7 +173,8 @@
                             <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
                         <v-card-text>
-                            Small description for wrap your model
+                            To scan, test and debug your model, you need to wrap it into a Giskard Model.
+                            Your model can use any ML library and can be any Python function that respects the right signature.
                         </v-card-text>
                     </v-card>
                     <div class="d-flex justify-center">
@@ -187,7 +188,7 @@
                             <v-icon right>mdi-arrow-right</v-icon>
                         </v-card-title>
                         <v-card-text>
-                            Small description for upload suite from scan
+                            The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model.
                         </v-card-text>
                     </v-card>
                 </div>
@@ -472,7 +473,7 @@ onActivated(async () => {
 
 .dashed-vertical-line {
     display: inline-block;
-    border-left: 2px dashed rgba(0, 0, 0, 0.2);
+    border-left: 2px dashed rgba(0, 0, 0, 0.15);
     height: 50px;
     margin: 0 auto;
 }
