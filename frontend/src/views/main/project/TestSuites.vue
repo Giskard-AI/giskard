@@ -8,7 +8,10 @@
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end flex-wrap">
-
+                            <v-btn text @click="refresh">
+                                <v-icon small left>refresh</v-icon>
+                                Refresh
+                            </v-btn>
                             <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
                                 <v-icon left>mdi-plus</v-icon>
                                 create a new test suite

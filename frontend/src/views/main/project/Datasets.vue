@@ -4,8 +4,8 @@
       <v-spacer></v-spacer>
       <div class="mr-2">
         <v-btn text @click="reloadDatasets">
-          <v-icon small left>refresh</v-icon>
-          Refresh
+          refresh
+          <v-icon right>refresh</v-icon>
         </v-btn>
         <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
           add a dataset
