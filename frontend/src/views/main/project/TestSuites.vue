@@ -212,7 +212,6 @@ import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import mixpanel from 'mixpanel-browser';
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import UploadTestSuiteModal from "./modals/UploadTestSuiteModal.vue";
 import { JWTToken, TestResult } from '@/generated-sources';
 import { useProjectStore } from '@/stores/project';
 import { useProjectArtifactsStore } from '@/stores/project-artifacts';
@@ -278,16 +277,6 @@ const latestExecutions = computed(() => {
     const executions = filteredSuites.value.map(suite => suite.executions);
     return executions.map(executionsSuite => executionsSuite.length === 0 ? null : executionsSuite[0]);
 });
-
-function openUploadDialog() {
-    $vfm.show({
-        component: UploadTestSuiteModal,
-        bind: {
-            apiAccessToken: apiAccessToken,
-            projectKey: project.value!.key
-        },
-    });
-}
 
 async function createTestSuite() {
     const project = await api.getProject(props.projectId)
