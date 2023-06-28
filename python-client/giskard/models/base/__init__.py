@@ -715,7 +715,7 @@ class WrapperModel(BaseModel, ABC):
 
 class MLFlowBasedModel(WrapperModel, ABC):
     """
-    An abstract base class for models that are serializable by the MLFlow library.
+    An base class for models that are serializable by the MLFlow library. By default MLFlowBasedModel wraps PyFuncModel.
 
     This class provides functionality for saving the model with MLFlow in addition to saving other metadata with the
     `save` method. Subclasses should implement the `save_model` method to provide their own MLFlow-specific model
@@ -731,7 +731,15 @@ class MLFlowBasedModel(WrapperModel, ABC):
         super().save(local_path)
 
     def save_model(self, local_path, mlflow_meta):
-        mlflow.pyfunc.save_model(local_path, mlflow_model=mlflow_meta)
+        from mlflow.models.model import Model
+
+        artifact_path = self.model.metadata.artifact_path
+        module = self.model.metadata.flavors["python_function"]["loader_module"]
+        flavor = importlib.import_module(module)
+        model = flavor.load_model(self.model.metadata.get_model_info().model_uri)
+
+        mlflow_model = Model(artifact_path=artifact_path)
+        flavor.save_model(path=local_path, mlflow_model=mlflow_model, model=model)
 
     @classmethod
     def load_model(cls, local_dir):
