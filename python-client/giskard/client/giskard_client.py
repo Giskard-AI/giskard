@@ -71,12 +71,14 @@ class BearerAuth(AuthBase):
 
 
 class GiskardClient:
-    def __init__(self, url: str, token: str):
+    def __init__(self, url: str, token: str, hf_token: str = None):
         self.host_url = url
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(token)
+        if hf_token:
+            self._session.cookies["spaces-jwt"] = hf_token
 
         server_settings = self._session.get("settings/ml-worker-connect").json()
         analytics.init_server_info(server_settings)
@@ -130,7 +132,8 @@ class GiskardClient:
         )
         try:
             response = self._session.post(
-                "project", json={"description": description, "key": project_key, "name": name}
+                "project",
+                json={"description": description, "key": project_key, "name": name},
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
@@ -160,7 +163,14 @@ class GiskardClient:
             category_features=res["categoryFeatures"],
         )
 
-    def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
+    def save_model_meta(
+        self,
+        project_key: str,
+        model_id: UUID,
+        meta: ModelMeta,
+        python_version: str,
+        size: int,
+    ):
         class_label_dtype = (
             None
             if (not meta.classification_labels or not len(meta.classification_labels))
@@ -201,7 +211,9 @@ class GiskardClient:
             },
         )
 
-        print(f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}")
+        print(
+            f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}"
+        )
 
     def log_artifacts(self, local_dir, artifact_path=None):
         local_dir = os.path.abspath(local_dir)
@@ -211,7 +223,11 @@ class GiskardClient:
             else:
                 rel_path = os.path.relpath(root, local_dir)
                 rel_path = relative_path_to_artifact_path(rel_path)
-                artifact_dir = posixpath.join(artifact_path, rel_path) if artifact_path else rel_path
+                artifact_dir = (
+                    posixpath.join(artifact_path, rel_path)
+                    if artifact_path
+                    else rel_path
+                )
             for f in filenames:
                 self.log_artifact(os.path.join(root, f), artifact_dir)
 
@@ -248,7 +264,14 @@ class GiskardClient:
             resp = self._session.post(endpoint, data=f)
             augmented_raise_for_status(resp)
 
-    def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta, original_size_bytes, compressed_size_bytes):
+    def save_dataset_meta(
+        self,
+        project_key,
+        dataset_id,
+        meta: DatasetMeta,
+        original_size_bytes,
+        compressed_size_bytes,
+    ):
         self._session.post(
             f"project/{project_key}/datasets",
             json={
@@ -278,7 +301,9 @@ class GiskardClient:
             },
         )
 
-        print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
+        print(
+            f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}"
+        )
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
         json = self._session.put(endpoint, json=meta.to_json()).json()
@@ -291,4 +316,6 @@ class GiskardClient:
         return self._session.get("settings/ml-worker-connect").json()
 
     def save_test_suite(self, dto: TestSuiteDTO):
-        return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()
+        return self._session.post(
+            f"testing/project/{dto.project_key}/suites", json=dto.dict()
+        ).json()

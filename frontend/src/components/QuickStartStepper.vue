@@ -26,7 +26,7 @@
       <v-stepper-content step="2" class="stepper-content">
         <div class="mb-6">
           <div v-if="apiAccessToken && apiAccessToken.id_token">
-            <CodeSnippet :codeContent='uploadSnippet'></CodeSnippet>
+            <CodeSnippet :codeContent='uploadSnippet' language="python"></CodeSnippet>
           </div>
         </div>
         <div class="d-flex">
@@ -50,11 +50,11 @@
           </v-btn-toggle>
           <div v-show="toggleTestType === 'scan'">
             <p class="mt-4 mb-2">To scan your model, run the following Python code:</p>
-            <CodeSnippet :codeContent="scanCodeContent"></CodeSnippet>
+            <CodeSnippet :codeContent="scanCodeContent" language="python"></CodeSnippet>
           </div>
           <div v-show="toggleTestType === 'manual'">
             <p class="mt-4 mb-2">To manually test your model, run the following Python code:</p>
-            <CodeSnippet :codeContent="manualTestCodeContent"></CodeSnippet>
+            <CodeSnippet :codeContent="manualTestCodeContent" language="python"></CodeSnippet>
           </div>
         </div>
         <div class="d-flex">
@@ -69,12 +69,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { api } from "@/api";
-import { apiURL } from "@/env";
-import { JWTToken, MLWorkerInfoDTO, ProjectDTO } from "@/generated-sources";
+import {computed, onMounted, ref} from "vue";
+import {api} from "@/api";
+import {JWTToken, MLWorkerInfoDTO, ProjectDTO} from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import StartWorkerInstructions from "./StartWorkerInstructions.vue";
+import {useMainStore} from "@/stores/main";
+import {generateGiskardClientSnippet} from "@/snippets";
 
 interface Props {
   project: ProjectDTO;
@@ -89,6 +90,8 @@ const apiAccessToken = ref<JWTToken | null>(null);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
+const mainStore = useMainStore();
+const giskardClientSnippet = ref<string | null>(null);
 
 const uploadSnippet = computed(() => {
   // language=Python
@@ -97,12 +100,7 @@ const uploadSnippet = computed(() => {
 # for demo purposes only 🛳️. Replace with your dataframe creation
 original_model, original_df = giskard.demo.titanic()
 
-# Create a Giskard client
-token = "${apiAccessToken.value!.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
+${giskardClientSnippet.value}
 
 # Wrap your Pandas Dataframe and model with Giskard 🎁
 giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
@@ -157,7 +155,7 @@ onMounted(async () => {
     allMLWorkerSettings.value = await api.getMLWorkerSettings();
     externalWorker.value = allMLWorkerSettings.value.find(worker => worker.isRemote === true) || null;
   } catch (error) { }
-
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
   await generateApiAccessToken();
 
   if (externalWorker.value) {

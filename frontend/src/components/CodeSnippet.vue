@@ -7,7 +7,7 @@ import { copyToClipboard } from "@/global-keys";
 
 interface Props {
   codeContent: string;
-  language: string;
+  language?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {

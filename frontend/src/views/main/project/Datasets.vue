@@ -59,7 +59,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else-if="apiAccessToken && apiAccessToken.id_token && !isLoading">
+    <v-container v-else-if="giskardClientSnippet && !isLoading">
       <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
@@ -68,23 +68,22 @@
 </template>
 
 <script setup lang="ts">
-import { apiURL } from "@/env";
-import { api } from "@/api";
-import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
+import {api} from "@/api";
+import {Role} from "@/enums";
+import {$vfm} from 'vue-final-modal';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import {computed, onBeforeMount, onMounted, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
-import { TYPE } from "vue-toastification";
+import {TYPE} from "vue-toastification";
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import {generateGiskardClientSnippet} from "@/snippets";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -97,26 +96,18 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
+const giskardClientSnippet = ref<string | null>(null);
 const isLoading = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
-const apiAccessToken = ref<JWTToken | null>(null);
 
 const codeContent = computed(() =>
   `import giskard
 
 # for demo purposes only 🛳️. Replace with your dataframe creation
 _, df = giskard.demo.titanic()
-
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
-
+${giskardClientSnippet.value}
 # Wrap your Pandas Dataframe with Giskard dataset 🎁
 giskard_dataset = giskard.Dataset(df,
                                   target="Survived",
@@ -153,11 +144,13 @@ function openUploadDialog() {
   });
 }
 
+const mainStore = useMainStore();
+
 async function deleteDataFile(id: string) {
-  mixpanel.track('Delete dataset', { id });
+  mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  useMainStore().addNotification({ content: messageDTO.message });
+  mainStore.addNotification({content: messageDTO.message});
   await projectArtifactsStore.loadDatasets();
 }
 
@@ -184,7 +177,7 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({ content: error.response.statusText, color: TYPE.ERROR });
+      mainStore.addNotification({content: error.response.statusText, color: TYPE.ERROR});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
@@ -206,20 +199,14 @@ async function reloadDatasets() {
   }
 }
 
-const generateApiAccessToken = async () => {
-  try {
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
 });
 
 onMounted(async () => {
-  await generateApiAccessToken();
+  isLoading.value = true;
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
+  isLoading.value = false;
 });
 </script>
 

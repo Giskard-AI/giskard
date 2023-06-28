@@ -100,7 +100,7 @@
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
             </div>
         </v-container>
-        <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
+        <v-container v-else-if="giskardClientSnippet">
             <div class="d-flex mb-6">
                 <v-spacer></v-spacer>
 
@@ -138,6 +138,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import { JWTToken, TestResult } from '@/generated-sources';
 import { useProjectStore } from '@/stores/project';
 import { useProjectArtifactsStore } from '@/stores/project-artifacts';
+import {generateGiskardClientSnippet} from "@/snippets";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -148,7 +149,7 @@ const props = defineProps<{
 }>();
 
 const searchSession = ref('');
-const apiAccessToken = ref<JWTToken | null>(null);
+const giskardClientSnippet = ref<string | null>(null);
 
 const codeContent = computed(() =>
     `import giskard
@@ -156,12 +157,7 @@ const codeContent = computed(() =>
 # for demo purposes only 🛳️. Replace with your dataframe creation
 original_model, original_df = giskard.demo.titanic()
 
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
+${giskardClientSnippet.value}
 
 # Wrap your model and dataset with Giskard 🎁
 giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
@@ -274,14 +270,6 @@ function deleteTestSuite(suite: any) {
     });
 }
 
-const generateApiAccessToken = async () => {
-    try {
-        apiAccessToken.value = await api.getApiAccessToken();
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 async function refresh() {
     await testSuitesStore.reloadComplete();
     await projectArtifactsStore.loadProjectArtifacts(false);
@@ -296,7 +284,7 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
-    await generateApiAccessToken();
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
 })
 </script>
 

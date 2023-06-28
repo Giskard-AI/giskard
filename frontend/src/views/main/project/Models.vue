@@ -83,7 +83,7 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-else-if="apiAccessToken && apiAccessToken.id_token && !isLoading">
+    <v-container v-else-if="giskardClientSnippet && !isLoading">
       <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
       <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
       <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
@@ -92,25 +92,25 @@
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
-import { apiURL } from "@/env";
-import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
+import {api} from '@/api';
+import {Role} from "@/enums";
+import {$vfm} from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
-import { JWTToken, ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { computed, onBeforeMount, onMounted, ref } from 'vue';
+import {computed, onBeforeMount, onMounted, ref} from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { state } from "@/socket";
+import {state} from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import {generateGiskardClientSnippet} from "@/snippets";
 
 
 const userStore = useUserStore();
@@ -126,7 +126,7 @@ const props = defineProps<Props>();
 const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
-const apiAccessToken = ref<JWTToken | null>(null);
+const giskardClientSnippet = ref<string | null>(null);
 
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;
@@ -139,12 +139,7 @@ const codeContent = computed(
 
 original_model, _ = giskard.demo.titanic()  # for demo purposes only 🛳️. Replace with your model creation
 
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
+${giskardClientSnippet.value}
 
 # Wrap your model with Giskard model 🎁
 giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
@@ -211,20 +206,14 @@ async function reloadModels() {
   }
 }
 
-const generateApiAccessToken = async () => {
-  try {
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
 })
 
 onMounted(async () => {
-  await generateApiAccessToken();
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
+  console.log(giskardClientSnippet.value);
+
 })
 </script>
 
