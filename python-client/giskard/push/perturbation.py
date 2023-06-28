@@ -12,7 +12,6 @@ from giskard.scanner.robustness.text_transformations import (
     TextTypoTransformation,
     TextUppercase,
 )
-
 from ..push import PerturbationPush
 
 text_transfo_list = [
@@ -128,6 +127,7 @@ class NumTransformation(TransformationFunction):
     name = "mad perturbation"
 
     def __init__(self, column, perturbation_value):
+        super().__init__(self.execute)
         self.column = column
         self.perturbation_value = perturbation_value
 

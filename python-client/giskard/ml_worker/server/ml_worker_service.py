@@ -494,6 +494,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
     def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
+        uuid = ''
         try:
             model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id)
@@ -560,16 +561,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             # if cta kind is CreateSlice or CreateSliceOpenDebugger
             if request.cta_kind == CallToActionKind.CreateSlice \
                     or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger:
-                logger.info("Uploading slicing function")
                 push.slicing_function.meta.tags.append("generated")
                 uuid = push.slicing_function.upload(self.client)
-                logger.info(f"Uploaded slicing function with uuid: {uuid}")
+            if request.cta_kind == CallToActionKind.SavePerturbation:
+                for perturbation in push.transformation_function:
+                    uuid = perturbation.upload(self.client)
+
+            if uuid != '':
+                logger.info(f"Uploaded object for CTA with uuid: {uuid}")
 
         return ml_worker_pb2.SuggestFilterResponse(
             contribution=contrib_grpc,
             perturbation=perturb_grpc,
             overconfidence=overconf_grpc,
             borderline=borderl_grpc,
+            object_uuid=uuid
         )
 
     @staticmethod

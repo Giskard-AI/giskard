@@ -56,8 +56,10 @@
 
 import {computed, ref} from 'vue';
 import {usePushStore} from "@/stores/push";
+import {useMainStore} from "@/stores/main";
 
 const pushStore = usePushStore();
+const mainStore = useMainStore();
 
 const props = defineProps({
   type: String,
@@ -115,7 +117,20 @@ const icon = computed(() => {
 
 async function applyCta(kind: string) {
   // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
-  await pushStore.applyPush(push.value!.kind, kind);
+  let uuid = await pushStore.applyPush(push.value!.kind, kind);
+
+  switch (kind) {
+    case "CreateSlice":
+      mainStore.addSimpleNotification("Successfully saved");
+      break;
+    case "CreateSliceOpenDebugger":
+      break;
+    case "SavePerturbation":
+      break;
+    default:
+      break;
+  }
+
 }
 </script>
 

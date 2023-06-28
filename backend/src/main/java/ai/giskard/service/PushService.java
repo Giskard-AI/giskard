@@ -27,7 +27,7 @@ public class PushService {
                 .setProjectKey(projectKey)
                 .build());
 
-            return "";
+            return resp.getObjectUuid();
         }
     }
 }

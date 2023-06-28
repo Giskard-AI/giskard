@@ -452,4 +452,5 @@ message SuggestFilterResponse {
   optional Push contribution = 2;
   optional Push overconfidence = 3;
   optional Push borderline = 4;
+  optional string object_uuid = 5;
 }
