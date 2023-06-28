@@ -34,7 +34,7 @@ class TestSuiteResult(tuple):
         tests_results = "".join(
             [
                 f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value in self[1]
+                for key, value, _ in self[1]
             ]
         )
         return """
@@ -218,7 +218,7 @@ class Suite:
                 - (str) The test_name
                 - (bool | TestResult) The result of the test execution
         """
-        res: List[(str, Union[bool, TestResult])] = list()
+        res: List[(str, Union[bool, TestResult], Dict[str, Any])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -228,7 +228,7 @@ class Suite:
             try:
                 test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result))
+                res.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
@@ -245,11 +245,11 @@ class Suite:
                     )
                 )
 
-        result = single_binary_result([result for name, result in res])
+        result = single_binary_result([result for name, result, params in res])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if result else 'failed'}")
-        for test_name, r in res:
+        for test_name, r, a in res:
             logger.info(f"{test_name}: {format_test_result(r)}")
         return TestSuiteResult((result, res))
 
@@ -379,11 +379,11 @@ class Suite:
         input_dict: Dict[str, SuiteInput] = {i.name: i for i in inputs}
 
         if any(
-            [
-                arg
-                for arg in required_args
-                if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
-            ]
+                [
+                    arg
+                    for arg in required_args
+                    if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
+                ]
         ):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
@@ -404,11 +404,11 @@ class Suite:
             return
 
         if contains_tag(test_func, "ground_truth") and any(
-            [
-                dataset
-                for dataset in input_dict.values()
-                if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
-            ]
+                [
+                    dataset
+                    for dataset in input_dict.values()
+                    if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
+                ]
         ):
             return
 
