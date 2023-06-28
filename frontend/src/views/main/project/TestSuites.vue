@@ -141,7 +141,7 @@
                         'option-card': true,
                         'd-flex': true,
                         'align-center': true
-                    }" @click="toggleSnippetType = 'demo'">
+                    }" @click="openDemoInstructions">
                         <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">demo projects</span></v-card-text>
                     </v-card>
                     <v-card width="275" outlined :class="{
@@ -150,7 +150,7 @@
                         'option-card': true,
                         'd-flex': true,
                         'align-center': true
-                    }" @click="toggleSnippetType = 'custom'">
+                    }" @click="openCustomInstructions">
                         <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">your own model</span></v-card-text>
                     </v-card>
                 </div>
@@ -316,7 +316,7 @@ async function createTestSuite() {
         {
             id: suite,
             projectKey: project.key,
-            screen: 'Test suites'
+            screen: 'project-testing'
         }
     );
 
@@ -379,7 +379,7 @@ function deleteTestSuite(suite: any) {
                     {
                         id: suite.id,
                         projectKey: suite.projectKey,
-                        screen: 'Test suites'
+                        screen: 'project-testing'
                     });
             }
         }
@@ -397,6 +397,24 @@ const generateApiAccessToken = async () => {
 async function refresh() {
     await testSuitesStore.reloadComplete();
     await projectArtifactsStore.loadProjectArtifacts(false);
+}
+
+function openDemoInstructions() {
+    toggleSnippetType.value = 'demo';
+    mixpanel.track('Select option to upload test suite', {
+        projectKey: project.value!.key,
+        option: 'demo',
+        screen: 'project-testing'
+    });
+}
+
+function openCustomInstructions() {
+    toggleSnippetType.value = 'custom';
+    mixpanel.track('Select option to upload test suite', {
+        projectKey: project.value!.key,
+        option: 'custom',
+        screen: 'project-testing'
+    });
 }
 
 onActivated(async () => {
