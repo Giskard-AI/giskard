@@ -225,8 +225,8 @@ class Suite:
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, suite_run_args)
             try:
-                test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
                 res.append((test_partial.test_name, result, test_params))
                 if verbose:
@@ -235,13 +235,14 @@ class Suite:
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution")
+                logging.exception(f"An error happened during test execution for test: {test_partial.test_name}")
                 res.append(
                     (
                         test_partial.test_name,
                         TestResult(
                             passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
                         ),
+                        test_params,
                     )
                 )
 
