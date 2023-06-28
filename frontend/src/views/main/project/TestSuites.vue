@@ -126,7 +126,7 @@
                         'd-flex': true,
                         'align-center': true
                     }" @click="toggleSnippetType = 'demo'">
-                        <v-card-text class="text-center text-body-1">Upload a test suite from demo projects</v-card-text>
+                        <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">demo projects</span></v-card-text>
                     </v-card>
                     <v-card width="275" outlined :class="{
                         'mx-2': true,
@@ -135,21 +135,20 @@
                         'd-flex': true,
                         'align-center': true
                     }" @click="toggleSnippetType = 'custom'">
-                        <v-card-text class="text-center text-body-1">Upload a test suite from your own model</v-card-text>
+                        <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">your own model</span></v-card-text>
                     </v-card>
                 </div>
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-16 mb-6">
-                <p class="text-center font-weight-medium">Execute the following Python code to upload a demo test suite to the current project 👇</p>
+                <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
                 <div class="mt-6 mb-6">
                     <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
                 </div>
-                <p class="text-center">To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
             </div>
             <div v-else-if="toggleSnippetType === 'custom'" class="mt-16 mb-6 d-flex justify-center">
                 <div>
-                    <p class="font-weight-medium text-center">To upload a test suite from your model, follow these 3 steps:</p>
+                    <p class="text-center">To upload a <span class="font-weight-bold">test suite from your own model</span>, follow these steps:</p>
                     <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
                         <v-card-title class="font-weight-medium">
                             <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
@@ -446,9 +445,6 @@ onActivated(async () => {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.option-card .v-card__text {
-    font-weight: 600;
-}
 
 .active-option {
     border: 2px solid #087038;
@@ -457,7 +453,6 @@ onActivated(async () => {
 
 .active-option .v-card__text {
     color: #087038;
-    font-weight: 600;
 }
 
 .card-step:hover {
