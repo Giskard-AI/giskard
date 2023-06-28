@@ -173,44 +173,6 @@ def _test_diff_prediction(
     )
 
 
-@test(name="AUC test class", tags=['performance', 'classification', 'ground_truth'])
-class AucTest(GiskardTest):
-    """
-    Test if the model AUC performance is higher than a threshold for a given slice
-
-    Example : The test is passed when the AUC for females is higher than 0.7
-    """
-
-    dataset: Dataset
-    model: BaseModel
-    threshold: float
-
-    def __init__(self, model: BaseModel = None, dataset: Dataset = None, threshold: float = None, debug: bool = False):
-        """
-        :param model: Model used to compute the test
-        :param dataset: dataset used to compute the test
-        :param threshold: Threshold value of AUC metrics
-        """
-        self.dataset = dataset
-        self.model = model
-        self.threshold = threshold
-        self.debug = debug
-        super().__init__()
-
-    def execute(self) -> TestResult:
-        """
-
-        :return:
-          actual_slices_size:
-            Length of dataset tested
-          metric:
-            The AUC performance metric
-          passed:
-            TRUE if AUC metrics >= threshold
-        """
-        return test_auc.test_fn(dataset=self.dataset, model=self.model, threshold=self.threshold, debug=self.debug)
-
-
 @test(name="AUC", tags=["performance", "classification", "ground_truth"])
 def test_auc(
         model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
@@ -450,7 +412,8 @@ def test_rmse(
 
 @test(name="MSE", tags=["performance", "regression", "ground_truth"])
 def test_mse(
-        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+        model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0,
+        debug_percent_rows: float = 0.3, debug: bool = False
 ):
     """
     Test if the model mean squared error (MSE) is lower than a threshold.
@@ -478,7 +441,8 @@ def test_mse(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mse")
-    return _test_regression_score(_get_mse, model, dataset, threshold)
+    return _test_regression_score(_get_mse, model, dataset, threshold, debug_percent_rows=debug_percent_rows,
+                                  debug=debug)
 
 
 @test(name="MAE", tags=["performance", "regression", "ground_truth"])
