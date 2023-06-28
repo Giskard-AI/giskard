@@ -739,7 +739,7 @@ class MLFlowBasedModel(WrapperModel, ABC):
         model = flavor.load_model(self.model.metadata.get_model_info().model_uri)
 
         mlflow_model = Model(artifact_path=artifact_path)
-        flavor.save_model(path=local_path, mlflow_model=mlflow_model, model=model)
+        flavor.save_model(model, path=local_path, mlflow_model=mlflow_model)
 
     @classmethod
     def load_model(cls, local_dir):
