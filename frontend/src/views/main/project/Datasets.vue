@@ -3,10 +3,6 @@
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
       <div class="mr-2">
-        <v-btn text @click="reloadDatasets">
-          refresh
-          <v-icon right>refresh</v-icon>
-        </v-btn>
         <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
           add a dataset
           <v-icon right>mdi-open-in-new</v-icon>
@@ -57,6 +53,12 @@
             <div class="caption" v-else>Could not properly load data</div>
           </v-expansion-panel-content>
         </v-expansion-panel>
+        <div class="d-flex flex-column align-center justify-center mt-6">
+          <v-btn small @click="reloadDatasets" plain>
+            <span class="caption">Refresh</span>
+            <v-icon size="small" class="ml-1">refresh</v-icon>
+          </v-btn>
+        </div>
       </v-expansion-panels>
     </v-container>
     <v-container v-else-if="apiAccessToken && apiAccessToken.id_token && !isLoading">

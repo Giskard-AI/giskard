@@ -3,10 +3,6 @@
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
       <div class="mr-2">
-        <v-btn text @click="reloadModels">
-          refresh
-          <v-icon right>refresh</v-icon>
-        </v-btn>
         <v-btn v-if="projectArtifactsStore.models.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
           add a model
           <v-icon right>mdi-open-in-new</v-icon>
@@ -63,6 +59,13 @@
         </v-row>
         <v-divider></v-divider>
       </v-card>
+
+      <div class="d-flex flex-column align-center justify-center mt-6">
+        <v-btn small @click="reloadModels" plain>
+          <span class="caption">Refresh</span>
+          <v-icon size="small" class="ml-1">refresh</v-icon>
+        </v-btn>
+      </div>
 
       <!-- Dialog for launching model inspection -->
       <v-dialog v-if="isMLWorkerConnected" v-model="showInspectDialog" @click:outside="cancelLaunchInspector" max-width="600">
