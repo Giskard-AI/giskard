@@ -9,13 +9,13 @@
                     <v-col cols="8">
                         <div class="d-flex justify-end">
 
-                            <v-btn class="primaryLightBtn ml-2" color="primaryLight" @click="createTestSuite">
-                                <v-icon left>add</v-icon>
-                                New test suite
+                            <v-btn class="ml-2" color="primary" @click="createTestSuite">
+                                <v-icon left>mdi-plus</v-icon>
+                                new test suite
                             </v-btn>
-                            <v-btn color="primary" class="ml-2" @click="openUploadDialog">
-                                Upload with API
-                                <v-icon right>mdi-application-braces-outline</v-icon>
+                            <v-btn class="ml-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                                create a suite with code
+                                <v-icon right>mdi-open-in-new</v-icon>
                             </v-btn>
                         </div>
                     </v-col>
@@ -98,14 +98,14 @@
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
             </v-alert>
             <div>
-                <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
-                    <v-icon>add</v-icon>
-                    Create a new test suite
+                <v-btn @click="createTestSuite" color="primary">
+                    <v-icon left>mdi-plus</v-icon>
+                    Create a test suite with <span class="font-weight-black ml-1">UI</span>
                 </v-btn>
                 <span class="mx-4 font-weight-medium grey--text text--darken-2">OR</span>
-                <v-btn color="primary" @click="openUploadDialog">
-                    Upload with API
-                    <v-icon right>mdi-application-braces-outline</v-icon>
+                <v-btn href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                    Create a test suite with <span class="font-weight-black ml-1">code</span>
+                    <v-icon right>mdi-open-in-new</v-icon>
                 </v-btn>
             </div>
             <div class="d-flex justify-center mb-6">
