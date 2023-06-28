@@ -35,11 +35,6 @@ def process_text(some_string):
     return some_string
 
 
-class GiskardModel(Model):
-    def model_predict(self, df):
-        return self.model.predict(df)
-
-
 class GiskardEvaluator(ModelEvaluator):
     def can_evaluate(self, model_type, **kwargs):
         return model_type in ["classifier", "regressor"]
@@ -61,10 +56,10 @@ class GiskardEvaluator(ModelEvaluator):
             raise ValueError("Only pd.DataFrame are currently supported in Giskard.")
 
         cl = evaluator_config["classification_labels"] if "classification_labels" in self.evaluator_config else None
-        giskard_model = GiskardModel(model=model,
-                                     model_type=gsk_model_types[model_type],
-                                     feature_names=dataset.feature_names,
-                                     classification_labels=cl)
+        giskard_model = Model(model=model,
+                              model_type=gsk_model_types[model_type],
+                              feature_names=dataset.feature_names,
+                              classification_labels=cl)
 
         results = scan(giskard_model, giskard_dataset)
 
