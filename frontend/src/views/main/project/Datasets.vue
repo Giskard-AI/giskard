@@ -3,13 +3,13 @@
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
       <div class="mr-2">
-        <v-btn @click="reloadDatasets">
-          Reload
-          <v-icon right>refresh</v-icon>
+        <v-btn text @click="reloadDatasets">
+          <v-icon small left>refresh</v-icon>
+          Refresh
         </v-btn>
-        <v-btn v-if="projectArtifactsStore.datasets.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
+        <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
+          add a dataset
+          <v-icon right>mdi-open-in-new</v-icon>
         </v-btn>
       </div>
     </div>
@@ -71,7 +71,6 @@
 import { apiURL } from "@/env";
 import { api } from "@/api";
 import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
 import { computed, onBeforeMount, onMounted, ref } from "vue";
@@ -83,7 +82,6 @@ import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import { JWTToken } from "@/generated-sources";
 import { TYPE } from "vue-toastification";
-import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
@@ -142,16 +140,6 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
-
-function openUploadDialog() {
-  $vfm.show({
-    component: UploadArtifactModal,
-    bind: {
-      title: 'Upload a dataset',
-      codeContent: codeContent.value,
-    },
-  });
-}
 
 async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', { id });
