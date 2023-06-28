@@ -8,13 +8,13 @@
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end flex-wrap">
+                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
+                                <v-icon left>mdi-plus</v-icon>
+                                create a new suite
+                            </v-btn>
                             <v-btn class="ml-2 mb-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
                                 add suite with code
                                 <v-icon right>mdi-open-in-new</v-icon>
-                            </v-btn>
-                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
-                                create a new suite
-                                <v-icon right>mdi-plus</v-icon>
                             </v-btn>
                         </div>
                     </v-col>
@@ -106,14 +106,17 @@
             </v-alert>
             <div>
                 <v-btn @click="createTestSuite" color="primary">
-                    <v-icon left>mdi-plus</v-icon>
+                    <v-icon left>mdi-monitor-shimmer</v-icon>
                     Create a test suite with <span class="font-weight-black ml-1">UI</span>
                 </v-btn>
                 <span class="mx-4 font-weight-medium grey--text text--darken-2">OR</span>
                 <v-btn href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                    <v-icon left>mdi-application-brackets-outline</v-icon>
                     Create a test suite with <span class="font-weight-black ml-1">code</span>
-                    <v-icon right>mdi-open-in-new</v-icon>
+                    <v-icon right class="ml-4">mdi-open-in-new</v-icon>
                 </v-btn>
+
+
             </div>
             <div class="d-flex justify-center mb-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
