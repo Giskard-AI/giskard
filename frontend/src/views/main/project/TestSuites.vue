@@ -126,7 +126,7 @@
                         'd-flex': true,
                         'align-center': true
                     }" @click="toggleSnippetType = 'demo'">
-                        <v-card-text class="text-center text-body-1">Upload demo test suite</v-card-text>
+                        <v-card-text class="text-center text-body-1">Upload a test suite from demo projects</v-card-text>
                     </v-card>
                     <v-card width="275" outlined :class="{
                         'mx-2': true,
@@ -135,7 +135,7 @@
                         'd-flex': true,
                         'align-center': true
                     }" @click="toggleSnippetType = 'custom'">
-                        <v-card-text class="text-center text-body-1">Upload test suite from your model</v-card-text>
+                        <v-card-text class="text-center text-body-1">Upload a test suite from your own model</v-card-text>
                     </v-card>
                 </div>
             </div>
