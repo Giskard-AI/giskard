@@ -11,6 +11,7 @@ The Giskard python package provides an automatic scan functionality designed to 
 - `Ethical bias <../../getting-started/key_vulnerabilities/ethics/index.md>`_
 - `Data leakage <../../getting-started/key_vulnerabilities/data_leakage/index.md>`_
 - `Stochasticity <../../getting-started/key_vulnerabilities/stochasticity/index.md>`_
+- `Spurious correlation <../../getting-started/key_vulnerabilities/spurious/index.md>`_
 
 
 With the automatic scan, you can proactively identify and address key vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
@@ -94,6 +95,9 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers. 
     # Create a Giskard client after having installed the Giskard server (see documentation)
+
+    from giskard import GiskardClient
+
     token = "API_TOKEN"  # Find it in Settings in the Giskard server
     client = GiskardClient(
         url="http://localhost:19000",  # URL of your Giskard instance
