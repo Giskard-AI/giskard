@@ -3,13 +3,13 @@
     <div class="d-flex mb-6">
       <v-spacer></v-spacer>
       <div class="mr-2">
-        <v-btn @click="reloadModels">
-          Reload
+        <v-btn text @click="reloadModels">
+          refresh
           <v-icon right>refresh</v-icon>
         </v-btn>
-        <v-btn v-if="projectArtifactsStore.models.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
+        <v-btn v-if="projectArtifactsStore.models.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
+          add a model
+          <v-icon right>mdi-open-in-new</v-icon>
         </v-btn>
       </div>
     </div>
@@ -95,7 +95,6 @@
 import { api } from '@/api';
 import { apiURL } from "@/env";
 import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
 import { JWTToken, ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
@@ -107,7 +106,6 @@ import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { state } from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -168,16 +166,6 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
-
-function openUploadDialog() {
-  $vfm.show({
-    component: UploadArtifactModal,
-    bind: {
-      title: 'Upload a model',
-      codeContent: codeContent.value,
-    },
-  });
-}
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
