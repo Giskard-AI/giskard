@@ -7,14 +7,14 @@
                         <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field>
                     </v-col>
                     <v-col cols="8">
-                        <div class="d-flex justify-end">
+                        <div class="d-flex justify-end flex-wrap">
 
-                            <v-btn class="ml-2" color="primary" @click="createTestSuite">
+                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
                                 <v-icon left>mdi-plus</v-icon>
-                                new test suite
+                                create a new test suite
                             </v-btn>
-                            <v-btn class="ml-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
-                                create a suite with code
+                            <v-btn class="ml-2 mb-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                                add suite with code
                                 <v-icon right>mdi-open-in-new</v-icon>
                             </v-btn>
                         </div>
