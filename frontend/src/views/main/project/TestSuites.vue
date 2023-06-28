@@ -8,17 +8,13 @@
                     </v-col>
                     <v-col cols="8">
                         <div class="d-flex justify-end flex-wrap">
-                            <v-btn text @click="refresh">
-                                <v-icon small left>refresh</v-icon>
-                                Refresh
-                            </v-btn>
-                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
-                                <v-icon left>mdi-plus</v-icon>
-                                create a new test suite
-                            </v-btn>
                             <v-btn class="ml-2 mb-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
                                 add suite with code
                                 <v-icon right>mdi-open-in-new</v-icon>
+                            </v-btn>
+                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
+                                create a new suite
+                                <v-icon right>mdi-plus</v-icon>
                             </v-btn>
                         </div>
                     </v-col>
@@ -32,6 +28,7 @@
                         <v-col cols="2">Status</v-col>
                         <v-col cols="2">Total executions</v-col>
                         <v-col cols="1"></v-col>
+
                     </v-row>
 
                     <v-expansion-panel v-for="(suite, index) in filteredSuites" :key="suite.suite.id" @click.stop="openTestSuite(suite.suite.id)" class="expansion-panel">
@@ -89,7 +86,14 @@
                             </v-row>
                         </v-expansion-panel-header>
                     </v-expansion-panel>
+                    <div class="d-flex flex-column align-center justify-center mt-6">
+                        <v-btn small @click="refresh" plain>
+                            <span class="caption">Refresh</span>
+                            <v-icon size="small" class="ml-1">refresh</v-icon>
+                        </v-btn>
+                    </div>
                 </v-expansion-panels>
+
             </div>
             <div v-else>
                 <router-view />
@@ -113,6 +117,12 @@
             </div>
             <div class="d-flex justify-center mb-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+            </div>
+            <div class="d-flex flex-column align-center justify-center mt-6">
+                <v-btn small @click="refresh" plain>
+                    <span class="caption">Refresh</span>
+                    <v-icon size="small" class="ml-1">refresh</v-icon>
+                </v-btn>
             </div>
         </v-container>
         <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
@@ -197,6 +207,12 @@
             </div>
             <div v-else class="d-flex justify-center my-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+            </div>
+            <div class="d-flex flex-column align-center justify-center mt-6">
+                <v-btn small @click="refresh" plain>
+                    <span class="caption">Refresh</span>
+                    <v-icon size="small" class="ml-1">refresh</v-icon>
+                </v-btn>
             </div>
         </v-container>
     </div>
