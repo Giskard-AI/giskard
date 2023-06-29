@@ -82,6 +82,7 @@ def map_function_meta(callable_type):
 
 
 def log_artifact_local(local_file, artifact_path=None):
+    # Log artifact locally from an internal worker
     verify_artifact_path(artifact_path)
 
     file_name = os.path.basename(local_file)
@@ -90,8 +91,6 @@ def log_artifact_local(local_file, artifact_path=None):
     artifact_file = posixpath.join("/", *paths)
     Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
 
-    # FIXME: Artifacts of the project not yet shown
-    logging.info(f"Logging artifact locally from {local_file} to {artifact_file}")
     shutil.copy(local_file, artifact_file)
 
 
