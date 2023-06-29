@@ -2506,36 +2506,6 @@
 &lt;/div&gt;
 
 
-
-        
-        &lt;div class=&quot;p-4&quot;&gt;
-    &lt;h2 class=&quot;my-4 mr-2 font-medium&quot;&gt;Debug your issues in the Giskard server&lt;/h2&gt;
-    
-    &lt;p class=&quot;text-sm my-1&quot;&gt;
-        Install the Giskard server app to:
-    &lt;/p&gt;
-    &lt;ul class=&quot;list-disc ml-4 my-1 text-sm&quot;&gt;
-        &lt;li&gt;Debug and diagnose your scan issues&lt;/li&gt;
-        &lt;li&gt;Save your scan result as a re-executable test suite to benchmark your model&lt;/li&gt;
-        &lt;li&gt;Extend your test suite with &lt;a href=&quot;https://docs.giskard.ai/en/latest/reference/tests/index.html&quot; target=&quot;_blank&quot; class=&quot;underline&quot;&gt;our catalog of ready-to-use tests&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-    &lt;p class=&quot;text-sm my-1&quot;&gt;
-        You can find &lt;a href=&quot;https://docs.giskard.ai/en/latest/guides/installation_app/index.html&quot; target=&quot;_blank&quot;&gt;installation instructions here.&lt;/a&gt;
-    &lt;/p&gt;
-    &lt;div class=&quot;text-sm my-2&quot;&gt;
-        &lt;pre&gt;&lt;code class=&quot;language-python rounded&quot;&gt;from giskard import GiskardClient
-
-# Create a test suite from your scan results
-test_suite = results.generate_test_suite(&quot;My first test suite&quot;)
-
-# Upload your test suite to your Giskard server instance
-client = GiskardClient(&quot;http://localhost:19000&quot;, &quot;GISKARD_API_KEY&quot;)
-client.create_project(&quot;my_project_id&quot;, &quot;my_project_name&quot;)
-test_suite.upload(client, &quot;my_project_id&quot;)
-&lt;/code&gt;&lt;/pre&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
-        
     &lt;/div&gt;
 &lt;/div&gt;
 &lt;script type=&quot;text/javascript&quot;&gt;
