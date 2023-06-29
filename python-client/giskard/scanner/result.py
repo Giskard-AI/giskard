@@ -1,8 +1,11 @@
-from collections import defaultdict
-
 import pandas as pd
+from html import escape
+from pathlib import Path
+from collections import defaultdict
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 from giskard.utils.analytics_collector import analytics, anonymize
+from .visualization.custom_jinja import pluralize, format_metric
 
 
 class ScanResult:
@@ -25,10 +28,9 @@ class ScanResult:
         display_html(html, raw=True)
 
     def _repr_html_(self):
-        from jinja2 import Environment, PackageLoader, select_autoescape
-        from .visualization.custom_jinja import pluralize, format_metric
-        from html import escape
+        return self.to_html(embed=True)
 
+    def to_html(self, filename=None, embed=False):
         env = Environment(
             loader=PackageLoader("giskard.scanner", "templates"),
             autoescape=select_autoescape(),
@@ -46,36 +48,36 @@ class ScanResult:
             issues=self.issues,
             issues_by_group=issues_by_group,
             num_major_issues={
-                group: len([i for i in issues if i.is_major]) for group, issues in issues_by_group.items()
+                group: len([i for i in issues if i.level == "major"]) for group, issues in issues_by_group.items()
             },
             num_medium_issues={
-                group: len([i for i in issues if not i.is_major]) for group, issues in issues_by_group.items()
+                group: len([i for i in issues if i.level == "medium"]) for group, issues in issues_by_group.items()
+            },
+            num_info_issues={
+                group: len([i for i in issues if i.level == "info"]) for group, issues in issues_by_group.items()
             },
         )
 
-        escaped = escape(html)
-        uid = id(self)
+        if embed:
+            # Put the HTML in an iframe
+            escaped = escape(html)
+            uid = id(self)
 
-        from pathlib import Path
+            with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
+                js_lib = f.read()
 
-        with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
-            js_lib = f.read()
-
-        return f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
+            return f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
 <script>
 {js_lib}
 (function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
-</script>
-"""
+</script>"""
 
-    def to_html(self, filename=None):
-        html = self._repr_html_()
+        if filename is not None:
+            with open(filename, "w") as f:
+                f.write(html)
+            return
 
-        if not filename:
-            return html
-
-        with open(filename, "w") as f:
-            f.write(html)
+        return html
 
     def to_dataframe(self):
         df = pd.DataFrame(

@@ -77,11 +77,9 @@ def _contribution_push(model, ds, idrow):
 
     zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
 
-    k1, k2 = keys[-1], keys[-2]
+    k1 = keys[-1]
     if zscore_array[-1] >= 2:
         return [k1]
-    elif zscore_array[-1] >= 1.5 and zscore_array[-2] >= 1:
-        return [k1, k2]
     else:
         return None
 
