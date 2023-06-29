@@ -239,7 +239,8 @@ export default class Inspector extends Vue {
             .map(([name, type]) => ({
                 name,
                 type,
-                values: this.dataset.categoryFeatures[name]
+                values: this.dataset.categoryFeatures ?
+                  this.dataset.categoryFeatures[name] : []
             }))
     }
 
