@@ -1,5 +1,5 @@
 import mlflow
-
+import pytest
 
 def test_sklearn():
     from giskard import demo
@@ -16,8 +16,10 @@ def test_sklearn():
             evaluators="giskard",
             evaluator_config={"classification_labels": ["no", "yes"]}
         )
+    mlflow.end_run()
 
 
+@pytest.mark.skip(reason="find a faster example")
 def test_tensorflow():
     import pandas as pd
     import tensorflow as tf
@@ -94,3 +96,4 @@ def test_tensorflow():
             evaluators="giskard",
             evaluator_config={"classification_labels": [0, 1]}
         )
+    mlflow.end_run()
