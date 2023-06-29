@@ -16,14 +16,14 @@ Installing Giskard in Azure enables you to inspect & test models that you create
    <figure><img src="../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 6. Connect to your VM in SSH by using the path of the **private key file** you downloaded. To do so, go to the tab `Overview`, select `Connect` and `SSH` then follow the different steps to get the right command to execute in your terminal.&#x20;
 
-{% hint style="info" %}
+:::{note}
 For example, the terminal command line to SSH connect to your install from your computer can be:
 
 ```
 sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 ```
 
-{% endhint %}
+:::
 
 ### 2. Install Giskard in the VM
 
@@ -45,14 +45,14 @@ giskard server start
 * Get the Public IP address of your Giskard VM by clicking on the `Overview` tab
 * Go to **`http://<your IP address>:19000`** in your web browser
 
-{% hint style="info" %}
+:::{note}
 You can stop the instance and restart it when you need to save your Azure compute costs. However, note that&#x20;
 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **re-start the Giskard server**, by executing in the Giskard folder:
 
 &#x20;`giskard server start`
-{% endhint %}
+:::
 
 * The user id is `admin` and the password is `admin`
 
