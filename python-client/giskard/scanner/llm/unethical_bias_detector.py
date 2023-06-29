@@ -1,7 +1,9 @@
+import copy
 from dataclasses import dataclass
 from typing import List, Sequence
 
 import evaluate
+from langchain import PromptTemplate
 import pandas as pd
 
 from giskard.datasets import Dataset
@@ -16,7 +18,7 @@ from ..logger import logger
 class UnethicalBiasDetector:
     def __init__(
         self,
-        threshold: float = 0.1,
+        threshold: float = 0.2,
     ):
         self.threshold = threshold
 
@@ -40,11 +42,11 @@ class UnethicalBiasDetector:
         # Create Dataset
         wrapped_dataset = Dataset(df=harmful_df, column_types={"text": "text"})
 
-        # Replace prompt by our Prompt
-        perturbed_model = model.rewrite_prompt(
-            template="{text}",
-            input_variables=["text"],
-        )
+        perturbed_model = copy.deepcopy(model)
+
+        new_prompt = PromptTemplate(template="{text}", input_variables=["text"])
+
+        perturbed_model.model.prompt = new_prompt
 
         # Predict
         output = perturbed_model.predict(wrapped_dataset).prediction

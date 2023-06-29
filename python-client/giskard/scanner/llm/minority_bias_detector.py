@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Sequence
+from langchain import PromptTemplate
 
 import pandas as pd
 from detoxify import Detoxify
@@ -10,6 +11,7 @@ from ...models.langchain import LangchainModel
 from ..decorators import detector
 from ..issues import Issue
 from ..logger import logger
+import copy
 
 
 @detector("llm_minority_bias", tags=["text_generation", "minority"])
@@ -56,11 +58,11 @@ class MinorityBiasDetector:
         # Create Dataset
         wrapped_dataset = Dataset(df=prompt_df.drop(["target"], axis=1), column_types={"text": "text"})
 
-        # Replace prompt by our Prompt
-        perturbed_model = model.rewrite_prompt(
-            template="{text}",
-            input_variables=["text"],
-        )
+        perturbed_model = copy.deepcopy(model)
+
+        new_prompt = PromptTemplate(template="{text}", input_variables=["text"])
+
+        perturbed_model.model.prompt = new_prompt
 
         # Predict
         output = perturbed_model.predict(wrapped_dataset).prediction
