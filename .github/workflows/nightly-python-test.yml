@@ -9,6 +9,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
       - name: Checkout code
         uses: actions/checkout@v3.3.0
         with:
@@ -19,6 +26,20 @@ jobs:
         run: | # FIXME: Won't work on Windows
           echo "platform_arch=$(uname -m)" >> "$GITHUB_OUTPUT"
           echo "sys_platform=$(uname -o)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+
+      - name: Cache Frontend dependencies
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
+          restore-keys: ${{ runner.os }}-frontend
 
       - name: Cache Giskard test resources
         uses: actions/cache@v3
@@ -45,6 +66,10 @@ jobs:
         with:
           cache-read-only: false
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: Set up Python # Only use this step on x86_64
         if: ${{ steps.runner_info.outputs.platform_arch == 'amd64' || steps.runner_info.outputs.platform_arch == 'x86_64' }}
         uses: actions/setup-python@v4
@@ -64,7 +89,17 @@ jobs:
           python -m pip install virtualenv -U --upgrade pip
           echo "Python ($(which python)) packages:\n $(python -m pip list)"
 
-      - name: Run full Python tests
+      - name: Get current date
+        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
+        id: current_date
         env:
+          TZ: Europe/Paris
+        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Test
+        env:
+          GSK_DISABLE_ANALYTICS: True
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
-        run: ./gradlew full-python-test
+        run: ./gradlew build test-all integrationTest :python-client:lint :python-client:package jacocoTestReport --debug --parallel
+
+      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
