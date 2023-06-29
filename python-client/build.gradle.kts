@@ -80,7 +80,7 @@ tasks {
         command = "run test-fast"
     }
 
-    create<PythonTask>("full-python-test") {
+    create<PythonTask>("test-all") {
         dependsOn("install")
         module = "pdm"
         command = "run test"
