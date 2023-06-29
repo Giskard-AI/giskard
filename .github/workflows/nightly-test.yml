@@ -1,12 +1,12 @@
-name: Nightly Python test
+name: Nightly test
 on:
   schedule:
     - cron: '0 1 * * *' # Always run at 1:00 a.m.
   workflow_dispatch:
 
 jobs:
-  full-python-test:
-    name: Build
+  full-test:
+    name: Full test
     runs-on: ubuntu-latest
     steps:
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
