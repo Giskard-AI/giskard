@@ -14,6 +14,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get information of GitHub Action runner
+        id: runner_info
+        run: | # FIXME: Won't work on Windows
+          echo "platform_arch=$(uname -m)" >> "$GITHUB_OUTPUT"
+          echo "sys_platform=$(uname -o)" >> "$GITHUB_OUTPUT"
+
       - name: Cache Giskard test resources
         uses: actions/cache@v3
         with:
@@ -39,10 +45,15 @@ jobs:
         with:
           cache-read-only: false
 
-      - name: Set up Python
+      - name: Set up Python # Only use this step on x86_64
+        if: ${{ steps.runner_info.outputs.platform_arch == 'amd64' || steps.runner_info.outputs.platform_arch == 'x86_64' }}
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
+      - name: Install Python and pip through apt
+        if: ${{ steps.runner_info.outputs.platform_arch != 'amd64' && steps.runner_info.outputs.platform_arch != 'x86_64' }}
+        run: apt update && apt install -y python3 python3-pip
 
       - name: Get number of available cores for Python test workers
         id: nb_workers
