@@ -17,6 +17,7 @@ _default_detectors = [
     ".llm.gender_bias_detector",
     ".llm.unethical_bias_detector",
     ".llm.minority_bias_detector",
+    ".llm.token_leakage",
 ]
 
 
