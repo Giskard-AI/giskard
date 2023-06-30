@@ -10,15 +10,52 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Artifact
+from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
+
+
+def parse_function_arguments(client, project_key, function_inputs):
+    arguments = dict()
+
+    for value in function_inputs:
+        if value["isAlias"]:
+            continue
+        if value["type"] == "Dataset":
+            arguments[value["name"]] = Dataset.download(client, project_key, value["value"], False)
+        elif value["type"] == "BaseModel":
+            arguments[value["name"]] = BaseModel.download(client, project_key, value["value"])
+        elif value["type"] == "SlicingFunction":
+            arguments[value["name"]] = SlicingFunction.download(value["value"], client, None)(
+                **parse_function_arguments(client, project_key, value["params"])
+            )
+        elif value["type"] == "TransformationFunction":
+            arguments[value["name"]] = TransformationFunction.download(value["value"], client, None)(
+                **parse_function_arguments(client, project_key, value["params"])
+            )
+        elif value["type"] == "float":
+            arguments[value["name"]] = float(value["value"])
+        elif value["type"] == "int":
+            arguments[value["name"]] = int(value["value"])
+        elif value["type"] == "str":
+            arguments[value["name"]] = str(value["value"])
+        elif value["type"] == "bool":
+            arguments[value["name"]] = bool(value["value"])
+        elif value["type"] == "kwargs":
+            kwargs = dict()
+            exec(value["value"], {"kwargs": kwargs})
+            arguments.update(kwargs)
+        else:
+            raise IllegalArgumentError("Unknown argument type")
+    return arguments
 
 
 class TestSuiteResult(tuple):
@@ -474,6 +511,20 @@ class Suite:
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
+
+    @classmethod
+    def download(cls, client: GiskardClient, project_key: str, suite_id: int) -> "Suite":
+        suite_json = client.get_suite(client.get_project(project_key).project_id, suite_id)
+
+        suite = Suite(name=suite_json["name"])
+        suite.id = suite_id
+
+        for test_json in suite_json["tests"]:
+            test = GiskardTest.download(test_json["testUuid"], client, None)
+            test_arguments = parse_function_arguments(client, project_key, test_json["functionInputs"].values())
+            suite.add_test(test.get_builder()(**test_arguments))
+
+        return suite
 
 
 def contains_tag(func: TestFunctionMeta, tag: str):
