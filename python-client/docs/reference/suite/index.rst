@@ -5,7 +5,6 @@ Test suite
 
    .. automethod:: __init__
    .. automethod:: run
-   .. automethod:: save
    .. automethod:: add_test
    .. automethod:: upload
 

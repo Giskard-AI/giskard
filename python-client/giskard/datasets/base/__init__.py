@@ -105,7 +105,13 @@ class DataProcessor:
 
 class Dataset(ColumnMetadataMixin):
     """
-    A class for constructing and processing datasets.
+    To scan, test and debug your model, you need to provide a dataset that can be executed by your model.
+    This dataset can be your training, testing, golden, or production dataset.
+
+    The ``pandas.DataFrame`` you provide should contain the **raw data before pre-processing** (categorical encoding, scaling,
+    etc.). The prediction function that you wrap with the Giskard `Model` should be able to
+    execute the pandas dataframe.
+
 
     Attributes:
         df (pandas.DataFrame):
