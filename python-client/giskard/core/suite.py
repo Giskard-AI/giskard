@@ -264,13 +264,13 @@ class Suite:
 
         test_params = {}
         for pname, p in available_params:
-            if pname in test_partial.provided_inputs:
+            if pname in kwargs:
+                test_params[pname] = kwargs[pname]
+            elif pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
                 else:
                     test_params[pname] = test_partial.provided_inputs[pname]
-            elif pname in kwargs:
-                test_params[pname] = kwargs[pname]
         return test_params
 
     def upload(self, client: GiskardClient, project_key: str):
