@@ -5,17 +5,17 @@ def test_sklearn():
     from giskard import demo
     model, df = demo.titanic()
 
-    with mlflow.start_run() as run:
-        model_uri = mlflow.sklearn.log_model(model, "sklearn_model", pyfunc_predict_fn="predict_proba").model_uri
+    mlflow.start_run()
+    model_uri = mlflow.sklearn.log_model(model, "sklearn_model", pyfunc_predict_fn="predict_proba").model_uri
 
-        mlflow.evaluate(
-            model=model_uri,
-            model_type="classifier",
-            data=df,
-            targets="Survived",
-            evaluators="giskard",
-            evaluator_config={"classification_labels": ["no", "yes"]}
-        )
+    mlflow.evaluate(
+        model=model_uri,
+        model_type="classifier",
+        data=df,
+        targets="Survived",
+        evaluators="giskard",
+        evaluator_config={"classification_labels": ["no", "yes"]}
+    )
     mlflow.end_run()
 
 
