@@ -34,7 +34,7 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn small text color="primary" @click="applyCta(detail.kind)">
+                <v-btn small text color="primary" :loading="detail.kind === loading" @click="applyCta(detail.kind)">
                   {{ detail.button }}
                 </v-btn>
               </v-list-item-action>
@@ -57,9 +57,11 @@
 import {computed, ref} from 'vue';
 import {usePushStore} from "@/stores/push";
 import {useMainStore} from "@/stores/main";
+import {useCatalogStore} from "@/stores/catalog";
 
 const pushStore = usePushStore();
 const mainStore = useMainStore();
+const catalogStore = useCatalogStore();
 
 const props = defineProps({
   type: String,
@@ -67,6 +69,7 @@ const props = defineProps({
 });
 
 const opened = ref<boolean>(false);
+const loading = ref<string>("");
 const value = computed(() => {
   return pushStore.current;
 });
@@ -116,21 +119,30 @@ const icon = computed(() => {
 });
 
 async function applyCta(kind: string) {
+  loading.value = kind;
   // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
   let uuid = await pushStore.applyPush(push.value!.kind, kind);
 
   switch (kind) {
     case "CreateSlice":
+    case "SaveExample":
       mainStore.addSimpleNotification("Successfully saved");
       break;
     case "CreateSliceOpenDebugger":
+      await catalogStore.loadCatalog(7); // TODO: Fix
+      // TODO: Figure out how to load a slice from here
+      mainStore.addSimpleNotification("Slice applied");
+      break;
+    case "CreateTest":
+      mainStore.addSimpleNotification("Test created, add it to a test suite?");
       break;
     case "SavePerturbation":
+      mainStore.addSimpleNotification("Perturbation saved");
       break;
     default:
       break;
   }
-
+  loading.value = "";
 }
 </script>
 
