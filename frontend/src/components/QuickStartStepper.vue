@@ -10,7 +10,7 @@
 
     <v-stepper-items>
       <v-stepper-content step="1" class="stepper-content">
-        <div class="mb-6" v-if="externalWorker !== null">
+        <div class="mb-6" v-if="externalWorker !== null || appSettings?.isRunningOnHfSpaces">
           <p>ML Worker is already running!</p>
           <p>You can skip this step.</p>
         </div>
@@ -91,6 +91,7 @@ const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const externalWorker = ref<MLWorkerInfoDTO | null>(null);
 
 const mainStore = useMainStore();
+const appSettings = computed(() => mainStore.appSettings);
 const giskardClientSnippet = ref<string | null>(null);
 
 const uploadSnippet = computed(() => {
