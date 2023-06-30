@@ -44,6 +44,11 @@ def test_all_global():
     assert passed
 
 
+def test_argument_overriden():
+    passed, _ = Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3)
+    assert passed
+
+
 def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
     assert (
         Suite()
