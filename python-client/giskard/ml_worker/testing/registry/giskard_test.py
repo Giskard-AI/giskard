@@ -131,7 +131,7 @@ class GiskardTestMethod(GiskardTest):
 
         # if params contains debug then we check if test_fn has debug argument
         if "debug" in self.params:
-            if "debug" not in inspect.getfullargspec(self.test_fn).args:
+            if "debug" not in list(inspect.signature(self.test_fn).parameters.keys()):
                 raise ValueError("This test does not support debugging mode at the moment.")
 
         return self.test_fn(**self.params)
