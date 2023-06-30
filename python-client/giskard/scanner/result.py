@@ -1,3 +1,6 @@
+import tempfile
+
+import mlflow
 import pandas as pd
 from html import escape
 from pathlib import Path
@@ -123,3 +126,12 @@ class ScanResult:
             "scan:generate_test_suite",
             {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )
+
+    def to_mlflow(self, client=None, run_id=None):
+        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
+            scan_results_filename = f.name.split("/")[-1]
+            self.to_html(scan_results_filename)
+            if client is None and run_id is None:
+                mlflow.log_artifact(scan_results_filename)
+            elif client and run_id:
+                client.log_artifact(run_id, scan_results_filename)
