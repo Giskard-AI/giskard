@@ -66,7 +66,7 @@ class ScanResult:
             with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
                 js_lib = f.read()
 
-            return f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
+            html = f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
 <script>
 {js_lib}
 (function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
