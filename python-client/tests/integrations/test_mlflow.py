@@ -4,7 +4,6 @@ import pytest
 def test_sklearn():
     from giskard import demo
     model, df = demo.titanic()
-    mlflow.end_run()
     mlflow.start_run()
     model_uri = mlflow.sklearn.log_model(model, "sklearn_model", pyfunc_predict_fn="predict_proba").model_uri
 
@@ -85,15 +84,15 @@ def test_tensorflow():
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=["accuracy"]
     )
 
-    with mlflow.start_run() as run:
-        model_uri = mlflow.tensorflow.log_model(export_model, "tensorflow_model").model_uri
+    mlflow.start_run()
+    model_uri = mlflow.tensorflow.log_model(export_model, "tensorflow_model").model_uri
 
-        mlflow.evaluate(
-            model=model_uri,
-            model_type="classifier",
-            data=test_df,
-            targets="Label",
-            evaluators="giskard",
-            evaluator_config={"classification_labels": [0, 1]}
-        )
+    mlflow.evaluate(
+        model=model_uri,
+        model_type="classifier",
+        data=test_df,
+        targets="Label",
+        evaluators="giskard",
+        evaluator_config={"classification_labels": [0, 1]}
+    )
     mlflow.end_run()
