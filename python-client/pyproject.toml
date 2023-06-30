@@ -160,10 +160,11 @@ llm = [
     "torch",
     "langchain",
     "evaluate",
-#    pdm lock -G:all doesn't work without fixing these two versions
+    #    pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
-    "detoxify"
+    "detoxify",
+    "rouge-score>=0.1.2",
 ]
 server = [
     "tenacity>=4.11.0",
