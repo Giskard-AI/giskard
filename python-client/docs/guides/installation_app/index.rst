@@ -168,4 +168,4 @@ Giskard executes your model using an worker that runs directly the model in your
 
             !giskard worker --help
 
-      You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload an object <../upload/index.html>`_ page.
+      You're all set to try Giskard in action. Upload your first model, dataset, test suite, or slicing & transformation functions by following the `upload an object <../upload/index.html>`_ page.
