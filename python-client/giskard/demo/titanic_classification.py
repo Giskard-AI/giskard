@@ -16,6 +16,19 @@ def get_df():
     df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
     return df
 
+def get_test_df():
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "titanic.csv"))
+    df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
+    _classification_labels = {0: "no", 1: "yes"}
+    df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
+    Y = df["Survived"]
+    X = df.drop("Survived", axis=1)
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
+        X, Y, test_size=0.50, random_state=30, stratify=Y
+    )
+    test_df = pd.concat([X_test, Y_test], axis=1)
+    return test_df
+
 
 def get_model_and_df():
     df = get_df()

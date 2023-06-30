@@ -1,4 +1,5 @@
 <template>
+  <div>
     <v-select
       clearable
       outlined
@@ -13,6 +14,8 @@
       dense
       hide-details
     ></v-select>
+  </div>
+
 </template>
 
 <script setup lang="ts">

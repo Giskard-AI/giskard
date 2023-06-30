@@ -41,7 +41,7 @@ giskard server start
 
 That's it, you are now ready to use Giskard in AWS! Now you can start [uploading an artifact](docs/guide/upload/index.md)!
 
-{% hint style="info" %}
+:::{hint}
 You can stop the instance and restart it when you need to save AWS compute costs. However, note that the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched
-{% endhint %}
+:::
 

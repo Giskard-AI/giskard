@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex" :class="{ w100: fullWidth }">
-      <v-select clearable :outlined='fullWidth' class='slice-function-selector' :label='label' v-model='value'
+      <v-select attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label' v-model='value'
                 :items="[{
             name: 'None',
             displayName: 'None',
