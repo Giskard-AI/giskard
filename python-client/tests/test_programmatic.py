@@ -44,6 +44,11 @@ def test_all_global():
     assert passed
 
 
+def test_argument_overriden():
+    passed, _ = Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3)
+    assert passed
+
+
 def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
     assert (
         Suite()
@@ -117,15 +122,18 @@ def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseM
     def empty_slice(x):
         return x.iloc[[]]
 
-    result = Suite().add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice)) \
-        .add_test(test_f1(dataset=shared_input, threshold=0.2)) \
+    result = (
+        Suite()
+        .add_test(test_f1(dataset=shared_input, threshold=0.2, slicing_function=empty_slice))
+        .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .run(model=german_credit_model, dataset=german_credit_data)
+    )
 
     assert result[0] is False
     assert result[1][0][1].passed is False
     assert result[1][0][1].is_error is True
     assert result[1][0][1].messages[0].type is TestMessageLevel.ERROR
-    assert 'The sliced dataset in test_f1 is empty.' in result[1][0][1].messages[0].text
+    assert "The sliced dataset in test_f1 is empty." in result[1][0][1].messages[0].text
     assert result[1][1][1].passed is True
     assert result[1][1][1].is_error is False
 
