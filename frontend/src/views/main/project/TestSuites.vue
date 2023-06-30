@@ -7,10 +7,14 @@
                         <v-text-field label="Search for a test suite" append-icon="search" outlined v-model="searchSession"></v-text-field>
                     </v-col>
                     <v-col cols="8">
-                        <div class="d-flex justify-end">
-                            <v-btn color="primaryLight" class="primaryLightBtn" @click="createTestSuite">
-                                <v-icon left>add</v-icon>
-                                New test suite
+                        <div class="d-flex justify-end flex-wrap">
+                            <v-btn class="ml-2 mb-2" color="primary" @click="createTestSuite">
+                                <v-icon left>mdi-plus</v-icon>
+                                create a new suite
+                            </v-btn>
+                            <v-btn class="ml-2 mb-2" href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                                add suite with code
+                                <v-icon right>mdi-open-in-new</v-icon>
                             </v-btn>
                         </div>
                     </v-col>
@@ -24,6 +28,7 @@
                         <v-col cols="2">Status</v-col>
                         <v-col cols="2">Total executions</v-col>
                         <v-col cols="1"></v-col>
+
                     </v-row>
 
                     <v-expansion-panel v-for="(suite, index) in filteredSuites" :key="suite.suite.id" @click.stop="openTestSuite(suite.suite.id)" class="expansion-panel">
@@ -43,14 +48,14 @@
                                     <div class="d-flex flex-column">
                                         <span class="font-weight-bold">{{ suite.suite.tests.length }} tests in total</span>
                                         <div v-if="latestExecutions[index]?.executionDate" class="d-flex flex-column">
-                                          <span class="passed-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.PASSED).length
+                                            <span class="passed-tests">{{
+                                                latestExecutions[index]?.results?.filter(result => result.status === TestResult.PASSED).length
                                             }} passing</span>
-                                          <span class="failed-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.FAILED).length
+                                            <span class="failed-tests">{{
+                                                latestExecutions[index]?.results?.filter(result => result.status === TestResult.FAILED).length
                                             }} failing</span>
-                                          <span class="error-tests">{{
-                                              latestExecutions[index]?.results?.filter(result => result.status === TestResult.ERROR).length
+                                            <span class="error-tests">{{
+                                                latestExecutions[index]?.results?.filter(result => result.status === TestResult.ERROR).length
                                             }} with error</span>
                                         </div>
                                     </div>
@@ -81,7 +86,14 @@
                             </v-row>
                         </v-expansion-panel-header>
                     </v-expansion-panel>
+                    <div class="d-flex flex-column align-center justify-center mt-6">
+                        <v-btn small @click="refresh" plain>
+                            <span class="caption">Refresh</span>
+                            <v-icon size="small" class="ml-1">refresh</v-icon>
+                        </v-btn>
+                    </div>
                 </v-expansion-panels>
+
             </div>
             <div v-else>
                 <router-view />
@@ -92,32 +104,119 @@
             <v-alert class="text-center">
                 <p class="headline font-weight-medium grey--text text--darken-2">You haven't created any test suite for this project. <br>Please create a new one.</p>
             </v-alert>
-            <v-btn tile @click="createTestSuite" color="primaryLight" class="primaryLightBtn">
-                <v-icon>add</v-icon>
-                Create a new test suite
-            </v-btn>
+            <div>
+                <v-btn @click="createTestSuite" color="primary">
+                    <v-icon left>mdi-monitor-shimmer</v-icon>
+                    Create a test suite with <span class="font-weight-black ml-1">UI</span>
+                </v-btn>
+                <span class="mx-4 font-weight-medium grey--text text--darken-2">OR</span>
+                <v-btn href="https://docs.giskard.ai/en/latest/guides/test-suite/index.html" target="_blank">
+                    <v-icon left>mdi-application-brackets-outline</v-icon>
+                    Create a test suite with <span class="font-weight-black ml-1">code</span>
+                    <v-icon right class="ml-4">mdi-open-in-new</v-icon>
+                </v-btn>
+
+
+            </div>
             <div class="d-flex justify-center mb-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
             </div>
+            <div class="d-flex flex-column align-center justify-center mt-6">
+                <v-btn small @click="refresh" plain>
+                    <span class="caption">Refresh</span>
+                    <v-icon size="small" class="ml-1">refresh</v-icon>
+                </v-btn>
+            </div>
         </v-container>
         <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
-            <div class="d-flex mb-6">
-                <v-spacer></v-spacer>
+            <div class="mt-2">
+                <v-alert class='text-center mt-6' v-if="toggleSnippetType === undefined">
+                    <p class='headline font-weight-medium grey--text text--darken-2'>There are no artifacts (datasets and models) in this project yet. <br>Choose an option below to upload them and create a test suite.</p>
+                </v-alert>
 
-                <div class="mr-2">
-                    <v-btn @click="refresh">
-                        Reload
-                        <v-icon right>refresh</v-icon>
-                    </v-btn>
-                    <v-btn v-if="projectArtifactsStore.datasets.length > 0" color="primary" class="ml-2" @click="">
-                        Upload with API
-                        <v-icon right>mdi-application-braces-outline</v-icon>
-                    </v-btn>
+                <div class="d-flex justify-center mt-2">
+                    <v-card width="275" outlined :class="{
+                        'mx-2': true,
+                        'active-option': toggleSnippetType === 'demo',
+                        'option-card': true,
+                        'd-flex': true,
+                        'align-center': true
+                    }" @click="openDemoInstructions">
+                        <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">demo projects</span></v-card-text>
+                    </v-card>
+                    <v-card width="275" outlined :class="{
+                        'mx-2': true,
+                        'active-option': toggleSnippetType === 'custom',
+                        'option-card': true,
+                        'd-flex': true,
+                        'align-center': true
+                    }" @click="openCustomInstructions">
+                        <v-card-text class="text-center text-body-1">Upload a test suite from <span class="font-weight-bold">your own model</span></v-card-text>
+                    </v-card>
                 </div>
             </div>
-            <p class="font-weight-medium secondary--text">There are no artifacts (datasets and models) in this project yet. Follow the code snippet below to upload them and create a test suite 👇</p>
-            <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-            <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
+
+            <div v-if="toggleSnippetType === 'demo'" class="mt-12 mb-6">
+                <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
+                <div class="mt-6 mb-6">
+                    <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                </div>
+            </div>
+            <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
+                <div>
+                    <p class="text-center">To upload a <span class="font-weight-bold">test suite from your own model</span>, follow these steps:</p>
+                    <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
+                        <v-card-title class="font-weight-medium">
+                            <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
+                            <span>Wrap your dataset</span>
+                            <v-spacer></v-spacer>
+                            <v-icon right>mdi-arrow-right</v-icon>
+                        </v-card-title>
+                        <v-card-text>
+                            To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your training, testing, golden, or production dataset.
+                        </v-card-text>
+                    </v-card>
+                    <div class="d-flex justify-center">
+                        <div class="dashed-vertical-line"></div>
+                    </div>
+
+                    <v-card max-width="500" class="my-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
+                        <v-card-title class="font-weight-medium">
+                            <v-icon class="mr-2" color="primary">mdi-numeric-2-circle-outline</v-icon>
+                            <span>Wrap your model</span>
+                            <v-spacer></v-spacer>
+                            <v-icon right>mdi-arrow-right</v-icon>
+                        </v-card-title>
+                        <v-card-text>
+                            To scan, test and debug your model, you need to wrap it into a Giskard Model.
+                            Your model can use any ML library and can be any Python function that respects the right signature.
+                        </v-card-text>
+                    </v-card>
+                    <div class="d-flex justify-center">
+                        <div class="dashed-vertical-line"></div>
+                    </div>
+                    <v-card max-width="500" class="mt-4 mb-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
+                        <v-card-title class="font-weight-medium">
+                            <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
+                            <span>Upload suite from scan</span>
+                            <v-spacer></v-spacer>
+                            <v-icon right>mdi-arrow-right</v-icon>
+                        </v-card-title>
+                        <v-card-text>
+                            The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model.
+                        </v-card-text>
+                    </v-card>
+                </div>
+            </div>
+            <div v-else class="d-flex justify-center my-6">
+                <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
+            </div>
+            <div class="d-flex flex-column align-center justify-center mt-6">
+                <v-btn small @click="refresh" plain>
+                    <span class="caption">Refresh</span>
+                    <v-icon size="small" class="ml-1">refresh</v-icon>
+                </v-btn>
+            </div>
         </v-container>
     </div>
 </template>
@@ -144,36 +243,49 @@ const testSuitesStore = useTestSuitesStore();
 const projectArtifactsStore = useProjectArtifactsStore();
 
 const props = defineProps<{
-  projectId: number
+    projectId: number
 }>();
 
-const searchSession = ref('');
+const searchSession = ref("");
+const toggleSnippetType = ref<string | undefined>(undefined);
 const apiAccessToken = ref<JWTToken | null>(null);
 
-const codeContent = computed(() =>
-    `import giskard
+const codeContent = computed(() => {
+    return `import giskard
 
-# for demo purposes only 🛳️. Replace with your dataframe creation
-original_model, original_df = giskard.demo.titanic()
+# Replace this with your own data & model creation.
+df = giskard.demo.titanic_df()
+data_preprocessing_function, clf = giskard.demo.titanic_pipeline()
+
+# Wrap your Pandas DataFrame
+giskard_dataset = giskard.Dataset(df=df,
+                                  target="Survived",
+                                  name="Titanic dataset",
+                                  cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
+# Wrap your model
+def prediction_function(df):
+    preprocessed_df = data_preprocessing_function(df)
+    return clf.predict_proba(preprocessed_df)
+
+giskard_model = giskard.Model(model=prediction_function,
+                              model_type="classification",
+                              name="Titanic model",
+                              classification_labels=clf.classes_,
+                              feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'])
+
+# Then apply the scan
+results = giskard.scan(giskard_model, giskard_dataset)
 
 # Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
-
-# Wrap your model and dataset with Giskard 🎁
-giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
-giskard_dataset = giskard.Dataset(original_df, target="Survived", name="Titanic dataset")
-
-# Scan your model for potential issues 🕵️
-results = giskard.scan(giskard_model, giskard_dataset)
+token = "${apiAccessToken.value?.id_token}" # API Access Token
+client = giskard.GiskardClient(url="${apiURL}",  # URL of your Giskard instance
+                               token=token)
 
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-);
+});
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -204,7 +316,7 @@ async function createTestSuite() {
         {
             id: suite,
             projectKey: project.key,
-            screen: 'Test suites'
+            screen: 'project-testing'
         }
     );
 
@@ -267,7 +379,7 @@ function deleteTestSuite(suite: any) {
                     {
                         id: suite.id,
                         projectKey: suite.projectKey,
-                        screen: 'Test suites'
+                        screen: 'project-testing'
                     });
             }
         }
@@ -287,6 +399,24 @@ async function refresh() {
     await projectArtifactsStore.loadProjectArtifacts(false);
 }
 
+function openDemoInstructions() {
+    toggleSnippetType.value = 'demo';
+    mixpanel.track('Select option to upload test suite', {
+        projectKey: project.value!.key,
+        option: 'demo',
+        screen: 'project-testing'
+    });
+}
+
+function openCustomInstructions() {
+    toggleSnippetType.value = 'custom';
+    mixpanel.track('Select option to upload test suite', {
+        projectKey: project.value!.key,
+        option: 'custom',
+        screen: 'project-testing'
+    });
+}
+
 onActivated(async () => {
     searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
@@ -302,8 +432,9 @@ onActivated(async () => {
 
 <style scoped>
 .test-suite-logo {
-    width: min(17.5vw, 150px);
+    height: max(50vh, 150px);
     margin-top: 2rem;
+
 }
 
 .expansion-panel {
@@ -319,17 +450,55 @@ onActivated(async () => {
 }
 
 .passed-tests {
-  margin-top: 0.25rem;
-  color: #66AD5B;
+    margin-top: 0.25rem;
+    color: #66AD5B;
 }
 
 .failed-tests {
-  margin-top: 0.25rem;
-  color: #EB5E59;
+    margin-top: 0.25rem;
+    color: #EB5E59;
 }
 
 .error-tests {
-  margin-top: 0.25rem;
-  color: #ebba59;
+    margin-top: 0.25rem;
+    color: #ebba59;
+}
+
+.option-card {
+    border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.option-card:hover {
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+
+.active-option {
+    border: 2px solid #087038;
+    background-color: rgba(8, 112, 56, 0.07)
+}
+
+.active-option .v-card__text {
+    color: #087038;
+}
+
+.card-step:hover {
+    cursor: pointer;
+    /* change background color with animation */
+    transition: background-color 0.5s ease;
+    background-color: rgba(8, 112, 56, 0.07);
+}
+
+.card-step:hover .v-icon {
+    color: #087038;
+}
+
+.dashed-vertical-line {
+    display: inline-block;
+    border-left: 2px dashed rgba(0, 0, 0, 0.15);
+    height: 50px;
+    margin: 0 auto;
 }
 </style>

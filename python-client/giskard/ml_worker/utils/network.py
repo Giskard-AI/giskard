@@ -10,7 +10,6 @@ import requests
 
 import giskard
 from giskard.client.python_utils import warning
-from giskard.utils import threaded
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,6 @@ def is_pre_release(current_version: str):
     return re.match(r".*[a-z].*", current_version) is not None
 
 
-@threaded
 def check_latest_giskard_version():
     try:
         current_version = giskard.__version__
@@ -46,7 +44,12 @@ def check_latest_giskard_version():
         if current_version not in releases:
             return
         for ver, resources in releases.items():
-            latest_release_date = max(map(lambda r: datetime.datetime.fromisoformat(r["upload_time"]), resources))
+            latest_release_date = max(
+                map(
+                    lambda r: datetime.datetime.fromisoformat(r["upload_time"]),
+                    resources,
+                )
+            )
             releases_dates[ver] = latest_release_date
         latest_version, latest_release_date = max(releases_dates.items(), key=lambda x: x[1])
 

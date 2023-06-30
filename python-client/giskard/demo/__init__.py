@@ -2,7 +2,7 @@ from . import titanic_classification, linear_regression
 
 
 def titanic_df():
-    return titanic_classification.get_df()
+    return titanic_classification.get_test_df()
 
 
 def titanic():
