@@ -109,9 +109,7 @@ import giskard
 df = giskard.demo.titanic_df()
 data_preprocessor, clf = giskard.demo.titanic_pipeline()
 
-# Wrap your Pandas DataFrame with Giskard.Dataset, containing examples such as:
-# your test set, a golden dataset, etc.
-# See https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
+# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
 giskard_dataset = giskard.Dataset(
     df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
     target="Survived",  # Ground truth variable
@@ -119,10 +117,9 @@ giskard_dataset = giskard.Dataset(
     cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
 )
 
-# Wrap your model with Giskard.Model:
+# Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
 # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
 # for classification, regression & text generation.
-# See https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
 def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     preprocessed_df = data_preprocessor(df)
