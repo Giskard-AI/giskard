@@ -65,7 +65,7 @@ class GiskardEvaluator(ModelEvaluator):
 
         # log html scan result
         with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-            scan_results_filename = f.name.split("/")[-1]
+            scan_results_filename = f.name
             results.to_html(scan_results_filename)
             self.client.log_artifact(self.run_id, scan_results_filename)
 

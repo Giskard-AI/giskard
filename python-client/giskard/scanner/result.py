@@ -129,7 +129,7 @@ class ScanResult:
 
     def to_mlflow(self, client=None, run_id=None):
         with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-            scan_results_filename = f.name.split("/")[-1]
+            scan_results_filename = f.name
             self.to_html(scan_results_filename)
             if client is None and run_id is None:
                 mlflow.log_artifact(scan_results_filename)
