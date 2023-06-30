@@ -1,6 +1,7 @@
 <template>
   <div>
     <v-select
+      attach
       clearable
       outlined
       class='slice-function-selector'
