@@ -241,6 +241,7 @@ export default class Inspector extends Vue {
                 type,
                 values: this.dataset.categoryFeatures ?
                   this.dataset.categoryFeatures[name] : []
+                  // Provide an empty list in case of null due to DB migration
             }))
     }
 
