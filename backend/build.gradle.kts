@@ -241,7 +241,7 @@ dependencies {
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
 
     implementation("commons-fileupload:commons-fileupload:1.4")
-    implementation("commons-io:commons-io:2.11.0")
+    implementation("commons-io:commons-io:2.13.0")
 }
 
 protobuf {
