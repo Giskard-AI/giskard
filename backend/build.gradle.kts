@@ -240,7 +240,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java-util:3.21.9")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
 
-    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-fileupload:commons-fileupload:1.5")
     implementation("commons-io:commons-io:2.11.0")
 }
 
