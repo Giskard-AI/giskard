@@ -55,7 +55,7 @@ public class SettingsController {
     private String gitCommitTime;
     private final boolean isHfSpace = isRunningInHFSpaces();
 
-    private boolean isRunningInHFSpaces() {
+    public static boolean isRunningInHFSpaces() {
         return Stream.of("SPACE_REPO_NAME", "SPACE_ID", "SPACE_HOST").allMatch(System.getenv()::containsKey);
     }
 

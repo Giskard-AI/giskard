@@ -1,6 +1,7 @@
 package ai.giskard.web.socket;
 
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.web.rest.controllers.SettingsController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,11 @@ public class WorkerStatusSocketService {
             @Override
             public void run() {
                 Map<String, Boolean> data = new HashMap<>();
-                data.put("connected", mlWorkerService.isExternalWorkerConnected());
+                data.put("connected",
+                    mlWorkerService.isExternalWorkerConnected() ||
+                    SettingsController.isRunningInHFSpaces()
+                    // HF Space uses internal worker that always connected
+                );
 
                 simpMessagingTemplate.convertAndSend(
                         "/topic/worker-status",
