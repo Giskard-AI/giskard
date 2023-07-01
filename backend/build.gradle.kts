@@ -237,7 +237,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("commons-codec:commons-codec:1.15")
-    implementation("com.google.protobuf:protobuf-java-util:3.21.9")
+    implementation("com.google.protobuf:protobuf-java-util:3.23.3")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
 
     implementation("commons-fileupload:commons-fileupload:1.4")
