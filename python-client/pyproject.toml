@@ -63,9 +63,9 @@ test = [
     "torchtext>=0.15.1",
     "portalocker>=2.0.0",
     "scikit-learn==1.0.2",
-    "tensorflow-macos>=2.8.0, <2.10; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
-    "tensorflow-text>=2.8.0, <2.10; sys_platform != 'darwin' or platform_machine != 'arm64'",
+    "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
+    "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
 ]
 doc = [
     "furo>=2023.5.20",
