@@ -2,14 +2,17 @@
   <div v-if="project" class="vertical-container">
     <v-toolbar flat dense light class="secondary--text text--lighten-2">
       <v-toolbar-title class="mt-4 text-body-1">
-        <router-link to="/main/projects">
+        <router-link to="/main/projects" class="font-weight-medium grey--text text--darken-1">
           Projects
         </router-link>
-        <span class="font-weight-bold">/</span>
-        <router-link :to="{ name: 'project-properties', params: { id } }">
+        <span class="font-weight-black">/</span>
+        <router-link :to="{ name: 'project-properties', params: { id } }" class="font-weight-medium grey--text text--darken-1">
           {{ project.name }} ({{ project.key }})
         </router-link>
-        <span class="font-weight-bold">/</span>
+        <span class="font-weight-black">/</span>
+        <router-link :to="{ name: currentTab, params: { id } }" class="font-weight-bold" id="current-route">
+          {{ currentTabString }}
+        </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
@@ -123,6 +126,12 @@ const userProfile = computed(() => {
   return userStore.userProfile;
 })
 
+const currentTabString = computed(() => {
+  let tabString = currentTab.value?.split('-')[1] || 'unknown tab';
+  tabString = tabString.charAt(0).toUpperCase() + tabString.slice(1);
+  return tabString
+})
+
 
 const coworkerNamesAvailable = computed(() => {
   return mainStore.coworkers
@@ -173,7 +182,7 @@ async function deleteProject() {
 }
 
 function updateCurrentTab() {
-  currentTab.value = route.fullPath.split('/')[4] || null;
+  currentTab.value = route.name?.split('-').slice(0, 2).join('-') || null;
 }
 
 
@@ -193,5 +202,9 @@ onMounted(async () => {
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
+}
+
+#current-route {
+  font-size: 1.125rem !important;
 }
 </style>
