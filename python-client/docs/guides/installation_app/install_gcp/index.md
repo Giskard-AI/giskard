@@ -17,12 +17,13 @@ gcloud compute firewall-rules create giskard-main --allow tcp:19000
 gcloud compute firewall-rules create giskard-worker --allow tcp:40051
 ```
 
-{% hint style="info" %}
+:::{warning}
 Make sure you have the **proper rights** to open a port. If not contact your GCP administrator.&#x20;
-{% endhint %}
+:::
 
-{% hint style="info" %}
+:::{note}
 Creating the firewall rules can also be done **through UI** in the `VPC Network`section:
+
 
 * Go to the `firewall` in `VPC Network` section of GCP
 * Click on `create a firewall rule`
@@ -32,7 +33,7 @@ Creating the firewall rules can also be done **through UI** in the `VPC Network`
 * In `Protocols and ports`, select `Specified protocols and ports`
 * Then select `TCP`, and type `19000`
 * `Repeat the same steps to open port 40051`
-  {% endhint %}
+:::
 
 ### 2. Install Giskard in the GCP VM
 
@@ -54,13 +55,13 @@ giskard server start
 * Get the external IP address of your Giskard VM in the `VM instances` section of the `Compute Engine`
 * Go to **`http://<your IP address>:19000`** in your web browser
 
-{% hint style="info" %}
+:::{hint}
 You can stop the instance and restart it when you need to save your GCP compute costs. However, note that&#x20;
 
 * the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched.
 * you will need to **restart the giskard server**, by executing in the Giskard folder:
 
 &#x20;`giskard server start`
-{% endhint %}
+:::
 
 That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](docs/guide/upload/index.md)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
