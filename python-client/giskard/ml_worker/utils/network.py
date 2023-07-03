@@ -10,7 +10,6 @@ import requests
 
 import giskard
 from giskard.client.python_utils import warning
-from giskard.utils import threaded
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +51,7 @@ def check_latest_giskard_version():
                 )
             )
             releases_dates[ver] = latest_release_date
-        latest_version, latest_release_date = max(
-            releases_dates.items(), key=lambda x: x[1]
-        )
+        latest_version, latest_release_date = max(releases_dates.items(), key=lambda x: x[1])
 
         if latest_release_date > releases_dates[current_version]:
             warning(
