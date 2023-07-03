@@ -239,7 +239,7 @@ def test_drift_psi(
     # if not passed and debug:
     #     main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
     #     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
     #     output_ds = actual_dataset.copy()  # copy all properties
     #     output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
     #     test_name = inspect.stack()[0][3]
@@ -330,7 +330,7 @@ def test_drift_chi_square(
     # if not passed and debug:
     #     main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
     #     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
     #     output_ds = actual_dataset.copy()  # copy all properties
     #     output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
     #     test_name = inspect.stack()[0][3]
@@ -549,7 +549,7 @@ def test_drift_prediction_psi(
     if not passed and debug:
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
         output_ds = actual_dataset.copy()  # copy all properties
         output_ds.df = actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values]
         test_name = inspect.stack()[0][3]
@@ -587,7 +587,7 @@ def _test_series_drift_psi(
 
 def _generate_message_modalities(main_drifting_modalities_bool, output_data, test_data):
     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-    filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+    filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
     messages: Optional[List[TestMessage]] = None
     if filtered_modalities:
         messages = [
@@ -671,7 +671,7 @@ def test_drift_prediction_chi_square(
     if not passed and debug:
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, w)]
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
         output_ds = actual_dataset.copy()  # copy all properties
         output_ds.df = actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values]
         test_name = inspect.stack()[0][3]
