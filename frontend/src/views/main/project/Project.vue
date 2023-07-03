@@ -82,21 +82,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Quick start dialog -->
-    <v-dialog v-model="openQuickStart" width="80vw">
-      <v-card flat>
-        <v-card-title flat>
-          Quick start guide
-          <v-spacer></v-spacer>
-          <v-btn text href="https://docs.giskard.ai/en/latest/" target="_blank">
-            <span>Documentation</span>
-            <v-icon right>mdi-open-in-new</v-icon>
-          </v-btn>
-        </v-card-title>
-        <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
-      </v-card>
-    </v-dialog>
-
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
@@ -117,7 +102,6 @@ import { useUserStore } from "@/stores/user";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
-import QuickStartStepper from "@/components/QuickStartStepper.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -136,7 +120,6 @@ const props = defineProps<Props>();
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
-const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
 const userProfile = computed(() => {
@@ -211,10 +194,6 @@ onMounted(async () => {
   await mainStore.getCoworkers();
   updateCurrentTab();
   await projectArtifactsStore.setProjectId(props.id, false);
-
-  if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
-    openQuickStart.value = true;
-  }
 })
 </script>
 
