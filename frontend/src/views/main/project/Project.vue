@@ -1,7 +1,7 @@
 <template>
   <div v-if="project" class="vertical-container">
-    <v-toolbar flat dense light class="secondary--text text--lighten-2">
-      <v-toolbar-title class="mt-4 text-body-1 d-flex">
+    <v-toolbar flat light class="secondary--text text--lighten-2">
+      <v-toolbar-title class="text-body-1 d-flex mt-2">
         <router-link to="/main/projects" class="font-weight-medium grey--text">
           Projects
         </router-link>
@@ -20,7 +20,7 @@
       <v-spacer></v-spacer>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+          <v-btn text small tile v-bind="attrs" v-on="on" class="align-self-start mt-1">
             <v-icon>mdi-dots-horizontal</v-icon>
           </v-btn>
         </template>
@@ -132,7 +132,7 @@ const userProfile = computed(() => {
 })
 
 const currentTabString = computed(() => {
-  let tabString = currentTab.value?.split('-')[1] || 'unknown tab';
+  let tabString = currentTab.value?.split('-')[1] || '';
   tabString = tabString.charAt(0).toUpperCase() + tabString.slice(1);
   return tabString
 })

@@ -1,7 +1,11 @@
 <template>
   <div>
-    <v-toolbar flat v-show="projects.length > 0">
-      <v-toolbar-title class="font-weight-medium">Projects</v-toolbar-title>
+    <v-toolbar flat light v-show="projects.length > 0" class="secondary--text text--lighten-2">
+      <v-toolbar-title class="text-body-1">
+        <router-link to="/main/projects" class="font-weight-bold" id="page-title">
+          Projects
+        </router-link>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
         <v-icon right>refresh</v-icon>
@@ -370,5 +374,9 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#page-title {
+  font-size: 1.125rem !important;
 }
 </style>
