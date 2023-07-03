@@ -1,10 +1,5 @@
 <template>
   <div>
-    <v-toolbar flat dense class="text--lighten-2">
-      <v-toolbar-title class="font-weight-medium">
-        Debugger
-      </v-toolbar-title>
-    </v-toolbar>
     <div v-if='isMLWorkerConnected' class='vertical-container'>
       <v-container v-if='debuggingSessionsStore.debuggingSessions.length > 0' class='vc' fluid>
         <v-row>

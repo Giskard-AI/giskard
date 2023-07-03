@@ -1,10 +1,5 @@
 <template>
     <div class="vertical-container">
-        <v-toolbar flat dense class="text--lighten-2">
-            <v-toolbar-title class="font-weight-medium">
-                Testing
-            </v-toolbar-title>
-        </v-toolbar>
         <v-container fluid class="vc" v-if="testSuitesStore.testSuites.length > 0">
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
