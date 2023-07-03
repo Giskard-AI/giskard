@@ -154,7 +154,7 @@ export default new Router({
                   children: [
                     {
                       path: ':inspectionId',
-                      name: 'inspection',
+                      name: 'project-debugger-inspection',
                       component: () => import('./views/main/project/InspectorWrapper.vue'),
                       props: route => {
                         return {

@@ -207,7 +207,7 @@ function resetSearchInput() {
 
 async function openInspection(projectId: string, inspectionId: string) {
   await router.push({
-    name: 'inspection',
+    name: 'project-debugger-inspection',
     params: {
       id: projectId,
       inspectionId: inspectionId

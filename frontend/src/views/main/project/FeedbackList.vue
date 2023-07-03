@@ -216,7 +216,7 @@ function deleteFeedback(feedback: FeedbackMinimalDTO) {
 
 async function createDebuggingSession(debuggingSession) {
   await router.push({
-    name: 'inspection',
+    name: 'project-debugger-inspection',
     params: {
       id: projectId.toString(),
       inspectionId: debuggingSession.id.toString()
