@@ -133,7 +133,7 @@ export default new Router({
                   children: [
                     {
                       path: ':feedbackId',
-                      name: 'feedback-detail',
+                      name: 'project-feedback-detail',
                       component: () => import('./views/main/project/FeedbackDetail.vue'),
                       props: route => {
                         return { id: Number(route.params.feedbackId) };

@@ -109,7 +109,7 @@ async function fetchFeedbacks() {
 }
 
 async function openFeedback(obj) {
-  await router.push({ name: 'feedback-detail', params: { feedbackId: obj.id } })
+  await router.push({ name: 'project-feedback-detail', params: { feedbackId: obj.id } })
 }
 
 async function handleRouteChanged() {
