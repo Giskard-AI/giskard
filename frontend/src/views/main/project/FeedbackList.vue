@@ -120,8 +120,8 @@ async function handleRouteChanged() {
 watch(() => route.meta, async () => { await handleRouteChanged() });
 
 function handleFeedbackDetailDialogClosed(isOpen) {
-  if (!isOpen && route.name !== 'project-feedbacks') {
-    router.push({ name: 'project-feedbacks' });
+  if (!isOpen && route.name !== 'project-feedback') {
+    router.push({ name: 'project-feedback' });
   }
 }
 

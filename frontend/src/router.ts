@@ -125,7 +125,7 @@ export default new Router({
                 },
                 {
                   path: 'feedbacks',
-                  name: 'project-feedbacks',
+                  name: 'project-feedback',
                   component: () => import('./views/main/project/FeedbackList.vue'),
                   props: route => {
                     return { projectId: Number(route.params.id) };
