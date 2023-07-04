@@ -2,7 +2,7 @@
 
 Everyone is encouraged to contribute, and we appreciate each and every one of them. Helping the community is thus not limited to writing code. The community will greatly benefit from your efforts to provide clarification, assist others, and enhance the documentation. 📗
 
-Additionally, it is helpful if you help us spread the word by mentioning the library in blog articles about the amazing projects it enabled, tweeting about it on occasion, or just staring the repository! ⭐️
+Additionally, it is helpful if you help us spread the word by mentioning the library in blog articles about the amazing projects it enabled, tweeting about it on occasion, or just starring the repository! ⭐️
 
 If you choose to contribute, please be mindful to respect our [code of conduct](https://github.com/Giskard-AI/giskard/blob/main/CODE_OF_CONDUCT.md).
 
