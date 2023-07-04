@@ -12,7 +12,8 @@ from mlflow.models.evaluation import ModelEvaluator
 
 gsk_model_types = {
     "classifier": SupportedModelTypes.CLASSIFICATION,
-    "regressor": SupportedModelTypes.REGRESSION
+    "regressor": SupportedModelTypes.REGRESSION,
+    "text": SupportedModelTypes.TEXT_GENERATION
 }
 
 alphanumeric_map = {
