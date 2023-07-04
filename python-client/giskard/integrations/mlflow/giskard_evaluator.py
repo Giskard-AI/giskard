@@ -62,18 +62,11 @@ class GiskardEvaluator(ModelEvaluator):
                               feature_names=dataset.feature_names,
                               classification_labels=cl)
 
-        results = scan(giskard_model, giskard_dataset)
+        scan_results = scan(giskard_model, giskard_dataset)
+        test_suite = scan_results.generate_test_suite("scan test suite")
+        test_suite_results = test_suite.run()
 
         # log html scan result
-        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-            scan_results_filename = f.name
-            results.to_html(scan_results_filename)
-            self.client.log_artifact(self.run_id, scan_results_filename)
-
+        scan_results.to_mlflow(client=self.client, run_id=self.run_id)
         # log metrics resulting from scan
-        test_suite = results.generate_test_suite("scan test suite")
-        test_suite_results = test_suite.run()
-        for test_result in test_suite_results[1]:
-            test_name = test_result[0]
-            test_name = process_text(test_name)
-            self.client.log_metric(self.run_id, test_name, test_result[1].metric)
+        test_suite_results.to_mlflow(client=self.client, run_id=self.run_id)

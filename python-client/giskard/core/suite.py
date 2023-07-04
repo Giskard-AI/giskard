@@ -41,6 +41,18 @@ class TestSuiteResult(tuple):
             tests_results,
         )
 
+    def to_mlflow(self, client=None, run_id=None):
+        import mlflow
+        from giskard.integrations.mlflow.giskard_evaluator import process_text
+
+        for test_result in self[1]:
+            test_name = test_result[0]
+            test_name = process_text(test_name)
+            if client is None and run_id is None:
+                mlflow.log_metric(test_name, test_result[1].metric)
+            elif client and run_id:
+                client.log_metric(run_id, test_name, test_result[1].metric)
+
 
 class SuiteInput:
     """
@@ -381,11 +393,11 @@ class Suite:
         input_dict: Dict[str, SuiteInput] = {i.name: i for i in inputs}
 
         if any(
-            [
-                arg
-                for arg in required_args
-                if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
-            ]
+                [
+                    arg
+                    for arg in required_args
+                    if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
+                ]
         ):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
@@ -406,11 +418,11 @@ class Suite:
             return
 
         if contains_tag(test_func, "ground_truth") and any(
-            [
-                dataset
-                for dataset in input_dict.values()
-                if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
-            ]
+                [
+                    dataset
+                    for dataset in input_dict.values()
+                    if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
+                ]
         ):
             return
 
