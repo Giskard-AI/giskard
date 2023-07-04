@@ -80,6 +80,12 @@ tasks {
         command = "run test-fast"
     }
 
+    create<PythonTask>("test-all") {
+        dependsOn("install")
+        module = "pdm"
+        command = "run test"
+    }
+
     idea {
         module {
             excludeDirs.add(file(virtualEnvDirectory))
