@@ -160,10 +160,6 @@ function downloadDataFile(id: string) {
   api.downloadDataFile(id)
 }
 
-function resetSearchInput() {
-  searchDataset.value = '';
-}
-
 async function peakDataFile(id: string) {
   if (lastVisitedFileId.value != id) {
     lastVisitedFileId.value = id; // this is a trick to avoid recalling the api every time one panel is opened/closed
