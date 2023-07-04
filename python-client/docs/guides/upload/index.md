@@ -50,9 +50,24 @@ Upload your suite to the Giskard server to:
 ```python
 from giskard import demo, Model, testing, Suite, GiskardClient
 
-model, _ = demo.titanic()
+data_preprocessor, clf = demo.titanic_pipeline()
 
-wrapped_model = Model(model=model, model_type="classification")
+# Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
+# you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
+# for classification, regression & text generation.
+def prediction_function(df):
+    # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
+    preprocessed_df = data_preprocessor(df)
+    return clf.predict_proba(preprocessed_df)
+
+giskard_model = Model(
+    model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
+    model_type="classification",  # Either regression, classification or text_generation.
+    name="Titanic model",  # Optional
+    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
+    # classification_threshold=0.5,  # Default: 0.5
+)
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
@@ -66,8 +81,8 @@ client = GiskardClient(url, token)
 client.create_project(project_name, "Project name", "Small description of the project")
 
 suite = Suite() \
-    .add_test(testing.test_f1(model=wrapped_model)) \
-    .add_test(testing.test_accuracy(model=wrapped_model)) \
+    .add_test(testing.test_f1(model=giskard_model)) \
+    .add_test(testing.test_accuracy(model=giskard_model)) \
     .upload(client, project_name)
 
 ```
@@ -89,39 +104,23 @@ Uploading the model to the Giskard server enables you to:
 ```python
 from giskard import demo, Model, GiskardClient
 
-model, _ = demo.titanic()
+data_preprocessor, clf = demo.titanic_pipeline()
 
-wrapped_model = Model(model=model, model_type="classification")
+# Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
+# you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
+# for classification, regression & text generation.
+def prediction_function(df):
+    # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
+    preprocessed_df = data_preprocessor(df)
+    return clf.predict_proba(preprocessed_df)
 
-url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
-project_name = "my_project_id"
-
-# Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
-
-# Create a project
-client.create_project(project_name, "Project name", "Small description of the project")
-
-wrapped_model.upload(client, project_name)
-```
-
-:::
-:::{tab-item} Dataset
-Uploading your dataset to the Giskard server enables you to:
-* Inspect and debug your dataset
-* Use your dataset as the input for your tests (unit datasets)
-
-```python
-from giskard import demo, Dataset, GiskardClient
-
-_ , df = demo.titanic()
-
-wrapped_dataset = Dataset(
-    df=df,
-    target="Survived",
-    cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+giskard_model = Model(
+    model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
+    model_type="classification",  # Either regression, classification or text_generation.
+    name="Titanic model",  # Optional
+    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
+    # classification_threshold=0.5,  # Default: 0.5
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally
@@ -135,7 +134,40 @@ client = GiskardClient(url, token)
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
 
-wrapped_dataset.upload(client, project_name)
+giskard_model.upload(client, project_name)
+```
+
+:::
+:::{tab-item} Dataset
+Uploading your dataset to the Giskard server enables you to:
+* Inspect and debug your dataset
+* Use your dataset as the input for your tests (unit datasets)
+
+```python
+from giskard import demo, Dataset, GiskardClient
+
+df = demo.titanic_df()
+
+# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
+giskard_dataset = Dataset(
+    df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
+    target="Survived",  # Ground truth variable
+    name="Titanic dataset", # Optional
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+)
+
+url = "http://localhost:19000"  # If Giskard is installed locally
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+project_name = "my_project_id"
+
+# Create a giskard client to communicate with Giskard
+client = GiskardClient(url, token)
+
+# Create a project
+client.create_project(project_name, "Project name", "Small description of the project")
+
+giskard_dataset.upload(client, project_name)
 ```
 
 :::
@@ -181,7 +213,6 @@ Saving your transformation function in the Giskard server will enable you to:
   
 ```python
 from giskard import transformation_function, GiskardClient
-import pandas as pd
 
 @transformation_function(name="increase age")
 def increase_age(row):
