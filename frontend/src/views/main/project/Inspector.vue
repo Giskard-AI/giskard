@@ -160,13 +160,13 @@ const inputMetaData = computed(() => {
   }
 
   return Object.entries(props.dataset.columnTypes)
-      .map(([name, type]) => ({
-          name,
-          type,
-          values: props.dataset.categoryFeatures ?
-              props.dataset.categoryFeatures[name] : []
-              // Provide an empty list in case of null due to DB migration
-      }))
+    .map(([name, type]) => ({
+      name,
+      type,
+      values: props.dataset.categoryFeatures ?
+        props.dataset.categoryFeatures[name] : []
+      // Provide an empty list in case of null due to DB migration
+    }))
 })
 
 const isInputNotOriginal = computed(() => {
