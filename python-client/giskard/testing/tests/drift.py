@@ -593,7 +593,7 @@ def _generate_message_modalities(main_drifting_modalities_bool, output_data, tes
         messages = [
             TestMessage(
                 type=TestMessageLevel.ERROR,
-                text=f"The {test_data} is drifting for the following modalities: {','.join(filtered_modalities)}",
+                text=f"The {test_data} is drifting for the following modalities: {','.join(str(filtered_modalities))}",
             )
         ]
     return messages

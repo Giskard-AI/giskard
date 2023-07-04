@@ -123,7 +123,7 @@ def map_dataset_process_function_meta(callable_type):
 
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(
-        self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None, loop=asyncio.get_event_loop()
+            self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None, loop=asyncio.get_event_loop()
     ) -> None:
         super().__init__()
         self.ml_worker = ml_worker
@@ -200,25 +200,16 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return request
 
     def runAdHocTest(
-        self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
         test: GiskardTest = GiskardTest.download(request.testUuid, self.client, None)
 
         arguments = self.parse_function_arguments(request.arguments)
-        if request.debug:
-            arguments["debug"] = request.debug
 
-        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-        test_result = test.get_builder()(**arguments).execute()
+        arguments["debug"] = request.debug if request.debug else None
+        debug_info = extract_debug_info(request.arguments) if request.debug else None
 
-        if test_result.output_df:  # if debug is True and test has failed
-            debug_info = extract_debug_info(request.arguments)
-            test_result.output_df.name += debug_info['suffix']
-
-            test_result.output_df_id = test_result.output_df.upload(client=self.client,
-                                                                    project_key=debug_info['project_key'])
-            # for now, we won't return output_df from grpc, rather upload it
-            test_result.output_df = None
+        test_result = self.do_run_adhoc_test(self.client, arguments, test, debug_info)
 
         return ml_worker_pb2.TestResultMessage(
             results=[
@@ -228,8 +219,30 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             ]
         )
 
+    @staticmethod
+    def do_run_adhoc_test(client, arguments, test, debug_info=None):
+
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+        test_result = test.get_builder()(**arguments).execute()
+        if test_result.output_df:  # if debug is True and test has failed
+
+            if debug_info is None:
+                raise ValueError("You have requested to debug the test, "
+                                 "but extract_debug_info did not return the information needed.")
+
+            test_result.output_df.name += debug_info['suffix']
+
+            test_result.output_df_id = test_result.output_df.upload(client=client,
+                                                                    project_key=debug_info['project_key'])
+            # for now, we won't return output_df from grpc, rather upload it
+            test_result.output_df = None
+        elif arguments["debug"]:
+            raise ValueError("You have requested to debug the test, but the test did not return a debuggable output.")
+
+        return test_result
+
     def datasetProcessing(
-        self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+            self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
 
@@ -267,7 +280,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runTestSuite(
-        self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
+            self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
         try:
@@ -531,9 +544,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             return SuiteInput(i.name, i.type)
 
     def generateTestSuite(
-        self,
-        request: ml_worker_pb2.GenerateTestSuiteRequest,
-        context: grpc.ServicerContext,
+            self,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
     ) -> ml_worker_pb2.GenerateTestSuiteResponse:
         inputs = [self.map_suite_input(i) for i in request.inputs]
 
@@ -553,14 +566,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def stopWorker(
-        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> google.protobuf.empty_pb2.Empty:
         logger.info("Received request to stop the worker")
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
     def getCatalog(
-        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta("TEST"),
