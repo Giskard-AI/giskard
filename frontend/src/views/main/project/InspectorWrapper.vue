@@ -253,10 +253,10 @@ function next() {
   }
 }
 
-watch(() => rowNb.value, async (newValue, oldValue) => {
+watch(() => inputData.value, async (newValue, oldValue) => {
   console.log("RowNb changed");
   const pushStore = usePushStore();
-  await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, newValue);
+  await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, rowNb.value, newValue, modelFeatures.value);
 });
 
 async function submitGeneralFeedback() {
@@ -453,6 +453,26 @@ async function handleSwitchSample() {
     }
   });
 }
+
+const modelFeatures = computed(() => {
+  return inputMetaData
+      .value
+      //.filter(x => (!inspection.value?.model.featureNames || inspection.value.model.featureNames.includes(x.name)))
+      .map(x => x.name);
+});
+
+const inputMetaData = computed(() => {
+  if (!inspection.value?.model) {
+    return [];
+  }
+
+  return Object.entries(inspection.value?.dataset.columnTypes)
+      .map(([name, type]) => ({
+        name,
+        type,
+        values: inspection.value?.dataset.categoryFeatures[name]
+      }))
+});
 </script>
 
 <style scoped>

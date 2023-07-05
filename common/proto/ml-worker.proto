@@ -425,6 +425,11 @@ message SuggestFilterRequest {
   CallToActionKind cta_kind = 4;
   PushKind push_kind = 5;
   string project_key = 6;
+
+  DataFrame dataframe = 7;
+  string target = 8;
+  map<string, string> column_types = 9;
+  map<string, string> column_dtypes = 10;
 }
 
 message PushUploadRequest {

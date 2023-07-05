@@ -3,16 +3,18 @@
     <template v-slot:activator="{ on: onMenu }">
       <v-tooltip right>
         <template v-slot:activator='{ on: onTooltip }'>
-          <v-btn small icon v-on="{ ...onMenu, ...onTooltip }">
-            <v-badge bottom overlap color="transparent">
-              <v-icon size="18">mdi-auto-fix</v-icon>
+          <v-btn small icon outlined color="warning" class="ml-1"
+                 v-on="{ ...onMenu, ...onTooltip }">
+            <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
+            <!--<v-badge top overlap color="transparent">
+              <v-icon size="18" color="primary">mdi-warning</v-icon>
               <template v-slot:badge>
-                <v-icon color="primary" class="mt-n1 ml-n2" style="height: 6px;" small>{{ icon }}</v-icon>
+                <v-icon color="error" style="height: 6px;" small>mdi-exclamation</v-icon>
               </template>
-            </v-badge>
+            </v-badge>-->
           </v-btn>
         </template>
-        <span>Suggestions</span>
+        <span>{{ push.pushTitle }}</span>
       </v-tooltip>
     </template>
 
@@ -62,10 +64,11 @@ import {useCatalogStore} from "@/stores/catalog";
 const pushStore = usePushStore();
 const mainStore = useMainStore();
 const catalogStore = useCatalogStore();
-
+//:modelFeatures="modelFeatures"
+//:inputData="inputData"
 const props = defineProps({
   type: String,
-  column: String,
+  column: String
 });
 
 const opened = ref<boolean>(false);

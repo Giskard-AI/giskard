@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
@@ -11,17 +12,20 @@ import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.PushService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.ApplyPushDTO;
+import ai.giskard.web.dto.PredictionInputDTO;
 import ai.giskard.web.dto.PushDTO;
-import ai.giskard.worker.ArtifactRef;
-import ai.giskard.worker.SuggestFilterRequest;
-import ai.giskard.worker.SuggestFilterResponse;
+import ai.giskard.worker.*;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,21 +41,45 @@ public class PushController {
     private final GRPCMapper grpcMapper;
 
 
-    @GetMapping("/pushes/{modelId}/{datasetId}/{idx}")
-    public Map<String, PushDTO> getPushes(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @PathVariable @NotNull int idx) {
+    @PostMapping("/pushes/{modelId}/{datasetId}/{idx}")
+    public Map<String, PushDTO> getPushes(@PathVariable @NotNull UUID modelId,
+                                          @PathVariable @NotNull UUID datasetId,
+                                          @PathVariable @NotNull int idx,
+                                          @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         Project project = dataset.getProject();
+        Map<String, String> features = data.getFeatures();
 
         ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
         ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
 
         try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
+            SuggestFilterRequest.Builder requestBuilder = SuggestFilterRequest.newBuilder()
                 .setDataset(datasetRef)
                 .setModel(modelRef)
                 .setRowidx(idx)
-                .build());
+                .setDataframe(
+                    DataFrame.newBuilder()
+                        .addRows(DataRow.newBuilder().putAllColumns(
+                            features.entrySet().stream()
+                                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                        ))
+                        .build()
+                );
+
+            if (dataset.getTarget() != null) {
+                requestBuilder.setTarget(dataset.getTarget());
+            }
+            if (dataset.getColumnTypes() != null) {
+                requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            }
+            if (dataset.getColumnDtypes() != null) {
+                requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
+            }
+
+            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(requestBuilder.build());
 
             Map<String, PushDTO> dtos = new HashMap<>();
 
@@ -81,5 +109,11 @@ public class PushController {
             applyPushDTO.getPushKind(),
             applyPushDTO.getCtaKind()
         );
+    }
+
+    // Probably move this to a util class.
+    public boolean shouldDrop(String columnDtype, String value) {
+        return Objects.isNull(columnDtype) || Objects.isNull(value) ||
+            ((columnDtype.startsWith("int") || columnDtype.startsWith("float")) && Strings.isBlank(value));
     }
 }

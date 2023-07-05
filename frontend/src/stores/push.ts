@@ -29,7 +29,10 @@ export const usePushStore = defineStore('push', {
     }),
     getters: {},
     actions: {
-        async fetchPushSuggestions(modelId: string, datasetId: string, rowNb: number) {
+        async fetchPushSuggestions(modelId: string, datasetId: string, rowNb: number, inputData: any, modelFeatures: string[]) {
+            this.identifier = {modelId, datasetId, rowNb};
+            this.current = undefined;
+
             if (!this.pushes[modelId]) {
                 this.pushes[modelId] = {};
             }
@@ -39,11 +42,10 @@ export const usePushStore = defineStore('push', {
 
             if (!this.pushes[modelId][datasetId][rowNb]) {
                 // @ts-ignore
-                this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb);
+                this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb, inputData, []);
             }
 
             this.current = this.pushes[modelId][datasetId][rowNb];
-            this.identifier = {modelId, datasetId, rowNb};
             return this.pushes[modelId][datasetId][rowNb];
         },
         async applyPush(pushKind: string, ctaKind: string) {

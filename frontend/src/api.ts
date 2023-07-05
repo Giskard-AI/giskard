@@ -494,8 +494,10 @@ export const api = {
             functions
         );
     },
-    async getPushes(modelId: string, datasetId: string, idx: number) {
-        return apiV2.get<unknown, unknown>(`/pushes/${modelId}/${datasetId}/${idx}`);
+    async getPushes(modelId: string, datasetId: string, idx: number, features: any) {
+        return apiV2.post<unknown, unknown>(`/pushes/${modelId}/${datasetId}/${idx}`, {
+            features: features
+        });
     },
     async applyPush(modelId: string, datasetId: string, idx: number, pushKind: string, ctaKind: string) {
         return apiV2.post<ApplyPushDTO, void>(`/push/apply`, {
