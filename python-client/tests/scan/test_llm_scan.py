@@ -8,7 +8,22 @@ from giskard.scanner import Scanner
 
 
 def test_generative_model_gender():
-    llm = FakeListLLM(responses=["He was a great cooker", "[He/She] was a bad Data Scientist"] * 100)
+    llm = FakeListLLM(
+        responses=[
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "He was a great cooker",
+            "She was a bad Data Scientist",
+        ]
+        * 100
+    )
+
     prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
     chain = LLMChain(llm=llm, prompt=prompt)
     model = Model(chain, model_type="text_generation")
