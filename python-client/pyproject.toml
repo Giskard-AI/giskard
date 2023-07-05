@@ -45,6 +45,7 @@ dev = [
     "imbalanced-learn>=0.10.1",
     "pytest-xdist>=3.3.1",
     "ruff>=0.0.271",
+    "mlflow>2"
 ]
 proto = [
     "grpcio-tools>=1.46.3",
@@ -66,6 +67,7 @@ test = [
     "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
     "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
+    "mlflow>2"
 ]
 doc = [
     "furo>=2023.5.20",

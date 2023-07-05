@@ -68,5 +68,6 @@ class GiskardEvaluator(ModelEvaluator):
 
         # log html scan result
         scan_results.to_mlflow(client=self.client, run_id=self.run_id)
+
         # log metrics resulting from scan
         test_suite_results.to_mlflow(client=self.client, run_id=self.run_id)
