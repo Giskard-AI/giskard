@@ -2826,7 +2826,7 @@ dependencies = [
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev", "doc", "llm", "proto", "server", "test"]
-content_hash = "sha256:aa72a5e69c25aea1a05caa396bad1bdad7bbb1c4c086e8a240223aa052039f8a"
+content_hash = "sha256:cb9b1925bfb2cb4fbc370da8e4eb8b55ad0020d0b5f6647353dab043f71deec9"
 
 [metadata.files]
 "absl-py 1.4.0" = [
