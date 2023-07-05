@@ -8,6 +8,7 @@ from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
     test_drift_prediction_chi_square, test_drift_prediction_psi
 
 
+@pytest.mark.skip(reason="Pure data drift tests are not supported for debug")
 @pytest.mark.parametrize("dataset, male_drift_samples", [("german_credit_data", 2), ("german_credit_data", 0)])
 def test_data_drift_psi_detailed(dataset, male_drift_samples, request):
     dataset = request.getfixturevalue(dataset)
@@ -78,6 +79,7 @@ def test_data_drift_psi_detailed(dataset, male_drift_samples, request):
         assert len(results.output_df.df) == male_drift_samples
 
 
+@pytest.mark.skip(reason="Pure data drift tests are not supported for debug")
 @pytest.mark.parametrize("dataset, male_drift_samples", [("german_credit_data", 2), ("german_credit_data", 0)])
 def test_data_drift_globally(dataset, male_drift_samples, request):
     dataset = request.getfixturevalue(dataset)
