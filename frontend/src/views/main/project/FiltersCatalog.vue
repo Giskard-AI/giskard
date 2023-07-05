@@ -113,9 +113,9 @@
                                     </v-btn>
                                 </div>
                                 <v-row v-if="sliceResult">
-                                    <v-col>
+                                    <v-col v-if="sliceResult">
                                         <span class="text-h6">Result</span>
-                                        <p>Slice size: {{ sliceResult.totalRows - sliceResult.filteredRows.length }} /
+                                        <p v-if="sliceResult.filteredRows">Slice size: {{ sliceResult.totalRows - sliceResult.filteredRows?.length }} /
                                             {{
                                                 sliceResult.totalRows
                                             }}</p>
