@@ -1,19 +1,10 @@
-from giskard.models.sklearn import SKLearnModel
 import mlflow
+
+from giskard.models.sklearn import SKLearnModel
 
 
 class CatboostModel(SKLearnModel):
-    """
-    A subclass of the SKLearnModel class for using the Catboost model.
-
-    The CatboostModel class is a wrapper around the Catboost machine learning library.
-
-    Inherits all attributes and methods from the SKLearnModel class.
-
-    Attributes:
-        _feature_names_attr (str): A string attribute indicating the name of the feature names attribute for the Catboost model.
-
-    """
+    """Automatically wraps catboost models for use with Giskard."""
 
     _feature_names_attr = "feature_names_"
 

@@ -1,9 +1,11 @@
+from typing import Iterable, Optional
+
 import numpy as np
 import pandas as pd
-from typing import Optional, Iterable
 
-from .base import BaseModel, ModelType, ModelPredictionResults
+from ..core.core import ModelType
 from ..datasets.base import Dataset
+from .base import BaseModel, ModelPredictionResults
 
 
 class PrecookedModel(BaseModel):

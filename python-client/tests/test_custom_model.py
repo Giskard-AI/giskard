@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Union
 
 from giskard.core.core import SupportedModelTypes
-from giskard.models.base import MODEL_CLASS_PKL, WrapperModel, BaseModel
+from giskard.models.base import BaseModel, WrapperModel
+from giskard.models.base.model import MODEL_CLASS_PKL
 from giskard.models.sklearn import SKLearnModel
 from tests.utils import MockedClient
 

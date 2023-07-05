@@ -1,14 +1,14 @@
-from typing import Iterable, Optional, Callable, Any
+from typing import Any, Callable, Iterable, Optional
 
 import mlflow
 import pandas as pd
 
 from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowBasedModel
+from giskard.models.base import MLFlowSerializableModel
 
 
-class LangchainModel(MLFlowBasedModel):
+class LangchainModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
         self,

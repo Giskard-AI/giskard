@@ -1,14 +1,14 @@
-from typing import Any, Callable, Optional, Iterable
+from typing import Any, Callable, Iterable, Optional
 
 import numpy
 import pandas as pd
 
-from giskard.core.core import ModelType
-from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import CloudpickleBasedModel
+from ...core.core import ModelType
+from ...core.validation import configured_validate_arguments
+from ..base.serialization import CloudpickleSerializableModel
 
 
-class PredictionFunctionModel(CloudpickleBasedModel):
+class PredictionFunctionModel(CloudpickleSerializableModel):
     @configured_validate_arguments
     def __init__(
         self,

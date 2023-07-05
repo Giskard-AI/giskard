@@ -1,47 +1,19 @@
 import logging
-from abc import ABC
-from typing import Callable, Optional, Iterable, Any
+from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
 from giskard.core.core import ModelType
 from giskard.models import infer_giskard_cls
-from giskard.models.base import CloudpickleBasedModel
 from giskard.models.function import PredictionFunctionModel
+
+from ..base.serialization import CloudpickleSerializableModel
 
 logger = logging.getLogger(__name__)
 
 
-class Model(CloudpickleBasedModel, ABC):
+class Model(CloudpickleSerializableModel):
     """
-    To scan, test and debug your model, you need to wrap it into a Giskard Model.
-    Your model can use any ML library (``sklearn``, ``catboost``, ``pytorch``, ``tensorflow``,
-    ``huggingface`` and ``langchain``) and can be any Python function that respects the right signature.
-
-    You can wrap your model in two different ways:
-
-    1. Wrap a prediction function that contains all your data pre-processing steps.
-       Prediction function is any Python function that takes input as raw pandas dataframe and returns the probabilities
-       for each classification labels (classification) or predictions (regression or text_generation).
-
-       Make sure that:
-
-       - ``prediction_function`` encapsulates all the data pre-processing steps (categorical encoding, numerical scaling, etc.).
-       - ``prediction_function(df[feature_names])`` does not return an error message.
-    2. Wrap a model object in addition to a data pre-processing function.
-       Providing the model object to Model allows us to automatically infer the ML library of your model object and
-       provide a suitable serialization method (provided by ``save_model`` and ``load_model`` methods).
-
-       This requires:
-
-       - Mandatory: Overriding the model_predict method which should take the input as raw pandas dataframe and return
-         the probabilities for each classification labels (classification) or predictions (regression or text_generation).
-       - Optional: Our pre-defined serialization and prediction methods cover the ``sklearn``, ``catboost``, ``pytorch``
-         , ``tensorflow``, ``huggingface`` and ``langchain`` libraries.
-         If none of these libraries are detected, cloudpickle is used as the default for serialization.
-         If this fails, we will ask you to also override the ``save_model`` and ``load_model`` methods where you provide your own
-         serialization of the model object.
-
     Args:
         model (Any):
             Could be any function or ML model. The standard model output required for Giskard is:
@@ -76,7 +48,7 @@ class Model(CloudpickleBasedModel, ABC):
         **kwargs: Additional keyword arguments.
 
     Returns:
-        Union[CloudpickleBasedModel, SKLearnModel, HuggingFaceModel,
+        Union[CloudpickleSerializableModel, SKLearnModel, HuggingFaceModel,
         CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
     """
 
@@ -99,7 +71,7 @@ class Model(CloudpickleBasedModel, ABC):
         ``PredictionFunctionModel``, ``SKLearnModel``, ``CatboostModel``, ``HuggingFaceModel``,
         ``PyTorchModel``, ``TensorFlowModel`` or ``LangchainModel``, depending on the ML library detected in the ``model`` object.
         If the ``model`` object provided does not belong to one of these libraries, an instance of
-        ``CloudpickleBasedModel`` is returned in which case:
+        ``CloudpickleSerializableModel`` is returned in which case:
 
         1. the default serialization method used will be ``cloudpickle``
 
@@ -118,11 +90,11 @@ class Model(CloudpickleBasedModel, ABC):
             giskard_cls = infer_giskard_cls(model)
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
             # if the Model class is instantiated (thus == Model) -> get the methods from the inferred class
-            # if giskard_cls == None -> get the methods from CloudpickleBasedModel
+            # if giskard_cls == None -> get the methods from CloudpickleSerializableModel
             is_overriden = cls.__name__ != "Model"  # TODO: Improve this
             if is_overriden:
                 if not giskard_cls:
-                    giskard_cls = CloudpickleBasedModel
+                    giskard_cls = CloudpickleSerializableModel
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.save_model = giskard_cls.save_model
@@ -138,7 +110,7 @@ class Model(CloudpickleBasedModel, ABC):
                     + "' wrapper class."
                 )
                 possibly_overriden_cls = giskard_cls
-            else:  # possibly_overriden_cls = CloudpickleBasedModel
+            else:  # possibly_overriden_cls = CloudpickleSerializableModel
                 raise NotImplementedError(
                     "We could not infer your model library. You have two options:"
                     "\n- Pass a prediction_function to the Model class "

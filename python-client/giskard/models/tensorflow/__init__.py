@@ -1,17 +1,17 @@
 import logging
-from typing import Optional, Iterable, Any, Callable
+from typing import Any, Callable, Iterable, Optional
 
 import mlflow
 import pandas as pd
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowBasedModel
+from giskard.models.base import MLFlowSerializableModel
 
 logger = logging.getLogger(__name__)
 
 
-class TensorFlowModel(MLFlowBasedModel):
+class TensorFlowModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
         self,

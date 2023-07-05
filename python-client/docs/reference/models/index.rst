@@ -1,5 +1,20 @@
-Model
-============
+Models
+======
+
+.. automodule:: giskard.models
+
+Integrations
+------------
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   integrations/*
+
+
+The :class:`giskard.Model` class
+--------------------------------
 
 .. autoclass:: giskard.Model
 
@@ -15,4 +30,12 @@ Model
    .. automethod:: upload
    .. automethod:: download
 
+
+
+
+
+Model Prediction
+----------------
 .. autoclass:: giskard.models.base.ModelPredictionResults
+
+

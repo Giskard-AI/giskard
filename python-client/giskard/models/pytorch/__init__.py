@@ -1,7 +1,7 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Union, Literal, get_args, Optional
+from typing import Literal, Optional, Union, get_args
 
 import mlflow
 import numpy as np
@@ -12,7 +12,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import ModelType
-from giskard.models.base import MLFlowBasedModel
+
+from ..base.serialization import MLFlowSerializableModel
 from ..utils import map_to_tuples
 
 TorchDType = Literal[
@@ -58,10 +59,10 @@ class TorchMinimalDataset(torch_dataset):
         return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=string_to_torch_dtype(self.torch_dtype))
 
 
-class PyTorchModel(MLFlowBasedModel):
+class PyTorchModel(MLFlowSerializableModel):
     """
     A wrapper class for PyTorch models that extends the functionality of the
-    MLFlowBasedModel class.
+    MLFlowSerializableModel class.
 
     Attributes:
         iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
@@ -157,7 +158,7 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _convert_to_numpy(self, raw_predictions):
         if isinstance(raw_predictions, torch.Tensor):
-            return raw_predictions.detach().numpy()
+            return raw_predictions.detach().cpu().numpy()
 
         return np.asarray(raw_predictions)
 
@@ -202,7 +203,3 @@ def _get_dataset_from_dataloader(dl: DataLoader):
                     The type we found was {dl.dataset} which we don't support. Please provide us \n \
                     with a different iterable as output of your data_preprocessing_function."
     )
-
-
-def _convert_to_numpy(self, predictions):
-    return torch.cat(predictions).detach().squeeze(0).numpy()
