@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Any
 
 from tests.utils import MockedClient, match_model_id
 import pytest
