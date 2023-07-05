@@ -17,10 +17,9 @@ from sklearn.metrics import (
 
 from giskard import test
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestResult
-from giskard.ml_worker.testing.tests.debug_slicing_functions import incorrect_rows_slicing_fn, \
+from giskard.testing.tests.debug_slicing_functions import incorrect_rows_slicing_fn, \
     nlargest_abs_err_rows_slicing_fn
 from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
