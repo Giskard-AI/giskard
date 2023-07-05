@@ -3,9 +3,9 @@ from typing import Any, Callable, Iterable, Optional
 import numpy
 import pandas as pd
 
-from ...core.core import ModelType
-from ...core.validation import configured_validate_arguments
-from ..base.serialization import CloudpickleSerializableModel
+from ..core.core import ModelType
+from ..core.validation import configured_validate_arguments
+from .base.serialization import CloudpickleSerializableModel
 
 
 class PredictionFunctionModel(CloudpickleSerializableModel):
@@ -14,8 +14,8 @@ class PredictionFunctionModel(CloudpickleSerializableModel):
         self,
         model: Callable,
         model_type: ModelType,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         name: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,

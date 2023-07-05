@@ -24,17 +24,13 @@ class WrapperModel(BaseModel, ABC):
     to preprocess incoming data before it's passed to the underlying model
     """
 
-    model: Any
-    data_preprocessing_function: Callable[[pd.DataFrame], Any]
-    model_postprocessing_function: Callable[[Any], Any]
-
     @configured_validate_arguments
     def __init__(
         self,
         model: Any,
         model_type: ModelType,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         name: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
@@ -79,13 +75,18 @@ class WrapperModel(BaseModel, ABC):
             if sign_len != 1:
                 raise ValueError(f"model_postprocessing_function only takes 1 argument but {sign_len} were provided.")
 
+    def _preprocess(self, data):
+        if self.data_preprocessing_function:
+            return self.data_preprocessing_function(data)
+        return data
+
     def _postprocess(self, raw_predictions):
         # User specified a custom postprocessing function
         if self.model_postprocessing_function:
             raw_predictions = self.model_postprocessing_function(raw_predictions)
 
         # Convert predictions to numpy array
-        raw_predictions = self._convert_to_numpy(raw_predictions)
+        raw_predictions = np.asarray(raw_predictions)
 
         # We try to automatically fix issues in the output shape
         raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
@@ -99,19 +100,15 @@ class WrapperModel(BaseModel, ABC):
         else:
             dfs = [df]
 
-        raw_predictions = []
-        for batch in dfs:
-            if self.data_preprocessing_function:
-                batch = self.data_preprocessing_function(batch)
+        outputs = []
+        for batch in map(self._preprocess, dfs):
+            output = self.model_predict(batch)
+            output = self._postprocess(output)
+            outputs.append(output)
 
-            raw_predictions.append(self._postprocess(self.model_predict(batch)))
+        return np.concatenate(outputs)
 
-        return np.concatenate(raw_predictions)
-
-    def _convert_to_numpy(self, raw_predictions):
-        return np.asarray(raw_predictions)
-
-    def _possibly_fix_predictions_shape(self, raw_predictions):
+    def _possibly_fix_predictions_shape(self, raw_predictions: np.ndarray):
         if not self.is_classification:
             return raw_predictions
 
