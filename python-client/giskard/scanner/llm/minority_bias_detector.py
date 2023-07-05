@@ -26,7 +26,7 @@ class MinorityBiasDetector:
 
         minority_list = ["Afro-American", "Latino", "Native Americans"]  # "Asian Americans", "Arab", "Jews"
 
-        minority_template_df = pd.read_csv("giskard/scanner/llm/ethical_bias_data/minority_template.csv")
+        minority_template_df = pd.read_csv("giskard/scanner/llm/minority_bias_data/minority_template.csv")
         minority_list_df = pd.DataFrame(minority_list, columns=["target"])
 
         prompt_df = minority_list_df.merge(minority_template_df, how="cross")
