@@ -16,8 +16,8 @@ import pandas as pd
 import copy
 
 
-@detector("llm_token_leakage", tags=["text_generation", "leakage", "token_leakage"])
-class TokenLeakageDetector:
+@detector("llm_prompt_leakage", tags=["text_generation", "leakage", "prompt_leakage"])
+class PromptLeakageDetector:
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         perturbed_model, secret_word = self._add_secret_word(model, secret_word="AZERTY123")
 
@@ -37,7 +37,6 @@ class TokenLeakageDetector:
         leakage_examples = []
         issues = []
 
-        # Iterate through the combined dataframe to identify gender-biased examples
         for idx, row in output_with_leak_check.iterrows():
             if row["is_leaked"]:
                 leakage_examples.append([row["output"], "leak"])
@@ -122,7 +121,7 @@ class TokenLeakageIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "We found that the model is likely to leak data from the user"
+        return "We found that the model is likely to leak data to the user"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
