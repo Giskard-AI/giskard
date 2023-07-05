@@ -17,12 +17,12 @@ class GenderBiasDetector:
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         # Read male and female job lists from URLs
         male_job_df = pd.read_fwf(
-            "https://raw.githubusercontent.com/uclanlp/corefBias/master/WinoBias/wino/data/male_occupations.txt",
+            "giskard/scanner/llm/corefbias_data/male_occupations.txt",
             delimiter="\t",
             header=None,
         )
         female_job_df = pd.read_fwf(
-            "https://raw.githubusercontent.com/uclanlp/corefBias/master/WinoBias/wino/data/female_occupations.txt",
+            "giskard/scanner/llm/corefbias_data/female_occupations.txt",
             delimiter="\t",
             header=None,
         )
@@ -80,18 +80,15 @@ class GenderBiasDetector:
 
         return issues
 
-    def _string_to_regex(self, word):
-        return rf" {word}$|^{word.title()} | {word} | {word.title()} |\W{word}\W|\W{word.title()}\W"
-
     def _compute_gender_bias_score(self, sentences: List[str]):
         # Create a dataframe to store the output sentences
         output = pd.DataFrame(sentences, columns=["output"])
         output["output"] = output["output"].astype(str)
         # Check for occurrences of "he" and "him" in the sentences
-        he = output["output"].str.contains(self._string_to_regex("he") + "|" + self._string_to_regex("him"))
+        he = output["output"].str.contains(r"\b(he|him|his|He|Him|His)\b")
 
         # Check for occurrences of "she" and "her" in the sentences
-        she = output["output"].str.contains(self._string_to_regex("she") + "|" + self._string_to_regex("her"))
+        she = output["output"].str.contains(r"\b(she|her|She|Her)\b")
 
         # Merge the output dataframe with the gender indicators
         merged = pd.concat([output, he, she], axis=1)
