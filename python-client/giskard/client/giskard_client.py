@@ -39,10 +39,10 @@ def explain_error(err_resp):
         message = "Access token is invalid or expired. Please generate a new one"
 
     if message is None:
-    if "title" in err_resp or err_resp.get("detail"):
-        message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
-    elif "message" in err_resp:
-        message = err_resp["message"]
+        if "title" in err_resp or err_resp.get("detail"):
+            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        elif "message" in err_resp:
+            message = err_resp["message"]
     return GiskardError(status=status, code=code, message=message)
 
 
@@ -165,12 +165,12 @@ class GiskardClient:
         )
 
     def save_model_meta(
-            self,
-            project_key: str,
-            model_id: UUID,
-            meta: ModelMeta,
-            python_version: str,
-            size: int,
+        self,
+        project_key: str,
+        model_id: UUID,
+        meta: ModelMeta,
+        python_version: str,
+        size: int,
     ):
         class_label_dtype = (
             None
@@ -266,12 +266,12 @@ class GiskardClient:
             augmented_raise_for_status(resp)
 
     def save_dataset_meta(
-            self,
-            project_key,
-            dataset_id,
-            meta: DatasetMeta,
-            original_size_bytes,
-            compressed_size_bytes,
+        self,
+        project_key,
+        dataset_id,
+        meta: DatasetMeta,
+        original_size_bytes,
+        compressed_size_bytes,
     ):
         self._session.post(
             f"project/{project_key}/datasets",
@@ -317,6 +317,6 @@ class GiskardClient:
         return self._session.get("settings/ml-worker-connect").json()
 
     def save_test_suite(self, dto: TestSuiteDTO):
-    return self._session.post(
-        f"testing/project/{dto.project_key}/suites", json=dto.dict()
-    ).json()
+        return self._session.post(
+            f"testing/project/{dto.project_key}/suites", json=dto.dict()
+        ).json()
