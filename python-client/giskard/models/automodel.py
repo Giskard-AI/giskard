@@ -1,15 +1,44 @@
+import inspect
 import logging
+from importlib import import_module
 from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
-from giskard.core.core import ModelType
-from giskard.models import infer_giskard_cls
-from giskard.models.function import PredictionFunctionModel
-
-from ..base.serialization import CloudpickleSerializableModel
+from ..core.core import ModelType
+from .base.serialization import CloudpickleSerializableModel
+from .function import PredictionFunctionModel
 
 logger = logging.getLogger(__name__)
+
+
+_ml_libraries = {
+    ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
+    ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
+    ("giskard.models.langchain", "LangchainModel"): [("langchain.chains.base", "Chain")],
+    ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
+    ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
+    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
+}
+
+
+def _get_class(_lib, _class):
+    return getattr(import_module(_lib), _class)
+
+
+def _infer_giskard_cls(model: Any):
+    if inspect.isfunction(model) or inspect.ismethod(model):
+        return PredictionFunctionModel
+    else:
+        for _giskard_class, _base_libs in _ml_libraries.items():
+            try:
+                giskard_cls = _get_class(*_giskard_class)
+                base_libs = [_get_class(*_base_lib) for _base_lib in _base_libs]
+                if isinstance(model, tuple(base_libs)):
+                    return giskard_cls
+            except ImportError:
+                pass
+    return None
 
 
 class Model(CloudpickleSerializableModel):
@@ -87,7 +116,7 @@ class Model(CloudpickleSerializableModel):
                 "\nIf a prediction function is provided, we use cloudpickle to serialize it."
             )
         else:
-            giskard_cls = infer_giskard_cls(model)
+            giskard_cls = _infer_giskard_cls(model)
             # if the Model class is overriden (thus != Model) -> get the methods from the subclass
             # if the Model class is instantiated (thus == Model) -> get the methods from the inferred class
             # if giskard_cls == None -> get the methods from CloudpickleSerializableModel

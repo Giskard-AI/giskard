@@ -3,9 +3,9 @@ from typing import Any, Callable, Iterable, Optional
 import mlflow
 import pandas as pd
 
-from ...core.core import ModelType, SupportedModelTypes
-from ...core.validation import configured_validate_arguments
-from ..base.serialization import MLFlowSerializableModel
+from ..core.core import ModelType, SupportedModelTypes
+from ..core.validation import configured_validate_arguments
+from .base.serialization import MLFlowSerializableModel
 
 
 class SKLearnModel(MLFlowSerializableModel):
@@ -19,8 +19,8 @@ class SKLearnModel(MLFlowSerializableModel):
         model,
         model_type: ModelType,
         name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,

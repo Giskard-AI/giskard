@@ -1,4 +1,4 @@
-from giskard.models import infer_giskard_cls
+from giskard.models.automodel import _infer_giskard_cls
 from giskard.models.catboost import CatboostModel
 from giskard.models.function import PredictionFunctionModel
 from giskard.models.huggingface import HuggingFaceModel
@@ -8,7 +8,7 @@ from giskard.models.tensorflow import TensorFlowModel
 
 
 def pytorch_model():
-    from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
+    from torchtext.models import XLMR_BASE_ENCODER, RobertaClassificationHead
 
     num_classes = 2
     input_dim = 768
@@ -37,20 +37,20 @@ def huggingface_model():
 
 
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
-    giskard_cls = infer_giskard_cls(lambda x: x**2)
+    giskard_cls = _infer_giskard_cls(lambda x: x**2)
     assert giskard_cls == PredictionFunctionModel
 
-    giskard_cls = infer_giskard_cls(german_credit_raw_model)
+    giskard_cls = _infer_giskard_cls(german_credit_raw_model)
     assert giskard_cls == SKLearnModel
 
-    giskard_cls = infer_giskard_cls(german_credit_catboost_raw_model)
+    giskard_cls = _infer_giskard_cls(german_credit_catboost_raw_model)
     assert giskard_cls == CatboostModel
 
-    giskard_cls = infer_giskard_cls(pytorch_model())
+    giskard_cls = _infer_giskard_cls(pytorch_model())
     assert giskard_cls == PyTorchModel
 
-    giskard_cls = infer_giskard_cls(tensorflow_model())
+    giskard_cls = _infer_giskard_cls(tensorflow_model())
     assert giskard_cls == TensorFlowModel
 
-    giskard_cls = infer_giskard_cls(huggingface_model())
+    giskard_cls = _infer_giskard_cls(huggingface_model())
     assert giskard_cls == HuggingFaceModel

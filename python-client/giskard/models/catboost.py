@@ -1,6 +1,6 @@
 import mlflow
 
-from giskard.models.sklearn import SKLearnModel
+from .sklearn import SKLearnModel
 
 
 class CatboostModel(SKLearnModel):

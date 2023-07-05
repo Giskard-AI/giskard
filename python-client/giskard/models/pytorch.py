@@ -13,8 +13,8 @@ from torch.utils.data import Dataset as torch_dataset
 
 from giskard.core.core import ModelType
 
-from ..base.serialization import MLFlowSerializableModel
-from ..utils import map_to_tuples
+from .base.serialization import MLFlowSerializableModel
+from .utils import map_to_tuples
 
 TorchDType = Literal[
     "float32",

@@ -4,9 +4,9 @@ from typing import Any, Callable, Iterable, Optional
 import mlflow
 import pandas as pd
 
-from giskard.core.core import ModelType
-from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowSerializableModel
+from ..core.core import ModelType
+from ..core.validation import configured_validate_arguments
+from .base import MLFlowSerializableModel
 
 logger = logging.getLogger(__name__)
 

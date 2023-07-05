@@ -86,7 +86,7 @@ Expected model output
 
 An important thing to notice is that Giskard expects classification models to
 return probabilities for each class. HuggingFace models usually return logits
-instead of probabilities. In genral, we will handle this for you by applying a
+instead of probabilities. In general, we will handle this for you by applying a
 softmax function to the logits. However, if you are using a model that deviates
 from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
