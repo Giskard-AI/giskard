@@ -36,7 +36,6 @@ public class SlicingFunctionController {
     @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
     public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
-        // TODO GSK-1280: add projectKey to slicing function
         slicingFunction.setProjectKey(projectKey);
         return slicingFunctionService.save(slicingFunction);
     }
