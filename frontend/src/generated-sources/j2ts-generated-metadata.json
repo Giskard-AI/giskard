@@ -62,7 +62,6 @@
     "ai.giskard.web.dto.TestSuiteDTO": "TestSuiteDTO",
     "ai.giskard.web.dto.FilterDatasetDTO": "FilterDatasetDTO",
     "ai.giskard.web.dto.ml.TestResultMessageDTO": "TestResultMessageDTO",
-    "ai.giskard.domain.InspectionSettings": "InspectionSettings",
     "ai.giskard.web.dto.DataUploadParamsDTO": "DataUploadParamsDTO",
     "ai.giskard.web.dto.ml.write.TestSuitePostDTO": "TestSuitePostDTO",
     "ai.giskard.domain.ml.ModelLanguage": "ModelLanguage",
