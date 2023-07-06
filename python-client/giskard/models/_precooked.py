@@ -28,7 +28,20 @@ class PrecookedModel(BaseModel):
 
     @classmethod
     def from_model(cls, model: BaseModel, dataset: Dataset):
-        """Creates a PrecookedModel from an existing model and dataset."""
+        """Creates a PrecookedModel from an existing model and dataset.
+
+        Parameters
+        ----------
+        model : BaseModel
+            A instance of a Giskard model.
+        dataset : Dataset
+            Dataset for which predictions will be cached.
+
+        Returns
+        -------
+        PrecookedModel
+
+        """
         predictions = model.predict(dataset)
 
         return cls(

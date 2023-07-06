@@ -18,10 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 class WrapperModel(BaseModel, ABC):
-    """
-    A subclass of a BaseModel that wraps an existing model object (model) and uses it to make inference
+    """Base class for model wrappers.
+
+    This is subclass of a :class:`BaseModel` that wraps an existing model
+    object and uses it to make inference.
+
     This class introduces a `data_preprocessing_function` which can be used
-    to preprocess incoming data before it's passed to the underlying model
+    to preprocess incoming data before it is passed to the underlying model.
     """
 
     @configured_validate_arguments
@@ -39,23 +42,29 @@ class WrapperModel(BaseModel, ABC):
         **kwargs,
     ) -> None:
         """
-        Initialize a new instance of the WrapperModel class.
-
-        Args:
-            model (Any): The model that will be wrapped.
-            model_type (ModelType): The type of the model. Must be a value from the `ModelType` enumeration.
-            data_preprocessing_function (Callable[[pd.DataFrame], Any], optional): A function that will be applied to incoming data. Defaults to None.
-            model_postprocessing_function (Callable[[Any], Any], optional): A function that will be applied to the model's predictions. Defaults to None.
-            name (str, optional): A name for the wrapper. Defaults to None.
-            feature_names (Optional[Iterable], optional): A list of feature names. Defaults to None.
-            classification_threshold (float, optional): The probability threshold for classification. Defaults to 0.5.
-            classification_labels (Optional[Iterable], optional): A list of classification labels. Defaults to None.
-            batch_size (Optional[int], optional): The batch size to use for inference. Defaults to None, which means
-              inference will be done on the full dataframe.
-
-        Raises:
-            ValueError: If `data_preprocessing_function` takes more than one argument.
-            ValueError: If `model_postprocessing_function` takes more than one argument.
+        Parameters
+        ----------
+        model : Any
+            The model that will be wrapped.
+        model_type : ModelType
+            The type of the model. Must be a value from the :class:`ModelType`
+            enumeration.
+        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+            A function that will be applied to incoming data. Default is ``None``.
+        model_postprocessing_function : Callable[[Any], Any], optional
+            A function that will be applied to the model's predictions. Default
+            is ``None``.
+        name : str, optional
+            A name for the wrapper. Default is ``None``.
+        feature_names : Optional[Iterable], optional
+            A list of feature names. Default is ``None``.
+        classification_threshold : float, optional
+            The probability threshold for classification. Default is 0.5.
+        classification_labels : Optional[Iterable], optional
+            A list of classification labels. Default is None.
+        batch_size : Optional[int], optional
+            The batch size to use for inference. Default is ``None``, which
+            means inference will be done on the full dataframe.
         """
         super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, **kwargs)
         self.model = model
@@ -153,24 +162,24 @@ class WrapperModel(BaseModel, ABC):
         return raw_predictions
 
     @abstractmethod
-    def model_predict(self, df):
-        """
-        Abstract method for making predictions using the model.
-        The standard model output required for Giskard is:
+    def model_predict(self, data):
+        """Performs the model inference/forward pass.
 
-        * if classification: an array (nxm) of probabilities corresponding to n data entries
-          (rows of pandas.DataFrame)
-          and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-          also accepted.
-          Make sure that the probability provided is for the second label provided in classification_labels.
-        * if regression or text_generation: an array of predictions corresponding to data entries
-          (rows of pandas.DataFrame) and outputs.
+        Parameters
+        ----------
+        data : Any
+            The input data for making predictions. If you did not specify a
+            `data_preprocessing_function`, this will be a :class:`pd.DataFrame`,
+            otherwise it will be whatever the `data_preprocessing_function`
+            returns.
 
-        Args:
-            df (pandas.DataFrame): The input data for making predictions.
-
-        Returns:
-            The predicted values based on the input data.
+        Returns
+        -------
+        numpy.ndarray
+            If the model is ``classification``, it should return an array of
+            probabilities of shape ``(num_entries, num_classes)``.
+            If the model is ``regression`` or ``text_generation``, it should
+            return an array of ``num_entries`` predictions.
         """
         ...
 
@@ -183,15 +192,13 @@ class WrapperModel(BaseModel, ABC):
             self.save_model_postprocessing_function(local_path)
 
     @abstractmethod
-    def save_model(self, local_path: Union[str, Path]) -> None:
-        """
-        Saving the ``model`` object. The serialization depends on the model type:
+    def save_model(self, path: Union[str, Path]) -> None:
+        """Saves the wrapped ``model`` object.
 
-        - ``mlflow`` methods are used if the ``model`` is from either of ``sklearn``, ``catboost``, ``pytorch`` or ``tensorflow``.
-        - ``transformers`` methods are used if the ``model`` is from ``huggingface``.
-        - ``langchain`` methods are used if the ``model`` is from ``langchain``.
-
-        :param local_path: path to the saved model
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to which the model should be saved.
         """
         ...
 
@@ -217,13 +224,13 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, local_dir):
-        """
-        Loading the ``model`` object. The de-serialization depends on the model type:
+    def load_model(cls, path: Union[str, Path]):
+        """Loads the wrapped ``model`` object.
 
-        - ``mlflow`` methods are used if the ``model`` is from either of ``sklearn``, ``catboost``, ``pytorch`` or ``tensorflow``.
-        - ``transformers`` methods are used if the ``model`` is from ``huggingface``.
-        - ``langchain`` methods are used if the ``model`` is from ``langchain``.
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path from which the model should be loaded.
         """
         ...
 

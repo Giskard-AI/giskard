@@ -27,26 +27,6 @@ class SKLearnModel(MLFlowSerializableModel):
         batch_size: Optional[int] = None,
         **kwargs,
     ) -> None:
-        """
-        Constructs an instance of the SKLearnModel class with the provided arguments.
-
-        Args:
-            model (Any): The machine learning model to be validated and used for inference.
-            model_type (ModelType): The type of model being used. Must be a value from the SupportedModelTypes enum.
-            name (str, optional): A string name for the model being used, used for identification purposes.
-            data_preprocessing_function (Callable[[pd.DataFrame], Any], optional):
-                A callable function that performs any necessary preprocessing on input data.
-                Must take a pandas DataFrame as input and return a single object.
-            model_postprocessing_function (Callable[[Any], Any], optional):
-                A callable function that performs any necessary postprocessing on model output.
-                Must take a single object as input and return a single object.
-            feature_names (Iterable, optional): An iterable of string feature names.
-            classification_threshold (float, optional):
-                A float classification threshold value, if applicable to the model being used.
-            classification_labels (Iterable, optional):
-                An iterable of classification label names, if applicable to the model being used.
-            batch_size (int, optional): The batch size to use for inference. Disabled by default.
-        """
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if classification_labels is None and hasattr(model, "classes_"):
                 classification_labels = list(getattr(model, "classes_"))

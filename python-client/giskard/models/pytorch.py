@@ -11,8 +11,7 @@ import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from giskard.core.core import ModelType
-
+from ..core.core import ModelType
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
 
@@ -60,15 +59,7 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowSerializableModel):
-    """
-    A wrapper class for PyTorch models that extends the functionality of the
-    MLFlowSerializableModel class.
-
-    Attributes:
-        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
-        device (str): The device to run the model on.
-        torch_dtype (TorchDType): The data type to be used for input tensors.
-    """
+    """Automatically wraps a PyTorch model into a Giskard model."""
 
     def __init__(
         self,
@@ -199,7 +190,8 @@ def _get_dataset_from_dataloader(dl: DataLoader):
         return dl.dataset
 
     raise ValueError(
-        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
-                    The type we found was {dl.dataset} which we don't support. Please provide us \n \
-                    with a different iterable as output of your data_preprocessing_function."
+        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. "
+        f"The type we found was {dl.dataset} which we don’t support. Please "
+        "provide us with a different iterable as output of your "
+        "data_preprocessing_function."
     )

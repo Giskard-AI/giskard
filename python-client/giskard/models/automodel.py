@@ -43,42 +43,45 @@ def _infer_giskard_cls(model: Any):
 
 class Model(CloudpickleSerializableModel):
     """
-    Args:
-        model (Any):
-            Could be any function or ML model. The standard model output required for Giskard is:
 
-            * if classification: an array (nxm) of probabilities corresponding to n data entries
-              (rows of pandas.DataFrame)
-              and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-              also accepted.
-              Make sure that the probability provided is for the second label provided in classification_labels.
-            * if regression or text_generation: an array of predictions corresponding to data entries
-              (rows of pandas.DataFrame) and outputs.
-        name (Optional[str]):
-             the name of the model.
-        model_type (ModelType):
-            The type of the model: regression, classification or text_generation.
-        data_preprocessing_function (Optional[Callable[[pd.DataFrame], Any]]):
-            A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
-            that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
-            in which case no need to provide this argument.
-        model_postprocessing_function (Optional[Callable[[Any], Any]]):
-            A function that takes a clf output as input,
-            applies postprocessing and returns an object of the same type and shape as the clf output.
-        feature_names (Optional[Iterable[str]]):
-            list of feature names matching the column names in the data that correspond to the features which the model
-            trained on. By default, feature_names are all the Dataset columns except from target.
-        classification_threshold (float):
-            represents the classification model threshold, for binary
-            classification models.
-        classification_labels (Optional[Iterable[str]]):
-            that represents the classification labels, if model_type is
-            classification. Make sure the labels have the same order as the column output of clf.
-        **kwargs: Additional keyword arguments.
+    Parameters
+    ----------
+    model : Any
+        Could be any function or ML model. The standard model output required for Giskard is:
+        * if classification: an array (nxm) of probabilities corresponding to n data entries
+        (rows of pandas.DataFrame)
+        and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
+        also accepted.
+        Make sure that the probability provided is for the second label provided in classification_labels.
+        * if regression or text_generation: an array of predictions corresponding to data entries
+        (rows of pandas.DataFrame) and outputs.
+    name : Optional[str]
+        the name of the model.
+    model_type : ModelType
+        The type of the model: regression, classification or text_generation.
+    data_preprocessing_function : Optional[Callable[[pd.DataFrame]
+        A function that takes a pandas.DataFrame as raw input, applies preprocessing and returns any object
+        that could be directly fed to clf. You can also choose to include your preprocessing inside clf,
+        in which case no need to provide this argument.
+    model_postprocessing_function : Optional[Callable[[Any]
+        A function that takes a clf output as input,
+        applies postprocessing and returns an object of the same type and shape as the clf output.
+    feature_names : Optional[Iterable[str]]
+        list of feature names matching the column names in the data that correspond to the features which the model
+        trained on. By default, feature_names are all the Dataset columns except from target.
+    classification_threshold : float
+        represents the classification model threshold, for binary
+        classification models.
+    classification_labels : Optional[Iterable[str]]
+        that represents the classification labels, if model_type is
+        classification. Make sure the labels have the same order as the column output of clf.
+    **kwargs :
+        Additional keyword arguments.
 
-    Returns:
-        Union[CloudpickleSerializableModel, SKLearnModel, HuggingFaceModel,
-        CatboostModel, PyTorchModel, TensorFlowModel]: The wrapped Giskard model.
+    Returns
+    -------
+
+
     """
 
     should_save_model_class = True

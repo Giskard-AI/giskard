@@ -66,7 +66,6 @@ class BaseModel(ABC):
     Raises:
         ValueError
             If an invalid model type is specified.
-
             If duplicate values are found in the classification_labels.
     """
 
