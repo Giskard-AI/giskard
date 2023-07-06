@@ -273,7 +273,6 @@ export default class Inspector extends Vue {
     }
 
     public setResult(r) {
-      console.log('result', r);
         if (isClassification(this.model.modelType)) {
             this.classificationResult = r
         }
