@@ -9,4 +9,5 @@ export interface DatasetProcessFunctionDTO extends CallableDTO {
     clauses: {[key: string]: any}[];
     columnType?: string | null;
     processType: DatasetProcessFunctionType;
+    projectKey: string;
 }
