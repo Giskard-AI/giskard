@@ -1,15 +1,16 @@
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 
 from ..push import BorderlinePush, OverconfidencePush
 
 from giskard.testing.tests.calibration import _default_overconfidence_threshold
 
 
-def create_overconfidence_push(model, ds, idrow):
-    values = ds.df.loc[[idrow]]
+def create_overconfidence_push(model, ds, df):
+    # row_slice = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
+    row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
+    values = row_slice.df
     training_label = values[ds.target].values[0]
-
-    row_slice = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
 
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         model_prediction_results = model.predict(row_slice)
@@ -31,13 +32,14 @@ def create_overconfidence_push(model, ds, idrow):
             return res
 
 
-def create_borderline_push(model, ds, idrow):
+def create_borderline_push(model, ds, df):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
+        # row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
+        row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
         model_prediction_results = model.predict(row_slice)
         all_predictions = model_prediction_results.all_predictions
         diff, max, second = _var(all_predictions)
-        values = ds.df.loc[[idrow]]
+        values = row_slice.df
         training_label = values[ds.target].values[0]
         training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
 
