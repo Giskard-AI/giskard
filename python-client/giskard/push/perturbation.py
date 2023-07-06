@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.push import SupportedPerturbationType
 from giskard.scanner.robustness.text_transformations import (
@@ -24,13 +25,13 @@ text_transfo_list = [
 ]
 
 
-def create_perturbation_push(model, ds, idrow):
+def create_perturbation_push(model, ds, df):
     for feat, coltype in ds.column_types.items():
-        perturbation_res = Perturbation(model, ds, idrow, feat, coltype)
+        perturbation_res = Perturbation(model, ds, df, feat, coltype)
         if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
             res = PerturbationPush(
                 feature=feat,
-                value=ds.df.iloc[idrow][feat],
+                value=df.iloc[0][feat],
                 transformation_function=perturbation_res.transformation_function,
             )
             return res
@@ -38,7 +39,7 @@ def create_perturbation_push(model, ds, idrow):
         if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
             res = PerturbationPush(
                 feature=feat,
-                value=ds.df.iloc[idrow][feat],
+                value=df.iloc[0][feat],
                 text_perturbed=perturbation_res.text_perturbed,
                 transformation_function=perturbation_res.transformation_function,
             )
@@ -48,7 +49,7 @@ def create_perturbation_push(model, ds, idrow):
 class Perturbation:
     model = None
     ds = None
-    idrow = None
+    df = None
     feat = None
     coltype = None
     passed = None
@@ -56,10 +57,10 @@ class Perturbation:
     text_perturbed = None
     transformation_function = None
 
-    def __init__(self, model, ds, idrow, feature, coltype):
+    def __init__(self, model, ds, df, feature, coltype):
         self.model = model
         self.ds = ds
-        self.idrow = idrow
+        self.df = df
         self.feature = feature
         if coltype == "numeric":
             self.coltype = SupportedPerturbationType.NUMERIC
@@ -76,8 +77,12 @@ class Perturbation:
             mad = np.median(x)
             return mad
 
-        idrow = self.idrow
-        ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
+        # idrow = self.idrow
+        # ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
+
+        ds_slice = Dataset(
+            df=self.df, target=self.ds.target, column_types=self.ds.column_types.copy(), validation=False
+        )
 
         row_perturbed = ds_slice.copy()
         if self.coltype == SupportedPerturbationType.NUMERIC:
