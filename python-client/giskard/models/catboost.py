@@ -4,7 +4,7 @@ from .sklearn import SKLearnModel
 
 
 class CatboostModel(SKLearnModel):
-    """Automatically wraps catboost models for use with Giskard."""
+    """Automatically wraps ``catboost`` models for use with Giskard."""
 
     _feature_names_attr = "feature_names_"
 
