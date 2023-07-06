@@ -9,15 +9,35 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from giskard.ml_worker.testing.registry.giskard_test import (
+    GiskardTest,
+    Test,
+    GiskardTestMethod,
+)
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+)
+from giskard.ml_worker.testing.test_result import (
+    TestResult,
+    TestMessage,
+    TestMessageLevel,
+)
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
+suite_input_types: List[type] = [
+    Dataset,
+    BaseModel,
+    str,
+    bool,
+    int,
+    float,
+    SlicingFunction,
+    TransformationFunction,
+]
 
 
 class TestSuiteResult(tuple):
@@ -65,7 +85,9 @@ class SuiteInput:
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        assert ptype in suite_input_types, f"Type should be one of those: {suite_input_types}"
+        assert (
+            ptype in suite_input_types
+        ), f"Type should be one of those: {suite_input_types}"
         self.name = name
         self.type = ptype
 
@@ -157,7 +179,14 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
             value=str(p.meta.uuid),
             type=ptype,
             params=[
-                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key, uploaded_uuids)
+                build_test_input_dto(
+                    client,
+                    value,
+                    pname,
+                    p.meta.args[pname].type,
+                    project_key,
+                    uploaded_uuids,
+                )
                 for pname, value in p.params.items()
             ],
         )
@@ -222,18 +251,26 @@ class Suite:
         """
         res: List[(str, Union[bool, TestResult], Dict[str, Any])] = list()
         required_params = self.find_required_params()
-        undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
+        undefined_params = {
+            k: v for k, v in required_params.items() if k not in suite_run_args
+        }
         if len(undefined_params):
-            raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
+            raise ValueError(
+                f"Missing {len(undefined_params)} required parameters: {undefined_params}"
+            )
 
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
             try:
-                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+                result = test_partial.giskard_test.get_builder()(
+                    **test_params
+                ).execute()
                 res.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
-                        """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
+                        """Executed '{0}' with arguments {1}: {2}""".format(
+                            test_partial.test_name, test_params, result
+                        )
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
@@ -242,7 +279,11 @@ class Suite:
                     (
                         test_partial.test_name,
                         TestResult(
-                            passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
+                            passed=False,
+                            is_error=True,
+                            messages=[
+                                TestMessage(type=TestMessageLevel.ERROR, text=error)
+                            ],
                         ),
                         test_params,
                     )
@@ -259,9 +300,13 @@ class Suite:
     @staticmethod
     def create_test_params(test_partial, kwargs):
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
-            available_params = inspect.signature(test_partial.giskard_test.test_fn).parameters.items()
+            available_params = inspect.signature(
+                test_partial.giskard_test.test_fn
+            ).parameters.items()
         else:
-            available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.items()
+            available_params = inspect.signature(
+                test_partial.giskard_test.__init__
+            ).parameters.items()
 
         test_params = {}
         for pname, p in available_params:
@@ -269,7 +314,9 @@ class Suite:
                 test_params[pname] = kwargs[pname]
             elif pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
-                    test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
+                    test_params[pname] = kwargs[
+                        test_partial.provided_inputs[pname].name
+                    ]
                 else:
                     test_params[pname] = test_partial.provided_inputs[pname]
         return test_params
@@ -284,7 +331,9 @@ class Suite:
         """
         self.id = client.save_test_suite(self.to_dto(client, project_key))
         project_id = client.get_project(project_key).project_id
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
+        print(
+            f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview"
+        )
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str):
@@ -299,7 +348,12 @@ class Suite:
                     testUuid=t.giskard_test.upload(client),
                     functionInputs={
                         pname: build_test_input_dto(
-                            client, p, pname, t.giskard_test.meta.args[pname].type, project_key, uploaded_uuids
+                            client,
+                            p,
+                            pname,
+                            t.giskard_test.meta.args[pname].type,
+                            project_key,
+                            uploaded_uuids,
                         )
                         for pname, p in t.provided_inputs.items()
                     },
@@ -308,7 +362,9 @@ class Suite:
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> "Suite":
+    def add_test(
+        self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params
+    ) -> "Suite":
         """
         Add a test to the suite.
 
@@ -336,7 +392,11 @@ class Suite:
             test_fn = GiskardTestMethod(test_fn)
 
         if test_name is None:
-            test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
+            test_name = (
+                test_fn.meta.name
+                if test_fn.meta.display_name is None
+                else test_fn.meta.display_name
+            )
 
         self.tests.append(TestPartial(test_fn, params, test_name))
 
@@ -347,9 +407,13 @@ class Suite:
 
         for test_partial in self.tests:
             if isinstance(test_partial.giskard_test, GiskardTestMethod):
-                available_params = inspect.signature(test_partial.giskard_test.test_fn).parameters.values()
+                available_params = inspect.signature(
+                    test_partial.giskard_test.test_fn
+                ).parameters.values()
             else:
-                available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.values()
+                available_params = inspect.signature(
+                    test_partial.giskard_test.__init__
+                ).parameters.values()
 
             for p in available_params:
                 if p.default == inspect.Signature.empty:
@@ -377,7 +441,9 @@ class Suite:
 
         return self
 
-    def _add_test_if_suitable(self, test_func: TestFunctionMeta, inputs: List[SuiteInput]):
+    def _add_test_if_suitable(
+        self, test_func: TestFunctionMeta, inputs: List[SuiteInput]
+    ):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
         input_dict: Dict[str, SuiteInput] = {i.name: i for i in inputs}
 
@@ -385,7 +451,8 @@ class Suite:
                 [
                     arg
                     for arg in required_args
-                    if arg.name not in input_dict or arg.type != input_dict[arg.name].type.__name__
+                if arg.name not in input_dict
+                or arg.type != input_dict[arg.name].type.__name__
                 ]
         ):
             # Test is not added if an input  without default value is not specified
@@ -394,14 +461,20 @@ class Suite:
 
         suite_args = {}
 
-        for arg in [arg for arg in test_func.args.values() if arg.default is not None and arg.name not in input_dict]:
+        for arg in [
+            arg
+            for arg in test_func.args.values()
+            if arg.default is not None and arg.name not in input_dict
+        ]:
             # Set default value if not provided
             suite_args[arg.name] = arg.default
 
         models = [
             modelInput
             for modelInput in input_dict.values()
-            if isinstance(modelInput, ModelInput) and modelInput.model_type is not None and modelInput.model_type != ""
+            if isinstance(modelInput, ModelInput)
+            and modelInput.model_type is not None
+            and modelInput.model_type != ""
         ]
         if any(models) and not contains_tag(test_func, next(iter(models)).model_type):
             return
@@ -410,12 +483,16 @@ class Suite:
                 [
                     dataset
                     for dataset in input_dict.values()
-                    if isinstance(dataset, DatasetInput) and dataset.target is None and dataset.target != ""
+                if isinstance(dataset, DatasetInput)
+                and dataset.target is None
+                and dataset.target != ""
                 ]
         ):
             return
 
-        self.add_test(GiskardTest.load(test_func.uuid, None, None).get_builder()(**suite_args))
+        self.add_test(
+            GiskardTest.load(test_func.uuid, None, None).get_builder()(**suite_args)
+        )
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
