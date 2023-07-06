@@ -497,17 +497,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         uuid = ''
         try:
             model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+            dataset = Dataset.download(self.client, request.model.project_key, request.dataset.id)
 
             df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
-
             if request.column_dtypes:
                 df = Dataset.cast_column_to_dtypes(df, request.column_dtypes)
 
-            dataset = Dataset(
-                # model.prepare_dataframe(df, column_dtypes=request.column_dtypes),
-                df,
-                target=request.target,
-            )
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
                 raise ValueError(
@@ -528,7 +523,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         from giskard.push.prediction import create_overconfidence_push
         from giskard.push.prediction import create_borderline_push
 
-        contribs = create_contribution_push(model, dataset, 0)
+        contribs = create_contribution_push(model, dataset, 0, df)
         perturbs = create_perturbation_push(model, dataset, 0)
         overconf = create_overconfidence_push(model, dataset, 0)
         borderl = create_borderline_push(model, dataset, 0)

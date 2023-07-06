@@ -7,9 +7,9 @@ from ..models.model_explanation import explain
 from ..push import ContributionPush
 
 
-def create_contribution_push(model, ds, idrow):
+def create_contribution_push(model, ds, idrow, df):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and _existing_shap_values(ds):
-        shap_res = _contribution_push(model, ds, idrow)
+        shap_res = _contribution_push(model, ds, idrow, df)
         slice_df = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
         values = slice_df.df
         training_label = values[ds.target].values[0]
@@ -71,8 +71,8 @@ def create_contribution_push(model, ds, idrow):
                     return res
 
 
-def _contribution_push(model, ds, idrow):
-    feature_shap = _get_shap_values(model, ds, idrow)
+def _contribution_push(model, ds, idrow, df):
+    feature_shap = _get_shap_values(model, ds, idrow, df)
     keys = list(feature_shap.keys())
 
     zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
@@ -84,9 +84,9 @@ def _contribution_push(model, ds, idrow):
         return None
 
 
-def _get_shap_values(model, ds, idrow):
+def _get_shap_values(model, ds, idrow, df):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-        return explain(model, ds, ds.df.iloc[idrow])["explanations"][model.meta.classification_labels[0]]
+        return explain(model, ds, df.iloc[0])["explanations"][model.meta.classification_labels[0]]
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
         return explain(model, ds, ds.df.iloc[idrow])["explanations"]["default"]
 
