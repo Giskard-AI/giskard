@@ -500,9 +500,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
 
-            # Here using model.prepare_dataframe will remove the target which we don't want.
-            # I just pass in df to get the whole thing, but then column_dtypes isn't used
-            # Maybe this is the root cause?
+            if request.column_dtypes:
+                df = Dataset.cast_column_to_dtypes(df, request.column_dtypes)
+
             dataset = Dataset(
                 # model.prepare_dataframe(df, column_dtypes=request.column_dtypes),
                 df,
