@@ -2,6 +2,8 @@ import asyncio
 import logging
 import sys
 
+import stomp
+
 import grpc
 from grpc.aio._server import Server
 from pydantic import AnyHttpUrl
@@ -20,14 +22,47 @@ class MLWorker:
     socket_file_location: str
     tunnel: MLWorkerBridge = None
     grpc_server: Server
+    ws_conn: stomp.WSStompConnection
+    ml_worker_id: str
 
     def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None) -> None:
         client = None if is_server else GiskardClient(backend_url, api_key)
 
         server, address = self._create_grpc_server(client, is_server)
+
+        ws_conn = stomp.WSStompConnection([("localhost", 9000)], ws_path="/websocket")
+        self.ml_worker_id = "unknown"
         if not is_server:
             logger.info("Remote server host and port are specified, connecting as an external ML Worker")
             self.tunnel = MLWorkerBridge(address, client)
+
+            # External ML worker
+            self.ml_worker_id = "external"
+            ws_conn.connect(
+                with_connect_command=True,
+                wait=True,
+                headers={
+                    "jwt": client.session.auth.token,
+                },
+            )
+        else:
+            # Internal worker uses a token
+            self.ml_worker_id = "internal"
+            ws_conn.connect(
+                with_connect_command=True,
+                wait=True,
+                headers={
+                    "token": "inoki-test-token",
+                },
+            )
+
+        if ws_conn.is_connected():
+            ws_conn.subscribe(f"/ml-worker/{self.ml_worker_id}/action", "worker-inoki")
+            # TODO: Check the subscription status
+        else:
+            raise Exception("Worker cannot connect through WebSocket")
+
+        self.ws_conn = ws_conn
 
         self.grpc_server = server
 

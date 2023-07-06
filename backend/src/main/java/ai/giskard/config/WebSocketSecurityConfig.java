@@ -1,8 +1,10 @@
 package ai.giskard.config;
 
+import ai.giskard.ml.MLWorkerID;
 import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
 
     private final TokenProvider tokenProvider;
     private final LicenseService licenseService;
+    private final MLWorkerWSService mlWorkerWSService;
 
     @Override
     protected boolean sameOriginDisabled() {
@@ -48,6 +51,18 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                 }
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     if (licenseService.hasFeature(FeatureFlag.AUTH)) {
+                        log.debug("Session " + accessor.getSessionId() + " CONNECT");
+                        // Check if an internal worker trying to connect
+                        List<String> internalTokenHeaders = accessor.getNativeHeader("token");
+                        if (internalTokenHeaders != null && !internalTokenHeaders.isEmpty()
+                            && StringUtils.hasText(internalTokenHeaders.get(0))) {
+                            // TODO: Validate the token
+                            if (mlWorkerWSService.prepareInternalWorker(accessor.getSessionId())) {
+                                log.debug("Potential internal worker connected \"" + accessor.getSessionId() + "\"");
+                                return message;
+                            }
+                        }
+
                         List<String> jwtHeaders = accessor.getNativeHeader("jwt");
                         if (jwtHeaders == null || jwtHeaders.isEmpty() || !StringUtils.hasText(jwtHeaders.get(0))) {
                             log.warn("Missing JWT token");
@@ -63,6 +78,21 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                     }
 
                 }
+
+                if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                    if (accessor.getDestination().matches("/ml-worker/.+/action")) {
+                        // Try to associate with the internal worker
+                        if (!mlWorkerWSService.associateWorker(MLWorkerID.INTERNAL.toString(),
+                                                              accessor.getSessionId())) {
+                            if (!mlWorkerWSService.associateWorker(MLWorkerID.EXTERNAL.toString(),
+                                                                   accessor.getSessionId()))  {
+                                // Both internal and external workers are occupied
+                                throw new AccessDeniedException("Cannot find available worker");
+                            }
+                        }
+                    }
+                }
+
                 return message;
             }
         });
