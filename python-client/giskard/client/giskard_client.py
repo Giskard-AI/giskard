@@ -39,7 +39,10 @@ def explain_error(err_resp):
         message = "Access token is invalid or expired. Please generate a new one"
 
     if message is None:
-        message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        if "title" in err_resp or err_resp.get("detail"):
+            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        elif "message" in err_resp:
+            message = err_resp["message"]
     return GiskardError(status=status, code=code, message=message)
 
 
