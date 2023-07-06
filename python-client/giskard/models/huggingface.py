@@ -181,6 +181,15 @@ class HuggingFaceModel(WrapperModel):
         self.huggingface_module = model.__class__
         self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
 
+        try:
+            if batch_size == 1 and model.device.type == "cuda":
+                logger.info(
+                    "Your model is running on GPU. We recommend to set a batch "
+                    "size greater than 1 to improve performance."
+                )
+        except AttributeError:
+            pass
+
     @classmethod
     def load_model(cls, local_path):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
