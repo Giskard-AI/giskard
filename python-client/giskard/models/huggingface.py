@@ -104,6 +104,8 @@ from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
 
+from ..client.python_utils import warning
+
 try:
     import torch
 except ImportError as e:
@@ -183,7 +185,7 @@ class HuggingFaceModel(WrapperModel):
 
         try:
             if batch_size == 1 and model.device.type == "cuda":
-                logger.info(
+                warning(
                     "Your model is running on GPU. We recommend to set a batch "
                     "size greater than 1 to improve performance."
                 )
