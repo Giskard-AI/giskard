@@ -525,8 +525,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         contribs = create_contribution_push(model, dataset, df)
         perturbs = create_perturbation_push(model, dataset, df)
-        overconf = create_overconfidence_push(model, dataset, 0)
-        borderl = create_borderline_push(model, dataset, 0)
+        overconf = create_overconfidence_push(model, dataset, df)
+        borderl = create_borderline_push(model, dataset, df)
 
         if contribs is not None:
             contrib_grpc = contribs.to_grpc()
