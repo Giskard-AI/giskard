@@ -2,7 +2,6 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from giskard import Model
 from giskard.core.core import SupportedModelTypes
@@ -14,7 +13,6 @@ def test_catboost(german_credit_test_data, german_credit_catboost):
     assert (res.probabilities >= 0).all() and (res.probabilities <= 1).all()
 
 
-@pytest.mark.skip(reason="GSK-230 enable test once model upload API is changed from functional to class based")
 def test_catboost_changed_column_order(german_credit_test_data, german_credit_catboost):
     original_predictions = german_credit_catboost.predict(german_credit_test_data).probabilities
 
