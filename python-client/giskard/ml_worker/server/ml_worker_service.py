@@ -269,7 +269,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
-        if test_result.output_df:  # if debug is True and test has failed
+        if test_result.output_df is not None:  # i.e. if debug is True and test has failed
 
             if debug_info is None:
                 raise ValueError("You have requested to debug the test, "
