@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +19,8 @@ public class MLWorkerWSService {
 
     private final HashMap<String, String> workers = new HashMap<String, String>();
     private String potentialInternalWorkerId;
+
+    private ConcurrentHashMap<String, BlockingQueue<String>> messagePool = new ConcurrentHashMap<>();
 
     public boolean prepareInternalWorker(String uuid) {
         if (potentialInternalWorkerId != null && uuid != potentialInternalWorkerId) return false;
@@ -57,5 +61,15 @@ public class MLWorkerWSService {
             return workers.remove(MLWorkerID.INTERNAL.toString(), uuid);
         }
         return true;
+    }
+
+    public void attachResult(String repId, String result) {
+        if (messagePool.containsKey(repId)) {
+            messagePool.get(repId).offer(result);
+        }
+    }
+
+    public void registerResultWaiter(String repId, BlockingQueue<String> queue) {
+        messagePool.put(repId, queue);
     }
 }

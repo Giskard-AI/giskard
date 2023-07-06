@@ -2,7 +2,14 @@ import asyncio
 import logging
 import sys
 
+import json
 import stomp
+
+import platform
+import pkg_resources
+import psutil
+import os
+import giskard
 
 import grpc
 from grpc.aio._server import Server
@@ -16,6 +23,59 @@ from giskard.ml_worker.utils.request_interceptor import MLWorkerRequestIntercept
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+class MLWorkerWebSocketListener(stomp.ConnectionListener):
+    def __init__(self, worker):
+        self.ml_worker = worker
+
+    def on_error(self, frame):
+        logger.info(f"received an error {frame.body}")
+
+    def on_disconnected(self):
+        logger.info("disconnected")
+
+    def on_message(self, frame):
+        logger.info(f"received a message {frame.cmd} {frame.headers} {frame.body}")
+        req = json.loads(frame.body)
+        if "action" in req.keys():
+            if req["action"] == "getInfo":
+                logger.info("Collecting ML Worker info from WebSocket")
+                installed_packages = (
+                    {p.project_name: p.version for p in pkg_resources.working_set}
+                    if "list_packages" in req.keys() and req["list_packages"]
+                    else None
+                )
+                current_process = psutil.Process(os.getpid())
+                info = {
+                    "platform": {
+                        "machine": platform.uname().machine,
+                        "node": platform.uname().node,
+                        "processor": platform.uname().processor,
+                        "release": platform.uname().release,
+                        "system": platform.uname().system,
+                        "version": platform.uname().version,
+                    },
+                    "giskardClientVersion": giskard.__version__,
+                    "pid": os.getpid(),
+                    "processStartTime": int(current_process.create_time()),
+                    "interpreter": sys.executable,
+                    "interpreterVersion": platform.python_version(),
+                    "installedPackages": installed_packages,
+                    "internalGrpcAddress": "123",  # self.ml_worker.address,
+                    "isRemote": self.ml_worker.tunnel is not None,
+                }
+                logger.debug("Test ML Worker Collecting replying")
+                if "id" in req.keys():
+                    req_id = req["id"]
+                    self.ml_worker.ws_conn.send(
+                        f"/app/ml-worker/{self.ml_worker.ml_worker_id}/rep",
+                        json.dumps({"id": req_id, "action": "getInfo", "payload": json.dumps(info)}),
+                    )
+
+
+INTERNAL_WORKER_ID = "INTERNAL"
+EXTERNAL_WORKER_ID = "EXTERNAL"
 
 
 class MLWorker:
@@ -37,7 +97,7 @@ class MLWorker:
             self.tunnel = MLWorkerBridge(address, client)
 
             # External ML worker
-            self.ml_worker_id = "external"
+            self.ml_worker_id = EXTERNAL_WORKER_ID
             ws_conn.connect(
                 with_connect_command=True,
                 wait=True,
@@ -47,7 +107,7 @@ class MLWorker:
             )
         else:
             # Internal worker uses a token
-            self.ml_worker_id = "internal"
+            self.ml_worker_id = INTERNAL_WORKER_ID
             ws_conn.connect(
                 with_connect_command=True,
                 wait=True,
@@ -63,6 +123,7 @@ class MLWorker:
             raise Exception("Worker cannot connect through WebSocket")
 
         self.ws_conn = ws_conn
+        self.ws_conn.set_listener("ml-worker-action-listener", MLWorkerWebSocketListener(self))
 
         self.grpc_server = server
 
