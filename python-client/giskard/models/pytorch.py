@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Literal, Optional, Union, get_args
 
 import mlflow
-import numpy as np
 import pandas as pd
 import torch
 import yaml
@@ -151,7 +150,7 @@ class PyTorchModel(MLFlowSerializableModel):
         if isinstance(raw_predictions, torch.Tensor):
             return raw_predictions.detach().cpu().numpy()
 
-        return np.asarray(raw_predictions)
+        return super()._convert_to_numpy(raw_predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:

@@ -95,12 +95,15 @@ class WrapperModel(BaseModel, ABC):
             raw_predictions = self.model_postprocessing_function(raw_predictions)
 
         # Convert predictions to numpy array
-        raw_predictions = np.asarray(raw_predictions)
+        raw_predictions = self._convert_to_numpy(raw_predictions)
 
         # We try to automatically fix issues in the output shape
         raw_predictions = self._possibly_fix_predictions_shape(raw_predictions)
 
         return raw_predictions
+
+    def _convert_to_numpy(self, raw_predictions):
+        return np.asarray(raw_predictions)
 
     @configured_validate_arguments
     def predict_df(self, df: pd.DataFrame):
