@@ -7,6 +7,7 @@ from giskard.models.automodel import Model
 from giskard.datasets.base import Dataset
 from giskard.scanner import scan
 from giskard.core.core import SupportedModelTypes
+from giskard.core.model_validation import ValidationFlags
 
 from mlflow.models.evaluation import ModelEvaluator
 
@@ -25,6 +26,11 @@ alphanumeric_map = {
     "=": "equal to",
     "!=": "different of",
 }
+
+
+class PyFuncModel(Model):
+    def model_predict(self, df):
+        return self.model.predict(df)
 
 
 def process_text(some_string):
@@ -57,12 +63,14 @@ class GiskardEvaluator(ModelEvaluator):
             raise ValueError("Only pd.DataFrame are currently supported in Giskard.")
 
         cl = evaluator_config["classification_labels"] if "classification_labels" in self.evaluator_config else None
-        giskard_model = Model(model=model,
-                              model_type=gsk_model_types[model_type],
-                              feature_names=dataset.feature_names,
-                              classification_labels=cl)
+        giskard_model = PyFuncModel(model=model,
+                                    model_type=gsk_model_types[model_type],
+                                    feature_names=dataset.feature_names,
+                                    classification_labels=cl)
 
-        scan_results = scan(giskard_model, giskard_dataset)
+        validation_flags = ValidationFlags()
+        validation_flags.model_loading_and_saving = False
+        scan_results = scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags)
         test_suite = scan_results.generate_test_suite("scan test suite")
         test_suite_results = test_suite.run()
 
