@@ -253,7 +253,9 @@ export default class Inspector extends Vue {
             .map(([name, type]) => ({
                 name,
                 type,
-                values: this.dataset.categoryFeatures[name]
+                values: this.dataset.categoryFeatures ?
+                  this.dataset.categoryFeatures[name] : []
+                  // Provide an empty list in case of null due to DB migration
             }))
     }
 
