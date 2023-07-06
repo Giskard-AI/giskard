@@ -715,7 +715,7 @@ class WrapperModel(BaseModel, ABC):
 
 class MLFlowBasedModel(WrapperModel, ABC):
     """
-    An base class for models that are serializable by the MLFlow library. By default MLFlowBasedModel wraps PyFuncModel.
+    An abstract base class for models that are serializable by the MLFlow library.
 
     This class provides functionality for saving the model with MLFlow in addition to saving other metadata with the
     `save` method. Subclasses should implement the `save_model` method to provide their own MLFlow-specific model
@@ -729,27 +729,6 @@ class MLFlowBasedModel(WrapperModel, ABC):
         """
         self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
         super().save(local_path)
-
-    def save_model(self, local_path, mlflow_meta):
-        from mlflow.models.model import Model
-
-        artifact_path = self.model.metadata.artifact_path
-        module = self.model.metadata.flavors["python_function"]["loader_module"]
-        flavor = importlib.import_module(module)
-        model = flavor.load_model(self.model.metadata.get_model_info().model_uri)
-
-        mlflow_model = Model(artifact_path=artifact_path)
-        if "sklearn" in module:
-            flavor.save_model(model, path=local_path, mlflow_model=mlflow_model, pyfunc_predict_fn="predict_proba")
-        else:
-            flavor.save_model(model, path=local_path, mlflow_model=mlflow_model)
-
-    @classmethod
-    def load_model(cls, local_dir):
-        return mlflow.pyfunc.load_model(local_dir)
-
-    def model_predict(self, df):
-        return self.model.predict(df)
 
 
 class CloudpickleBasedModel(WrapperModel, ABC):

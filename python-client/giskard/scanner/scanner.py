@@ -5,7 +5,6 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
-
 from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
@@ -16,6 +15,7 @@ from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
 from giskard.client.python_utils import warning
+from giskard.core.model_validation import ValidationFlags
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -30,7 +30,8 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+            self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False,
+            validation_flags: Optional[ValidationFlags] = ValidationFlags()
     ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
         if model.is_text_generation:
@@ -42,7 +43,7 @@ class Scanner:
 
         if not model.is_text_generation:
             time_start = perf_counter()
-            validate_model(model=model, validate_ds=dataset)
+            validate_model(model=model, validate_ds=dataset, validation_flags=validation_flags)
             model_validation_time = perf_counter() - time_start
         else:
             model_validation_time = None
