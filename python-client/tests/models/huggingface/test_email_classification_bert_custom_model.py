@@ -1,12 +1,10 @@
 import pytest
-
 import torch
 from scipy import special
-from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import BertForSequenceClassification, BertTokenizer
 
 import tests.utils
-from giskard import Dataset
-from giskard import Model
+from giskard import Dataset, Model
 from giskard.models.huggingface import HuggingFaceModel
 
 
