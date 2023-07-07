@@ -10,7 +10,7 @@ async function routeGuard(to, from, next) {
   const userStore = useUserStore();
   const mainStore = useMainStore();
   if (!mainStore.license) {
-    await exponentialRetry(mainStore.fetchLicense);
+    await mainStore.fetchLicense();
   }
   if (!mainStore.license?.active) {
     if (to.path !== '/setup') {

@@ -139,7 +139,7 @@ dependencies = [
     "mlflow-skinny>=2",
     "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
     "scikit-learn>=1.0",
-    "scipy>=1.7.3,<1.9", # eli5 doesn't work with scipy>=1.9: cannot import name 'itemfreq' from 'scipy.stats'
+    "scipy>=1.7.3",
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic>=1.7, <2",
@@ -169,8 +169,6 @@ server = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "eli5>=0.12.0",
-    "ipython", # eli5.show_prediction doesn't work without ipython
     "grpcio>=1.39.0,<=1.51.1",
     "grpcio-status>=1.16.0,<=1.51.1",
     "lockfile>=0.12.2",
