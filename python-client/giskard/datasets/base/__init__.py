@@ -141,14 +141,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[str] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[str, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[str] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[str, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -238,11 +238,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -278,11 +278,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -317,7 +317,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
         assert (
-            not transformation_function.cell_level or "column_name" in transformation_function.params
+                not transformation_function.cell_level or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -331,7 +331,7 @@ class Dataset(ColumnMetadataMixin):
         return self.data_processor.apply(self)
 
     def _infer_column_types(
-        self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]], validation: bool = True
+            self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]], validation: bool = True
     ):
         """
         This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
@@ -614,6 +614,15 @@ class Dataset(ColumnMetadataMixin):
             dataset.load_metadata_from_instance(self.column_meta)
 
         return dataset
+
+    def to_mlflow(self, client=None, run_id=None):
+        import mlflow
+        with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv") as f:
+            self.df.to_csv(f.name)
+            if client is None and run_id is None:
+                mlflow.log_artifact(f.name)
+            elif client and run_id:
+                client.log_artifact(run_id, f.name)
 
 
 def _cast_to_list_like(object):

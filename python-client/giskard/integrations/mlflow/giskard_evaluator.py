@@ -74,6 +74,9 @@ class GiskardEvaluator(ModelEvaluator):
         test_suite = scan_results.generate_test_suite("scan test suite")
         test_suite_results = test_suite.run()
 
+        # log dataset
+        giskard_dataset.to_mlflow(client=self.client, run_id=self.run_id)
+
         # log html scan result
         scan_results.to_mlflow(client=self.client, run_id=self.run_id)
 
