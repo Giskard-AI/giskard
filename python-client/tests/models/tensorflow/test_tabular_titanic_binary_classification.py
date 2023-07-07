@@ -1,49 +1,36 @@
-import joblib
-import pandas as pd
-from huggingface_hub import cached_download, hf_hub_url
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 import tests.utils
 from giskard import Dataset
+from giskard.demo import titanic_classification
 from giskard.models.tensorflow import TensorFlowModel
 
 
 def test_tabular_titanic_binary_classification():
-    REPO_ID = "danupurnomo/dummy-titanic"
-    PIPELINE_FILENAME = "final_pipeline.pkl"
-    TF_FILENAME = "titanic_model.h5"
+    df = titanic_classification.get_test_df()
+    preprocess, _ = titanic_classification.get_pipeline()
 
-    model_pipeline = joblib.load(cached_download(hf_hub_url(REPO_ID, PIPELINE_FILENAME)))
+    input_shape = (preprocess(df).shape[-1],)
 
-    model_seq = load_model(cached_download(hf_hub_url(REPO_ID, TF_FILENAME)))
-
-    new_data = {
-        "PassengerId": 1191,
-        "Pclass": 1,
-        "Name": "Sherlock Holmes",
-        "Sex": "male",
-        "Age": 30,
-        "SibSp": 0,
-        "Parch": 0,
-        "Ticket": "C.A.29395",
-        "Fare": 12,
-        "Cabin": "F44",
-        "Embarked": "S",
-    }
-    new_data = pd.DataFrame([new_data, new_data])
-
-    def my_preproccessing_function(df):
-        return model_pipeline.transform(df)
-
-    my_model = TensorFlowModel(
-        name=TF_FILENAME,
-        model=model_seq,
-        feature_names=list(new_data.keys()),
-        model_type="classification",
-        classification_labels=["0", "1"],
-        data_preprocessing_function=my_preproccessing_function,
+    model = tf.keras.models.Sequential(
+        [
+            tf.keras.layers.Dense(128, input_shape=input_shape, activation="relu"),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(2, activation="softmax"),
+        ]
     )
 
-    my_test_dataset = Dataset(new_data, name="test dataset")
+    my_model = TensorFlowModel(
+        model,
+        feature_names=df.columns.drop("Survived"),
+        model_type="classification",
+        classification_labels=["no", "yes"],
+        data_preprocessing_function=preprocess,
+    )
+
+    my_test_dataset = Dataset(df, target="Survived", name="test dataset")
+
+    assert my_model.predict(my_test_dataset)
+    assert my_model.predict(my_test_dataset).raw.shape == (len(df), 2)
 
     tests.utils.verify_model_upload(my_model, my_test_dataset)
