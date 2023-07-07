@@ -10,6 +10,7 @@ import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
+from ..client.python_utils import warning
 from ..core.core import ModelType
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
@@ -73,6 +74,7 @@ class PyTorchModel(MLFlowSerializableModel):
         classification_threshold=0.5,
         classification_labels=None,
         iterate_dataset=True,
+        batch_size=1,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -84,12 +86,19 @@ class PyTorchModel(MLFlowSerializableModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            batch_size=batch_size,
             **kwargs,
         )
 
         self.device = device
         self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
+
+        if batch_size == 1 and device.startswith("cuda"):
+            warning(
+                "Your model is running on GPU. We recommend to set a batch "
+                "size greater than 1 to improve performance."
+            )
 
     @classmethod
     def load_model(cls, local_dir):
