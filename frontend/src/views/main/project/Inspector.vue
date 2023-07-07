@@ -166,8 +166,7 @@ const inputMetaData = computed(() => {
     .map(([name, type]) => ({
       name,
       type,
-      values: props.dataset.categoryFeatures ?
-        props.dataset.categoryFeatures[name] : []
+      values: props.dataset.categoryFeatures[name] ?? []
       // Provide an empty list in case of null due to DB migration
     }))
 })
