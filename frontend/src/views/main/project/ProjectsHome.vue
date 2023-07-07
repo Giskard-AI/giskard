@@ -1,7 +1,11 @@
 <template>
   <div>
-    <v-toolbar flat v-show="projects.length > 0">
-      <v-toolbar-title class="text-h6 font-weight-regular secondary--text text--lighten-1">Projects</v-toolbar-title>
+    <v-toolbar flat light v-show="projects.length > 0" class="secondary--text text--lighten-2">
+      <v-toolbar-title class="text-body-1">
+        <router-link to="/main/projects" class="font-weight-bold" id="page-title">
+          Projects
+        </router-link>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn text small @click="loadProjects()" color="secondary">Reload
         <v-icon right>refresh</v-icon>
@@ -175,20 +179,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
-import { ValidationObserver } from "vee-validate";
-import { Role } from "@/enums";
-import { PostImportProjectDTO, ProjectPostDTO } from "@/generated-sources";
-import { toSlug } from "@/utils";
-import { useRoute, useRouter } from "vue-router/composables";
-import moment from "moment";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { api } from "@/api";
-import mixpanel from "mixpanel-browser";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { copyText } from "@/utils";
+import { computed, onMounted, ref, watch } from 'vue';
+import { ValidationObserver } from 'vee-validate';
+import { Role } from '@/enums';
+import { PostImportProjectDTO, ProjectPostDTO } from '@/generated-sources';
+import { copyText, toSlug } from '@/utils';
+import { useRoute, useRouter } from 'vue-router/composables';
+import moment from 'moment';
+import { useUserStore } from '@/stores/user';
+import { useProjectStore } from '@/stores/project';
+import { api } from '@/api';
+import mixpanel from 'mixpanel-browser';
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
 
 const route = useRoute();
 const router = useRouter();
@@ -322,10 +325,7 @@ async function submitNewProject() {
   const proj: ProjectPostDTO = {
     name: newProjectName.value.trim(),
     key: newProjectKey.value!.trim(),
-    description: newProjectDesc.value.trim(),
-    inspectionSettings: {
-      limeNumberSamples: 500
-    }
+    description: newProjectDesc.value.trim()
   };
 
   try {
@@ -370,5 +370,9 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#page-title {
+  font-size: 1.125rem !important;
 }
 </style>

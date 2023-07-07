@@ -172,12 +172,19 @@
                   />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation :modelId="model.id"
-                                   :datasetId="dataset.id"
-                                   :textFeatureNames="textFeatureNames"
-                                   :classificationLabels="model.classificationLabels"
-                                   :classificationResult="classificationResult"
-                                   :inputData="inputData"
+                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION'
+                                   :modelId='model.id'
+                                   :datasetId='dataset.id'
+                                   :textFeatureNames='textFeatureNames'
+                                   :classificationLabels='model.classificationLabels'
+                                   :classificationResult='classificationResult'
+                                   :inputData='inputData'
+                  />
+                  <RegressionTextExplanation v-else
+                                             :modelId='model.id'
+                                             :datasetId='dataset.id'
+                                             :textFeatureNames='textFeatureNames'
+                                             :inputData='inputData'
                   />
                 </v-tab-item>
               </v-tabs>
@@ -191,24 +198,31 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Vue, Watch} from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, ModelDTO} from "@/generated-sources";
-import {isClassification} from "@/ml-utils";
-import mixpanel from "mixpanel-browser";
-import {anonymize} from "@/utils";
+import { DatasetDTO, ModelDTO, ModelType } from '@/generated-sources';
+import { isClassification } from '@/ml-utils';
+import mixpanel from 'mixpanel-browser';
+import { anonymize } from '@/utils';
 import _ from 'lodash';
-import TransformationPopover from "@/components/TransformationPopover.vue";
-import {useCatalogStore} from "@/stores/catalog";
+import TransformationPopover from '@/components/TransformationPopover.vue';
+import { useCatalogStore } from '@/stores/catalog';
+import RegressionTextExplanation from '@/views/main/project/RegressionTextExplanation.vue';
 import PushPopover from "@/components/PushPopover.vue";
 
 @Component({
+  computed: {
+    ModelType() {
+      return ModelType;
+    }
+  },
   components: {
     PushPopover,
+    RegressionTextExplanation,
     TransformationPopover,
     OverlayLoader, PredictionResults, FeedbackPopover, PredictionExplanations, TextExplanation
   }
@@ -249,7 +263,9 @@ export default class Inspector extends Vue {
         .map(([name, type]) => ({
           name,
           type,
-          values: this.dataset.categoryFeatures[name]
+                values: this.dataset.categoryFeatures ?
+                  this.dataset.categoryFeatures[name] : []
+                  // Provide an empty list in case of null due to DB migration
         }))
   }
 

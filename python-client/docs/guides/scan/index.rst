@@ -11,6 +11,7 @@ The Giskard python package provides an automatic scan functionality designed to 
 - `Ethical bias <../../getting-started/key_vulnerabilities/ethics/index.md>`_
 - `Data leakage <../../getting-started/key_vulnerabilities/data_leakage/index.md>`_
 - `Stochasticity <../../getting-started/key_vulnerabilities/stochasticity/index.md>`_
+- `Spurious correlation <../../getting-started/key_vulnerabilities/spurious/index.md>`_
 
 
 With the automatic scan, you can proactively identify and address key vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
@@ -35,14 +36,39 @@ After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_
 
 .. code-block:: python
 
-    from giskard import demo, Model, Dataset, scan
+    import giskard
 
-    model, df = demo.titanic()
+    # Replace this with your own data & model creation.
+    df = giskard.demo.titanic_df()
+    data_preprocessor, clf = giskard.demo.titanic_pipeline()
 
-    wrapped_model = Model(model=model, model_type="classification")
-    wrapped_dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+    # Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
+    giskard_dataset = giskard.Dataset(
+        df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
+        target="Survived",  # Ground truth variable
+        name="Titanic dataset", # Optional
+        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+    )
 
-    scan_results = scan(wrapped_model, wrapped_dataset)
+    # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
+    # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
+    # for classification, regression & text generation.
+    def prediction_function(df):
+        # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
+        preprocessed_df = data_preprocessor(df)
+        return clf.predict_proba(preprocessed_df)
+
+    giskard_model = giskard.Model(
+        model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
+        model_type="classification",  # Either regression, classification or text_generation.
+        name="Titanic model",  # Optional
+        classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+        feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
+        # classification_threshold=0.5,  # Default: 0.5
+    )
+
+    # Then apply the scan
+    scan_results = giskard.scan(giskard_model, giskard_dataset)
 
 Once the scan completes, you can display the results directly in your notebook:
 
@@ -94,6 +120,9 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers. 
     # Create a Giskard client after having installed the Giskard server (see documentation)
+
+    from giskard import GiskardClient
+
     token = "API_TOKEN"  # Find it in Settings in the Giskard server
     client = GiskardClient(
         url="http://localhost:19000",  # URL of your Giskard instance

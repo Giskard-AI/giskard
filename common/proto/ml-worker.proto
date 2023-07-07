@@ -87,7 +87,6 @@ message ExplainTextRequest{
   string feature_name = 2;
   map<string, string> columns = 3;
   map<string, string> column_types = 4;
-  uint32 n_samples = 5;
 }
 
 message ExplainResponse{
