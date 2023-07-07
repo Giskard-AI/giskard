@@ -1,17 +1,18 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSGetInfoDTO;
+import ai.giskard.ml.dto.MLWorkerWSGetInfoParamDTO;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
-import ai.giskard.worker.MLWorkerInfo;
-import ai.giskard.worker.MLWorkerInfoRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Empty;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,33 +32,47 @@ import java.util.concurrent.ExecutionException;
 public class MLWorkerController {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final MLWorkerService mlWorkerService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping()
     public List<MLWorkerInfoDTO> getMLWorkerInfo()
-            throws JsonProcessingException, InvalidProtocolBufferException, ExecutionException, InterruptedException {
-        try (MLWorkerClient internalClient = mlWorkerService.createClientNoError(true);
-                MLWorkerClient externalClient = mlWorkerService.createClientNoError(false)) {
-            List<ListenableFuture<MLWorkerInfo>> awaitableResults = new ArrayList<>();
+            throws JsonProcessingException {
+        List<MLWorkerWSGetInfoDTO> results = new ArrayList<>();
 
-            if (internalClient != null) {
-                awaitableResults.add(internalClient.getFutureStub()
-                        .getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
-            }
-            if (externalClient != null) {
-                awaitableResults.add(externalClient.getFutureStub()
-                        .getInfo(MLWorkerInfoRequest.newBuilder().setListPackages(true).build()));
-            }
+        MLWorkerWSGetInfoParamDTO param = new MLWorkerWSGetInfoParamDTO();
+        param.setListPackages(true);
+        if (mlWorkerWSService.isWorkerConnected(MLWorkerID.INTERNAL)) {
 
-            List<MLWorkerInfo> mlWorkerInfos = Futures.successfulAsList(awaitableResults).get();
-            List<MLWorkerInfoDTO> res = new ArrayList<>();
-            for (MLWorkerInfo info : mlWorkerInfos) {
-                if (info != null) {
-                    res.add(new ObjectMapper().readValue(JsonFormat.printer().print(info), MLWorkerInfoDTO.class));
-                }
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                MLWorkerID.INTERNAL,
+                MLWorkerWSAction.getInfo,
+                param
+            );
+            if (result != null && result instanceof MLWorkerWSGetInfoDTO) {
+                results.add((MLWorkerWSGetInfoDTO)result);
             }
-
-            return res;
         }
+        if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.getInfo,
+                param
+            );
+            if (result != null && result instanceof MLWorkerWSGetInfoDTO) {
+                results.add((MLWorkerWSGetInfoDTO)result);
+            }
+        }
+
+        List<MLWorkerInfoDTO> res = new ArrayList<>();
+        for (MLWorkerWSBaseDTO info : results) {
+            if (info != null) {
+                res.add(new ObjectMapper().readValue(objectMapper.writeValueAsString(info), MLWorkerInfoDTO.class));
+            }
+        }
+
+        return res;
     }
 
     @PostMapping("/stop")

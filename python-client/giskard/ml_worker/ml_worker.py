@@ -39,11 +39,12 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
         logger.info(f"received a message {frame.cmd} {frame.headers} {frame.body}")
         req = json.loads(frame.body)
         if "action" in req.keys():
+            params = req["param"] if "param" in req.keys() else {}
             if req["action"] == "getInfo":
                 logger.info("Collecting ML Worker info from WebSocket")
                 installed_packages = (
                     {p.project_name: p.version for p in pkg_resources.working_set}
-                    if "list_packages" in req.keys() and req["list_packages"]
+                    if "list_packages" in params.keys() and params["list_packages"]
                     else None
                 )
                 current_process = psutil.Process(os.getpid())
