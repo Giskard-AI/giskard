@@ -127,11 +127,21 @@ class ScanResult:
             {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )
 
-    def to_mlflow(self, client=None, run_id=None):
-        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
+    def to_mlflow(self, client=None, run_id=None, summary=True, model_artifact_path=""):
+        results_df = self.to_dataframe()
+        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        if model_artifact_path != "":
+            model_artifact_path = "-for-" + model_artifact_path
+
+        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path+"-", suffix=".html") as f:
             scan_results_filename = f.name
             self.to_html(scan_results_filename)
+
             if client is None and run_id is None:
                 mlflow.log_artifact(scan_results_filename)
+                if summary:
+                    mlflow.log_table(results_df, artifact_file="scan-summary"+model_artifact_path+".json")
             elif client and run_id:
                 client.log_artifact(run_id, scan_results_filename)
+                if summary:
+                    client.log_table(run_id, results_df, artifact_file="scan-summary"+model_artifact_path+".json")
