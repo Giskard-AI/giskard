@@ -18,7 +18,7 @@ from giskard.ml_worker.testing.functions.transformation import keyboard_typo_tra
 
 ## Create your own transformation function
 
-To create a Giskard slicing function, you just need to decorate an existing Python function with `@slicing_function()`. Depending on the argument of the decorator, you can decorate different Python functions filtered by row, dataframe or cell level:
+To create a Giskard transformation function, you just need to decorate an existing Python function with `@transformation_function()`. Depending on the argument of the decorator, you can decorate different Python functions filtered by row, dataframe or cell level:
 
 :::::{tab-set}
 
@@ -48,7 +48,7 @@ transformed_dataset = dataset.transform(my_func2(offset=20))
 When `row_level=False`, you can decorate a function that takes a full **pandas dataframe** as input, and returns a filtered pandas dataframe. Make sure that the first argument of your function corresponds to the pandas dataframe you want to filter:
 
 ```
-from giskard import slicing_function, demo
+from giskard import transformation_function, demo
 import pandas as pd
 
 _, df = demo.titanic()
@@ -69,7 +69,7 @@ transformed_dataset = dataset.transform(my_func1(offset=20))
 When `cell_level=True` (False by default), you can decorate a function that takes as argument a **value** (string, numeric or text), and returns a boolean. Make sure that the first argument of your function corresponds to the value, and that the second argument defines the **column name** where you want to filter the value:
 
 ```
-from giskard import slicing_function, demo
+from giskard import transformation_function, demo
 import pandas as pd
 
 _, df = demo.titanic()

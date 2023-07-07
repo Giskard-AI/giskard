@@ -19,4 +19,5 @@ public class DatasetProcessFunctionDTO extends CallableDTO {
     private String columnType;
     private DatasetProcessFunctionType processType;
     private List<Map<String, Object>> clauses;
+    private String projectKey;
 }

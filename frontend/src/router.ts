@@ -10,7 +10,7 @@ async function routeGuard(to, from, next) {
   const userStore = useUserStore();
   const mainStore = useMainStore();
   if (!mainStore.license) {
-    await exponentialRetry(mainStore.fetchLicense);
+    await mainStore.fetchLicense();
   }
   if (!mainStore.license?.active) {
     if (to.path !== '/setup') {
@@ -125,7 +125,7 @@ export default new Router({
                 },
                 {
                   path: 'feedbacks',
-                  name: 'project-feedbacks',
+                  name: 'project-feedback',
                   component: () => import('./views/main/project/FeedbackList.vue'),
                   props: route => {
                     return { projectId: Number(route.params.id) };
@@ -133,7 +133,7 @@ export default new Router({
                   children: [
                     {
                       path: ':feedbackId',
-                      name: 'feedback-detail',
+                      name: 'project-feedback-detail',
                       component: () => import('./views/main/project/FeedbackDetail.vue'),
                       props: route => {
                         return { id: Number(route.params.feedbackId) };
@@ -154,7 +154,7 @@ export default new Router({
                   children: [
                     {
                       path: ':inspectionId',
-                      name: 'inspection',
+                      name: 'project-debugger-inspection',
                       component: () => import('./views/main/project/InspectorWrapper.vue'),
                       props: route => {
                         return {
@@ -242,7 +242,7 @@ export default new Router({
                 },
                 {
                   path: 'testing/:suiteId',
-                  name: 'test-suite',
+                  name: 'project-testing-test-suite',
                   component: () => import('./views/main/project/TestSuite.vue'),
                   props: route => {
                     return {
@@ -253,7 +253,7 @@ export default new Router({
                   children: [
                     {
                       path: 'overview',
-                      name: 'test-suite-overview',
+                      name: 'project-testing-test-suite-overview',
                       component: () => import('./views/main/project/TestSuiteOverview.vue'),
                       props: route => {
                         return {
@@ -264,7 +264,7 @@ export default new Router({
                     },
                     {
                       path: 'compare-execution',
-                      name: 'test-suite-compare-executions',
+                      name: 'project-testing-test-suite-compare-executions',
                       component: () => import('./views/main/project/TestSuiteCompareExecutions.vue'),
                       props: route => {
                         return {
@@ -277,7 +277,7 @@ export default new Router({
                     },
                     {
                       path: 'execution',
-                      name: 'test-suite-executions',
+                      name: 'project-testing-test-suite-executions',
                       component: () => import('./views/main/project/TestSuiteExecutions.vue'),
                       props: route => {
                         return {
@@ -288,7 +288,7 @@ export default new Router({
                       children: [
                         {
                           path: ':executionId',
-                          name: 'test-suite-execution',
+                          name: 'project-testing-test-suite-execution',
                           component: () => import('./views/main/project/TestSuiteExecution.vue'),
                           props: route => {
                             return {

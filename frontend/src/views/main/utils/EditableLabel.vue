@@ -2,21 +2,20 @@
   <div class="d-flex">
     <div v-show="!editable">{{ label }}</div>
     <v-text-field v-show="editable" v-model="label"></v-text-field>
-    <v-icon class="mode-switch" @click="editable=!editable">edit</v-icon>
+    <v-icon class="mode-switch" @click="editable = !editable">edit</v-icon>
   </div>
-
 </template>
 
-<script lang="ts">
-import Component from "vue-class-component";
-import {Prop, Vue} from "vue-property-decorator";
+<script setup lang="ts">
+import { ref } from 'vue';
 
-@Component
-export default class EditableLabel extends Vue {
-  @Prop() label?: string;
-  editable = false;
-
+interface Props {
+  label?: string;
 }
+
+const props = defineProps<Props>();
+
+const editable = ref(false);
 </script>
 
 <style scoped lang="scss">

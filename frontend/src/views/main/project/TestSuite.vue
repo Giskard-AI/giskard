@@ -10,22 +10,16 @@
             Back to all suites
           </v-btn>
           <v-btn text @click="() => openSettings()"> Edit test suite </v-btn>
-          <v-btn
-            v-if="hasTest"
-            :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }"
-            class="mx-1"
-            color="secondary"
-            outlined
-          >
+          <v-btn v-if="hasTest" :to="{ name: 'project-catalog-tests', query: { suiteId: suiteId } }" class="mx-1" color="secondary" outlined>
             Add test
           </v-btn>
         </div>
         <v-tabs class="pl-3 pr-3 mt-2">
-          <v-tab :to="{ name: 'test-suite-overview' }">
+          <v-tab :to="{ name: 'project-testing-test-suite-overview' }">
             <v-icon class="mr-2">mdi-chart-bar</v-icon>
             <span class="tab-item-text">Report</span>
           </v-tab>
-          <v-tab :to="{ name: 'test-suite-executions' }">
+          <v-tab :to="{ name: 'project-testing-test-suite-executions' }">
             <v-icon class="mr-2">history</v-icon>
             <span class="tab-item-text">Past executions</span>
           </v-tab>
@@ -33,31 +27,9 @@
         <v-row v-if="!hideHeader" class="mt-0 overview-container pl-3 pr-3 pb-3">
           <v-col>
             <div class="d-flex flex-wrap align-center">
-              <v-select
-                v-model="statusFilter"
-                :items="statusFilterOptions"
-                class="mr-4 max-w-150"
-                dense
-                hide-details="auto"
-                item-text="label"
-                label="Test execution status"
-                outlined
-                variant="underlined"
-                @input="handleFilterChanged"
-              >
+              <v-select v-model="statusFilter" :items="statusFilterOptions" class="mr-4 max-w-150" dense hide-details="auto" item-text="label" label="Test execution status" outlined variant="underlined" @input="handleFilterChanged">
               </v-select>
-              <v-text-field
-                v-model="searchFilter"
-                append-icon="search"
-                class="max-w-250"
-                dense
-                hide-details="auto"
-                label="Search test"
-                outlined
-                placeholder="Performance"
-                type="text"
-                @input="handleFilterChanged"
-              ></v-text-field>
+              <v-text-field v-model="searchFilter" append-icon="search" class="max-w-250" dense hide-details="auto" label="Search test" outlined placeholder="Performance" type="text" @input="handleFilterChanged"></v-text-field>
               <div class="flex-grow-1"></div>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
@@ -67,14 +39,7 @@
                 </template>
                 <span>Coming soon</span>
               </v-tooltip>
-              <v-btn
-                v-if="hasTest && hasInput && !hasJobInProgress"
-                class="mx-1"
-                color="primary"
-                large
-                outlined
-                @click="openRunTestSuite(true)"
-              >
+              <v-btn v-if="hasTest && hasInput && !hasJobInProgress" class="mx-1" color="primary" large outlined @click="openRunTestSuite(true)">
                 Compare
               </v-btn>
               <v-btn v-if="hasTest" :loading="hasJobInProgress" class="mx-1" color="primary" large @click="handleRunTestSuite">
@@ -143,7 +108,7 @@ const isMLWorkerConnected = computed(() => {
 
 const displayWorkerInstructions = computed(() => !isMLWorkerConnected.value && openWorkerInstructions.value);
 
-const hideHeader = computed(() => route.name === 'test-suite-configuration');
+const hideHeader = computed(() => route.name === 'project-testing-test-suite-configuration');
 
 async function loadData() {
   await loadTestSuites(props.projectId, props.suiteId);
