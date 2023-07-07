@@ -15,7 +15,7 @@ _default_detectors = [
     ".correlation.spurious_correlation_detector",
     ".llm.toxicity_detector",
     ".llm.gender_bias_detector",
-    ".llm.ethical_bias_detector",
+    ".llm.harmful_prompt_detector",
     ".llm.minority_bias_detector",
     ".llm.prompt_leakage_detector",
 ]
