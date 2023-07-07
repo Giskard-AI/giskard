@@ -30,6 +30,7 @@ def tensorflow_model():
         ]
     )
 
+
 def pyfunc_model():
     import tensorflow as tf
     from tensorflow import keras
@@ -54,7 +55,7 @@ def huggingface_model():
 
 
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
-    giskard_cls = infer_giskard_cls(lambda x: x**2)
+    giskard_cls = infer_giskard_cls(lambda x: x ** 2)
     assert giskard_cls == PredictionFunctionModel
 
     giskard_cls = infer_giskard_cls(german_credit_raw_model)
