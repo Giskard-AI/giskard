@@ -1,7 +1,6 @@
 import mlflow
 import pytest
 
-import giskard.models.sklearn
 from giskard.core.core import SupportedModelTypes
 
 mlflow_model_types = {
