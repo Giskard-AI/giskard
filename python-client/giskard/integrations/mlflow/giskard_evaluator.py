@@ -6,7 +6,7 @@ from giskard.models.automodel import Model
 from giskard.datasets.base import Dataset
 from giskard.scanner import scan
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model_validation import ValidationFlags
+from giskard.core.model_validation import ValidationFlags, validate_model
 
 from mlflow.models.evaluation import ModelEvaluator
 
@@ -52,33 +52,50 @@ class GiskardEvaluator(ModelEvaluator):
         self.run_id = run_id
         self.evaluator_config = evaluator_config
 
-        if isinstance(dataset.features_data, pd.DataFrame):
-            data = dataset.features_data.copy()
-            data[dataset.targets_name] = dataset.labels_data
-            giskard_dataset = Dataset(df=data,
-                                      target=dataset.targets_name,
-                                      name=dataset.name)
+        if not isinstance(dataset.features_data, pd.DataFrame):
+            raise ValueError("Only pd.DataFrame are currently supported by the giskard evaluator.")
         else:
-            raise ValueError("Only pd.DataFrame are currently supported in Giskard.")
+            try:
+                data = dataset.features_data.copy()
+                data[dataset.targets_name] = dataset.labels_data
+                giskard_dataset = Dataset(df=data,
+                                          target=dataset.targets_name,
+                                          name=dataset.name)
 
-        cl = evaluator_config["classification_labels"] if "classification_labels" in self.evaluator_config else None
+                # log dataset
+                giskard_dataset.to_mlflow(client=self.client, run_id=self.run_id)
+            except Exception as e:
+                raise ValueError("An error occurred while wrapping the dataset. "
+                                 "Please submit the traceback to the following GitHub repository for further assistance: "
+                                 "https://github.com/Giskard-AI/giskard.") from e
 
-        giskard_model = PyFuncModel(model=model,
-                                    model_type=gsk_model_types[model_type],
-                                    feature_names=dataset.feature_names,
-                                    classification_labels=cl)
+        try:
+            giskard_model = PyFuncModel(model=model,
+                                        model_type=gsk_model_types[model_type],
+                                        feature_names=dataset.feature_names,
+                                        **evaluator_config)
+        except Exception as e:
+            raise ValueError("An error occurred while wrapping the model. "
+                             "Please submit the traceback to the following GitHub repository for further assistance: "
+                             "https://github.com/Giskard-AI/giskard.") from e
 
-        validation_flags = ValidationFlags()
-        validation_flags.model_loading_and_saving = False
-        scan_results = scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags)
-        test_suite = scan_results.generate_test_suite("scan test suite")
-        test_suite_results = test_suite.run()
+        try:
+            validation_flags = ValidationFlags()
+            validation_flags.model_loading_and_saving = False
+            scan_results = scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags)
 
-        # log dataset
-        giskard_dataset.to_mlflow(client=self.client, run_id=self.run_id)
+            # log html scan result
+            scan_results.to_mlflow(client=self.client, run_id=self.run_id)
+        except Exception as e:
+            raise ValueError("An error occurred while scanning the model for vulnerabilities. "
+                             "Please submit the traceback to the following GitHub repository for further assistance: "
+                             "https://github.com/Giskard-AI/giskard.") from e
 
-        # log html scan result
-        scan_results.to_mlflow(client=self.client, run_id=self.run_id)
+        try:
+            test_suite = scan_results.generate_test_suite("scan test suite")
+            test_suite_results = test_suite.run()
 
-        # log metrics resulting from scan
-        test_suite_results.to_mlflow(client=self.client, run_id=self.run_id)
+            # log metrics resulting from scan
+            test_suite_results.to_mlflow(client=self.client, run_id=self.run_id)
+        except Exception:  # noqa
+            pass
