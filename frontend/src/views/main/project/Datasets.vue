@@ -1,14 +1,19 @@
 <template>
   <div class="vertical-container">
-    <div class="d-flex mb-6">
-      <v-spacer></v-spacer>
-      <div class="mr-2">
-        <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
-          add a dataset
-          <v-icon right>mdi-open-in-new</v-icon>
-        </v-btn>
-      </div>
-    </div>
+    <v-row class="mt-2 pl-3">
+      <v-col cols='4'>
+        <v-text-field v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+      </v-col>
+      <v-col cols="8">
+        <div class="d-flex justify-end mb-6">
+          <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="mr-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
+            add a dataset
+            <v-icon right>mdi-open-in-new</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
+
     <LoadingFullscreen v-if="isLoading" name="datasets" />
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
@@ -20,7 +25,7 @@
           <v-col cols="1" class="col-container">Id</v-col>
           <v-col cols="2" class="col-container">Actions</v-col>
         </v-row>
-        <v-expansion-panel v-for="f in projectArtifactsStore.datasets" :key="f.id">
+        <v-expansion-panel v-for="f in filteredDatasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold" :title="f.name ? f.name : f.id">
@@ -112,6 +117,17 @@ const isLoading = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+const searchDataset = ref<string>('');
+
+const filteredDatasets = computed(() => {
+  return projectArtifactsStore.datasets.filter((dataset) => {
+    const search = searchDataset.value.toLowerCase();
+    return (
+      dataset.name.toLowerCase().includes(search) ||
+      dataset.id.toString().includes(search)
+    );
+  });
+});
 
 const project = computed(() => {
   return projectStore.project(props.projectId)

@@ -1,14 +1,18 @@
 <template>
   <div class="vertical-container">
-    <div class="d-flex mb-6">
-      <v-spacer></v-spacer>
-      <div class="mr-2">
-        <v-btn v-if="projectArtifactsStore.models.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
-          add a model
-          <v-icon right>mdi-open-in-new</v-icon>
-        </v-btn>
-      </div>
-    </div>
+    <v-row class="mt-2 pl-3">
+      <v-col cols='4'>
+        <v-text-field v-model='searchModel' append-icon='search' label='Search for a model' outlined></v-text-field>
+      </v-col>
+      <v-col cols="8">
+        <div class="d-flex justify-end mb-6">
+          <v-btn v-if="projectArtifactsStore.models.length > 0" class="mr-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
+            add a model
+            <v-icon right>mdi-open-in-new</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     <LoadingFullscreen v-if="isLoading" name="models" />
     <v-container v-if="projectArtifactsStore.models.length > 0 && !isLoading" fluid class="vc">
       <v-card flat>
@@ -21,7 +25,7 @@
           <v-col cols="3" class="col-container">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card class="grey lighten-5" v-for="m in        projectArtifactsStore.models      " :key="m.id" outlined tiled>
+      <v-card class="grey lighten-5" v-for="m in filteredModels" :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
           <v-col cols="3" class="font-weight-bold" :title="m.name">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -141,6 +145,17 @@ const props = defineProps<Props>();
 const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
+const searchModel = ref<string>('');
+
+const filteredModels = computed(() => {
+  return projectArtifactsStore.models.filter((model) => {
+    const search = searchModel.value.toLowerCase();
+    return (
+      model.name.toLowerCase().includes(search) ||
+      model.id.toString().includes(search)
+    );
+  });
+});
 
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;

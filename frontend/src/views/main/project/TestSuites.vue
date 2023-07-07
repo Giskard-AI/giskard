@@ -318,7 +318,7 @@ async function createTestSuite() {
     );
 
     await testSuitesStore.reload()
-    await router.push({ name: 'test-suite-overview', params: { suiteId: suite.toString() } });
+    await router.push({ name: 'project-testing-test-suite-overview', params: { suiteId: suite.toString() } });
 }
 
 async function openTestSuite(suiteId: number | null | undefined) {
@@ -335,7 +335,7 @@ async function openTestSuite(suiteId: number | null | undefined) {
 
 async function redirectToTestSuite(projectId: string, suiteId: string) {
     await router.push({
-        name: 'test-suite-overview',
+        name: 'project-testing-test-suite-overview',
         params: {
             projectId,
             suiteId
