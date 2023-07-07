@@ -23,16 +23,16 @@ class SKLearnModel(MLFlowBasedModel):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Constructs an instance of the SKLearnModel class with the provided arguments.
@@ -95,3 +95,11 @@ class SKLearnModel(MLFlowBasedModel):
             return self.model.predict(df)
         else:
             return self.model.predict_proba(df)
+
+    def to_mlflow(self,
+                  artifact_path="sklearn-model-from-giskard",
+                  pyfunc_predict_fn="predict_proba",
+                  **kwargs):
+        return mlflow.sklearn.log_model(sk_model=self.model, artifact_path=artifact_path,
+                                        pyfunc_predict_fn=pyfunc_predict_fn,
+                                        **kwargs)

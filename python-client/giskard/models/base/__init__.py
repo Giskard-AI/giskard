@@ -488,6 +488,9 @@ class BaseModel(ABC):
                 f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
             )
 
+    def to_mlflow(self):
+        raise NotImplementedError
+
 
 class WrapperModel(BaseModel, ABC):
     """
@@ -764,6 +767,18 @@ class CloudpickleBasedModel(WrapperModel, ABC):
                 "We couldn't load your model with cloudpickle. Please provide us with your own "
                 "serialisation method by overriding the save_model() and load_model() methods."
             )
+
+    def to_mlflow(self,
+                  artifact_path="prediction-function-from-giskard",
+                  **kwargs):
+        import mlflow
+
+        class MLflowModel(mlflow.pyfunc.PythonModel):
+            def predict(self, df):
+                return self.predict(df)
+
+        mlflow_model = MLflowModel()
+        return mlflow.pyfunc.log_model(artifact_path=artifact_path, python_model=mlflow_model)
 
 
 class CustomModel(BaseModel, ABC):

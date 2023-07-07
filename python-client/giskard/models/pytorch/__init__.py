@@ -70,19 +70,19 @@ class PyTorchModel(MLFlowBasedModel):
     """
 
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        torch_dtype: TorchDType = "float32",
-        device="cpu",
-        name: Optional[str] = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-        iterate_dataset=True,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            torch_dtype: TorchDType = "float32",
+            device="cpu",
+            name: Optional[str] = None,
+            data_preprocessing_function=None,
+            model_postprocessing_function=None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
+            iterate_dataset=True,
+            **kwargs,
     ) -> None:
         super().__init__(
             model=model,
@@ -191,6 +191,9 @@ class PyTorchModel(MLFlowBasedModel):
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
             )
+
+    def to_mlflow(self, artifact_path="pytorch-model-from-giskard", **kwargs):
+        return mlflow.pytorch.log_model(self.model, artifact_path, **kwargs)
 
 
 def _get_dataset_from_dataloader(dl: DataLoader):

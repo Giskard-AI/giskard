@@ -38,16 +38,16 @@ class HuggingFaceModel(WrapperModel):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         """
         Initializes an instance of a HuggingFaceModel with the provided arguments and sets necessary attributes.
@@ -144,3 +144,7 @@ class HuggingFaceModel(WrapperModel):
             return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
 
         return self.model(**data)
+
+    def to_mlflow(self, artifact_path="transformers-model-from-giskard", **kwargs):
+        import mlflow
+        return mlflow.transformers.log_model(self.model, artifact_path, **kwargs)
