@@ -5,10 +5,8 @@ import ai.giskard.ml.MLWorkerID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.Block;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +17,7 @@ public class MLWorkerWSService {
     private final Logger log = LoggerFactory.getLogger(MLWorkerWSService.class.getName());
     private final ApplicationProperties applicationProperties;
 
-    private final HashMap<String, String> workers = new HashMap<String, String>();
+    private final ConcurrentHashMap<String, String> workers = new ConcurrentHashMap<>();
     private String potentialInternalWorkerId;
 
     private ConcurrentHashMap<String, BlockingQueue<String>> messagePool = new ConcurrentHashMap<>();
@@ -99,5 +97,9 @@ public class MLWorkerWSService {
         if (oneShotMessagePool.containsKey(repId)) {
             oneShotMessagePool.remove(repId);
         }
+    }
+
+    public boolean isWorkerConnected(MLWorkerID workerID) {
+        return workers.containsKey(workerID.toString());
     }
 }
