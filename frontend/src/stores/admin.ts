@@ -89,6 +89,27 @@ export const useAdminStore = defineStore('admin', {
                 await api.disableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
+                mainStore.addNotification({ content: 'Successfully disabled', color: TYPE.SUCCESS });
+
+                // If we disabled ourselves, we want to logout as our user no longer exists.
+                if (userStore.userProfile?.id === user.id) {
+                    await userStore.logout();
+                }
+            } catch (error) {
+                await mainStore.checkApiError(error);
+                throw new Error(error.response.data.detail);
+            }
+        },
+
+        async deleteUser(user: AdminUserDTOWithPassword) {
+            const mainStore = useMainStore();
+            const userStore = useUserStore();
+            const loadingNotification = { content: 'Deleting', showProgress: true };
+            try {
+                mainStore.addNotification(loadingNotification);
+                await api.deleteUser(user.user_id!);
+                await this.getUsers();
+                mainStore.removeNotification(loadingNotification);
                 mainStore.addNotification({ content: 'Successfully deleted', color: TYPE.SUCCESS });
 
                 // If we deleted ourselves, we want to logout as our user no longer exists.
@@ -103,13 +124,13 @@ export const useAdminStore = defineStore('admin', {
 
         async enableUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
-            const loadingNotification = {content: 'Saving', showProgress: true};
+            const loadingNotification = { content: 'Saving', showProgress: true };
             try {
                 mainStore.addNotification(loadingNotification);
                 await api.enableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Successfully restored', color: TYPE.SUCCESS});
+                mainStore.addNotification({ content: 'Successfully restored', color: TYPE.SUCCESS });
             } catch (error) {
                 await mainStore.checkApiError(error);
                 throw new Error(error.response.data.detail);

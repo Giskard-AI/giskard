@@ -46,15 +46,18 @@
           <v-icon v-if="item.enabled">checkmark</v-icon>
           <v-icon v-else>close</v-icon>
         </template>
-        <template v-slot:item.action="{item}" v-slot:item.id="{item}">
-          <v-btn icon slot="activator" :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
-            <v-icon color="primary">edit</v-icon>
+        <template v-slot:item.action='{item}' v-slot:item.id='{item}'>
+          <v-btn icon slot='activator' :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
+            <v-icon color='primary'>edit</v-icon>
           </v-btn>
           <v-btn v-if='item.enabled' icon @click='disableUser(item)'>
             <v-icon color='accent'>delete</v-icon>
           </v-btn>
-          <v-btn v-else icon @click="enableUser(item)">
-            <v-icon color="warning">restore</v-icon>
+          <v-btn v-else icon @click='enableUser(item)'>
+            <v-icon color='warning'>restore</v-icon>
+          </v-btn>
+          <v-btn v-if='!item.enabled' icon @click='deleteUser(item)'>
+            <v-icon color='accent'>delete</v-icon>
           </v-btn>
         </template>
       </v-data-table>
@@ -133,10 +136,14 @@ const canAddUsers = computed(() => {
 
 onMounted(async () => {
   await adminStore.getUsers();
-})
+});
 
 async function disableUser(user: AdminUserDTOWithPassword) {
   await adminStore.disableUser(user);
+}
+
+async function deleteUser(user: AdminUserDTOWithPassword) {
+  await adminStore.deleteUser(user);
 }
 
 async function enableUser(user: AdminUserDTOWithPassword) {
