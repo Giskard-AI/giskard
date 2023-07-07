@@ -59,8 +59,6 @@ class TorchMinimalDataset(torch_dataset):
 
 
 class PyTorchModel(MLFlowSerializableModel):
-    """Automatically wraps a PyTorch model into a Giskard model."""
-
     def __init__(
         self,
         model,
@@ -77,6 +75,43 @@ class PyTorchModel(MLFlowSerializableModel):
         batch_size=1,
         **kwargs,
     ) -> None:
+        """Automatically wraps a PyTorch model.
+
+        This class provides a default wrapper around the PyTorch library for usage with Giskard.
+
+        Parameters
+        ----------
+        model : Any
+            The PyTorch model to wrap.
+        model_type : ModelType
+            The type of the model, either ``regression`` or ``classification``.
+        torch_dtype : TorchDType, optional
+            The data type to use for the input data. Default is "float32".
+        device : str, optional
+            The device to use for the model. We will ensure that the model is on
+            this device before running the inference. Default is "cpu". Make
+            sure that your ``data_preprocessing_function`` returns tensors on
+            the same device.
+        name : str, optional
+            A name for the wrapper. Default is ``None``.
+        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+            A function that will be applied to incoming data, before passing
+            them to the model. You may want use this to convert the data to
+            tensors. Default is ``None``.
+        model_postprocessing_function : Callable[[Any], Any], optional
+            A function that will be applied to the model's predictions. Default
+            is ``None``.
+        feature_names : Optional[Iterable], optional
+            A list of feature names. Default is ``None``.
+        classification_threshold : float, optional
+            The probability threshold for classification. Default is 0.5.
+        classification_labels : Optional[Iterable], optional
+            A list of classification labels. Default is ``None``.
+        iterate_dataset : bool, optional
+            Whether to iterate over the dataset. Default is ``True``.
+        batch_size : int, optional
+            The batch size to use for inference. Default is 1.
+        """
         super().__init__(
             model=model,
             model_type=model_type,
