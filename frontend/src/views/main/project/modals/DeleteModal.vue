@@ -1,13 +1,9 @@
 <template>
-  <v-dialog
-      v-model="dialogOpened"
-      width="500"
-  >
+  <v-dialog v-model="dialogOpened" width="500">
     <template v-slot:activator="{ on, attrs }">
       <v-tooltip bottom>
         <template v-slot:activator="{ onTooltip, attrsTooltip }" v-bind="attrs" v-on="on">
-          <v-btn icon color="accent" @click.stop="openModal()"
-                 v-bind="attrsTooltip" v-on="onTooltip">
+          <v-btn icon color="accent" @click.stop="openModal()" v-bind="attrsTooltip" v-on="onTooltip">
             <v-icon>delete</v-icon>
           </v-btn>
         </template>
@@ -41,8 +37,8 @@
           <v-col>
             <div v-if="usage.totalUsage">Are you sure you want to delete it?</div>
             <div v-else>Are you sure you want to delete {{ type }} <span class="font-weight-bold">{{
-                fileName
-              }}</span>?
+              fileName
+            }}</span>?
             </div>
           </v-col>
         </v-row>
@@ -51,7 +47,7 @@
         Loading information about {{ props.type }}...
       </v-card-text>
       <v-card-actions>
-        <v-spacer/>
+        <v-spacer />
         <v-btn color="primary" @click="dialogOpened = false; $emit('submit', true)">Delete</v-btn>
       </v-card-actions>
     </v-card>
@@ -59,10 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
-import {api} from "@/api";
-import {capitalize} from "@vue/shared";
-import {PrepareDeleteDTO} from "@/generated-sources";
+import { ref } from "vue";
+import { api } from "@/api";
+import { capitalize } from "@vue/shared";
+import { PrepareDeleteDTO } from "@/generated-sources";
 import router from "@/router";
 
 const emit = defineEmits(['submit'])
@@ -89,7 +85,7 @@ function openSuite(suite: PrepareDeleteDTO.LightTestSuite) {
 
 function openFeedback(feedback: PrepareDeleteDTO.LightFeedback) {
   router.push({
-    name: "feedback-detail",
+    name: "project-feedback-detail",
     params: {
       feedbackId: feedback.id.toString(),
       projectId: feedback.projectId.toString()
