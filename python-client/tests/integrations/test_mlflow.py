@@ -4,6 +4,7 @@ import pytest
 def test_sklearn():
     from giskard import demo
     model, df = demo.titanic()
+    mlflow.end_run()
     mlflow.start_run()
     model_uri = mlflow.sklearn.log_model(model, "sklearn_model", pyfunc_predict_fn="predict_proba").model_uri
 
