@@ -105,20 +105,8 @@
                   <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout" />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION'
-                                   :modelId='model.id'
-                                   :datasetId='dataset.id'
-                                   :textFeatureNames='textFeatureNames'
-                                   :classificationLabels='model.classificationLabels'
-                                   :classificationResult='classificationResult'
-                                   :inputData='inputData'
-                  />
-                  <RegressionTextExplanation v-else
-                                             :modelId='model.id'
-                                             :datasetId='dataset.id'
-                                             :textFeatureNames='textFeatureNames'
-                                             :inputData='inputData'
-                  />
+                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :classificationLabels='model.classificationLabels' :classificationResult='classificationResult' :inputData='inputData' />
+                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :inputData='inputData' />
                 </v-tab-item>
               </v-tabs>
             </v-card-text>
@@ -160,12 +148,13 @@ const props = withDefaults(defineProps<Props>(), {
   isMiniMode: false
 })
 
+const debouncingTimeout: number = 500;
+
 const loadingData = ref(false);
 const featuresToView = ref<string[]>([])
 const errorLoadingMetadata = ref("")
 const dataErrorMsg = ref("")
 const classificationResult = ref("")
-const debouncingTimeout = ref(500);
 const dataFormObserver = ref(null);
 
 const inputMetaData = computed(() => {
