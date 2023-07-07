@@ -14,7 +14,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 
 @dataclass
@@ -29,6 +29,10 @@ class ValidationFlags:
     model_execution: bool = True
     label_with_target: bool = True
     order_classifcation_labels: bool = True
+
+    def deactivate_all(self):
+        for field in fields(self):
+            setattr(self, field.name, False)
 
 
 @configured_validate_arguments
@@ -61,12 +65,12 @@ def _do_validate_model(model: BaseModel,
         model = validate_model_loading_and_saving(model)
 
     if isinstance(model, WrapperModel) \
-            and model.data_preprocessing_function is not None\
+            and model.data_preprocessing_function is not None \
             and validation_flags.data_preprocessing_function:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
     if isinstance(model, WrapperModel) \
-            and model.model_postprocessing_function is not None\
+            and model.model_postprocessing_function is not None \
             and validation_flags.model_postprocessing_function:
         validate_model_postprocessing_function(model.model_postprocessing_function)
 
@@ -101,7 +105,7 @@ def _do_validate_model(model: BaseModel,
                 validate_model_execution(model, validate_ds)
 
         if model.meta.model_type == SupportedModelTypes.CLASSIFICATION \
-                and validate_ds.target is not None\
+                and validate_ds.target is not None \
                 and validation_flags.order_classifcation_labels:
             validate_order_classifcation_labels(model, validate_ds)
 
