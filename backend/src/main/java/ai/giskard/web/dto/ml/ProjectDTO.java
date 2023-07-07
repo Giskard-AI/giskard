@@ -1,6 +1,5 @@
 package ai.giskard.web.dto.ml;
 
-import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.MLWorkerType;
 import ai.giskard.web.dto.user.UserDTO;
 import com.dataiku.j2ts.annotations.UIModel;
@@ -26,6 +25,5 @@ public class ProjectDTO {
     private String description;
     private List<UserDTO> guests;
     private Instant createdDate;
-    private InspectionSettings inspectionSettings;
     private MLWorkerType mlWorkerType;
 }
