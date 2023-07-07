@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -19,4 +20,5 @@ public class ApplyPushDTO {
     private int rowIdx;
     private PushKind pushKind;
     private CallToActionKind ctaKind;
+    private Map<String, String> features;
 }

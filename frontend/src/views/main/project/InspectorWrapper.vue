@@ -155,6 +155,7 @@ import {$vfm} from "vue-final-modal";
 import BlockingLoadingModal from "@/views/main/project/modals/BlockingLoadingModal.vue";
 import {confirm} from "@/utils/confirmation.utils";
 import {usePushStore} from "@/stores/push";
+import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 
 interface CreatedFeedbackCommonDTO {
   targetFeature?: string | null;
@@ -193,11 +194,7 @@ const filter = ref<Filter>({
   type: RowFilterType.ALL
 });
 
-const selectedSlicingFunction = ref<Partial<ParameterizedCallableDTO>>({
-  uuid: undefined,
-  params: [],
-  type: 'SLICING'
-});
+const {selectedSlicingFunction} = storeToRefs(useDebuggingSessionsStore())
 
 const dataProcessingResult = ref<DatasetProcessingResultDTO | null>(null);
 
@@ -386,6 +383,11 @@ watch(() => props.inspectionId, async (nv, ov) => {
     await init();
   }
 });
+
+watch(() => selectedSlicingFunction.value, async () => {
+  console.log("watch updated");
+  await processDataset();
+})
 
 async function processDataset() {
   const pipeline = [selectedSlicingFunction.value, ...transformationPipeline.value]

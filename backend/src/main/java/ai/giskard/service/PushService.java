@@ -6,6 +6,8 @@ import ai.giskard.worker.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 //@Transactional
 @RequiredArgsConstructor
@@ -16,7 +18,8 @@ public class PushService {
     private final GRPCMapper grpcMapper;
 
     // Applying a push suggestion should always return the ID of the created object :)
-    public String applyPushSuggestion(String projectKey, ArtifactRef model, ArtifactRef dataset, int idx, PushKind pushKind, CallToActionKind callToActionKind) {
+    public String applyPushSuggestion(String projectKey, ArtifactRef model, ArtifactRef dataset, int idx,
+                                      PushKind pushKind, CallToActionKind callToActionKind, Map<String, String> features) {
         try (MLWorkerClient client = mlWorkerService.createClient(false)) {
             SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(SuggestFilterRequest.newBuilder()
                 .setDataset(dataset)

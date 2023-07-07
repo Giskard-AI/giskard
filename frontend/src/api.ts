@@ -499,13 +499,14 @@ export const api = {
             features: features
         });
     },
-    async applyPush(modelId: string, datasetId: string, idx: number, pushKind: string, ctaKind: string) {
+    async applyPush(modelId: string, datasetId: string, idx: number, pushKind: string, ctaKind: string, features: any) {
         return apiV2.post<ApplyPushDTO, void>(`/push/apply`, {
             modelId,
             datasetId,
             rowIdx: idx,
             pushKind: pushKind,
-            ctaKind: ctaKind
+            ctaKind: ctaKind,
+            features: features
         });
     },
 };

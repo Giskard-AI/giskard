@@ -101,14 +101,37 @@ public class PushController {
         ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
         ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
 
-        return pushService.applyPushSuggestion(
-            project.getKey(),
-            modelRef,
-            datasetRef,
-            applyPushDTO.getRowIdx(),
-            applyPushDTO.getPushKind(),
-            applyPushDTO.getCtaKind()
-        );
+        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
+            SuggestFilterRequest.Builder requestBuilder = SuggestFilterRequest.newBuilder()
+                .setDataset(datasetRef)
+                .setModel(modelRef)
+                .setRowidx(applyPushDTO.getRowIdx())
+                .setCtaKind(applyPushDTO.getCtaKind())
+                .setPushKind(applyPushDTO.getPushKind())
+                .setProjectKey(project.getKey())
+                .setDataframe(
+                    DataFrame.newBuilder()
+                        .addRows(DataRow.newBuilder().putAllColumns(
+                            applyPushDTO.getFeatures().entrySet().stream()
+                                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                        ))
+                        .build()
+                );
+
+            if (dataset.getTarget() != null) {
+                requestBuilder.setTarget(dataset.getTarget());
+            }
+            if (dataset.getColumnTypes() != null) {
+                requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            }
+            if (dataset.getColumnDtypes() != null) {
+                requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
+            }
+
+            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(requestBuilder.build());
+            return resp.getObjectUuid();
+        }
     }
 
     // Probably move this to a util class.

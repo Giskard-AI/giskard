@@ -18,7 +18,9 @@ interface Pushes {
 interface PushIdentifier {
     modelId: string,
     datasetId: string,
-    rowNb: number
+    rowNb: number,
+    inputData: any,
+    modelFeatures: string[]
 }
 
 export const usePushStore = defineStore('push', {
@@ -30,27 +32,29 @@ export const usePushStore = defineStore('push', {
     getters: {},
     actions: {
         async fetchPushSuggestions(modelId: string, datasetId: string, rowNb: number, inputData: any, modelFeatures: string[]) {
-            this.identifier = {modelId, datasetId, rowNb};
+            this.identifier = {modelId, datasetId, rowNb, inputData, modelFeatures};
             this.current = undefined;
 
-            if (!this.pushes[modelId]) {
-                this.pushes[modelId] = {};
-            }
-            if (!this.pushes[modelId][datasetId]) {
-                this.pushes[modelId][datasetId] = {};
-            }
+            // if (!this.pushes[modelId]) {
+            //     this.pushes[modelId] = {};
+            // }
+            // if (!this.pushes[modelId][datasetId]) {
+            //     this.pushes[modelId][datasetId] = {};
+            // }
+            //
+            // if (!this.pushes[modelId][datasetId][rowNb]) {
+            //     // @ts-ignore
+            //     this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb, inputData);
+            // }
 
-            if (!this.pushes[modelId][datasetId][rowNb]) {
-                // @ts-ignore
-                this.pushes[modelId][datasetId][rowNb] = await api.getPushes(modelId, datasetId, rowNb, inputData, []);
-            }
-
-            this.current = this.pushes[modelId][datasetId][rowNb];
-            return this.pushes[modelId][datasetId][rowNb];
+            // @ts-ignore
+            this.current = await api.getPushes(modelId, datasetId, rowNb, inputData);
+            return this.current;
         },
-        async applyPush(pushKind: string, ctaKind: string) {
-            let result = await api.applyPush(this.identifier!.modelId, this.identifier!.datasetId, this.identifier!.rowNb, pushKind, ctaKind);
-            console.log(result);
+        async applyPush(pushKind: string, ctaKind: string): Promise<string> {
+            let result = await api.applyPush(this.identifier!.modelId, this.identifier!.datasetId, this.identifier!.rowNb, pushKind, ctaKind, this.identifier!.inputData);
+            // @ts-ignore
+            return result;
         }
     }
 })

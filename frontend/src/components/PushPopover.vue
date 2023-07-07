@@ -60,10 +60,17 @@ import {computed, ref} from 'vue';
 import {usePushStore} from "@/stores/push";
 import {useMainStore} from "@/stores/main";
 import {useCatalogStore} from "@/stores/catalog";
+import {storeToRefs} from "pinia";
+import {useProjectStore} from "@/stores/project";
+import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 
 const pushStore = usePushStore();
 const mainStore = useMainStore();
+const {slicingFunctionsByUuid} = storeToRefs(useCatalogStore())
 const catalogStore = useCatalogStore();
+const projectStore = useProjectStore();
+const debuggingStore = useDebuggingSessionsStore();
+
 //:modelFeatures="modelFeatures"
 //:inputData="inputData"
 const props = defineProps({
@@ -124,7 +131,9 @@ const icon = computed(() => {
 async function applyCta(kind: string) {
   loading.value = kind;
   // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
+  // @ts-ignore
   let uuid = await pushStore.applyPush(push.value!.kind, kind);
+
 
   switch (kind) {
     case "CreateSlice":
@@ -132,9 +141,16 @@ async function applyCta(kind: string) {
       mainStore.addSimpleNotification("Successfully saved");
       break;
     case "CreateSliceOpenDebugger":
-      await catalogStore.loadCatalog(7); // TODO: Fix
-      // TODO: Figure out how to load a slice from here
-      mainStore.addSimpleNotification("Slice applied");
+      await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
+      const slice = slicingFunctionsByUuid.value[uuid];
+      if (slice !== undefined) {
+        console.log("Setting object")
+        debuggingStore.setCurrentSlicingFunctionUuid(uuid);
+        // TODO: Figure out how to load a slice from here
+        mainStore.addSimpleNotification("Slice applied");
+      } else {
+        // Error slice not found
+      }
       break;
     case "CreateTest":
       mainStore.addSimpleNotification("Test created, add it to a test suite?");
@@ -146,6 +162,7 @@ async function applyCta(kind: string) {
       break;
   }
   loading.value = "";
+  opened.value = false;
 }
 </script>
 
