@@ -98,8 +98,11 @@ class SKLearnModel(MLFlowBasedModel):
 
     def to_mlflow(self,
                   artifact_path="sklearn-model-from-giskard",
-                  pyfunc_predict_fn="predict_proba",
                   **kwargs):
+        if self.is_classification:
+            pyfunc_predict_fn = "predict_proba"
+        elif self.is_regression:
+            pyfunc_predict_fn = "predict"
         return mlflow.sklearn.log_model(sk_model=self.model, artifact_path=artifact_path,
                                         pyfunc_predict_fn=pyfunc_predict_fn,
                                         **kwargs)
