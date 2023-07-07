@@ -1,5 +1,5 @@
 <template>
-    <div class="vc mt-2 pb-0" v-if="catalog">
+    <div class="vc pb-0" v-if="catalog">
         <div>
             <v-btn text outlined color="primary" class="ma-1 rounded-pill tab" :to="{ name: 'project-catalog-datasets' }" @click="trackTabChange('project-catalog-datasets')">
                 <v-icon left small class="mr-1">mdi-database</v-icon>
@@ -88,5 +88,11 @@ onDeactivated(() => {
 
 .v-btn--active.tab {
     border-color: #087038 !important;
+}
+
+::v-deep .v-toolbar__content {
+    padding-left: 4px !important;
+    display: inline-flex;
+    flex-direction: column;
 }
 </style>
