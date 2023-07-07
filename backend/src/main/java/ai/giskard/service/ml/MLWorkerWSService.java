@@ -5,9 +5,11 @@ import ai.giskard.ml.MLWorkerID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Block;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,6 +23,7 @@ public class MLWorkerWSService {
     private String potentialInternalWorkerId;
 
     private ConcurrentHashMap<String, BlockingQueue<String>> messagePool = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, BlockingQueue<String>> oneShotMessagePool = new ConcurrentHashMap<>();
 
     public boolean prepareInternalWorker(String uuid) {
         if (potentialInternalWorkerId != null && uuid != potentialInternalWorkerId) return false;
@@ -64,12 +67,37 @@ public class MLWorkerWSService {
     }
 
     public void attachResult(String repId, String result) {
+        if (oneShotMessagePool.containsKey(repId)) {
+            oneShotMessagePool.remove(repId).offer(result);
+            return;
+        }
         if (messagePool.containsKey(repId)) {
-            messagePool.get(repId).offer(result);
+            BlockingQueue<String> bq = messagePool.get(repId);
+            // Only keeps the newest
+            if (!bq.isEmpty()) {
+                bq.remove();
+            }
+            bq.offer(result);
         }
     }
 
-    public void registerResultWaiter(String repId, BlockingQueue<String> queue) {
-        messagePool.put(repId, queue);
+    public BlockingQueue<String> getResultWaiter(String repId, boolean isOneShot) {
+        BlockingQueue<String> bq = new ArrayBlockingQueue<>(1);
+        if (isOneShot)
+            oneShotMessagePool.put(repId, bq);
+        else
+            messagePool.put(repId, bq);
+        return bq;
+    }
+
+    public void removeResultWaiter(String repId) {
+        if (messagePool.containsKey(repId)) {
+            messagePool.remove(repId);
+            return;
+        }
+
+        if (oneShotMessagePool.containsKey(repId)) {
+            oneShotMessagePool.remove(repId);
+        }
     }
 }
