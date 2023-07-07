@@ -24,20 +24,26 @@ public class SlicingFunctionController {
     private final SlicingFunctionRepository slicingFunctionRepository;
     private final SlicingFunctionService slicingFunctionService;
 
-    @GetMapping("/slices/{uuid}")
+    @GetMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
     @Transactional(readOnly = true)
-    public SlicingFunctionDTO getSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid) {
+    public SlicingFunctionDTO getSlicingFunction(
+        @PathVariable(value = "projectKey", required = false) String projectKey,
+        @PathVariable("uuid") @NotNull UUID uuid) {
+        // TODO GSK-1280: add projectKey to slicing function
         return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping("/slices/{uuid}")
-    public SlicingFunctionDTO updateSlicingFunction(@PathVariable("uuid") @NotNull UUID uuid,
+    @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
+        slicingFunction.setProjectKey(projectKey);
         return slicingFunctionService.save(slicingFunction);
     }
 
-    @PostMapping("/slices/no-code")
-    public SlicingFunctionDTO updateSlicingFunction(@Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
+    @PostMapping("project/{projectKey}/slices/no-code")
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable("projectKey") @NotNull String projectKey,
+                                                    @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
+        // TODO GSK-1280: add projectKey to slicing function
         return slicingFunctionService.generate(comparisonClauses);
     }
 

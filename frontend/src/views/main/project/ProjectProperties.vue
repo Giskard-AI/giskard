@@ -1,16 +1,16 @@
 <template>
   <v-container fluid class="font-weight-light mt-3">
     <v-row>
-      <v-col cols="9">
-        <v-card height="100%" outlined>
-          <v-card-title class="font-weight-light secondary--text py-1 mt-2">
+      <v-col cols='12'>
+        <v-card height='100%' outlined>
+          <v-card-title class='font-weight-light secondary--text py-1 mt-2'>
             Project Settings
             <v-spacer></v-spacer>
-            <v-btn text @click="exportProject(project.id)">
-              <v-icon left color="primary">mdi-application-export</v-icon>
+            <v-btn text @click='exportProject(project.id)'>
+              <v-icon left color='primary'>mdi-application-export</v-icon>
               Export
             </v-btn>
-            <v-btn class="ml-2" color="accent" text @click="openDeleteDialog = true" v-if="isProjectOwnerOrAdmin">
+            <v-btn class='ml-2' color='accent' text @click='openDeleteDialog = true' v-if='isProjectOwnerOrAdmin'>
               <v-icon left>delete</v-icon>
               Delete
             </v-btn>
@@ -81,25 +81,6 @@
           </v-card-text>
         </v-card>
       </v-col>
-
-      <v-col cols="3">
-        <v-card height="100%" outlined>
-          <v-card-title class="font-weight-light secondary--text">
-            Explanation Properties
-          </v-card-title>
-          <v-card-text>
-            <v-simple-table class="properties-table">
-              <tr>
-                <td>LIME Number Samples:</td>
-                <td>
-                  <InlineEditText :text="project.inspectionSettings.limeNumberSamples.toString()" editText="Change" @save="renameLimeNumberSamples" :canEdit="true">
-                  </InlineEditText>
-                </td>
-              </tr>
-            </v-simple-table>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
 
     <v-dialog persistent max-width="340" v-model="openDeleteDialog">
@@ -121,17 +102,16 @@
 </template>
 
 <script setup lang="ts">
-import { getUserFullDisplayName } from '@/utils';
+import { copyText, getUserFullDisplayName } from '@/utils';
 import { IUserProfileMinimal } from '@/interfaces';
-import mixpanel from "mixpanel-browser";
-import { useProjectStore } from "@/stores/project";
+import mixpanel from 'mixpanel-browser';
+import { useProjectStore } from '@/stores/project';
 import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
-import { useRouter } from "vue-router/composables";
-import { copyText } from '@/utils';
+import { useRouter } from 'vue-router/composables';
 
 const router = useRouter();
 
@@ -186,7 +166,6 @@ async function renameProjectName(newName: string) {
   const proj: ProjectPostDTO = {
     name: newName,
     description: project.value!.description,
-    inspectionSettings: project.value!.inspectionSettings
   }
 
   await editProject(proj);
@@ -198,22 +177,6 @@ async function renameProjectDescription(newDescription: string) {
   const proj: ProjectPostDTO = {
     name: project.value!.name,
     description: newDescription,
-    inspectionSettings: project.value!.inspectionSettings
-  }
-
-  await editProject(proj);
-}
-
-async function renameLimeNumberSamples(newLimeSamples: string) {
-  const newLimeSamplesParsed = parseInt(newLimeSamples);
-  if (isNaN(newLimeSamplesParsed)) return;
-
-  const proj: ProjectPostDTO = {
-    name: project.value!.name,
-    description: project.value!.description,
-    inspectionSettings: {
-      limeNumberSamples: newLimeSamplesParsed
-    }
   }
 
   await editProject(proj);

@@ -33,7 +33,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,7 +79,6 @@ public class InitService {
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
-    private final ResourceLoader resourceLoader;
 
     private Map<String, ProjectConfig> createProjectConfigMap() {
         return Map.of(
@@ -98,8 +96,7 @@ public class InitService {
                     .columnTypes(zillowColumnTypes)
                     .columnDtypes(zillowColumnDtypes)
                     .target("SalePrice")
-                    .build(),
-                new InspectionSettings()
+                    .build()
             ),
             ENRON_PROJECT_KEY, new ProjectConfig("Email Classification", "aitester",
                 ModelUploadParamsDTO.builder().modelType("classification")
@@ -116,8 +113,7 @@ public class InitService {
                     .columnDtypes(enronColumnDtypes)
                     .projectKey(ENRON_PROJECT_KEY)
                     .target("Target")
-                    .build(),
-                new InspectionSettings(5)
+                    .build()
             ),
             GERMAN_CREDIT_PROJECT_KEY, new ProjectConfig("Credit Scoring Classification", "admin",
                 ModelUploadParamsDTO.builder().modelType("classification")
@@ -134,8 +130,7 @@ public class InitService {
                     .target("default")
                     .columnTypes(germanCreditColumnTypes)
                     .columnDtypes(germanCreditColumnDtypes)
-                    .build(),
-                new InspectionSettings()
+                    .build()
             )
         );
     }
@@ -248,7 +243,6 @@ public class InitService {
             Assert.notNull(owner, "Owner does not exist in database");
             Project project = new Project(projectKey, projectName, projectName, owner);
             project.setMlWorkerType(MLWorkerType.INTERNAL);
-            project.setInspectionSettings(projects.get(projectKey).inspectionSettings);
             projectService.create(project, ownerLogin);
             projectRepository.save(project);
 
@@ -352,6 +346,6 @@ public class InitService {
 
 
     private record ProjectConfig(String name, String creator, ModelUploadParamsDTO modelParams,
-                                 DataUploadParamsDTO datasetParams, InspectionSettings inspectionSettings) {
+                                 DataUploadParamsDTO datasetParams) {
     }
 }

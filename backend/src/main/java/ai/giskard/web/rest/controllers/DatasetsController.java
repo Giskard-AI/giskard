@@ -155,9 +155,12 @@ public class DatasetsController {
                     arguments.put("column_name", FunctionArguments.COLUMN_NAME);
                 }
 
-                ArtifactRef artifactRef = ArtifactRef.newBuilder()
-                    .setId(callable.getUuid().toString())
-                    .build();
+                ArtifactRef.Builder artefactRefBuilder = ArtifactRef.newBuilder().setId(callable.getUuid().toString());
+
+                if (callable.getProjectKey() != null) {
+                    artefactRefBuilder.setProjectKey(callable.getProjectKey());
+                }
+                ArtifactRef artifactRef = artefactRefBuilder.build();
 
                 if (callable instanceof SlicingFunction) {
                     functionBuilder.setSlicingFunction(artifactRef);

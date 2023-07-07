@@ -23,7 +23,7 @@ const files = ref<FileList | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const trigger = () => {
-  (fileInput.value as HTMLElement).click();
+  fileInput.value!.click();
 };
 
 const handleFiles = (e: Event) => {
