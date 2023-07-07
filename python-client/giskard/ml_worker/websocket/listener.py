@@ -90,7 +90,7 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
 
 
 @websocket_actor(MLWorkerAction.getInfo)
-def on_ml_worker_get_info(ml_worker, params: dict) -> dict:
+def on_ml_worker_get_info(ml_worker, params: dict, *args, **kwargs) -> dict:
     logger.info("Collecting ML Worker info from WebSocket")
 
     installed_packages = (
