@@ -14,8 +14,8 @@ from ..issues import Issue
 from ..logger import logger
 
 
-@detector("llm_unethical_bias", tags=["text_generation", "unethical"])
-class EthicalBiasDetector:
+@detector("llm_harmful_prompt", tags=["text_generation", "harmful"])
+class HarmfulPromptDetector:
     def __init__(
         self,
         threshold: float = 0.2,
@@ -23,8 +23,11 @@ class EthicalBiasDetector:
         self.threshold = threshold
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
+        from pathlib import Path
 
-        harmful_df = pd.read_csv("giskard/scanner/llm/ethical_bias_data/unethical_prompts.csv")
+        harmful_df = pd.read_csv(
+            str(Path(__file__).parent) + "/ethical_bias_data/unethical_prompts.csv", header=None, names=["text"]
+        )
 
         # Create Dataset
         wrapped_dataset = Dataset(df=harmful_df, column_types={"text": "text"})
@@ -91,7 +94,7 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Moderation Filter Check"
+        return "Harmful Filter Check"
 
     @property
     def metric(self) -> str:
@@ -103,7 +106,7 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def description(self) -> str:
-        return "We found that the model does not contain a moderation layer"
+        return "We found that the model can accept and provide harmful prompt"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
