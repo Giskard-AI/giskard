@@ -239,6 +239,9 @@ export const api = {
   async signupUser(userData: ManagedUserVM) {
     return apiV2.post<unknown, void>(`/register`, userData);
   },
+  async deleteUser(login: string) {
+    return apiV2.delete<unknown, void>(`/admin/users/${login}`);
+  },
   async disableUser(login: string) {
     return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
   },

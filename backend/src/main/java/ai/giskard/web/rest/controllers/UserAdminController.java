@@ -174,14 +174,27 @@ public class UserAdminController {
     }
 
     /**
+     * {@code DELETE /admin/users/:login} : delete the "login" User.
+     *
+     * @param login the login of the user to delete.
+     */
+    @PatchMapping("/{login}/disable")
+    @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
+    public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+        log.debug("REST request to delete User: {}", login);
+        userService.deleteUser(login);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * {@code PATCH /admin/users/:login/disable} : disable the "login" User.
      *
-     * @param login the login of the user to disabled.
+     * @param login the login of the user to disable.
      */
     @PatchMapping("/{login}/disable")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> disableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
-        log.debug("REST request to delete User: {}", login);
+        log.debug("REST request to disable User: {}", login);
         userService.disableUser(login);
         return ResponseEntity.noContent().build();
     }

@@ -186,6 +186,27 @@ public class UserService {
             .map(AdminUserDTO::new);
     }
 
+    private void ensureAnyOtherAdminExists(User user) {
+        roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
+            if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
+                throw new GiskardRuntimeException("You must have at least one other admin user before disabling or deleting an admin user.");
+            }
+        });
+    }
+
+    /***
+     * Tries to delete a user.
+     * User cannot be the only admin (ie there must be one admin left after disabling)
+     * @param login
+     */
+    public void deleteUser(String login) {
+        userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
+            ensureAnyOtherAdminExists(user);
+
+            userRepository.delete(user);
+        });
+    }
+
     /***
      * Tries to disable a user.
      * User cannot be the only admin (ie there must be one admin left after disabling)
@@ -193,11 +214,7 @@ public class UserService {
      */
     public void disableUser(String login) {
         userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
-            roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
-                if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
-                    throw new GiskardRuntimeException("You must have at least one other admin user before disabling an admin user.");
-                }
-            });
+            ensureAnyOtherAdminExists(user);
 
             user.setEnabled(false);
             userRepository.save(user);
