@@ -1,23 +1,26 @@
 <template>
   <div v-if="project" class="vertical-container">
-    <v-toolbar flat dense light class="secondary--text text--lighten-2">
-      <v-toolbar-title class="mt-4">
-        <router-link to="/main/projects">
+    <v-toolbar flat light class="secondary--text text--lighten-2">
+      <v-toolbar-title class="text-body-1 d-flex mt-2">
+        <router-link to="/main/projects" class="font-weight-medium grey--text">
           Projects
         </router-link>
-        <span>/</span>
-        <router-link :to="{ name: 'project-properties', params: { id } }">
-          {{ project.name }} ({{ project.key }})
+        <span class="font-weight-black mx-1">/</span>
+        <router-link :to="{ name: 'project-properties', params: { id } }" class="font-weight-medium grey--text">
+          <div class="d-flex flex-column align-center">
+            <span id="project-name">{{ project.name }}</span>
+            <span id="project-key" @click.stop.prevent="copyProjectKey"><span>{{ project.key }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+          </div>
         </router-link>
-        <span v-show="currentTab !== null">
-          <span>/</span>
+        <span class="font-weight-black mx-1">/</span>
+        <router-link :to="{ name: currentTab, params: { id } }" class="font-weight-bold" id="current-route">
           {{ currentTabString }}
-        </span>
+        </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+          <v-btn text small tile v-bind="attrs" v-on="on" class="align-self-start mt-1">
             <v-icon>mdi-dots-horizontal</v-icon>
           </v-btn>
         </template>
@@ -93,6 +96,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
 import { IUserProfileMinimal } from "@/interfaces";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
@@ -127,7 +132,9 @@ const userProfile = computed(() => {
 })
 
 const currentTabString = computed(() => {
-  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
+  let tabString = currentTab.value?.split('-')[1] || '';
+  tabString = tabString.charAt(0).toUpperCase() + tabString.slice(1);
+  return tabString
 })
 
 
@@ -180,7 +187,12 @@ async function deleteProject() {
 }
 
 function updateCurrentTab() {
-  currentTab.value = route.fullPath.split('/')[4] || null;
+  currentTab.value = route.name?.split('-').slice(0, 2).join('-') || null;
+}
+
+async function copyProjectKey() {
+  await copyToClipboard(project.value!.key);
+  mainStore.addNotification({ content: "Copied project key to clipboard", color: TYPE.SUCCESS });
 }
 
 
@@ -200,5 +212,19 @@ onMounted(async () => {
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
+}
+
+#current-route {
+  font-size: 1.125rem !important;
+}
+
+#project-key {
+  font-size: 0.675rem !important;
+  line-height: 0.675rem !important;
+}
+
+#project-key span {
+  text-decoration: underline;
+  margin-right: 0.2rem;
 }
 </style>
