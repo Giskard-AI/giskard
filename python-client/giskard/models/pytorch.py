@@ -71,8 +71,8 @@ class PyTorchModel(MLFlowSerializableModel):
         feature_names=None,
         classification_threshold=0.5,
         classification_labels=None,
-        iterate_dataset=True,
-        batch_size=1,
+        iterate_dataset: bool = True,
+        batch_size: Optional[int] = None,
         **kwargs,
     ) -> None:
         """Automatically wraps a PyTorch model.
@@ -129,10 +129,10 @@ class PyTorchModel(MLFlowSerializableModel):
         self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
 
-        if batch_size == 1 and str(device).startswith("cuda"):
+        if str(device).startswith("cuda") and batch_size is None:
             warning(
                 "Your model is running on GPU. We recommend to set a batch "
-                "size greater than 1 to improve performance."
+                "size and `iterate_dataset=False` to improve performance."
             )
 
     @classmethod
@@ -183,6 +183,7 @@ class PyTorchModel(MLFlowSerializableModel):
         self.model.to(self.device)
         self.model.eval()
 
+        print(data)
         if self.iterate_dataset:
             predictions = self._get_predictions_from_iterable(data)
         else:
