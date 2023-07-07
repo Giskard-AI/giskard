@@ -15,6 +15,12 @@ from ..logger import logger
 
 @detector("llm_gender_bias", tags=["text_generation", "gender"])
 class GenderBiasDetector:
+    def __init__(
+        self,
+        p_value_threshold: float = 0.05,
+    ):
+        self.p_value_threshold = p_value_threshold
+
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         from pathlib import Path
 
@@ -50,7 +56,7 @@ class GenderBiasDetector:
 
         # Iterate through the combined dataframe to identify gender-biased examples
         if (
-            p_value < 0.05
+            p_value < self.p_value_threshold
         ):  # We can reject the following null hypothesis: HO:" the relative proportions of one variable are independent of the second variable;"
             for idx, row in results.iterrows():
                 if row["gender_detected"] in ("male", "female"):
