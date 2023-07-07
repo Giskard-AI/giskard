@@ -501,10 +501,4 @@ onActivated(async () => {
     height: 50px;
     margin: 0 auto;
 }
-
-::v-deep .v-toolbar__content {
-    padding-left: 4px !important;
-    display: inline-flex;
-    flex-direction: column;
-}
 </style>

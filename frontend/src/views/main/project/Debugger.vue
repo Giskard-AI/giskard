@@ -258,10 +258,4 @@ onActivated(async () => {
 .expansion-panel {
   margin-top: 10px !important;
 }
-
-::v-deep .v-toolbar__content {
-  padding-left: 4px !important;
-  display: inline-flex;
-  flex-direction: column;
-}
 </style>

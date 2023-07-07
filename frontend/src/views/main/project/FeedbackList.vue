@@ -254,10 +254,4 @@ div.v-input.flex-1 {
   background-color: rgba(49, 110, 62, 0.2);
   cursor: default;
 }
-
-::v-deep .v-toolbar__content {
-  padding-left: 4px !important;
-  display: inline-flex;
-  flex-direction: column;
-}
 </style>
