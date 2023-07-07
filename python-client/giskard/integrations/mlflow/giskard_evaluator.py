@@ -66,8 +66,8 @@ class GiskardEvaluator(ModelEvaluator):
                 giskard_dataset.to_mlflow(client=self.client, run_id=self.run_id)
             except Exception as e:
                 raise ValueError("An error occurred while wrapping the dataset. "
-                                 "Please submit the traceback to the following GitHub repository for further assistance: "
-                                 "https://github.com/Giskard-AI/giskard.") from e
+                                 "Please submit the traceback as a GitHub issue in the following "
+                                 "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
 
         try:
             giskard_model = PyFuncModel(model=model,
@@ -76,8 +76,8 @@ class GiskardEvaluator(ModelEvaluator):
                                         **evaluator_config)
         except Exception as e:
             raise ValueError("An error occurred while wrapping the model. "
-                             "Please submit the traceback to the following GitHub repository for further assistance: "
-                             "https://github.com/Giskard-AI/giskard.") from e
+                             "Please submit the traceback as a GitHub issue in the following "
+                             "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
 
         try:
             validation_flags = ValidationFlags()
@@ -88,8 +88,8 @@ class GiskardEvaluator(ModelEvaluator):
             scan_results.to_mlflow(client=self.client, run_id=self.run_id)
         except Exception as e:
             raise ValueError("An error occurred while scanning the model for vulnerabilities. "
-                             "Please submit the traceback to the following GitHub repository for further assistance: "
-                             "https://github.com/Giskard-AI/giskard.") from e
+                             "Please submit the traceback as a GitHub issue in the following "
+                             "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
 
         try:
             test_suite = scan_results.generate_test_suite("scan test suite")
