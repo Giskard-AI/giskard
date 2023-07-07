@@ -16,7 +16,6 @@ import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -78,9 +77,6 @@ public class UserAdminController {
         "lastModifiedDate");
 
     private final Logger log = LoggerFactory.getLogger(UserAdminController.class);
-
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
 
     private final UserService userService;
 
@@ -178,15 +174,15 @@ public class UserAdminController {
     }
 
     /**
-     * {@code DELETE /admin/users/:login} : delete the "login" User.
+     * {@code PATCH /admin/users/:login/disable} : disable the "login" User.
      *
-     * @param login the login of the user to delete.
+     * @param login the login of the user to disabled.
      */
-    @DeleteMapping("/{login}")
+    @PatchMapping("/{login}/disable")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+    public ResponseEntity<Void> disableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
-        userService.deleteUser(login);
+        userService.disableUser(login);
         return ResponseEntity.noContent().build();
     }
 

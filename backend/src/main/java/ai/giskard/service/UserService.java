@@ -187,15 +187,15 @@ public class UserService {
     }
 
     /***
-     * Tries to delete a user.
-     * User cannot be the only admin (ie there must be one admin left after deletion)
+     * Tries to disable a user.
+     * User cannot be the only admin (ie there must be one admin left after disabling)
      * @param login
      */
-    public void deleteUser(String login) {
+    public void disableUser(String login) {
         userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
             roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
                 if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
-                    throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
+                    throw new GiskardRuntimeException("You must have at least one other admin user before disabling an admin user.");
                 }
             });
 

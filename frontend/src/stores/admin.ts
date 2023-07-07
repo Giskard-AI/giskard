@@ -1,9 +1,9 @@
-import {defineStore} from "pinia";
-import {AdminUserDTO, RoleDTO} from "@/generated-sources";
-import {api} from "@/api";
-import {useMainStore} from "@/stores/main";
-import {useUserStore} from "@/stores/user";
-import {TYPE} from "vue-toastification";
+import { defineStore } from 'pinia';
+import { AdminUserDTO, RoleDTO } from '@/generated-sources';
+import { api } from '@/api';
+import { useMainStore } from '@/stores/main';
+import { useUserStore } from '@/stores/user';
+import { TYPE } from 'vue-toastification';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 
@@ -80,16 +80,16 @@ export const useAdminStore = defineStore('admin', {
             }
         },
 
-        async deleteUser(user: AdminUserDTOWithPassword) {
+        async disableUser(user: AdminUserDTOWithPassword) {
             const mainStore = useMainStore();
             const userStore = useUserStore();
-            const loadingNotification = {content: 'Saving', showProgress: true};
+            const loadingNotification = { content: 'Saving', showProgress: true };
             try {
                 mainStore.addNotification(loadingNotification);
-                await api.deleteUser(user.user_id!);
+                await api.disableUser(user.user_id!);
                 await this.getUsers();
                 mainStore.removeNotification(loadingNotification);
-                mainStore.addNotification({content: 'Successfully deleted', color: TYPE.SUCCESS});
+                mainStore.addNotification({ content: 'Successfully deleted', color: TYPE.SUCCESS });
 
                 // If we deleted ourselves, we want to logout as our user no longer exists.
                 if (userStore.userProfile?.id === user.id) {
