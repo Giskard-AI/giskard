@@ -15,7 +15,8 @@ import java.util.Map;
 @Setter
 @MappedSuperclass
 public abstract class DatasetProcessFunction extends Callable {
-
+    @Column
+    private String projectKey;
     @Column(nullable = false)
     private boolean cellLevel;
     @Column
@@ -24,5 +25,4 @@ public abstract class DatasetProcessFunction extends Callable {
     private DatasetProcessFunctionType processType;
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Map<String, Object>> clauses; // NOSONAR
-
 }

@@ -6,8 +6,8 @@ import { copyToClipboard } from "@/global-keys";
 
 
 interface Props {
-  codeContent: string;
-  language: string;
+  codeContent?: string;
+  language?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -31,7 +31,8 @@ async function copyCode() {
 </script>
 
 <template>
-  <!-- //NOSONAR --><div class="pre-block rounded pa-4"><code v-html="highlightedCode" class="code-block" />
+  <div class="pre-block rounded pa-4">
+    <!-- //NOSONAR --><code v-html="highlightedCode" class="code-block"></code>
     <v-btn class="copy-button" small icon @click="copyCode">
       <v-icon small>mdi-content-copy</v-icon>
       <span v-show="copied" class="copied-message">Copied</span>
