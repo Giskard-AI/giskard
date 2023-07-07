@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, getCurrentInstance } from 'vue';
+import { ref, getCurrentInstance } from 'vue';
 
 const instance = getCurrentInstance();
 
