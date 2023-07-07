@@ -77,14 +77,9 @@ public class MLWorkerController {
 
     @PostMapping("/stop")
     public void stopWorker(boolean internal) {
-        try (MLWorkerClient internalClient = mlWorkerService.createClientNoError(internal)) {
-            internalClient.getBlockingStub().stopWorker(Empty.newBuilder().build());
-        } catch (StatusRuntimeException e) {
-            // UNAVAILABLE = ML worker has been stopped (as expected)
-            if (!Status.UNAVAILABLE.getCode().equals(e.getStatus().getCode())) {
-                log.error("Failed to stop ML Worker: {}", internal, e);
-                throw e;
-            }
+        MLWorkerID workerID = internal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.stopWorker, null);
         }
     }
 

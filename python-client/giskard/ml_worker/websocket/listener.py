@@ -12,6 +12,8 @@ import sys
 import os
 import giskard
 
+import asyncio
+
 
 logger = logging.getLogger(__name__)
 
@@ -117,3 +119,10 @@ def on_ml_worker_get_info(ml_worker, params: dict, *args, **kwargs) -> dict:
         "internalGrpcAddress": ml_worker.ml_worker_id,
         "isRemote": ml_worker.tunnel is not None,
     }
+
+
+@websocket_actor(MLWorkerAction.stopWorker)
+def on_ml_worker_stop_worker(ml_worker, *args, **kwargs):
+    # FIXME: Stop the server properly
+    asyncio.get_event_loop().create_task(ml_worker.stop())
+    return None

@@ -120,4 +120,6 @@ class MLWorker:
     async def stop(self):
         if self.tunnel:
             await self.tunnel.stop()
+        if self.ws_conn:
+            self.ws_conn.disconnect()
         await self.grpc_server.stop(3)
