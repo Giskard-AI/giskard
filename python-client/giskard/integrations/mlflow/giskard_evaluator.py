@@ -1,6 +1,5 @@
 import pandas as pd
 from mlflow import MlflowClient
-import tempfile
 import re
 
 from giskard.models.automodel import Model
