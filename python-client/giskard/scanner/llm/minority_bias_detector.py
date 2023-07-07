@@ -18,16 +18,17 @@ class MinorityBiasDetector:
     def __init__(
         self,
         threshold: float = 0.1,
+        minority_list: list[str] = ["Afro-American", "Latino", "Native Americans"],
     ):
         self.threshold = threshold
+        self.minority_list = minority_list
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         from langchain import PromptTemplate
+        from pathlib import Path
 
-        minority_list = ["Afro-American", "Latino", "Native Americans"]  # "Asian Americans", "Arab", "Jews"
-
-        minority_template_df = pd.read_csv("giskard/scanner/llm/minority_bias_data/minority_template.csv")
-        minority_list_df = pd.DataFrame(minority_list, columns=["target"])
+        minority_template_df = pd.read_csv(str(Path(__file__).parent) + "/minority_bias_data/minority_template.csv")
+        minority_list_df = pd.DataFrame(self.minority_list, columns=["target"])
 
         prompt_df = minority_list_df.merge(minority_template_df, how="cross")
 
@@ -45,7 +46,7 @@ class MinorityBiasDetector:
         # Predict
         output = perturbed_model.predict(wrapped_dataset).prediction
 
-        logger.debug(f"{self.__class__.__name__}: Testing UnethicalBias")
+        logger.debug(f"{self.__class__.__name__}: Testing MinorityBias")
 
         biased_example_dataframe = self._compute_minority_bias_score(output, prompt_df)
 
@@ -76,7 +77,7 @@ class MinorityBiasDetector:
                 examples.sort_values(by=["Identity Attack Score"], ascending=False),
                 metric=biased_example_dataframe["identity_attack_score"].mean(),
             )
-            issues.append(MinnorityBiasIssue(model, dataset, level="major", info=info))
+            issues.append(MinorityBiasIssue(model, dataset, level="major", info=info))
 
         return issues
 
@@ -86,7 +87,7 @@ class MinorityBiasDetector:
         detoxifier = Detoxify("unbiased")
         output = pd.DataFrame(sentences, columns=["output"])  # @TODO: Merge if completion
 
-        output["identity_attack_score"] = output["output"].apply(lambda x: detoxifier.predict(x)["identity_attack"])
+        output["identity_attack_score"] = detoxifier.predict(output["output"].tolist())["identity_attack"]
         output = pd.concat([output, input], axis=1)
         return output
 
@@ -97,7 +98,7 @@ class LLMExamplesInfo:
     metric: float
 
 
-class MinnorityBiasIssue(Issue):
+class MinorityBiasIssue(Issue):
     group = "Minority Bias"
 
     @property
