@@ -129,7 +129,7 @@ class PyTorchModel(MLFlowSerializableModel):
         self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
 
-        if batch_size == 1 and device.startswith("cuda"):
+        if batch_size == 1 and str(device).startswith("cuda"):
             warning(
                 "Your model is running on GPU. We recommend to set a batch "
                 "size greater than 1 to improve performance."
