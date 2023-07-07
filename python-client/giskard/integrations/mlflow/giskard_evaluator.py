@@ -62,6 +62,7 @@ class GiskardEvaluator(ModelEvaluator):
             raise ValueError("Only pd.DataFrame are currently supported in Giskard.")
 
         cl = evaluator_config["classification_labels"] if "classification_labels" in self.evaluator_config else None
+
         giskard_model = PyFuncModel(model=model,
                                     model_type=gsk_model_types[model_type],
                                     feature_names=dataset.feature_names,
