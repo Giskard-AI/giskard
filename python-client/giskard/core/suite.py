@@ -11,16 +11,35 @@ from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from giskard.ml_worker.testing.registry.giskard_test import (
+    GiskardTest,
+    Test,
+    GiskardTestMethod,
+)
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+)
+from giskard.ml_worker.testing.test_result import (
+    TestResult,
+    TestMessage,
+    TestMessageLevel,
+)
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
+suite_input_types: List[type] = [
+    Dataset,
+    BaseModel,
+    str,
+    bool,
+    int,
+    float,
+    SlicingFunction,
+    TransformationFunction,
+]
 
 
 def parse_function_arguments(client, project_key, function_inputs):
@@ -195,7 +214,14 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
             value=str(p.meta.uuid),
             type=ptype,
             params=[
-                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key, uploaded_uuids)
+                build_test_input_dto(
+                    client,
+                    value,
+                    pname,
+                    p.meta.args[pname].type,
+                    project_key,
+                    uploaded_uuids,
+                )
                 for pname, value in p.params.items()
             ],
         )
@@ -298,7 +324,9 @@ class Suite:
                     (
                         test_partial.test_name,
                         TestResult(
-                            passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
+                            passed=False,
+                            is_error=True,
+                            messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
                     )
                 )
@@ -354,7 +382,12 @@ class Suite:
                     testUuid=t.giskard_test.upload(client),
                     functionInputs={
                         pname: build_test_input_dto(
-                            client, p, pname, t.giskard_test.meta.args[pname].type, project_key, uploaded_uuids
+                            client,
+                            p,
+                            pname,
+                            t.giskard_test.meta.args[pname].type,
+                            project_key,
+                            uploaded_uuids,
                         )
                         for pname, p in t.provided_inputs.items()
                     },

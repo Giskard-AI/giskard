@@ -39,7 +39,10 @@ def explain_error(err_resp):
         message = "Access token is invalid or expired. Please generate a new one"
 
     if message is None:
-        message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        if "title" in err_resp or err_resp.get("detail"):
+            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
+        elif "message" in err_resp:
+            message = err_resp["message"]
     return GiskardError(status=status, code=code, message=message)
 
 
@@ -130,7 +133,8 @@ class GiskardClient:
         )
         try:
             response = self._session.post(
-                "project", json={"description": description, "key": project_key, "name": name}
+                "project",
+                json={"description": description, "key": project_key, "name": name},
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
@@ -164,7 +168,14 @@ class GiskardClient:
             category_features=res["categoryFeatures"],
         )
 
-    def save_model_meta(self, project_key: str, model_id: UUID, meta: ModelMeta, python_version: str, size: int):
+    def save_model_meta(
+        self,
+        project_key: str,
+        model_id: UUID,
+        meta: ModelMeta,
+        python_version: str,
+        size: int,
+    ):
         class_label_dtype = (
             None
             if (not meta.classification_labels or not len(meta.classification_labels))
@@ -252,7 +263,14 @@ class GiskardClient:
             resp = self._session.post(endpoint, data=f)
             augmented_raise_for_status(resp)
 
-    def save_dataset_meta(self, project_key, dataset_id, meta: DatasetMeta, original_size_bytes, compressed_size_bytes):
+    def save_dataset_meta(
+        self,
+        project_key,
+        dataset_id,
+        meta: DatasetMeta,
+        original_size_bytes,
+        compressed_size_bytes,
+    ):
         self._session.post(
             f"project/{project_key}/datasets",
             json={
