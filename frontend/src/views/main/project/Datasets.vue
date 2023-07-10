@@ -1,12 +1,11 @@
 <template>
   <div class="vertical-container">
     <v-row class="mt-2 pl-3">
-      <v-col cols='4'>
+      <v-col class="d-flex">
         <v-text-field v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+        <v-checkbox v-model="showDebugDatasets" label="Show debug datasets" class="ml-4"/>
       </v-col>
-      <v-col cols="8">
-        <v-checkbox v-model="showDebugDatasets" label="Show debug datasets"></v-checkbox>
-        <v-spacer/>
+      <v-col>
         <div class="d-flex justify-end mb-6">
           <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="mr-2"
                  href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
