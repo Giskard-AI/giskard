@@ -6,12 +6,18 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.MLWorkerWSArtifactRefDTO;
+import ai.giskard.ml.dto.MLWorkerWSRunModelParamDTO;
 import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +44,8 @@ public class ModelService {
     private final MLWorkerService mlWorkerService;
     private final FileLocationService fileLocationService;
     private final GRPCMapper grpcMapper;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
 
 
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
@@ -133,14 +141,26 @@ public class ModelService {
     }
 
     protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            RunModelRequest request = RunModelRequest.newBuilder()
-                .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset, sample))
-                .setInspectionId(inspectionId)
-                .setProjectKey(model.getProject().getKey())
-                .build();
-            client.getBlockingStub().runModel(request);
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            // Initialize params
+            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
+            modelRef.setId(model.getId().toString());
+            modelRef.setProjectKey(model.getProject().getKey());
+
+            MLWorkerWSArtifactRefDTO datasetRef = new MLWorkerWSArtifactRefDTO();
+            datasetRef.setId(dataset.getId().toString());
+            datasetRef.setProjectKey(dataset.getProject().getKey());
+            datasetRef.setSample(sample);
+
+            MLWorkerWSRunModelParamDTO param = new MLWorkerWSRunModelParamDTO();
+            param.setModel(modelRef);
+            param.setDataset(datasetRef);
+            param.setInspectionId(inspectionId);
+            param.setProjectKey(model.getProject().getKey());
+
+            // Execute runModel action
+            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);
         }
     }
 }

@@ -37,6 +37,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.utils.file_utils import get_file_name
+from giskard.ml_worker.websocket.listener import websocket_actor, MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import (
     explain,
@@ -620,3 +621,83 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
         return ml_worker_pb2.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+@websocket_actor(MLWorkerAction.runModel)
+def runModel(ml_worker, params: dict, *args, **kwargs):
+    try:
+        model = BaseModel.download(ml_worker.client, params["model"]["project_key"], params["model"]["id"])
+        dataset = Dataset.download(
+            ml_worker.client,
+            params["dataset"]["project_key"],
+            params["dataset"]["id"],
+            sample=params["dataset"]["sample"],
+        )
+    except ValueError as e:
+        if "unsupported pickle protocol" in str(e):
+            raise ValueError(
+                "Unable to unpickle object, "
+                "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                f"\nOriginal Error: {e}"
+            ) from e
+        raise e
+    except ModuleNotFoundError as e:
+        raise GiskardException(
+            f"Failed to import '{e.name}'. "
+            f"Make sure it's installed in the ML Worker environment."
+            "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
+        ) from e
+    prediction_results = model.predict(dataset)
+
+    if model.is_classification:
+        results = prediction_results.all_predictions
+        labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
+        label_serie = dataset.df[dataset.target] if dataset.target else None
+        if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+            preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
+            sorted_predictions = np.sort(prediction_results.all_predictions.values)
+            abs_diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="absDiff")
+        else:
+            diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
+            preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
+            abs_diff = pd.Series(diff.abs(), name="absDiff")
+        calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
+    else:
+        results = pd.Series(prediction_results.prediction)
+        preds_serie = results
+        if dataset.target and dataset.target in dataset.df.columns:
+            target_serie = dataset.df[dataset.target]
+            diff = preds_serie - target_serie
+            diff_percent = pd.Series(diff / target_serie, name="diffPercent")
+            abs_diff = pd.Series(diff.abs(), name="absDiff")
+            abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
+            calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
+        else:
+            calculated = pd.concat([preds_serie], axis=1)
+
+    with tempfile.TemporaryDirectory(prefix="giskard-") as f:
+        dir = Path(f)
+        logger.info(f"Logging predictions for {params['project_key']} Inspection {params['inspectionId']}")
+        predictions_csv = get_file_name("predictions", "csv", params["dataset"]["sample"])
+        results.to_csv(index=False, path_or_buf=dir / predictions_csv)
+        if ml_worker.client:
+            ml_worker.client.log_artifact(
+                dir / predictions_csv, f"{params['project_key']}/models/inspections/{params['inspectionId']}"
+            )
+        else:
+            log_artifact_local(
+                dir / predictions_csv, f"{params['project_key']}/models/inspections/{params['inspectionId']}"
+            )
+
+        calculated_csv = get_file_name("calculated", "csv", params["dataset"]["sample"])
+        calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
+        if ml_worker.client:
+            ml_worker.client.log_artifact(
+                dir / calculated_csv, f"{params['project_key']}/models/inspections/{params['inspectionId']}"
+            )
+        else:
+            log_artifact_local(
+                dir / calculated_csv, f"{params['project_key']}/models/inspections/{params['inspectionId']}"
+            )
+    return None
