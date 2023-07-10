@@ -75,7 +75,7 @@
         </v-row>
       </v-col>
     </v-row>
-    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' :transformationModifications="modifications" class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" />
+    <Inspector :dataset='inspection.dataset' :inputData.sync='inputData' :model='inspection.model' :originalData='originalData' :transformationModifications="modifications" class='px-0' @reset='resetInput' @submitValueFeedback='submitValueFeedback' @submitValueVariationFeedback='submitValueVariationFeedback' v-if="totalRows > 0" :key="inputData._GISKARD_INDEX_" />
     <v-alert v-else border="bottom" colored-border type="warning" class="mt-8" elevation="2">
       No data matches the selected filter.<br />
       In order to show data, please refine the filter's criteria.
