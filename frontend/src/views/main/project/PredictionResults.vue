@@ -89,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import VChart from "vue-echarts";
 import { ref, onMounted, watch, getCurrentInstance, computed } from "vue";
 import ResultPopover from "@/components/ResultPopover.vue"
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
