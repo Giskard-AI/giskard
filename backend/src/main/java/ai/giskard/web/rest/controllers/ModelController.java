@@ -5,6 +5,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.ml.dto.MLWorkerWSExplainDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunModelForDataFrameDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -70,10 +71,12 @@ public class ModelController {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        ExplainResponse explanations = modelService.explain(model, dataset, data.getFeatures());
+        MLWorkerWSExplainDTO explanations = modelService.explain(model, dataset, data.getFeatures());
         ExplainResponseDTO result = new ExplainResponseDTO();
-        explanations.getExplanationsMap().forEach((label, perFeatureExplanations) ->
-            result.getExplanations().put(label, perFeatureExplanations.getPerFeatureMap()));
+        if (explanations != null) {
+            explanations.getExplanations().forEach((label, perFeatureExplanations) ->
+                result.getExplanations().put(label, perFeatureExplanations.getPerFeature()));
+        }
         return result;
     }
 

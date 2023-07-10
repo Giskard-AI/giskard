@@ -730,3 +730,16 @@ def runModelForDataFrame(ml_worker, params: dict, *args, **kwargs):
             "prediction": list(predictions.prediction.astype(str)),
             "raw_prediction": list(predictions.prediction),
         }
+
+
+@websocket_actor(MLWorkerAction.explain)
+def explain_ws(ml_worker, params: dict, *args, **kwargs):
+    model = BaseModel.download(ml_worker.client, params["model"]["project_key"], params["model"]["id"])
+    dataset = Dataset.download(
+        ml_worker.client, params["dataset"]["project_key"], params["dataset"]["id"], params["dataset"]["sample"]
+    )
+    explanations = explain(model, dataset, params["columns"])
+
+    logger.info(explanations)
+
+    return {"explanations": {str(k): {"per_feature": v} for k, v in explanations["explanations"].items()}}

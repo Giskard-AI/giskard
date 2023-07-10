@@ -105,18 +105,32 @@ public class ModelService {
             ((columnDtype.startsWith("int") || columnDtype.startsWith("float")) && Strings.isBlank(value));
     }
 
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            ExplainRequest request = ExplainRequest.newBuilder()
-                .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset, false))
-                .putAllColumns(features.entrySet().stream()
-                    .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .build();
+    public MLWorkerWSExplainDTO explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        MLWorkerWSExplainDTO response = null;
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
+            modelRef.setProjectKey(model.getProject().getKey());
+            modelRef.setId(model.getId().toString());
 
-            return client.getBlockingStub().explain(request);
+            MLWorkerWSArtifactRefDTO datasetRef = new MLWorkerWSArtifactRefDTO();
+            datasetRef.setProjectKey(dataset.getProject().getKey());
+            datasetRef.setId(dataset.getId().toString());
+            datasetRef.setSample(false);
+
+            MLWorkerWSExplainParamDTO param = new MLWorkerWSExplainParamDTO();
+            param.setModel(modelRef);
+            param.setDataset(datasetRef);
+            param.setColumns(features.entrySet().stream()
+                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.explain, param);
+            if (result != null && result instanceof MLWorkerWSExplainDTO) {
+                response = (MLWorkerWSExplainDTO) result;
+            }
         }
+        return response;
     }
 
     public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
