@@ -6,7 +6,7 @@ from giskard.models.automodel import Model
 from giskard.datasets.base import Dataset
 from giskard.scanner import scan
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model_validation import ValidationFlags, validate_model
+from giskard.core.model_validation import ValidationFlags
 
 from mlflow.models.evaluation import ModelEvaluator
 
