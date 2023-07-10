@@ -37,4 +37,3 @@ function getBadgeColor(testStatus: TestResult) {
 }
 </script>
 
-<style scoped lang="scss"></style>
