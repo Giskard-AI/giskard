@@ -701,3 +701,32 @@ def runModel(ml_worker, params: dict, *args, **kwargs):
                 dir / calculated_csv, f"{params['project_key']}/models/inspections/{params['inspectionId']}"
             )
     return None
+
+
+@websocket_actor(MLWorkerAction.runModelForDataFrame)
+def runModelForDataFrame(ml_worker, params: dict, *args, **kwargs):
+    model = BaseModel.download(ml_worker.client, params["model"]["project_key"], params["model"]["id"])
+    df = pd.DataFrame.from_records([r["columns"] for r in params["dataframe"]["rows"]])
+    logger.info(df)
+    logger.info(params)
+    ds = Dataset(
+        model.prepare_dataframe(df, column_dtypes=params["column_dtypes"]),
+        target=None,
+        column_types=params["column_types"],
+    )
+    predictions = model.predict(ds)
+    if model.is_classification:
+        return {
+            "all_predictions": {
+                "rows": [
+                    {"columns": {str(k): v for k, v in r.astype(str).to_dict().items()}}
+                    for _, r in predictions.all_predictions.iterrows()
+                ]
+            },
+            "prediction": list(predictions.prediction.astype(str)),
+        }
+    else:
+        return {
+            "prediction": list(predictions.prediction.astype(str)),
+            "raw_prediction": list(predictions.prediction),
+        }

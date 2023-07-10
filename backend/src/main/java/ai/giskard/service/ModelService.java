@@ -8,8 +8,7 @@ import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
-import ai.giskard.ml.dto.MLWorkerWSArtifactRefDTO;
-import ai.giskard.ml.dto.MLWorkerWSRunModelParamDTO;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -48,37 +48,55 @@ public class ModelService {
     private final MLWorkerWSCommService mlWorkerWSCommService;
 
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        RunModelForDataFrameResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            response = getRunModelForDataFrameResponse(model, dataset, features, client);
+    public MLWorkerWSRunModelForDataFrameDTO predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        MLWorkerWSRunModelForDataFrameDTO response = null;
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            response = getRunModelForDataFrameResponse(model, dataset, features);
         }
         return response;
     }
 
-    private RunModelForDataFrameResponse getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features, MLWorkerClient client) {
-        RunModelForDataFrameResponse response;
-        RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.createRef(model))
-            .setDataframe(
-                DataFrame.newBuilder()
-                    .addRows(DataRow.newBuilder().putAllColumns(
-                        features.entrySet().stream()
-                            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    ))
-                    .build()
-            );
+    private MLWorkerWSRunModelForDataFrameDTO getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        MLWorkerWSRunModelForDataFrameDTO response = null;
+
+        // Initialize the parameters and build the Data Frame
+        MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
+        modelRef.setProjectKey(model.getProject().getKey());
+        modelRef.setId(model.getId().toString());
+
+        MLWorkerWSDataFrameDTO dataframe = new MLWorkerWSDataFrameDTO();
+        ArrayList<MLWorkerWSDataRowDTO> rows = new ArrayList<>(1);
+        MLWorkerWSDataRowDTO row = new MLWorkerWSDataRowDTO();
+        row.setColumns(features.entrySet().stream()
+            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        rows.add(row);
+        dataframe.setRows(rows);
+
+        MLWorkerWSRunModelForDataFrameParamDTO param = new MLWorkerWSRunModelForDataFrameParamDTO();
+        param.setModel(modelRef);
+        param.setDataframe(dataframe);
+
         if (dataset.getTarget() != null) {
-            requestBuilder.setTarget(dataset.getTarget());
+            param.setTarget(dataset.getTarget());
         }
         if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            param.setColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
         }
         if (dataset.getColumnDtypes() != null) {
-            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
+            param.setColumnDtypes(dataset.getColumnDtypes());
         }
-        response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
+
+        // Perform the runModelForDataFrame action and parse the reply
+        MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+            model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+            MLWorkerWSAction.runModelForDataFrame,
+            param
+        );
+        if (result != null && result instanceof MLWorkerWSRunModelForDataFrameDTO) {
+            response = (MLWorkerWSRunModelForDataFrameDTO) result;
+        }
         return response;
     }
 

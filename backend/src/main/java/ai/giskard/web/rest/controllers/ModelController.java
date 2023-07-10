@@ -5,6 +5,7 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.ml.dto.MLWorkerWSRunModelForDataFrameDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -126,14 +127,14 @@ public class ModelController {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        RunModelForDataFrameResponse result = modelService.predict(model, dataset, data.getFeatures());
+        MLWorkerWSRunModelForDataFrameDTO result = modelService.predict(model, dataset, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
         if (model.getModelType() == ModelType.CLASSIFICATION) {
-            result.getAllPredictions().getRows(0).getColumnsMap().forEach((label, proba) ->
+            result.getAllPredictions().getRows().get(0).getColumns().forEach((label, proba) ->
                 allPredictions.put(label, Float.parseFloat(proba))
             );
         }
-        return new PredictionDTO(result.getPrediction(0), allPredictions);
+        return new PredictionDTO(result.getPrediction().get(0), allPredictions);
     }
 
     @GetMapping("models/prepare-delete/{modelId}")
