@@ -43,7 +43,7 @@ def process_text(some_string):
 
 class GiskardEvaluator(ModelEvaluator):
     def can_evaluate(self, model_type, **kwargs):
-        return model_type in ["classifier", "regressor"]
+        return model_type in ["classifier", "regressor", "text"]
 
     def evaluate(
             self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
