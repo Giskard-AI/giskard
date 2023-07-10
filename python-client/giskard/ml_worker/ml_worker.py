@@ -28,9 +28,11 @@ class MLWorker:
     grpc_server: Server
     ws_conn: stomp.WSStompConnection
     ml_worker_id: str
+    client: GiskardClient
 
     def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None) -> None:
         client = None if is_server else GiskardClient(backend_url, api_key)
+        self.client = client
 
         server, address = self._create_grpc_server(client, is_server)
 
