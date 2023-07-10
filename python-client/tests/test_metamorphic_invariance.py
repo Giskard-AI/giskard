@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 
 import giskard.testing.tests.metamorphic as metamorphic
+from giskard import Dataset, Model
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
 from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
@@ -246,3 +247,43 @@ def test_metamorphic_invariance_wilcoxon_nopert(german_credit_test_data, german_
 
     assert results.actual_slices_size[0] == len(german_credit_test_data)
     assert results.passed, f"metric = {results.metric}"
+
+
+def test_metamorphic_invariance_llm():
+    from langchain.chains import LLMChain
+    from langchain.llms.fake import FakeListLLM
+    from langchain.prompts import PromptTemplate
+
+    responses = [
+        "\n\nHueFoots.",
+        "\n\nEcoDrive Motors.",
+        "\n\nRainbow Socks.",
+        "\n\nNoOil Motors.",
+    ]
+    llm = FakeListLLM(responses=responses)
+    prompt = PromptTemplate(
+        input_variables=["product"],
+        template="What is a good name for a company that makes {product}?",
+    )
+    chain = LLMChain(llm=llm, prompt=prompt)
+
+    wrapped_model = Model(chain, model_type="text_generation")
+    df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
+
+    wrapped_dataset = Dataset(df, cat_columns=[])
+
+    @transformation_function()
+    def perturbation(x: pd.Series) -> pd.Series:
+        x["product"] = f"some {x['product']}"
+        return x
+
+    results = metamorphic.test_metamorphic_invariance(
+        model=wrapped_model,
+        dataset=wrapped_dataset,
+        transformation_function=perturbation,
+        threshold=0.1,
+        output_sensitivity=0.2,
+    ).execute()
+
+    assert results.actual_slices_size[0] == 2
+    assert results.passed

@@ -1,4 +1,6 @@
 from typing import Optional
+
+import numpy as np
 import pandas as pd
 import inspect
 
@@ -15,6 +17,7 @@ from giskard.ml_worker.testing.utils import check_slice_not_empty
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed
+from giskard.scanner.llm.utils import LLMImportError
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -61,6 +64,25 @@ def _compare_prediction(results_df, prediction_task, direction, output_sensitivi
     if direction == Direction.Invariant:
         if prediction_task == SupportedModelTypes.CLASSIFICATION:
             passed_idx = results_df.loc[results_df["prediction"] == results_df["perturbed_prediction"]].index.values
+
+        elif prediction_task == SupportedModelTypes.TEXT_GENERATION:
+            try:
+                import evaluate
+                scorer = evaluate.load("bertscore")
+            except ImportError as err:
+                raise LLMImportError() from err
+            except FileNotFoundError as err:
+                raise LLMImportError("Your version of evaluate does not support 'bertscore'. "
+                                     "Please use 'pip install -U evaluate' to upgrade it") from err
+
+            score = scorer.compute(
+                predictions=results_df["perturbed_prediction"].values,
+                references=results_df["prediction"].values,
+                model_type="distilbert-base-multilingual-cased",
+                idf=True,
+            )
+            passed = np.array(score["f1"]) > 1 - output_sensitivity
+            passed_idx = results_df.loc[passed].index.values
 
         elif prediction_task == SupportedModelTypes.REGRESSION:
             results_df["predict_difference_ratio"] = results_df.apply(

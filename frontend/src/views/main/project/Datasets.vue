@@ -1,15 +1,22 @@
 <template>
   <div class="vertical-container">
-    <v-checkbox v-model="showDebugDatasets" label="Show debug datasets"></v-checkbox>
-    <div class="d-flex mb-6">
-      <v-spacer></v-spacer>
-      <div class="mr-2">
-        <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="ml-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
-          add a dataset
-          <v-icon right>mdi-open-in-new</v-icon>
-        </v-btn>
-      </div>
-    </div>
+    <v-row class="mt-2 pl-3">
+      <v-col cols='4'>
+        <v-text-field v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+      </v-col>
+      <v-col cols="8">
+        <v-checkbox v-model="showDebugDatasets" label="Show debug datasets"></v-checkbox>
+        <v-spacer/>
+        <div class="d-flex justify-end mb-6">
+          <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="mr-2"
+                 href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
+            add a dataset
+            <v-icon right>mdi-open-in-new</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
+
     <LoadingFullscreen v-if="isLoading" name="datasets"/>
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
@@ -91,17 +98,17 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
-import { Role } from "@/enums";
+import {api} from "@/api";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { computed, onBeforeMount, ref } from "vue";
+import {computed, onBeforeMount, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import { TYPE } from "vue-toastification";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
+import {TYPE} from "vue-toastification";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
@@ -117,9 +124,11 @@ interface Props {
 const props = defineProps<Props>();
 
 const isLoading = ref<boolean>(false);
+const showDebugDatasets = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
+const searchDataset = ref<string>('');
 
 const project = computed(() => {
   return projectStore.project(props.projectId)
@@ -146,11 +155,14 @@ async function deleteDataFile(id: string) {
 }
 
 const datasets = computed(() => {
-  if (showDebugDatasets.value) {
-    return projectArtifactsStore.datasets;
-  } else {
-    return projectArtifactsStore.datasets.filter(e => (e.name == null || !e.name.startsWith('Debug: ')))
-  }
+  return projectArtifactsStore.datasets.filter((dataset) => {
+    const search = searchDataset.value.toLowerCase();
+    return (
+        (!search || search.length == 0) ||
+        dataset.name.toLowerCase().includes(search) ||
+        dataset.id.toString().includes(search)
+    ) && (!dataset.name.startsWith('Debug: ') || showDebugDatasets.value);
+  });
 });
 
 function downloadDataFile(id: string) {
