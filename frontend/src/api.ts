@@ -316,7 +316,7 @@ export const api = {
   async deleteModelFiles(modelId: string) {
     return apiV2.delete<unknown, MessageDTO>(`/models/${modelId}`);
   },
-  downloadModelFile(id: number) {
+  downloadModelFile(id: string) {
     downloadURL(`${API_V2_ROOT}/download/model/${id}`);
   },
   async editModelName(modelId: string, name: string) {
