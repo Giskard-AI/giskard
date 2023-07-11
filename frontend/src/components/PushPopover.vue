@@ -3,8 +3,9 @@
     <template v-slot:activator="{ on: onMenu }">
       <v-tooltip right>
         <template v-slot:activator='{ on: onTooltip }'>
-          <v-btn small icon outlined color="warning" class="ml-1"
+          <v-btn small icon outlined color="warning" class="ml-1 ripple"
                  v-on="{ ...onMenu, ...onTooltip }">
+            <div class="rim1"></div>
             <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
             <!--<v-badge top overlap color="transparent">
               <v-icon size="18" color="primary">mdi-warning</v-icon>
@@ -63,10 +64,13 @@ import {useCatalogStore} from "@/stores/catalog";
 import {storeToRefs} from "pinia";
 import {useProjectStore} from "@/stores/project";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import {$vfm} from "vue-final-modal";
+import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
+import {chain} from "lodash";
 
 const pushStore = usePushStore();
 const mainStore = useMainStore();
-const {slicingFunctionsByUuid} = storeToRefs(useCatalogStore())
+const {slicingFunctionsByUuid, testFunctionsByUuid} = storeToRefs(useCatalogStore())
 const catalogStore = useCatalogStore();
 const projectStore = useProjectStore();
 const debuggingStore = useDebuggingSessionsStore();
@@ -153,10 +157,24 @@ async function applyCta(kind: string) {
       }
       break;
     case "CreateTest":
-      mainStore.addSimpleNotification("Test created, add it to a test suite?");
+    case "AddTestToCatalog":
+      await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
+      const test = testFunctionsByUuid.value[uuid];
+      if (test !== undefined) {
+        console.log("Test found", test);
+        addToTestSuite(test);
+      } else {
+        console.log("Test not found");
+      }
       break;
     case "SavePerturbation":
       mainStore.addSimpleNotification("Perturbation saved");
+      break;
+    case "OpenDebuggerBorderline":
+      // Programmatically apply Borderline filter
+      break;
+    case "OpenDebuggerOverconfidence":
+      // Programmatically apply Overconfidence filter
       break;
     default:
       break;
@@ -164,7 +182,61 @@ async function applyCta(kind: string) {
   loading.value = "";
   opened.value = false;
 }
+
+function addToTestSuite(test) {
+  $vfm.show({
+    component: AddTestToSuite,
+    bind: {
+      projectId: projectStore.currentProjectId ?? 0,
+      test: test,
+      suiteId: null,
+      testArguments: chain(test.args)
+          .keyBy('name')
+          .mapValues(arg => ({
+            name: arg.name,
+            isAlias: false,
+            type: arg.type,
+            value: arg.optional ? arg.defaultValue : null,
+          }))
+          .value()
+    }
+  });
+}
 </script>
 
 <style scoped>
+.rim1 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  width: 0em;
+  height: 0em;
+  border: white .5em solid;
+  background: orange;
+  z-index: 0;
+}
+
+.rim1 {
+  animation: expand 2s ease-out infinite;
+}
+
+@keyframes expand {
+  0% {
+    top: calc(50% - .5em);
+    left: calc(50% - .5em);
+    width: 1em;
+    height: 1em;
+    border: white .25em solid;
+    opacity: 0.5;
+  }
+  100% {
+    top: calc(50% - 2em);
+    left: calc(50% - 2em);
+    width: 4em;
+    height: 4em;
+    border: white .5em solid;
+    opacity: 0;
+  }
+}
 </style>
