@@ -912,3 +912,54 @@ def datasetProcessing(ml_worker, params: dict, *args, **kwargs):
             for row in modified_rows.iterrows()
         ],
     }
+
+
+def map_result_to_single_test_result_ws(result) -> ml_worker_pb2.SingleTestResult:
+    if isinstance(result, TestResult):
+        return {
+            "passed": result.passed,
+            "is_error": result.is_error,
+            "messages": [
+                ml_worker_pb2.TestMessage(
+                    type=ml_worker_pb2.TestMessageType.ERROR
+                    if message.type == TestMessageLevel.ERROR
+                    else ml_worker_pb2.TestMessageType.INFO,
+                    text=message.text,
+                )
+                for message in result.messages
+            ]
+            if result.messages is not None
+            else [],
+            "props": result.props,
+            "metric": result.metric,
+            "missing_count": result.missing_count,
+            "missing_percent": result.missing_percent,
+            "unexpected_count": result.unexpected_count,
+            "unexpected_percent": result.unexpected_percent,
+            "unexpected_percent_total": result.unexpected_percent_total,
+            "unexpected_percent_nonmissing": result.unexpected_percent_nonmissing,
+            "partial_unexpected_index_list": [
+                {"value": puc.value, "count": puc.count} for puc in result.partial_unexpected_index_list
+            ],
+            "unexpected_index_list": result.unexpected_index_list,
+            "output_df": result.output_df,
+            "number_of_perturbed_rows": result.number_of_perturbed_rows,
+            "actual_slices_size": result.actual_slices_size,
+            "reference_slices_size": result.reference_slices_size,
+        }
+    elif isinstance(result, bool):
+        return {"passed": result}
+    else:
+        raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+@websocket_actor(MLWorkerAction.runAdHocTest)
+def runAdHocTest(ml_worker, params: dict, *args, **kwargs):
+    test: GiskardTest = GiskardTest.download(params["testUuid"], ml_worker.client, None)
+
+    arguments = parse_function_arguments(params["arguments"])
+
+    logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+    test_result = test.get_builder()(**arguments).execute()
+
+    return {"results": [{"testUuid": test.meta.uuid, "result": map_result_to_single_test_result_ws(test_result)}]}

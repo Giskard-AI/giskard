@@ -47,7 +47,7 @@ public class MLWorkerWSCommService {
             return switch (action) {
                 case getInfo -> objectMapper.readValue(result, MLWorkerWSGetInfoDTO.class);
                 // TODO: Create the DTO classes
-                case runAdHocTest -> null;
+                case runAdHocTest -> objectMapper.readValue(result, MLWorkerWSRunAdHocTestParamDTO.class);
                 case datasetProcessing -> objectMapper.readValue(result, MLWorkerWSDatasetProcessingDTO.class);
                 case runTestSuite -> null;
                 case runModel -> null;
