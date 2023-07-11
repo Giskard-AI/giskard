@@ -55,7 +55,7 @@ public class MLWorkerWSCommService {
                 case explain -> objectMapper.readValue(result, MLWorkerWSExplainDTO.class);
                 case explainText -> objectMapper.readValue(result, MLWorkerWSExplainTextDTO.class);
                 case echo -> null;
-                case generateTestSuite -> null;
+                case generateTestSuite -> objectMapper.readValue(result, MLWorkerWSGenerateTestSuiteDTO.class);
                 case stopWorker -> null;
                 case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
                 case generateQueryBasedSlicingFunction -> null;

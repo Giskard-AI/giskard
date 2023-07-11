@@ -1,5 +1,6 @@
 package ai.giskard.domain.ml;
 
+import ai.giskard.ml.dto.MLWorkerWSGeneratedTestInputDTO;
 import ai.giskard.worker.GeneratedTestInput;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +38,12 @@ public class FunctionInput implements Serializable {
     private List<FunctionInput> params = new ArrayList<>();
 
     public FunctionInput(GeneratedTestInput testInput) {
+        this.name = testInput.getName();
+        this.value = testInput.getValue();
+        this.isAlias = testInput.getIsAlias();
+    }
+
+    public FunctionInput(MLWorkerWSGeneratedTestInputDTO testInput) {
         this.name = testInput.getName();
         this.value = testInput.getValue();
         this.isAlias = testInput.getIsAlias();

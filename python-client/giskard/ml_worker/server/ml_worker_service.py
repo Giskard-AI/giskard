@@ -1010,3 +1010,31 @@ def runTestSuite(ml_worker, params: dict, *args, **kwargs) -> ml_worker_pb2.Test
     except Exception as exc:
         logger.exception("An error occurred during the test suite execution: %s", exc)
         return {"is_error": True, "is_pass": False, "results": [], "logs": log_listener.close()}
+
+
+def map_suite_input_ws(i):
+    if i["type"] == "Model" and i["model_meta"] is not None:
+        return ModelInput(i["name"], i["model_meta"]["model_type"])
+    elif i["type"] == "Dataset" and i["dataset_meta"] is not None:
+        return DatasetInput(i["name"], i["dataset_meta"]["target"])
+    else:
+        return SuiteInput(i["name"], i["type"])
+
+
+@websocket_actor(MLWorkerAction.generateTestSuite)
+def generateTestSuite(ml_worker, params: dict, *args, **kwargs):
+    inputs = [map_suite_input_ws(i) for i in params["inputs"]]
+
+    suite = Suite().generate_tests(inputs).to_dto(ml_worker.client, params["project_key"])
+
+    return {
+        "tests": [
+            {
+                "test_uuid": test.testUuid,
+                "inputs": [
+                    {"name": i.name, "value": i.value, "is_alias": i.is_alias} for i in test.functionInputs.values()
+                ],
+            }
+            for test in suite.tests
+        ]
+    }
