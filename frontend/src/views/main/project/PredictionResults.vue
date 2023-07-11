@@ -125,6 +125,10 @@ const props = withDefaults(defineProps<Props>(), {
   debounceTime: 250,
 });
 
+const chartInit = {
+  renderer: 'svg'
+}
+
 const prediction = ref<string | number | undefined>("");
 const resultProbabilities = ref<any>({});
 const loading = ref<boolean>(false);
@@ -255,12 +259,6 @@ function sliceLongCategoryName(obj: Object, max_size: number) {
 
 function isDefined(val: any) {
   return !_.isNil(val);
-}
-
-function chartInit() {
-  return {
-    renderer: 'svg'
-  }
 }
 
 const emit = defineEmits(["result"]);
