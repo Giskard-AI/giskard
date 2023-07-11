@@ -772,10 +772,13 @@ class CloudpickleBasedModel(WrapperModel, ABC):
                   artifact_path: str = "prediction-function-from-giskard",
                   **kwargs):
 
+        def _giskard_predict(df):
+            return self.predict(df)
+
         class MLflowModel(mlflow.pyfunc.PythonModel):
 
-            def predict(self, context, model_input):
-                return self.predict(model_input=model_input)
+            def predict(self, df):
+                return _giskard_predict(df)
 
         mlflow_model = MLflowModel()
         return mlflow.pyfunc.log_model(artifact_path=artifact_path, python_model=mlflow_model)
