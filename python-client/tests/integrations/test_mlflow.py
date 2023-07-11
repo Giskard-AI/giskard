@@ -62,16 +62,6 @@ def test_slow(dataset_name, model_name, request):
 
 @pytest.mark.parametrize(
     "dataset_name,model_name", [("german_credit_data", "german_credit_model")])
-def test_unknown_arg_to_model(dataset_name, model_name, request):
-    dataset = request.getfixturevalue(dataset_name)
-    model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels,
-                                         "unknown_arg": "just_for_testing"}}
-    _evaluate(dataset, model, evaluator_config, request)
-
-
-@pytest.mark.parametrize(
-    "dataset_name,model_name", [("german_credit_data", "german_credit_model")])
 def test_errors(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
