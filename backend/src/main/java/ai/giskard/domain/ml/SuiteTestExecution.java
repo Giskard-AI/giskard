@@ -1,6 +1,7 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
+import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.SingleTestResult;
@@ -97,4 +98,28 @@ public class SuiteTestExecution extends BaseEntity {
             .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
     }
 
+    public SuiteTestExecution(SuiteTest test,
+                              TestSuiteExecution execution,
+                              MLWorkerWSSingleTestResultDTO message) {
+        this.test = test;
+        this.execution = execution;
+        this.missingCount = message.getMissingCount();
+        this.missingPercent = message.getMissingPercent();
+        this.unexpectedCount = message.getUnexpectedCount();
+        this.unexpectedPercent = message.getUnexpectedPercent();
+        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
+        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
+        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexList();
+        this.unexpectedIndexList = message.getUnexpectedIndexList();
+        this.status = message.getIsError()
+            ? TestResult.ERROR : message.getPassed()
+            ? TestResult.PASSED : TestResult.FAILED;
+        this.metric = message.getMetric();
+        this.actualSlicesSize = message.getActualSlicesSize();
+        this.referenceSlicesSize = message.getReferenceSlicesSize();
+        this.messages = message.getMessages().stream().map(
+            msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
+        this.inputs = test.getFunctionInputs().stream()
+            .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
+    }
 }

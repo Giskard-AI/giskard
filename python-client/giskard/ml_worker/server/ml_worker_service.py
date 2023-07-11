@@ -963,3 +963,50 @@ def runAdHocTest(ml_worker, params: dict, *args, **kwargs):
     test_result = test.get_builder()(**arguments).execute()
 
     return {"results": [{"testUuid": test.meta.uuid, "result": map_result_to_single_test_result_ws(test_result)}]}
+
+
+@websocket_actor(MLWorkerAction.runTestSuite)
+def runTestSuite(ml_worker, params: dict, *args, **kwargs) -> ml_worker_pb2.TestSuiteResultMessage:
+    log_listener = LogListener()
+    try:
+        tests = [
+            {
+                "test": GiskardTest.download(t.testUuid, ml_worker.client, None),
+                "arguments": parse_function_arguments(t.arguments),
+                "id": t.id,
+            }
+            for t in params["tests"]
+        ]
+
+        global_arguments = parse_function_arguments(params["globalArguments"])
+
+        test_names = list(
+            map(
+                lambda t: t["test"].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
+                tests,
+            )
+        )
+        logger.info(f"Executing test suite: {test_names}")
+
+        suite = Suite()
+        for t in tests:
+            suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
+
+        is_pass, results = suite.run(**global_arguments)
+
+        identifier_single_test_results = []
+        for identifier, result in results:
+            identifier_single_test_results.append(
+                {"id": identifier, "result": map_result_to_single_test_result_ws(result)}
+            )
+
+        return {
+            "is_error": False,
+            "is_pass": is_pass,
+            "results": identifier_single_test_results,
+            "logs": log_listener.close(),
+        }
+
+    except Exception as exc:
+        logger.exception("An error occurred during the test suite execution: %s", exc)
+        return {"is_error": True, "is_pass": False, "results": [], "logs": log_listener.close()}

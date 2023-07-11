@@ -6,6 +6,7 @@ import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.ml.dto.MLWorkerWSArtifactRefDTO;
 import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
+import ai.giskard.ml.dto.MLWorkerWSSuiteTestArgumentDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
@@ -45,6 +46,29 @@ public class TestArgumentService {
         }
 
         return builder.build();
+    }
+
+    public MLWorkerWSSuiteTestArgumentDTO buildFixedTestArgumentWS(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey,
+                                                                   boolean sample) {
+        TestFunction testFunction = test.getTestFunction();
+        MLWorkerWSSuiteTestArgumentDTO argument = new MLWorkerWSSuiteTestArgumentDTO();
+        argument.setTestUuid(testFunction.getUuid().toString());
+        argument.setId(test.getId());
+
+        Map<String, FunctionArgument> arguments = testFunction.getArgs().stream()
+            .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
+
+        List<MLWorkerWSFuncArgumentDTO> args = new ArrayList<>(test.getFunctionInputs().size());
+        for (FunctionInput input : test.getFunctionInputs()) {
+            if (input.isAlias()) {
+                FunctionInput shared = globalArguments.get(input.getValue());
+                args.add(buildTestArgumentWS(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams(), sample));
+            } else {
+                args.add(buildTestArgumentWS(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), sample));
+            }
+        }
+
+        return argument;
     }
 
     public FuncArgument buildTestArgument(Map<String, FunctionArgument> arguments,
