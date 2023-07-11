@@ -82,6 +82,34 @@ def map_function_meta(callable_type):
     }
 
 
+def map_function_meta_ws(callable_type):
+    return {
+        test.uuid: {
+            "uuid": test.uuid,
+            "name": test.name,
+            "displayName": test.display_name,
+            "module": test.module,
+            "doc": test.doc,
+            "code": test.code,
+            "moduleDoc": test.module_doc,
+            "tags": test.tags,
+            "type": test.type,
+            "args": [
+                {
+                    "name": a.name,
+                    "type": a.type,
+                    "optional": a.optional,
+                    "default": str(a.default),
+                    "argOrder": a.argOrder,
+                }
+                for a in test.args.values()
+            ],
+        }
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
 def log_artifact_local(local_file, artifact_path=None):
     # Log artifact locally from an internal worker
     verify_artifact_path(artifact_path)
@@ -117,6 +145,37 @@ def map_dataset_process_function_meta(callable_type):
             columnType=test.column_type,
             processType=test.process_type.name,
         )
+        for test in tests_registry.get_all().values()
+        if test.type == callable_type
+    }
+
+
+def map_dataset_process_function_meta_ws(callable_type):
+    return {
+        test.uuid: {
+            "uuid": test.uuid,
+            "name": test.name,
+            "displayName": test.display_name,
+            "module": test.module,
+            "doc": test.doc,
+            "code": test.code,
+            "moduleDoc": test.module_doc,
+            "tags": test.tags,
+            "type": test.type,
+            "args": [
+                {
+                    "name": a.name,
+                    "type": a.type,
+                    "optional": a.optional,
+                    "default": str(a.default),
+                    "argOrder": a.argOrder,
+                }
+                for a in test.args.values()
+            ],
+            "cellLevel": test.cell_level,
+            "columnType": test.column_type,
+            "processType": test.process_type.name,
+        }
         for test in tests_registry.get_all().values()
         if test.type == callable_type
     }
@@ -762,4 +821,13 @@ def explain_text_ws(ml_worker, params: dict, *args, **kwargs):
     return {
         "weights": {str(k): {"weights": [weight for weight in map_features_weight[k]]} for k in map_features_weight},
         "words": list_words,
+    }
+
+
+@websocket_actor(MLWorkerAction.getCatalog)
+def getCatalog(*args, **kwargs):
+    return {
+        "tests": map_function_meta_ws("TEST"),
+        "slices": map_dataset_process_function_meta_ws("SLICE"),
+        "transformations": map_dataset_process_function_meta_ws("TRANSFORMATION"),
     }

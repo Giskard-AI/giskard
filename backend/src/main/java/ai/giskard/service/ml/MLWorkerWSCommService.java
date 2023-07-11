@@ -57,7 +57,7 @@ public class MLWorkerWSCommService {
                 case echo -> null;
                 case generateTestSuite -> null;
                 case stopWorker -> null;
-                case getCatalog -> null;
+                case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
                 case generateQueryBasedSlicingFunction -> null;
             };
         } catch (InterruptedException e) {
