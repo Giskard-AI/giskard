@@ -6,6 +6,7 @@ import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.ml.dto.MLWorkerWSExplainDTO;
+import ai.giskard.ml.dto.MLWorkerWSExplainTextDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunModelForDataFrameDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
@@ -110,11 +111,11 @@ public class ModelController {
         InspectionSettings inspectionSettings = projectRepository.getMandatoryById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
-        ExplainTextResponse textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
-        textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
-            explanationRes.getWeights().put(label, weightPerFeature.getWeightsList())
+        MLWorkerWSExplainTextDTO textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
+        textResponse.getWeights().forEach((label, weightPerFeature) ->
+            explanationRes.getWeights().put(label, weightPerFeature.getWeights())
         );
-        explanationRes.setWords(textResponse.getWordsList());
+        explanationRes.setWords(textResponse.getWords());
         return explanationRes;
     }
 

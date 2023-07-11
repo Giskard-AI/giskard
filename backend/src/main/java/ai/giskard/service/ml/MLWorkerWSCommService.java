@@ -2,10 +2,7 @@ package ai.giskard.service.ml;
 
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
-import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
-import ai.giskard.ml.dto.MLWorkerWSExplainDTO;
-import ai.giskard.ml.dto.MLWorkerWSGetInfoDTO;
-import ai.giskard.ml.dto.MLWorkerWSRunModelForDataFrameDTO;
+import ai.giskard.ml.dto.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +53,7 @@ public class MLWorkerWSCommService {
                 case runModel -> null;
                 case runModelForDataFrame -> objectMapper.readValue(result, MLWorkerWSRunModelForDataFrameDTO.class);
                 case explain -> objectMapper.readValue(result, MLWorkerWSExplainDTO.class);
-                case explainText -> null;
+                case explainText -> objectMapper.readValue(result, MLWorkerWSExplainTextDTO.class);
                 case echo -> null;
                 case generateTestSuite -> null;
                 case stopWorker -> null;

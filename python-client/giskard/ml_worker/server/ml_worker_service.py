@@ -743,3 +743,23 @@ def explain_ws(ml_worker, params: dict, *args, **kwargs):
     logger.info(explanations)
 
     return {"explanations": {str(k): {"per_feature": v} for k, v in explanations["explanations"].items()}}
+
+
+@websocket_actor(MLWorkerAction.explainText)
+def explain_text_ws(ml_worker, params: dict, *args, **kwargs):
+    n_samples = 500 if params["n_samples"] <= 0 else params["n_samples"]
+    model = BaseModel.download(ml_worker.client, params["model"]["project_key"], params["model"]["id"])
+    text_column = params["feature_name"]
+
+    if params["column_types"][text_column] != "text":
+        raise ValueError(f"Column {text_column} is not of type text")
+    text_document = params["columns"][text_column]
+    input_df = pd.DataFrame({k: [v] for k, v in params["columns"].items()})
+    if model.meta.feature_names:
+        input_df = input_df[model.meta.feature_names]
+    (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+    map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
+    return {
+        "weights": {str(k): {"weights": [weight for weight in map_features_weight[k]]} for k in map_features_weight},
+        "words": list_words,
+    }

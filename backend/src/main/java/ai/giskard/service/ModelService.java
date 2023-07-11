@@ -133,18 +133,29 @@ public class ModelService {
         return response;
     }
 
-    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
-        ExplainTextResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            response = client.getBlockingStub().explainText(
-                ExplainTextRequest.newBuilder()
-                    .setModel(grpcMapper.createRef(model))
-                    .setFeatureName(featureName)
-                    .putAllColumns(features)
-                    .putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
-                    .setNSamples(inspectionSettings.getLimeNumberSamples())
-                    .build()
+    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
+        MLWorkerWSExplainTextDTO response = null;
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
+            modelRef.setProjectKey(model.getProject().getKey());
+            modelRef.setId(model.getId().toString());
+
+            MLWorkerWSExplainTextParamDTO param = new MLWorkerWSExplainTextParamDTO();
+            param.setModel(modelRef);
+            param.setFeatureName(featureName);
+            param.setColumns(features);
+            param.setColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            param.setNSamples(inspectionSettings.getLimeNumberSamples());
+
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.explainText,
+                param
             );
+            if (result != null && result instanceof MLWorkerWSExplainTextDTO) {
+                response = (MLWorkerWSExplainTextDTO) result;
+            }
         }
         return response;
     }
