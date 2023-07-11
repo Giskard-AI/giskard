@@ -3,6 +3,10 @@ package ai.giskard.service.ml;
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.grpc.MLWorkerClientErrorInterceptor;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSEchoMsgDTO;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.worker.EchoMsg;
@@ -32,6 +36,8 @@ public class MLWorkerService {
     private final Logger log = LoggerFactory.getLogger(MLWorkerService.class);
     private final ApplicationProperties applicationProperties;
     private final MLWorkerTunnelService mlWorkerTunnelService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
 
 
     @Nullable
@@ -84,15 +90,22 @@ public class MLWorkerService {
 
     @Scheduled(fixedRateString = "${giskard.external-worker-heartbeat-interval-seconds:60}", timeUnit = TimeUnit.SECONDS)
     public void sendHeartbeatToConnectedWorkers() {
-        if (isExternalWorkerConnected()) {
+        if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
             log.debug("Executing ML Worker heartbeat");
-            try (MLWorkerClient client = createClient(false)) {
-                EchoMsg echo = client.getBlockingStub().echo(EchoMsg.newBuilder().setMsg(HEARTBEAT_MESSAGE).build());
-                if (!HEARTBEAT_MESSAGE.equals(echo.getMsg())) {
-                    log.warn("ML Worker heartbeat returned unexpected result: {}", echo.getMsg());
+            MLWorkerWSEchoMsgDTO echoMsg = new MLWorkerWSEchoMsgDTO();
+            echoMsg.setMsg(HEARTBEAT_MESSAGE);
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.echo,
+                echoMsg
+            );
+            if (result instanceof MLWorkerWSEchoMsgDTO) {
+                MLWorkerWSEchoMsgDTO reply = (MLWorkerWSEchoMsgDTO) result;
+                if (!HEARTBEAT_MESSAGE.equals(reply.getMsg())) {
+                    log.warn("ML Worker heartbeat returned unexpected result: {}", reply.getMsg());
                 }
-            } catch (Exception e) {
-                log.warn("Failed to perform ML Worker heartbeat", e);
+            } else {
+                log.warn("Cannot get ML Worker heartbeat message");
             }
         }
     }

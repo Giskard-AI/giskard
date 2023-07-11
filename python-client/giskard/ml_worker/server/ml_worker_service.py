@@ -1038,3 +1038,8 @@ def generateTestSuite(ml_worker, params: dict, *args, **kwargs):
             for test in suite.tests
         ]
     }
+
+
+@websocket_actor(MLWorkerAction.echo)
+def echo(params: dict, *args, **kwargs):
+    return params
