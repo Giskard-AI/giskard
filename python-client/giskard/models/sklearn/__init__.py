@@ -77,7 +77,7 @@ class SKLearnModel(MLFlowBasedModel):
     def _get_pyfunc_predict_fn(self):
         if self.is_classification:
             return "predict_proba"
-        elif self.is_regression:
+        elif self.is_regression or self.is_text_generation:
             return "predict"
         else:
             raise ValueError("Unsupported model type")
@@ -92,7 +92,7 @@ class SKLearnModel(MLFlowBasedModel):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):
-        if self.is_regression:
+        if self.is_regression or self.is_text_generation:
             return self.model.predict(df)
         else:
             return self.model.predict_proba(df)
