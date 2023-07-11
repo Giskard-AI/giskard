@@ -589,7 +589,7 @@ def clean(delete_data):
 @click.option(
     "--token",
     "token",
-    required=False,
+    required=True,
     help="In case you have an ngrok account, you can use a token "
     "generated from https://dashboard.ngrok.com/get-started/your-authtoken",
 )

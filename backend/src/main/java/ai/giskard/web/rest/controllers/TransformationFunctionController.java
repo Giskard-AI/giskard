@@ -21,16 +21,22 @@ public class TransformationFunctionController {
     private final TransformationFunctionRepository transformationFunctionRepository;
     private final TransformationFunctionService transformationFunctionService;
 
-    @GetMapping("/transformations/{uuid}")
+    @GetMapping({"project/{projectKey}/transformations/{uuid}", "/transformations/{uuid}"})
     @Transactional(readOnly = true)
-    public TransformationFunctionDTO getTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid) {
+    public TransformationFunctionDTO getTransformationFunction(
+        @PathVariable(value = "projectKey", required = false) String projectKey,
+        @PathVariable("uuid") @NotNull UUID uuid) {
+        // TODO GSK-1280: add projectKey to slicing function
         return giskardMapper.toDTO(transformationFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping("/transformations/{uuid}")
+    @PutMapping({"project/{projectKey}/transformations/{uuid}", "/transformations/{uuid}"})
     @Transactional
-    public TransformationFunctionDTO updateTransformationFunction(@PathVariable("uuid") @NotNull UUID uuid,
-                                                                  @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
+    public TransformationFunctionDTO updateTransformationFunction(
+        @PathVariable(value = "projectKey", required = false) String projectKey,
+        @PathVariable("uuid") @NotNull UUID uuid,
+        @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
+        transformationFunction.setProjectKey(projectKey);
         return transformationFunctionService.save(transformationFunction);
     }
 

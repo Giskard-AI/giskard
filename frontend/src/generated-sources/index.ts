@@ -1,7 +1,6 @@
 export const GENERATED_MAPPING = {
     'ai.giskard.domain.ColumnType' : 'ColumnType',
     'ai.giskard.domain.GeneralSettings' : 'GeneralSettings',
-    'ai.giskard.domain.InspectionSettings' : 'InspectionSettings',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.domain.ml.ModelLanguage' : 'ModelLanguage',
     'ai.giskard.domain.ml.ModelType' : 'ModelType',
@@ -100,7 +99,6 @@ export const GENERATED_MAPPING = {
 };
 export * from './ai/giskard/domain/column-type';
 export * from './ai/giskard/domain/general-settings';
-export * from './ai/giskard/domain/inspection-settings';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/domain/ml/model-language';
 export * from './ai/giskard/domain/ml/model-type';

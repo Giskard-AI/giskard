@@ -1,18 +1,18 @@
 <template>
   <div class="vertical-container">
-    <div class="d-flex mb-6">
-      <v-spacer></v-spacer>
-      <div class="mr-2">
-        <v-btn @click="reloadModels">
-          Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-        <v-btn v-if="projectArtifactsStore.models.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
-        </v-btn>
-      </div>
-    </div>
+    <v-row class="mt-2 pl-3">
+      <v-col cols='4'>
+        <v-text-field v-model='searchModel' append-icon='search' label='Search for a model' outlined></v-text-field>
+      </v-col>
+      <v-col cols="8">
+        <div class="d-flex justify-end mb-6">
+          <v-btn v-if="projectArtifactsStore.models.length > 0" class="mr-2" href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
+            add a model
+            <v-icon right>mdi-open-in-new</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     <LoadingFullscreen v-if="isLoading" name="models" />
     <v-container v-if="projectArtifactsStore.models.length > 0 && !isLoading" fluid class="vc">
       <v-card flat>
@@ -25,7 +25,7 @@
           <v-col cols="3" class="col-container">Actions</v-col>
         </v-row>
       </v-card>
-      <v-card class="grey lighten-5" v-for="m in        projectArtifactsStore.models      " :key="m.id" outlined tiled>
+      <v-card class="grey lighten-5" v-for="m in filteredModels" :key="m.id" outlined tiled>
         <v-row class="px-2 py-1 align-center">
           <v-col cols="3" class="font-weight-bold" :title="m.name">
             <InlineEditText :text="m.name" :can-edit="isProjectOwnerOrAdmin" @save="(name) => renameModel(m.id, name)">
@@ -45,13 +45,13 @@
           </v-col>
           <v-col cols="3">
             <div>
-              <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="showInspectDialog = true; modelToInspect = m">
+              <v-btn small tile color="primaryLight" class="primaryLightBtn mr-1" @click="showInspectDialog = true; modelToInspect = m">
                 <v-icon dense left>policy</v-icon>
                 Debug
               </v-btn>
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-btn icon color="info" @click=" downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
+                  <v-btn icon @click=" downloadModelPickle(m.id)" v-bind="attrs" v-on="on">
                     <v-icon>download</v-icon>
                   </v-btn>
                 </template>
@@ -63,6 +63,13 @@
         </v-row>
         <v-divider></v-divider>
       </v-card>
+
+      <div class="d-flex flex-column align-center justify-center mt-6">
+        <v-btn small @click="reloadModels" plain>
+          <span class="caption">Refresh</span>
+          <v-icon size="small" class="ml-1">refresh</v-icon>
+        </v-btn>
+      </div>
 
       <!-- Dialog for launching model inspection -->
       <v-dialog v-if="isMLWorkerConnected" v-model="showInspectDialog" @click:outside="cancelLaunchInspector" max-width="600">
@@ -83,31 +90,42 @@
       </v-dialog>
 
     </v-container>
-    <v-container v-else-if="apiAccessToken && apiAccessToken.id_token && !isLoading">
-      <p class="font-weight-medium secondary--text">There are no models in this project yet. Follow the code snippet below to upload a model 👇</p>
-      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
+    <v-container v-else-if="!isLoading">
+      <v-alert class='text-center'>
+        <p class='headline font-weight-medium grey--text text--darken-2'>There are no models in this project yet. <br>Click the button below to learn how to upload a model.</p>
+      </v-alert>
+      <div class="d-flex justify-center">
+        <v-btn href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank" rel="noopener">
+          add a new model
+          <v-icon right>mdi-open-in-new</v-icon>
+        </v-btn>
+      </div>
+      <div class="d-flex justify-center mb-6">
+        <img src="@/assets/logo_models.png" class="models-logo" title="Models tab logo" alt="A turtle drinking coffee and using a laptop">
+      </div>
+      <div class="d-flex justify-center mt-6">
+        <v-btn small @click="reloadModels" plain>
+          <span class="caption">Refresh</span>
+          <v-icon size="small" class="ml-1">refresh</v-icon>
+        </v-btn>
+      </div>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
 import { api } from '@/api';
-import { apiURL } from "@/env";
 import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
 import InspectorLauncher from './InspectorLauncher.vue';
-import { JWTToken, ModelDTO } from '@/generated-sources';
+import { ModelDTO } from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
-import { computed, onBeforeMount, onMounted, ref } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import CodeSnippet from '@/components/CodeSnippet.vue';
-import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { state } from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
@@ -126,32 +144,21 @@ const props = defineProps<Props>();
 const isLoading = ref<boolean>(false);
 const showInspectDialog = ref<boolean>(false);
 const modelToInspect = ref<ModelDTO | null>(null);
-const apiAccessToken = ref<JWTToken | null>(null);
+const searchModel = ref<string>('');
+
+const filteredModels = computed(() => {
+  return projectArtifactsStore.models.filter((model) => {
+    const search = searchModel.value.toLowerCase();
+    return (
+      model.name.toLowerCase().includes(search) ||
+      model.id.toString().includes(search)
+    );
+  });
+});
 
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;
 });
-
-const codeContent = computed(
-  // language=Python
-  () =>
-    `import giskard
-
-original_model, _ = giskard.demo.titanic()  # for demo purposes only 🛳️. Replace with your model creation
-
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
-
-# Wrap your model with Giskard model 🎁
-giskard_model = giskard.Model(original_model, model_type="classification", name="Titanic model")
-
-# Upload to the current project ✉️
-giskard_model.upload(client, "${project.value!.key}")`
-)
 
 const project = computed(() => {
   return projectStore.project(props.projectId)
@@ -168,16 +175,6 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
-
-function openUploadDialog() {
-  $vfm.show({
-    component: UploadArtifactModal,
-    bind: {
-      title: 'Upload a model',
-      codeContent: codeContent.value,
-    },
-  });
-}
 
 async function deleteModelPickle(id: string) {
   mixpanel.track('Delete model', { id });
@@ -211,21 +208,9 @@ async function reloadModels() {
   }
 }
 
-const generateApiAccessToken = async () => {
-  try {
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
-})
-
-onMounted(async () => {
-  await generateApiAccessToken();
-})
+});
 </script>
 
 <style>
@@ -237,5 +222,10 @@ div.v-dialog {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.models-logo {
+  height: max(50vh, 150px);
+  margin-top: 2rem;
 }
 </style>

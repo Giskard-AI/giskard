@@ -73,7 +73,7 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-feedbacks', params: { id: currentProjectId } }" value="feedbacks">
+            <v-list-item :to="{ name: 'project-feedback', params: { id: currentProjectId } }" value="feedbacks">
               <v-list-item-content>
                 <v-icon>mdi-comment-multiple-outline</v-icon>
                 <div class="caption">Feedback</div>

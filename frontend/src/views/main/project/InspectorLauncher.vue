@@ -105,7 +105,7 @@ async function launchInspector() {
     debuggingSessionsStore.setCurrentDebuggingSessionId(inspection.id);
 
     await router.push({
-      name: 'inspection', params: {
+      name: 'project-debugger-inspection', params: {
         id: props.projectId.toString(),
         inspectionId: inspection.id.toString(),
       }
