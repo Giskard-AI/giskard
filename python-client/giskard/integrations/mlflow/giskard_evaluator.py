@@ -1,7 +1,8 @@
 import pandas as pd
-from mlflow import MlflowClient
 import re
 import logging
+from mlflow import MlflowClient
+from mlflow.models.evaluation import ModelEvaluator
 
 from ...models.automodel import Model
 from ...datasets.base import Dataset
@@ -9,8 +10,7 @@ from ...scanner import scan
 from ...core.core import SupportedModelTypes
 from ...core.model_validation import ValidationFlags
 from ...utils.analytics_collector import analytics
-
-from mlflow.models.evaluation import ModelEvaluator
+from ...utils import fullname
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,10 @@ class GiskardEvaluator(ModelEvaluator):
                                         model_type=gsk_model_types[model_type],
                                         feature_names=dataset.feature_names,
                                         **evaluator_config)
-            properties.update({"model_id": str(model.id)})
+            properties.update(
+                {"model_class": fullname(giskard_model),
+                 "model_inner_class": fullname(giskard_model.model)})
+
             analytics.track("mlflow_integration", properties)
         except Exception as e:
             analytics.track(
