@@ -773,8 +773,9 @@ class CloudpickleBasedModel(WrapperModel, ABC):
                   **kwargs):
 
         class MLflowModel(mlflow.pyfunc.PythonModel):
-            def predict(self, df):
-                return self.predict(df)
+
+            def predict(self, context, model_input):
+                return self.predict(model_input=model_input)
 
         mlflow_model = MLflowModel()
         return mlflow.pyfunc.log_model(artifact_path=artifact_path, python_model=mlflow_model)
