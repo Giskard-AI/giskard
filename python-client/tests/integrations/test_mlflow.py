@@ -39,7 +39,7 @@ def _evaluate(dataset, model, evaluator_config, request):
 def test_fast(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"classification_labels": model.meta.classification_labels}
+    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
     _evaluate(dataset, model, evaluator_config, request)
 
 
@@ -56,7 +56,7 @@ def test_fast(dataset_name, model_name, request):
 def test_slow(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"classification_labels": model.meta.classification_labels}
+    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
     _evaluate(dataset, model, evaluator_config, request)
 
 
@@ -65,8 +65,8 @@ def test_slow(dataset_name, model_name, request):
 def test_unknown_arg_to_model(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"classification_labels": model.meta.classification_labels,
-                        "unknown_arg": "just_for_testing"}
+    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels,
+                                         "unknown_arg": "just_for_testing"}}
     _evaluate(dataset, model, evaluator_config, request)
 
 
@@ -75,7 +75,7 @@ def test_unknown_arg_to_model(dataset_name, model_name, request):
 def test_errors(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"classification_labels": model.meta.classification_labels}
+    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
 
     # dataset type error
     dataset_copy = dataset.copy()
@@ -96,7 +96,7 @@ def test_errors(dataset_name, model_name, request):
 
     # model wrapping error
     dataset_copy = dataset.copy()
-    evaluator_config = {"classification_labels": None}
+    evaluator_config = {"model_config": {"classification_labels": None}}
 
     with pytest.raises(Exception) as e:
         _evaluate(dataset_copy, model, evaluator_config, request)
@@ -106,7 +106,7 @@ def test_errors(dataset_name, model_name, request):
     dataset_copy = dataset.copy()
     cl = model.meta.classification_labels
     cl.append("unknown_label")
-    evaluator_config = {"classification_labels": cl}
+    evaluator_config = {"model_config": {"classification_labels": cl}}
 
     with pytest.raises(Exception) as e:
         _evaluate(dataset_copy, model, evaluator_config, request)
