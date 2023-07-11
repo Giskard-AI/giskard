@@ -914,7 +914,7 @@ def datasetProcessing(ml_worker, params: dict, *args, **kwargs):
     }
 
 
-def map_result_to_single_test_result_ws(result) -> ml_worker_pb2.SingleTestResult:
+def map_result_to_single_test_result_ws(result):
     if isinstance(result, TestResult):
         return {
             "passed": result.passed,
@@ -966,7 +966,7 @@ def runAdHocTest(ml_worker, params: dict, *args, **kwargs):
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def runTestSuite(ml_worker, params: dict, *args, **kwargs) -> ml_worker_pb2.TestSuiteResultMessage:
+def runTestSuite(ml_worker, params: dict, *args, **kwargs):
     log_listener = LogListener()
     try:
         tests = [
