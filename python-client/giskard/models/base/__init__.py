@@ -769,9 +769,8 @@ class CloudpickleBasedModel(WrapperModel, ABC):
             )
 
     def to_mlflow(self,
-                  artifact_path="prediction-function-from-giskard",
+                  artifact_path: str = "prediction-function-from-giskard",
                   **kwargs):
-        import mlflow
 
         class MLflowModel(mlflow.pyfunc.PythonModel):
             def predict(self, df):

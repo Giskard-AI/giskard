@@ -145,6 +145,6 @@ class HuggingFaceModel(WrapperModel):
 
         return self.model(**data)
 
-    def to_mlflow(self, artifact_path="transformers-model-from-giskard", **kwargs):
+    def to_mlflow(self, artifact_path: str = "transformers-model-from-giskard", **kwargs):
         import mlflow
         return mlflow.transformers.log_model(self.model, artifact_path, **kwargs)

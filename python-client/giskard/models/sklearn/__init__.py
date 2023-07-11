@@ -74,16 +74,17 @@ class SKLearnModel(MLFlowBasedModel):
             **kwargs,
         )
 
-    def save_model(self, local_path, mlflow_meta):
+    def _get_pyfunc_predict_fn(self):
         if self.is_classification:
-            pyfunc_predict_fn = "predict_proba"
+            return "predict_proba"
         elif self.is_regression:
-            pyfunc_predict_fn = "predict"
+            return "predict"
         else:
             raise ValueError("Unsupported model type")
 
+    def save_model(self, local_path, mlflow_meta):
         mlflow.sklearn.save_model(
-            self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
+            self.model, path=local_path, pyfunc_predict_fn=self._get_pyfunc_predict_fn(), mlflow_model=mlflow_meta
         )
 
     @classmethod
@@ -99,10 +100,6 @@ class SKLearnModel(MLFlowBasedModel):
     def to_mlflow(self,
                   artifact_path="sklearn-model-from-giskard",
                   **kwargs):
-        if self.is_classification:
-            pyfunc_predict_fn = "predict_proba"
-        elif self.is_regression:
-            pyfunc_predict_fn = "predict"
         return mlflow.sklearn.log_model(sk_model=self.model, artifact_path=artifact_path,
-                                        pyfunc_predict_fn=pyfunc_predict_fn,
+                                        pyfunc_predict_fn=self._get_pyfunc_predict_fn(),
                                         **kwargs)

@@ -20,5 +20,5 @@ class CatboostModel(SKLearnModel):
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
         mlflow.catboost.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
-    def to_mlflow(self, artifact_path="catboost-model-from-giskard", **kwargs):
+    def to_mlflow(self, artifact_path: str = "catboost-model-from-giskard", **kwargs):
         return mlflow.catboost.log_model(self.model, artifact_path, **kwargs)

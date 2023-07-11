@@ -70,5 +70,5 @@ class LangchainModel(MLFlowBasedModel):
 
         return self.__class__(chain, **model_kwargs)
 
-    def to_mlflow(self, artifact_path="langchain-model-from-giskard", **kwargs):
+    def to_mlflow(self, artifact_path: str = "langchain-model-from-giskard", **kwargs):
         return mlflow.langchain.log_model(self.model, artifact_path, **kwargs)

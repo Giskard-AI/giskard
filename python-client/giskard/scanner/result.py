@@ -6,6 +6,7 @@ from html import escape
 from pathlib import Path
 from collections import defaultdict
 from jinja2 import Environment, PackageLoader, select_autoescape
+from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
 from .visualization.custom_jinja import pluralize, format_metric
@@ -127,21 +128,24 @@ class ScanResult:
             {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )
 
-    def to_mlflow(self, client=None, run_id=None, summary=True, model_artifact_path=""):
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None, summary: bool = True,
+                  model_artifact_path: str = ""):
         results_df = self.to_dataframe()
         results_df.metric = results_df.metric.replace("=.*", "", regex=True)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
 
-        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path+"-", suffix=".html") as f:
+        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path + "-",
+                                         suffix=".html") as f:
             scan_results_filename = f.name
             self.to_html(scan_results_filename)
 
-            if client is None and run_id is None:
+            if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_artifact(scan_results_filename)
                 if summary:
-                    mlflow.log_table(results_df, artifact_file="scan-summary"+model_artifact_path+".json")
-            elif client and run_id:
-                client.log_artifact(run_id, scan_results_filename)
+                    mlflow.log_table(results_df, artifact_file="scan-summary" + model_artifact_path + ".json")
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_artifact(mlflow_run_id, scan_results_filename)
                 if summary:
-                    client.log_table(run_id, results_df, artifact_file="scan-summary"+model_artifact_path+".json")
+                    mlflow_client.log_table(mlflow_run_id, results_df,
+                                            artifact_file="scan-summary" + model_artifact_path + ".json")

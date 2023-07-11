@@ -192,7 +192,7 @@ class PyTorchModel(MLFlowBasedModel):
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
             )
 
-    def to_mlflow(self, artifact_path="pytorch-model-from-giskard", **kwargs):
+    def to_mlflow(self, artifact_path: str = "pytorch-model-from-giskard", **kwargs):
         return mlflow.pytorch.log_model(self.model, artifact_path, **kwargs)
 
 

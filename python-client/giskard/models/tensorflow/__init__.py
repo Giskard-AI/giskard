@@ -14,16 +14,16 @@ logger = logging.getLogger(__name__)
 class TensorFlowModel(MLFlowBasedModel):
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+            model_postprocessing_function: Callable[[Any], Any] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ):
         super().__init__(
             model=model,
@@ -46,3 +46,6 @@ class TensorFlowModel(MLFlowBasedModel):
 
     def model_predict(self, data):
         return self.model.predict(data)
+
+    def to_mlflow(self, artifact_path: str = "tensorflow-model-from-giskard", **kwargs):
+        return mlflow.tensorflow.log_model(self.model, artifact_path, **kwargs)

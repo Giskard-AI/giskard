@@ -618,7 +618,9 @@ class Dataset(ColumnMetadataMixin):
     def to_mlflow(self, client=None, run_id=None):
         import mlflow
         with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv") as f:
-            self.df.to_csv(f.name)
+            with open(f.name, "wb") as fw:
+                uncompressed_bytes = save_df(self.df)
+                fw.write(uncompressed_bytes)
             if client is None and run_id is None:
                 mlflow.log_artifact(f.name)
             elif client and run_id:

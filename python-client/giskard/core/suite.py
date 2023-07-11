@@ -3,6 +3,7 @@ import logging
 import traceback
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional
+from mlflow import MlflowClient
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
@@ -61,17 +62,17 @@ class TestSuiteResult(tuple):
             tests_results,
         )
 
-    def to_mlflow(self, client=None, run_id=None):
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
         from giskard.integrations.mlflow.giskard_evaluator import process_text
 
         for test_result in self[1]:
             test_name = test_result[0]
             test_name = process_text(test_name)
-            if client is None and run_id is None:
+            if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_metric(test_name, test_result[1].metric)
-            elif client and run_id:
-                client.log_metric(run_id, test_name, test_result[1].metric)
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
 
 
 class SuiteInput:
@@ -98,7 +99,7 @@ class SuiteInput:
 
     def __init__(self, name: str, ptype: Any) -> None:
         assert (
-            ptype in suite_input_types
+                ptype in suite_input_types
         ), f"Type should be one of those: {suite_input_types}"
         self.name = name
         self.type = ptype
@@ -374,7 +375,7 @@ class Suite:
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
     def add_test(
-        self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params
+            self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params
     ) -> "Suite":
         """
         Add a test to the suite.
@@ -453,18 +454,18 @@ class Suite:
         return self
 
     def _add_test_if_suitable(
-        self, test_func: TestFunctionMeta, inputs: List[SuiteInput]
+            self, test_func: TestFunctionMeta, inputs: List[SuiteInput]
     ):
         required_args = [arg for arg in test_func.args.values() if arg.default is None]
         input_dict: Dict[str, SuiteInput] = {i.name: i for i in inputs}
 
         if any(
-            [
-                arg
-                for arg in required_args
-                if arg.name not in input_dict
-                or arg.type != input_dict[arg.name].type.__name__
-            ]
+                [
+                    arg
+                    for arg in required_args
+                    if arg.name not in input_dict
+                       or arg.type != input_dict[arg.name].type.__name__
+                ]
         ):
             # Test is not added if an input  without default value is not specified
             # or if an input does not match the required type
@@ -484,20 +485,20 @@ class Suite:
             modelInput
             for modelInput in input_dict.values()
             if isinstance(modelInput, ModelInput)
-            and modelInput.model_type is not None
-            and modelInput.model_type != ""
+               and modelInput.model_type is not None
+               and modelInput.model_type != ""
         ]
         if any(models) and not contains_tag(test_func, next(iter(models)).model_type):
             return
 
         if contains_tag(test_func, "ground_truth") and any(
-            [
-                dataset
-                for dataset in input_dict.values()
-                if isinstance(dataset, DatasetInput)
-                and dataset.target is None
-                and dataset.target != ""
-            ]
+                [
+                    dataset
+                    for dataset in input_dict.values()
+                    if isinstance(dataset, DatasetInput)
+                       and dataset.target is None
+                       and dataset.target != ""
+                ]
         ):
             return
 
