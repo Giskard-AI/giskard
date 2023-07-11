@@ -831,3 +831,84 @@ def getCatalog(*args, **kwargs):
         "slices": map_dataset_process_function_meta_ws("SLICE"),
         "transformations": map_dataset_process_function_meta_ws("TRANSFORMATION"),
     }
+
+
+def parse_function_arguments(ml_worker, request_arguments):
+    arguments = dict()
+
+    for arg in request_arguments:
+        if arg["none"]:
+            continue
+        if "dataset" in arg.keys():
+            arguments[arg["name"]] = Dataset.download(
+                ml_worker.client, arg["dataset"]["project_key"], arg["dataset"]["id"], arg["dataset"]["sample"]
+            )
+        elif "model" in arg.keys():
+            arguments[arg["name"]] = BaseModel.download(
+                ml_worker.client, arg["model"]["project_key"], arg["model"]["id"]
+            )
+        elif "slicingFunction" in arg.keys():
+            arguments[arg["name"]] = SlicingFunction.download(arg["slicingFunction"]["id"], ml_worker.client, None)(
+                **parse_function_arguments(arg["args"])
+            )
+        elif "transformationFunction" in arg.keys():
+            arguments[arg["name"]] = TransformationFunction.download(
+                arg["transformationFunction"]["id"], ml_worker.client, None
+            )(**parse_function_arguments(arg["args"]))
+        elif "float" in arg.keys():
+            arguments[arg["name"]] = float(arg["float"])
+        elif "int" in arg.keys():
+            arguments[arg["name"]] = int(arg["int"])
+        elif "str" in arg.keys():
+            arguments[arg["name"]] = str(arg["str"])
+        elif "bool" in arg.keys():
+            arguments[arg["name"]] = bool(arg["bool"])
+        elif "kwargs" in arg.keys():
+            kwargs = dict()
+            exec(arg["kwargs"], {"kwargs": kwargs})
+            arguments.update(kwargs)
+        else:
+            raise IllegalArgumentError("Unknown argument type")
+    return arguments
+
+
+@websocket_actor(MLWorkerAction.datasetProcessing)
+def datasetProcessing(ml_worker, params: dict, *args, **kwargs):
+    dataset = Dataset.download(
+        ml_worker.client, params["dataset"]["project_key"], params["dataset"]["id"], params["dataset"]["sample"]
+    )
+
+    for function in params["dataset"]["functions"]:
+        arguments = parse_function_arguments(function["arguments"])
+        if "slicingFunction" in function.keys():
+            dataset.add_slicing_function(
+                SlicingFunction.download(function["slicingFunction"]["id"], ml_worker.client, None)(**arguments)
+            )
+        else:
+            dataset.add_transformation_function(
+                TransformationFunction.download(function["transformationFunction"]["id"], ml_worker.client, None)(
+                    **arguments
+                )
+            )
+
+    result = dataset.process()
+
+    filtered_rows_idx = dataset.df.index.difference(result.df.index)
+    modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how="all")
+
+    return {
+        "datasetId": params["dataset"]["id"],
+        "totalRows": len(dataset.df.index),
+        "filteredRows": filtered_rows_idx,
+        "modifications": [
+            {
+                "rowId": row[0],
+                "modifications": {
+                    key: str(value)
+                    for key, value in row[1].items()
+                    if not type(value) == float or not math.isnan(value)
+                },
+            }
+            for row in modified_rows.iterrows()
+        ],
+    }

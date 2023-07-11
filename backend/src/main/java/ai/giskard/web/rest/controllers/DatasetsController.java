@@ -3,10 +3,15 @@ package ai.giskard.web.rest.controllers;
 import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.*;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -29,6 +34,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
 import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @RestController
@@ -46,6 +52,8 @@ public class DatasetsController {
     private final SlicingFunctionService slicingFunctionService;
     private final TransformationFunctionService transformationFunctionService;
     private final MLWorkerService mlWorkerService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestArgumentService testArgumentService;
 
     /**
@@ -136,16 +144,17 @@ public class DatasetsController {
             })
             .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
-        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            DatasetProcessingRequest.Builder builder = DatasetProcessingRequest.newBuilder()
-                .setDataset(ArtifactRef.newBuilder()
-                    .setId(dataset.getId().toString())
-                    .setProjectKey(dataset.getProject().getKey())
-                    .setSample(sample)
-                    .build());
+        MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        MLWorkerWSDatasetProcessingDTO response = null;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSArtifactRefDTO datasetRef = new MLWorkerWSArtifactRefDTO();
+            datasetRef.setId(dataset.getId().toString());
+            datasetRef.setProjectKey(dataset.getProject().getKey());
+            datasetRef.setSample(sample);
 
+            List<MLWorkerWSDatasetProcessingFunctionDTO> functions = new ArrayList<>(processingFunctions.size());
             processingFunctions.forEach(processingFunction -> {
-                DatasetProcessingFunction.Builder functionBuilder = DatasetProcessingFunction.newBuilder();
+                MLWorkerWSDatasetProcessingFunctionDTO function = new MLWorkerWSDatasetProcessingFunctionDTO();
 
                 DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
                 Map<String, FunctionArgument> arguments = callable.getArgs().stream()
@@ -155,28 +164,48 @@ public class DatasetsController {
                     arguments.put("column_name", FunctionArguments.COLUMN_NAME);
                 }
 
-                ArtifactRef artifactRef = ArtifactRef.newBuilder()
-                    .setId(callable.getUuid().toString())
-                    .build();
+                MLWorkerWSArtifactRefDTO artifactRef = new MLWorkerWSArtifactRefDTO();
+                artifactRef.setId(callable.getUuid().toString());
 
                 if (callable instanceof SlicingFunction) {
-                    functionBuilder.setSlicingFunction(artifactRef);
+                    function.setSlicingFunction(artifactRef);
                 } else {
-                    functionBuilder.setTransformationFunction(artifactRef);
+                    function.setTransformationFunction(artifactRef);
                 }
 
+                List<MLWorkerWSFuncArgumentDTO> argumentList = new ArrayList<>(processingFunction.getParams().size());
                 for (FunctionInputDTO input : processingFunction.getParams()) {
-                    functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList(), sample));
+                        argumentList.add(testArgumentService
+                            .buildTestArgumentWS(
+                                arguments,
+                                input.getName(),
+                                input.getValue(),
+                                project.getKey(),
+                                Collections.emptyList(),
+                                sample
+                            )
+                        );
                 }
+                function.setArguments(argumentList);
 
-                builder.addFunctions(functionBuilder.build());
+                functions.add(function);
             });
 
+            MLWorkerWSDatasetProcessingParamDTO param = new MLWorkerWSDatasetProcessingParamDTO();
+            param.setDataset(datasetRef);
+            param.setFunctions(functions);
 
-            DatasetProcessingResultMessage datasetProcessingResultMessage = client.getBlockingStub().datasetProcessing(builder.build());
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.datasetProcessing,
+                param
+            );
+            if (result != null && result instanceof MLWorkerWSDatasetProcessingDTO) {
+                response = (MLWorkerWSDatasetProcessingDTO) result;
 
-            return convertGRPCObject(datasetProcessingResultMessage, DatasetProcessingResultDTO.class);
+                return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
+            }
         }
+        throw new NullPointerException("Dataset processing failed");
     }
 }

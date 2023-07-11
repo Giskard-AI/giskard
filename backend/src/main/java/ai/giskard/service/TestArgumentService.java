@@ -4,6 +4,8 @@ import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
+import ai.giskard.ml.dto.MLWorkerWSArtifactRefDTO;
+import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SuiteTestArgument;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -60,6 +63,22 @@ public class TestArgumentService {
         return buildTestArgument(inputName, value, projectKey, argument.getType(), params, sample);
     }
 
+    public MLWorkerWSFuncArgumentDTO buildTestArgumentWS(Map<String, FunctionArgument> arguments,
+                                          String inputName,
+                                          String inputValue,
+                                          String projectKey,
+                                          List<FunctionInput> params,
+                                          boolean sample) {
+        FunctionArgument argument = arguments.get(inputName);
+        if (Strings.isBlank(inputValue) && !argument.isOptional()) {
+            throw new IllegalArgumentException("The required argument '" + inputName + "' was not provided");
+        }
+
+        String value = Strings.isBlank(inputValue) ? argument.getDefaultValue() : inputValue;
+
+        return buildTestArgumentWS(inputName, value, projectKey, argument.getType(), params, sample);
+    }
+
 
     public FuncArgument buildTestArgument(String inputName, String inputValue, String projectKey,
                                           String inputType, List<FunctionInput> params, boolean sample) {
@@ -94,6 +113,47 @@ public class TestArgumentService {
         }
 
         return argumentBuilder.build();
+    }
+
+    public MLWorkerWSFuncArgumentDTO buildTestArgumentWS(String inputName, String inputValue, String projectKey,
+                                                         String inputType, List<FunctionInput> params, boolean sample) {
+        MLWorkerWSFuncArgumentDTO argument = new MLWorkerWSFuncArgumentDTO();
+        argument.setName(inputName);
+
+        if (inputValue.equals("None")) {
+            argument.setNone(true);
+            return argument;
+        }
+
+        argument.setNone(false);
+
+        MLWorkerWSArtifactRefDTO ref = new MLWorkerWSArtifactRefDTO();
+        ref.setProjectKey(projectKey);
+        ref.setId(inputValue);
+        ref.setSample(sample);
+        switch (inputType) {
+            case "Dataset" -> argument.setDataset(ref);
+            case "BaseModel" -> argument.setModel(ref);
+            case "SlicingFunction" -> argument.setSlicingFunction(ref);
+            case "TransformationFunction" ->
+                argument.setTransformationFunction(ref);
+            case "float" -> argument.setFloatValue(Float.parseFloat(inputValue));
+            case "int" -> argument.setIntValue(Integer.parseInt(inputValue));
+            case "str" -> argument.setStrValue(inputValue);
+            case "bool" -> argument.setBoolValue(Boolean.parseBoolean(inputValue));
+            case "Kwargs" -> argument.setKwargs(inputValue);
+            default ->
+                throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
+        }
+
+        if (params != null) {
+            List<MLWorkerWSFuncArgumentDTO> childrenArgs = new ArrayList<>(params.size());
+            params.forEach(child -> childrenArgs.add(
+                buildTestArgumentWS(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams(), sample)));
+            argument.setArgs(childrenArgs);
+        }
+
+        return argument;
     }
 
     private static ArtifactRef.Builder buildArtifactRef(String projectKey, String id) {
