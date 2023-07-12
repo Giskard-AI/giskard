@@ -1,16 +1,15 @@
+import re
 from unittest import mock
 
 import pandas as pd
 import pytest
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
-from giskard import Dataset
-from giskard import GiskardClient
-from giskard import Model
+from giskard import Dataset, GiskardClient, Model
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.result import ScanResult
-from langchain import LLMChain, PromptTemplate
 
 
 @pytest.mark.parametrize(
@@ -190,3 +189,17 @@ def test_generate_test_suite_some_tests(titanic_model, titanic_dataset):
     suite = scanner.analyze(titanic_model, titanic_dataset).generate_test_suite()
     created_tests = len(suite.tests)
     assert created_tests, "Titanic scan doesn't produce tests"
+
+
+def test_scanner_raises_error_if_non_giskard_model_is_passed(titanic_model, titanic_dataset):
+    scanner = Scanner()
+    msg = re.escape("The model object you provided is not valid. Please wrap it with the `giskard.Model` class.")
+    with pytest.raises(ValueError, match=msg):
+        scanner.analyze(titanic_model.model, titanic_dataset)
+
+
+def test_scanner_raises_error_if_non_giskard_dataset_is_passed(titanic_model, titanic_dataset):
+    scanner = Scanner()
+    msg = re.escape("The dataset object you provided is not valid")
+    with pytest.raises(ValueError, match=msg):
+        scanner.analyze(titanic_model, titanic_dataset.df)
