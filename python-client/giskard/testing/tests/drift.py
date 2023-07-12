@@ -179,7 +179,7 @@ def test_drift_psi(
         threshold: float = 0.2,
         max_categories: int = 20,
         psi_contribution_percent: float = 0.2,
-        # debug: bool = False # We don't have a pure data debugging session today
+        debug: bool = False
 ) -> TestResult:
     """
     Test if the PSI score between the actual and reference datasets is below the threshold for
@@ -234,20 +234,19 @@ def test_drift_psi(
     )
 
     # --- debug ---
-    # We don't have a pure data debugging session today
-    # output_ds = None
-    # if not passed and debug:
-    #     main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
-    #     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-    #     output_ds = actual_dataset.copy()  # copy all properties
-    #     output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
-    #     test_name = inspect.stack()[0][3]
-    #     if output_ds.df.empty:
-    #         raise ValueError(
-    #             test_name + f": the categories {filtered_modalities} completely drifted as they are not present in the "
-    #                         f"'actual_dataset'")
-    #     output_ds.name = "Debug: " + test_name
+    output_ds = None
+    if not passed and debug:
+        main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
+        output_ds = actual_dataset.copy()  # copy all properties
+        output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
+        test_name = inspect.stack()[0][3]
+        if output_ds.df.empty:
+            raise ValueError(
+                test_name + f": the categories {filtered_modalities} completely drifted as they are not present in the "
+                            f"'actual_dataset'")
+        output_ds.name = "Debug: " + test_name
     # ---
 
     return TestResult(
@@ -256,7 +255,7 @@ def test_drift_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        # output_df=output_ds
+        output_df=output_ds
     )
 
 
@@ -269,7 +268,7 @@ def test_drift_chi_square(
         threshold: float = 0.05,
         max_categories: int = 20,
         chi_square_contribution_percent: float = 0.2,
-        # debug: bool = False # We don't have a pure data debugging session today
+        debug: bool = False
 ) -> TestResult:
     """
     Test if the p-value of the chi square test between the actual and reference datasets is
@@ -326,15 +325,15 @@ def test_drift_chi_square(
     )
 
     # --- debug ---
-    # output_ds = None
-    # if not passed and debug:
-    #     main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
-    #     modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
-    #     filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-    #     output_ds = actual_dataset.copy()  # copy all properties
-    #     output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
-    #     test_name = inspect.stack()[0][3]
-    #     output_ds.name = "Debug: " + test_name
+    output_ds = None
+    if not passed and debug:
+        main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
+        modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
+        filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
+        output_ds = actual_dataset.copy()  # copy all properties
+        output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
+        test_name = inspect.stack()[0][3]
+        output_ds.name = "Debug: " + test_name
     # ---
 
     return TestResult(
@@ -343,7 +342,7 @@ def test_drift_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        # output_df=output_ds
+        output_df=output_ds
     )
 
 
