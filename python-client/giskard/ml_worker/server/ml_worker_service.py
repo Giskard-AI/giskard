@@ -18,7 +18,6 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 import giskard
@@ -94,11 +93,7 @@ def log_artifact_local(local_file, artifact_path=None):
 
     file_name = os.path.basename(local_file)
 
-    paths = (
-        (projects_dir, artifact_path, file_name)
-        if artifact_path
-        else (projects_dir, file_name)
-    )
+    paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
     artifact_file = posixpath.join("/", *paths)
     Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
 
@@ -171,9 +166,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                         unit_scale=True,
                         unit_divisor=1024,
                     )
-                    yield ml_worker_pb2.UploadStatus(
-                        code=ml_worker_pb2.StatusCode.CacheMiss
-                    )
+                    yield ml_worker_pb2.UploadStatus(code=ml_worker_pb2.StatusCode.CacheMiss)
                 else:
                     logger.info(f"File already exists: {path}")
                     break
@@ -187,9 +180,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     if progress is not None:
                         progress.close()
                     logger.exception(f"Failed to upload file {meta.name}", e)
-                    yield ml_worker_pb2.UploadStatus(
-                        code=ml_worker_pb2.StatusCode.Failed
-                    )
+                    yield ml_worker_pb2.UploadStatus(code=ml_worker_pb2.StatusCode.Failed)
 
         if progress is not None:
             progress.close()
@@ -198,9 +189,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def getInfo(self, request: ml_worker_pb2.MLWorkerInfoRequest, context):
         logger.info("Collecting ML Worker info")
         installed_packages = (
-            {p.project_name: p.version for p in pkg_resources.working_set}
-            if request.list_packages
-            else None
+            {p.project_name: p.version for p in pkg_resources.working_set} if request.list_packages else None
         )
         current_process = psutil.Process(os.getpid())
         return ml_worker_pb2.MLWorkerInfo(
@@ -222,9 +211,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             is_remote=self.remote,
         )
 
-    def echo(
-        self, request: ml_worker_pb2.EchoMsg, context: grpc.ServicerContext
-    ) -> ml_worker_pb2.EchoMsg:
+    def echo(self, request: ml_worker_pb2.EchoMsg, context: grpc.ServicerContext) -> ml_worker_pb2.EchoMsg:
         return request
 
     def runAdHocTest(
@@ -234,9 +221,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         arguments = self.parse_function_arguments(request.arguments)
 
-        logger.info(
-            f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}"
-        )
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
 
         return ml_worker_pb2.TestResultMessage(
@@ -282,9 +267,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         result = dataset.process()
 
         filtered_rows_idx = dataset.df.index.difference(result.df.index)
-        modified_rows = result.df[
-            dataset.df.iloc[result.df.index].ne(result.df)
-        ].dropna(how="all")
+        modified_rows = result.df[dataset.df.iloc[result.df.index].ne(result.df)].dropna(how="all")
 
         return ml_worker_pb2.DatasetProcessingResultMessage(
             datasetId=request.dataset.id,
@@ -321,8 +304,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             test_names = list(
                 map(
-                    lambda t: t["test"].meta.display_name
-                    or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
+                    lambda t: t["test"].meta.display_name or f"{t['test'].meta.module + '.' + t['test'].meta.name}",
                     tests,
                 )
             )
@@ -350,9 +332,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
 
         except Exception as exc:
-            logger.exception(
-                "An error occurred during the test suite execution: %s", exc
-            )
+            logger.exception("An error occurred during the test suite execution: %s", exc)
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=True, is_pass=False, results=[], logs=log_listener.close()
             )
@@ -371,17 +351,15 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     arg.dataset.sample,
                 )
             elif arg.HasField("model"):
-                arguments[arg.name] = BaseModel.download(
-                    self.client, arg.model.project_key, arg.model.id
-                )
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
             elif arg.HasField("slicingFunction"):
-                arguments[arg.name] = SlicingFunction.download(
-                    arg.slicingFunction.id, self.client, None
-                )(**self.parse_function_arguments(arg.args))
+                arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args)
+                )
             elif arg.HasField("transformationFunction"):
-                arguments[arg.name] = TransformationFunction.download(
-                    arg.transformationFunction.id, self.client, None
-                )(**self.parse_function_arguments(arg.args))
+                arguments[arg.name] = TransformationFunction.download(arg.transformationFunction.id, self.client, None)(
+                    **self.parse_function_arguments(arg.args)
+                )
             elif arg.HasField("float"):
                 arguments[arg.name] = float(arg.float)
             elif arg.HasField("int"):
@@ -398,12 +376,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 raise IllegalArgumentError("Unknown argument type")
         return arguments
 
-    def explain(
-        self, request: ml_worker_pb2.ExplainRequest, context
-    ) -> ml_worker_pb2.ExplainResponse:
-        model = BaseModel.download(
-            self.client, request.model.project_key, request.model.id
-        )
+    def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(
             self.client,
             request.dataset.project_key,
@@ -419,12 +393,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             }
         )
 
-    def explainText(
-        self, request: ml_worker_pb2.ExplainTextRequest, context
-    ) -> ml_worker_pb2.ExplainTextResponse:
-        model = BaseModel.download(
-            self.client, request.model.project_key, request.model.id
-        )
+    def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.column_types[text_column] != "text":
@@ -434,9 +404,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.meta.feature_names:
             input_df = input_df[model.meta.feature_names]
-        (list_words, list_weights) = explain_text(
-            model, input_df, text_column, text_document
-        )
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
         map_features_weight = (
             dict(zip(model.meta.classification_labels, list_weights))
             if model.is_classification
@@ -452,12 +420,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             words=list_words,
         )
 
-    def runModelForDataFrame(
-        self, request: ml_worker_pb2.RunModelForDataFrameRequest, context
-    ):
-        model = BaseModel.download(
-            self.client, request.model.project_key, request.model.id
-        )
+    def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
+        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
         ds = Dataset(
             model.prepare_dataframe(df, column_dtypes=request.column_dtypes),
@@ -476,13 +440,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 raw_prediction=predictions.prediction,
             )
 
-    def runModel(
-        self, request: ml_worker_pb2.RunModelRequest, context
-    ) -> ml_worker_pb2.RunModelResponse:
+    def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = BaseModel.download(
-                self.client, request.model.project_key, request.model.id
-            )
+            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(
                 self.client,
                 request.dataset.project_key,
@@ -510,10 +470,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             results = prediction_results.all_predictions
             labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
             label_serie = dataset.df[dataset.target] if dataset.target else None
-            if (
-                len(model.meta.classification_labels) > 2
-                or model.meta.classification_threshold is None
-            ):
+            if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                 sorted_predictions = np.sort(prediction_results.all_predictions.values)
                 abs_diff = pd.Series(
@@ -521,10 +478,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     name="absDiff",
                 )
             else:
-                diff = (
-                    prediction_results.all_predictions.iloc[:, 1]
-                    - model.meta.classification_threshold
-                )
+                diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
                 preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")
             calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
@@ -536,9 +490,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 diff = preds_serie - target_serie
                 diff_percent = pd.Series(diff / target_serie, name="diffPercent")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")
-                abs_diff_percent = pd.Series(
-                    abs_diff / target_serie, name="absDiffPercent"
-                )
+                abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
                 calculated = pd.concat(
                     [
                         preds_serie,
@@ -554,9 +506,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         with tempfile.TemporaryDirectory(prefix="giskard-") as f:
             dir = Path(f)
-            predictions_csv = get_file_name(
-                "predictions", "csv", request.dataset.sample
-            )
+            predictions_csv = get_file_name("predictions", "csv", request.dataset.sample)
             results.to_csv(index=False, path_or_buf=dir / predictions_csv)
             if self.ml_worker.tunnel:
                 self.ml_worker.tunnel.client.log_artifact(
@@ -606,22 +556,16 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     try:
                         return bool(filterfunc["filter_row"](row))
                     except Exception as e:  # noqa # NOSONAR
-                        raise ValueError(
-                            "Failed to execute user defined filtering function"
-                        ) from e
+                        raise ValueError("Failed to execute user defined filtering function") from e
 
-                yield ml_worker_pb2.FilterDatasetResponse(
-                    code=ml_worker_pb2.StatusCode.Ready
-                )
+                yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ready)
             elif filter_msg.HasField("data"):
                 logger.info("Got chunk " + str(filter_msg.idx))
                 time_start = time.perf_counter()
                 data_as_string = filter_msg.data.content.decode("utf-8")
                 data_as_string = meta.headers + "\n" + data_as_string
                 # CSV => Dataframe
-                data = StringIO(
-                    data_as_string
-                )  # Wrap using StringIO to avoid creating file
+                data = StringIO(data_as_string)  # Wrap using StringIO to avoid creating file
                 df = pd.read_csv(data, keep_default_na=False, na_values=["_GSK_NA_"])
                 df = df.astype(column_dtypes)
                 # Iterate over rows, applying filter_row func
@@ -640,9 +584,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     rows=rows_to_keep,
                 )
 
-        logger.info(
-            f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}"
-        )
+        logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")
         yield ml_worker_pb2.FilterDatasetResponse(code=ml_worker_pb2.StatusCode.Ok)
 
     def suggestFilter(self, request: ml_worker_pb2.SuggestFilterRequest, context):
@@ -653,6 +595,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
             if request.column_dtypes:
+                for missing_column in [
+                    column_name for column_name in request.column_dtypes.keys() if column_name not in df.columns
+                ]:
+                    df[missing_column] = np.nan
                 df = Dataset.cast_column_to_dtypes(df, request.column_dtypes)
 
         except ValueError as e:
@@ -765,9 +711,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 ml_worker_pb2.GeneratedTest(
                     test_uuid=test.testUuid,
                     inputs=[
-                        ml_worker_pb2.GeneratedTestInput(
-                            name=i.name, value=i.value, is_alias=i.is_alias
-                        )
+                        ml_worker_pb2.GeneratedTestInput(name=i.name, value=i.value, is_alias=i.is_alias)
                         for i in test.functionInputs.values()
                     ],
                 )
@@ -795,9 +739,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
     def pandas_df_to_proto_df(df):
         return ml_worker_pb2.DataFrame(
             rows=[
-                ml_worker_pb2.DataRow(
-                    columns={str(k): v for k, v in r.astype(str).to_dict().items()}
-                )
+                ml_worker_pb2.DataRow(columns={str(k): v for k, v in r.astype(str).to_dict().items()})
                 for _, r in df.iterrows()
             ]
         )
@@ -834,9 +776,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
             unexpected_percent_total=result.unexpected_percent_total,
             unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
             partial_unexpected_index_list=[
-                ml_worker_pb2.Partial_unexpected_counts(
-                    value=puc.value, count=puc.count
-                )
+                ml_worker_pb2.Partial_unexpected_counts(value=puc.value, count=puc.count)
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
