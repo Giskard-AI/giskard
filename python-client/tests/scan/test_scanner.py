@@ -214,7 +214,9 @@ def test_scanner_warns_if_too_many_features():
     model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
     dataset = Dataset(pd.DataFrame(np.ones((10, 120)), columns=map(str, np.arange(120))), target="0")
 
-    with pytest.warns(UserWarning, match="It looks like your dataset has a very large number of features (120)"):
+    with pytest.warns(
+        UserWarning, match=re.escape("It looks like your dataset has a very large number of features (120)")
+    ):
         scanner.analyze(model, dataset)
 
     # Model specifying few feature names should not raise a warning
