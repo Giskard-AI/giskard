@@ -189,8 +189,9 @@ public class TestSuiteService {
         Project project = projectRepository.getOneByKey(projectKey);
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            MLWorkerWSGenerateTestSuiteParamDTO param = new MLWorkerWSGenerateTestSuiteParamDTO();
-            param.setProjectKey(projectKey);
+            MLWorkerWSGenerateTestSuiteParamDTO param = MLWorkerWSGenerateTestSuiteParamDTO.builder()
+                .projectKey(projectKey)
+                .build();
 
             List<MLWorkerWSSuiteInputDTO> inputs = dto.getInputs()
                 .stream()

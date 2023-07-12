@@ -41,8 +41,8 @@ public class MLWorkerController {
             throws JsonProcessingException {
         List<MLWorkerWSGetInfoDTO> results = new ArrayList<>();
 
-        MLWorkerWSGetInfoParamDTO param = new MLWorkerWSGetInfoParamDTO();
-        param.setListPackages(true);
+        MLWorkerWSGetInfoParamDTO param = MLWorkerWSGetInfoParamDTO.builder()
+            .listPackages(true).build();
         if (mlWorkerWSService.isWorkerConnected(MLWorkerID.INTERNAL)) {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(

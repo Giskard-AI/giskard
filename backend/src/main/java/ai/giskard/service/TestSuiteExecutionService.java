@@ -57,26 +57,21 @@ public class TestSuiteExecutionService {
         MLWorkerID workerID = suite.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         MLWorkerWSTestSuiteDTO response = null;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-
-            MLWorkerWSTestSuiteParamDTO param = new MLWorkerWSTestSuiteParamDTO();
-            List<MLWorkerWSFuncArgumentDTO> globalArguments = new ArrayList<>(execution.getInputs().size());
-            for (FunctionInput input : execution.getInputs()) {
-                globalArguments.add(testArgumentService.buildTestArgumentWS(arguments, input.getName(),
-                    input.getValue(), suite.getProject().getKey(), input.getParams(), sample));
-            }
-            param.setGlobalArguments(globalArguments);
-
             Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(
                 execution.getInputs().stream(),
                 suite.getFunctionInputs().stream()
             ).collect(Collectors.toMap(FunctionInput::getName, Function.identity()));
 
-            List<MLWorkerWSSuiteTestArgumentDTO> suiteTests = new ArrayList<>(suite.getTests().size());
-            for (SuiteTest suiteTest : suite.getTests()) {
-                suiteTests.add(testArgumentService.buildFixedTestArgumentWS(suiteInputsAndShared, suiteTest,
-                    suite.getProject().getKey(), sample));
-            }
-            param.setTests(suiteTests);
+            MLWorkerWSTestSuiteParamDTO param = MLWorkerWSTestSuiteParamDTO.builder()
+                .globalArguments(execution.getInputs().stream().map(
+                    input -> testArgumentService.buildTestArgumentWS(arguments, input.getName(),
+                        input.getValue(), suite.getProject().getKey(), input.getParams(), sample)
+                ).collect(Collectors.toList()))
+                .tests(suite.getTests().stream().map(
+                    suiteTest -> testArgumentService.buildFixedTestArgumentWS(suiteInputsAndShared, suiteTest,
+                        suite.getProject().getKey(), sample)
+                ).collect(Collectors.toList()))
+                .build();
 
             Map<Long, SuiteTest> tests = suite.getTests().stream()
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));

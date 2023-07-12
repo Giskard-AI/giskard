@@ -58,16 +58,14 @@ public class TestController {
         boolean usingInternalWorker = project.isUsingInternalWorker();
         MLWorkerID workerID = usingInternalWorker ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            MLWorkerWSRunAdHocTestParamDTO param = new MLWorkerWSRunAdHocTestParamDTO();
-            param.setTestUuid(request.getTestUuid());
-
-            List<MLWorkerWSFuncArgumentDTO> args = new ArrayList<>(request.getInputs().size());
-            for (FunctionInputDTO input : request.getInputs()) {
-                args.add(testArgumentService
-                    .buildTestArgumentWS(arguments, input.getName(), input.getValue(), project.getKey(),
-                        giskardMapper.fromDTO(input).getParams(), sample));
-            }
-            param.setArguments(args);
+            MLWorkerWSRunAdHocTestParamDTO param = MLWorkerWSRunAdHocTestParamDTO.builder()
+                .testUuid(request.getTestUuid())
+                .arguments(request.getInputs().stream().map
+                    (input -> testArgumentService
+                        .buildTestArgumentWS(arguments, input.getName(), input.getValue(), project.getKey(),
+                            giskardMapper.fromDTO(input).getParams(), sample)
+                    ).collect(Collectors.toList())
+                ).build();
 
             MLWorkerWSRunAdHocTestDTO response = null;
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(

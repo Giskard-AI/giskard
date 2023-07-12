@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,22 +57,23 @@ public class ModelService {
         MLWorkerWSRunModelForDataFrameDTO response = null;
 
         // Initialize the parameters and build the Data Frame
-        MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
-        modelRef.setProjectKey(model.getProject().getKey());
-        modelRef.setId(model.getId().toString());
+        MLWorkerWSDataFrameDTO dataframe = MLWorkerWSDataFrameDTO.builder()
+            .rows(
+                List.of(
+                    MLWorkerWSDataRowDTO.builder().columns(
+                        features.entrySet().stream()
+                            .filter(entry -> !shouldDrop(
+                                dataset.getColumnDtypes().get(entry.getKey()),
+                                entry.getValue()
+                            )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    ).build()
+                )
+            ).build();
 
-        MLWorkerWSDataFrameDTO dataframe = new MLWorkerWSDataFrameDTO();
-        ArrayList<MLWorkerWSDataRowDTO> rows = new ArrayList<>(1);
-        MLWorkerWSDataRowDTO row = new MLWorkerWSDataRowDTO();
-        row.setColumns(features.entrySet().stream()
-            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-        rows.add(row);
-        dataframe.setRows(rows);
-
-        MLWorkerWSRunModelForDataFrameParamDTO param = new MLWorkerWSRunModelForDataFrameParamDTO();
-        param.setModel(modelRef);
-        param.setDataframe(dataframe);
+        MLWorkerWSRunModelForDataFrameParamDTO param = MLWorkerWSRunModelForDataFrameParamDTO.builder()
+            .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+            .dataframe(dataframe)
+            .build();
 
         if (dataset.getTarget() != null) {
             param.setTarget(dataset.getTarget());
@@ -108,21 +106,15 @@ public class ModelService {
         MLWorkerWSExplainDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
-            modelRef.setProjectKey(model.getProject().getKey());
-            modelRef.setId(model.getId().toString());
-
-            MLWorkerWSArtifactRefDTO datasetRef = new MLWorkerWSArtifactRefDTO();
-            datasetRef.setProjectKey(dataset.getProject().getKey());
-            datasetRef.setId(dataset.getId().toString());
-            datasetRef.setSample(false);
-
-            MLWorkerWSExplainParamDTO param = new MLWorkerWSExplainParamDTO();
-            param.setModel(modelRef);
-            param.setDataset(datasetRef);
-            param.setColumns(features.entrySet().stream()
-                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+            MLWorkerWSExplainParamDTO param = MLWorkerWSExplainParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
+                .columns(
+                    features.entrySet().stream()
+                        .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                )
+                .build();
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.explain, param);
             if (result != null && result instanceof MLWorkerWSExplainDTO) {
@@ -136,15 +128,12 @@ public class ModelService {
         MLWorkerWSExplainTextDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
-            modelRef.setProjectKey(model.getProject().getKey());
-            modelRef.setId(model.getId().toString());
-
-            MLWorkerWSExplainTextParamDTO param = new MLWorkerWSExplainTextParamDTO();
-            param.setModel(modelRef);
-            param.setFeatureName(featureName);
-            param.setColumns(features);
-            param.setColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            MLWorkerWSExplainTextParamDTO param = MLWorkerWSExplainTextParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .featureName(featureName)
+                .columns(features)
+                .columnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
+                .build();
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
@@ -185,20 +174,12 @@ public class ModelService {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             // Initialize params
-            MLWorkerWSArtifactRefDTO modelRef = new MLWorkerWSArtifactRefDTO();
-            modelRef.setId(model.getId().toString());
-            modelRef.setProjectKey(model.getProject().getKey());
-
-            MLWorkerWSArtifactRefDTO datasetRef = new MLWorkerWSArtifactRefDTO();
-            datasetRef.setId(dataset.getId().toString());
-            datasetRef.setProjectKey(dataset.getProject().getKey());
-            datasetRef.setSample(sample);
-
-            MLWorkerWSRunModelParamDTO param = new MLWorkerWSRunModelParamDTO();
-            param.setModel(modelRef);
-            param.setDataset(datasetRef);
-            param.setInspectionId(inspectionId);
-            param.setProjectKey(model.getProject().getKey());
+            MLWorkerWSRunModelParamDTO param = MLWorkerWSRunModelParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset, sample))
+                .inspectionId(inspectionId)
+                .projectKey(model.getProject().getKey())
+                .build();
 
             // Execute runModel action
             mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);

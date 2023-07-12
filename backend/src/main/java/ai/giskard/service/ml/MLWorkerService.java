@@ -92,8 +92,9 @@ public class MLWorkerService {
     public void sendHeartbeatToConnectedWorkers() {
         if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
             log.debug("Executing ML Worker heartbeat");
-            MLWorkerWSEchoMsgDTO echoMsg = new MLWorkerWSEchoMsgDTO();
-            echoMsg.setMsg(HEARTBEAT_MESSAGE);
+            MLWorkerWSEchoMsgDTO echoMsg = MLWorkerWSEchoMsgDTO.builder()
+                .msg(HEARTBEAT_MESSAGE)
+                .build();
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 MLWorkerID.EXTERNAL,
                 MLWorkerWSAction.echo,

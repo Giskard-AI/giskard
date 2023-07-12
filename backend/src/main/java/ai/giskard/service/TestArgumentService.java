@@ -141,43 +141,46 @@ public class TestArgumentService {
 
     public MLWorkerWSFuncArgumentDTO buildTestArgumentWS(String inputName, String inputValue, String projectKey,
                                                          String inputType, List<FunctionInput> params, boolean sample) {
-        MLWorkerWSFuncArgumentDTO argument = new MLWorkerWSFuncArgumentDTO();
-        argument.setName(inputName);
+        MLWorkerWSFuncArgumentDTO.MLWorkerWSFuncArgumentDTOBuilder argument = MLWorkerWSFuncArgumentDTO.builder()
+            .name(inputName);
 
         if (inputValue.equals("None")) {
-            argument.setNone(true);
-            return argument;
+            argument.none(true);
+            return argument.build();
         }
 
-        argument.setNone(false);
+        argument.none(false);
 
-        MLWorkerWSArtifactRefDTO ref = new MLWorkerWSArtifactRefDTO();
-        ref.setProjectKey(projectKey);
-        ref.setId(inputValue);
-        ref.setSample(sample);
+        MLWorkerWSArtifactRefDTO ref = MLWorkerWSArtifactRefDTO.builder()
+            .projectKey(projectKey)
+            .id(inputValue)
+            .sample(sample)
+            .build();
         switch (inputType) {
-            case "Dataset" -> argument.setDataset(ref);
-            case "BaseModel" -> argument.setModel(ref);
-            case "SlicingFunction" -> argument.setSlicingFunction(ref);
+            case "Dataset" -> argument.dataset(ref);
+            case "BaseModel" -> argument.model(ref);
+            case "SlicingFunction" -> argument.slicingFunction(ref);
             case "TransformationFunction" ->
-                argument.setTransformationFunction(ref);
-            case "float" -> argument.setFloatValue(Float.parseFloat(inputValue));
-            case "int" -> argument.setIntValue(Integer.parseInt(inputValue));
-            case "str" -> argument.setStrValue(inputValue);
-            case "bool" -> argument.setBoolValue(Boolean.parseBoolean(inputValue));
-            case "Kwargs" -> argument.setKwargs(inputValue);
+                argument.transformationFunction(ref);
+            case "float" -> argument.floatValue(Float.parseFloat(inputValue));
+            case "int" -> argument.intValue(Integer.parseInt(inputValue));
+            case "str" -> argument.strValue(inputValue);
+            case "bool" -> argument.boolValue(Boolean.parseBoolean(inputValue));
+            case "Kwargs" -> argument.kwargs(inputValue);
             default ->
                 throw new IllegalArgumentException(String.format("Unknown test execution input type %s", inputType));
         }
 
         if (params != null) {
-            List<MLWorkerWSFuncArgumentDTO> childrenArgs = new ArrayList<>(params.size());
-            params.forEach(child -> childrenArgs.add(
-                buildTestArgumentWS(child.getName(), child.getValue(), projectKey, child.getType(), child.getParams(), sample)));
-            argument.setArgs(childrenArgs);
+            argument.args(params.stream().map(child ->
+                    buildTestArgumentWS(
+                        child.getName(), child.getValue(), projectKey, child.getType(), child.getParams(), sample
+                    )
+                ).collect(Collectors.toList())
+            );
         }
 
-        return argument;
+        return argument.build();
     }
 
     private static ArtifactRef.Builder buildArtifactRef(String projectKey, String id) {
