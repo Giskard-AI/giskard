@@ -5,6 +5,10 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.CallableRepository;
 import ai.giskard.web.dto.DatasetProcessFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import org.hibernate.Hibernate;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunction, D extends DatasetProcessFunctionDTO> extends CallableService<E, D> {
 
@@ -17,6 +21,14 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         this.projectRepository = projectRepository;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public E getInitialized(UUID uuid) {
+        E callable = super.getInitialized(uuid);
+        Hibernate.initialize(callable.getProjects());
+        return callable;
+    }
+
     protected E update(E existing, D dto) {
         existing = super.update(existing, dto);
         existing.setCellLevel(dto.isCellLevel());
@@ -26,4 +38,5 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         existing.getProjects().addAll(projectRepository.findAllByKeyIn(dto.getProjectKeys()));
         return existing;
     }
+
 }
