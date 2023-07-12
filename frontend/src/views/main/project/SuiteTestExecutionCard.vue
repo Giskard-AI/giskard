@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status].capitalized }}
         </v-chip>
-        <v-btn color="primary" @click="debugTest" outlined small :disabled="!canBeDebugged">
+        <v-btn color="primary" @click="debugTest" outlined small :disabled="!canBeDebugged" :loading="loading">
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -46,23 +46,42 @@
         Edit parameters
       </v-btn>
     </div>
+
+    <div>
+      <v-dialog
+          v-model="modelDialog"
+          width="auto"
+      >
+        <v-card>
+          <v-card-text>
+            Select a model to debug with
+            <ModelSelector
+                :project-id="testSuiteStore.projectId"
+                label="Model"
+                :return-object="false"
+                @update:value="onSelectModel"/>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
 <script lang='ts' setup>
 import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {storeToRefs} from 'pinia';
 import {useCatalogStore} from '@/stores/catalog';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {api} from "@/api";
-import router from "@/router";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import mixpanel from 'mixpanel-browser';
 import {TEST_RESULT_DATA} from '@/utils/tests.utils';
+import {api} from "@/api";
+import router from "@/router";
+import ModelSelector from "@/views/main/utils/ModelSelector.vue";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -76,6 +95,9 @@ const props = defineProps<{
   compact: boolean,
   isPastExecution: boolean
 }>();
+
+const loading = ref<boolean>(false);
+const modelDialog = ref<boolean>(false);
 
 const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
@@ -131,6 +153,9 @@ const transformationFunction = computed(() => {
 
 const errors = computed(() => props.result?.messages?.filter(message => message.type === 'ERROR') ?? []);
 
+async function onSelectModel(modelUuid) {
+  await runDebug(undefined, modelUuid);
+}
 
 async function editTests() {
   await $vfm.show({
@@ -142,9 +167,42 @@ async function editTests() {
 }
 
 async function debugTest() {
-  console.log("Debugging");
-  let inputs: any[] = []; // FunctionInputDTO, ideally
+  let inputs = createDebugInputs();
+  let models = inputs.filter(i => i.name == "model");
+  if (models.length == 0) {
+    modelDialog.value = true;
+    return;
+  }
 
+  let model = models[0].value;
+  await runDebug(inputs, model);
+}
+
+async function runDebug(inputs, modelId: string) {
+  if (inputs == undefined) {
+    inputs = createDebugInputs();
+  }
+
+  loading.value = true;
+  let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
+  let dataset = res.result[0].result.outputDfUuid;
+
+  const debuggingSession = await api.prepareInspection({
+    datasetId: dataset,
+    modelId: modelId,
+    name: "Debugging session for " + props.suiteTest.test.name,
+    sample: true
+  });
+  debuggingSessionStore.setCurrentDebuggingSessionId(debuggingSession.id);
+  loading.value = false;
+
+  await router.push({
+    name: 'project-debugger',
+  })
+}
+
+function createDebugInputs() {
+  let inputs: any[] = []; // FunctionInputDTO, ideally
   function parseArguments(res, args) {
     Object.keys(args).forEach(key => {
       var parsed = JSON.parse(args[key]);
@@ -161,21 +219,7 @@ async function debugTest() {
 
   parseArguments(inputs, props.result?.arguments);
 
-  let model = inputs.filter(i => i.name == "model")[0].value;
-
-  let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
-  let dataset = res.result[0].result.outputDfUuid;
-
-  const debuggingSession = await api.prepareInspection({
-    datasetId: dataset,
-    modelId: model as string,
-    name: "Debugging session for " + props.suiteTest.test.name,
-    sample: true
-  });
-  debuggingSessionStore.setCurrentDebuggingSessionId(debuggingSession.id);
-  await router.push({
-    name: 'project-debugger',
-  })
+  return inputs;
 }
 
 function openLogs() {
