@@ -5,17 +5,17 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
+from giskard.client.python_utils import warning
 
-from .issues import Issue
-from .logger import logger
-from .registry import DetectorRegistry
-from .result import ScanResult
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
-from giskard.client.python_utils import warning
+from .issues import Issue
+from .logger import logger
+from .registry import DetectorRegistry
+from .result import ScanResult
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -33,6 +33,21 @@ class Scanner:
         self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
     ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
+
+        # Check that the model and dataset were appropriately wrapped with Giskard
+        if not isinstance(model, BaseModel):
+            raise ValueError(
+                "The model object you provided is not valid. Please wrap it with the `giskard.Model` class. "
+                "See the instructions here: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html"
+            )
+
+        if dataset is not None and not isinstance(dataset, Dataset):
+            raise ValueError(
+                "The dataset object you provided is not valid. Please wrap your dataframe with `giskard.Dataset`. "
+                "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
+            )
+
+        # Some extra checks
         if model.is_text_generation:
             logger.warning(
                 "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
@@ -59,6 +74,7 @@ class Scanner:
                 column_types=dataset.column_types,
             )
 
+        # Good, we can start
         maybe_print("🔎 Running scan…", verbose=verbose)
         time_start = perf_counter()
 
@@ -140,8 +156,8 @@ class Scanner:
     def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
         # If we detected a StochasticityIssue, we will have a possibly false
         # positive DataLeakageIssue. We remove it here.
-        from .stochasticity.stochasticity_detector import StochasticityIssue
         from .data_leakage.data_leakage_detector import DataLeakageIssue
+        from .stochasticity.stochasticity_detector import StochasticityIssue
 
         if any(isinstance(issue, StochasticityIssue) for issue in issues):
             issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
