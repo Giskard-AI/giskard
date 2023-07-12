@@ -75,7 +75,7 @@ class GenderBiasDetector:
             info = LLMExamplesInfo(examples, metric=p_value)
 
             # Create GenderBiasIssue object and append it to the issues list
-            issues.append(GenderBiasIssue(model, dataset, level="major", info=info))
+            issues = [GenderBiasIssue(model, dataset, level="major", info=info)]
 
         return issues
 
