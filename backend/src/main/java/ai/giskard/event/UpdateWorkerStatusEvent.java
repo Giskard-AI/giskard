@@ -3,7 +3,10 @@ package ai.giskard.event;
 import org.springframework.context.ApplicationEvent;
 
 public class UpdateWorkerStatusEvent extends ApplicationEvent {
-    public UpdateWorkerStatusEvent(Object source) {
+    public boolean isConnected;
+
+    public UpdateWorkerStatusEvent(Object source, boolean isConnected) {
         super(source);
+        this.isConnected = isConnected;
     }
 }

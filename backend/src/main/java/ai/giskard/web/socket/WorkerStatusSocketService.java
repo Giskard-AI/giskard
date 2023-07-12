@@ -22,15 +22,28 @@ public class WorkerStatusSocketService {
         sendCurrentStatus();
     }
 
-    @EventListener
-    public void handleUpdateWorkerStatusEvent(UpdateWorkerStatusEvent event) {
-        sendCurrentStatus();
+    @EventListener(condition = "#event.isConnected == true")
+    public void handleWorkerConnectedEvent(UpdateWorkerStatusEvent event) {
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("connected", true);
+        sendData(data);
+    }
+
+    @EventListener(condition = "#event.isConnected == false")
+    public void handleWorkerDisconnectedEvent(UpdateWorkerStatusEvent event) {
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("connected", false);
+        sendData(data);
     }
 
     public void sendCurrentStatus() {
         Map<String, Boolean> data = new HashMap<>();
         data.put("connected", mlWorkerService.isExternalWorkerConnected());
 
+        sendData(data);
+    }
+
+    private void sendData(Map<String, Boolean> data) {
         simpMessagingTemplate.convertAndSend(
                 "/topic/worker-status",
                 data);

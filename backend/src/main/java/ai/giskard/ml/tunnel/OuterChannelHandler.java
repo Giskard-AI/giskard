@@ -172,7 +172,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
             if (future.isSuccess()) {
                 log.info("Started inner server {} for incoming service channel {}", localAddress, serviceOuterChannel.id());
             }
-            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this));
+            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this, true));
         });
         serviceOuterChannel.closeFuture().addListener(future -> {
             log.info("Shutting down inner server for outer channel {}", serviceOuterChannel.id());
@@ -181,7 +181,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
             channelRegistry.removeServiceChannel(serviceOuterChannel.id());
             innerServerData = Optional.empty();
             eventBus.post(innerServerData);
-            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this));
+            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this, false));
         });
 
         return new InnerServerStartResponse(localAddress, innerChannelFuture, group);
