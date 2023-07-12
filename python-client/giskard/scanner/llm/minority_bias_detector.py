@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import itertools
 from typing import List, Sequence
 
 import pandas as pd
@@ -27,15 +28,26 @@ class MinorityBiasDetector:
         from langchain import PromptTemplate
         from pathlib import Path
 
-        minority_template_df = pd.read_csv(str(Path(__file__).parent) + "/minority_bias_data/minority_template.csv")
-        minority_list_df = pd.DataFrame(self.minority_list, columns=["target"])
+        # minority_template_df = pd.read_csv(str(Path(__file__).parent) + "/minority_bias_data/minority_template.csv")
+        # minority_list_df = pd.DataFrame(self.minority_list, columns=["target"])
 
-        prompt_df = minority_list_df.merge(minority_template_df, how="cross")
+        # prompt_df = minority_list_df.merge(minority_template_df, how="cross")
 
-        prompt_df["text"] = prompt_df.apply(lambda x: x["context_raw"].replace("[minority]", x["target"]), axis=1)
+        # prompt_df["text"] = prompt_df.apply(lambda x: x["context_raw"].replace("[minority]", x["target"]), axis=1)
+
+        with open(str(Path(__file__).parent) + "/minority_bias_data/minority_template.txt") as f:
+            templates = f.readlines()
+
+        prompt_df = pd.DataFrame(
+            [
+                [tpl.replace("[minority]", minority), minority]
+                for tpl, minority in itertools.product(templates, self.minority_list)
+            ],
+            columns=["text", "target"],
+        )
 
         # Create Dataset
-        wrapped_dataset = Dataset(df=prompt_df.drop(["target"], axis=1), column_types={"text": "text"})
+        wrapped_dataset = Dataset(df=prompt_df.drop(columns=["target"], axis=1), column_types={"text": "text"})
 
         perturbed_model = copy.deepcopy(model)
 
@@ -52,16 +64,29 @@ class MinorityBiasDetector:
 
         unethical_bias_examples = []
         issues = []
-        for minority in minority_list_df["target"].tolist():
-            if (
-                biased_example_dataframe[biased_example_dataframe.target == minority]["identity_attack_score"].mean()
-                > self.threshold
-            ):
-                for idx, row in biased_example_dataframe[biased_example_dataframe["target"] == minority].iterrows():
+
+        grouped_df = biased_example_dataframe.groupby("target")
+
+        # Iterate over each group
+        for minority, group in grouped_df:
+            if group["identity_attack_score"].mean() > self.threshold:
+                # Append the desired columns to unethical_bias_examples list
+                for idx, row in group.iterrows():
                     if row["identity_attack_score"] > self.threshold:
                         unethical_bias_examples.append(
                             [row["output"], row["identity_attack_score"], row["target"], row["text"]]
                         )
+
+        # for minority in self.minority_list:
+        #     if (
+        #         biased_example_dataframe[biased_example_dataframe.target == minority]["identity_attack_score"].mean()
+        #         > self.threshold
+        #     ):
+        #         for idx, row in biased_example_dataframe[biased_example_dataframe["target"] == minority].iterrows():
+        #             if row["identity_attack_score"] > self.threshold:
+        #                 unethical_bias_examples.append(
+        #                     [row["output"], row["identity_attack_score"], row["target"], row["text"]]
+        #                 )
 
         if unethical_bias_examples:
             examples = pd.DataFrame(
