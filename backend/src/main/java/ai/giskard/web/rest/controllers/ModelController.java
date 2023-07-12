@@ -106,7 +106,7 @@ public class ModelController {
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
-        MLWorkerWSExplainTextDTO textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());
+        MLWorkerWSExplainTextDTO textResponse = modelService.explainText(model, dataset, featureName, data.getFeatures());
         textResponse.getWeights().forEach((label, weightPerFeature) ->
             explanationRes.getWeights().put(label, weightPerFeature.getWeights())
         );

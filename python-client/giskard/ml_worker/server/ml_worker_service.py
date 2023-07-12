@@ -946,7 +946,7 @@ def datasetProcessing(ml_worker, params: dict, *args, **kwargs):
         ml_worker.client, params["dataset"]["project_key"], params["dataset"]["id"], params["dataset"]["sample"]
     )
 
-    for function in params["dataset"]["functions"]:
+    for function in params["functions"]:
         arguments = parse_function_arguments(function["arguments"])
         if "slicingFunction" in function.keys():
             dataset.add_slicing_function(
