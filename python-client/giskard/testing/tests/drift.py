@@ -22,6 +22,19 @@ from giskard.models.base import BaseModel
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
 
+def check_if_debuggable(actual_ds, reference_ds):
+    if actual_ds.df.empty:
+        raise ValueError("Your actual_dataset is empty. Debug is not defined for this case.")
+    if reference_ds.df.empty:
+        raise ValueError("Your reference_dataset is empty. Debug is not defined for this case.")
+    if actual_ds.id == reference_ds.id:
+        raise ValueError("You passed the same dataset as actual_dataset and reference_dataset. "
+                         "Debug is not defined for this case.")
+    if actual_ds.df.equals(reference_ds.df):
+        raise ValueError("Your actual_dataset is identical to your reference_dataset. "
+                         "Debug is not defined for this case.")
+
+
 def _calculate_psi(category, actual_distribution, expected_distribution):
     # To use log and avoid zero distribution probability,
     # we bound distribution probability by min_distribution_probability
@@ -236,6 +249,7 @@ def test_drift_psi(
     # --- debug ---
     output_ds = None
     if not passed and debug:
+        check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
@@ -328,6 +342,7 @@ def test_drift_chi_square(
     # --- debug ---
     output_ds = None
     if not passed and debug:
+        check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
@@ -548,6 +563,7 @@ def test_drift_prediction_psi(
     # --- debug ---
     output_ds = None
     if not passed and debug:
+        check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
@@ -671,6 +687,7 @@ def test_drift_prediction_chi_square(
     # --- debug ---
     output_ds = None
     if not passed and debug:
+        check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
