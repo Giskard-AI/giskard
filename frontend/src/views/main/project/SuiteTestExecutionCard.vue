@@ -54,7 +54,9 @@
       >
         <v-card>
           <v-card-text>
-            Select a model to debug with
+            <v-card-title>
+              Select a model to debug with
+            </v-card-title>
             <ModelSelector
                 :project-id="testSuiteStore.projectId"
                 label="Model"
