@@ -967,7 +967,7 @@ def datasetProcessing(ml_worker, params: dict, *args, **kwargs):
     return {
         "datasetId": params["dataset"]["id"],
         "totalRows": len(dataset.df.index),
-        "filteredRows": filtered_rows_idx,
+        "filteredRows": list(filtered_rows_idx),
         "modifications": [
             {
                 "rowId": row[0],
