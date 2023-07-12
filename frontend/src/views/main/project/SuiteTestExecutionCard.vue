@@ -61,7 +61,8 @@
                 :project-id="testSuiteStore.projectId"
                 label="Model"
                 :return-object="false"
-                @update:value="onSelectModel"/>
+                @update:value="onSelectModel"
+                :value.sync="selectedModel"/>
           </v-card-text>
         </v-card>
       </v-dialog>
@@ -113,6 +114,7 @@ const props = defineProps<{
 
 const loading = ref<boolean>(false);
 const modelDialog = ref<boolean>(false);
+const selectedModel = ref<string>("");
 
 const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
@@ -199,6 +201,7 @@ async function runDebug(inputs, modelId: string) {
   }
 
   try {
+    modelDialog.value = false;
     loading.value = true;
     let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
     let dataset = res.result[0].result.outputDfUuid;
@@ -216,6 +219,7 @@ async function runDebug(inputs, modelId: string) {
     })
   } finally {
     loading.value = false;
+    selectedModel.value = "";
   }
 }
 
