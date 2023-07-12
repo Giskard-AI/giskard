@@ -64,6 +64,19 @@
         </v-card>
       </v-dialog>
     </div>
+    <div>
+      <v-dialog
+          v-model="loading"
+          width="auto"
+      >
+        <v-card>
+          <v-card-title>Loading debug session</v-card-title>
+          <v-card-text>
+            <v-progress-linear indeterminate></v-progress-linear>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -183,22 +196,25 @@ async function runDebug(inputs, modelId: string) {
     inputs = createDebugInputs();
   }
 
-  loading.value = true;
-  let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
-  let dataset = res.result[0].result.outputDfUuid;
+  try {
+    loading.value = true;
+    let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
+    let dataset = res.result[0].result.outputDfUuid;
 
-  const debuggingSession = await api.prepareInspection({
-    datasetId: dataset,
-    modelId: modelId,
-    name: "Debugging session for " + props.suiteTest.test.name,
-    sample: true
-  });
-  debuggingSessionStore.setCurrentDebuggingSessionId(debuggingSession.id);
-  loading.value = false;
+    const debuggingSession = await api.prepareInspection({
+      datasetId: dataset,
+      modelId: modelId,
+      name: "Debugging session for " + props.suiteTest.test.name,
+      sample: true
+    });
+    debuggingSessionStore.setCurrentDebuggingSessionId(debuggingSession.id);
 
-  await router.push({
-    name: 'project-debugger',
-  })
+    await router.push({
+      name: 'project-debugger',
+    })
+  } finally {
+    loading.value = false;
+  }
 }
 
 function createDebugInputs() {
