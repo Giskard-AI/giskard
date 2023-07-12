@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
@@ -27,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -52,7 +50,6 @@ public class ModelController {
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
     private final ProjectFileDeletionService deletionService;
-    private final TransactionTemplate tt;
 
 
     /**
@@ -107,8 +104,6 @@ public class ModelController {
     public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        long projectId = model.getProject().getId();
-        InspectionSettings inspectionSettings = projectRepository.getMandatoryById(projectId).getInspectionSettings();
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
         MLWorkerWSExplainTextDTO textResponse = modelService.explainText(model, dataset, inspectionSettings, featureName, data.getFeatures());

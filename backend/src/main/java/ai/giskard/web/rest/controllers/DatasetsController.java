@@ -166,6 +166,9 @@ public class DatasetsController {
 
                 MLWorkerWSArtifactRefDTO artifactRef = new MLWorkerWSArtifactRefDTO();
                 artifactRef.setId(callable.getUuid().toString());
+                if (callable.getProjectKey() != null) {
+                    artifactRef.setProjectKey(callable.getProjectKey());
+                }
 
                 if (callable instanceof SlicingFunction) {
                     function.setSlicingFunction(artifactRef);

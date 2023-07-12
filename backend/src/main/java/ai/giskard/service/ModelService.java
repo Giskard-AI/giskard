@@ -1,7 +1,6 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.ColumnType;
-import ai.giskard.domain.InspectionSettings;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
@@ -133,7 +132,7 @@ public class ModelService {
         return response;
     }
 
-    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, InspectionSettings inspectionSettings, String featureName, Map<String, String> features) throws IOException {
+    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
         MLWorkerWSExplainTextDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
@@ -146,7 +145,6 @@ public class ModelService {
             param.setFeatureName(featureName);
             param.setColumns(features);
             param.setColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
-            param.setNSamples(inspectionSettings.getLimeNumberSamples());
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
