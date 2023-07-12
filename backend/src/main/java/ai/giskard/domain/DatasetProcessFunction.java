@@ -5,20 +5,24 @@ import ai.giskard.web.dto.DatasetProcessFunctionType;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.MappedSuperclass;
-import java.util.ArrayList;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
 @MappedSuperclass
 public abstract class DatasetProcessFunction extends Callable {
-    @Convert(converter = SimpleJSONStringAttributeConverter.class)
-    @Column
-    private List<String> projectKeys = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "dataset_process_function_projects",
+        joinColumns = {@JoinColumn(name = "function_uuid")},
+        inverseJoinColumns = {@JoinColumn(name = "project_id")}
+    )
+    private Set<Project> projects;
+
     @Column(nullable = false)
     private boolean cellLevel;
     @Column

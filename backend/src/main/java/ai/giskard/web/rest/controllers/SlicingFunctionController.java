@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -36,7 +37,7 @@ public class SlicingFunctionController {
     @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
     public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
-        slicingFunction.setProjectKeys(List.of(projectKey));
+        slicingFunction.setProjectKeys(Set.of(projectKey));
         return slicingFunctionService.save(slicingFunction);
     }
 

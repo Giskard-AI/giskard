@@ -49,13 +49,9 @@ public class MLWorkerCacheService {
 
         return CatalogDTO.builder()
             .tests(testFunctionRepository.findAll().stream().map(giskardMapper::toDTO).toList())
-            .slices(slicingFunctionRepository.findAll().stream()
-                // TODO: repository level WHERE
-                .filter(function -> function.getProjectKeys().isEmpty() || function.getProjectKeys().contains(project.getKey()))
+            .slices(slicingFunctionRepository.findAllForProject(project).stream()
                 .map(giskardMapper::toDTO).toList())
-            .transformations(transformationFunctionRepository.findAll().stream()
-                // TODO: repository level WHERE
-                .filter(function -> function.getProjectKeys().isEmpty() || function.getProjectKeys().contains(project.getKey()))
+            .transformations(transformationFunctionRepository.findAllForProject(project).stream()
                 .map(giskardMapper::toDTO).toList())
             .build();
     }

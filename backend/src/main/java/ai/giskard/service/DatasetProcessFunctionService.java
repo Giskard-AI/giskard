@@ -1,17 +1,20 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.DatasetProcessFunction;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.CallableRepository;
 import ai.giskard.web.dto.DatasetProcessFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunction, D extends DatasetProcessFunctionDTO> extends CallableService<E, D> {
 
-    public DatasetProcessFunctionService(CallableRepository<E> callableRepository, GiskardMapper giskardMapper) {
+    protected ProjectRepository projectRepository;
+
+    public DatasetProcessFunctionService(CallableRepository<E> callableRepository,
+                                         GiskardMapper giskardMapper,
+                                         ProjectRepository projectRepository) {
         super(callableRepository, giskardMapper);
+        this.projectRepository = projectRepository;
     }
 
     protected E update(E existing, D dto) {
@@ -20,8 +23,7 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         existing.setColumnType(dto.getColumnType());
         existing.setProcessType(dto.getProcessType());
         existing.setClauses(dto.getClauses());
-        existing.getProjectKeys().addAll(dto.getProjectKeys());
-        existing.setProjectKeys(new ArrayList<>(new HashSet<>(existing.getProjectKeys())));
+        existing.getProjects().addAll(projectRepository.findAllByKeyIn(dto.getProjectKeys()));
         return existing;
     }
 }

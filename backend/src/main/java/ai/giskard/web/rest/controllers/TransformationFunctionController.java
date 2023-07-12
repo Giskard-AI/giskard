@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -37,7 +37,7 @@ public class TransformationFunctionController {
         @PathVariable(value = "projectKey", required = false) String projectKey,
         @PathVariable("uuid") @NotNull UUID uuid,
         @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
-        transformationFunction.setProjectKeys(List.of(projectKey));
+        transformationFunction.setProjectKeys(Set.of(projectKey));
         return transformationFunctionService.save(transformationFunction);
     }
 
