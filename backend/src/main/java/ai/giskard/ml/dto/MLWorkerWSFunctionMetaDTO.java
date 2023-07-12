@@ -20,7 +20,7 @@ public class MLWorkerWSFunctionMetaDTO implements MLWorkerWSBaseDTO {
 
     String moduleDoc;
 
-    List<MLWorkerWSFunctionMetaDTO> args;
+    List<MLWorkerWSTestFunctionArgumentDTO> args;
 
     List<String> tags;
 

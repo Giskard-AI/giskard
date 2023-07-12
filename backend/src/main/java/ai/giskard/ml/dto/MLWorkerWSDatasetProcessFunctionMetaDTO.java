@@ -1,7 +1,10 @@
 package ai.giskard.ml.dto;
 
+import lombok.Getter;
+
 import java.util.List;
 
+@Getter
 public class MLWorkerWSDatasetProcessFunctionMetaDTO implements MLWorkerWSBaseDTO {
     String uuid;
 
@@ -17,7 +20,7 @@ public class MLWorkerWSDatasetProcessFunctionMetaDTO implements MLWorkerWSBaseDT
 
     String moduleDoc;
 
-    List<MLWorkerWSFunctionMetaDTO> args;
+    List<MLWorkerWSTestFunctionArgumentDTO> args;
 
     List<String> tags;
 
