@@ -97,7 +97,7 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 
 
 def test_default_dataset_is_used_with_generative_model():
-    model = mock.MagicMock()
+    model = mock.MagicMock(Model)
     model.is_text_generation = True
     scanner = Scanner()
 
