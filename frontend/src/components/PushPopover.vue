@@ -67,6 +67,8 @@ import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 import {$vfm} from "vue-final-modal";
 import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
 import {chain} from "lodash";
+import {TYPE} from "vue-toastification";
+import {RowFilterType} from "@/generated-sources";
 
 const pushStore = usePushStore();
 const mainStore = useMainStore();
@@ -148,12 +150,10 @@ async function applyCta(kind: string) {
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
       const slice = slicingFunctionsByUuid.value[uuid];
       if (slice !== undefined) {
-        console.log("Setting object")
         debuggingStore.setCurrentSlicingFunctionUuid(uuid);
-        // TODO: Figure out how to load a slice from here
         mainStore.addSimpleNotification("Slice applied");
       } else {
-        // Error slice not found
+        mainStore.addNotification({content: 'Could not load slice', color: TYPE.ERROR});
       }
       break;
     case "CreateTest":
@@ -161,10 +161,9 @@ async function applyCta(kind: string) {
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
       const test = testFunctionsByUuid.value[uuid];
       if (test !== undefined) {
-        console.log("Test found", test);
         addToTestSuite(test);
       } else {
-        console.log("Test not found");
+        mainStore.addNotification({content: 'Could not load test', color: TYPE.ERROR});
       }
       break;
     case "SavePerturbation":
@@ -172,6 +171,7 @@ async function applyCta(kind: string) {
       break;
     case "OpenDebuggerBorderline":
       // Programmatically apply Borderline filter
+      debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: false});
       break;
     case "OpenDebuggerOverconfidence":
       // Programmatically apply Overconfidence filter

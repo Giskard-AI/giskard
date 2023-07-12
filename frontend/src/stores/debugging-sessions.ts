@@ -1,12 +1,20 @@
-import {InspectionCreateDTO, InspectionDTO, ParameterizedCallableDTO} from '@/generated-sources';
+import {InspectionCreateDTO, InspectionDTO, ParameterizedCallableDTO, RowFilterType} from '@/generated-sources';
 import {defineStore} from 'pinia';
 import {api} from '@/api';
+
+interface FilterType {
+    label: string;
+    value: RowFilterType;
+    disabled?: boolean;
+    description?: string;
+}
 
 interface State {
     projectId: number | null;
     debuggingSessions: Array<InspectionDTO>;
     currentDebuggingSessionId: number | null;
     selectedSlicingFunction: Partial<ParameterizedCallableDTO>;
+    selectedFilter: FilterType | null
 }
 
 export const useDebuggingSessionsStore = defineStore('debuggingSessions', {
@@ -18,7 +26,8 @@ export const useDebuggingSessionsStore = defineStore('debuggingSessions', {
             uuid: undefined,
             params: [],
             type: 'SLICING'
-        }
+        },
+        selectedFilter: null
     }),
     getters: {},
     actions: {
@@ -67,6 +76,9 @@ export const useDebuggingSessionsStore = defineStore('debuggingSessions', {
                 params: [],
                 type: 'SLICING'
             };
+        },
+        setSelectedFilter(filter: FilterType | null) {
+            this.selectedFilter = filter;
         }
     },
 });
