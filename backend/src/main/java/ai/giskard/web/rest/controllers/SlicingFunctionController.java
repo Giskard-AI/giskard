@@ -36,7 +36,7 @@ public class SlicingFunctionController {
     @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
     public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
-        slicingFunction.setProjectKey(projectKey);
+        slicingFunction.setProjectKeys(List.of(projectKey));
         return slicingFunctionService.save(slicingFunction);
     }
 

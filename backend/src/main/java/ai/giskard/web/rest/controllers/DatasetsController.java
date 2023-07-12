@@ -157,8 +157,8 @@ public class DatasetsController {
 
                 ArtifactRef.Builder artefactRefBuilder = ArtifactRef.newBuilder().setId(callable.getUuid().toString());
 
-                if (callable.getProjectKey() != null) {
-                    artefactRefBuilder.setProjectKey(callable.getProjectKey());
+                if (!callable.getProjectKeys().isEmpty()) {
+                    artefactRefBuilder.setProjectKey(project.getKey());
                 }
                 ArtifactRef artifactRef = artefactRefBuilder.build();
 

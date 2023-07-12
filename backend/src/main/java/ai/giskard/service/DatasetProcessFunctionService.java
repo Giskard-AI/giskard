@@ -5,6 +5,9 @@ import ai.giskard.repository.ml.CallableRepository;
 import ai.giskard.web.dto.DatasetProcessFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunction, D extends DatasetProcessFunctionDTO> extends CallableService<E, D> {
 
     public DatasetProcessFunctionService(CallableRepository<E> callableRepository, GiskardMapper giskardMapper) {
@@ -17,8 +20,8 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         existing.setColumnType(dto.getColumnType());
         existing.setProcessType(dto.getProcessType());
         existing.setClauses(dto.getClauses());
-        // TODO: allow list of project to not override the project key
-        existing.setProjectKey(dto.getProjectKey());
+        existing.getProjectKeys().addAll(dto.getProjectKeys());
+        existing.setProjectKeys(new ArrayList<>(new HashSet<>(existing.getProjectKeys())));
         return existing;
     }
 }

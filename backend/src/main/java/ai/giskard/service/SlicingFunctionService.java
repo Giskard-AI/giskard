@@ -41,7 +41,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
 
     protected SlicingFunction create(SlicingFunctionDTO dto) {
         SlicingFunction function = giskardMapper.fromDTO(dto);
-        function.setProjectKey(dto.getProjectKey());
+        function.setProjectKeys(dto.getProjectKeys());
         if (function.getArgs() != null) {
             function.getArgs().forEach(arg -> arg.setFunction(function));
         }
@@ -86,7 +86,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         slicingFunction.setCellLevel(false);
         slicingFunction.setColumnType("");
         slicingFunction.setProcessType(DatasetProcessFunctionType.CLAUSES);
-        slicingFunction.setProjectKey(projectKey);
+        slicingFunction.setProjectKeys(List.of(projectKey));
 
         return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunction));
     }

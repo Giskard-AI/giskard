@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,5 +20,5 @@ public class DatasetProcessFunctionDTO extends CallableDTO {
     private String columnType;
     private DatasetProcessFunctionType processType;
     private List<Map<String, Object>> clauses;
-    private String projectKey;
+    private List<String> projectKeys = new ArrayList<>();
 }

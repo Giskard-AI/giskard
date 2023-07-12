@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.MappedSuperclass;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +16,9 @@ import java.util.Map;
 @Setter
 @MappedSuperclass
 public abstract class DatasetProcessFunction extends Callable {
+    @Convert(converter = SimpleJSONStringAttributeConverter.class)
     @Column
-    private String projectKey;
+    private List<String> projectKeys = new ArrayList<>();
     @Column(nullable = false)
     private boolean cellLevel;
     @Column

@@ -45,13 +45,17 @@ public class MLWorkerCacheService {
         // TODO: Remove from transaction, however it mostly relly on cache so impact is reduced
 
         Project project = projectRepository.getMandatoryById(projectId);
-        findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
+        findGiskardTest(project.isUsingInternalWorker());
 
         return CatalogDTO.builder()
             .tests(testFunctionRepository.findAll().stream().map(giskardMapper::toDTO).toList())
-            .slices(slicingFunctionRepository.findAllByProjectKeyNullOrProjectKey(project.getKey()).stream()
+            .slices(slicingFunctionRepository.findAll().stream()
+                // TODO: repository level WHERE
+                .filter(function -> function.getProjectKeys().isEmpty() || function.getProjectKeys().contains(project.getKey()))
                 .map(giskardMapper::toDTO).toList())
-            .transformations(transformationFunctionRepository.findAllByProjectKeyNullOrProjectKey(project.getKey()).stream()
+            .transformations(transformationFunctionRepository.findAll().stream()
+                // TODO: repository level WHERE
+                .filter(function -> function.getProjectKeys().isEmpty() || function.getProjectKeys().contains(project.getKey()))
                 .map(giskardMapper::toDTO).toList())
             .build();
     }
