@@ -68,7 +68,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         );
     }
 
-    public SlicingFunctionDTO generate(List<ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
+    public SlicingFunctionDTO generate(List<ComparisonClauseDTO> comparisonClauses, String projectKey) throws JsonProcessingException {
         String name = comparisonClauses.stream().map(this::clauseToString).collect(Collectors.joining(" & "));
 
         SlicingFunction slicingFunction = new SlicingFunction();
@@ -86,6 +86,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         slicingFunction.setCellLevel(false);
         slicingFunction.setColumnType("");
         slicingFunction.setProcessType(DatasetProcessFunctionType.CLAUSES);
+        slicingFunction.setProjectKey(projectKey);
 
         return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunction));
     }

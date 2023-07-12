@@ -43,8 +43,7 @@ public class SlicingFunctionController {
     @PostMapping("project/{projectKey}/slices/no-code")
     public SlicingFunctionDTO createSlicingFunction(@PathVariable("projectKey") @NotNull String projectKey,
                                                     @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
-        // TODO GSK-1280: add projectKey to slicing function
-        return slicingFunctionService.generate(comparisonClauses);
+        return slicingFunctionService.generate(comparisonClauses, projectKey);
     }
 
 

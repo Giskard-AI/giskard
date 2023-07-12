@@ -1,5 +1,6 @@
 package ai.giskard.service.ml;
 
+import ai.giskard.domain.Project;
 import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.repository.ProjectRepository;
@@ -22,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Stream;
-
 import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @Service
@@ -40,47 +39,36 @@ public class MLWorkerCacheService {
     private final TransformationFunctionRepository transformationFunctionRepository;
     private final ProjectRepository projectRepository;
     private final GiskardMapper giskardMapper;
-    private CatalogDTO catalogWithoutPickles = new CatalogDTO();
 
     @Transactional
     public CatalogDTO getCatalog(long projectId) {
         // TODO: Remove from transaction, however it mostly relly on cache so impact is reduced
-        CatalogDTO catalog = findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
+
+        Project project = projectRepository.getMandatoryById(projectId);
+        findGiskardTest(projectRepository.getMandatoryById(projectId).isUsingInternalWorker());
 
         return CatalogDTO.builder()
-            .tests(Stream.concat(
-                    testFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
-                    catalog.getTests().stream()
-                )
-                .toList())
-            .slices(Stream.concat(
-                    slicingFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
-                    catalog.getSlices().stream()
-                )
-                .toList())
-            .transformations(Stream.concat(
-                    transformationFunctionRepository.findAll().stream().map(giskardMapper::toDTO),
-                    catalog.getTransformations().stream()
-                )
-                .toList())
+            .tests(testFunctionRepository.findAll().stream().map(giskardMapper::toDTO).toList())
+            .slices(slicingFunctionRepository.findAllByProjectKeyNullOrProjectKey(project.getKey()).stream()
+                .map(giskardMapper::toDTO).toList())
+            .transformations(transformationFunctionRepository.findAllByProjectKeyNullOrProjectKey(project.getKey()).stream()
+                .map(giskardMapper::toDTO).toList())
             .build();
     }
 
-    public CatalogDTO findGiskardTest(boolean isInternal) {
+    public void findGiskardTest(boolean isInternal) {
         if (isInternal) {
-            // Only cache external ML worker
-            return getTestFunctions(true);
+            return;
         }
 
         if (mlWorkerTunnelService.isClearCacheRequested()) {
-            catalogWithoutPickles = getTestFunctions(false);
+            CatalogDTO catalogWithoutPickles = getTestFunctions(false);
             testFunctionService.saveAll(catalogWithoutPickles.getTests());
             slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
             transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
             mlWorkerTunnelService.setClearCacheRequested(false);
         }
 
-        return catalogWithoutPickles;
     }
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
