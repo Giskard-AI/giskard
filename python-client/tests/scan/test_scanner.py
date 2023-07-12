@@ -1,6 +1,8 @@
 import re
+import warnings
 from unittest import mock
 
+import numpy as np
 import pandas as pd
 import pytest
 from langchain import LLMChain, PromptTemplate
@@ -203,3 +205,25 @@ def test_scanner_raises_error_if_non_giskard_dataset_is_passed(titanic_model, ti
     msg = re.escape("The dataset object you provided is not valid")
     with pytest.raises(ValueError, match=msg):
         scanner.analyze(titanic_model, titanic_dataset.df)
+
+
+def test_scanner_warns_if_too_many_features():
+    scanner = Scanner()
+
+    # Model with no feature names
+    model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
+    dataset = Dataset(pd.DataFrame(np.ones((10, 120)), columns=map(str, np.arange(120))), target="0")
+
+    with pytest.warns(UserWarning, match="It looks like your dataset has a very large number of features (120)"):
+        scanner.analyze(model, dataset)
+
+    # Model specifying few feature names should not raise a warning
+    model = Model(
+        lambda x: np.ones(len(x)),
+        model_type="classification",
+        classification_labels=[0, 1],
+        feature_names=["1", "2", "3"],
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        scanner.analyze(model, dataset)

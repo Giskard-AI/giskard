@@ -74,6 +74,15 @@ class Scanner:
                 column_types=dataset.column_types,
             )
 
+        num_features = len(model.meta.feature_names) if model.meta.feature_names else len(dataset.columns)
+        if num_features > 100:
+            warning(
+                f"It looks like your dataset has a very large number of features ({num_features}), "
+                "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
+                "pre-processing (categorical encoding, vectorization, etc.). "
+                "Check https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html for more details."
+            )
+
         # Good, we can start
         maybe_print("🔎 Running scan…", verbose=verbose)
         time_start = perf_counter()
