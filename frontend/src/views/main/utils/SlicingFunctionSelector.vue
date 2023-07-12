@@ -38,6 +38,7 @@ import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal
 import { chain } from 'lodash';
 import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
 import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
+import { api } from '@/api';
 
 const props = withDefaults(defineProps<{
   projectId: number,
@@ -121,10 +122,12 @@ async function updateArgs() {
 }
 
 async function createSlice() {
+  const project = await api.getProject(props.projectId);
     await $vfm.show({
         component: CreateSliceModal,
         bind: {
-            dataset: props.dataset
+          projectKey: project.key,
+          dataset: props.dataset
         },
         on: {
             async created(uuid: string) {

@@ -6,20 +6,20 @@ import {
     DatasetDTO,
     DatasetProcessFunctionDTO
 } from '@/generated-sources';
-import {defineStore} from 'pinia';
-import {api} from '@/api';
-import {chain} from "lodash";
-import {getColumnType} from "@/utils/column-type-utils";
+import { defineStore } from 'pinia';
+import { api } from '@/api';
+import { chain } from 'lodash';
+import { getColumnType } from '@/utils/column-type-utils';
 
 interface State {
-    catalog: CatalogDTO | null
+    catalog: CatalogDTO | null;
 }
 
 
 function latestVersions<E extends CallableDTO>(data?: Array<E>): Array<E> {
     return chain(data ?? [])
-        .groupBy(func => `${func.module}.${func.name}`)
-        .mapValues(functions => chain(functions)
+      .groupBy(func => `${func.module}.${func.name}`)
+      .mapValues(functions => chain(functions)
             .maxBy(func => func.version ?? 1)
             .value())
         .values()
@@ -69,15 +69,15 @@ export const useCatalogStore = defineStore('catalog', {
         async loadCatalog(projectId: number) {
             this.catalog = await api.getCatalog(projectId);
         },
-        async createSlicingFunction(dataset: DatasetDTO, clauses: Array<ComparisonClauseDTO & {
+        async createSlicingFunction(projectKey: string, dataset: DatasetDTO, clauses: Array<ComparisonClauseDTO & {
             columnType: ColumnType
         }>) {
-            const slicingFunction = await api.createSlicingFunction(clauses.map(c => {
-                const {columnType, ...clause} = c;
+            const slicingFunction = await api.createSlicingFunction(projectKey, clauses.map(c => {
+                const { columnType, ...clause } = c;
                 return {
                     ...clause,
                     columnDtype: dataset.columnDtypes[clause.columnName]
-                }
+                };
             }));
 
             this.catalog!.slices.push(slicingFunction);

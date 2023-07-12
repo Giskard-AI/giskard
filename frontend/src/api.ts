@@ -1,6 +1,6 @@
-import axios, {AxiosError} from 'axios';
-import {apiURL} from '@/env';
-import {getLocalToken, removeLocalToken} from '@/utils';
+import axios, { AxiosError } from 'axios';
+import { apiURL } from '@/env';
+import { getLocalToken, removeLocalToken } from '@/utils';
 import Vue from 'vue';
 
 import {
@@ -49,13 +49,13 @@ import {
   TestTemplateExecutionResultDTO,
   TokenAndPasswordVM,
   UpdateMeDTO,
-  UserDTO,
+  UserDTO
 } from './generated-sources';
-import {TYPE} from 'vue-toastification';
+import { TYPE } from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
-import {useUserStore} from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
   // Do something before request is sent
@@ -461,24 +461,24 @@ export const api = {
     return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
       projectId,
       testUuid,
-      inputs,
+      inputs
     });
   },
   async getCatalog(projectId: number) {
     return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
       params: {
-        projectId,
-      },
+        projectId
+      }
     });
   },
-  async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
-    return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses);
+  async createSlicingFunction(projectKey: string, comparisonClauses: Array<ComparisonClauseDTO>) {
+    return apiV2.post<unknown, SlicingFunctionDTO>(`/project/${projectKey}/slices/no-code`, comparisonClauses);
   },
   async uploadLicense(form: FormData) {
     return apiV2.post<unknown, unknown>(`/ee/license`, form, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+        'Content-Type': 'multipart/form-data'
+      }
     });
   },
   async finalizeSetup(allowAnalytics: boolean, license: string) {
