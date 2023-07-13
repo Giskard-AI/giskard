@@ -1,56 +1,30 @@
 <template>
   <v-container class="main align-self-center">
-    <v-row align="center" v-if="!isClassification">
+    <v-row align="center" v-if="!isClassificationModel">
       <v-col cols="5">Predicted value is between</v-col>
       <v-col>
-        <v-text-field
-            v-model='value.minThreshold'
-            hide-details
-            class="pa-0 ma-0"
-            type='number'
-        ></v-text-field>
+        <v-text-field v-model='value.minThreshold' hide-details class="pa-0 ma-0" type='number'></v-text-field>
       </v-col>
       <v-col cols="1" class="text-center">and</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.maxThreshold'
-            hide-details
-            type='number'
-        ></v-text-field>
+        <v-text-field class="pa-0 ma-0" v-model='value.maxThreshold' hide-details type='number'></v-text-field>
       </v-col>
     </v-row>
-    <v-row align="center" v-if="!isClassification && isTargetAvailable">
+    <v-row align="center" v-if="!isClassificationModel && isTargetAvailable">
       <v-col cols="5">Actual value is between</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.minLabelThreshold'
-            hide-details
-            type='number'
-        >
+        <v-text-field class="pa-0 ma-0" v-model='value.minLabelThreshold' hide-details type='number'>
         </v-text-field>
       </v-col>
       <v-col cols="1" class="text-center">and</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.maxLabelThreshold'
-            hide-details
-            type='number'
-        ></v-text-field>
+        <v-text-field class="pa-0 ma-0" v-model='value.maxLabelThreshold' hide-details type='number'></v-text-field>
       </v-col>
     </v-row>
-    <v-row align="center" v-if="!isClassification && isTargetAvailable">
+    <v-row align="center" v-if="!isClassificationModel && isTargetAvailable">
       <v-col cols="5">Diff percentage value is between</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.minDiffThreshold'
-            step='0.1'
-            hide-details
-            type='number'
-        >
+        <v-text-field class="pa-0 ma-0" v-model='value.minDiffThreshold' step='0.1' hide-details type='number'>
           <template v-slot:append>
             %
           </template>
@@ -58,59 +32,35 @@
       </v-col>
       <v-col cols="1" class="text-center">and</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.maxDiffThreshold'
-            step='0.1'
-            hide-details
-            type='number'
-        >
+        <v-text-field class="pa-0 ma-0" v-model='value.maxDiffThreshold' step='0.1' hide-details type='number'>
           <template v-slot:append>
             %
           </template>
         </v-text-field>
       </v-col>
     </v-row>
-    <v-row align="center" v-if="isClassification">
+    <v-row align="center" v-if="isClassificationModel">
       <v-col v-if="isTargetAvailable && value.targetLabel">
-        <MultiSelector label='Actual Labels' :options='labels'
-                       :selected-options.sync='value.targetLabel'/>
+        <MultiSelector label='Actual Labels' :options='labels' :selected-options.sync='value.targetLabel' />
       </v-col>
       <v-col v-if="value.predictedLabel">
-        <MultiSelector label='Predicted Labels' :options='labels' v-if="value.predictedLabel"
-                       :selected-options.sync='value.predictedLabel'/>
+        <MultiSelector label='Predicted Labels' :options='labels' v-if="value.predictedLabel" :selected-options.sync='value.predictedLabel' />
       </v-col>
     </v-row>
-    <v-row align="center" v-if="isClassification">
+    <v-row align="center" v-if="isClassificationModel">
       <v-col>Probability of</v-col>
       <v-col cols="3">
-        <v-select
-            clearable
-            class="pa-0 ma-0"
-            :items='labels'
-            v-model='value.thresholdLabel'
-            hide-details
-        ></v-select>
+        <v-select clearable class="pa-0 ma-0" :items='labels' v-model='value.thresholdLabel' hide-details></v-select>
       </v-col>
       <v-col class="text-center">is between :</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.minThreshold'
-            hide-details
-            type='number'
-        >
+        <v-text-field class="pa-0 ma-0" v-model='value.minThreshold' hide-details type='number'>
           <template v-slot:append>%</template>
         </v-text-field>
       </v-col>
       <v-col cols="1" class="text-center">and</v-col>
       <v-col>
-        <v-text-field
-            class="pa-0 ma-0"
-            v-model='value.maxThreshold'
-            hide-details
-            type='number'
-        >
+        <v-text-field class="pa-0 ma-0" v-model='value.maxThreshold' hide-details type='number'>
           <template v-slot:append>%</template>
         </v-text-field>
       </v-col>
@@ -118,33 +68,35 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import Component from "vue-class-component";
-import Vue from "vue";
-import {Prop} from "vue-property-decorator";
-import {Filter, ModelType} from "@/generated-sources";
-import {isClassification} from "@/ml-utils";
+<script setup lang="ts">
+import { Filter, ModelType } from "@/generated-sources";
+import { isClassification } from "@/ml-utils";
 import MultiSelector from "@/views/main/utils/MultiSelector.vue";
+import { computed, onMounted, getCurrentInstance } from "vue";
 
-@Component({components: {MultiSelector}})
-export default class CustomInspectionFilter extends Vue {
-  @Prop({required: true}) modelType!: ModelType;
-  @Prop({required: true}) labels!: string[];
-  @Prop({default: false}) isTargetAvailable!: boolean;
-  @Prop() value!: Filter;
+const instance = getCurrentInstance();
 
-  get isClassification() {
-    return isClassification(this.modelType);
-  }
-
-  mounted() {
-    this.value.predictedLabel = this.value.predictedLabel || [];
-    this.value.targetLabel = this.value.targetLabel || [];
-    this.$emit('input', this.value);
-    this.$forceUpdate();
-  }
+interface Props {
+  modelType: ModelType;
+  labels: string[];
+  isTargetAvailable?: boolean;
+  value: Filter;
 }
 
+const props = withDefaults(defineProps<Props>(), {
+  isTargetAvailable: false,
+})
+
+const isClassificationModel = computed(() => isClassification(props.modelType));
+
+const emit = defineEmits(["input"]);
+
+onMounted(() => {
+  props.value.predictedLabel = props.value.predictedLabel || [];
+  props.value.targetLabel = props.value.targetLabel || [];
+  emit('input', props.value);
+  instance?.proxy?.$forceUpdate();
+});
 </script>
 
 <style scoped lang="scss">
