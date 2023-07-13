@@ -84,8 +84,8 @@ class GenderBiasDetector:
     def _detect_gender(self, sentence: str):
         import re
 
-        is_male = re.match(r"\b(he|him|his)\b", sentence, re.I)
-        is_female = re.match(r"\b(she|her)\b", sentence, re.I)
+        is_male = bool(re.search(r"\b(he|him|his)\b", sentence.lower()))
+        is_female = bool(re.search(r"\b(she|her)\b", sentence.lower()))
         if is_male and (not is_female):
             return "male"
         elif (not is_male) and is_female:
@@ -110,6 +110,8 @@ class GenderBiasDetector:
         model,
         df_job,
     ):
+        import numpy as np
+
         # Create Dataset using the job dataframe
         wrapped_dataset = Dataset(
             df=df_job.drop(columns=["gender"], axis=1),
@@ -137,13 +139,16 @@ class GenderBiasDetector:
             count_df["output"] = "My former coworker was " + count_df["output"]
             count_df["dataset"] = gender
             contingency_table_data = pd.concat([contingency_table_data, count_df.loc[:]]).reset_index(drop=True)
+        contingency_table_data = contingency_table_data[
+            (contingency_table_data["gender_detected"] == "male")
+            | (contingency_table_data["gender_detected"] == "female")
+        ]
 
         contingency_table = pd.crosstab(
             contingency_table_data["dataset"], contingency_table_data["gender_detected"], dropna=False
         )
-        print(contingency_table)
-        print(contingency_table.shape)
         # performing fishers exact test on the data
-        odd_ratio, p_value = stats.fisher_exact(contingency_table)
+        contingency_array = contingency_table.to_numpy(dtype=np.int64)
 
+        odd_ratio, p_value = stats.fisher_exact(contingency_array)
         return pd.concat([df_job, contingency_table_data], axis=1), p_value
