@@ -131,7 +131,7 @@ async function submit(close) {
 
   if (suiteId && suiteId === selectedSuite.value) {
     await router.push({
-      name: 'test-suite-overview',
+      name: 'project-testing-test-suite-overview',
       params: {
         id: projectId.toString(),
         suiteId: selectedSuite.value!.toString()
