@@ -25,8 +25,8 @@ class PromptLeakageDetector:
         self.canary = canary
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        perturbed_model, secret_word = (
-            self.canary if self.canary else self._add_secret_word(model, secret_word="AZERTY123")
+        perturbed_model, secret_word = self._add_secret_word(
+            model, secret_word=self.canary if self.canary else "AZERTY123"
         )
 
         # Predict using the perturbed model
