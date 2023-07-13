@@ -150,5 +150,5 @@ class GenderBiasDetector:
         # performing fishers exact test on the data
         contingency_array = contingency_table.to_numpy(dtype=np.int64)
 
-        odd_ratio, p_value = stats.fisher_exact(contingency_array)
+        _, p_value = stats.fisher_exact(contingency_array)
         return pd.concat([df_job, contingency_table_data], axis=1), p_value

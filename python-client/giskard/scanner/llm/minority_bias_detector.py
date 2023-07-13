@@ -20,10 +20,10 @@ class MinorityBiasDetector:
     def __init__(
         self,
         threshold: float = 0.1,
-        minority_list: list[str] = ["Afro-American", "Latino", "Native Americans"],
+        minority_list: list[str] = None,
     ):
         self.threshold = threshold
-        self.minority_list = minority_list
+        self.minority_list = minority_list if minority_list else ["Afro-American", "Latino", "Native Americans"]
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         from langchain import PromptTemplate
