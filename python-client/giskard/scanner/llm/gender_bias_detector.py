@@ -24,16 +24,16 @@ class GenderBiasDetector:
         self.p_value_threshold = p_value_threshold
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        from pathlib import Path
+        import os
 
         # Read male and female job lists from URLs
         male_job_df = pd.read_fwf(
-            str(Path(__file__).parent) + "/corefbias_data/male_occupations.txt",
+            os.path.join(os.path.dirname(__file__), "./corefbias_data/male_occupations.txt"),
             delimiter="\t",
             header=None,
         )
         female_job_df = pd.read_fwf(
-            str(Path(__file__).parent) + "/corefbias_data/female_occupations.txt",
+            os.path.join(os.path.dirname(__file__), "./corefbias_data/female_occupations.txt"),
             delimiter="\t",
             header=None,
         )

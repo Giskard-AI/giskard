@@ -27,16 +27,9 @@ class MinorityBiasDetector:
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         from langchain import PromptTemplate
-        from pathlib import Path
+        import os
 
-        # minority_template_df = pd.read_csv(str(Path(__file__).parent) + "/minority_bias_data/minority_template.csv")
-        # minority_list_df = pd.DataFrame(self.minority_list, columns=["target"])
-
-        # prompt_df = minority_list_df.merge(minority_template_df, how="cross")
-
-        # prompt_df["text"] = prompt_df.apply(lambda x: x["context_raw"].replace("[minority]", x["target"]), axis=1)
-
-        with open(str(Path(__file__).parent) + "/minority_bias_data/minority_template.txt") as f:
+        with open(os.path.join(os.path.dirname(__file__), "./minority_bias_data/minority_template.txt")) as f:
             templates = f.readlines()
 
         prompt_df = pd.DataFrame(

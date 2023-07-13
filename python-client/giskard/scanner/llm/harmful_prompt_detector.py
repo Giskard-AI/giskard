@@ -23,10 +23,10 @@ class HarmfulPromptDetector:
         self.threshold = threshold
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        from pathlib import Path
+        import os
 
         harmful_df = pd.read_csv(
-            str(Path(__file__).parent) + "/ethical_bias_data/unethical_prompts.csv",
+            os.path.join(os.path.dirname(__file__), "./ethical_bias_data/unethical_prompts.csv"),
             header=None,
             names=["text"],
         )
