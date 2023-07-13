@@ -109,7 +109,7 @@ async function fetchFeedbacks() {
 }
 
 async function openFeedback(obj) {
-  await router.push({ name: 'feedback-detail', params: { feedbackId: obj.id } })
+  await router.push({ name: 'project-feedback-detail', params: { feedbackId: obj.id } })
 }
 
 async function handleRouteChanged() {
@@ -120,8 +120,8 @@ async function handleRouteChanged() {
 watch(() => route.meta, async () => { await handleRouteChanged() });
 
 function handleFeedbackDetailDialogClosed(isOpen) {
-  if (!isOpen && route.name !== 'project-feedbacks') {
-    router.push({ name: 'project-feedbacks' });
+  if (!isOpen && route.name !== 'project-feedback') {
+    router.push({ name: 'project-feedback' });
   }
 }
 
@@ -216,7 +216,7 @@ function deleteFeedback(feedback: FeedbackMinimalDTO) {
 
 async function createDebuggingSession(debuggingSession) {
   await router.push({
-    name: 'inspection',
+    name: 'project-debugger-inspection',
     params: {
       id: projectId.toString(),
       inspectionId: debuggingSession.id.toString()
