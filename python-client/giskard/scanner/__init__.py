@@ -17,7 +17,6 @@ _default_detectors = [
     ".llm.gender_bias_detector",
     ".llm.harmful_prompt_detector",
     ".llm.minority_bias_detector",
-    ".llm.prompt_leakage_detector",
 ]
 
 

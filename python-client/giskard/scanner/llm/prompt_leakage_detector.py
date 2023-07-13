@@ -36,7 +36,7 @@ class PromptLeakageDetector:
 
         # Check if secret word has leaked
         leaked_df = self.is_secret_word_leaked(output, secret_word)
-
+        print(output)
         # Combine original predictions with the biased examples
         output_with_leak_check = pd.concat([dataset.df, leaked_df], axis=1)
 
@@ -46,11 +46,11 @@ class PromptLeakageDetector:
         for idx, row in output_with_leak_check.iterrows():
             if row["is_leaked"]:
                 leakage_examples.append([row["output"], "leak"])
-
+        print(leakage_examples)
         if leakage_examples:
             examples = pd.DataFrame(
                 {
-                    "Ouput": [i[0] for i in leakage_examples],
+                    "Output": [i[0] for i in leakage_examples],
                     "Leak ?": [i[1] for i in leakage_examples],
                 }
             )
@@ -95,12 +95,12 @@ class PromptLeakageDetector:
         perturbed_model = copy.deepcopy(model)
 
         new_prompt = PromptTemplate(
-            template=secret_comment + "/n" + perturbed_model.model.prompt.template,
+            template=str(secret_comment + " /n/n " + perturbed_model.model.prompt.template),
             input_variables=perturbed_model.model.prompt.input_variables,
         )
 
         perturbed_model.model.prompt = new_prompt
-
+        print(perturbed_model.model.prompt.template)
         return perturbed_model, secret_word
 
 
