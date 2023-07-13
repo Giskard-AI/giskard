@@ -17,5 +17,5 @@ public class MLWorkerWSRunModelForDataFrameDTO implements MLWorkerWSBaseDTO {
     List<Float> probabilities;
 
     @JsonProperty("raw_prediction")
-    List<Float> raw_Prediction;
+    List<Float> rawPrediction;
 }
