@@ -51,22 +51,30 @@ public class UserDeletionService {
         userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
             ensureAnyOtherAdminExists(user);
 
-            List<Project> ownedProjects = projectRepository.getProjectsByOwner(user);
-            if (!ownedProjects.isEmpty()) {
-                projectRepository.deleteAll(ownedProjects);
-                projectRepository.flush();
-            }
+            deleteUserOwnedProjects(user);
 
-            List<Feedback> userFeedbacks = feedbackRepository.findAllByUser(user);
-            if (!userFeedbacks.isEmpty()) {
-                User deletedUser = userRepository.getOneByLogin("deleted_user");
-
-                userFeedbacks.forEach(feedback -> feedback.setUser(deletedUser));
-                feedbackRepository.saveAll(userFeedbacks);
-            }
+            setUserFeedbacksToDeletedUser(user);
 
             userRepository.delete(user);
         });
+    }
+
+    private void setUserFeedbacksToDeletedUser(User user) {
+        List<Feedback> userFeedbacks = feedbackRepository.findAllByUser(user);
+        if (!userFeedbacks.isEmpty()) {
+            User deletedUser = userRepository.getOneByLogin("deleted_user");
+
+            userFeedbacks.forEach(feedback -> feedback.setUser(deletedUser));
+            feedbackRepository.saveAll(userFeedbacks);
+        }
+    }
+
+    private void deleteUserOwnedProjects(User user) {
+        List<Project> ownedProjects = projectRepository.getProjectsByOwner(user);
+        if (!ownedProjects.isEmpty()) {
+            projectRepository.deleteAll(ownedProjects);
+            projectRepository.flush();
+        }
     }
 
     /***
