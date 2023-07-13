@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,8 @@ public class UserDeletionService {
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
+
+    private final ProjectService projectService;
 
     private final ProjectRepository projectRepository;
 
@@ -47,6 +50,7 @@ public class UserDeletionService {
      * User cannot be the only admin (ie there must be one admin left after disabling)
      * @param login
      */
+    @Transactional
     public void deleteUser(String login) {
         userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
             ensureAnyOtherAdminExists(user);
@@ -55,6 +59,8 @@ public class UserDeletionService {
 
             setUserFeedbacksToDeletedUser(user);
 
+            user.getProjects().forEach(project -> project.getGuests().remove(user));
+
             userRepository.delete(user);
         });
     }
@@ -62,9 +68,7 @@ public class UserDeletionService {
     private void setUserFeedbacksToDeletedUser(User user) {
         List<Feedback> userFeedbacks = feedbackRepository.findAllByUser(user);
         if (!userFeedbacks.isEmpty()) {
-            User deletedUser = userRepository.getOneByLogin("deleted_user");
-
-            userFeedbacks.forEach(feedback -> feedback.setUser(deletedUser));
+            userFeedbacks.forEach(feedback -> feedback.setUser(null));
             feedbackRepository.saveAll(userFeedbacks);
         }
     }
@@ -72,8 +76,7 @@ public class UserDeletionService {
     private void deleteUserOwnedProjects(User user) {
         List<Project> ownedProjects = projectRepository.getProjectsByOwner(user);
         if (!ownedProjects.isEmpty()) {
-            projectRepository.deleteAll(ownedProjects);
-            projectRepository.flush();
+            ownedProjects.forEach(project -> projectService.delete(project.getId()));
         }
     }
 
