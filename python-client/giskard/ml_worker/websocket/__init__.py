@@ -4,7 +4,11 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class Empty(BaseModel):
+class WorkerReply(BaseModel):
+    pass
+
+
+class Empty(WorkerReply):
     pass
 
 
@@ -53,7 +57,7 @@ class DatasetProcessFuctionMeta(BaseModel):
     processType: str
 
 
-class Catalog(BaseModel):
+class Catalog(WorkerReply):
     tests: Dict[str, FunctionMeta]
     slices: Dict[str, DatasetProcessFuctionMeta]
     transformations: Dict[str, DatasetProcessFuctionMeta]
@@ -72,7 +76,7 @@ class DatasetRowModificationResult(BaseModel):
     modifications: Dict[str, str]
 
 
-class DatasetProcessing(BaseModel):
+class DatasetProcessing(WorkerReply):
     datasetId: str
     totalRows: int
     filteredRows: List[int]
@@ -105,7 +109,7 @@ class DatesetProcessingParam(BaseModel):
     functions: List[DatasetProcessingFunction]
 
 
-class EchoMsg(BaseModel):
+class EchoMsg(WorkerReply):
     msg: str
 
 
@@ -113,7 +117,7 @@ class Explanation(BaseModel):
     per_feature: Dict[str, float]
 
 
-class Explain(BaseModel):
+class Explain(WorkerReply):
     explanations: Dict[str, Explanation]
 
 
@@ -127,7 +131,7 @@ class WeightsPerFeature(BaseModel):
     weights: List[float]
 
 
-class ExplainText(BaseModel):
+class ExplainText(WorkerReply):
     words: List[str]
     weights: Dict[str, WeightsPerFeature]
 
@@ -151,7 +155,7 @@ class GeneratedTestSuite(BaseModel):
     inputs: List[GeneratedTestInput]
 
 
-class GenerateTestSuite(BaseModel):
+class GenerateTestSuite(WorkerReply):
     tests: List[GeneratedTestSuite]
 
 
@@ -184,7 +188,7 @@ class Platform(BaseModel):
     version: str
 
 
-class GetInfo(BaseModel):
+class GetInfo(WorkerReply):
     platform: Platform
     interpreter: str
     interpreterVersion: str
@@ -246,7 +250,7 @@ class NamedSingleTestResult(BaseModel):
     result: SingleTestResult
 
 
-class RunAdHocTest(BaseModel):
+class RunAdHocTest(WorkerReply):
     results: List[NamedSingleTestResult]
 
 
@@ -255,7 +259,7 @@ class RunAdHocTestParam(BaseModel):
     arguments: List[FuncArgument]
 
 
-class RunModelForDataFram(BaseModel):
+class RunModelForDataFrame(WorkerReply):
     all_predictions: DataFrame
     prediction: List[str]
     probabilities: List[float]
@@ -291,7 +295,7 @@ class TestFunctionArgument(BaseModel):
     argOrder: int
 
 
-class TestSuite(BaseModel):
+class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: IdentifierSingleTestResult

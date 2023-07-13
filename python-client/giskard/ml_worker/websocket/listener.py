@@ -12,6 +12,20 @@ import sys
 import os
 import giskard
 
+from giskard.ml_worker import websocket
+from giskard.ml_worker.websocket import (
+    EchoMsg,
+    ExplainParam,
+    GetInfoParam,
+    RunModelParam,
+    TestSuiteParam,
+    ExplainTextParam,
+    RunAdHocTestParam,
+    DatesetProcessingParam,
+    GenerateTestSuiteParam,
+    RunModelForDataFrameParam,
+)
+
 import asyncio
 
 
@@ -57,15 +71,44 @@ def websocket_actor(action: MLWorkerAction):
                 rep_id = req["id"] if "id" in req.keys() else None
                 # Parse the param
                 params = req["param"] if "param" in req.keys() else {}
+                # TODO: Sort by usage frequency
+                if action == MLWorkerAction.getInfo:
+                    params = GetInfoParam.parse_obj(params)
+                elif action == MLWorkerAction.runAdHocTest:
+                    params = RunAdHocTestParam.parse_obj(params)
+                elif action == MLWorkerAction.datasetProcessing:
+                    params = DatesetProcessingParam.parse_obj(params)
+                elif action == MLWorkerAction.runTestSuite:
+                    params = TestSuiteParam.parse_obj(params)
+                elif action == MLWorkerAction.runModel:
+                    params = RunModelParam.parse_obj(params)
+                elif action == MLWorkerAction.runModelForDataFrame:
+                    params = RunModelForDataFrameParam.parse_obj(params)
+                elif action == MLWorkerAction.explain:
+                    params = ExplainParam.parse_obj(params)
+                elif action == MLWorkerAction.explainText:
+                    params = ExplainTextParam.parse_obj(params)
+                elif action == MLWorkerAction.echo:
+                    params = EchoMsg.parse_obj(params)
+                elif action == MLWorkerAction.generateTestSuite:
+                    params = GenerateTestSuiteParam.parse_obj(params)
+                elif action == MLWorkerAction.stopWorker:
+                    pass
+                elif action == MLWorkerAction.getCatalog:
+                    pass
+                elif action == MLWorkerAction.generateQueryBasedSlicingFunction:
+                    pass
                 # Call the function and get the response
-                info = callback(ml_worker=ml_worker, action=action.name, params=params, *args, **kwargs)
+                info: websocket.WorkerReply = callback(
+                    ml_worker=ml_worker, action=action.name, params=params, *args, **kwargs
+                )
 
                 if rep_id:
                     # Reply if there is an ID
-                    logger.info(f"[WRAPPED_CALLBACK] replying {info} for {action.name}")
+                    logger.info(f"[WRAPPED_CALLBACK] replying {info.json()} for {action.name}")
                     ml_worker.ws_conn.send(
                         f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
-                        json.dumps({"id": rep_id, "action": action.name, "payload": json.dumps(info)}),
+                        json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
                     )
 
             WEBSOCKET_ACTORS[action.name] = wrapped_callback
@@ -93,37 +136,35 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
 
 
 @websocket_actor(MLWorkerAction.getInfo)
-def on_ml_worker_get_info(ml_worker, params: dict, *args, **kwargs) -> dict:
+def on_ml_worker_get_info(ml_worker, params: GetInfoParam, *args, **kwargs) -> dict:
     logger.info("Collecting ML Worker info from WebSocket")
 
     installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set}
-        if "list_packages" in params.keys() and params["list_packages"]
-        else None
+        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else None
     )
     current_process = psutil.Process(os.getpid())
-    return {
-        "platform": {
-            "machine": platform.uname().machine,
-            "node": platform.uname().node,
-            "processor": platform.uname().processor,
-            "release": platform.uname().release,
-            "system": platform.uname().system,
-            "version": platform.uname().version,
-        },
-        "giskardClientVersion": giskard.__version__,
-        "pid": os.getpid(),
-        "processStartTime": int(current_process.create_time()),
-        "interpreter": sys.executable,
-        "interpreterVersion": platform.python_version(),
-        "installedPackages": installed_packages,
-        "internalGrpcAddress": ml_worker.ml_worker_id,
-        "isRemote": ml_worker.tunnel is not None,
-    }
+    return websocket.GetInfo(
+        platform=websocket.Platform(
+            machine=platform.uname().machine,
+            node=platform.uname().node,
+            processor=platform.uname().processor,
+            release=platform.uname().release,
+            system=platform.uname().system,
+            version=platform.uname().version,
+        ),
+        giskardClientVersion=giskard.__version__,
+        pid=os.getpid(),
+        processStartTime=int(current_process.create_time()),
+        interpreter=sys.executable,
+        interpreterVersion=platform.python_version(),
+        installedPackages=installed_packages,
+        internalGrpcAddress=ml_worker.ml_worker_id,
+        isRemote=ml_worker.tunnel is not None,
+    )
 
 
 @websocket_actor(MLWorkerAction.stopWorker)
 def on_ml_worker_stop_worker(ml_worker, *args, **kwargs):
     # FIXME: Stop the server properly
     asyncio.get_event_loop().create_task(ml_worker.stop())
-    return None
+    return websocket.Empty()
