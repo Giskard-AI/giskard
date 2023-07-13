@@ -448,7 +448,7 @@ export const api = {
   async replyToFeedback(feedbackId: number, content: string, replyToId: number | null = null) {
     return apiV2.post<unknown, void>(`/feedbacks/${feedbackId}/reply`, <CreateFeedbackReplyDTO>{
       content,
-      replyToReply: replyToId,
+      replyToReply: replyToId
     });
   },
   async deleteFeedback(id: number) {
@@ -457,8 +457,8 @@ export const api = {
   async deleteFeedbackReply(feedbackId: number, replyId: number) {
     return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
   },
-  async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>) {
-    return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
+  async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>, sample: boolean) {
+    return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test?sample=${sample}`, {
       projectId,
       testUuid,
       inputs
