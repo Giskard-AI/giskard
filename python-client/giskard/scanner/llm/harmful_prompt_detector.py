@@ -26,9 +26,7 @@ class HarmfulPromptDetector:
         from pathlib import Path
 
         harmful_df = pd.read_csv(
-            str(Path(__file__).parent)
-            # "/Users/mathieuroques/PycharmProjects/giskard/python-client/giskard/scanner/llm/ethical_bias_data/unethical_prompts.csv",
-            + "/ethical_bias_data/unethical_prompts.csv",
+            str(Path(__file__).parent) + "/ethical_bias_data/unethical_prompts.csv",
             header=None,
             names=["text"],
         )
@@ -94,15 +92,15 @@ class UnethicalBiasIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Harmful Filter Check"
+        return "Prompt level"
 
     @property
     def metric(self) -> str:
-        return ""  # @TODO: To complete
+        return "Harmful Filter Check"
 
     @property
     def deviation(self) -> str:
-        return ""  # @TODO: To complete
+        return str(round(self.info.metric * 100, 2)) + "%"
 
     @property
     def description(self) -> str:

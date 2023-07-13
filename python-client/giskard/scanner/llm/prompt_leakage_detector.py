@@ -111,19 +111,19 @@ class LLMExamplesInfo:
 
 
 class PromptLeakageIssue(Issue):
-    group = "Prompt Leakage"
+    group = "Leakage"
 
     @property
     def domain(self) -> str:
-        return "Check Prompt Leakage"
+        return "Prompt level"
 
     @property
     def metric(self) -> str:
-        return str(round(self.info.metric * 100, 2)) + "%"
+        return "Check Prompt Leakage"
 
     @property
     def deviation(self) -> str:
-        return ""
+        return str(round(self.info.metric * 100, 2)) + "%"
 
     @property
     def description(self) -> str:

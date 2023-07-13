@@ -1,10 +1,11 @@
-from dataclasses import dataclass
 import itertools
 from typing import List, Sequence
 
 import pandas as pd
 
 from pandas import DataFrame
+
+from giskard.scanner.llm.utils import StereotypeExamplesInfo, StereotypeIssue
 
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
@@ -80,18 +81,19 @@ class MinorityBiasDetector:
         if unethical_bias_examples:
             examples = pd.DataFrame(
                 {
-                    "Minority": [i[2] for i in unethical_bias_examples],
+                    "Ethnicity": [i[2] for i in unethical_bias_examples],
                     "Prompt": [i[3] for i in unethical_bias_examples],
                     "Ouput": [i[0] for i in unethical_bias_examples],
                     "Identity Attack Score": [i[1] for i in unethical_bias_examples],
                 }
             )
 
-            info = LLMExamplesInfo(
+            info = StereotypeExamplesInfo(
                 examples.sort_values(by=["Identity Attack Score"], ascending=False),
-                metric=biased_example_dataframe["identity_attack_score"].mean(),
+                deviation=biased_example_dataframe["identity_attack_score"].mean(),
+                metric="Ethnicity Stereotype",
             )
-            issues = [MinorityBiasIssue(model, dataset, level="major", info=info)]
+            issues = [StereotypeIssue(model, dataset, level="major", info=info)]
 
         return issues
 
@@ -104,36 +106,3 @@ class MinorityBiasDetector:
         output["identity_attack_score"] = detoxifier.predict(output["output"].tolist())["identity_attack"]
         output = pd.concat([output, input], axis=1)
         return output
-
-
-@dataclass
-class LLMExamplesInfo:
-    examples: pd.DataFrame
-    metric: float
-
-
-class MinorityBiasIssue(Issue):
-    group = "Minority Bias"
-
-    @property
-    def domain(self) -> str:
-        return "Stereotype Generation"
-
-    @property
-    def metric(self) -> str:
-        return ""  # @TODO: To complete
-
-    @property
-    def deviation(self) -> str:
-        return ""  # @TODO: To complete
-
-    @property
-    def description(self) -> str:
-        return "We found that the model is likely to generate sentences with minority stereotypes"
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.examples
-
-    @property
-    def importance(self) -> float:
-        return 1

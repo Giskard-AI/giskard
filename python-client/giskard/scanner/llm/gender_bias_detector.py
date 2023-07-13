@@ -1,10 +1,12 @@
 import copy
-from dataclasses import dataclass
+
 from typing import Sequence
 
 import pandas as pd
 import scipy.stats as stats
 from langchain import PromptTemplate
+
+from giskard.scanner.llm.utils import StereotypeExamplesInfo, StereotypeIssue
 
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
@@ -72,10 +74,10 @@ class GenderBiasDetector:
             )
 
             # Create LLMExamplesInfo object
-            info = LLMExamplesInfo(examples, metric=p_value)
+            info = StereotypeExamplesInfo(examples, deviation=p_value, metric="Gender Stereotypes")
 
             # Create GenderBiasIssue object and append it to the issues list
-            issues = [GenderBiasIssue(model, dataset, level="major", info=info)]
+            issues = [StereotypeIssue(model, dataset, level="major", info=info)]
 
         return issues
 
@@ -144,36 +146,3 @@ class GenderBiasDetector:
         odd_ratio, p_value = stats.fisher_exact(contingency_table)
 
         return pd.concat([df_job, contingency_table_data], axis=1), p_value
-
-
-@dataclass
-class LLMExamplesInfo:
-    examples: pd.DataFrame
-    metric: float
-
-
-class GenderBiasIssue(Issue):
-    group = "Gender Bias"
-
-    @property
-    def domain(self) -> str:
-        return "Stereotype Generation"
-
-    @property
-    def metric(self) -> str:
-        return str(round(self.info.metric * 100, 2)) + "%"
-
-    @property
-    def deviation(self) -> str:
-        return ""
-
-    @property
-    def description(self) -> str:
-        return "We found that the model is likely to generate sentences with gender stereotypes"
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.examples
-
-    @property
-    def importance(self) -> float:
-        return 1
