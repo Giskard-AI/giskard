@@ -205,8 +205,8 @@ class GetInfoParam(BaseModel):
 
 
 class TestMessageType(Enum):
-    ERROR = 0
-    INFO = 1
+    ERROR = 1
+    INFO = 2
 
 
 class TestMessage(BaseModel):
