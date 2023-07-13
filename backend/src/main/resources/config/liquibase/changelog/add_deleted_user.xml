@@ -1,0 +1,17 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet id="add-deleted-user" author="kevinmessiaen">
+        <insert tableName="giskard_users">
+            <column name="user_id" value="deleted_user"/>
+            <column name="hashed_password" value="$2a$10$VEjxo0jq2YG9Rbk2HmX9S.k1uZBGYUHdUcid3g/vfiEl7lwWgOH/K"/>
+            <column name="display_name" value="Deleted user"/>
+            <column name="email" value="deleted.user@localhost"/>
+            <column name="is_active" valueBoolean="false"/>
+            <column name="enabled" valueBoolean="false"/>
+            <column name="created_by" value="system"/>
+            <column name="last_modified_by" value="system"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

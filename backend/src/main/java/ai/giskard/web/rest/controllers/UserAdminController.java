@@ -178,7 +178,7 @@ public class UserAdminController {
      *
      * @param login the login of the user to delete.
      */
-    @PatchMapping("/{login}/disable")
+    @DeleteMapping("/{login}")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
