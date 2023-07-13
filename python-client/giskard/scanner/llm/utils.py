@@ -48,7 +48,7 @@ class StereotypeIssue(Issue):
 
     @property
     def deviation(self) -> str:
-        return self.info.deviation
+        return str(round(self.info.deviation * 100, 2)) + "%"
 
     @property
     def description(self) -> str:
