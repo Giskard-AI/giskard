@@ -59,7 +59,7 @@ class Catalog(BaseModel):
     transformations: Dict[str, DatasetProcessFuctionMeta]
 
 
-class DataRow:
+class DataRow(BaseModel):
     columns: Dict[str, str]
 
 
@@ -230,7 +230,7 @@ class SingleTestResult(BaseModel):
     partial_unexpected_index_list: List[int]
     partial_unexpected_counts: List[PartialUnexpectedCounts]
     unexpected_index_list: List[int]
-    outputDf: bytearray
+    outputDf: bytes
     number_of_perturbed_rows: int
     actual_slices_size: List[int]
     reference_slices_size: List[int]
