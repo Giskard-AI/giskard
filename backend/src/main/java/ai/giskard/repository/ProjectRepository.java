@@ -34,6 +34,8 @@ public interface ProjectRepository extends MappableJpaRepository<Project, Long> 
 
     List<Project> getProjectsByOwnerOrGuestsContains(User owner, User guest);
 
+    List<Project> getProjectsByOwner(User owner);
+
     @Named("no_mapstruct")
     default Project getOneByName(String name) {
         return findOneByName(name).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.NAME, name));

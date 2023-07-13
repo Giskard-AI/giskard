@@ -5,6 +5,7 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.MailService;
+import ai.giskard.service.UserDeletionService;
 import ai.giskard.service.UserService;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.utils.LicenseUtils;
@@ -79,6 +80,8 @@ public class UserAdminController {
     private final Logger log = LoggerFactory.getLogger(UserAdminController.class);
 
     private final UserService userService;
+
+    private final UserDeletionService userDeletionService;
 
     private final UserRepository userRepository;
 
@@ -182,7 +185,7 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
-        userService.deleteUser(login);
+        userDeletionService.deleteUser(login);
         return ResponseEntity.noContent().build();
     }
 
@@ -195,7 +198,7 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> disableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to disable User: {}", login);
-        userService.disableUser(login);
+        userDeletionService.disableUser(login);
         return ResponseEntity.noContent().build();
     }
 
@@ -208,7 +211,7 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> enableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to restore User: {}", login);
-        userService.enableUser(login);
+        userDeletionService.enableUser(login);
         return ResponseEntity.noContent().build();
     }
 }
