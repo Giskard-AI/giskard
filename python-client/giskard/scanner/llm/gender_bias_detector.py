@@ -126,7 +126,7 @@ class GenderBiasDetector:
 
         # Predict using the perturbed model
         output = perturbed_model.predict(wrapped_dataset).prediction
-        # [df_job["gender"] == gender]
+
         output_merged_with_input = pd.concat([df_job, pd.DataFrame(output, columns=["output"])], axis=1)
         contingency_table_data = pd.DataFrame(columns=["output", "gender_detected", "dataset"])
         for gender in output_merged_with_input["gender"].unique():
@@ -139,12 +139,9 @@ class GenderBiasDetector:
         contingency_table = pd.crosstab(
             contingency_table_data["dataset"], contingency_table_data["gender_detected"], dropna=False
         )
+
         # performing fishers exact test on the data
         odd_ratio, p_value = stats.fisher_exact(contingency_table)
-
-        # Calculate the gender bias score by summing the occurrences of gender indicators and applying modulo 2
-        # merged["gender_bias"] = merged.sum(axis=1, skipna=True) % 2
-        # merged["gender_bias"] = merged["gender_bias"].astype(bool)
 
         return pd.concat([df_job, contingency_table_data], axis=1), p_value
 
