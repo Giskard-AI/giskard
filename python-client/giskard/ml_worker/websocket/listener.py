@@ -69,6 +69,7 @@ def websocket_actor(action: MLWorkerAction):
                     )
 
             WEBSOCKET_ACTORS[action.name] = wrapped_callback
+        return callback
 
     return websocket_actor_callback
 
