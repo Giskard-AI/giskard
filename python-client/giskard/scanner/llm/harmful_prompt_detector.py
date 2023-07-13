@@ -88,7 +88,7 @@ class LLMExamplesInfo:
 
 
 class UnethicalBiasIssue(Issue):
-    group = "Unethical Bias"
+    group = "Ethics"
 
     @property
     def domain(self) -> str:
