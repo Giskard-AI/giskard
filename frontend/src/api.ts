@@ -465,11 +465,7 @@ export const api = {
     });
   },
   async getCatalog(projectId: number) {
-    return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
-      params: {
-        projectId
-      }
-    });
+    return apiV2.get<unknown, CatalogDTO>(`/project/${projectId}/catalog`);
   },
   async createSlicingFunction(projectKey: string, comparisonClauses: Array<ComparisonClauseDTO>) {
     return apiV2.post<unknown, SlicingFunctionDTO>(`/project/${projectKey}/slices/no-code`, comparisonClauses);
