@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex" :class="{w100: fullWidth}">
         <v-select
-          attach
+          :attach='attach'
           clearable
           :outlined='fullWidth'
           class='slice-function-selector'
@@ -41,10 +41,12 @@ const props = withDefaults(defineProps<{
   args?: Array<FunctionInputDTO>,
   icon: boolean,
   columnType?: string,
-  columnName?: string
+  columnName?: string,
+  attach: string | boolean
 }>(), {
-    fullWidth: true,
-    icon: false
+  fullWidth: true,
+  icon: false,
+  attach: ''
 });
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
