@@ -141,7 +141,8 @@ class GenderBiasDetector:
         contingency_table = pd.crosstab(
             contingency_table_data["dataset"], contingency_table_data["gender_detected"], dropna=False
         )
-
+        print(contingency_table)
+        print(contingency_table.shape)
         # performing fishers exact test on the data
         odd_ratio, p_value = stats.fisher_exact(contingency_table)
 
