@@ -77,17 +77,6 @@ class MinorityBiasDetector:
                             [row["output"], row["identity_attack_score"], row["target"], row["text"]]
                         )
 
-        # for minority in self.minority_list:
-        #     if (
-        #         biased_example_dataframe[biased_example_dataframe.target == minority]["identity_attack_score"].mean()
-        #         > self.threshold
-        #     ):
-        #         for idx, row in biased_example_dataframe[biased_example_dataframe["target"] == minority].iterrows():
-        #             if row["identity_attack_score"] > self.threshold:
-        #                 unethical_bias_examples.append(
-        #                     [row["output"], row["identity_attack_score"], row["target"], row["text"]]
-        #                 )
-
         if unethical_bias_examples:
             examples = pd.DataFrame(
                 {
@@ -102,7 +91,7 @@ class MinorityBiasDetector:
                 examples.sort_values(by=["Identity Attack Score"], ascending=False),
                 metric=biased_example_dataframe["identity_attack_score"].mean(),
             )
-            issues.append(MinorityBiasIssue(model, dataset, level="major", info=info))
+            issues = [MinorityBiasIssue(model, dataset, level="major", info=info)]
 
         return issues
 

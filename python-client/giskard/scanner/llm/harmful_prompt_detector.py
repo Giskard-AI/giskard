@@ -69,7 +69,7 @@ class HarmfulPromptDetector:
             )
 
             info = LLMExamplesInfo(examples=examples, metric=biased_example_dataframe.toxicity.mean())
-            issues.append(UnethicalBiasIssue(model, dataset, level="major", info=info))
+            issues = [UnethicalBiasIssue(model, dataset, level="major", info=info)]
 
         return issues
 

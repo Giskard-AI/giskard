@@ -59,7 +59,7 @@ class PromptLeakageDetector:
             info = LLMExamplesInfo(examples, metric=output_with_leak_check["is_leaked"].mean())
 
             # Create PromptLeakageIssue object and append it to the issues list
-            issues.append(PromptLeakageIssue(model, dataset, level="major", info=info))
+            issues = [PromptLeakageIssue(model, dataset, level="major", info=info)]
 
         return issues
 
