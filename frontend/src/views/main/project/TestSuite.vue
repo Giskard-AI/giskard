@@ -3,7 +3,7 @@
     <div class="vc">
       <v-container class="main-container vc pt-0">
         <div class="d-flex flex-wrap pl-3 pr-3">
-          <h1 class="test-suite-name">{{ suite.name }}</h1>
+          <h1 class="test-suite-name">{{ suiteName }}</h1>
           <div class="flex-grow-1"></div>
           <v-btn text @click.stop="redirectToTesting">
             <v-icon class="mr-2">mdi-arrow-left</v-icon>
@@ -101,6 +101,11 @@ const props = defineProps<{
 const { suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter, hasJobInProgress } = storeToRefs(useTestSuiteStore());
 
 const openWorkerInstructions = ref(false);
+
+const suiteName = computed(() => {
+  if (!suite.value) return `Unnamed test suite`;
+  return suite.value.name ? suite.value.name : `Unnamed test suite`;
+});
 
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;
