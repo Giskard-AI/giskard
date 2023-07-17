@@ -34,8 +34,8 @@ class FunctionMeta(BaseModel):
     module: str
     doc: str
     moduleDoc: Optional[str] = None
-    args: List[TestFunctionArgument]
-    tags: List[str]
+    args: Optional[List[TestFunctionArgument]] = None
+    tags: Optional[List[str]] = None
     code: str
     type: str
 
@@ -48,8 +48,8 @@ class DatasetProcessFunctionMeta(BaseModel):
     module: str
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None
-    args: List[TestFunctionArgument]
-    tags: List[str]
+    args: Optional[List[TestFunctionArgument]] = None
+    tags: Optional[List[str]] = None
     code: str
     type: str
     cellLevel: bool
@@ -68,7 +68,7 @@ class DataRow(BaseModel):
 
 
 class DataFrame(BaseModel):
-    rows: List[DataRow]
+    rows: Optional[List[DataRow]] = None
 
 
 class DatasetRowModificationResult(BaseModel):
@@ -79,8 +79,8 @@ class DatasetRowModificationResult(BaseModel):
 class DatasetProcessing(WorkerReply):
     datasetId: str
     totalRows: int
-    filteredRows: List[int]
-    modifications: List[DatasetRowModificationResult]
+    filteredRows: Optional[List[int]] = None
+    modifications: Optional[List[DatasetRowModificationResult]] = None
 
 
 class FuncArgument(BaseModel):
@@ -101,12 +101,12 @@ class FuncArgument(BaseModel):
 class DatasetProcessingFunction(BaseModel):
     slicingFunction: Optional[ArtifactRef] = None
     transformationFunction: Optional[ArtifactRef] = None
-    arguments: List[FuncArgument]
+    arguments: Optional[List[FuncArgument]] = None
 
 
 class DatesetProcessingParam(BaseModel):
     dataset: ArtifactRef
-    functions: List[DatasetProcessingFunction]
+    functions: Optional[List[DatasetProcessingFunction]] = None
 
 
 class EchoMsg(WorkerReply):
@@ -128,11 +128,11 @@ class ExplainParam(BaseModel):
 
 
 class WeightsPerFeature(BaseModel):
-    weights: List[float]
+    weights: Optional[List[float]] = None
 
 
 class ExplainText(WorkerReply):
-    words: List[str]
+    words: Optional[List[str]] = None
     weights: Dict[str, WeightsPerFeature]
 
 
@@ -152,11 +152,11 @@ class GeneratedTestInput(BaseModel):
 
 class GeneratedTestSuite(BaseModel):
     test_uuid: str
-    inputs: List[GeneratedTestInput]
+    inputs: Optional[List[GeneratedTestInput]] = None
 
 
 class GenerateTestSuite(WorkerReply):
-    tests: List[GeneratedTestSuite]
+    tests: Optional[List[GeneratedTestSuite]] = None
 
 
 class ModelMeta(BaseModel):
@@ -176,7 +176,7 @@ class SuiteInput(BaseModel):
 
 class GenerateTestSuiteParam(BaseModel):
     project_key: str
-    inputs: List[SuiteInput]
+    inputs: Optional[List[SuiteInput]] = None
 
 
 class Platform(BaseModel):
@@ -215,7 +215,7 @@ class TestMessage(BaseModel):
 
 
 class PartialUnexpectedCounts(BaseModel):
-    value: List[int]
+    value: Optional[List[int]] = None
     count: int
 
 
@@ -251,17 +251,17 @@ class NamedSingleTestResult(BaseModel):
 
 
 class RunAdHocTest(WorkerReply):
-    results: List[NamedSingleTestResult]
+    results: Optional[List[NamedSingleTestResult]] = None
 
 
 class RunAdHocTestParam(BaseModel):
     testUuid: str
-    arguments: List[FuncArgument]
+    arguments: Optional[List[FuncArgument]] = None
 
 
 class RunModelForDataFrame(WorkerReply):
     all_predictions: Optional[DataFrame] = None
-    prediction: List[str]
+    prediction: Optional[List[str]] = None
     probabilities: Optional[List[float]] = None
     raw_prediction: Optional[List[float]] = None
 
@@ -284,7 +284,7 @@ class RunModelParam(BaseModel):
 class SuiteTestArgument(BaseModel):
     id: int
     testUuid: str
-    arguments: List[FuncArgument]
+    arguments: Optional[List[FuncArgument]] = None
 
 
 class TestFunctionArgument(BaseModel):
@@ -298,10 +298,10 @@ class TestFunctionArgument(BaseModel):
 class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
-    results: IdentifierSingleTestResult
+    results: Optional[List[IdentifierSingleTestResult]] = None
     logs: str
 
 
 class TestSuiteParam(BaseModel):
-    tests: List[SuiteTestArgument]
-    globalArguments: List[FuncArgument]
+    tests: Optional[List[SuiteTestArgument]] = None
+    globalArguments: Optional[List[FuncArgument]] = None
