@@ -1,7 +1,6 @@
 <template>
   <div class='d-flex w100 align-start'>
-    <v-alert :color='testResultStyle.color' :icon='testResultStyle.icon' class='flex-grow-1' prominent
-             text>
+    <v-alert :color='testResultStyle.color' :icon='testResultStyle.icon' class='flex-grow-1' prominent text>
       <v-row align='center'>
         <v-col class='grow d-flex flex-wrap'>
           <h4 v-if='!props.execution' class='text-alert'>
@@ -15,23 +14,19 @@
           <h4 v-else class='text-alert'>Test suite
             {{ props.execution.result === TestResult.PASSED ? 'passed' : 'failed' }}:
             <span v-if='successRatio.error > 0'>{{ plurialize('test', successRatio.error) }} with error</span>
-            <span
-              v-if='successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)'>, </span>
+            <span v-if='successRatio.error > 0 && (successRatio.passed > 0 || successRatio.failed > 0)'>, </span>
             <span v-if='successRatio.failed > 0'>{{
-                plurialize('test', successRatio.failed)
-              }} failed</span>
+              plurialize('test', successRatio.failed)
+            }} failed</span>
             <span v-if='successRatio.failed > 0 && successRatio.passed > 0'>, </span>
             <span v-if='successRatio.passed > 0'>{{
-                plurialize('test', successRatio.passed)
-              }} passed</span>
-            <span
-              v-if='successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0'>. </span>
+              plurialize('test', successRatio.passed)
+            }} passed</span>
+            <span v-if='successRatio.failed > 0 || successRatio.passed > 0 || successRatio.error > 0'>. </span>
             <span>Executed {{ timeSince(execution.executionDate) }}</span>
           </h4>
           <v-spacer />
-          <v-btn v-if='props.execution' :color="props.execution.result === TestResult.PASSED ? 'primary' : 'error'"
-                 small
-                 @click='openLogs'>execution logs
+          <v-btn v-if='props.execution' :color="props.execution.result === TestResult.PASSED ? 'primary' : 'error'" small @click='openLogs'>execution logs
           </v-btn>
         </v-col>
       </v-row>
@@ -59,7 +54,6 @@ const props = defineProps<{
   }[],
   execution?: TestSuiteExecutionDTO,
   compact: boolean,
-  tryMode: boolean
 }>();
 
 const { suite, projectId } = storeToRefs(useTestSuiteStore());
