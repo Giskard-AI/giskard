@@ -27,6 +27,11 @@ public class MLWorkerWSCommService {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
+        // Wait for result during 5 seconds/5000 milliseconds
+        return this.performAction(workerID, action, param, 5000);
+    }
+
+    public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
         BlockingQueue<String> queue = mlWorkerWSService.getResultWaiter(repId.toString(), true);
@@ -40,7 +45,7 @@ public class MLWorkerWSCommService {
 
         try {
             // Waiting for the result
-            String result = queue.poll(5, TimeUnit.SECONDS);
+            String result = queue.poll(milliseconds, TimeUnit.MILLISECONDS);
             if (result == null) mlWorkerWSService.removeResultWaiter(repId.toString());
 
             ObjectMapper objectMapper = new ObjectMapper();
