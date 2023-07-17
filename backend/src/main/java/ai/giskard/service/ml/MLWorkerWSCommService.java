@@ -43,10 +43,20 @@ public class MLWorkerWSCommService {
         data.put("param", param);
         simpMessagingTemplate.convertAndSend("/ml-worker/" + workerID + "/action", data);
 
+        String result = null;
         try {
             // Waiting for the result
-            String result = queue.poll(milliseconds, TimeUnit.MILLISECONDS);
-            if (result == null) mlWorkerWSService.removeResultWaiter(repId.toString());
+            result = queue.poll(milliseconds, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            mlWorkerWSService.removeResultWaiter(repId.toString());
+        }
+
+        try {
+            if (result == null) {
+                mlWorkerWSService.removeResultWaiter(repId.toString());
+                log.warn("Received an empty reply for " + repId);
+                return null;
+            }
 
             ObjectMapper objectMapper = new ObjectMapper();
             return switch (action) {
@@ -64,8 +74,20 @@ public class MLWorkerWSCommService {
                 case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
                 case generateQueryBasedSlicingFunction -> null;
             };
-        } catch (InterruptedException e) {
-            mlWorkerWSService.removeResultWaiter(repId.toString());
+        } catch (JsonMappingException e) {
+            log.warn("Unable to deserialize result from ML Worker during mapping");
+        } catch (JsonProcessingException e) {
+            log.warn("Unable to deserialize result from ML Worker during processing");
+        }
+
+        // Parse error
+        try {
+            if (result != null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
+                log.warn(error.getErrorStr());
+                // TODO: Pass it to the frontend
+            }
         } catch (JsonMappingException e) {
             log.warn("Unable to deserialize result from ML Worker during mapping");
         } catch (JsonProcessingException e) {

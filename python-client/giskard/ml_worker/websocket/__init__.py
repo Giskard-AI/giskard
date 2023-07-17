@@ -12,6 +12,11 @@ class Empty(WorkerReply):
     pass
 
 
+class ErrorReply(WorkerReply):
+    error_str: str
+    error_type: str
+
+
 class ArtifactRef(BaseModel):
     project_key: str
     id: str

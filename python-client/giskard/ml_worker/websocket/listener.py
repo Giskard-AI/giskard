@@ -71,37 +71,40 @@ def websocket_actor(action: MLWorkerAction):
                 rep_id = req["id"] if "id" in req.keys() else None
                 # Parse the param
                 params = req["param"] if "param" in req.keys() else {}
-                # TODO: Sort by usage frequency
-                if action == MLWorkerAction.getInfo:
-                    params = GetInfoParam.parse_obj(params)
-                elif action == MLWorkerAction.runAdHocTest:
-                    params = RunAdHocTestParam.parse_obj(params)
-                elif action == MLWorkerAction.datasetProcessing:
-                    params = DatesetProcessingParam.parse_obj(params)
-                elif action == MLWorkerAction.runTestSuite:
-                    params = TestSuiteParam.parse_obj(params)
-                elif action == MLWorkerAction.runModel:
-                    params = RunModelParam.parse_obj(params)
-                elif action == MLWorkerAction.runModelForDataFrame:
-                    params = RunModelForDataFrameParam.parse_obj(params)
-                elif action == MLWorkerAction.explain:
-                    params = ExplainParam.parse_obj(params)
-                elif action == MLWorkerAction.explainText:
-                    params = ExplainTextParam.parse_obj(params)
-                elif action == MLWorkerAction.echo:
-                    params = EchoMsg.parse_obj(params)
-                elif action == MLWorkerAction.generateTestSuite:
-                    params = GenerateTestSuiteParam.parse_obj(params)
-                elif action == MLWorkerAction.stopWorker:
-                    pass
-                elif action == MLWorkerAction.getCatalog:
-                    pass
-                elif action == MLWorkerAction.generateQueryBasedSlicingFunction:
-                    pass
-                # Call the function and get the response
-                info: websocket.WorkerReply = callback(
-                    ml_worker=ml_worker, action=action.name, params=params, *args, **kwargs
-                )
+                try:
+                    # TODO: Sort by usage frequency
+                    if action == MLWorkerAction.getInfo:
+                        params = GetInfoParam.parse_obj(params)
+                    elif action == MLWorkerAction.runAdHocTest:
+                        params = RunAdHocTestParam.parse_obj(params)
+                    elif action == MLWorkerAction.datasetProcessing:
+                        params = DatesetProcessingParam.parse_obj(params)
+                    elif action == MLWorkerAction.runTestSuite:
+                        params = TestSuiteParam.parse_obj(params)
+                    elif action == MLWorkerAction.runModel:
+                        params = RunModelParam.parse_obj(params)
+                    elif action == MLWorkerAction.runModelForDataFrame:
+                        params = RunModelForDataFrameParam.parse_obj(params)
+                    elif action == MLWorkerAction.explain:
+                        params = ExplainParam.parse_obj(params)
+                    elif action == MLWorkerAction.explainText:
+                        params = ExplainTextParam.parse_obj(params)
+                    elif action == MLWorkerAction.echo:
+                        params = EchoMsg.parse_obj(params)
+                    elif action == MLWorkerAction.generateTestSuite:
+                        params = GenerateTestSuiteParam.parse_obj(params)
+                    elif action == MLWorkerAction.stopWorker:
+                        pass
+                    elif action == MLWorkerAction.getCatalog:
+                        pass
+                    elif action == MLWorkerAction.generateQueryBasedSlicingFunction:
+                        pass
+                    # Call the function and get the response
+                    info: websocket.WorkerReply = callback(
+                        ml_worker=ml_worker, action=action.name, params=params, *args, **kwargs
+                    )
+                except Exception as e:
+                    info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
 
                 if rep_id:
                     # Reply if there is an ID
