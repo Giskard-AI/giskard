@@ -13,10 +13,10 @@ name = "torch"
 proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
 test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
-test.env = { GSK_DISABLE_ANALYTICS = "True"}
+test.env = { GSK_DISABLE_ANALYTICS = "True" }
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
-test-fast.env = { GSK_DISABLE_ANALYTICS = "True"}
+test-fast.env = { GSK_DISABLE_ANALYTICS = "True" }
 lint = "ruff giskard tests"
 doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
 
@@ -80,6 +80,7 @@ doc = [
     "sphinx-copybutton>=0.5.2",
     "sphinx-click>=4.4.0",
     "nbsphinx>=0.9.2",
+    "ipython==8.12.0"
 ]
 
 [tool.setuptools.packages.find]
@@ -159,7 +160,7 @@ llm = [
     "torch",
     "langchain",
     "evaluate",
-#    pdm lock -G:all doesn't work without fixing these two versions
+    #    pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
 ]
