@@ -9,4 +9,8 @@ public class UpdateWorkerStatusEvent extends ApplicationEvent {
         super(source);
         this.isConnected = isConnected;
     }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
 }
