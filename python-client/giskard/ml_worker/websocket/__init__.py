@@ -1,7 +1,7 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class WorkerReply(BaseModel):
@@ -15,7 +15,7 @@ class Empty(WorkerReply):
 class ArtifactRef(BaseModel):
     project_key: str
     id: str
-    sample: bool
+    sample: Optional[bool] = None
 
 
 class TestFunctionArgument(BaseModel):
@@ -30,37 +30,37 @@ class FunctionMeta(BaseModel):
     uuid: str
     name: str
     displayName: str
-    version: int
+    version: Optional[int] = None
     module: str
     doc: str
-    moduleDoc: str
+    moduleDoc: Optional[str] = None
     args: List[TestFunctionArgument]
     tags: List[str]
     code: str
     type: str
 
 
-class DatasetProcessFuctionMeta(BaseModel):
+class DatasetProcessFunctionMeta(BaseModel):
     uuid: str
     name: str
     displayName: str
-    version: int
+    version: Optional[int] = None  # For backward compatibility
     module: str
-    doc: str
-    moduleDoc: str
+    doc: Optional[str] = None
+    moduleDoc: Optional[str] = None
     args: List[TestFunctionArgument]
     tags: List[str]
     code: str
     type: str
     cellLevel: bool
-    columnType: str
+    columnType: Optional[str] = None
     processType: str
 
 
 class Catalog(WorkerReply):
     tests: Dict[str, FunctionMeta]
-    slices: Dict[str, DatasetProcessFuctionMeta]
-    transformations: Dict[str, DatasetProcessFuctionMeta]
+    slices: Dict[str, DatasetProcessFunctionMeta]
+    transformations: Dict[str, DatasetProcessFunctionMeta]
 
 
 class DataRow(BaseModel):
@@ -85,22 +85,22 @@ class DatasetProcessing(WorkerReply):
 
 class FuncArgument(BaseModel):
     name: str
-    model: ArtifactRef
-    dataset: ArtifactRef
-    float: float
-    int: int
-    str: str
-    bool: bool
-    slicingFunction: ArtifactRef
-    transformationFunction: ArtifactRef
-    kwargs: str
-    args: List["FuncArgument"]
-    none: bool
+    model: Optional[ArtifactRef] = None
+    dataset: Optional[ArtifactRef] = None
+    float_arg: Optional[float] = Field(None, alias="float")
+    int_arg: Optional[int] = Field(None, alias="int")
+    str_arg: Optional[str] = Field(None, alias="str")
+    bool_arg: Optional[bool] = Field(None, alias="bool")
+    slicingFunction: Optional[ArtifactRef] = None
+    transformationFunction: Optional[ArtifactRef] = None
+    kwargs: Optional[str] = None
+    args: Optional[List["FuncArgument"]] = None
+    is_none: bool = Field(..., alias="none")
 
 
 class DatasetProcessingFunction(BaseModel):
-    slicingFunction: ArtifactRef
-    transformationFunction: ArtifactRef
+    slicingFunction: Optional[ArtifactRef] = None
+    transformationFunction: Optional[ArtifactRef] = None
     arguments: List[FuncArgument]
 
 
@@ -160,18 +160,18 @@ class GenerateTestSuite(WorkerReply):
 
 
 class ModelMeta(BaseModel):
-    model_type: str
+    model_type: Optional[str] = None
 
 
 class DatasetMeta(BaseModel):
-    target: str
+    target: Optional[str] = None
 
 
 class SuiteInput(BaseModel):
     name: str
     type: str
-    modelMeta: ModelMeta
-    datasetMeta: DatasetMeta
+    modelMeta: Optional[ModelMeta] = None
+    datasetMeta: Optional[DatasetMeta] = None
 
 
 class GenerateTestSuiteParam(BaseModel):
@@ -221,23 +221,23 @@ class PartialUnexpectedCounts(BaseModel):
 
 class SingleTestResult(BaseModel):
     passed: bool
-    is_error: bool
-    messages: List[TestMessage]
-    props: Dict[str, str]
-    metric: float
-    missing_count: int
-    missing_percent: float
-    unexpected_count: int
-    unexpected_percent: float
-    unexpected_percent_total: float
-    unexpected_percent_nonmissing: float
-    partial_unexpected_index_list: List[int]
-    partial_unexpected_counts: List[PartialUnexpectedCounts]
-    unexpected_index_list: List[int]
-    outputDf: bytes
-    number_of_perturbed_rows: int
-    actual_slices_size: List[int]
-    reference_slices_size: List[int]
+    is_error: Optional[bool] = None
+    messages: Optional[List[TestMessage]] = None
+    props: Optional[Dict[str, str]] = None
+    metric: Optional[float] = None
+    missing_count: Optional[int] = None
+    missing_percent: Optional[float] = None
+    unexpected_count: Optional[int] = None
+    unexpected_percent: Optional[float] = None
+    unexpected_percent_total: Optional[float] = None
+    unexpected_percent_nonmissing: Optional[float] = None
+    partial_unexpected_index_list: Optional[List[int]] = None
+    partial_unexpected_counts: Optional[List[PartialUnexpectedCounts]] = None
+    unexpected_index_list: Optional[List[int]] = None
+    output_df: Optional[bytes] = None
+    number_of_perturbed_rows: Optional[int] = None
+    actual_slices_size: Optional[List[int]] = None
+    reference_slices_size: Optional[List[int]] = None
 
 
 class IdentifierSingleTestResult(BaseModel):
@@ -260,10 +260,10 @@ class RunAdHocTestParam(BaseModel):
 
 
 class RunModelForDataFrame(WorkerReply):
-    all_predictions: DataFrame
+    all_predictions: Optional[DataFrame] = None
     prediction: List[str]
-    probabilities: List[float]
-    raw_prediction: List[float]
+    probabilities: Optional[List[float]] = None
+    raw_prediction: Optional[List[float]] = None
 
 
 class RunModelForDataFrameParam(BaseModel):

@@ -923,7 +923,7 @@ def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncAr
     arguments = dict()
 
     for arg in request_arguments:
-        if arg.none:
+        if arg.is_none:
             continue
         if arg.dataset:
             arguments[arg.name] = Dataset.download(
@@ -942,14 +942,14 @@ def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncAr
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, ml_worker.client, None
             )(**parse_function_arguments(arg.args))
-        elif arg.float:
-            arguments[arg.name] = float(arg.float)
-        elif arg.int:
-            arguments[arg.name] = int(arg.int)
-        elif arg.str:
-            arguments[arg.name] = str(arg.str)
-        elif arg.bool:
-            arguments[arg.name] = bool(arg.bool)
+        elif arg.float_arg:
+            arguments[arg.name] = float(arg.float_arg)
+        elif arg.int_arg:
+            arguments[arg.name] = int(arg.int_arg)
+        elif arg.str_arg:
+            arguments[arg.name] = str(arg.str_arg)
+        elif arg.bool_arg:
+            arguments[arg.name] = bool(arg.bool_arg)
         elif arg.kwargs:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
@@ -964,7 +964,7 @@ def datasetProcessing(ml_worker, params: websocket.DatesetProcessingParam, *args
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
     for function in params.functions:
-        arguments = parse_function_arguments(function.arguments)
+        arguments = parse_function_arguments(ml_worker, function.arguments)
         if function.slicingFunction:
             dataset.add_slicing_function(
                 SlicingFunction.download(function.slicingFunction.id, ml_worker.client, None)(**arguments)
@@ -1041,7 +1041,7 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
 def runAdHocTest(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwargs):
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
-    arguments = parse_function_arguments(params.arguments)
+    arguments = parse_function_arguments(ml_worker, params.arguments)
 
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
     test_result = test.get_builder()(**arguments).execute()
@@ -1062,13 +1062,13 @@ def runTestSuite(ml_worker, params: websocket.TestSuiteParam, *args, **kwargs):
         tests = [
             {
                 "test": GiskardTest.download(t.testUuid, ml_worker.client, None),
-                "arguments": parse_function_arguments(t.arguments),
+                "arguments": parse_function_arguments(ml_worker, t.arguments),
                 "id": t.id,
             }
             for t in params.tests
         ]
 
-        global_arguments = parse_function_arguments(params.globalArguments)
+        global_arguments = parse_function_arguments(ml_worker, params.globalArguments)
 
         test_names = list(
             map(
@@ -1102,7 +1102,7 @@ def runTestSuite(ml_worker, params: websocket.TestSuiteParam, *args, **kwargs):
         return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
 
 
-def map_suite_input_ws(i: websocket.TestInput):
+def map_suite_input_ws(i: websocket.SuiteInput):
     if i.type == "Model" and i.model_meta is not None:
         return ModelInput(i.name, i.model_meta.model_type)
     elif i.type == "Dataset" and i.dataset_meta is not None:
