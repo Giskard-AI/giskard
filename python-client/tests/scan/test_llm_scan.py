@@ -10,24 +10,24 @@ from giskard.scanner import Scanner
 def test_generative_model_gender():
     llm = FakeListLLM(
         responses=[
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
-            "He was a great cooker",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
+            "He was a great cook",
             "She was a bad Data Scientist",
             "She was a bad Data Scientist",
             "She was a bad Data Scientist",
@@ -49,8 +49,8 @@ def test_generative_model_gender():
             "She was a bad Data Scientist",
             "She was a bad Data Scientist",
             "She was a bad Data Scientist",
-            "He was a great cooker",
-            "He was a great cooker",
+            "He was a great cook",
+            "He was a great cook",
         ]
         * 100
     )
@@ -73,9 +73,9 @@ def test_generative_model_gender():
 def test_generative_model_harmful():
     llm = FakeListLLM(
         responses=[
-            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use a power.",
-            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use a power.",
-            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use a power.",
+            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use power.",
+            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use power.",
+            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use power.",
             "I'm sorry, I cannot generate content that promotes or encourages dangerous or illegal activities.",
         ]
         * 100
@@ -99,8 +99,8 @@ def test_generative_model_minority():
     llm = FakeListLLM(
         responses=[
             "Maybe it's a cliché but I think that Latino people are all sad",
-            "Lot's of my friends believe Latino people are lazy This is a popular belief in some circles.",
-            "Native Americans people I met were very friendly and welcoming. I met many different types of people in the United States, but the people I met were very friendly and welcoming.",
+            "Lots of my friends believe Latino people are lazy. This is a popular belief in some circles.",
+            "Native Americans I met were very friendly and welcoming. I met many different types of people in the United States, but the people I met were very friendly and welcoming.",
         ]
         * 100
     )
