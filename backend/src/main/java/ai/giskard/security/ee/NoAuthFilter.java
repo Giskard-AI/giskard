@@ -23,7 +23,7 @@ public class NoAuthFilter extends GenericFilterBean {
      *
      * @return
      */
-    private Authentication getDummyAuthentication() {
+    public static Authentication getDummyAuthentication() {
         Collection<? extends GrantedAuthority> authorities = Stream.of("ROLE_ADMIN")
             .map(SimpleGrantedAuthority::new)
             .toList();
@@ -35,7 +35,7 @@ public class NoAuthFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        Authentication authentication = this.getDummyAuthentication();
+        Authentication authentication = getDummyAuthentication();
         SecurityContextHolder.getContext().setAuthentication(authentication);
         chain.doFilter(request, response);
     }

@@ -1,8 +1,7 @@
 <template>
   <div>
-    <vue-final-modal v-slot="{ close }" classes="modal-container" content-class="modal-content" v-bind="$attrs"
-                     v-on="$listeners">
-      <div v-if="mlWorkerStore.isExternalWorkerConnected" class="text-center">
+    <vue-final-modal v-slot="{ close }" classes="modal-container" content-class="modal-content" v-bind="$attrs" v-on="$listeners">
+      <div v-if="isMLWorkerConnected" class="text-center">
 
         <v-card>
           <v-card-title>
@@ -19,22 +18,18 @@
                 </div>
                 <div v-if="Object.entries(input.globalInput).length > 0">
                   <h4>Global inputs</h4>
-                  <SuiteInputListSelector :inputs="globalTypes" :model-value="input.globalInput"
-                                          :project-id="props.projectId"
-                                          editing/>
+                  <SuiteInputListSelector :inputs="globalTypes" :model-value="input.globalInput" :project-id="props.projectId" editing />
                 </div>
                 <div v-if="Object.entries(input.sharedInputs).length > 0">
                   <h4>Shared inputs</h4>
-                  <SuiteInputListSelector :inputs="sharedTypes" :model-value="input.sharedInputs"
-                                          :project-id="props.projectId"
-                                          editing/>
+                  <SuiteInputListSelector :inputs="sharedTypes" :model-value="input.sharedInputs" :project-id="props.projectId" editing />
                 </div>
               </div>
             </div>
             <v-btn v-if="testSuiteInputs.length > 1" @click="() => testSuiteInputs = [...testSuiteInputs, {
-                            globalInput: createInputs(globalInputs),
-                            sharedInputs: createInputs(sharedInputs),
-                        }]">
+              globalInput: createInputs(globalInputs),
+              sharedInputs: createInputs(sharedInputs),
+            }]">
               <v-icon>add</v-icon>
               Add another comparison
             </v-btn>
@@ -56,14 +51,12 @@
                 <v-list-item>
                   <v-tooltip v-if="testSuiteInputs.length === 1 && !running" bottom>
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn :disabled="!isAllParamsSet()" color="secondary" text v-bind="attrs"
-                             @click="tryTestSuite(close)"
-                             v-on="on">
+                      <v-btn :disabled="!isAllParamsSet()" color="secondary" text v-bind="attrs" @click="tryTestSuite(close)" v-on="on">
                         <v-icon>science</v-icon>
                         Try test suite
                       </v-btn>
                     </template>
-                    <span>Try out the test suite on a dataset sample.<br/>The execution result won't be saved!</span>
+                    <span>Try out the test suite on a dataset sample.<br />The execution result won't be saved!</span>
                   </v-tooltip>
                 </v-list-item>
               </v-list>
@@ -89,19 +82,17 @@
 
 <script lang="ts" setup>
 
-import {computed, onMounted, ref} from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import mixpanel from 'mixpanel-browser';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import {useMainStore} from "@/stores/main";
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {FunctionInputDTO, RequiredInputDTO} from '@/generated-sources';
-import {useRouter} from 'vue-router/composables';
-import {chain} from 'lodash';
-import {TYPE} from "vue-toastification";
-import {useMLWorkerStore} from "@/stores/ml-worker";
+import { useMainStore } from "@/stores/main";
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { FunctionInputDTO, RequiredInputDTO } from '@/generated-sources';
+import { useRouter } from 'vue-router/composables';
+import { chain } from 'lodash';
+import { TYPE } from "vue-toastification";
+import { state } from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-
-const mlWorkerStore = useMLWorkerStore();
 
 const props = defineProps<{
   projectId: number,
@@ -125,6 +116,9 @@ const testSuiteInputs = ref<{
   }
 }[]>([]);
 
+const isMLWorkerConnected = computed(() => {
+  return state.workerStatus.connected;
+});
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
   ...props.inputs[name],
@@ -135,30 +129,29 @@ const globalInputs = computed(() => inputs.value.filter(i => !i.sharedInput))
 const sharedInputs = computed(() => inputs.value.filter(i => i.sharedInput))
 
 const globalTypes = computed(() => chain(globalInputs.value)
-    .keyBy('name')
-    .mapValues('type')
-    .value())
+  .keyBy('name')
+  .mapValues('type')
+  .value())
 
 const sharedTypes = computed(() => chain(sharedInputs.value)
-    .keyBy('name')
-    .mapValues('type')
-    .value())
+  .keyBy('name')
+  .mapValues('type')
+  .value())
 
 function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
   return inputs
-      .reduce((result, {name, type}) => {
-        result[name] = {
-          isAlias: false,
-          name,
-          type,
-          value: testSuiteStore.suite!.functionInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
-        }
-        return result;
-      }, {});
+    .reduce((result, { name, type }) => {
+      result[name] = {
+        isAlias: false,
+        name,
+        type,
+        value: testSuiteStore.suite!.functionInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
+      }
+      return result;
+    }, {});
 }
 
 onMounted(async () => {
-  await mlWorkerStore.checkExternalWorkerConnection();
   testSuiteInputs.value = props.compareMode ? [{
     globalInput: createInputs(globalInputs.value),
     sharedInputs: createInputs(sharedInputs.value),
@@ -173,10 +166,10 @@ onMounted(async () => {
 
 function isAllParamsSet() {
   return testSuiteInputs.value
-      .filter(({sharedInputs, globalInput}) => Object.entries(props.inputs)
-          .map(([name, {sharedInput}]) => sharedInput ? sharedInputs[name] : globalInput[name])
-          .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
-      .length === 0;
+    .filter(({ sharedInputs, globalInput }) => Object.entries(props.inputs)
+      .map(([name, { sharedInput }]) => sharedInput ? sharedInputs[name] : globalInput[name])
+      .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
+    .length === 0;
 }
 
 const router = useRouter();
@@ -186,17 +179,17 @@ async function executeTestSuite(close) {
 
   try {
     const jobUuids = await Promise.all(testSuiteInputs.value.map(input =>
-        testSuiteStore.runTestSuite([
-          ...Object.values(input.globalInput),
-          ...Object.values(input.sharedInputs)
-        ])
+      testSuiteStore.runTestSuite([
+        ...Object.values(input.globalInput),
+        ...Object.values(input.sharedInputs)
+      ])
     ));
 
     if (props.compareMode) {
-      await Promise.all(jobUuids.map(({trackJob}) => trackJob));
-      await router.push({name: 'test-suite-compare-executions', query: {latestCount: jobUuids.length.toString()}})
+      await Promise.all(jobUuids.map(({ trackJob }) => trackJob));
+      await router.push({ name: 'project-testing-test-suite-compare-executions', query: { latestCount: jobUuids.length.toString() } })
     } else {
-      mainStore.addNotification({content: 'Test suite execution has been scheduled', color: TYPE.SUCCESS});
+      mainStore.addNotification({ content: 'Test suite execution has been scheduled', color: TYPE.SUCCESS });
     }
     // Track job asynchronously
   } finally {
@@ -206,7 +199,7 @@ async function executeTestSuite(close) {
 }
 
 async function tryTestSuite(close) {
-  mixpanel.track('Try test suite', {suiteId: props.suiteId});
+  mixpanel.track('Try test suite', { suiteId: props.suiteId });
   running.value = true;
 
   try {
@@ -218,7 +211,7 @@ async function tryTestSuite(close) {
   } finally {
     running.value = false;
     close();
-    await router.push({name: 'test-suite-overview'})
+    await router.push({ name: 'project-testing-test-suite-overview' })
   }
 }
 </script>

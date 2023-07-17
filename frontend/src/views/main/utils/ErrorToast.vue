@@ -10,18 +10,14 @@
   </div>
 </template>
 
-<script lang="ts">
-
-import Component from "vue-class-component";
-import Vue from "vue";
-import {Prop} from "vue-property-decorator";
-
-@Component
-export default class ErrorToast extends Vue {
-  @Prop({required: true}) title!: string;
-  @Prop() detail?: string;
-  @Prop() stack?: string;
+<script setup lang="ts">
+interface Props {
+  title: string;
+  detail?: string;
+  stack?: string;
 }
+
+const props = defineProps<Props>();
 </script>
 
 <style scoped lang="scss">

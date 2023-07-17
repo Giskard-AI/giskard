@@ -115,9 +115,10 @@ Giskard executes your model using an worker that runs directly the model in your
 
          .. code-block:: sh
 
-               giskard server expose
+               giskard server expose --token <ngrok_API_token>
 
-         Then run the below 4 lines of code in a **cell of your Colab notebook**:
+         Read the flowing `instructions <https://docs.giskard.ai/en/latest/cli/ngrok/index.html>`_ in order to get the
+         :code:`ngrok_API_token`. Then run the below 4 lines of code in a **cell of your Colab notebook**:
 
          .. code-block:: sh
 
@@ -168,4 +169,4 @@ Giskard executes your model using an worker that runs directly the model in your
 
             !giskard worker --help
 
-      You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the `upload an object <../upload/index.html>`_ page.
+      You're all set to try Giskard in action. Upload your first model, dataset, test suite, or slicing & transformation functions by following the `upload an object <../upload/index.html>`_ page.

@@ -63,6 +63,9 @@ import { TYPE } from 'vue-toastification';
 import { extractArgumentDocumentation, ParsedDocstring } from "@/utils/python-doc.utils";
 import mixpanel from 'mixpanel-browser';
 import { anonymize } from "@/utils";
+import { useRouter } from 'vue-router/composables';
+
+const router = useRouter();
 
 const { projectId, test, suiteId, testArguments } = defineProps<{
   projectId: number,
@@ -76,8 +79,6 @@ const testSuites = ref<TestSuiteDTO[]>([]);
 const selectedSuite = ref<number | null>(null);
 const testInputs = ref<{ [name: string]: FunctionInputDTO }>({});
 const doc = ref<ParsedDocstring | null>(null);
-
-onMounted(loadData);
 
 async function loadData() {
   doc.value = extractArgumentDocumentation(test)
@@ -93,8 +94,6 @@ async function loadData() {
     }
     return result
   }, {} as { [name: string]: FunctionInputDTO })
-  testInputs.value['model'].value = null;
-  testInputs.value['dataset'].value = null;
 }
 
 
@@ -129,6 +128,17 @@ async function submit(close) {
     content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
     color: TYPE.SUCCESS
   });
+
+  if (suiteId && suiteId === selectedSuite.value) {
+    await router.push({
+      name: 'project-testing-test-suite-overview',
+      params: {
+        id: projectId.toString(),
+        suiteId: selectedSuite.value!.toString()
+      }
+    });
+  }
+
   close();
 
   mixpanel.track('Add test to test suite',
@@ -164,6 +174,9 @@ async function createTestSuite() {
   selectedSuite.value = suite;
 }
 
+onMounted(async () => {
+  await loadData();
+});
 </script>
 
 <style scoped>

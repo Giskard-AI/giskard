@@ -3,11 +3,11 @@
     <v-container class="main-container vc">
       <v-progress-linear indeterminate v-if="executionsAndJobs === undefined" color="primary" class="mt-2"></v-progress-linear>
       <v-container v-else-if="executionsAndJobs.length === 0 && hasTest" class="d-flex flex-column vc fill-height">
-          <h1 class="pt-16">No execution has been performed yet!</h1>
-          <v-btn tile class='mx-1' @click='openRunTestSuite(false)' color="primary" :loading="hasJobInProgress">
-              <v-icon>arrow_right</v-icon>
-              Run test suite
-          </v-btn>
+        <h1 class="pt-16">No execution has been performed yet!</h1>
+        <v-btn tile class='mx-1' @click='openRunTestSuite(false)' color="primary" :loading="hasJobInProgress">
+          <v-icon>arrow_right</v-icon>
+          Run test suite
+        </v-btn>
       </v-container>
       <v-container v-else-if="executionsAndJobs.length === 0" class="d-flex flex-column vc fill-height">
         <h1 class="pt-16">No tests has been added to the suite</h1>
@@ -35,7 +35,7 @@
             <v-list-item-group color="primary" mandatory>
               <div v-for="e in executionsAndJobs" :key="e.execution?.id ?? e.date">
                 <v-divider />
-                <v-list-item :disabled="e.disabled" :to="e.disabled ? null : { name: 'test-suite-execution', params: { executionId: e.execution.id } }">
+                <v-list-item :disabled="e.disabled" :to="e.disabled ? null : { name: 'project-testing-test-suite-execution', params: { executionId: e.execution.id } }">
                   <v-list-item-icon>
                     <v-icon :color="e.color" size="40">{{
                       e.icon
@@ -45,14 +45,14 @@
                   <v-list-item-content>
                     <div class="d-flex justify-space-between">
                       <div>
-                        <span v-if="getModel(e)">Model: {{ getModel(e) }}<br/></span>
-                        <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br/></span>
+                        <span v-if="getModel(e)">Model: {{ getModel(e) }}<br /></span>
+                        <span v-if="getDataset(e)">Dataset: {{ getDataset(e) }}<br /></span>
                         <span>{{ (e.disabled ? e.date : e.execution.executionDate) | date }}</span>
                       </div>
                       <v-tooltip bottom v-if="!e.disabled">
                         <template v-slot:activator="{ on, attrs }">
                           <div v-bind="attrs" v-on="on">
-                            <v-checkbox v-model="compareSelectedItems" :value="e.execution.id"/>
+                            <v-checkbox v-model="compareSelectedItems" :value="e.execution.id" />
                           </div>
                         </template>
                         <span v-if="compareSelectedItems.includes(e.execution.id)">Remove from comparison</span>
@@ -75,29 +75,29 @@
 
 <script setup lang="ts">
 
-import {computed, onMounted} from 'vue';
-import {JobDTO, JobState, TestResult, TestSuiteExecutionDTO} from '@/generated-sources';
-import {Colors} from '@/utils/colors';
-import {Comparators} from '@/utils/comparators';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {useRoute, useRouter} from 'vue-router/composables';
-import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
-import {$vfm} from 'vue-final-modal';
+import { computed, onMounted } from 'vue';
+import { JobDTO, JobState, TestResult, TestSuiteExecutionDTO } from '@/generated-sources';
+import { Colors } from '@/utils/colors';
+import { Comparators } from '@/utils/comparators';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
+import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import {chain} from "lodash";
+import { chain } from "lodash";
 import mixpanel from "mixpanel-browser";
 
 const {
-    models,
-    datasets,
-    inputs,
-    executions,
-    trackedJobs,
-    projectId,
-    suite,
-    hasTest,
-    hasJobInProgress
+  models,
+  datasets,
+  inputs,
+  executions,
+  trackedJobs,
+  projectId,
+  suite,
+  hasTest,
+  hasJobInProgress
 } = storeToRefs(useTestSuiteStore());
 
 
@@ -179,23 +179,23 @@ const router = useRouter();
 
 onMounted(() => {
   if (executions.value.length > 0 && !route.params.executionId) {
-    router.push({ name: 'test-suite-execution', params: { executionId: executions.value[0].id.toString() } })
+    router.push({ name: 'project-testing-test-suite-execution', params: { executionId: executions.value[0].id.toString() } })
   }
 })
 
 async function compare() {
-    await router.push({
-        name: 'test-suite-compare-executions',
-        query: {selectedIds: JSON.stringify(compareSelectedItems.value)}
-    })
+  await router.push({
+    name: 'project-testing-test-suite-compare-executions',
+    query: { selectedIds: JSON.stringify(compareSelectedItems.value) }
+  })
 
-    mixpanel.track('Compare selected test suite executions', {
-        suiteId: suite.value!.id,
-        projectId: projectId.value,
-        executionsIds: compareSelectedItems.value
-    });
+  mixpanel.track('Compare selected test suite executions', {
+    suiteId: suite.value!.id,
+    projectId: projectId.value,
+    executionsIds: compareSelectedItems.value
+  });
 
-    testSuiteCompareStore.reset();
+  testSuiteCompareStore.reset();
 }
 
 async function openRunTestSuite(compareMode: boolean) {

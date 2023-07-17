@@ -1,23 +1,26 @@
 <template>
   <div v-if="project" class="vertical-container">
-    <v-toolbar flat dense light class="secondary--text text--lighten-2">
-      <v-toolbar-title class="mt-4">
-        <router-link to="/main/projects">
+    <v-toolbar flat light class="secondary--text text--lighten-2">
+      <v-toolbar-title class="text-body-1 d-flex mt-2">
+        <router-link to="/main/projects" class="font-weight-medium grey--text">
           Projects
         </router-link>
-        <span>/</span>
-        <router-link :to="{ name: 'project-properties', params: { id } }">
-          {{ project.name }} ({{ project.key }})
+        <span class="font-weight-black mx-1">/</span>
+        <router-link :to="{ name: 'project-properties', params: { id } }" class="font-weight-medium grey--text">
+          <div class="d-flex flex-column align-center">
+            <span id="project-name">{{ project.name }}</span>
+            <span id="project-key" @click.stop.prevent="copyProjectKey"><span>{{ project.key }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+          </div>
         </router-link>
-        <span v-show="currentTab !== null">
-          <span>/</span>
+        <span class="font-weight-black mx-1">/</span>
+        <router-link :to="{ name: currentTab, params: { id } }" class="font-weight-bold" id="current-route">
           {{ currentTabString }}
-        </span>
+        </router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu left bottom offset-y rounded=0 v-if="isProjectOwnerOrAdmin">
         <template v-slot:activator="{ on, attrs }">
-          <v-btn text small tile v-bind="attrs" v-on="on" class="ml-2">
+          <v-btn text small tile v-bind="attrs" v-on="on" class="align-self-start mt-1">
             <v-icon>mdi-dots-horizontal</v-icon>
           </v-btn>
         </template>
@@ -82,21 +85,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Quick start dialog -->
-    <v-dialog v-model="openQuickStart" width="80vw">
-      <v-card flat>
-        <v-card-title flat>
-          Quick start guide
-          <v-spacer></v-spacer>
-          <v-btn text href="https://docs.giskard.ai/en/latest/" target="_blank">
-            <span>Documentation</span>
-            <v-icon right>mdi-open-in-new</v-icon>
-          </v-btn>
-        </v-card-title>
-        <QuickStartStepper :project="project" @close="openQuickStart = false"></QuickStartStepper>
-      </v-card>
-    </v-dialog>
-
     <v-container fluid id="container-project-tab" class="vertical-container pb-0">
       <keep-alive>
         <router-view :isProjectOwnerOrAdmin="isProjectOwnerOrAdmin"></router-view>
@@ -108,6 +96,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
 import { IUserProfileMinimal } from "@/interfaces";
 import { Role } from "@/enums";
 import mixpanel from "mixpanel-browser";
@@ -117,7 +107,6 @@ import { useUserStore } from "@/stores/user";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
 import { useProjectStore } from "@/stores/project";
 import { getUserFullDisplayName } from "@/utils";
-import QuickStartStepper from "@/components/QuickStartStepper.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -136,7 +125,6 @@ const props = defineProps<Props>();
 const userToInvite = ref<Partial<IUserProfileMinimal>>({});
 const openShareDialog = ref<boolean>(false);
 const openDeleteDialog = ref<boolean>(false);
-const openQuickStart = ref<boolean>(false);
 const currentTab = ref<string | null>(null);
 
 const userProfile = computed(() => {
@@ -144,7 +132,9 @@ const userProfile = computed(() => {
 })
 
 const currentTabString = computed(() => {
-  return currentTab.value!.charAt(0).toUpperCase() + currentTab.value!.slice(1)
+  let tabString = currentTab.value?.split('-')[1] || '';
+  tabString = tabString.charAt(0).toUpperCase() + tabString.slice(1);
+  return tabString
 })
 
 
@@ -197,7 +187,12 @@ async function deleteProject() {
 }
 
 function updateCurrentTab() {
-  currentTab.value = route.fullPath.split('/')[4] || null;
+  currentTab.value = route.name?.split('-').slice(0, 2).join('-') || null;
+}
+
+async function copyProjectKey() {
+  await copyToClipboard(project.value!.key);
+  mainStore.addNotification({ content: "Copied project key to clipboard", color: TYPE.SUCCESS });
 }
 
 
@@ -211,15 +206,25 @@ onMounted(async () => {
   await mainStore.getCoworkers();
   updateCurrentTab();
   await projectArtifactsStore.setProjectId(props.id, false);
-
-  if (projectArtifactsStore.datasets.length == 0 && projectArtifactsStore.models.length == 0) {
-    openQuickStart.value = true;
-  }
 })
 </script>
 
 <style scoped>
 #container-project-tab {
   padding-top: 4px !important;
+}
+
+#current-route {
+  font-size: 1.125rem !important;
+}
+
+#project-key {
+  font-size: 0.675rem !important;
+  line-height: 0.675rem !important;
+}
+
+#project-key span {
+  text-decoration: underline;
+  margin-right: 0.2rem;
 }
 </style>

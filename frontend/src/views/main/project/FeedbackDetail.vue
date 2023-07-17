@@ -125,7 +125,7 @@ function deleteFeedback(feedbackId: number) {
     on: {
       async confirm(close) {
         await api.deleteFeedback(feedbackId);
-        await router.push({ name: 'project-feedbacks', params: { id: data.value!.project.id.toString() } });
+        await router.push({ name: 'project-feedback', params: { id: data.value!.project.id.toString() } });
         close();
         mainStore.addSimpleNotification('Successfully deleted feedback!');
       }

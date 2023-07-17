@@ -2,6 +2,8 @@ import asyncio
 import logging
 import os
 import platform
+import posixpath
+import shutil
 import sys
 import tempfile
 import time
@@ -17,6 +19,8 @@ import pkg_resources
 import psutil
 import tqdm
 
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
+
 import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import Suite, ModelInput, DatasetInput, SuiteInput
@@ -30,7 +34,9 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+)
 from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.models.base import BaseModel
@@ -38,7 +44,7 @@ from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
-from giskard.path_utils import model_path, dataset_path
+from giskard.path_utils import model_path, dataset_path, projects_dir
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +73,11 @@ def map_function_meta(callable_type):
             type=test.type,
             args=[
                 ml_worker_pb2.TestFunctionArgument(
-                    name=a.name, type=a.type, optional=a.optional, default=str(a.default), argOrder=a.argOrder
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder,
                 )
                 for a in test.args.values()
             ],
@@ -75,6 +85,19 @@ def map_function_meta(callable_type):
         for test in tests_registry.get_all().values()
         if test.type == callable_type
     }
+
+
+def log_artifact_local(local_file, artifact_path=None):
+    # Log artifact locally from an internal worker
+    verify_artifact_path(artifact_path)
+
+    file_name = os.path.basename(local_file)
+
+    paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
+    artifact_file = posixpath.join("/", *paths)
+    Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
+
+    shutil.copy(local_file, artifact_file)
 
 
 def map_dataset_process_function_meta(callable_type):
@@ -91,7 +114,11 @@ def map_dataset_process_function_meta(callable_type):
             type=test.type,
             args=[
                 ml_worker_pb2.TestFunctionArgument(
-                    name=a.name, type=a.type, optional=a.optional, default=str(a.default), argOrder=a.argOrder
+                    name=a.name,
+                    type=a.type,
+                    optional=a.optional,
+                    default=str(a.default),
+                    argOrder=a.argOrder,
                 )
                 for a in test.args.values()
             ],
@@ -106,7 +133,12 @@ def map_dataset_process_function_meta(callable_type):
 
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(
-        self, ml_worker: MLWorker, client: GiskardClient, address=None, remote=None, loop=asyncio.get_event_loop()
+        self,
+        ml_worker: MLWorker,
+        client: GiskardClient,
+        address=None,
+        remote=None,
+        loop=asyncio.get_event_loop(),
     ) -> None:
         super().__init__()
         self.ml_worker = ml_worker
@@ -195,25 +227,41 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return ml_worker_pb2.TestResultMessage(
             results=[
                 ml_worker_pb2.NamedSingleTestResult(
-                    testUuid=test.meta.uuid, result=map_result_to_single_test_result(test_result)
+                    testUuid=test.meta.uuid,
+                    result=map_result_to_single_test_result(test_result),
                 )
             ]
         )
 
     def datasetProcessing(
-        self, request: ml_worker_pb2.DatasetProcessingRequest, context: grpc.ServicerContext
+        self,
+        request: ml_worker_pb2.DatasetProcessingRequest,
+        context: grpc.ServicerContext,
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
+        dataset = Dataset.download(
+            self.client,
+            request.dataset.project_key,
+            request.dataset.id,
+            request.dataset.sample,
+        )
 
         for function in request.functions:
             arguments = self.parse_function_arguments(function.arguments)
             if function.HasField("slicingFunction"):
                 dataset.add_slicing_function(
-                    SlicingFunction.download(function.slicingFunction.id, self.client, None)(**arguments)
+                    SlicingFunction.download(
+                        function.slicingFunction.id,
+                        self.client,
+                        function.slicingFunction.project_key or None,
+                    )(**arguments)
                 )
             else:
                 dataset.add_transformation_function(
-                    TransformationFunction.download(function.transformationFunction.id, self.client, None)(**arguments)
+                    TransformationFunction.download(
+                        function.transformationFunction.id,
+                        self.client,
+                        function.transformationFunction.project_key or None,
+                    )(**arguments)
                 )
 
         result = dataset.process()
@@ -277,7 +325,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
 
             return ml_worker_pb2.TestSuiteResultMessage(
-                is_error=False, is_pass=result.passed, results=identifier_single_test_results, logs=log_listener.close()
+                is_error=False,
+                is_pass=result.passed,
+                results=identifier_single_test_results,
+                logs=log_listener.close(),
             )
 
         except Exception as exc:
@@ -294,7 +345,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 continue
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(
-                    self.client, arg.dataset.project_key, arg.dataset.id, arg.dataset.sample
+                    self.client,
+                    arg.dataset.project_key,
+                    arg.dataset.id,
+                    arg.dataset.sample,
                 )
             elif arg.HasField("model"):
                 arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
@@ -324,7 +378,12 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
-        dataset = Dataset.download(self.client, request.dataset.project_key, request.dataset.id, request.dataset.sample)
+        dataset = Dataset.download(
+            self.client,
+            request.dataset.project_key,
+            request.dataset.id,
+            request.dataset.sample,
+        )
         explanations = explain(model, dataset, request.columns)
 
         return ml_worker_pb2.ExplainResponse(
@@ -335,18 +394,22 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
-        n_samples = 500 if request.n_samples <= 0 else request.n_samples
         model = BaseModel.download(self.client, request.model.project_key, request.model.id)
         text_column = request.feature_name
 
         if request.column_types[text_column] != "text":
             raise ValueError(f"Column {text_column} is not of type text")
+
         text_document = request.columns[text_column]
         input_df = pd.DataFrame({k: [v] for k, v in request.columns.items()})
         if model.meta.feature_names:
             input_df = input_df[model.meta.feature_names]
-        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
-        map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
+        (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
+        map_features_weight = (
+            dict(zip(model.meta.classification_labels, list_weights))
+            if model.is_classification
+            else {"WEIGHTS": list_weights}
+        )
         return ml_worker_pb2.ExplainTextResponse(
             weights={
                 str(k): ml_worker_pb2.ExplainTextResponse.WeightsPerFeature(
@@ -373,14 +436,18 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             )
         else:
             return ml_worker_pb2.RunModelForDataFrameResponse(
-                prediction=predictions.prediction.astype(str), raw_prediction=predictions.prediction
+                prediction=predictions.prediction.astype(str),
+                raw_prediction=predictions.prediction,
             )
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
             model = BaseModel.download(self.client, request.model.project_key, request.model.id)
             dataset = Dataset.download(
-                self.client, request.dataset.project_key, request.dataset.id, sample=request.dataset.sample
+                self.client,
+                request.dataset.project_key,
+                request.dataset.id,
+                sample=request.dataset.sample,
             )
         except ValueError as e:
             if "unsupported pickle protocol" in str(e):
@@ -406,7 +473,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
                 preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
                 sorted_predictions = np.sort(prediction_results.all_predictions.values)
-                abs_diff = pd.Series(sorted_predictions[:, -1] - sorted_predictions[:, -2], name="absDiff")
+                abs_diff = pd.Series(
+                    sorted_predictions[:, -1] - sorted_predictions[:, -2],
+                    name="absDiff",
+                )
             else:
                 diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
                 preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
@@ -421,7 +491,16 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 diff_percent = pd.Series(diff / target_serie, name="diffPercent")
                 abs_diff = pd.Series(diff.abs(), name="absDiff")
                 abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent")
-                calculated = pd.concat([preds_serie, target_serie, abs_diff, abs_diff_percent, diff_percent], axis=1)
+                calculated = pd.concat(
+                    [
+                        preds_serie,
+                        target_serie,
+                        abs_diff,
+                        abs_diff_percent,
+                        diff_percent,
+                    ],
+                    axis=1,
+                )
             else:
                 calculated = pd.concat([preds_serie], axis=1)
 
@@ -429,15 +508,29 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             dir = Path(f)
             predictions_csv = get_file_name("predictions", "csv", request.dataset.sample)
             results.to_csv(index=False, path_or_buf=dir / predictions_csv)
-            self.ml_worker.tunnel.client.log_artifact(
-                dir / predictions_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
-            )
+            if self.ml_worker.tunnel:
+                self.ml_worker.tunnel.client.log_artifact(
+                    dir / predictions_csv,
+                    f"{request.project_key}/models/inspections/{request.inspectionId}",
+                )
+            else:
+                log_artifact_local(
+                    dir / predictions_csv,
+                    f"{request.project_key}/models/inspections/{request.inspectionId}",
+                )
 
             calculated_csv = get_file_name("calculated", "csv", request.dataset.sample)
             calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
-            self.ml_worker.tunnel.client.log_artifact(
-                dir / calculated_csv, f"{request.project_key}/models/inspections/{request.inspectionId}"
-            )
+            if self.ml_worker.tunnel:
+                self.ml_worker.tunnel.client.log_artifact(
+                    dir / calculated_csv,
+                    f"{request.project_key}/models/inspections/{request.inspectionId}",
+                )
+            else:
+                log_artifact_local(
+                    dir / calculated_csv,
+                    f"{request.project_key}/models/inspections/{request.inspectionId}",
+                )
         return google.protobuf.empty_pb2.Empty()
 
     def filterDataset(self, request_iterator, context: grpc.ServicerContext):
@@ -486,7 +579,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 times.append(time_end - time_start)
                 # Send NEXT code
                 yield ml_worker_pb2.FilterDatasetResponse(
-                    code=ml_worker_pb2.StatusCode.Next, idx=filter_msg.idx, rows=rows_to_keep
+                    code=ml_worker_pb2.StatusCode.Next,
+                    idx=filter_msg.idx,
+                    rows=rows_to_keep,
                 )
 
         logger.info(f"Filter dataset finished. Avg chunk time: {sum(times) / len(times)}")

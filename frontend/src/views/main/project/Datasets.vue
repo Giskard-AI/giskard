@@ -1,18 +1,19 @@
 <template>
   <div class="vertical-container">
-    <div class="d-flex mb-6">
-      <v-spacer></v-spacer>
-      <div class="mr-2">
-        <v-btn @click="reloadDatasets">
-          Reload
-          <v-icon right>refresh</v-icon>
-        </v-btn>
-        <v-btn v-if="projectArtifactsStore.datasets.length > 0" color="primary" class="ml-2" @click="openUploadDialog">
-          Upload with API
-          <v-icon right>mdi-application-braces-outline</v-icon>
-        </v-btn>
-      </div>
-    </div>
+    <v-row class="mt-2 pl-3">
+      <v-col cols='4'>
+        <v-text-field v-if="projectArtifactsStore.datasets.length" v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+      </v-col>
+      <v-col cols="8">
+        <div class="d-flex justify-end mb-6">
+          <v-btn v-if="projectArtifactsStore.datasets.length > 0" class="mr-2" href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
+            add a dataset
+            <v-icon right>mdi-open-in-new</v-icon>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
+
     <LoadingFullscreen v-if="isLoading" name="datasets" />
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
       <v-expansion-panels flat>
@@ -24,7 +25,7 @@
           <v-col cols="1" class="col-container">Id</v-col>
           <v-col cols="2" class="col-container">Actions</v-col>
         </v-row>
-        <v-expansion-panel v-for="f in projectArtifactsStore.datasets" :key="f.id">
+        <v-expansion-panel v-for="f in filteredDatasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold" :title="f.name ? f.name : f.id">
@@ -39,7 +40,7 @@
                 <span>
                   <v-tooltip bottom dense>
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn icon color="info" @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
+                      <v-btn icon @click.stop="downloadDataFile(f.id)" v-bind="attrs" v-on="on">
                         <v-icon>download</v-icon>
                       </v-btn>
                     </template>
@@ -57,33 +58,49 @@
             <div class="caption" v-else>Could not properly load data</div>
           </v-expansion-panel-content>
         </v-expansion-panel>
+        <div class="d-flex justify-center mt-6">
+          <v-btn small @click="reloadDatasets" plain>
+            <span class="caption">Refresh</span>
+            <v-icon size="small" class="ml-1">refresh</v-icon>
+          </v-btn>
+        </div>
       </v-expansion-panels>
     </v-container>
-    <v-container v-else-if="apiAccessToken && apiAccessToken.id_token && !isLoading">
-      <p class="font-weight-medium secondary--text">There are no datasets in this project yet. Follow the code snippet below to upload a dataset 👇</p>
-      <CodeSnippet :code-content="codeContent" :language="'python'"></CodeSnippet>
-      <p class="mt-4 font-weight-medium secondary--text">Check out the <a href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">full documentation</a> for more information.</p>
+    <v-container v-else-if="!isLoading">
+      <v-alert class='text-center'>
+        <p class='headline font-weight-medium grey--text text--darken-2'>There are no datasets in this project yet. <br>Click the button below to learn how to upload a dataset.</p>
+      </v-alert>
+      <div class="d-flex justify-center">
+        <v-btn href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
+          add a new dataset
+          <v-icon right>mdi-open-in-new</v-icon>
+        </v-btn>
+      </div>
+      <div class="d-flex justify-center mb-6">
+        <img src="@/assets/logo_datasets.png" class="datasets-logo" title="Datasets tab logo" alt="A turtle typing too fast on a laptop">
+      </div>
+      <div class="d-flex justify-center mt-6">
+        <v-btn small @click="reloadDatasets" plain>
+          <span class="caption">Refresh</span>
+          <v-icon size="small" class="ml-1">refresh</v-icon>
+        </v-btn>
+      </div>
     </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { apiURL } from "@/env";
 import { api } from "@/api";
 import { Role } from "@/enums";
-import { $vfm } from 'vue-final-modal';
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { computed, onBeforeMount, onMounted, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
 import { useUserStore } from "@/stores/user";
 import { useProjectStore } from "@/stores/project";
 import { useMainStore } from "@/stores/main";
 import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken } from "@/generated-sources";
 import { TYPE } from "vue-toastification";
-import UploadArtifactModal from "./modals/UploadArtifactModal.vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
@@ -102,30 +119,17 @@ const isLoading = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
-const apiAccessToken = ref<JWTToken | null>(null);
+const searchDataset = ref<string>('');
 
-const codeContent = computed(() =>
-  `import giskard
-
-# for demo purposes only 🛳️. Replace with your dataframe creation
-_, df = giskard.demo.titanic()
-
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}"
-client = giskard.GiskardClient(
-    url="${apiURL}",  # URL of your Giskard instance
-    token=token
-)
-
-# Wrap your Pandas Dataframe with Giskard dataset 🎁
-giskard_dataset = giskard.Dataset(df,
-                                  target="Survived",
-                                  name="Titanic dataset")
-
-# Upload to the current project ✉️
-giskard_dataset.upload(client, "${project.value!.key}")
-`
-)
+const filteredDatasets = computed(() => {
+  return projectArtifactsStore.datasets.filter((dataset) => {
+    const search = searchDataset.value.toLowerCase();
+    return (
+      dataset.name.toLowerCase().includes(search) ||
+      dataset.id.toString().includes(search)
+    );
+  });
+});
 
 const project = computed(() => {
   return projectStore.project(props.projectId)
@@ -142,16 +146,6 @@ const isProjectOwnerOrAdmin = computed(() => {
 const isUserProjectOwner = computed(() => {
   return project.value && userProfile.value ? project.value?.owner.id == userProfile.value?.id : false;
 });
-
-function openUploadDialog() {
-  $vfm.show({
-    component: UploadArtifactModal,
-    bind: {
-      title: 'Upload a dataset',
-      codeContent: codeContent.value,
-    },
-  });
-}
 
 async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', { id });
@@ -206,20 +200,8 @@ async function reloadDatasets() {
   }
 }
 
-const generateApiAccessToken = async () => {
-  try {
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
-});
-
-onMounted(async () => {
-  await generateApiAccessToken();
 });
 </script>
 
@@ -248,5 +230,10 @@ div.v-input {
 
 .expansion-panel-content::v-deep .v-expansion-panel-content__wrap {
   padding: 0 0 16px !important;
+}
+
+.datasets-logo {
+  height: max(50vh, 150px);
+  margin-top: 2rem;
 }
 </style>

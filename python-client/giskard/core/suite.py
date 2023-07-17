@@ -9,18 +9,40 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, Test, GiskardTestMethod
+from giskard.ml_worker.testing.registry.giskard_test import (
+    GiskardTest,
+    Test,
+    GiskardTestMethod,
+)
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.registry.transformation_function import (
+    TransformationFunction,
+)
+from giskard.ml_worker.testing.test_result import (
+    TestResult,
+    TestMessage,
+    TestMessageLevel,
+)
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)
 
-suite_input_types: List[type] = [Dataset, BaseModel, str, bool, int, float, SlicingFunction, SlicingFunction]
+suite_input_types: List[type] = [
+    Dataset,
+    BaseModel,
+    str,
+    bool,
+    int,
+    float,
+    SlicingFunction,
+    TransformationFunction,
+]
 
 
 class TestSuiteResult:
+    """Represents the result of a test suite."""
+
     def __init__(self, passed: bool, results: List[Tuple[str, TestResult, Dict[str, Any]]]):
         self.passed = passed
         self.results = results
@@ -165,7 +187,14 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
             value=str(p.meta.uuid),
             type=ptype,
             params=[
-                build_test_input_dto(client, value, pname, p.meta.args[pname].type, project_key, uploaded_uuids)
+                build_test_input_dto(
+                    client,
+                    value,
+                    pname,
+                    p.meta.args[pname].type,
+                    project_key,
+                    uploaded_uuids,
+                )
                 for pname, value in p.params.items()
             ],
         )
@@ -197,24 +226,33 @@ class Suite:
     name: str
 
     def __init__(self, name=None) -> None:
-        """
-        Create a new Test Suite instance with a given name.
+        """Create a new Test Suite instance with a given name.
 
-        :param name: The name of the test suite.
+        Parameters
+        ----------
+        name : str, optional
+            The name of the test suite.
         """
         self.suite_params = {}
         self.tests = []
         self.name = name
 
     def run(self, verbose: bool = True, **suite_run_args):
-        """
-        Execute all the tests that have been added to the test suite through the `add_test` method.
+        """Execute all the tests that have been added to the test suite through the `add_test` method.
 
-        :param verbose: If set to True, the execution information for each test will be displayed. Defaults to False.
-        :param suite_run_args: Any arguments passed here will be applied to all the tests in the suite whenever they match with the
-            arguments defined for each test. If a test contains an argument that has already been defined, it will not get
-            overridden. If any inputs on the test suite are missing, an error will be raised.
-        :return: List[TestSuiteResult] containing test execution information
+        Parameters
+        ----------
+        verbose : bool
+            If set to `True`, the execution information for each test will be displayed. Defaults to `False`.
+        **suite_run_args : dict, optional
+            Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not
+            get overridden. If any inputs on the test suite are missing, an error will be raised.
+
+        Returns
+        -------
+        List[TestSuiteResult]
+            containing test execution information
         """
         results: List[Tuple[str, TestResult, Dict[str, Any]]] = list()
         required_params = self.find_required_params()
@@ -243,7 +281,9 @@ class Suite:
                     (
                         test_partial.test_name,
                         TestResult(
-                            passed=False, is_error=True, messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)]
+                            passed=False,
+                            is_error=True,
+                            messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
                         test_params,
                     )
@@ -267,13 +307,13 @@ class Suite:
 
         test_params = {}
         for pname, p in available_params:
-            if pname in test_partial.provided_inputs:
+            if pname in kwargs:
+                test_params[pname] = kwargs[pname]
+            elif pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
                 else:
                     test_params[pname] = test_partial.provided_inputs[pname]
-            elif pname in kwargs:
-                test_params[pname] = kwargs[pname]
         return test_params
 
     def upload(self, client: GiskardClient, project_key: str):
@@ -301,7 +341,12 @@ class Suite:
                     testUuid=t.giskard_test.upload(client),
                     functionInputs={
                         pname: build_test_input_dto(
-                            client, p, pname, t.giskard_test.meta.args[pname].type, project_key, uploaded_uuids
+                            client,
+                            p,
+                            pname,
+                            t.giskard_test.meta.args[pname].type,
+                            project_key,
+                            uploaded_uuids,
                         )
                         for pname, p in t.provided_inputs.items()
                     },

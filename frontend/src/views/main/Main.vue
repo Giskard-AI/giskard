@@ -1,15 +1,15 @@
 <template>
   <v-main class="fill-height vertical-container">
-    <v-navigation-drawer fixed app persistent class="background" mobile-breakpoint="sm" width="75" color="primaryLight">
+    <v-navigation-drawer fixed app permanent class='background' width='75' color='primaryLight'>
       <v-layout column fill-height>
-        <v-list subheader class="align-center" @click="resetStates">
-          <v-list-item to="/" @click.stop="() => {
+        <v-list subheader class='align-center' @click='resetStates'>
+          <v-list-item to='/' @click.stop='() => {
             projectStore.setCurrentProjectId(null);
-          }">
+          }'>
             <v-list-item-content>
-              <div class="align-center text-center">
-                <img src="@/assets/logo_v2.png" alt="Giskard icon" width="45px" />
-                <span class="caption">Projects</span>
+              <div class='align-center text-center'>
+                <img src='@/assets/logo_v2.png' alt='Giskard icon' width='45px' />
+                <span class='caption'>Projects</span>
               </div>
             </v-list-item-content>
           </v-list-item>
@@ -73,7 +73,7 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item :to="{ name: 'project-feedbacks', params: { id: currentProjectId } }" value="feedbacks">
+            <v-list-item :to="{ name: 'project-feedback', params: { id: currentProjectId } }" value="feedbacks">
               <v-list-item-content>
                 <v-icon>mdi-comment-multiple-outline</v-icon>
                 <div class="caption">Feedback</div>
@@ -125,14 +125,15 @@
 </template>
 
 <script lang="ts" setup>
-import { useUserStore } from "@/stores/user";
-import { useMainStore } from "@/stores/main";
-import { useProjectStore } from "@/stores/project";
-import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";
-import { useTestSuitesStore } from "@/stores/test-suites";
-import { computed, ref, watch } from "vue";
+import { useUserStore } from '@/stores/user';
+import { useMainStore } from '@/stores/main';
+import { useProjectStore } from '@/stores/project';
+import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
+import { useTestSuitesStore } from '@/stores/test-suites';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router/composables';
-import moment from "moment/moment";
+import moment from 'moment/moment';
+import { state, client } from '@/socket';
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -150,7 +151,6 @@ if (mainStore.license) {
     warningMessage.value = `Your license expires in ${dif} days`
   }
 }
-
 
 const hasAdminAccess = computed(() => {
   return userStore.hasAdminAccess;
@@ -190,6 +190,16 @@ watch(() => route.name, async (name) => {
   if (name === 'projects-home') {
     projectStore.setCurrentProjectId(null);
   }
+})
+
+watch(() => state, () => { })
+
+onMounted(() => {
+  client.activate();
+})
+
+onUnmounted(() => {
+  client.deactivate();
 })
 </script>
 
