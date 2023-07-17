@@ -870,10 +870,10 @@ def runModelForDataFrame(
             prediction=list(predictions.prediction.astype(str)),
         )
     else:
-        return {
-            "prediction": list(predictions.prediction.astype(str)),
-            "raw_prediction": list(predictions.prediction),
-        }
+        return websocket.RunModelForDataFrame(
+            prediction=list(predictions.prediction.astype(str)),
+            raw_prediction=list(predictions.prediction),
+        )
 
 
 @websocket_actor(MLWorkerAction.explain)
