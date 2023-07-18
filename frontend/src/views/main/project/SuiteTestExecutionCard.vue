@@ -98,6 +98,7 @@ import {TEST_RESULT_DATA} from '@/utils/tests.utils';
 import {api} from "@/api";
 import router from "@/router";
 import ModelSelector from "@/views/main/utils/ModelSelector.vue";
+import {chain} from "lodash";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -228,11 +229,15 @@ function createDebugInputs() {
   function parseArguments(res, args) {
     Object.keys(args).forEach(key => {
       var parsed = JSON.parse(args[key]);
+      //let arg = args[key];
       var params = [];
-      parseArguments(params, parsed.args);
+      if (parsed.args != undefined) {
+        parseArguments(params, parsed.args);
+      }
 
       res.push({
         name: key,
+        isAlias: false,
         value: parsed.value,
         params: params
       })
@@ -240,6 +245,33 @@ function createDebugInputs() {
   }
 
   parseArguments(inputs, props.result?.arguments);
+
+  let base_result = chain(props.suiteTest?.functionInputs)
+      .keyBy('name')
+      .mapValues(arg => ({
+        name: arg.name,
+        isAlias: false,
+        type: arg.type,
+        value: arg.value,
+        params: arg.params
+      }))
+      .value();
+
+  // Here we merge base_input and inputs
+  for (let i = 0; i < inputs.length; i++) {
+    let input = inputs[i];
+    // if field exists in base_result
+    if (base_result[input.name] != undefined) {
+      // set its value = to inputs' value
+      base_result[input.name].value = input.value;
+    } else {
+      // else add it as-is
+      base_result[input.name] = input;
+    }
+  }
+
+  // transform base_result into an array instead of a map, ditching the keys
+  inputs = Object.keys(base_result).map(key => base_result[key]);
 
   return inputs;
 }
