@@ -531,12 +531,13 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             preds_serie = results
             if dataset.target and dataset.target in dataset.df.columns:
                 target_serie = dataset.df[dataset.target]
+
                 diff = preds_serie - target_serie
                 diff_percent = pd.Series(
                     diff / target_serie,
                     name="diffPercent",
                     dtype=np.float64,
-                )
+                ).replace([np.inf, -np.inf], np.nan)
                 abs_diff = pd.Series(
                     diff.abs(),
                     name="absDiff",
@@ -546,7 +547,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     abs_diff / target_serie,
                     name="absDiffPercent",
                     dtype=np.float64,
-                )
+                ).replace([np.inf, -np.inf], np.nan)
                 calculated = pd.concat(
                     [
                         preds_serie,
