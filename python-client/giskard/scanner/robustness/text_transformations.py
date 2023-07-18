@@ -1,15 +1,16 @@
 import itertools
-import re
 import json
 import random
-import pandas as pd
+import re
 from pathlib import Path
 
-from ...datasets import Dataset
+import pandas as pd
+
 from ...core.core import DatasetProcessFunctionMeta
+from ...datasets import Dataset
+from ...ml_worker.testing.functions.transformation import gruber
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
-from ...ml_worker.testing.functions.transformation import gruber
 
 
 class TextTransformation(TransformationFunction):
@@ -178,7 +179,7 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 
         new_text = text
         for original_word, switched_word in replacements:
-            new_text = re.sub(rf"\b{original_word}\b", switched_word, new_text)
+            new_text = re.sub(rf"\b{re.escape(original_word)}\b", switched_word, new_text)
 
         return new_text
 
@@ -214,7 +215,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
         for n_list, term_list in enumerate(religion_dict):
             for n_term, term in enumerate(term_list):
                 mask_value = f"__GSK__ENT__RELIGION__{n_list}__{n_term}__"
-                text, num_rep = re.subn(rf"\b{term}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
+                text, num_rep = re.subn(rf"\b{re.escape(term)}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
                 if num_rep > 0:
                     i = (n_term + 1 + random.randrange(len(term_list) - 1)) % len(term_list)
                     replacement = term_list[i]
@@ -250,7 +251,12 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         for entity_type, income_type in ent_types:
             for n, entity_word in enumerate(nationalities_word_dict[entity_type][income_type]):
                 mask_value = f"__GSK__ENT__{entity_type}__{income_type}__{n}__"
-                text, num_rep = re.subn(rf"\b{entity_word}\b", mask_value, text, flags=re.IGNORECASE)
+                text, num_rep = re.subn(
+                    rf"(\W|^){re.escape(entity_word)}(\W|$)",
+                    rf"\g<1>{mask_value}\g<2>",
+                    text,
+                    flags=re.IGNORECASE,
+                )
                 if num_rep > 0:
                     r_income_type = "low-income" if income_type == "high-income" else "high-income"
                     replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])
