@@ -15,14 +15,19 @@
           </v-btn>
         </div>
         <v-tabs class="pl-3 pr-3 mt-2">
-          <v-tab :to="{ name: 'project-testing-test-suite-overview' }">
+          <v-tab :to="{
+            name: 'project-testing-test-suite-overview', params: {
+              id: projectId,
+              suiteId: suiteId,
+            }
+          }">
             <v-icon class="mr-2">mdi-chart-bar</v-icon>
             <span class="tab-item-text">Report</span>
           </v-tab>
           <v-tab :to="{
             name: 'project-testing-test-suite-executions',
             params: {
-              id: props.projectId,
+              id: projectId,
               suiteId: suiteId,
             },
           }">
