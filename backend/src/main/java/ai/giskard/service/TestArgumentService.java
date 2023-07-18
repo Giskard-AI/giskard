@@ -67,6 +67,7 @@ public class TestArgumentService {
                 args.add(buildTestArgumentWS(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), sample));
             }
         }
+        argument.setArguments(args);
 
         return argument;
     }

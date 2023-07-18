@@ -922,6 +922,10 @@ def getCatalog(*args, **kwargs) -> websocket.Catalog:
 def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncArgument]):
     arguments = dict()
 
+    # Processing empty list
+    if not request_arguments:
+        return arguments
+
     for arg in request_arguments:
         if arg.is_none:
             continue
