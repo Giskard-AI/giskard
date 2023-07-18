@@ -19,7 +19,13 @@
             <v-icon class="mr-2">mdi-chart-bar</v-icon>
             <span class="tab-item-text">Report</span>
           </v-tab>
-          <v-tab :to="{ name: 'project-testing-test-suite-executions' }">
+          <v-tab :to="{
+            name: 'project-testing-test-suite-executions',
+            params: {
+              id: props.projectId,
+              suiteId: suiteId,
+            },
+          }">
             <v-icon class="mr-2">history</v-icon>
             <span class="tab-item-text">Past executions</span>
           </v-tab>
