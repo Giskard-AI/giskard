@@ -144,6 +144,7 @@ async function showPastSessions() {
     params: {
       projectId: props.projectId.toString()
     }
+  }).catch(() => {
   });
 }
 
@@ -212,6 +213,7 @@ async function openInspection(projectId: string, inspectionId: string) {
       id: projectId,
       inspectionId: inspectionId
     }
+  }).catch(() => {
   });
 }
 
