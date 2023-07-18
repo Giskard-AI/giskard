@@ -1,5 +1,8 @@
 import random
+import re
+
 import pandas as pd
+
 from giskard import Dataset
 
 
@@ -187,3 +190,55 @@ def test_country_based_transformation():
         transformed_text[3]
         == "President Joe Biden visited U.S.'s capital for the first time since Nigeria invaded the country"
     )
+
+
+def test_country_based_transformation_edge_cases():
+    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+
+    random.seed(0)
+    df = pd.DataFrame(
+        {
+            "text": [
+                "Countries like Italy, that are followed by punctuation",
+                "Germany is at the beginning of the sentence",
+                "And at the end is Sweden",
+                "France",
+            ],
+            "language__gsk__meta": "en",
+        }
+    )
+
+    t = TextNationalityTransformation(column="text")
+
+    t1 = t.make_perturbation(df.iloc[0])
+    t2 = t.make_perturbation(df.iloc[1])
+    t3 = t.make_perturbation(df.iloc[2])
+    t4 = t.make_perturbation(df.iloc[3])
+
+    assert re.match(r"Countries like (.+), that are followed by punctuation", t1).group(1) != "Italy"
+    assert re.match(r"(.+) is at the beginning of the sentence", t2).group(1) != "Germany"
+    assert re.match(r"And at the end is (.+)", t3).group(1) != "Sweden"
+    assert "France" not in t4
+
+
+def test_country_based_transformation_escapes_special_chars():
+    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+
+    df = pd.DataFrame(
+        {
+            "text": [
+                "Things like UXSX should not be touched",
+                "Same for U0KX!",
+                "But U.S. should be replaced",
+                "And also U.K., that must be replaced",
+            ],
+            "language__gsk__meta": "en",
+        }
+    )
+
+    t = TextNationalityTransformation(column="text")
+
+    assert t.make_perturbation(df.iloc[0]) == "Things like UXSX should not be touched"
+    assert t.make_perturbation(df.iloc[1]) == "Same for U0KX!"
+    assert t.make_perturbation(df.iloc[2]) != "But U.S. should be replaced"
+    assert t.make_perturbation(df.iloc[3]) != "And also U.K., that must be replaced"
