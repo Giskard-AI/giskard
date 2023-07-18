@@ -64,7 +64,7 @@ def websocket_actor(action: MLWorkerAction):
 
     def websocket_actor_callback(callback: callable):
         if action in MLWorkerAction:
-            logger.info(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
+            logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
             def wrapped_callback(ml_worker, req: dict, *args, **kwargs):
                 # Parse the response ID
@@ -108,7 +108,7 @@ def websocket_actor(action: MLWorkerAction):
 
                 if rep_id:
                     # Reply if there is an ID
-                    logger.info(f"[WRAPPED_CALLBACK] replying {info.json()} for {action.name}")
+                    logger.debug(f"[WRAPPED_CALLBACK] replying {info.json()} for {action.name}")
                     ml_worker.ws_conn.send(
                         f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
                         json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
@@ -125,13 +125,15 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
         self.ml_worker = worker
 
     def on_error(self, frame):
-        logger.info(f"received an error {frame.body}")
+        logger.debug(f"received an error {frame.body}")
 
     def on_disconnected(self):
-        logger.info("disconnected")
+        logger.debug("disconnected")
+        # Attemp to reconnect
+        self.ml_worker.connect_websocket_client()
 
     def on_message(self, frame):
-        logger.info(f"received a message {frame.cmd} {frame.headers} {frame.body}")
+        logger.debug(f"received a message {frame.cmd} {frame.headers} {frame.body}")
         req = json.loads(frame.body)
         if "action" in req.keys() and req["action"] in WEBSOCKET_ACTORS:
             # Dispatch the action

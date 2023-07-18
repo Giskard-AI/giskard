@@ -2,7 +2,9 @@ import asyncio
 import logging
 import sys
 
+import random
 import stomp
+import time
 
 import grpc
 from grpc.aio._server import Server
@@ -27,6 +29,9 @@ class MLWorker:
     tunnel: MLWorkerBridge = None
     grpc_server: Server
     ws_conn: stomp.WSStompConnection
+    ws_stopping: bool = False
+    ws_attempts: int = 0
+    ws_max_attemps: int = 10
     ml_worker_id: str
     client: GiskardClient
 
@@ -35,26 +40,66 @@ class MLWorker:
         self.client = client
 
         server, address = self._create_grpc_server(client, is_server)
+        ws_conn = self._create_websocket_client(backend_url, is_server)
 
-        ws_conn = stomp.WSStompConnection([("localhost", 9000)], ws_path="/websocket")
-        self.ml_worker_id = "unknown"
         if not is_server:
             logger.info("Remote server host and port are specified, connecting as an external ML Worker")
             self.tunnel = MLWorkerBridge(address, client)
 
-            # External ML worker
+        self.grpc_server = server
+        self.ws_conn = ws_conn
+
+    def _create_websocket_client(self, backend_url: AnyHttpUrl = None, is_server=False):
+        if is_server:
+            # Retrieve from settings for internal ML Worker
+            self.ml_worker_id = INTERNAL_WORKER_ID
+            backend_url = AnyHttpUrl(
+                url=f"http://{settings.host}:{settings.ws_port}/{settings.ws_path}",
+                scheme="http",
+                host=settings.host,
+                port=settings.ws_port,
+                path=settings.ws_path,
+            )
+        else:
+            # External ML worker: URL should be provided
             self.ml_worker_id = EXTERNAL_WORKER_ID
-            ws_conn.connect(
+            # Use the URL path component provided by settings
+            backend_url.path = settings.ws_path
+        ws_conn = stomp.WSStompConnection([(backend_url.host, backend_url.port)], ws_path=backend_url.path)
+        ws_conn.set_listener("ml-worker-action-listener", MLWorkerWebSocketListener(self))
+        return ws_conn
+
+    def connect_websocket_client(self):
+        if self.ws_attempts >= self.ws_max_attemps:
+            logger.warn("Maximum reconnection attemps reached, please retry.")
+            return  # TODO: Exit the process
+        try:
+            self._connect_websocket_client(self.ml_worker_id == INTERNAL_WORKER_ID)
+        except Exception as e:
+            time.sleep(1 + random.random() * 2)
+            self.ws_attempts += 1
+            logger.debug(f"Disconnected due to {e}, reconnecting...")
+            self.connect_websocket_client()
+        else:
+            self.ws_attempts = 0
+
+    def _connect_websocket_client(self, is_server=False):
+        if self.ws_stopping:
+            return
+
+        if not is_server:
+            # External ML Worker: use jwt token
+            # raise ConnectFailedException
+            self.ws_conn.connect(
                 with_connect_command=True,
                 wait=True,
                 headers={
-                    "jwt": client.session.auth.token,
+                    "jwt": self.client.session.auth.token,
                 },
             )
         else:
-            # Internal worker uses a token
-            self.ml_worker_id = INTERNAL_WORKER_ID
-            ws_conn.connect(
+            # Internal ML Worker: TODO: use a token from env
+            self.ws_conn.connect(
                 with_connect_command=True,
                 wait=True,
                 headers={
@@ -62,16 +107,10 @@ class MLWorker:
                 },
             )
 
-        if ws_conn.is_connected():
-            ws_conn.subscribe(f"/ml-worker/{self.ml_worker_id}/action", "worker-inoki")
-            # TODO: Check the subscription status
+        if self.ws_conn.is_connected():
+            self.ws_conn.subscribe(f"/ml-worker/{self.ml_worker_id}/action", f"ws-worker-{self.ml_worker_id}")
         else:
             raise Exception("Worker cannot connect through WebSocket")
-
-        self.ws_conn = ws_conn
-        self.ws_conn.set_listener("ml-worker-action-listener", MLWorkerWebSocketListener(self))
-
-        self.grpc_server = server
 
     def _create_grpc_server(self, client: GiskardClient, is_server=False):
         from giskard.ml_worker.generated.ml_worker_pb2_grpc import add_MLWorkerServicer_to_server
@@ -110,6 +149,10 @@ class MLWorker:
     async def start(self):
         load_plugins()
 
+        if self.ws_conn:
+            self.ws_stopping = False
+            self.connect_websocket_client()
+
         await self.grpc_server.start()
         if self.tunnel:
             await self.tunnel.start()
@@ -123,5 +166,6 @@ class MLWorker:
         if self.tunnel:
             await self.tunnel.stop()
         if self.ws_conn:
+            self.ws_stopping = True
             self.ws_conn.disconnect()
         await self.grpc_server.stop(3)
