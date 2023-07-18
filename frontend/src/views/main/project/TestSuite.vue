@@ -135,7 +135,10 @@ async function openRunTestSuite(compareMode: boolean) {
         suiteId: props.suiteId,
         inputs: inputs.value,
         compareMode,
-        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs,
+        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs.reduce((acc, curr) => {
+          acc[curr.name] = curr.value;
+          return acc;
+        }, {}),
       },
     });
   } else {
