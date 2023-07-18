@@ -12,6 +12,7 @@ import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.TestSuiteResultMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,13 +77,20 @@ public class TestSuiteExecutionService {
             Map<Long, SuiteTest> tests = suite.getTests().stream()
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.runTestSuite,
-                param
-            );
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    workerID,
+                    MLWorkerWSAction.runTestSuite,
+                    param
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Cannot get ML Worker TestSuiteExecution reply");
+            }
 
-            if (result != null && result instanceof MLWorkerWSTestSuiteDTO) {
+            if (result instanceof MLWorkerWSTestSuiteDTO) {
                 response = (MLWorkerWSTestSuiteDTO) result;
                 execution.setResult(getResult(response));
                 execution.setResults(response.getResults().stream()
@@ -90,14 +98,14 @@ public class TestSuiteExecutionService {
                         new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
                             identifierSingleTestResult.getResult()))
                     .collect(Collectors.toList()));
+                execution.setResults(response.getResults().stream()
+                    .map(identifierSingleTestResult ->
+                        new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
+                            identifierSingleTestResult.getResult()))
+                    .collect(Collectors.toList()));
+                execution.setLogs(response.getLogs());
+                return;
             }
-
-            execution.setResults(response.getResults().stream()
-                .map(identifierSingleTestResult ->
-                    new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
-                        identifierSingleTestResult.getResult()))
-                .collect(Collectors.toList()));
-            execution.setLogs(response.getLogs());
         }
         throw new NullPointerException("Error while executing test suite");
     }

@@ -79,7 +79,13 @@ public class MLWorkerController {
     public void stopWorker(boolean internal) {
         MLWorkerID workerID = internal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.stopWorker, null);
+            try {
+                mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.stopWorker, null);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Did not get a valid ML Worker stopWorker reply");
+            }
         }
     }
 

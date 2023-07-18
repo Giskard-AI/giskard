@@ -17,6 +17,7 @@ import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.worker.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,15 +88,23 @@ public class ModelService {
         }
 
         // Perform the runModelForDataFrame action and parse the reply
-        MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-            model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
-            MLWorkerWSAction.runModelForDataFrame,
-            param
-        );
-        if (result != null && result instanceof MLWorkerWSRunModelForDataFrameDTO) {
-            response = (MLWorkerWSRunModelForDataFrameDTO) result;
+        MLWorkerWSBaseDTO result = null;
+        try {
+            result = mlWorkerWSCommService.performAction(
+                model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.runModelForDataFrame,
+                param
+            );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        } catch (NullPointerException e) {
+            throw new NullPointerException("Did not get an validate ML Worker RunModelForDataFrame reply");
         }
-        return response;
+        if (result instanceof MLWorkerWSRunModelForDataFrameDTO) {
+            response = (MLWorkerWSRunModelForDataFrameDTO) result;
+            return response;
+        }
+        throw new NullPointerException("Cannot get ML Worker RunModelForDataFrame reply");
     }
 
     public boolean shouldDrop(String columnDtype, String value) {
@@ -116,12 +126,20 @@ public class ModelService {
                 )
                 .build();
 
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.explain, param);
-            if (result != null && result instanceof MLWorkerWSExplainDTO) {
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.explain, param);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Did not get an validate ML Worker Explain reply");
+            }
+            if (result instanceof MLWorkerWSExplainDTO) {
                 response = (MLWorkerWSExplainDTO) result;
+                return response;
             }
         }
-        return response;
+        throw new NullPointerException("Cannot get ML Worker Explain reply");
     }
 
     public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
@@ -140,7 +158,7 @@ public class ModelService {
                 MLWorkerWSAction.explainText,
                 param
             );
-            if (result != null && result instanceof MLWorkerWSExplainTextDTO) {
+            if (result instanceof MLWorkerWSExplainTextDTO) {
                 response = (MLWorkerWSExplainTextDTO) result;
             }
         }
@@ -182,7 +200,13 @@ public class ModelService {
                 .build();
 
             // Execute runModel action
-            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);
+            try {
+                mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);
+            } catch (JsonProcessingException e) {
+                throw new NullPointerException("Did not get a valid ML Worker RunModel error message");
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Cannot get ML Worker RunModel reply");
+            }
         }
     }
 }

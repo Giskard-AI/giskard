@@ -23,6 +23,7 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
 import ai.giskard.worker.RunAdHocTestRequest;
 import ai.giskard.worker.TestResultMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,23 +69,30 @@ public class TestController {
                 ).build();
 
             MLWorkerWSRunAdHocTestDTO response = null;
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.runAdHocTest,
-                param
-            );
-            if (result != null && result instanceof MLWorkerWSRunAdHocTestDTO) {
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    workerID,
+                    MLWorkerWSAction.runAdHocTest,
+                    param
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Did not get a valid ML Worker RunAdHocTest reply");
+            }
+            if (result instanceof MLWorkerWSRunAdHocTestDTO) {
                 response = (MLWorkerWSRunAdHocTestDTO) result;
-            }
 
-            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
-            res.setResult(response);
-            if (response.getResults().stream().anyMatch(r -> !r.getResult().getPassed())) {
-                res.setStatus(TestResult.FAILED);
-            } else {
-                res.setStatus(TestResult.PASSED);
+                TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
+                res.setResult(response);
+                if (response.getResults().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                    res.setStatus(TestResult.FAILED);
+                } else {
+                    res.setStatus(TestResult.PASSED);
+                }
+                return res;
             }
-            return res;
         }
         throw new NullPointerException("Unable to get results of AdHoc test");
     }

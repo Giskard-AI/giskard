@@ -26,12 +26,14 @@ public class MLWorkerWSCommService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
+    public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param)
+            throws NullPointerException, JsonProcessingException {
         // Wait for result during 5 seconds/5000 milliseconds
         return this.performAction(workerID, action, param, 5000);
     }
 
-    public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
+    public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds)
+            throws NullPointerException, JsonProcessingException {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
         BlockingQueue<String> queue = mlWorkerWSService.getResultWaiter(repId.toString(), true);
@@ -51,14 +53,14 @@ public class MLWorkerWSCommService {
             mlWorkerWSService.removeResultWaiter(repId.toString());
         }
 
-        try {
-            if (result == null) {
-                mlWorkerWSService.removeResultWaiter(repId.toString());
-                log.warn("Received an empty reply for " + repId);
-                return null;
-            }
+        if (result == null) {
+            mlWorkerWSService.removeResultWaiter(repId.toString());
+            log.warn("Received an empty reply for " + action + " " + repId);
+            throw new NullPointerException("Received an empty reply for " + action);
+        }
 
-            ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
             return switch (action) {
                 case getInfo -> objectMapper.readValue(result, MLWorkerWSGetInfoDTO.class);
                 case runAdHocTest -> objectMapper.readValue(result, MLWorkerWSRunAdHocTestDTO.class);
@@ -74,25 +76,11 @@ public class MLWorkerWSCommService {
                 case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
                 case generateQueryBasedSlicingFunction -> null;
             };
-        } catch (JsonMappingException e) {
-            log.warn("Unable to deserialize result from ML Worker during mapping");
         } catch (JsonProcessingException e) {
-            log.warn("Unable to deserialize result from ML Worker during processing");
+            // Parse error information
+            MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
+            log.warn(error.getErrorStr());
+            throw new NullPointerException(error.getErrorStr());
         }
-
-        // Parse error
-        try {
-            if (result != null) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
-                log.warn(error.getErrorStr());
-                // TODO: Pass it to the frontend
-            }
-        } catch (JsonMappingException e) {
-            log.warn("Unable to deserialize result from ML Worker during mapping");
-        } catch (JsonProcessingException e) {
-            log.warn("Unable to deserialize result from ML Worker during processing");
-        }
-        return null;
     }
 }

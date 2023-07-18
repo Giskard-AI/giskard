@@ -20,6 +20,7 @@ import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.DatasetProcessingFunction;
 import ai.giskard.worker.DatasetProcessingRequest;
 import ai.giskard.worker.DatasetProcessingResultMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,12 +197,19 @@ public class DatasetsController {
                 .functions(functions)
                 .build();
 
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.datasetProcessing,
-                param
-            );
-            if (result != null && result instanceof MLWorkerWSDatasetProcessingDTO) {
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    workerID,
+                    MLWorkerWSAction.datasetProcessing,
+                    param
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Did not get a valid ML Worker DatasetProcessing reply");
+            }
+            if (result instanceof MLWorkerWSDatasetProcessingDTO) {
                 response = (MLWorkerWSDatasetProcessingDTO) result;
 
                 return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);

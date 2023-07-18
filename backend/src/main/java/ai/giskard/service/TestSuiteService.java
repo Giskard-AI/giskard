@@ -24,6 +24,7 @@ import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -199,12 +200,19 @@ public class TestSuiteService {
                 .toList();
             param.setInputs(inputs);
 
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.generateTestSuite,
-                param
-            );
-            if (result != null && result instanceof MLWorkerWSGenerateTestSuiteDTO) {
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    workerID,
+                    MLWorkerWSAction.generateTestSuite,
+                    param
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                throw new NullPointerException("Cannot get ML Worker createTestSuite reply");
+            }
+            if (result instanceof MLWorkerWSGenerateTestSuiteDTO) {
                 MLWorkerWSGenerateTestSuiteDTO response = (MLWorkerWSGenerateTestSuiteDTO) result;
 
                 TestSuite suite = new TestSuite();

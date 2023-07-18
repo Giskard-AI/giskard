@@ -18,6 +18,7 @@ import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,11 +89,19 @@ public class MLWorkerCacheService {
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
             MLWorkerWSCatalogDTO response = null;
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
-                MLWorkerWSAction.getCatalog, null
-            );
-            if (result != null && result instanceof MLWorkerWSCatalogDTO) {
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+                    MLWorkerWSAction.getCatalog, null
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            } catch (NullPointerException e) {
+                // Did not get a valid ML Worker getCatalog reply
+                return new CatalogDTO();
+            }
+            if (result instanceof MLWorkerWSCatalogDTO) {
                 response = (MLWorkerWSCatalogDTO) result;
 
                 return CatalogDTO.builder()

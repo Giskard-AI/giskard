@@ -10,6 +10,7 @@ import ai.giskard.ml.dto.MLWorkerWSEchoMsgDTO;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.worker.EchoMsg;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.NettyChannelBuilder;
@@ -95,11 +96,16 @@ public class MLWorkerService {
             MLWorkerWSEchoMsgDTO echoMsg = MLWorkerWSEchoMsgDTO.builder()
                 .msg(HEARTBEAT_MESSAGE)
                 .build();
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                MLWorkerID.EXTERNAL,
-                MLWorkerWSAction.echo,
-                echoMsg
-            );
+            MLWorkerWSBaseDTO result = null;
+            try {
+                result = mlWorkerWSCommService.performAction(
+                    MLWorkerID.EXTERNAL,
+                    MLWorkerWSAction.echo,
+                    echoMsg
+                );
+            } catch (JsonProcessingException | NullPointerException e) {
+                log.warn("Did not get a validate ML Worker heartbeat message");
+            }
             if (result instanceof MLWorkerWSEchoMsgDTO) {
                 MLWorkerWSEchoMsgDTO reply = (MLWorkerWSEchoMsgDTO) result;
                 if (!HEARTBEAT_MESSAGE.equals(reply.getMsg())) {
