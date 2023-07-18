@@ -1,5 +1,6 @@
 package ai.giskard.ml.tunnel;
 
+import ai.giskard.event.UpdateWorkerStatusEvent;
 import ai.giskard.service.ml.MLWorkerDataEncryptor;
 import ai.giskard.service.ml.MLWorkerSecurityService;
 import com.google.common.eventbus.EventBus;
@@ -16,6 +17,7 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 
 import javax.crypto.SecretKey;
 import java.net.SocketAddress;
@@ -28,6 +30,7 @@ import static ai.giskard.ml.tunnel.ServiceChannelCommand.START_INNER_SERVER;
 
 @ChannelHandler.Sharable
 public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
+    private ApplicationEventPublisher applicationEventPublisher;
     private final Logger log = LoggerFactory.getLogger(OuterChannelHandler.class);
 
     private Optional<InnerServerStartResponse> innerServerData = Optional.empty();
@@ -36,11 +39,13 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
 
     private final ChannelRegistry channelRegistry = new ChannelRegistry();
 
+
     @Getter
     private EventBus eventBus = new EventBus();
 
-    public OuterChannelHandler(MLWorkerSecurityService mlWorkerSecurityService) {
+    public OuterChannelHandler(MLWorkerSecurityService mlWorkerSecurityService, ApplicationEventPublisher applicationEventPublisher) {
         this.mlWorkerSecurityService = mlWorkerSecurityService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     private void initInnerServer(SocketChannel outerChannel, String keyId) {
@@ -167,6 +172,7 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
             if (future.isSuccess()) {
                 log.info("Started inner server {} for incoming service channel {}", localAddress, serviceOuterChannel.id());
             }
+            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this, true));
         });
         serviceOuterChannel.closeFuture().addListener(future -> {
             log.info("Shutting down inner server for outer channel {}", serviceOuterChannel.id());
@@ -175,8 +181,9 @@ public class OuterChannelHandler extends ChannelInboundHandlerAdapter {
             channelRegistry.removeServiceChannel(serviceOuterChannel.id());
             innerServerData = Optional.empty();
             eventBus.post(innerServerData);
-
+            applicationEventPublisher.publishEvent(new UpdateWorkerStatusEvent(this, false));
         });
+
         return new InnerServerStartResponse(localAddress, innerChannelFuture, group);
     }
 }
