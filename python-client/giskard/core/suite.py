@@ -540,7 +540,7 @@ class Suite:
         ):
             return
 
-        self.add_test(GiskardTest.load(test_func.uuid, None, None).get_builder()(**suite_args))
+        self.add_test(GiskardTest.download(test_func.uuid, None, None).get_builder()(**suite_args))
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
