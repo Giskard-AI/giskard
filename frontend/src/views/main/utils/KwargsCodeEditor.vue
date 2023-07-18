@@ -1,13 +1,13 @@
 <template>
     <div class="mt-1 editor-container">
-        <MonacoEditor ref="editor" :value="props.value" @change="onInput" class='editor' language='python' style="height: 150px" :options="monacoOptions" />
+        <MonacoEditor ref="editor" :value="monacoValue" @change="onInput" class='editor' language='python' style="height: 150px" :options="monacoOptions" />
     </div>
 </template>
 
 <script setup lang="ts">
 
 import MonacoEditor from 'vue-monaco';
-import { inject, nextTick, onMounted, ref } from "vue";
+import { computed, inject, nextTick, onMounted, ref } from "vue";
 import { editor } from "monaco-editor";
 import IEditorOptions = editor.IEditorOptions;
 
@@ -15,9 +15,15 @@ const l = MonacoEditor;
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = false;
 
-const props = defineProps<{
-    value?: string
-}>()
+interface Props {
+    value?: string | null | undefined;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    value: undefined,
+});
+
+const monacoValue = computed(() => props.value ?? '');
 
 const emit = defineEmits(['update:value']);
 
