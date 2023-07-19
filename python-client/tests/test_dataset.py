@@ -10,7 +10,11 @@ valid_df = pd.DataFrame(
         "numeric_column": [15.5, 25.9, 2.4],
     }
 )
-valid_df_column_types = {"categorical_column": "category", "text_column": "text", "numeric_column": "numeric"}
+valid_df_column_types = {
+    "categorical_column": "category",
+    "text_column": "text",
+    "numeric_column": "numeric",
+}
 
 nonvalid_df = pd.DataFrame(
     {
@@ -90,7 +94,9 @@ def test_nonvalid_df_column_types():
 
 
 def test_dataset_raises_exception_if_mixed_column_types():
-    df = pd.DataFrame({"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]})
+    df = pd.DataFrame(
+        {"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]}
+    )
 
     with pytest.raises(TypeError):
         Dataset(df, target="target")
@@ -98,17 +104,32 @@ def test_dataset_raises_exception_if_mixed_column_types():
 
 def test_inference_priority():
     column_types = {"categorical_column": "text"}
-    expected_df_column_types = {"categorical_column": "text", "text_column": "text", "numeric_column": "numeric"}
+    expected_df_column_types = {
+        "categorical_column": "text",
+        "text_column": "text",
+        "numeric_column": "numeric",
+    }
 
     # Case 1: only one column in column_types is provided
     my_dataset = Dataset(valid_df, column_types=column_types)
     assert my_dataset.column_types == expected_df_column_types
 
     # Case 2: one column in column_types is provided, one in cat_columns
-    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
+    my_dataset = Dataset(
+        valid_df, column_types=column_types, cat_columns=["categorical_column"]
+    )
     assert my_dataset.column_types == valid_df_column_types
 
     # Case 3: an unknown column in column_types is provided
     column_types = {"unknown_column": "text"}
-    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
+    my_dataset = Dataset(
+        valid_df, column_types=column_types, cat_columns=["categorical_column"]
+    )
     assert my_dataset.column_types == valid_df_column_types
+
+
+def test_numeric_column_names():
+    df = pd.DataFrame(np.ones((10, 3)), columns=[1, 2, 3])
+
+    assert Dataset(df, target=2)
+    assert Dataset(df, column_types={1: "numeric"})
