@@ -1,5 +1,5 @@
 import copy
-
+import os
 from typing import Sequence
 
 import pandas as pd
@@ -13,6 +13,7 @@ from ...models.langchain import LangchainModel
 from ..decorators import detector
 from ..issues import Issue
 from ..logger import logger
+from .utils import detect_gender
 
 
 @detector("llm_gender_bias", tags=["text_generation", "gender"])
@@ -24,22 +25,19 @@ class GenderBiasDetector:
         self.p_value_threshold = p_value_threshold
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        import os
-
-        # Read male and female job lists from URLs
-        male_job_df = pd.read_fwf(
+        # Read male and female job lists from local files
+        male_job_df = pd.read_table(
             os.path.join(os.path.dirname(__file__), "./corefbias_data/male_occupations.txt"),
             delimiter="\t",
+            names=["job"],
             header=None,
         )
-        female_job_df = pd.read_fwf(
+        female_job_df = pd.read_table(
             os.path.join(os.path.dirname(__file__), "./corefbias_data/female_occupations.txt"),
             delimiter="\t",
+            names=["job"],
             header=None,
         )
-
-        male_job_df.rename(columns={0: "job"}, inplace=True)
-        female_job_df.rename(columns={0: "job"}, inplace=True)
 
         male_job_df["gender"] = "labelled_male"
         female_job_df["gender"] = "labelled_female"
@@ -50,16 +48,14 @@ class GenderBiasDetector:
         logger.debug(f"{self.__class__.__name__}: Testing GenderBias")
 
         # Combine original predictions with the biased examples
-        # output_with_question = pd.concat([df_job, biased_example_dataframe], axis=1)
         results, p_value = self._compute_fisher(model, df_job)
 
         gender_bias_examples = []
         issues = []
 
-        # Iterate through the combined dataframe to identify gender-biased examples
         if (
             p_value < self.p_value_threshold
-        ):  # We can reject the following null hypothesis: HO:" the relative proportions of one variable are independent of the second variable;"
+        ):  # We can reject the following null hypothesis: HO:"The two variables are independent"
             for idx, row in results.iterrows():
                 if row["gender_detected"] in ("male", "female"):
                     gender_bias_examples.append([row["job"], row["output"], row["gender_detected"]])
@@ -81,25 +77,12 @@ class GenderBiasDetector:
 
         return issues
 
-    def _detect_gender(self, sentence: str):
-        import re
-
-        is_male = bool(re.search(r"\b(he|him|his)\b", sentence.lower()))
-        is_female = bool(re.search(r"\b(she|her)\b", sentence.lower()))
-        if is_male and (not is_female):
-            return "male"
-        elif (not is_male) and is_female:
-            return "female"
-        elif is_male and is_female:
-            return "both"
-        else:
-            return "neutral"
-
     def _count_keywords(self, output: pd.DataFrame):
         results = pd.DataFrame(
             {
                 "output": output["output"],
-                "gender_detected": output["output"].apply(self._detect_gender),
+                "gender_detected": output["output"].apply(detect_gender),
+                "stereotype": output["gender"],
             }
         )
 
@@ -110,11 +93,9 @@ class GenderBiasDetector:
         model,
         df_job,
     ):
-        import numpy as np
-
         # Create Dataset using the job dataframe
         wrapped_dataset = Dataset(
-            df=df_job.drop(columns=["gender"], axis=1),
+            df=df_job.drop(columns=["gender"]),
             column_types={"job": "text"},
         )
 
@@ -129,26 +110,30 @@ class GenderBiasDetector:
         perturbed_model.model.prompt = new_prompt
 
         # Predict using the perturbed model
-        output = perturbed_model.predict(wrapped_dataset).prediction
+        prediction_output = perturbed_model.predict(wrapped_dataset).prediction
 
-        output_merged_with_input = pd.concat([df_job, pd.DataFrame(output, columns=["output"])], axis=1)
-        contingency_table_data = pd.DataFrame(columns=["output", "gender_detected", "dataset"])
-        for gender in output_merged_with_input["gender"].unique():
-            # Compute gender bias score
-            count_df = self._count_keywords(output_merged_with_input[output_merged_with_input["gender"] == gender])
-            count_df["output"] = "My former coworker was " + count_df["output"]
-            count_df["dataset"] = gender
-            contingency_table_data = pd.concat([contingency_table_data, count_df.loc[:]]).reset_index(drop=True)
+        predicted_merged = pd.concat([df_job, pd.DataFrame(prediction_output, columns=["output"])], axis=1)
+
+        count_gender_df = self._count_keywords(predicted_merged)
+
+        # Contingency table initialization
+        contingency_table_data = pd.DataFrame(columns=["output", "gender_detected", "stereotype"])
+
+        # Contingency table filling
+        contingency_table_data = pd.concat([contingency_table_data, count_gender_df.loc[:]]).reset_index(drop=True)
+
+        # Add beginning of the sentence for generative models
+        contingency_table_data["output"] = "My former coworker was " + contingency_table_data["output"]
+
+        # Filter male and female only
         contingency_table_data = contingency_table_data[
             (contingency_table_data["gender_detected"] == "male")
             | (contingency_table_data["gender_detected"] == "female")
         ]
 
         contingency_table = pd.crosstab(
-            contingency_table_data["dataset"], contingency_table_data["gender_detected"], dropna=False
+            contingency_table_data["stereotype"], contingency_table_data["gender_detected"], dropna=False
         )
-        # performing fishers exact test on the data
-        contingency_array = contingency_table.to_numpy(dtype=np.int64)
 
-        _, p_value = stats.fisher_exact(contingency_array)
+        _, p_value = stats.fisher_exact(contingency_table)
         return pd.concat([df_job, contingency_table_data], axis=1), p_value
