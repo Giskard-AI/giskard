@@ -3,6 +3,7 @@ from ...datasets.base import Dataset
 from dataclasses import dataclass
 import pandas as pd
 from ..issues import Issue
+import re
 
 
 class LLMImportError(GiskardInstallationError):
@@ -26,6 +27,19 @@ def load_default_dataset():
             "best_answer": "text",
         },
     )
+
+
+def detect_gender(sentence: str) -> str:
+    is_male = bool(re.search(r"\b(he|him|his)\b", sentence.lower()))
+    is_female = bool(re.search(r"\b(she|her)\b", sentence.lower()))
+    if is_male and (not is_female):
+        return "male"
+    elif (not is_male) and is_female:
+        return "female"
+    elif is_male and is_female:
+        return "both"
+    else:
+        return "neutral"
 
 
 @dataclass
