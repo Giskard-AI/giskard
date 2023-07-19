@@ -51,7 +51,7 @@
             <v-icon color='primary'>edit</v-icon>
           </v-btn>
           <v-btn v-if='item.enabled' icon @click='disableUser(item)'>
-            <v-icon color='accent'>delete</v-icon>
+            <v-icon color='accent'>mdi-account-cancel</v-icon>
           </v-btn>
           <v-btn v-else icon @click='enableUser(item)'>
             <v-icon color='warning'>restore</v-icon>
