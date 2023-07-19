@@ -10,16 +10,17 @@ export const state = reactive({
     connected: false,
   },
 });
-let jwtToken = getLocalToken() || "";
 export const client = new Client({
   onStompError: async (frame: Frame) => {
-    if (frame.headers.message.includes('AccessDeniedException')) {
-      await client.deactivate()
+    if (frame.headers.message.includes('AccessDeniedException') || frame.headers.message.includes('.ExpiredJwtException')) {
+      await client.deactivate();
       useMainStore().addNotification({content: "Failed to establish websocket connection.", color: TYPE.ERROR});
-      console.error(`Failed to establish websocket connection: ${frame.headers.message}`)
+      console.error(`Failed to establish websocket connection: ${frame.headers.message}`);
     }
   },
-  connectHeaders: {jwt: jwtToken},
+  beforeConnect: () => {
+    client.connectHeaders = {jwt: getLocalToken() || ""};
+  },
   brokerURL: httpUrlToWsUrl(apiURL) + '/websocket',
   onConnect: () => {
     client.subscribe('/topic/worker-status', message => {
