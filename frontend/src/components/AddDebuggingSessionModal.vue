@@ -63,10 +63,7 @@ const isMLWorkerConnected = computed(() => {
 });
 
 const missingValues = computed(() => {
-  if (selectedDatasetId.value === null || selectedModelId.value === null) {
-    return true;
-  }
-  return false;
+  return selectedDatasetId.value === null || selectedModelId.value === null;
 });
 
 const emit = defineEmits(['createDebuggingSession'])
