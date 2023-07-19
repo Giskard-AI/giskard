@@ -74,17 +74,18 @@
 </template>
 
 <script setup lang="ts">
-import {Role} from "@/enums";
-import mixpanel from "mixpanel-browser";
-import {api} from "@/api";
-import {useRouter} from "vue-router/composables";
-import {useAdminStore} from "@/stores/admin";
-import {computed, onMounted, ref} from "vue";
-import {AdminUserDTO} from "@/generated-sources";
-import ButtonModalConfirmation from "@/components/ButtonModalConfirmation.vue";
+import { Role } from '@/enums';
+import mixpanel from 'mixpanel-browser';
+import { api } from '@/api';
+import { useRoute, useRouter } from 'vue-router/composables';
+import { useAdminStore } from '@/stores/admin';
+import { computed, onMounted, ref, watch } from 'vue';
+import { AdminUserDTO } from '@/generated-sources';
+import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 const router = useRouter();
+const route = useRoute();
 const adminStore = useAdminStore();
 
 const displayName = ref<string>('');
@@ -104,11 +105,14 @@ onMounted(async () => {
 
 const allRoles = computed(() => {
   return adminStore.roles;
-})
+});
+
 
 const user = computed(() => {
-  return adminStore.getUser(parseInt(router.currentRoute.params.id));
-})
+  return adminStore.getUser(parseInt(route.params.id));
+});
+
+watch(() => route.params.id, reset);
 
 function reset() {
   setPassword.value = false;
