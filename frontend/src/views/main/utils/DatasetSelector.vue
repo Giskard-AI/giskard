@@ -12,7 +12,7 @@ interface Props {
   projectId: number;
   label?: string;
   returnObject?: boolean;
-  value?: string | null | undefined;
+  value?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {

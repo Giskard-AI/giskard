@@ -16,7 +16,7 @@ const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = false;
 
 interface Props {
-    value?: string | null | undefined;
+    value?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
