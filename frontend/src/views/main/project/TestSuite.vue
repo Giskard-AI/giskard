@@ -114,8 +114,7 @@ const { suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter
 const openWorkerInstructions = ref(false);
 
 const suiteName = computed(() => {
-  if (!suite.value) return `Unnamed test suite`;
-  return suite.value.name ? suite.value.name : `Unnamed test suite`;
+  return suite.value?.name ?? 'Unnamed test suite';
 });
 
 const isMLWorkerConnected = computed(() => {
