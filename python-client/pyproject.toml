@@ -152,6 +152,7 @@ dependencies = [
     "chardet", # text metadata
     "jinja2>=3", # scan template (temporary)
     "requests-toolbelt>=0.9.1",
+    "bert-score>=0.3.13",
 ]
 
 [project.optional-dependencies]
