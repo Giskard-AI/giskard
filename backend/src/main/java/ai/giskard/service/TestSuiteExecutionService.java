@@ -4,7 +4,9 @@ import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.ml.*;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
-import ai.giskard.ml.dto.*;
+import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSTestSuiteDTO;
+import ai.giskard.ml.dto.MLWorkerWSTestSuiteParamDTO;
 import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
@@ -18,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -56,7 +57,6 @@ public class TestSuiteExecutionService {
             }));
 
         MLWorkerID workerID = suite.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
-        MLWorkerWSTestSuiteDTO response = null;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(
                 execution.getInputs().stream(),
@@ -67,11 +67,11 @@ public class TestSuiteExecutionService {
                 .globalArguments(execution.getInputs().stream().map(
                     input -> testArgumentService.buildTestArgumentWS(arguments, input.getName(),
                         input.getValue(), suite.getProject().getKey(), input.getParams(), sample)
-                ).collect(Collectors.toList()))
+                ).toList())
                 .tests(suite.getTests().stream().map(
                     suiteTest -> testArgumentService.buildFixedTestArgumentWS(suiteInputsAndShared, suiteTest,
                         suite.getProject().getKey(), sample)
-                ).collect(Collectors.toList()))
+                ).toList())
                 .build();
 
             Map<Long, SuiteTest> tests = suite.getTests().stream()
@@ -90,19 +90,18 @@ public class TestSuiteExecutionService {
                 throw new NullPointerException("Cannot get ML Worker TestSuiteExecution reply");
             }
 
-            if (result instanceof MLWorkerWSTestSuiteDTO) {
-                response = (MLWorkerWSTestSuiteDTO) result;
+            if (result instanceof MLWorkerWSTestSuiteDTO response) {
                 execution.setResult(getResult(response));
                 execution.setResults(response.getResults().stream()
                     .map(identifierSingleTestResult ->
                         new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
                             identifierSingleTestResult.getResult()))
-                    .collect(Collectors.toList()));
+                    .toList());
                 execution.setResults(response.getResults().stream()
                     .map(identifierSingleTestResult ->
                         new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
                             identifierSingleTestResult.getResult()))
-                    .collect(Collectors.toList()));
+                    .toList());
                 execution.setLogs(response.getLogs());
                 return;
             }
@@ -112,9 +111,9 @@ public class TestSuiteExecutionService {
 
 
     private static TestResult getResult(MLWorkerWSTestSuiteDTO testSuiteResultMessage) {
-        if (testSuiteResultMessage.getIsError()) {
+        if (Boolean.TRUE.equals(testSuiteResultMessage.getIsError())) {
             return TestResult.ERROR;
-        } else if (testSuiteResultMessage.getIsPass()) {
+        } else if (Boolean.TRUE.equals(testSuiteResultMessage.getIsPass())) {
             return TestResult.PASSED;
         } else {
             return TestResult.FAILED;

@@ -1,6 +1,5 @@
 package ai.giskard.service.ml;
 
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
@@ -88,7 +87,6 @@ public class MLWorkerCacheService {
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
-            MLWorkerWSCatalogDTO response = null;
             MLWorkerWSBaseDTO result = null;
             try {
                 result = mlWorkerWSCommService.performAction(
@@ -101,8 +99,7 @@ public class MLWorkerCacheService {
                 // Did not get a valid ML Worker getCatalog reply
                 return new CatalogDTO();
             }
-            if (result instanceof MLWorkerWSCatalogDTO) {
-                response = (MLWorkerWSCatalogDTO) result;
+            if (result instanceof MLWorkerWSCatalogDTO response) {
 
                 return CatalogDTO.builder()
                     .tests(response.getTests().values().stream()

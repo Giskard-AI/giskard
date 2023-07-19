@@ -4,7 +4,6 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
@@ -16,7 +15,6 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
-import ai.giskard.worker.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.Null;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,8 +56,6 @@ public class ModelService {
     }
 
     private MLWorkerWSRunModelForDataFrameDTO getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        MLWorkerWSRunModelForDataFrameDTO response = null;
-
         // Initialize the parameters and build the Data Frame
         MLWorkerWSDataFrameDTO dataframe = MLWorkerWSDataFrameDTO.builder()
             .rows(
@@ -100,8 +98,7 @@ public class ModelService {
         } catch (NullPointerException e) {
             throw new NullPointerException("Did not get an validate ML Worker RunModelForDataFrame reply");
         }
-        if (result instanceof MLWorkerWSRunModelForDataFrameDTO) {
-            response = (MLWorkerWSRunModelForDataFrameDTO) result;
+        if (result instanceof MLWorkerWSRunModelForDataFrameDTO response) {
             return response;
         }
         throw new NullPointerException("Cannot get ML Worker RunModelForDataFrame reply");
@@ -113,7 +110,6 @@ public class ModelService {
     }
 
     public MLWorkerWSExplainDTO explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        MLWorkerWSExplainDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSExplainParamDTO param = MLWorkerWSExplainParamDTO.builder()
@@ -134,8 +130,7 @@ public class ModelService {
             } catch (NullPointerException e) {
                 throw new NullPointerException("Did not get an validate ML Worker Explain reply");
             }
-            if (result instanceof MLWorkerWSExplainDTO) {
-                response = (MLWorkerWSExplainDTO) result;
+            if (result instanceof MLWorkerWSExplainDTO response) {
                 return response;
             }
         }
@@ -143,7 +138,6 @@ public class ModelService {
     }
 
     public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
-        MLWorkerWSExplainTextDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSExplainTextParamDTO param = MLWorkerWSExplainTextParamDTO.builder()
@@ -158,11 +152,11 @@ public class ModelService {
                 MLWorkerWSAction.explainText,
                 param
             );
-            if (result instanceof MLWorkerWSExplainTextDTO) {
-                response = (MLWorkerWSExplainTextDTO) result;
+            if (result instanceof MLWorkerWSExplainTextDTO response) {
+                return response;
             }
         }
-        return response;
+        throw new NullPointerException("Cannot get ML Worker explainText reply");
     }
 
     public Inspection createInspection(String name, UUID modelId, UUID datasetId, boolean sample) {

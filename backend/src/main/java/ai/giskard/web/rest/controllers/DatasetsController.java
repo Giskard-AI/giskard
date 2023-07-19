@@ -2,7 +2,6 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
@@ -16,10 +15,6 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.worker.ArtifactRef;
-import ai.giskard.worker.DatasetProcessingFunction;
-import ai.giskard.worker.DatasetProcessingRequest;
-import ai.giskard.worker.DatasetProcessingResultMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -36,7 +31,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
-import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
 
 @RestController
 @RequiredArgsConstructor
@@ -146,7 +140,6 @@ public class DatasetsController {
             .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
-        MLWorkerWSDatasetProcessingDTO response = null;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             List<MLWorkerWSDatasetProcessingFunctionDTO> functions =
                 processingFunctions.stream().map(processingFunction -> {
@@ -190,7 +183,7 @@ public class DatasetsController {
                     functionBuilder.arguments(argumentList);
 
                     return functionBuilder.build();
-                }).collect(Collectors.toList());
+                }).toList();
 
             MLWorkerWSDatasetProcessingParamDTO param = MLWorkerWSDatasetProcessingParamDTO.builder()
                 .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
@@ -209,7 +202,7 @@ public class DatasetsController {
             } catch (NullPointerException e) {
                 throw new NullPointerException("Did not get a valid ML Worker DatasetProcessing reply");
             }
-            if (result instanceof MLWorkerWSDatasetProcessingDTO) {
+            if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
                 response = (MLWorkerWSDatasetProcessingDTO) result;
 
                 return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);

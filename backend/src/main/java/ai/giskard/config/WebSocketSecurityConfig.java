@@ -23,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 import static ai.giskard.security.ee.NoAuthFilter.getDummyAuthentication;
 
@@ -51,14 +52,14 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                 }
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     if (licenseService.hasFeature(FeatureFlag.AUTH)) {
-                        log.debug("Session " + accessor.getSessionId() + " CONNECT");
+                        log.debug("Session {} CONNECT", accessor.getSessionId());
                         // Check if an internal worker trying to connect
                         List<String> internalTokenHeaders = accessor.getNativeHeader("token");
                         if (internalTokenHeaders != null && !internalTokenHeaders.isEmpty()
                             && StringUtils.hasText(internalTokenHeaders.get(0))) {
                             // TODO: Validate the token
-                            if (mlWorkerWSService.prepareInternalWorker(accessor.getSessionId())) {
-                                log.debug("Potential internal worker connected \"" + accessor.getSessionId() + "\"");
+                            if (mlWorkerWSService.prepareInternalWorker(Objects.requireNonNull(accessor.getSessionId()))) {
+                                log.debug("Potential internal worker connected \"{}\"", accessor.getSessionId());
                                 return message;
                             }
                         }
@@ -80,17 +81,20 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                 }
 
                 if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-                    if (accessor.getDestination().matches("/ml-worker/.+/action")) {
-                        // Try to associate with the internal worker
-                        if (!mlWorkerWSService.associateWorker(MLWorkerID.INTERNAL.toString(),
-                                                              accessor.getSessionId())) {
-                            if (!mlWorkerWSService.associateWorker(MLWorkerID.EXTERNAL.toString(),
-                                                                   accessor.getSessionId()))  {
-                                // Both internal and external workers are occupied
-                                throw new AccessDeniedException("Cannot find available worker");
-                            }
-                        }
+                    String destination = accessor.getDestination();
+                    if (destination == null)
+                        throw new AccessDeniedException("Cannot find available worker");
+                    if (!destination.startsWith("/ml-worker/"))
+                        return message; // By-pass the other subscriptions
+                    if (destination.equals(WebSocketConfig.INTERNAL_ML_WORKER_TOPIC) &&
+                        mlWorkerWSService.associateWorker(MLWorkerID.INTERNAL.toString(),
+                            Objects.requireNonNull(accessor.getSessionId())) ||
+                        destination.equals(WebSocketConfig.EXTERNAL_ML_WORKER_TOPIC) &&
+                        mlWorkerWSService.associateWorker(MLWorkerID.EXTERNAL.toString(),
+                            Objects.requireNonNull(accessor.getSessionId()))) {
+                        return message;
                     }
+                    throw new AccessDeniedException("Cannot find available worker");
                 }
 
                 return message;

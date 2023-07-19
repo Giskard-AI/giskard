@@ -765,7 +765,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def runModel(ml_worker, request: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(ml_worker, request: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(ml_worker.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(
@@ -872,7 +872,7 @@ def runModel(ml_worker, request: websocket.RunModelParam, *args, **kwargs) -> we
 
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
-def runModelForDataFrame(
+def run_model_for_data_frame(
     ml_worker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
@@ -935,7 +935,7 @@ def explain_text_ws(ml_worker, params: websocket.ExplainTextParam, *args, **kwar
 
 
 @websocket_actor(MLWorkerAction.getCatalog)
-def getCatalog(*args, **kwargs) -> websocket.Catalog:
+def get_catalog(*args, **kwargs) -> websocket.Catalog:
     return websocket.Catalog(
         tests=map_function_meta_ws("TEST"),
         slices=map_dataset_process_function_meta_ws("SLICE"),
@@ -964,12 +964,12 @@ def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncAr
             arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
         elif arg.slicingFunction:
             arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, ml_worker.client, None)(
-                **parse_function_arguments(arg.args)
+                **parse_function_arguments(ml_worker, arg.args)
             )
         elif arg.transformationFunction:
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, ml_worker.client, None
-            )(**parse_function_arguments(arg.args))
+            )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.float_arg:
             arguments[arg.name] = float(arg.float_arg)
         elif arg.int_arg:
@@ -988,7 +988,7 @@ def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncAr
 
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
-def datasetProcessing(ml_worker, params: websocket.DatesetProcessingParam, *args, **kwargs):
+def dataset_processing(ml_worker, params: websocket.DatesetProcessingParam, *args, **kwargs):
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
     for function in params.functions:
@@ -1066,7 +1066,7 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
 
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
-def runAdHocTest(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwargs):
+def run_ad_hoc_test(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwargs):
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
     arguments = parse_function_arguments(ml_worker, params.arguments)
@@ -1084,7 +1084,7 @@ def runAdHocTest(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwargs
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def runTestSuite(ml_worker, params: websocket.TestSuiteParam, *args, **kwargs):
+def run_test_suite(ml_worker, params: websocket.TestSuiteParam, *args, **kwargs):
     log_listener = LogListener()
     try:
         tests = [

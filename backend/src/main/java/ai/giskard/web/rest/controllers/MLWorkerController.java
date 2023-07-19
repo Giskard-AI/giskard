@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
@@ -12,9 +11,6 @@ import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.config.MLWorkerInfoDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.protobuf.Empty;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +46,8 @@ public class MLWorkerController {
                 MLWorkerWSAction.getInfo,
                 param
             );
-            if (result != null && result instanceof MLWorkerWSGetInfoDTO) {
-                results.add((MLWorkerWSGetInfoDTO)result);
+            if (result instanceof MLWorkerWSGetInfoDTO info) {
+                results.add(info);
             }
         }
         if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
@@ -60,8 +56,8 @@ public class MLWorkerController {
                 MLWorkerWSAction.getInfo,
                 param
             );
-            if (result != null && result instanceof MLWorkerWSGetInfoDTO) {
-                results.add((MLWorkerWSGetInfoDTO)result);
+            if (result instanceof MLWorkerWSGetInfoDTO info) {
+                results.add(info);
             }
         }
 

@@ -4,11 +4,9 @@ import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.ml.TestResult;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
-import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestParamDTO;
 import ai.giskard.repository.ProjectRepository;
@@ -17,18 +15,13 @@ import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
-import ai.giskard.web.dto.FunctionInputDTO;
 import ai.giskard.web.dto.RunAdhocTestRequest;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
-import ai.giskard.worker.RunAdHocTestRequest;
-import ai.giskard.worker.TestResultMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -65,10 +58,9 @@ public class TestController {
                     (input -> testArgumentService
                         .buildTestArgumentWS(arguments, input.getName(), input.getValue(), project.getKey(),
                             giskardMapper.fromDTO(input).getParams(), sample)
-                    ).collect(Collectors.toList())
+                    ).toList()
                 ).build();
 
-            MLWorkerWSRunAdHocTestDTO response = null;
             MLWorkerWSBaseDTO result = null;
             try {
                 result = mlWorkerWSCommService.performAction(
@@ -81,9 +73,7 @@ public class TestController {
             } catch (NullPointerException e) {
                 throw new NullPointerException("Did not get a valid ML Worker RunAdHocTest reply");
             }
-            if (result instanceof MLWorkerWSRunAdHocTestDTO) {
-                response = (MLWorkerWSRunAdHocTestDTO) result;
-
+            if (result instanceof MLWorkerWSRunAdHocTestDTO response) {
                 TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
                 res.setResult(response);
                 if (response.getResults().stream().anyMatch(r -> !r.getResult().getPassed())) {

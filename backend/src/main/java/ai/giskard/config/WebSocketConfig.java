@@ -1,5 +1,6 @@
 package ai.giskard.config;
 
+import ai.giskard.ml.MLWorkerID;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.util.CollectionUtils;
@@ -15,6 +16,12 @@ import java.util.List;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    public final static String ML_WORKER_TOPIC_PREFIX = "/ml-worker";
+    public final static String ML_WORKER_ACTION_TOPIC = "action";
+    public static final String INTERNAL_ML_WORKER_TOPIC =
+        String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.INTERNAL.toString(), ML_WORKER_ACTION_TOPIC);
+    public static final String EXTERNAL_ML_WORKER_TOPIC =
+        String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.EXTERNAL.toString(), ML_WORKER_ACTION_TOPIC);
 
     private final JHipsterProperties jHipsterProperties;
 
@@ -30,7 +37,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic", "/ml-worker");
+        config.enableSimpleBroker("/topic", ML_WORKER_TOPIC_PREFIX);
         config.setApplicationDestinationPrefixes("/app");
     }
 

@@ -8,7 +8,6 @@ import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
 import ai.giskard.jobs.JobType;
-import ai.giskard.ml.MLWorkerClient;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
@@ -23,7 +22,9 @@ import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.*;
+import ai.giskard.worker.DatasetMeta;
+import ai.giskard.worker.ModelMeta;
+import ai.giskard.worker.SuiteInput;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -212,9 +213,7 @@ public class TestSuiteService {
             } catch (NullPointerException e) {
                 throw new NullPointerException("Cannot get ML Worker createTestSuite reply");
             }
-            if (result instanceof MLWorkerWSGenerateTestSuiteDTO) {
-                MLWorkerWSGenerateTestSuiteDTO response = (MLWorkerWSGenerateTestSuiteDTO) result;
-
+            if (result instanceof MLWorkerWSGenerateTestSuiteDTO response) {
                 TestSuite suite = new TestSuite();
                 suite.setProject(project);
                 suite.setName(dto.getName());

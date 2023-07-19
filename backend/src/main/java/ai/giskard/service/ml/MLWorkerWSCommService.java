@@ -1,10 +1,10 @@
 package ai.giskard.service.ml;
 
+import ai.giskard.config.WebSocketConfig;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -43,7 +43,10 @@ public class MLWorkerWSCommService {
         data.put("action", action.toString());
         data.put("id", repId.toString());
         data.put("param", param);
-        simpMessagingTemplate.convertAndSend("/ml-worker/" + workerID + "/action", data);
+        simpMessagingTemplate.convertAndSend(
+            String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, workerID.toString(), WebSocketConfig.ML_WORKER_ACTION_TOPIC),
+            data
+        );
 
         String result = null;
         try {
@@ -51,11 +54,12 @@ public class MLWorkerWSCommService {
             result = queue.poll(milliseconds, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
+            Thread.currentThread().interrupt();
         }
 
         if (result == null) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
-            log.warn("Received an empty reply for " + action + " " + repId);
+            log.warn("Received an empty reply for {} {}", action, repId);
             throw new NullPointerException("Received an empty reply for " + action);
         }
 
@@ -66,20 +70,19 @@ public class MLWorkerWSCommService {
                 case runAdHocTest -> objectMapper.readValue(result, MLWorkerWSRunAdHocTestDTO.class);
                 case datasetProcessing -> objectMapper.readValue(result, MLWorkerWSDatasetProcessingDTO.class);
                 case runTestSuite -> objectMapper.readValue(result, MLWorkerWSTestSuiteDTO.class);
-                case runModel -> null;
+                case runModel, stopWorker, generateQueryBasedSlicingFunction -> null;
                 case runModelForDataFrame -> objectMapper.readValue(result, MLWorkerWSRunModelForDataFrameDTO.class);
                 case explain -> objectMapper.readValue(result, MLWorkerWSExplainDTO.class);
                 case explainText -> objectMapper.readValue(result, MLWorkerWSExplainTextDTO.class);
                 case echo -> objectMapper.readValue(result, MLWorkerWSEchoMsgDTO.class);
                 case generateTestSuite -> objectMapper.readValue(result, MLWorkerWSGenerateTestSuiteDTO.class);
-                case stopWorker -> null;
                 case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
-                case generateQueryBasedSlicingFunction -> null;
             };
         } catch (JsonProcessingException e) {
             // Parse error information
+            log.warn("Deserialization failed: {}", e.getMessage());
             MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
-            log.warn(error.getErrorStr());
+            log.warn("Parsed error: {}", error.getErrorStr());
             throw new NullPointerException(error.getErrorStr());
         }
     }

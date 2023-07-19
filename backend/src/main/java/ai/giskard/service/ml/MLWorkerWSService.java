@@ -1,7 +1,7 @@
 package ai.giskard.service.ml;
 
-import ai.giskard.config.ApplicationProperties;
 import ai.giskard.ml.MLWorkerID;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class MLWorkerWSService {
     private final Logger log = LoggerFactory.getLogger(MLWorkerWSService.class.getName());
-    private final ApplicationProperties applicationProperties;
 
     private final ConcurrentHashMap<String, String> workers = new ConcurrentHashMap<>();
     private String potentialInternalWorkerId;
@@ -23,20 +22,20 @@ public class MLWorkerWSService {
     private ConcurrentHashMap<String, BlockingQueue<String>> messagePool = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, BlockingQueue<String>> oneShotMessagePool = new ConcurrentHashMap<>();
 
-    public boolean prepareInternalWorker(String uuid) {
-        if (potentialInternalWorkerId != null && uuid != potentialInternalWorkerId) return false;
+    public boolean prepareInternalWorker(@NonNull String uuid) {
+        if (uuid.equals(potentialInternalWorkerId)) return false;
 
         potentialInternalWorkerId = uuid;
         return true;
     }
 
-    public boolean associateWorker(String id, String uuid) {
-        if (workers.get(id) != null && workers.get(id) != uuid) {
+    public boolean associateWorker(@NonNull String id, @NonNull String uuid) {
+        if (uuid.equals(workers.get(id))) {
             // Duplicated, could be an attacker
             return false;
         }
         // Check for internal worker
-        if (id == MLWorkerID.INTERNAL.toString() && this.potentialInternalWorkerId != uuid) {
+        if (id.equals(MLWorkerID.INTERNAL.toString()) && !uuid.equals(this.potentialInternalWorkerId)) {
             // UUID not matched, could be an attacker
             return false;
         }
@@ -45,8 +44,8 @@ public class MLWorkerWSService {
         return true;
     }
 
-    public boolean removeWorker(String uuid) {
-        if (potentialInternalWorkerId == uuid) {
+    public boolean removeWorker(@NonNull String uuid) {
+        if (uuid.equals(potentialInternalWorkerId)) {
             // Clear the memorized internal worker id
             potentialInternalWorkerId = null;
         }
@@ -66,16 +65,21 @@ public class MLWorkerWSService {
 
     public void attachResult(String repId, String result) {
         if (oneShotMessagePool.containsKey(repId)) {
-            oneShotMessagePool.remove(repId).offer(result);
+            if (!oneShotMessagePool.remove(repId).offer(result)) {
+                log.warn("Cannot offer a reply {}", result);
+            }
             return;
         }
         if (messagePool.containsKey(repId)) {
             BlockingQueue<String> bq = messagePool.get(repId);
             // Only keeps the newest
             if (!bq.isEmpty()) {
-                bq.remove();
+                String removed = bq.remove();
+                log.debug("Removed {} because a newer reply arrives.", removed);
             }
-            bq.offer(result);
+            if (!bq.offer(result)) {
+                log.warn("Cannot offer a reply {}", result);
+            }
         }
     }
 

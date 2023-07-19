@@ -17,7 +17,7 @@ public class MLWorkerWSController {
 
     @MessageMapping("/ml-worker/{workerId}/rep")
     public void onReplyReceived(@DestinationVariable String workerId, MLWorkerReplyDTO body) {
-        logger.info("Received rep from Worker " + workerId + " " + body.getId() + " " + body.getAction());
+        logger.debug("Received rep from Worker {} {} {}", workerId, body.getId(), body.getAction());
         // mlWorkerWSService notifies the listener
         mlWorkerWSService.attachResult(body.getId(), body.getPayload());
     }
