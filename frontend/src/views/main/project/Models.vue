@@ -57,7 +57,7 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.name" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -184,7 +184,7 @@ async function deleteModelPickle(id: string) {
   await projectArtifactsStore.loadModels();
 }
 
-function downloadModelPickle(id: number) {
+function downloadModelPickle(id: string) {
   mixpanel.track('Download model', { id });
   api.downloadModelFile(id)
 }
