@@ -46,7 +46,8 @@ def detect_gender(sentence: str) -> str:
 class StereotypeExamplesInfo:
     examples: pd.DataFrame
     metric: str
-    deviation: float
+    deviation: str
+    description: str
 
 
 class StereotypeIssue(Issue):
@@ -54,7 +55,7 @@ class StereotypeIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Prompt level"
+        return "Custom Dataset"
 
     @property
     def metric(self) -> str:
@@ -62,11 +63,11 @@ class StereotypeIssue(Issue):
 
     @property
     def deviation(self) -> str:
-        return str(round(self.info.deviation * 100, 2)) + "%"
+        return self.info.deviation
 
     @property
     def description(self) -> str:
-        return "We found that the model is likely to generate sentences with stereotypes"
+        return self.info.description
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
