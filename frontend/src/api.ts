@@ -1,6 +1,6 @@
-import axios, {AxiosError} from 'axios';
-import {apiURL} from '@/env';
-import {getLocalToken, removeLocalToken} from '@/utils';
+import axios, { AxiosError } from 'axios';
+import { apiURL } from '@/env';
+import { getLocalToken, removeLocalToken } from '@/utils';
 import Vue from 'vue';
 
 import {
@@ -49,13 +49,13 @@ import {
   TestTemplateExecutionResultDTO,
   TokenAndPasswordVM,
   UpdateMeDTO,
-  UserDTO,
+  UserDTO
 } from './generated-sources';
-import {TYPE} from 'vue-toastification';
+import { TYPE } from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
-import {useUserStore} from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
   // Do something before request is sent
@@ -316,7 +316,7 @@ export const api = {
   async deleteModelFiles(modelId: string) {
     return apiV2.delete<unknown, MessageDTO>(`/models/${modelId}`);
   },
-  downloadModelFile(id: number) {
+  downloadModelFile(id: string) {
     downloadURL(`${API_V2_ROOT}/download/model/${id}`);
   },
   async editModelName(modelId: string, name: string) {
@@ -448,7 +448,7 @@ export const api = {
   async replyToFeedback(feedbackId: number, content: string, replyToId: number | null = null) {
     return apiV2.post<unknown, void>(`/feedbacks/${feedbackId}/reply`, <CreateFeedbackReplyDTO>{
       content,
-      replyToReply: replyToId,
+      replyToReply: replyToId
     });
   },
   async deleteFeedback(id: number) {
@@ -457,18 +457,18 @@ export const api = {
   async deleteFeedbackReply(feedbackId: number, replyId: number) {
     return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
   },
-  async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>) {
-    return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test`, {
+  async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>, sample: boolean) {
+    return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test?sample=${sample}`, {
       projectId,
       testUuid,
-      inputs,
+      inputs
     });
   },
   async getCatalog(projectId: number) {
     return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
       params: {
-        projectId,
-      },
+        projectId
+      }
     });
   },
   async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {

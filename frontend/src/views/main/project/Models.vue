@@ -2,7 +2,7 @@
   <div class="vertical-container">
     <v-row class="mt-2 pl-3">
       <v-col cols='4'>
-        <v-text-field v-model='searchModel' append-icon='search' label='Search for a model' outlined></v-text-field>
+        <v-text-field v-if="projectArtifactsStore.models.length" v-model='searchModel' append-icon='search' label='Search for a model' outlined></v-text-field>
       </v-col>
       <v-col cols="8">
         <div class="d-flex justify-end mb-6">
@@ -57,7 +57,7 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.name" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -184,7 +184,7 @@ async function deleteModelPickle(id: string) {
   await projectArtifactsStore.loadModels();
 }
 
-function downloadModelPickle(id: number) {
+function downloadModelPickle(id: string) {
   mixpanel.track('Download model', { id });
   api.downloadModelFile(id)
 }

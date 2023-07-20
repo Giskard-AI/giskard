@@ -108,6 +108,7 @@
               <div class="caption">{{ userId }}</div>
             </v-list-item-content>
           </v-list-item>
+          <v-divider v-if="authAvailable" />
           <v-list-item @click="logout" v-if="authAvailable">
             <v-list-item-content>
               <v-icon>logout</v-icon>

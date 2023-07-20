@@ -13,7 +13,7 @@
                     <TestInputListSelector v-if="suiteTest.test.args" :test-inputs="suiteTest.functionInputs" :test="testFunctionsByUuid[suiteTest.testUuid]" :model-value="editedInputs" :project-id="projectId" :inputs="inputType" :doc="doc" @invalid="i => invalid = i" @result="v => result = v" />
                     <v-row>
                         <v-col>
-                            <v-expansion-panels flat @change="resizeEditor">
+                            <v-expansion-panels flat>
                                 <v-expansion-panel>
                                     <v-expansion-panel-header class="pa-0">Code</v-expansion-panel-header>
                                     <v-expansion-panel-content class="pa-0">
@@ -42,32 +42,32 @@
 
 <script setup lang="ts">
 
-import {FunctionInputDTO, SuiteTestDTO} from '@/generated-sources';
-import {computed, onMounted, ref} from 'vue';
-import _, {chain} from 'lodash';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {api} from '@/api';
+import { FunctionInputDTO, SuiteTestDTO } from '@/generated-sources';
+import { computed, onMounted, ref } from 'vue';
+import _, { chain } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { api } from '@/api';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
-import {useCatalogStore} from "@/stores/catalog";
-import {extractArgumentDocumentation} from "@/utils/python-doc.utils";
-import {$vfm} from "vue-final-modal";
+import { useCatalogStore } from "@/stores/catalog";
+import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
+import { $vfm } from "vue-final-modal";
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from "mixpanel-browser";
-import {anonymize} from "@/utils";
+import { anonymize } from "@/utils";
 
 const props = defineProps<{
     suiteTest: SuiteTestDTO
 }>();
 
-const {projectId, suite} = storeToRefs(useTestSuiteStore());
-const {reload} = useTestSuiteStore();
+const { projectId, suite } = storeToRefs(useTestSuiteStore());
+const { reload } = useTestSuiteStore();
 
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 const result = ref<{ [input: string]: FunctionInputDTO }>({});
 
-const {testFunctionsByUuid} = storeToRefs(useCatalogStore())
+const { testFunctionsByUuid } = storeToRefs(useCatalogStore())
 
 const sortedArguments = computed(() => {
     return _.sortBy(_.values(props.suiteTest.test.args), value => {
@@ -102,7 +102,7 @@ async function saveEditedInputs(close) {
         projectKey: suite.value!.projectKey,
         testUuid: props.suiteTest.testUuid,
         testName: props.suiteTest.test.displayName ?? props.suiteTest.test.name,
-        inputs: Object.values(result.value).map(({value, ...data}) => ({
+        inputs: Object.values(result.value).map(({ value, ...data }) => ({
             ...data,
             value: anonymize(value)
         }))

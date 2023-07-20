@@ -5,7 +5,7 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, Hashable
 
 import numpy as np
 import pandas
@@ -22,7 +22,10 @@ from giskard.client.io_utils import save_df, compress
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.ml_worker.testing.registry.slicing_function import (
+    SlicingFunction,
+    SlicingFunctionType,
+)
 from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunction,
     TransformationFunctionType,
@@ -78,7 +81,11 @@ class DataProcessor:
         while len(self.pipeline):
             step = self.pipeline.pop(-1 if apply_only_last else 0)
             is_slicing_only = is_slicing_only and isinstance(step, SlicingFunction)
-            df = step.execute(ds) if getattr(step, "needs_dataset", False) else step.execute(ds.df)
+            df = (
+                step.execute(ds)
+                if getattr(step, "needs_dataset", False)
+                else step.execute(ds.df)
+            )
             ds = Dataset(
                 df=df,
                 name=ds.name,
@@ -142,14 +149,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: Optional[str] = None,
-            cat_columns: Optional[List[str]] = None,
-            column_types: Optional[Dict[str, str]] = None,
-            id: Optional[uuid.UUID] = None,
-            validation=True,
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: Optional[Hashable] = None,
+        cat_columns: Optional[List[str]] = None,
+        column_types: Optional[Dict[Hashable, str]] = None,
+        id: Optional[uuid.UUID] = None,
+        validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -183,15 +190,22 @@ class Dataset(ColumnMetadataMixin):
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
         # used in the inference of category columns
-        self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
-        self.column_types = self._infer_column_types(column_types, cat_columns, validation)
+        self.category_threshold = (
+            round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
+        )
+        self.column_types = self._infer_column_types(
+            column_types, cat_columns, validation
+        )
         if validation:
             from giskard.core.dataset_validation import validate_column_types
 
             validate_column_types(self)
 
         if validation:
-            from giskard.core.dataset_validation import validate_column_categorization, validate_numeric_columns
+            from giskard.core.dataset_validation import (
+                validate_column_categorization,
+                validate_numeric_columns,
+            )
 
             validate_column_categorization(self)
             validate_numeric_columns(self)
@@ -205,7 +219,9 @@ class Dataset(ColumnMetadataMixin):
 
         self.data_processor = DataProcessor()
 
-        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+        logger.info(
+            "Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class."
+        )
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -217,7 +233,9 @@ class Dataset(ColumnMetadataMixin):
         self.data_processor.add_step(slicing_function)
         return self
 
-    def add_transformation_function(self, transformation_function: TransformationFunction):
+    def add_transformation_function(
+        self, transformation_function: TransformationFunction
+    ):
         """
         Add a transformation function to the data processor's list of steps.
 
@@ -231,7 +249,9 @@ class Dataset(ColumnMetadataMixin):
     def row_hashes(self):
         return pandas.Series(
             map(
-                lambda row: xxh3_128_hexdigest(f"{', '.join(map(lambda x: repr(x), row))}".encode("utf-8")),
+                lambda row: xxh3_128_hexdigest(
+                    f"{', '.join(map(lambda x: repr(x), row))}".encode("utf-8")
+                ),
                 self.df.values,
             ),
             index=self.df.index,
@@ -267,23 +287,33 @@ class Dataset(ColumnMetadataMixin):
             Raises TypeError: If `slicing_function` is not a callable or a `SlicingFunction` object.
         """
         if inspect.isfunction(slicing_function):
-            slicing_function = SlicingFunction(slicing_function, row_level=row_level, cell_level=cell_level)
+            slicing_function = SlicingFunction(
+                slicing_function, row_level=row_level, cell_level=cell_level
+            )
 
         if slicing_function.cell_level and column_name is not None:
             slicing_function = slicing_function(
                 column_name=column_name,
-                **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
+                **{
+                    key: value
+                    for key, value in slicing_function.params.items()
+                    if key != "column_name"
+                },
             )
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(slicing_function).apply(
+            self, apply_only_last=True
+        )
 
     @configured_validate_arguments
     def transform(
-            self,
-            transformation_function: Union[TransformationFunction, TransformationFunctionType],
-            row_level: bool = True,
-            cell_level=False,
-            column_name: Optional[str] = None,
+        self,
+        transformation_function: Union[
+            TransformationFunction, TransformationFunctionType
+        ],
+        row_level: bool = True,
+        cell_level=False,
+        column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -314,13 +344,20 @@ class Dataset(ColumnMetadataMixin):
         if transformation_function.cell_level and column_name is not None:
             transformation_function = transformation_function(
                 column_name=column_name,
-                **{key: value for key, value in transformation_function.params.items() if key != "column_name"},
+                **{
+                    key: value
+                    for key, value in transformation_function.params.items()
+                    if key != "column_name"
+                },
             )
 
         assert (
-                not transformation_function.cell_level or "column_name" in transformation_function.params
+            not transformation_function.cell_level
+            or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
-        return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
+        return self.data_processor.add_step(transformation_function).apply(
+            self, apply_only_last=True
+        )
 
     def process(self):
         """
@@ -332,7 +369,10 @@ class Dataset(ColumnMetadataMixin):
         return self.data_processor.apply(self)
 
     def _infer_column_types(
-            self, column_types: Optional[Dict[str, str]], cat_columns: Optional[List[str]], validation: bool = True
+        self,
+        column_types: Optional[Dict[str, str]],
+        cat_columns: Optional[List[str]],
+        validation: bool = True,
     ):
         """
         This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
@@ -360,7 +400,11 @@ class Dataset(ColumnMetadataMixin):
         """
         if not column_types:
             column_types = {}
-        df_columns = set([col for col in self.columns if col != self.target]) if self.target else set(self.columns)
+        df_columns = (
+            set([col for col in self.columns if col != self.target])
+            if self.target
+            else set(self.columns)
+        )
 
         # priority of cat_columns over column_types (for categorical columns)
         if cat_columns:
@@ -438,8 +482,12 @@ class Dataset(ColumnMetadataMixin):
         dataset_id = str(self.id)
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
-            original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            original_size_bytes, compressed_size_bytes = self.save(
+                Path(local_path), dataset_id
+            )
+            client.log_artifacts(
+                local_path, posixpath.join(project_key, "datasets", dataset_id)
+            )
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -463,7 +511,9 @@ class Dataset(ColumnMetadataMixin):
     @staticmethod
     def cast_column_to_dtypes(df, column_dtypes):
         current_types = df.dtypes.apply(lambda x: x.name).to_dict()
-        logger.info(f"Casting dataframe columns from {current_types} to {column_dtypes}")
+        logger.info(
+            f"Casting dataframe columns from {current_types} to {column_dtypes}"
+        )
         if column_dtypes:
             try:
                 df = df.astype(column_dtypes, errors="ignore")
@@ -481,7 +531,9 @@ class Dataset(ColumnMetadataMixin):
             )
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, dataset_id, sample: bool = False):
+    def download(
+        cls, client: GiskardClient, project_key, dataset_id, sample: bool = False
+    ):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
@@ -497,11 +549,19 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             Dataset: A Dataset object that represents the downloaded dataset.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
+        local_dir = (
+            settings.home_dir
+            / settings.cache_dir
+            / project_key
+            / "datasets"
+            / dataset_id
+        )
 
         if client is None:
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing dataset {project_key}.{dataset_id}"
+            assert (
+                local_dir.exists()
+            ), f"Cannot find existing dataset {project_key}.{dataset_id}"
             with open(Path(local_dir) / "giskard-dataset-meta.yaml") as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = DatasetMeta(
@@ -513,7 +573,9 @@ class Dataset(ColumnMetadataMixin):
                     category_features=saved_meta["category_features"],
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
+            client.load_artifact(
+                local_dir, posixpath.join(project_key, "datasets", dataset_id)
+            )
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
@@ -529,7 +591,11 @@ class Dataset(ColumnMetadataMixin):
     @staticmethod
     def _cat_columns(meta):
         return (
-            [fname for (fname, ftype) in meta.column_types.items() if ftype == SupportedColumnTypes.CATEGORY]
+            [
+                fname
+                for (fname, ftype) in meta.column_types.items()
+                if ftype == SupportedColumnTypes.CATEGORY
+            ]
             if meta.column_types
             else None
         )
@@ -539,13 +605,19 @@ class Dataset(ColumnMetadataMixin):
         return self._cat_columns(self.meta)
 
     def save(self, local_path: Path, dataset_id):
-        with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:
+        with open(local_path / "data.csv.zst", "wb") as f, open(
+            local_path / "data.sample.csv.zst", "wb"
+        ) as f_sample:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
-            original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
+            original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(
+                compressed_bytes
+            )
 
-            uncompressed_bytes = save_df(self.df.sample(min(SAMPLE_SIZE, len(self.df.index))))
+            uncompressed_bytes = save_df(
+                self.df.sample(min(SAMPLE_SIZE, len(self.df.index)))
+            )
             compressed_bytes = compress(uncompressed_bytes)
             f_sample.write(compressed_bytes)
 
@@ -599,7 +671,9 @@ class Dataset(ColumnMetadataMixin):
         return Dataset(
             df=df,
             target=self.target if self.target in df.columns else None,
-            column_types={key: val for key, val in self.column_types.items() if key in df.columns},
+            column_types={
+                key: val for key, val in self.column_types.items() if key in df.columns
+            },
             validation=False,
         )
 

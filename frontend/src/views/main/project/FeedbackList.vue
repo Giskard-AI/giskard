@@ -41,7 +41,7 @@
         <p class="headline font-weight-medium grey--text text--darken-2">
           No feedbacks were added to this project yet. <br>
           Get your first model feedback by clicking on
-          <v-btn id="feedback-button" icon large flat color="primary" class="ma-1">
+          <v-btn id="feedback-button" icon large text color="primary" class="ma-1">
             <v-icon color="primary">mdi-message-plus</v-icon>
           </v-btn>
           in a debugging session.
