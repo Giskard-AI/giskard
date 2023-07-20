@@ -128,7 +128,7 @@
                 </v-btn>
             </div>
         </v-container>
-        <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
+        <v-container v-else-if="giskardClientSnippet">
             <div class="mt-2">
                 <v-alert class='text-center mt-6' v-if="toggleSnippetType === undefined">
                     <p class='headline font-weight-medium grey--text text--darken-2'>There are no artifacts (datasets and models) in this project yet. <br>Choose an option below to upload them and create a test suite.</p>
@@ -222,21 +222,21 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from '@/api';
-import { apiURL } from '@/env';
-import { computed, onActivated, ref } from 'vue';
+import {api} from '@/api';
+import {computed, onActivated, ref} from 'vue';
 import router from '@/router';
-import { useMainStore } from '@/stores/main';
-import { useTestSuitesStore } from '@/stores/test-suites';
-import { TYPE } from 'vue-toastification';
+import {useMainStore} from '@/stores/main';
+import {useTestSuitesStore} from '@/stores/test-suites';
+import {TYPE} from 'vue-toastification';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from 'vue-final-modal';
+import {$vfm} from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import mixpanel from 'mixpanel-browser';
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken, TestResult } from '@/generated-sources';
-import { useProjectStore } from '@/stores/project';
-import { useProjectArtifactsStore } from '@/stores/project-artifacts';
+import {TestResult} from '@/generated-sources';
+import {useProjectStore} from '@/stores/project';
+import {useProjectArtifactsStore} from '@/stores/project-artifacts';
+import {generateGiskardClientSnippet} from "@/snippets";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -248,7 +248,7 @@ const props = defineProps<{
 
 const searchSession = ref("");
 const toggleSnippetType = ref<string | undefined>(undefined);
-const apiAccessToken = ref<JWTToken | null>(null);
+const giskardClientSnippet = ref<string | null>(null);
 
 const codeContent = computed(() => {
     return `import giskard
@@ -277,10 +277,7 @@ giskard_model = giskard.Model(model=prediction_function,
 # Then apply the scan
 results = giskard.scan(giskard_model, giskard_dataset)
 
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}" # API Access Token
-client = giskard.GiskardClient(url="${apiURL}",  # URL of your Giskard instance
-                               token=token)
+${giskardClientSnippet.value}
 
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
@@ -386,14 +383,6 @@ function deleteTestSuite(suite: any) {
     });
 }
 
-const generateApiAccessToken = async () => {
-    try {
-        apiAccessToken.value = await api.getApiAccessToken();
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 async function refresh() {
     await testSuitesStore.reloadComplete();
     await projectArtifactsStore.loadProjectArtifacts(false);
@@ -426,7 +415,7 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
-    await generateApiAccessToken();
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
 })
 </script>
 
