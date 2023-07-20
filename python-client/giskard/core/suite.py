@@ -109,7 +109,7 @@ class SuiteInput:
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        assert ptype in suite_input_types, f"Type should be one of those: {suite_input_types}"
+        assert ptype in suite_input_types, f"Type should be one of these: {suite_input_types}"
         self.name = name
         self.type = ptype
 
