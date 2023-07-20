@@ -49,6 +49,8 @@ class GenderBiasDetector:
 
         # Combine original predictions with the biased examples
         results, p_value = self._compute_fisher(model, df_job)
+        if results is None:
+            return []
 
         gender_bias_examples = []
         issues = []
@@ -135,6 +137,9 @@ class GenderBiasDetector:
             (contingency_table_data["gender_detected"] == "male")
             | (contingency_table_data["gender_detected"] == "female")
         ]
+
+        if contingency_table_data.empty:
+            return None, None
 
         contingency_table = pd.crosstab(
             contingency_table_data["stereotype"], contingency_table_data["gender_detected"], dropna=False
