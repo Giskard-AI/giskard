@@ -235,7 +235,6 @@ function getModel(e: ExecutionTabItem): string | null {
 
   const value = e.execution.inputs.find(e => e.type === 'BaseModel')?.value;
 
-  console.log(value);
   if (value) {
     return modelByUuid.value[value]?.name ?? null;
   }

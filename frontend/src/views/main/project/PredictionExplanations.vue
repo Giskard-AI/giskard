@@ -18,218 +18,215 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+<script setup lang="ts">
+import { ref, onMounted, watch, computed } from "vue";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { api } from "@/api";
-import ECharts from "vue-echarts";
 import { use } from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
 import { GridComponent } from "echarts/components";
-import "echarts/lib/component/legend";
 import { ModelType } from "@/generated-sources";
-import _ from "lodash";
+import * as _ from "lodash";
 import { CanceledError } from "axios";
+import VChart from "vue-echarts";
 
 use([CanvasRenderer, BarChart, GridComponent]);
-Vue.component("v-chart", ECharts);
 
-@Component({
-  components: { LoadingFullscreen },
-})
-export default class PredictionExplanations extends Vue {
-  @Prop({ required: true }) modelId!: string;
-  @Prop({ required: true }) datasetId!: string;
-  @Prop({ required: true }) predictionTask!: string;
-  @Prop() targetFeature!: string;
-  @Prop() classificationLabels!: string[];
-  @Prop({ default: {} }) inputData!: object;
-  @Prop() modelFeatures!: string[];
-  @Prop({ default: 250 }) debounceTime!: number;
+interface Props {
+  modelId: string;
+  datasetId: string;
+  predictionTask: string;
+  targetFeature: string;
+  classificationLabels: string[];
+  inputData: { [key: string]: string };
+  modelFeatures: string[];
+  debounceTime?: number;
+}
 
+const props = withDefaults(defineProps<Props>(), {
+  debounceTime: 250,
+});
 
-  loading: boolean = false;
-  errorMsg: string = "";
-  fullExplanations: object = {};
-  ModelType = ModelType;
-  controller?: AbortController;
+const loading = ref<boolean>(false);
+const errorMsg = ref<string>("");
+const fullExplanations = ref<any>({});
+const controller = ref<AbortController | undefined>();
 
-  async mounted() {
-    await this.getExplanation()
+onMounted(async () => {
+  await getExplanation();
+});
+
+watch(() => props.inputData, async () => {
+  await debouncedGetExplanation();
+}, { deep: true });
+
+const debouncedGetExplanation = _.debounce(async () => {
+  await getExplanation();
+}, props.debounceTime);
+
+async function getExplanation() {
+  if (controller.value) {
+    controller.value.abort();
   }
-
-  @Watch("inputData", { deep: true })
-  private async onInputDataChange() {
-    await this.debouncedGetExplanation();
-  }
-
-  private debouncedGetExplanation = _.debounce(async () => {
-    await this.getExplanation();
-  }, this.debounceTime);
-
-  private async getExplanation() {
-    if (this.controller) {
-      this.controller.abort();
-    }
-    this.controller = new AbortController();
-    if (Object.keys(this.inputData).length) {
-      try {
-        this.loading = true;
-        this.errorMsg = "";
-        const explainResponse = await api.explain(
-          this.modelId,
-          this.datasetId,
-          _.pick(this.inputData, this.modelFeatures),
-          this.controller
-        )
-        this.fullExplanations = explainResponse.explanations;
-        this.loading = false;
-      } catch (error) {
-        if (!(error instanceof CanceledError)) {
-          this.errorMsg = error.response.data.detail;
-          this.loading = false;
-        }
+  controller.value = new AbortController();
+  if (Object.keys(props.inputData).length) {
+    try {
+      loading.value = true;
+      errorMsg.value = "";
+      const explainResponse = (await api.explain(
+        props.modelId,
+        props.datasetId,
+        _.pick(props.inputData, props.modelFeatures),
+        controller.value
+      ))
+      fullExplanations.value = explainResponse.explanations;
+      loading.value = false;
+    } catch (error) {
+      if (!(error instanceof CanceledError)) {
+        errorMsg.value = error.response.data.detail;
+        loading.value = false;
       }
-    } else {
-      // reset
-      this.errorMsg = "";
-      this.fullExplanations = {};
     }
+  } else {
+    // reset
+    errorMsg.value = "";
+    fullExplanations.value = {};
   }
+}
 
-  private createSimpleExplanationChart(explanation: object) {
-    const sortedExplanation = Object.entries(explanation).sort((a, b) => a[1] - b[1])
-    return {
-      xAxis: {
-        type: "value",
-        min: 0,
-        name: "Feature contribution (SHAP values)",
-        nameLocation: "middle",
-        nameGap: 30,
-      },
-      yAxis: {
-        type: "category",
-        data: sortedExplanation.map(el => el[0]),
-      },
-      series: [
-        {
-          type: "bar",
-          stack: "total",
-          label: {
-            show: true,
-            position: "right",
-            formatter: (params) =>
-              params.value > 0.02
-                ? params.value.toFixed(2).toLocaleString()
-                : "",
-          },
-          labelLayout: {
-            hideOverlap: true,
-          },
-          data: sortedExplanation.map(el => el[1]),
-        },
-      ],
-      color: ["#0091EA"],
-      grid: {
-        width: "85%",
-        height: "80%",
-        top: "5%",
-        left: "10%",
-        right: "10%",
-        containLabel: true,
-      },
-    };
-  }
-
-  get chartOptionsRegression() {
-    return this.createSimpleExplanationChart(this.fullExplanations["default"]);
-  }
-
-  get chartOptionsBinaryClassification() {
-    const lastExplanations =
-      this.fullExplanations[Object.keys(this.fullExplanations)[Object.keys(this.fullExplanations).length - 1]];
-    return this.createSimpleExplanationChart(lastExplanations);
-  }
-
-  get chartOptionsMultiClassification() {
-    const explanationSumByFeature: { [name: string]: number; } = _.reduce(
-      _.values(this.fullExplanations),
-      (acc, labelExplanations) => {
-        _.forOwn(labelExplanations, (featureName, explainValue) => {
-          acc[explainValue] = (acc[explainValue] || 0) + featureName;
-        });
-        return acc;
-      }, {});
-
-    // Array of features sorted by sum of SHAP explanations
-    // Bonus: sort by feature name to guarantee same order if the explanation sum is the same
-    const sortedTopFeatures: Array<string> = Object.entries(
-      explanationSumByFeature
-    ).sort((a, b) => a[1] - b[1] || b[0].localeCompare(a[0])
-    ).map(el => el[0])
-    let chartSeries: object[] = [];
-
-    for (const [className, explanation] of Object.entries(
-      this.fullExplanations
-    )) {
-      // Guarantee that the explanation object follows the same feature order
-      let explanationSortedByFeature: object = {}
-      sortedTopFeatures.forEach(feature => {
-        explanationSortedByFeature[feature] = explanation[feature]
-      });
-      chartSeries.push({
-        name: className,
+function createSimpleExplanationChart(explanation: { [name: string]: number; }) {
+  const sortedExplanation = Object.entries(explanation).sort((a, b) => a[1] - b[1])
+  return {
+    xAxis: {
+      type: "value",
+      min: 0,
+      name: "Feature contribution (SHAP values)",
+      nameLocation: "middle",
+      nameGap: 30,
+    },
+    yAxis: {
+      type: "category",
+      data: sortedExplanation.map(el => el[0]),
+    },
+    series: [
+      {
         type: "bar",
         stack: "total",
-        emphasis: {
-          focus: "series",
-        },
         label: {
           show: true,
-          textStyle: {
-            fontSize: "10",
-          },
+          position: "right",
           formatter: (params) =>
-            params.value > 0.02 ? params.value.toFixed(2).toLocaleString() : "",
+            params.value > 0.02
+              ? params.value.toFixed(2).toLocaleString()
+              : "",
         },
         labelLayout: {
           hideOverlap: true,
         },
-        data: Object.values(explanationSortedByFeature),
+        data: sortedExplanation.map(el => el[1]),
+      },
+    ],
+    color: ["#0091EA"],
+    grid: {
+      width: "85%",
+      height: "80%",
+      top: "5%",
+      left: "10%",
+      right: "10%",
+      containLabel: true,
+    },
+  };
+}
+
+const chartOptionsRegression = computed(() => {
+  return createSimpleExplanationChart(fullExplanations.value["default"]);
+});
+
+
+const chartOptionsBinaryClassification = computed(() => {
+  const lastExplanations =
+    fullExplanations.value[Object.keys(fullExplanations.value)[Object.keys(fullExplanations.value).length - 1]];
+  return createSimpleExplanationChart(lastExplanations);
+});
+
+const chartOptionsMultiClassification = computed(() => {
+  const explanationSumByFeature: { [name: string]: number; } = _.reduce(
+    _.values(fullExplanations.value),
+    (acc, labelExplanations) => {
+      _.forOwn(labelExplanations, (featureName, explainValue) => {
+        acc[explainValue] = (acc[explainValue] || 0) + featureName;
       });
-    }
-    return {
-      xAxis: {
-        type: "value",
-        min: 0,
-        name: "Feature contribution (SHAP values)",
-        nameLocation: "middle",
-        nameGap: 30,
+      return acc;
+    }, {});
+
+  // Array of features sorted by sum of SHAP explanations
+  // Bonus: sort by feature name to guarantee same order if the explanation sum is the same
+  const sortedTopFeatures: Array<string> = Object.entries(
+    explanationSumByFeature
+  ).sort((a, b) => a[1] - b[1] || b[0].localeCompare(a[0])
+  ).map(el => el[0])
+  let chartSeries: any[] = [];
+
+  for (const [className, explanation] of Object.entries(
+    (fullExplanations.value as { [name: string]: { [name: string]: number; }; })
+  )) {
+    // Guarantee that the explanation object follows the same feature order
+    let explanationSortedByFeature: any = {}
+    sortedTopFeatures.forEach(feature => {
+      explanationSortedByFeature[feature] = explanation[feature]
+    });
+    chartSeries.push({
+      name: className,
+      type: "bar",
+      stack: "total",
+      emphasis: {
+        focus: "series",
       },
-      yAxis: {
-        type: "category",
-        data: sortedTopFeatures,
-      },
-      legend: {
-        data: Object.keys(this.fullExplanations),
+      label: {
+        show: true,
         textStyle: {
           fontSize: "10",
         },
-        type: this.classificationLabels.length > 5 ? 'scroll' : 'plain',
-        top: 0,
+        formatter: (params) =>
+          params.value > 0.02 ? params.value.toFixed(2).toLocaleString() : "",
       },
-      series: chartSeries,
-      grid: {
-        width: "85%",
-        height: "65%",
-        left: "10%",
-        top: "25%",
-        containLabel: true,
+      labelLayout: {
+        hideOverlap: true,
       },
-    };
+      data: Object.values(explanationSortedByFeature),
+    });
   }
-}
+  return {
+    xAxis: {
+      type: "value",
+      min: 0,
+      name: "Feature contribution (SHAP values)",
+      nameLocation: "middle",
+      nameGap: 30,
+    },
+    yAxis: {
+      type: "category",
+      data: sortedTopFeatures,
+    },
+    legend: {
+      data: Object.keys(fullExplanations.value),
+      textStyle: {
+        fontSize: "10",
+      },
+      type: props.classificationLabels.length > 5 ? 'scroll' : 'plain',
+      top: 0,
+    },
+    series: chartSeries,
+    grid: {
+      width: "85%",
+      height: "65%",
+      left: "10%",
+      top: "25%",
+      containLabel: true,
+    },
+  };
+});
 </script>
 
 <style scoped>
