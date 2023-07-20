@@ -9,17 +9,30 @@ from giskard.models.base import BaseModel
 from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
 
 
+def _assert_html_generation_does_no_fail(test_suite_result):
+    try:
+        test_suite_result._repr_html_()
+    except:  # noqa
+        assert False, "An error arose when trying to generate html for test_suite_result"
+
+
 @test()
 def _test_a_greater_b(a: int, b: int):
     return a > b
 
 
 def test_a_greater_b_fail():
-    assert not Suite().add_test(_test_a_greater_b(1, 2)).run().passed
+    test_suite_result = Suite().add_test(_test_a_greater_b(1, 2)).run()
+
+    assert not test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_a_greater_b_pass():
-    assert Suite().add_test(_test_a_greater_b(2, 1)).run().passed
+    test_suite_result = Suite().add_test(_test_a_greater_b(2, 1)).run()
+
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_missing_arg():
@@ -38,32 +51,42 @@ def test_missing_arg_one_global():
 
 
 def test_all_global():
-    assert Suite().add_test(_test_a_greater_b()).run(a=2, b=1).passed
+    test_suite_result = Suite().add_test(_test_a_greater_b()).run(a=2, b=1)
+
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_argument_overriden():
-    assert Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3).passed
+    test_suite_result = Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3)
+
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_multiple(german_credit_data: Dataset, german_credit_model: BaseModel):
-    assert (
+    test_suite_result = (
         Suite()
         .add_test(test_auc(threshold=0.2))
         .add_test(test_f1(threshold=0.2))
         .run(dataset=german_credit_data, model=german_credit_model)
-        .passed
     )
+
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_all_inputs_exposed_and_shared(german_credit_data, german_credit_model):
-    assert (
+    test_suite_result = (
         Suite()
         .add_test(test_auc())
         .add_test(test_f1())
         .add_test(_test_a_greater_b())
         .run(dataset=german_credit_data, model=german_credit_model, threshold=0.2, a=2, b=1)
-        .passed
     )
+
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_shared_input(german_credit_model: BaseModel, german_credit_data: Dataset):
@@ -71,14 +94,15 @@ def test_shared_input(german_credit_model: BaseModel, german_credit_data: Datase
 
     shared_input = SuiteInput("dataset", Dataset)
 
-    assert (
+    test_suite_result = (
         Suite()
         .add_test(test_auc(dataset=shared_input, threshold=0.2))
         .add_test(test_f1(dataset=shared_input, threshold=0.2))
         .add_test(test_diff_f1(threshold=0.2, actual_dataset=shared_input))
         .run(model=german_credit_model, dataset=german_credit_data, reference_dataset=last_half)
-        .passed
     )
+    assert test_suite_result.passed
+    _assert_html_generation_does_no_fail(test_suite_result)
 
 
 def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_credit_model: BaseModel):
@@ -102,6 +126,7 @@ def test_multiple_execution_of_same_test(german_credit_data: Dataset, german_cre
 
     assert result.passed
     assert len(result.results) == 3
+    _assert_html_generation_does_no_fail(result)
 
 
 def test_giskard_test_class(german_credit_data: Dataset, german_credit_model: BaseModel):
@@ -137,6 +162,8 @@ def test_execution_error(german_credit_data: Dataset, german_credit_model: BaseM
     assert "The sliced dataset in test_f1 is empty." in results[0][1].messages[0].text
     assert results[1][1].passed is True
     assert results[1][1].is_error is False
+
+    _assert_html_generation_does_no_fail(result)
 
 
 def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel):
