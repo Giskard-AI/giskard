@@ -66,10 +66,10 @@ class TestSuiteResult:
 
     def _repr_html_(self):
         from jinja2 import Environment, PackageLoader, select_autoescape
-        from ..scanner.visualization.custom_jinja import pluralize, format_metric
+        from giskard.visualization.custom_jinja import pluralize, format_metric
 
         env = Environment(
-            loader=PackageLoader("giskard", "templates"),
+            loader=PackageLoader("giskard.visualization", "templates"),
             autoescape=select_autoescape(),
         )
         env.filters["pluralize"] = pluralize

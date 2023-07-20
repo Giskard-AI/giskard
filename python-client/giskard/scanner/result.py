@@ -1,11 +1,12 @@
-import pandas as pd
+from collections import defaultdict
 from html import escape
 from pathlib import Path
-from collections import defaultdict
+
+import pandas as pd
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from giskard.utils.analytics_collector import analytics, anonymize
-from .visualization.custom_jinja import pluralize, format_metric
+from ..visualization.custom_jinja import pluralize, format_metric
 
 
 class ScanResult:
@@ -32,7 +33,7 @@ class ScanResult:
 
     def to_html(self, filename=None, embed=False):
         env = Environment(
-            loader=PackageLoader("giskard", "templates"),
+            loader=PackageLoader("giskard.visualization", "templates"),
             autoescape=select_autoescape(),
         )
         env.filters["pluralize"] = pluralize
