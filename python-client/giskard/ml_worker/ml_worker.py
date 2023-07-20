@@ -123,8 +123,14 @@ class MLWorker:
 
         while not self.ws_stopping:
             global websocket_loop_callback
-            if websocket_loop_callback:
-                websocket_loop_callback()
+            try:
+                if websocket_loop_callback:
+                    websocket_loop_callback()
+            except TypeError as e:
+                # Catch TypeError due to an issue in stompy.py
+                # as described in https://github.com/jasonrbriggs/stomp.py/issues/424
+                # and https://github.com/websocket-client/websocket-client/issues/930
+                logger.warn(f"WebSocket connection may not be properly closed: {e}")
 
     async def stop(self):
         if self.ws_conn:
