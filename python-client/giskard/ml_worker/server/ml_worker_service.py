@@ -765,7 +765,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(ml_worker, request: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(ml_worker: MLWorker, request: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(ml_worker.client, request.model.project_key, request.model.id)
         dataset = Dataset.download(
@@ -873,7 +873,7 @@ def run_model(ml_worker, request: websocket.RunModelParam, *args, **kwargs) -> w
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
 def run_model_for_data_frame(
-    ml_worker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
@@ -901,7 +901,7 @@ def run_model_for_data_frame(
 
 
 @websocket_actor(MLWorkerAction.explain)
-def explain_ws(ml_worker, params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
+def explain_ws(ml_worker: MLWorker, params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
     explanations = explain(model, dataset, params.columns)
@@ -912,7 +912,7 @@ def explain_ws(ml_worker, params: websocket.ExplainParam, *args, **kwargs) -> we
 
 
 @websocket_actor(MLWorkerAction.explainText)
-def explain_text_ws(ml_worker, params: websocket.ExplainTextParam, *args, **kwargs) -> websocket.ExplainText:
+def explain_text_ws(ml_worker: MLWorker, params: websocket.ExplainTextParam, *args, **kwargs) -> websocket.ExplainText:
     n_samples = 500 if params.n_samples <= 0 else params.n_samples
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     text_column = params.feature_name
@@ -943,7 +943,7 @@ def get_catalog(*args, **kwargs) -> websocket.Catalog:
     )
 
 
-def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncArgument]):
+def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websocket.FuncArgument]):
     arguments = dict()
 
     # Processing empty list
@@ -988,7 +988,7 @@ def parse_function_arguments(ml_worker, request_arguments: List[websocket.FuncAr
 
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
-def dataset_processing(ml_worker, params: websocket.DatesetProcessingParam, *args, **kwargs):
+def dataset_processing(ml_worker: MLWorker, params: websocket.DatesetProcessingParam, *args, **kwargs):
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
     for function in params.functions:
@@ -1066,7 +1066,7 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
 
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
-def run_ad_hoc_test(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwargs):
+def run_ad_hoc_test(ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs):
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
     arguments = parse_function_arguments(ml_worker, params.arguments)
@@ -1084,7 +1084,7 @@ def run_ad_hoc_test(ml_worker, params: websocket.RunAdHocTestParam, *args, **kwa
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def run_test_suite(ml_worker, params: websocket.TestSuiteParam, *args, **kwargs):
+def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args, **kwargs):
     log_listener = LogListener()
     try:
         tests = [
@@ -1141,7 +1141,7 @@ def map_suite_input_ws(i: websocket.SuiteInput):
 
 @websocket_actor(MLWorkerAction.generateTestSuite)
 def generateTestSuite(
-    ml_worker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
 ) -> websocket.GenerateTestSuite:
     inputs = [map_suite_input_ws(i) for i in params.inputs]
 

@@ -25,6 +25,7 @@ from giskard.ml_worker.websocket import (
     GenerateTestSuiteParam,
     RunModelForDataFrameParam,
 )
+from giskard.ml_worker.ml_worker import MLWorker
 
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class MLWorkerAction(Enum):
     generateQueryBasedSlicingFunction = 12
 
 
-def websocket_log_actor(ml_worker, req: dict, *args, **kwargs):
+def websocket_log_actor(ml_worker: MLWorker, req: dict, *args, **kwargs):
     param = req["param"] if "param" in req.keys() else {}
     action = req["action"] if "action" in req.keys() else ""
     logger.info(f"ML Worker {ml_worker.ml_worker_id} performing {action} params: {param}")
@@ -64,7 +65,7 @@ def websocket_actor(action: MLWorkerAction):
         if action in MLWorkerAction:
             logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
-            def wrapped_callback(ml_worker, req: dict, *args, **kwargs):
+            def wrapped_callback(ml_worker: MLWorker, req: dict, *args, **kwargs):
                 # Parse the response ID
                 rep_id = req["id"] if "id" in req.keys() else None
                 # Parse the param
@@ -157,7 +158,7 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
 
 
 @websocket_actor(MLWorkerAction.getInfo)
-def on_ml_worker_get_info(ml_worker, params: GetInfoParam, *args, **kwargs) -> dict:
+def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kwargs) -> dict:
     logger.info("Collecting ML Worker info from WebSocket")
 
     installed_packages = (
@@ -185,7 +186,7 @@ def on_ml_worker_get_info(ml_worker, params: GetInfoParam, *args, **kwargs) -> d
 
 
 @websocket_actor(MLWorkerAction.stopWorker)
-def on_ml_worker_stop_worker(ml_worker, *args, **kwargs):
+def on_ml_worker_stop_worker(ml_worker: MLWorker, *args, **kwargs):
     # Stop the server properly after sending disconnect
     logger.info("Stopping ML Worker")
     ml_worker.ws_stopping = True

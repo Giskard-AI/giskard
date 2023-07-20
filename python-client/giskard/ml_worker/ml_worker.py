@@ -9,7 +9,6 @@ from pydantic import AnyHttpUrl
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
-from giskard.ml_worker.websocket.listener import MLWorkerWebSocketListener
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -48,6 +47,8 @@ class MLWorker:
         self.ws_conn = ws_conn
 
     def _create_websocket_client(self, backend_url: AnyHttpUrl = None, is_server=False):
+        from giskard.ml_worker.websocket.listener import MLWorkerWebSocketListener
+
         if is_server:
             # Retrieve from settings for internal ML Worker
             self.ml_worker_id = INTERNAL_WORKER_ID
