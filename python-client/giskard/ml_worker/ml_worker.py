@@ -1,6 +1,7 @@
 import logging
 
 import random
+import secrets
 import stomp
 import time
 
@@ -27,7 +28,7 @@ def websocket_use_main_thread(callback):
 
 
 class MLWorker:
-    socket_file_location: str
+    token_file_location: str
     ws_conn: stomp.WSStompConnection
     ws_stopping: bool = False
     ws_attempts: int = 0
@@ -102,12 +103,15 @@ class MLWorker:
                 },
             )
         else:
-            # Internal ML Worker: TODO: use a token from env
+            # Internal ML Worker
+            internal_ml_worker_token = secrets.token_hex(16)
+            with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
+                f.write(internal_ml_worker_token)
             self.ws_conn.connect(
                 with_connect_command=True,
                 wait=False,
                 headers={
-                    "token": "inoki-test-token",
+                    "token": internal_ml_worker_token,
                 },
             )
 

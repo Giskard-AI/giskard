@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     port: int = 50051
     ws_port: int = 9000
     ws_path: str = "/websocket"
-    ws_token: str = "test-token"
     host: str = "localhost"
     max_workers: int = 10
     max_send_message_length_mb: int = 1024

@@ -2,6 +2,7 @@ package ai.giskard.config;
 
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.security.ee.jwt.TokenProvider;
+import ai.giskard.service.FileLocationService;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerWSService;
@@ -22,6 +23,9 @@ import org.springframework.security.config.annotation.web.socket.AbstractSecurit
 import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,6 +39,7 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     private final TokenProvider tokenProvider;
     private final LicenseService licenseService;
     private final MLWorkerWSService mlWorkerWSService;
+    private final FileLocationService fileLocationService;
 
     @Override
     protected boolean sameOriginDisabled() {
@@ -51,19 +56,25 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                     throw new AccessDeniedException("Failed to read STOMP headers");
                 }
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    if (licenseService.hasFeature(FeatureFlag.AUTH)) {
-                        log.debug("Session {} CONNECT", accessor.getSessionId());
-                        // Check if an internal worker trying to connect
-                        List<String> internalTokenHeaders = accessor.getNativeHeader("token");
-                        if (internalTokenHeaders != null && !internalTokenHeaders.isEmpty()
-                            && StringUtils.hasText(internalTokenHeaders.get(0))) {
-                            // TODO: Validate the token
-                            if (mlWorkerWSService.prepareInternalWorker(Objects.requireNonNull(accessor.getSessionId()))) {
+                    log.debug("Session {} CONNECT", accessor.getSessionId());
+                    // Check if an internal worker trying to connect
+                    List<String> internalTokenHeaders = accessor.getNativeHeader("token");
+                    if (internalTokenHeaders != null && !internalTokenHeaders.isEmpty()
+                        && StringUtils.hasText(internalTokenHeaders.get(0))) {
+                        // Validate the token
+                        try {
+                            String token = Files.readString(Paths.get(fileLocationService.giskardHome().toString(), "run", "internal-ml-worker"));
+                            if (StringUtils.hasText(token) && token.equals(internalTokenHeaders.get(0)) &&
+                                mlWorkerWSService.prepareInternalWorker(Objects.requireNonNull(accessor.getSessionId()))) {
                                 log.debug("Potential internal worker connected \"{}\"", accessor.getSessionId());
                                 return message;
                             }
+                        } catch (IOException e) {
+                            log.warn("Unable to load token for the internal ML Worker");
                         }
+                    }
 
+                    if (licenseService.hasFeature(FeatureFlag.AUTH)) {
                         List<String> jwtHeaders = accessor.getNativeHeader("jwt");
                         if (jwtHeaders == null || jwtHeaders.isEmpty() || !StringUtils.hasText(jwtHeaders.get(0))) {
                             log.warn("Missing JWT token");
