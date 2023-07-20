@@ -37,10 +37,7 @@ public class WorkerStatusSocketService {
 
     public void sendCurrentStatus() {
         Map<String, Boolean> data = new HashMap<>();
-        data.put("connected",
-                    // HF Space uses internal worker that always connected
-            mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL) || GeneralSettingsService.isRunningInHFSpaces
-                );
+        data.put("connected", mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL));
         sendData(data);
     }
 
