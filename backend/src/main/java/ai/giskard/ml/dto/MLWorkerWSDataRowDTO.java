@@ -12,5 +12,5 @@ import java.util.Map;
 @Builder
 @Jacksonized
 public class MLWorkerWSDataRowDTO implements MLWorkerWSBaseDTO {
-    Map<String, String> columns;
+    private Map<String, String> columns;
 }

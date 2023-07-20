@@ -46,5 +46,6 @@ public class MLWorkerWSFuncArgumentDTO implements MLWorkerWSBaseDTO {
     private String kwargs;
 
     private List<MLWorkerWSFuncArgumentDTO> args;
+
     private Boolean none;
 }

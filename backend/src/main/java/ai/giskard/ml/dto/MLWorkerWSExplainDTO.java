@@ -7,5 +7,5 @@ import java.util.Map;
 
 @Getter
 public class MLWorkerWSExplainDTO implements MLWorkerWSBaseDTO {
-    Map<String, MLWorkerWSExplanationDTO> explanations;
+    private Map<String, MLWorkerWSExplanationDTO> explanations;
 }

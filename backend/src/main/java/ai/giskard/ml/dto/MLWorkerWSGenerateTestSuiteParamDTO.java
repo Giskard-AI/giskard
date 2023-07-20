@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class MLWorkerWSGenerateTestSuiteParamDTO implements MLWorkerWSBaseDTO {
     @JsonProperty("project_key")
-    String projectKey;
+    private String projectKey;
 
-    List<MLWorkerWSSuiteInputDTO> inputs;
+    private List<MLWorkerWSSuiteInputDTO> inputs;
 }

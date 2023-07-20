@@ -14,11 +14,11 @@ import lombok.Setter;
 @Builder
 public class MLWorkerWSArtifactRefDTO implements MLWorkerWSBaseDTO {
     @JsonProperty("project_key")
-    String projectKey;
+    private String projectKey;
 
-    String id;
+    private String id;
 
-    Boolean sample;
+    private Boolean sample;
 
     public static MLWorkerWSArtifactRefDTO fromModel(@NonNull ProjectModel model) {
         return MLWorkerWSArtifactRefDTO.builder()

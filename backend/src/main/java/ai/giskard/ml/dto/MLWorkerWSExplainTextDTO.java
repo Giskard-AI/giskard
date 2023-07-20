@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Getter
 public class MLWorkerWSExplainTextDTO implements MLWorkerWSBaseDTO {
-    List<String> words;
+    private List<String> words;
 
-    Map<String, MLWorkerWSWeightsPerFeatureDTO> weights;
+    private Map<String, MLWorkerWSWeightsPerFeatureDTO> weights;
 }

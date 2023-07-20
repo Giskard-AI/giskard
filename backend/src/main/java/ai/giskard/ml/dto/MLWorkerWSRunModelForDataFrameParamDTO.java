@@ -11,15 +11,15 @@ import java.util.Map;
 @Setter
 @Builder
 public class MLWorkerWSRunModelForDataFrameParamDTO implements MLWorkerWSBaseDTO {
-    MLWorkerWSArtifactRefDTO model;
+    private MLWorkerWSArtifactRefDTO model;
 
-    MLWorkerWSDataFrameDTO dataframe;
+    private MLWorkerWSDataFrameDTO dataframe;
 
-    String target;
+    private String target;
 
     @JsonProperty("column_types")
-    Map<String, String> columnTypes;
+    private Map<String, String> columnTypes;
 
     @JsonProperty("column_dtypes")
-    Map<String, String> columnDtypes;
+    private Map<String, String> columnDtypes;
 }

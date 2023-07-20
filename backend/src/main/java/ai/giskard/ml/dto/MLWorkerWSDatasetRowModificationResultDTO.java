@@ -6,7 +6,7 @@ import java.util.Map;
 
 @Getter
 public class MLWorkerWSDatasetRowModificationResultDTO implements MLWorkerWSBaseDTO {
-    Integer rowId;
+    private Integer rowId;
 
-    Map<String, String> modifications;
+    private Map<String, String> modifications;
 }

@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @Builder
 public class MLWorkerWSDatasetProcessingParamDTO implements MLWorkerWSBaseDTO {
-    MLWorkerWSArtifactRefDTO dataset;
+    private MLWorkerWSArtifactRefDTO dataset;
 
-    List<MLWorkerWSDatasetProcessingFunctionDTO> functions;
+    private List<MLWorkerWSDatasetProcessingFunctionDTO> functions;
 }

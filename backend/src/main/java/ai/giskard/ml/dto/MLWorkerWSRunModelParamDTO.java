@@ -9,12 +9,12 @@ import lombok.Setter;
 @Setter
 @Builder
 public class MLWorkerWSRunModelParamDTO implements MLWorkerWSBaseDTO {
-    MLWorkerWSArtifactRefDTO model;
+    private MLWorkerWSArtifactRefDTO model;
 
-    MLWorkerWSArtifactRefDTO dataset;
+    private MLWorkerWSArtifactRefDTO dataset;
 
-    Long inspectionId;
+    private Long inspectionId;
 
     @JsonProperty("project_key")
-    String projectKey;
+    private String projectKey;
 }

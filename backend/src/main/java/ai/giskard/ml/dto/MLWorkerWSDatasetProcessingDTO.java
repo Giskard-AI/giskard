@@ -6,11 +6,11 @@ import java.util.List;
 
 @Getter
 public class MLWorkerWSDatasetProcessingDTO implements MLWorkerWSBaseDTO {
-    String datasetId;
+    private String datasetId;
 
-    Integer totalRows;
+    private Integer totalRows;
 
-    List<Integer> filteredRows;
+    private List<Integer> filteredRows;
 
-    List<MLWorkerWSDatasetRowModificationResultDTO> modifications;
+    private List<MLWorkerWSDatasetRowModificationResultDTO> modifications;
 }

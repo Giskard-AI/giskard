@@ -6,31 +6,31 @@ import java.util.List;
 
 @Getter
 public class MLWorkerWSDatasetProcessFunctionMetaDTO implements MLWorkerWSBaseDTO {
-    String uuid;
+    private String uuid;
 
-    String name;
+    private String name;
 
-    String displayName;
+    private String displayName;
 
-    Integer version;
+    private Integer version;
 
-    String module;
+    private String module;
 
-    String doc;
+    private String doc;
 
-    String moduleDoc;
+    private String moduleDoc;
 
-    List<MLWorkerWSTestFunctionArgumentDTO> args;
+    private List<MLWorkerWSTestFunctionArgumentDTO> args;
 
-    List<String> tags;
+    private List<String> tags;
 
-    String code;
+    private String code;
 
-    String type;
+    private String type;
 
-    Boolean cellLevel;
+    private Boolean cellLevel;
 
-    String columnType;
+    private String columnType;
 
-    String processType;
+    private String processType;
 }

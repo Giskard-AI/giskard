@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @Builder
 public class MLWorkerWSTestSuiteParamDTO implements MLWorkerWSBaseDTO {
-    List<MLWorkerWSSuiteTestArgumentDTO> tests;
+    private List<MLWorkerWSSuiteTestArgumentDTO> tests;
 
-    List<MLWorkerWSFuncArgumentDTO> globalArguments;
+    private List<MLWorkerWSFuncArgumentDTO> globalArguments;
 }

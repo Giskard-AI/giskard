@@ -12,10 +12,10 @@ public class MLWorkerWSRunModelForDataFrameDTO implements MLWorkerWSBaseDTO {
     @JsonProperty("all_predictions")
     private MLWorkerWSDataFrameDTO allPredictions;
 
-    List<String> prediction;
+    private List<String> prediction;
 
-    List<Float> probabilities;
+    private List<Float> probabilities;
 
     @JsonProperty("raw_prediction")
-    List<Float> rawPrediction;
+    private List<Float> rawPrediction;
 }

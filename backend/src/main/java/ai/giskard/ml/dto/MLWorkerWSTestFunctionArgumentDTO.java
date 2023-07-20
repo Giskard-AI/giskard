@@ -5,14 +5,14 @@ import lombok.Getter;
 
 @Getter
 public class MLWorkerWSTestFunctionArgumentDTO implements MLWorkerWSBaseDTO {
-    String name;
+    private String name;
 
-    String type;
+    private String type;
 
-    Boolean optional;
+    private Boolean optional;
 
     @JsonProperty("default")
-    String defaultValue;
+    private String defaultValue;
 
-    Integer argOrder;
+    private Integer argOrder;
 }

@@ -6,5 +6,5 @@ import java.util.List;
 
 @Getter
 public class MLWorkerWSWeightsPerFeatureDTO implements MLWorkerWSBaseDTO {
-    List<Float> weights;
+    private List<Float> weights;
 }

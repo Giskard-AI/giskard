@@ -8,5 +8,5 @@ import java.util.Map;
 @Getter
 public class MLWorkerWSExplanationDTO {
     @JsonProperty("per_feature")
-    Map<String, Float> perFeature;
+    private Map<String, Float> perFeature;
 }

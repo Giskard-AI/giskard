@@ -4,16 +4,16 @@ import lombok.Getter;
 
 @Getter
 public class MLWorkerWSPlatformDTO implements MLWorkerWSBaseDTO {
-    public String machine;
+    private String machine;
 
-    public String node;
+    private String node;
 
-    public String processor;
+    private String processor;
 
-    public String release;
+    private String release;
 
-    public String system;
+    private String system;
 
-    public String version;
+    private String version;
 
 }
