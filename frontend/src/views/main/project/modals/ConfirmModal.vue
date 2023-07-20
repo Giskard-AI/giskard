@@ -1,11 +1,5 @@
 <template>
-    <vue-final-modal
-            v-slot="{ close }"
-            v-bind="$attrs"
-            classes="modal-container"
-            content-class="modal-content"
-            v-on="$listeners"
-    >
+    <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content" v-on="$listeners">
         <div class="text-center">
             <v-card>
                 <v-card-title>
@@ -15,9 +9,9 @@
                     {{ props.text }}
                 </v-card-text>
                 <v-card-actions>
-                    <div class="flex-grow-1"/>
-                    <v-btn text color="primary" @click="close">{{ props.cancelMessage }}</v-btn>
-                    <v-btn :color=buttonColor @click="emit('confirm', close)">{{ props.confirmMessage }}</v-btn>
+                    <div class="flex-grow-1"></div>
+                    <v-btn text @click="close">{{ props.cancelMessage }}</v-btn>
+                    <v-btn :color=buttonColor @click="$emit('confirm', close)">{{ props.confirmMessage }}</v-btn>
                 </v-card-actions>
             </v-card>
         </div>
@@ -26,7 +20,7 @@
 
 <script setup lang="ts">
 
-import {computed} from 'vue';
+import { computed } from 'vue';
 
 const props = withDefaults((defineProps<{
     confirmMessage?: string,
@@ -62,5 +56,4 @@ const buttonColor = computed<string>(() => {
     margin: 0 1rem;
     padding: 1rem;
 }
-
 </style>

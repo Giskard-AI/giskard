@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -33,6 +35,9 @@ public class MLWorkerTunnelService {
     private final ApplicationProperties applicationProperties;
     private final MLWorkerSecurityService mlWorkerSecurityService;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @Getter
     private Optional<InnerServerStartResponse> innerServerDetails = Optional.empty();
     @Getter
@@ -40,8 +45,8 @@ public class MLWorkerTunnelService {
     private boolean clearCacheRequested = true;
 
     public MLWorkerTunnelService(
-        ApplicationProperties applicationProperties,
-        MLWorkerSecurityService mlWorkerSecurityService) {
+            ApplicationProperties applicationProperties,
+            MLWorkerSecurityService mlWorkerSecurityService) {
         this.applicationProperties = applicationProperties;
         this.mlWorkerSecurityService = mlWorkerSecurityService;
     }
@@ -57,24 +62,26 @@ public class MLWorkerTunnelService {
         EventLoopGroup group = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap();
 
-        OuterChannelHandler outerChannelHandler = new OuterChannelHandler(mlWorkerSecurityService);
+        OuterChannelHandler outerChannelHandler = new OuterChannelHandler(mlWorkerSecurityService,
+                applicationEventPublisher);
         ChannelInitializer<SocketChannel> outerChannelInitializer = new ChannelInitializer<>() {
             @Override
             protected void initChannel(SocketChannel outerChannel) {
                 log.info("New outer connection, outer channel id {}", outerChannel.id());
 
                 outerChannel.pipeline().addLast(
-                    new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
-                    new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LENGTH_FIELD_LENGTH_BYTES, 0, LENGTH_FIELD_LENGTH_BYTES),
-                    outerChannelHandler
-                );
+                        new LoggingHandler("Outer channel", LogLevel.DEBUG, ByteBufFormat.SIMPLE),
+                        new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, LENGTH_FIELD_LENGTH_BYTES, 0,
+                                LENGTH_FIELD_LENGTH_BYTES),
+                        outerChannelHandler);
+
             }
         };
 
         b.group(group)
-            .channel(NioServerSocketChannel.class)
-            .localAddress(new InetSocketAddress(externalMlWorkerEntrypointPort))
-            .childHandler(outerChannelInitializer);
+                .channel(NioServerSocketChannel.class)
+                .localAddress(new InetSocketAddress(externalMlWorkerEntrypointPort))
+                .childHandler(outerChannelInitializer);
 
         outerChannelHandler.getEventBus().register(new EventListener() {
             @Subscribe

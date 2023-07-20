@@ -14,8 +14,8 @@
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategory ? on : ''">
-                  {{ abbreviateMiddle(prediction, maxLengthDisplayedCategory) }}
+                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategoryComp ? on : ''">
+                  {{ abbreviateMiddle(prediction, maxLengthDisplayedCategoryComp) }}
                 </div>
               </template>
               <span> {{ prediction }}</span>
@@ -29,7 +29,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategory ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategory) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategoryComp ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategoryComp) }}</div>
                     <div v-else>-</div>
                   </div>
                 </template>
@@ -88,12 +88,12 @@
   </v-card>
 </template>
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+<script setup lang="ts">
+import VChart from "vue-echarts";
+import { ref, onMounted, watch, getCurrentInstance, computed } from "vue";
 import ResultPopover from "@/components/ResultPopover.vue"
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import { api } from "@/api";
-import ECharts from "vue-echarts";
 import { use } from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
@@ -105,198 +105,181 @@ import * as _ from "lodash";
 import { CanceledError } from "axios";
 
 use([CanvasRenderer, BarChart, GridComponent]);
-Vue.component("v-chart", ECharts);
 
-@Component({
-  components: { LoadingFullscreen, ResultPopover }
+const instance = getCurrentInstance();
+
+interface Props {
+  model: ModelDTO;
+  datasetId: string;
+  predictionTask: ModelType;
+  targetFeature: string;
+  modelFeatures: string[];
+  classificationLabels: string[];
+  inputData: { [key: string]: string };
+  modified?: boolean;
+  debounceTime?: number;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modified: false,
+  debounceTime: 250,
+});
+
+const chartInit = {
+  renderer: 'svg'
+}
+
+const prediction = ref<string | number | undefined>("");
+const resultProbabilities = ref<any>({});
+const loading = ref<boolean>(false);
+const errorMsg = ref<string>("");
+const predCategoriesN = ref<number>(5);
+const controller = ref<AbortController | undefined>(undefined);
+const sizeResultCard = ref<number>(0);
+
+const actual = computed(() => {
+  if (props.targetFeature && !errorMsg.value) return props.inputData[props.targetFeature]
+  else return undefined
 })
-export default class PredictionResults extends Vue {
-  @Prop({ required: true }) model!: ModelDTO;
-  @Prop({ required: true }) datasetId!: string;
-  @Prop({ required: true }) predictionTask!: ModelType;
-  @Prop() targetFeature!: string;
-  @Prop() modelFeatures!: string[];
-  @Prop() classificationLabels!: string[];
-  @Prop() inputData!: { [key: string]: string };
-  @Prop({ default: false }) modified!: boolean;
-  @Prop({ default: 250 }) debounceTime!: number;
 
-
-  prediction: string | number | undefined = "";
-  resultProbabilities: object = {};
-  loading: boolean = false;
-  errorMsg: string = "";
-  isClassification = isClassification;
-  ModelType = ModelType;
-  predCategoriesN = 5;
-  controller?: AbortController;
-  sizeResultCard?= 0;
-
-  abbreviateMiddle = abbreviateMiddle;
-
-  async mounted() {
-    this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
-    await this.submitPrediction()
-    window.addEventListener('resize', () => {
-      this.sizeResultCard = this.$parent?.$el.querySelector('#resultCard')?.clientWidth;
-    })
+const isCorrectPrediction = computed(() => {
+  if (_.isNumber(actual.value) || _.isNumber(prediction.value)) {
+    return _.toNumber(actual.value) === _.toNumber(prediction.value);
+  } else {
+    return _.toString(actual.value) === _.toString(prediction.value);
   }
+})
 
-  @Watch("inputData", { deep: true })
-  private async onInputDataChange() {
-    await this.debouncedSubmitPrediction();
+const classColorPrediction = computed(() => {
+  if (!actual.value) return 'info--text text--darken-2'
+  else return isCorrectPrediction.value ? 'primary--text' : 'error--text'
+})
+
+async function submitPrediction() {
+  if (controller.value) {
+    controller.value.abort();
   }
+  controller.value = new AbortController();
+  if (Object.keys(props.inputData).length) {
+    try {
+      loading.value = true;
+      const predictionResult = (await api.predict(
+        props.model.id,
+        props.datasetId,
+        _.pick(props.inputData, props.modelFeatures),
+        controller.value
+      ))
+      prediction.value = predictionResult.prediction;
+      emit("result", prediction.value);
 
-  private debouncedSubmitPrediction = _.debounce(async () => {
-    await this.submitPrediction();
-  }, this.debounceTime);
+      resultProbabilities.value = Object.entries(predictionResult.probabilities)
+        .sort(([, v1], [, v2]) => +v2 - +v1)       // Sort the object by value - solution based on:
+        .reduce((r, [k, v]) => ({ ...r, [k]: v }), {}); // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
 
-  private async submitPrediction() {
-    if (this.controller) {
-      this.controller.abort();
-    }
-    this.controller = new AbortController();
-    if (Object.keys(this.inputData).length) {
-      try {
-        this.loading = true;
-        const predictionResult = (await api.predict(
-          this.model.id,
-          this.datasetId,
-          _.pick(this.inputData, this.modelFeatures),
-          this.controller
-        ))
-        this.prediction = predictionResult.prediction;
-        this.$emit("result", this.prediction);
-        this.resultProbabilities = predictionResult.probabilities
-        // Sort the object by value - solution based on:
-        // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
-        this.resultProbabilities = Object.entries(this.resultProbabilities)
-          .sort(([, v1], [, v2]) => +v2 - +v1)
-          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
-        this.errorMsg = "";
-        this.loading = false;
-      } catch (error) {
-        if (!(error instanceof CanceledError)) {
-          this.errorMsg = error.response.data.detail;
-          this.prediction = undefined;
-          this.loading = false;
-        }
+      errorMsg.value = "";
+      loading.value = false;
+    } catch (error) {
+      if (!(error instanceof CanceledError)) {
+        errorMsg.value = error.response.data.detail;
+        prediction.value = undefined;
+        loading.value = false;
       }
-    } else {
-      // reset
-      this.errorMsg = "";
-      this.prediction = undefined;
-      this.resultProbabilities = {};
     }
-  }
-
-
-  get classColorPrediction() {
-    if (!this.isDefined(this.actual)) return 'info--text text--darken-2'
-    else return this.isCorrectPrediction ? 'primary--text' : 'error--text'
-  }
-
-  get isCorrectPrediction() {
-    if (_.isNumber(this.actual) || _.isNumber(this.prediction)) {
-      return _.toNumber(this.actual) === _.toNumber(this.prediction);
-    } else {
-      return _.toString(this.actual) === _.toString(this.prediction);
-    }
-  }
-
-  get actual() {
-    if (this.targetFeature && !this.errorMsg) return this.inputData[this.targetFeature]
-    else return undefined
-  }
-
-  get maxLengthDisplayedCategory() {
-    return maxLengthDisplayedCategory(this.sizeResultCard);
-  }
-
-
-  /**
-   * Getting first n entries of sorted objects and sort alphabetically, aggregating for "Others" options
-   *
-   * @param obj object
-   * @param n number of entries to keep
-   * @private
-   */
-  private firstNSortedByKey(obj: Object, n: number) {
-
-    let listed = Object.entries(obj)
-      .sort(([, a], [, b]) => a - b)
-      .slice(-n);
-    return Object.fromEntries(listed)
-  }
-
-  /**
-   * For every element s of arr, if s.length > max_size return a new string with the n first characters then ... then the n last characters
-   * Helper to long category names
-   *
-   * @param obj Object
-   * @param max_size the size in which we start slicing
-   * @param n number of slice to keep
-   * @private
-   */
-  private sliceLongCategoryName(obj, max_size) {
-    let res = Object.fromEntries(Object.entries(obj).map(function (elt) {
-      return ["".concat(...[abbreviateMiddle(elt[0], max_size)]), elt[1]]
-    }))
-    return res
-  }
-
-  isDefined(val: any) {
-    return !_.isNil(val);
-  }
-
-  get chartInit() {
-    return {
-      renderer: 'svg'
-    }
-  }
-
-  get chartOptions() {
-    let results = this.firstNSortedByKey(this.resultProbabilities, this.predCategoriesN)
-    results = this.sliceLongCategoryName(results, this.maxLengthDisplayedCategory)
-    return {
-      xAxis: {
-        type: "value",
-        min: 0,
-        max: 1,
-      },
-      yAxis: {
-        type: "category",
-        data: Object.keys(results),
-        axisLabel: {
-          interval: 0,
-        },
-      },
-      series: [
-        {
-          type: "bar",
-          label: {
-            show: true,
-            position: "right",
-            formatter: (params) =>
-              params.value % 1 == 0
-                ? params.value
-                : params.value.toFixed(2).toLocaleString(),
-          },
-          data: Object.values(results),
-        },
-      ],
-      color: ["#0091EA"],
-      grid: {
-        width: "80%",
-        height: "80%",
-        top: "10%",
-        left: "10%",
-        right: "10%",
-        containLabel: true,
-      },
-    };
+  } else {
+    // reset
+    errorMsg.value = "";
+    prediction.value = undefined;
+    resultProbabilities.value = {};
   }
 }
+
+const debouncedSubmitPrediction = _.debounce(async () => {
+  await submitPrediction();
+}, props.debounceTime);
+
+const maxLengthDisplayedCategoryComp = computed(() => {
+  return maxLengthDisplayedCategory(sizeResultCard.value);
+})
+
+const chartOptions = computed(() => {
+  let results = firstNSortedByKey(resultProbabilities.value, predCategoriesN.value)
+  results = sliceLongCategoryName(results, maxLengthDisplayedCategoryComp.value)
+  return {
+    xAxis: {
+      type: "value",
+      min: 0,
+      max: 1,
+    },
+    yAxis: {
+      type: "category",
+      data: Object.keys(results),
+      axisLabel: {
+        interval: 0,
+      },
+    },
+    series: [
+      {
+        type: "bar",
+        label: {
+          show: true,
+          position: "right",
+          formatter: (params: any) =>
+            params.value % 1 == 0
+              ? params.value
+              : params.value.toFixed(2).toLocaleString(),
+        },
+        data: Object.values(results),
+      },
+    ],
+    color: ["#0091EA"],
+    grid: {
+      width: "80%",
+      height: "80%",
+      top: "10%",
+      left: "10%",
+      right: "10%",
+      containLabel: true,
+    },
+  };
+});
+
+function firstNSortedByKey(obj: Object, n: number) {
+  let listed = Object.entries(obj)
+    .sort(([, a], [, b]) => a - b)
+    .slice(-n);
+  return Object.fromEntries(listed)
+}
+
+function sliceLongCategoryName(obj: Object, max_size: number) {
+  let res = Object.fromEntries(Object.entries(obj).map(function (elt) {
+    return ["".concat(...[abbreviateMiddle(elt[0], max_size)]), elt[1]]
+  }))
+  return res
+}
+
+function isDefined(val: any) {
+  return !_.isNil(val);
+}
+
+const emit = defineEmits(["result"]);
+
+watch(() => props.inputData, async () => {
+  await debouncedSubmitPrediction();
+})
+
+onMounted(async () => {
+  const clientWidth = instance?.proxy.$parent?.$el.querySelector('#resultCard')?.clientWidth;
+  if (clientWidth) {
+    sizeResultCard.value = clientWidth;
+  }
+  await submitPrediction();
+
+  if (clientWidth) {
+    window.addEventListener('resize', () => {
+      sizeResultCard.value = clientWidth;
+    })
+  }
+})
 </script>
 
 <style scoped>

@@ -2,7 +2,7 @@
   <div class="vertical-container">
     <v-row class="mt-2 pl-3">
       <v-col cols='4'>
-        <v-text-field v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+        <v-text-field v-if="projectArtifactsStore.datasets.length" v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
       </v-col>
       <v-col cols="8">
         <div class="d-flex justify-end mb-6">
