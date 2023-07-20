@@ -26,8 +26,6 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
 )
 
-import asyncio
-
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +103,7 @@ def websocket_actor(action: MLWorkerAction):
                     )
                 except Exception as e:
                     info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
+                    logger.warn(e)
 
                 if rep_id:
                     # Reply if there is an ID
@@ -114,6 +113,10 @@ def websocket_actor(action: MLWorkerAction):
                         json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
                     )
 
+                # Post-processing of stopWorker
+                if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:
+                    ml_worker.ws_conn.disconnect()
+
             WEBSOCKET_ACTORS[action.name] = wrapped_callback
         return callback
 
@@ -121,16 +124,29 @@ def websocket_actor(action: MLWorkerAction):
 
 
 class MLWorkerWebSocketListener(stomp.ConnectionListener):
+    subscribe_failed: bool = False
+
     def __init__(self, worker):
         self.ml_worker = worker
 
+    def on_connected(self, frame):
+        logger.debug("Connected")
+        self.ml_worker.ws_conn.subscribe(
+            f"/ml-worker/{self.ml_worker.ml_worker_id}/action", f"ws-worker-{self.ml_worker.ml_worker_id}"
+        )
+
     def on_error(self, frame):
-        logger.debug(f"received an error {frame.body}")
+        logger.debug("received an error")
+        if "message" in frame.headers.keys() and "Cannot find available worker" in frame.headers["message"]:
+            self.subscribe_failed = True
 
     def on_disconnected(self):
         logger.debug("disconnected")
-        # Attemp to reconnect
-        self.ml_worker.connect_websocket_client()
+        if not self.subscribe_failed:
+            # Attemp to reconnect
+            self.ml_worker.connect_websocket_client()
+        else:
+            self.ml_worker.stop()
 
     def on_message(self, frame):
         logger.debug(f"received a message {frame.cmd} {frame.headers} {frame.body}")
@@ -164,12 +180,13 @@ def on_ml_worker_get_info(ml_worker, params: GetInfoParam, *args, **kwargs) -> d
         interpreterVersion=platform.python_version(),
         installedPackages=installed_packages,
         internalGrpcAddress=ml_worker.ml_worker_id,
-        isRemote=ml_worker.tunnel is not None,
+        isRemote=ml_worker.is_remote_worker(),
     )
 
 
 @websocket_actor(MLWorkerAction.stopWorker)
 def on_ml_worker_stop_worker(ml_worker, *args, **kwargs):
-    # FIXME: Stop the server properly
-    asyncio.get_event_loop().create_task(ml_worker.stop())
+    # Stop the server properly after sending disconnect
+    logger.info("Stopping ML Worker")
+    ml_worker.ws_stopping = True
     return websocket.Empty()
