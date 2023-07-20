@@ -2,6 +2,7 @@ package ai.giskard.web.socket;
 
 import ai.giskard.event.UpdateWorkerStatusEvent;
 import ai.giskard.ml.MLWorkerID;
+import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,10 @@ public class WorkerStatusSocketService {
 
     public void sendCurrentStatus() {
         Map<String, Boolean> data = new HashMap<>();
-        data.put("connected", mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL));
+        data.put("connected",
+                    // HF Space uses internal worker that always connected
+            mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL) || GeneralSettingsService.isRunningInHFSpaces
+                );
         sendData(data);
     }
 

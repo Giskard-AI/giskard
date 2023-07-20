@@ -81,7 +81,7 @@
               <span>ML Worker</span>
               <v-spacer />
               <v-tabs class="worker-tabs" v-model="selectedWorkerTab">
-                <v-tab :disabled="mlWorkerSettingsLoading" class="worker-tab">
+                <v-tab :disabled="mlWorkerSettingsLoading" v-if="!appSettings?.isRunningOnHfSpaces" class="worker-tab">
                   <span>external</span>
                   <v-icon v-show="!mlWorkerSettingsLoading" size="10" :color="isWorkerAvailable(false) ? 'green' : 'red'">mdi-circle
                   </v-icon>
@@ -100,7 +100,9 @@
               </v-btn>
             </v-card-title>
             <v-card-text>
-              <v-alert v-show="!externalWorkerSelected" color="primary" border="left" outlined colored-border icon="warning">Internal ML Worker is only used in demo projects. For other projects use an <span class="font-weight-bold">External ML Worker</span>.
+              <v-alert v-show="!externalWorkerSelected && !appSettings?.isRunningOnHfSpaces" color="primary" border="left" outlined colored-border icon="warning">Internal ML Worker is only used in demo projects. For other projects use an <span class="font-weight-bold">External ML Worker</span>.
+              </v-alert>
+              <v-alert v-show="appSettings?.isRunningOnHfSpaces" color="primary" border="left" outlined colored-border icon="warning">Internal ML Worker is used for all projects in Hugging Face Spaces. You can edit the <span class="font-weight-bold">requirements.txt</span> file in "Files" to install your dependencies.
               </v-alert>
               <v-simple-table v-if="currentWorker">
                 <table class="w100">
@@ -212,7 +214,11 @@ onBeforeMount(async () => {
   await initMLWorkerInfo();
 })
 
-const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
+const externalWorkerSelected = computed(
+  () =>
+    selectedWorkerTab.value == 0 &&
+    !appSettings.value!.isRunningOnHfSpaces  // Not yet external worker in Hugging Face Space
+);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
   if (allMLWorkerSettings.value.length) {

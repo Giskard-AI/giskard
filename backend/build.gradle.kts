@@ -190,10 +190,8 @@ dependencies {
     implementation("org.springframework.security:spring-security-messaging")
     testImplementation("org.testcontainers:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(module = "spring-boot-starter-tomcat")
-    }
-    implementation("org.springframework.boot:spring-boot-starter-undertow")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-tomcat")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.zalando:problem-spring-web")
     implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
