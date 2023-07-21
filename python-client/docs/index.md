@@ -76,6 +76,12 @@ catalogs/index
 <img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
 ::::
 
+:::{card} <h2><center> Integrations </center></h2>
+:link: integrations/index.html
+<img src="assets/intro/integrations.png" alt="test" width="100%">
+::::
+
+
 :::::
 
 :::::{grid-item}
