@@ -196,7 +196,7 @@ class GiskardEvaluator(ModelEvaluator):
 
             # log html scan result
             scan_artifact_names = scan_results.to_mlflow(mlflow_client=self.client,
-                                                      mlflow_run_id=self.run_id)
+                                                         mlflow_run_id=self.run_id)
             return scan_results, scan_artifact_names
         except Exception as e:
             analytics.track(
@@ -273,5 +273,8 @@ class GiskardEvaluator(ModelEvaluator):
 
         # Generate test suite
         _, metrics = self._generate_test_suite(scan_results)
+
+        print("The evaluation with giskard ran successfully! You can now visualise the results by running 'mlflow ui' "
+              "in the terminal.")
 
         return EvaluationResult(metrics=metrics, artifacts=artifacts)
