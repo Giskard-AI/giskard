@@ -183,7 +183,6 @@ class PyTorchModel(MLFlowSerializableModel):
         self.model.to(self.device)
         self.model.eval()
 
-        print(data)
         if self.iterate_dataset:
             predictions = self._get_predictions_from_iterable(data)
         else:
