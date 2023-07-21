@@ -15,7 +15,7 @@
             </v-badge>-->
           </v-btn>
         </template>
-        <span>{{ push.pushTitle }}</span>
+        <span>{{ push.pushTitle }}. Click for more details.</span>
       </v-tooltip>
     </template>
 

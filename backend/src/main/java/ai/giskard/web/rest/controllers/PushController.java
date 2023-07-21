@@ -58,8 +58,10 @@ public class PushController {
             SuggestFilterRequest.Builder requestBuilder = SuggestFilterRequest.newBuilder()
                 .setDataset(datasetRef)
                 .setModel(modelRef)
-                .setRowidx(idx)
-                .setDataframe(
+                .setRowidx(idx);
+
+            if (features != null) {
+                requestBuilder.setDataframe(
                     DataFrame.newBuilder()
                         .addRows(DataRow.newBuilder().putAllColumns(
                             features.entrySet().stream()
@@ -68,6 +70,7 @@ public class PushController {
                         ))
                         .build()
                 );
+            }
 
             if (dataset.getTarget() != null) {
                 requestBuilder.setTarget(dataset.getTarget());

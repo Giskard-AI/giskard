@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import os
 import platform
 import posixpath
@@ -12,7 +13,6 @@ from pathlib import Path
 
 import google
 import grpc
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -133,12 +133,12 @@ def map_dataset_process_function_meta(callable_type):
 
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(
-        self,
-        ml_worker: MLWorker,
-        client: GiskardClient,
-        address=None,
-        remote=None,
-        loop=asyncio.get_event_loop(),
+            self,
+            ml_worker: MLWorker,
+            client: GiskardClient,
+            address=None,
+            remote=None,
+            loop=asyncio.get_event_loop(),
     ) -> None:
         super().__init__()
         self.ml_worker = ml_worker
@@ -215,7 +215,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return request
 
     def runAdHocTest(
-        self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
         test: GiskardTest = GiskardTest.download(request.testUuid, self.client, None)
 
@@ -234,9 +234,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def datasetProcessing(
-        self,
-        request: ml_worker_pb2.DatasetProcessingRequest,
-        context: grpc.ServicerContext,
+            self,
+            request: ml_worker_pb2.DatasetProcessingRequest,
+            context: grpc.ServicerContext,
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(
             self.client,
@@ -287,7 +287,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runTestSuite(
-        self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
+            self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
         try:
@@ -616,6 +616,17 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 f"Make sure it's installed in the ML Worker environment."
                 "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
             ) from e
+
+        # if df is empty, return early
+        if df.empty:
+            return ml_worker_pb2.SuggestFilterResponse(
+                contribution=None,
+                perturbation=None,
+                overconfidence=None,
+                borderline=None,
+                object_uuid=None
+            )
+
         from giskard.push.contribution import create_contribution_push
         from giskard.push.perturbation import create_perturbation_push
         from giskard.push.prediction import create_overconfidence_push
@@ -663,8 +674,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             # Upload related object depending on CTA type
             # if cta kind is CreateSlice or CreateSliceOpenDebugger
             if (
-                request.cta_kind == CallToActionKind.CreateSlice
-                or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger
+                    request.cta_kind == CallToActionKind.CreateSlice
+                    or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger
             ):
                 push.slicing_function.meta.tags.append("generated")
                 uuid = push.slicing_function.upload(self.client)
@@ -673,7 +684,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     uuid = perturbation.upload(self.client)
             if request.cta_kind == CallToActionKind.SaveExample:
                 uuid = push.saved_example.upload(self.client, request.project_key)
-            if request.cta_kind == CallToActionKind.CreateTest:
+            if (
+                    request.cta_kind == CallToActionKind.CreateTest
+                    or request.cta_kind == CallToActionKind.AddTestToCatalog
+            ):
                 for test in push.tests:
                     uuid = test.upload(self.client)
 
@@ -698,9 +712,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             return SuiteInput(i.name, i.type)
 
     def generateTestSuite(
-        self,
-        request: ml_worker_pb2.GenerateTestSuiteRequest,
-        context: grpc.ServicerContext,
+            self,
+            request: ml_worker_pb2.GenerateTestSuiteRequest,
+            context: grpc.ServicerContext,
     ) -> ml_worker_pb2.GenerateTestSuiteResponse:
         inputs = [self.map_suite_input(i) for i in request.inputs]
 
@@ -720,14 +734,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def stopWorker(
-        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> google.protobuf.empty_pb2.Empty:
         logger.info("Received request to stop the worker")
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
     def getCatalog(
-        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta("TEST"),
