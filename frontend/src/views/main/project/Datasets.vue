@@ -30,8 +30,10 @@
         <v-expansion-panel v-for="f in datasets" :key="f.id">
           <v-expansion-panel-header @click="peakDataFile(f.id)" class="grey lighten-5 py-1 pl-2">
             <v-row class="px-2 py-1 align-center">
-              <v-col cols="4" class="font-weight-bold" :title="f.name ? f.name : f.id">
-                <InlineEditText :text="f.name ? f.name : 'Unnamed dataset'" :can-edit="isProjectOwnerOrAdmin"
+              <v-col cols="4" class="font-weight-bold"
+                     :title="f.name ? f.name : f.id">
+                <InlineEditText :text="f.name ? projectArtifactsStore.translateTags(f.name) : 'Unnamed dataset'"
+                                :can-edit="isProjectOwnerOrAdmin"
                                 @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
               </v-col>
@@ -75,7 +77,8 @@
     </v-container>
     <v-container v-else-if="!isLoading">
       <v-alert class='text-center'>
-        <p class='headline font-weight-medium grey--text text--darken-2'>There are no datasets in this project yet. <br>Click the button below to learn how to upload a dataset.</p>
+        <p class='headline font-weight-medium grey--text text--darken-2'>There are no datasets in this project yet. <br>Click
+          the button below to learn how to upload a dataset.</p>
       </v-alert>
       <div class="d-flex justify-center">
         <v-btn href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank" rel="noopener">
@@ -84,7 +87,8 @@
         </v-btn>
       </div>
       <div class="d-flex justify-center mb-6">
-        <img src="@/assets/logo_datasets.png" class="datasets-logo" title="Datasets tab logo" alt="A turtle typing too fast on a laptop">
+        <img src="@/assets/logo_datasets.png" class="datasets-logo" title="Datasets tab logo"
+             alt="A turtle typing too fast on a laptop">
       </div>
       <div class="d-flex justify-center mt-6">
         <v-btn small @click="reloadDatasets" plain>
