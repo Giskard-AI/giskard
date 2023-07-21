@@ -67,6 +67,7 @@ ENV PATH="$VENV_PATH/bin:/usr/lib/postgresql/${POSTGRES_VERSION}/bin:$PATH" \
 
 WORKDIR $GSK_DIST_PATH
 
+COPY --from=build /app/python-client/dist $GSK_DIST_PATH/python-client
 COPY --from=build /app/python-client/.venv-prod $VENV_PATH
 COPY --from=build /app/backend/build/libs/backend*.jar $GSK_DIST_PATH/backend/giskard.jar
 COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist

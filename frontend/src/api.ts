@@ -190,6 +190,9 @@ function downloadURL(urlString) {
 }
 
 export const api = {
+  async getHuggingFaceToken(spaceId: string) {
+    return await axios.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
+  },
   async logInGetToken(username: string, password: string) {
     return apiV2.post<unknown, JWTToken>(`/authenticate`, { username, password });
   },
@@ -268,7 +271,6 @@ export const api = {
   async getApiAccessToken() {
     return apiV2.get<unknown, JWTToken>(`/api-access-token`);
   },
-
   // Projects
   async getProjects() {
     return apiV2.get<unknown, ProjectDTO[]>(`projects`);
@@ -316,7 +318,7 @@ export const api = {
   async deleteModelFiles(modelId: string) {
     return apiV2.delete<unknown, MessageDTO>(`/models/${modelId}`);
   },
-  downloadModelFile(id: number) {
+  downloadModelFile(id: string) {
     downloadURL(`${API_V2_ROOT}/download/model/${id}`);
   },
   async editModelName(modelId: string, name: string) {

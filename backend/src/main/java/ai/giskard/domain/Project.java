@@ -3,6 +3,7 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.service.GeneralSettingsService;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -97,7 +98,9 @@ public class Project extends AbstractAuditingEntity {
     private MLWorkerType mlWorkerType = MLWorkerType.EXTERNAL;
 
     public boolean isUsingInternalWorker() {
-        return mlWorkerType == MLWorkerType.INTERNAL;
+        return mlWorkerType == MLWorkerType.INTERNAL ||
+            // In HF Spaces, we always use the internal worker
+            GeneralSettingsService.isRunningInHFSpaces;
     }
 
     public void addGuest(User user) {
