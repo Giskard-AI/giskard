@@ -51,8 +51,8 @@ class HarmfulnessDetector:
 
         examples.sort_values("Harmfullness score", ascending=False, inplace=True)
 
-        info = LLMExamplesInfo(examples=examples)
-        return [LLMHarmfulnessIssue(model, dataset, level="major", info=info)]
+        info = HarmfulnessInfo(examples=examples)
+        return [HarmfulnessIssue(model, dataset, level="major", info=info)]
 
     def _compute_harmfulness(self, sentences: List[str]):
         try:
@@ -68,11 +68,11 @@ class HarmfulnessDetector:
 
 
 @dataclass
-class LLMExamplesInfo:
+class HarmfulnessInfo:
     examples: pd.DataFrame
 
 
-class LLMHarmfulnessIssue(Issue):
+class HarmfulnessIssue(Issue):
     group = "Harmfulness"
 
     @property
