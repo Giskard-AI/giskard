@@ -44,6 +44,9 @@ def test_right_label(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold for the percentage of passed rows
+      debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the rows that do not return the right classification label.
 
     Returns:
       actual_slices_size:
@@ -126,6 +129,9 @@ def test_output_in_range(
             Maximum probability of occurrence of classification label
         threshold(float):
             Threshold for the percentage of passed rows
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that are out of the given range.
 
     Returns:
         actual_slices_size:
@@ -222,6 +228,10 @@ def test_disparate_impact(
               Threshold below which the DI test is considered to fail, by default 0.8
           max_threshold(float):
               Threshold above which the DI test is considered to fail, by default 1.25
+          debug(bool):
+              If True and the test fails,
+              a dataset will be provided containing the rows from the protected and unprotected slices that were
+              incorrectly predicted on a specific positive outcome.
 
     Returns:
           metric:

@@ -238,6 +238,9 @@ def test_metamorphic_invariance(
             Optional. The threshold for ratio between the difference between perturbed prediction and actual prediction over
             the actual prediction for a regression model. We consider there is a prediction difference for
             regression if the ratio is above the output_sensitivity of 0.1
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-invariant rows.
 
     Returns:
         actual_slices_size:
@@ -301,6 +304,9 @@ def test_metamorphic_increasing(
           Slicing function to be applied on dataset
         classification_label(str):
           Optional.One specific label value from the target column
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-increasing rows.
 
     Returns:
         actual_slices_size:
@@ -365,6 +371,9 @@ def test_metamorphic_decreasing(
           Threshold of the ratio of decreasing rows
         classification_label(str):
           Optional. One specific label value from the target column
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-decreasing rows.
 
     Returns:
         actual_slices_size:
@@ -464,6 +473,9 @@ def test_metamorphic_decreasing_t_test(
           Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-decreasing rows.
 
     Returns:
         actual_slices_size:
@@ -526,6 +538,9 @@ def test_metamorphic_increasing_t_test(
           Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-increasing rows.
 
     Returns:
         actual_slices_size:
@@ -592,6 +607,9 @@ def test_metamorphic_invariance_t_test(
               Probability window in which the mean of the perturbed sample can be in
           critical_quantile(float):
               Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-invariant rows.
 
     Returns:
           actual_slices_size:
@@ -694,6 +712,9 @@ def test_metamorphic_decreasing_wilcoxon(
             Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-decreasing rows.
 
     Returns:
         actual_slices_size:
@@ -756,6 +777,9 @@ def test_metamorphic_increasing_wilcoxon(
             Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-increasing rows.
 
     Returns:
         actual_slices_size:
@@ -822,6 +846,9 @@ def test_metamorphic_invariance_wilcoxon(
             Probability window in which the mean of the perturbed sample can be in
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the non-invariant rows.
 
     Returns:
         actual_slices_size:

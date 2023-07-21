@@ -191,6 +191,9 @@ def test_auc(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value of AUC metrics
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows.
 
     Returns:
       actual_slices_size:
@@ -254,7 +257,9 @@ def test_f1(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for F1 Score
-
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows.
 
     Returns:
         actual_slices_size:
@@ -290,6 +295,9 @@ def test_accuracy(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Accuracy
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows.
 
     Returns:
       actual_slices_size:
@@ -325,6 +333,10 @@ def test_precision(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Precision
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows.
+
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -359,7 +371,9 @@ def test_recall(
         threshold(float):
           Threshold value for Recall
         debug(bool):
-          If the test returns debug values
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows.
+
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -394,6 +408,11 @@ def test_rmse(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for RMSE
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the top debug_percent_rows
+          of the rows with the highest absolute error (difference between prediction and data).
+
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -429,6 +448,11 @@ def test_mse(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for MSE
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the top debug_percent_rows
+          of the rows with the highest absolute error (difference between prediction and data).
+
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -464,6 +488,10 @@ def test_mae(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for MAE
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the top debug_percent_rows
+          of the rows with the highest absolute error (difference between prediction and data).
 
     Returns:
         actual_slices_size:
@@ -502,6 +530,10 @@ def test_r2(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for R-Squared
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the top debug_percent_rows
+          of the rows with the highest absolute error (difference between prediction and data).
 
     Returns:
         actual_slices_size:
@@ -549,6 +581,10 @@ def test_diff_accuracy(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Accuracy Score difference
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and
+          reference_dataset
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -608,7 +644,10 @@ def test_diff_f1(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for F1 Score difference
-
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and
+          reference_dataset
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -668,6 +707,10 @@ def test_diff_precision(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Precision difference
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and
+          reference_dataset
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -727,6 +770,10 @@ def test_diff_recall(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Recall difference
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and
+          reference_dataset
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -786,6 +833,11 @@ def test_diff_rmse(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for RMSE difference
+        debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the top debug_percent_rows
+          of the rows with the highest absolute error (difference between prediction and data) from both
+          actual_dataset and reference_dataset.
 
     Returns:
         actual_slices_size:

@@ -282,7 +282,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             # for now, we won't return output_df from grpc, rather upload it
             test_result.output_df = None
         elif arguments["debug"]:
-            raise ValueError("You have requested to debug the test, but the test did not return a debuggable output.")
+            raise ValueError("This test does not return any examples to debug. "
+                             "Check the debugging method associated to this test at "
+                             "https://docs.giskard.ai/en/latest/reference/tests/index.html")
 
         return test_result
 

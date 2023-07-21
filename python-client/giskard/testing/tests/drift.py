@@ -217,6 +217,11 @@ def test_drift_psi(
             the ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the
+            most (more than psi_contribution_percent of the total PSI score).
+
 
     Returns:
         actual_slices_size:
@@ -310,6 +315,10 @@ def test_drift_chi_square(
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most
+            (more than chi_square_contribution_percent of the total chi squared score).
 
     Returns:
         actual_slices_size:
@@ -529,6 +538,10 @@ def test_drift_prediction_psi(
             The ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most (more than
+            psi_contribution_percent of the total PSI score).
 
     Returns:
         actual_slices_size:
@@ -646,12 +659,16 @@ def test_drift_prediction_chi_square(
             Slicing function to be applied on both actual and reference datasets
         threshold(float):
             Threshold value of p-value of Chi-Square
-        max_categories:
+        max_categories(int):
             the maximum categories to compute the PSI score
-        chi_square_contribution_percent:
+        chi_square_contribution_percent(float):
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most (more than
+            chi_square_contribution_percent of the total chi squared score).
 
     Returns:
         actual_slices_size:
