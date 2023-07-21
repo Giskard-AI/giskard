@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import inspect
 from typing import Optional
 
 from ...ml_worker.testing.registry.decorators import test
@@ -32,11 +33,12 @@ def _default_overconfidence_threshold(model: BaseModel) -> float:
 
 @test(name="Overconfidence Rate", tags=["classification"])
 def test_overconfidence_rate(
-    model: BaseModel,
-    dataset: Dataset,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: Optional[float] = 0.10,
-    p_threshold: Optional[float] = None,
+        model: BaseModel,
+        dataset: Dataset,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: Optional[float] = 0.10,
+        p_threshold: Optional[float] = None,
+        debug: bool = False
 ):
     """Tests that the rate of overconfident predictions is below a threshold.
 
@@ -66,6 +68,9 @@ def test_overconfidence_rate(
             over which a prediction is considered overconfident. If not
             provided, it will be determined automatically depending on the
             number of classes.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have an overconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -78,12 +83,23 @@ def test_overconfidence_rate(
     if p_threshold is None:
         p_threshold = _default_overconfidence_threshold(model)
 
-    rate = (overconfidence_score[overconfidence_score > 0].dropna() > p_threshold).mean()
+    overconfidence_mask = overconfidence_score[overconfidence_score > 0].dropna() > p_threshold
+    rate = (overconfidence_mask).mean()
     passed = rate < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.copy()
+        output_ds.df = dataset.df.loc[overconfidence_mask[overconfidence_mask].index]
+        test_name = inspect.stack()[0][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(
         passed=bool(passed),
         metric=rate,
+        output_df=output_ds
     )
 
 
@@ -101,11 +117,12 @@ def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.S
 
 @test(name="Underconfidence Rate", tags=["classification"])
 def test_underconfidence_rate(
-    model: BaseModel,
-    dataset: Dataset,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: Optional[float] = 0.10,
-    p_threshold: float = 0.90,
+        model: BaseModel,
+        dataset: Dataset,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: Optional[float] = 0.10,
+        p_threshold: float = 0.90,
+        debug: bool = False
 ):
     """Tests that the rate of underconfident predictions is below a threshold.
 
@@ -135,6 +152,9 @@ def test_underconfidence_rate(
             underconfident. Default is 0.90, i.e. when the second most probable
             prediction is 90% or more with respect to the highest probability,
             the sample prediction is considered underconfident.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have an underconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -144,10 +164,21 @@ def test_underconfidence_rate(
 
     underconfidence_score = _calculate_underconfidence_score(model, dataset)
 
-    rate = (underconfidence_score.dropna() > p_threshold).mean()
+    underconfidence_mask = underconfidence_score.dropna() > p_threshold
+    rate = (underconfidence_mask).mean()
     passed = rate < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.copy()
+        output_ds.df = dataset.df.loc[underconfidence_mask[underconfidence_mask].index]
+        test_name = inspect.stack()[0][3]
+        output_ds.name = "Debug: " + test_name
+    # ---
 
     return TestResult(
         passed=bool(passed),
         metric=rate,
+        output_df=output_ds
     )

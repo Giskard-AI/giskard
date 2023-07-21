@@ -43,19 +43,19 @@ const {models, datasets, inputs, suite, projectId, hasTest, statusFilter, search
 const testSuiteCompareStore = useTestSuiteCompareStore();
 
 onMounted(() => {
-    testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
+  testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null);
 })
 
 watch(() => props.execution,
     () => testSuiteCompareStore.setCurrentExecution(props.execution ? props.execution.id : null),
-    { deep: true });
+    {deep: true});
 
 
 
 const filteredTest = computed(() => suite.value === null ? [] : chain(suite.value!.tests)
     .map(suiteTest => ({
-        suiteTest,
-        result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
+      suiteTest,
+      result: props.execution?.results?.find(result => result.test.id === suiteTest.id)
     }))
     .filter(TestsUtils.statusFilter(statusFilter.value))
     .filter(TestsUtils.searchFilter(searchFilter.value))
@@ -65,8 +65,8 @@ const filteredTest = computed(() => suite.value === null ? [] : chain(suite.valu
 
 <style scoped lang="scss">
 .log-viewer {
-    overflow: auto;
-    max-height: 400px;
+  overflow: auto;
+  max-height: 400px;
 }
 </style>
 
