@@ -193,6 +193,8 @@ class WrapperModel(BaseModel, ABC):
             self.save_data_preprocessing_function(local_path)
         if self.model_postprocessing_function:
             self.save_model_postprocessing_function(local_path)
+        if self.batch_size:
+            self.save_batch_size(local_path)
 
     @abstractmethod
     def save_model(self, path: Union[str, Path]) -> None:
@@ -213,10 +215,15 @@ class WrapperModel(BaseModel, ABC):
         with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
+    def save_batch_size(self, local_path: Union[str, Path]):
+        with Path(local_path).joinpath("batch_size").open("w") as f:
+            f.write(str(self.batch_size))
+
     @classmethod
     def load(cls, local_dir, **kwargs):
         kwargs["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         kwargs["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
+        kwargs["batch_size"] = cls._load_batch_size(local_dir)
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
         constructor_params["id"] = model_id
@@ -244,8 +251,7 @@ class WrapperModel(BaseModel, ABC):
         if file_path.exists():
             with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
-        else:
-            return None
+        return None
 
     @classmethod
     def load_model_postprocessing_function(cls, local_path: Union[str, Path]):
@@ -254,5 +260,12 @@ class WrapperModel(BaseModel, ABC):
         if file_path.exists():
             with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
-        else:
-            return None
+        return None
+
+    @staticmethod
+    def _load_batch_size(local_path: Union[str, Path]):
+        file_path = Path(local_path) / "batch_size"
+        if file_path.exists():
+            with file_path.open("r") as f:
+                return int(f.read())
+        return None

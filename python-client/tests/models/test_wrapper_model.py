@@ -1,7 +1,10 @@
+import tempfile
+
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 
-from giskard import Dataset
+from giskard import Dataset, Model
 from giskard.models.base.wrapper import WrapperModel
 
 
@@ -36,3 +39,20 @@ def test_wrapper_model_handles_batching():
     model.expected_batch_size = [20, 1]
 
     model.predict(dataset)
+
+
+def test_wrapper_model_saves_and_loads_batch_size():
+    base_model = LogisticRegression()
+    model = Model(
+        base_model.predict_proba,
+        model_type="classification",
+        feature_names=["one", "two"],
+        classification_threshold=0.5,
+        classification_labels=[0, 1],
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        model.batch_size = 127
+        model.save(tmpdir)
+        loaded_model = Model.load(tmpdir)
+
+        assert loaded_model.batch_size == 127
