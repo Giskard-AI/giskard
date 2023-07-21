@@ -90,17 +90,16 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
-import { Role } from "@/enums";
+import {api} from "@/api";
+import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import { computed, onBeforeMount, ref } from "vue";
+import {computed, onBeforeMount, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
-import { TYPE } from "vue-toastification";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
+import {TYPE} from "vue-toastification";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 
 const userStore = useUserStore();
@@ -114,7 +113,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
 const isLoading = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
@@ -148,10 +146,10 @@ const isUserProjectOwner = computed(() => {
 });
 
 async function deleteDataFile(id: string) {
-  mixpanel.track('Delete dataset', { id });
+  mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  useMainStore().addNotification({ content: messageDTO.message });
+  mainStore.addNotification({content: messageDTO.message});
   await projectArtifactsStore.loadDatasets();
 }
 
@@ -178,7 +176,7 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({ content: error.response.statusText, color: TYPE.ERROR });
+      mainStore.addNotification({content: error.response.statusText, color: TYPE.ERROR});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
