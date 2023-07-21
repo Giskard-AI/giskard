@@ -2,7 +2,7 @@
   <div class="vertical-container">
     <v-row class="mt-2 pl-3">
       <v-col class="d-flex">
-        <v-text-field v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+        <v-text-field v-if="projectArtifactsStore.datasets.length" v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
         <v-checkbox v-model="showDebugDatasets" label="Show debug datasets" class="ml-4"/>
       </v-col>
       <v-col>
@@ -109,7 +109,6 @@ import {computed, onBeforeMount, ref} from "vue";
 import InlineEditText from "@/components/InlineEditText.vue";
 import {useUserStore} from "@/stores/user";
 import {useProjectStore} from "@/stores/project";
-import {useMainStore} from "@/stores/main";
 import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import {TYPE} from "vue-toastification";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
@@ -125,7 +124,6 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-
 const isLoading = ref<boolean>(false);
 const showDebugDatasets = ref<boolean>(false);
 const lastVisitedFileId = ref<string | null>(null);
@@ -153,7 +151,7 @@ async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  useMainStore().addNotification({content: messageDTO.message});
+  mainStore.addNotification({content: messageDTO.message});
   await projectArtifactsStore.loadDatasets();
 }
 
@@ -191,7 +189,7 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
+      mainStore.addNotification({content: error.response.statusText, color: TYPE.ERROR});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }

@@ -19,7 +19,6 @@ import pandas as pd
 import pkg_resources
 import psutil
 import tqdm
-
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 import giskard
@@ -574,12 +573,23 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             preds_serie = results
             if dataset.target and dataset.target in dataset.df.columns:
                 target_serie = dataset.df[dataset.target]
+
                 diff = preds_serie - target_serie
-                diff_percent = pd.Series(diff / target_serie, name="diffPercent")
-                abs_diff = pd.Series(diff.abs(), name="absDiff")
-                abs_diff_percent = pd.Series(
-                    abs_diff / target_serie, name="absDiffPercent"
+                diff_percent = pd.Series(
+                    diff / target_serie,
+                    name="diffPercent",
+                    dtype=np.float64,
+                ).replace([np.inf, -np.inf], np.nan)
+                abs_diff = pd.Series(
+                    diff.abs(),
+                    name="absDiff",
+                    dtype=np.float64,
                 )
+                abs_diff_percent = pd.Series(
+                    abs_diff / target_serie,
+                    name="absDiffPercent",
+                    dtype=np.float64,
+                ).replace([np.inf, -np.inf], np.nan)
                 calculated = pd.concat(
                     [
                         preds_serie,
