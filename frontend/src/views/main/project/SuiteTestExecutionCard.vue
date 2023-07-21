@@ -204,7 +204,7 @@ async function runDebug(inputs, modelId: string) {
   try {
     modelDialog.value = false;
     loading.value = true;
-    let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, true);
+    let res = await api.runAdHocTest(testSuiteStore.projectId!, props.suiteTest.testUuid, inputs, false, true);
     let dataset = res.result[0].result.outputDfUuid;
 
     const debuggingSession = await api.prepareInspection({
