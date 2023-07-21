@@ -144,7 +144,7 @@ class ScanResult:
                                          suffix=".html") as f:
             scan_results_local_path = f.name
             scan_results_artifact_name = scan_results_local_path.split("/")[-1]
-            scan_summary_artifact_name = "scan-summary" + model_artifact_path if summary else None
+            scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
             self.to_html(scan_results_local_path)
 
             if mlflow_client is None and mlflow_run_id is None:

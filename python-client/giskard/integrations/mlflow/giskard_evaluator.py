@@ -267,9 +267,10 @@ class GiskardEvaluator(ModelEvaluator):
         artifacts["giskard_scan_results"] = GiskardScanResultEvaluationArtifact(
             uri=get_artifact_uri(self.run_id, scan_results_artifact_name),
             content=scan_results)
-        artifacts["giskard_scan_summary"] = GiskardScanSummaryEvaluationArtifact(
-            uri=get_artifact_uri(self.run_id, scan_summary_artifact_name),
-            content=scan_summary)
+        if scan_summary_artifact_name:
+            artifacts["giskard_scan_summary"] = GiskardScanSummaryEvaluationArtifact(
+                uri=get_artifact_uri(self.run_id, scan_summary_artifact_name),
+                content=scan_summary)
 
         # Generate test suite
         _, metrics = self._generate_test_suite(scan_results)
