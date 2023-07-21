@@ -693,13 +693,16 @@ class Dataset(ColumnMetadataMixin):
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
         with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv") as f:
-            with open(f.name, "wb") as fw:
+            local_path = f.name
+            artifact_name = local_path.split("/")[-1]
+            with open(local_path, "wb") as fw:
                 uncompressed_bytes = save_df(self.df)
                 fw.write(uncompressed_bytes)
             if mlflow_client is None and mlflow_run_id is None:
-                mlflow.log_artifact(f.name)
+                mlflow.log_artifact(local_path)
             elif mlflow_client and mlflow_run_id:
-                mlflow_client.log_artifact(mlflow_run_id, f.name)
+                mlflow_client.log_artifact(mlflow_run_id, local_path=local_path)
+        return artifact_name
 
 
 def _cast_to_list_like(object):

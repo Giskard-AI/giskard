@@ -66,6 +66,7 @@ class TestSuiteResult(tuple):
         import mlflow
         from giskard.integrations.mlflow.giskard_evaluator import process_text
 
+        metrics = dict()
         for test_result in self[1]:
             test_name = test_result[0]
             test_name = process_text(test_name)
@@ -73,6 +74,9 @@ class TestSuiteResult(tuple):
                 mlflow.log_metric(test_name, test_result[1].metric)
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
+            metrics[test_name] = test_result[1].metric
+
+        return metrics
 
 
 class SuiteInput:

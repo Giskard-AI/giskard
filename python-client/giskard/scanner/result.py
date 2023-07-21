@@ -128,24 +128,32 @@ class ScanResult:
             {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )
 
+    @staticmethod
+    def get_scan_summary_for_mlflow(scan_results):
+        results_df = scan_results.to_dataframe()
+        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        return results_df
+
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None, summary: bool = True,
                   model_artifact_path: str = ""):
-        results_df = self.to_dataframe()
-        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
 
         with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path + "-",
                                          suffix=".html") as f:
-            scan_results_filename = f.name
-            self.to_html(scan_results_filename)
+            scan_results_local_path = f.name
+            scan_results_artifact_name = scan_results_local_path.split("/")[-1]
+            scan_summary_artifact_name = "scan-summary" + model_artifact_path if summary else None
+            self.to_html(scan_results_local_path)
 
             if mlflow_client is None and mlflow_run_id is None:
-                mlflow.log_artifact(scan_results_filename)
+                mlflow.log_artifact(scan_results_local_path)
                 if summary:
-                    mlflow.log_table(results_df, artifact_file="scan-summary" + model_artifact_path + ".json")
+                    mlflow.log_table(results_df, artifact_file=scan_summary_artifact_name)
             elif mlflow_client and mlflow_run_id:
-                mlflow_client.log_artifact(mlflow_run_id, scan_results_filename)
+                mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
                     mlflow_client.log_table(mlflow_run_id, results_df,
-                                            artifact_file="scan-summary" + model_artifact_path + ".json")
+                                            artifact_file=scan_summary_artifact_name)
+        return scan_results_artifact_name, scan_summary_artifact_name
