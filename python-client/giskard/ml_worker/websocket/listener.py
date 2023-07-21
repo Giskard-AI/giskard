@@ -58,6 +58,8 @@ import numpy as np
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
+import threading
+
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,60 @@ def websocket_log_actor(ml_worker: MLWorker, req: dict, *args, **kwargs):
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
 
+def action_in_thread(callback, ml_worker, action, req):
+    # Parse the response ID
+    rep_id = req["id"] if "id" in req.keys() else None
+    # Parse the param
+    params = req["param"] if "param" in req.keys() else {}
+    try:
+        # TODO: Sort by usage frequency
+        if action == MLWorkerAction.getInfo:
+            params = GetInfoParam.parse_obj(params)
+        elif action == MLWorkerAction.runAdHocTest:
+            params = RunAdHocTestParam.parse_obj(params)
+        elif action == MLWorkerAction.datasetProcessing:
+            params = DatesetProcessingParam.parse_obj(params)
+        elif action == MLWorkerAction.runTestSuite:
+            params = TestSuiteParam.parse_obj(params)
+        elif action == MLWorkerAction.runModel:
+            params = RunModelParam.parse_obj(params)
+        elif action == MLWorkerAction.runModelForDataFrame:
+            params = RunModelForDataFrameParam.parse_obj(params)
+        elif action == MLWorkerAction.explain:
+            params = ExplainParam.parse_obj(params)
+        elif action == MLWorkerAction.explainText:
+            params = ExplainTextParam.parse_obj(params)
+        elif action == MLWorkerAction.echo:
+            params = EchoMsg.parse_obj(params)
+        elif action == MLWorkerAction.generateTestSuite:
+            params = GenerateTestSuiteParam.parse_obj(params)
+        elif action == MLWorkerAction.stopWorker:
+            pass
+        elif action == MLWorkerAction.getCatalog:
+            pass
+        elif action == MLWorkerAction.generateQueryBasedSlicingFunction:
+            pass
+        # Call the function and get the response
+        info: websocket.WorkerReply = callback(ml_worker=ml_worker, action=action.name, params=params)
+        # TODO: Allow to reply multiple messages for async event
+
+    except Exception as e:
+        info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
+        logger.warn(e)
+
+    if rep_id:
+        # Reply if there is an ID
+        logger.debug(f"[WRAPPED_CALLBACK] replying {len(info.json())} {info.json()} for {action.name}")
+        ml_worker.ws_conn.send(
+            f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
+            json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
+        )
+
+    # Post-processing of stopWorker
+    if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:
+        ml_worker.ws_conn.disconnect()
+
+
 def websocket_actor(action: MLWorkerAction):
     """
     Register a function as an actor to an action from WebSocket connection
@@ -97,57 +153,8 @@ def websocket_actor(action: MLWorkerAction):
             logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
             def wrapped_callback(ml_worker: MLWorker, req: dict, *args, **kwargs):
-                # Parse the response ID
-                rep_id = req["id"] if "id" in req.keys() else None
-                # Parse the param
-                params = req["param"] if "param" in req.keys() else {}
-                try:
-                    # TODO: Sort by usage frequency
-                    if action == MLWorkerAction.getInfo:
-                        params = GetInfoParam.parse_obj(params)
-                    elif action == MLWorkerAction.runAdHocTest:
-                        params = RunAdHocTestParam.parse_obj(params)
-                    elif action == MLWorkerAction.datasetProcessing:
-                        params = DatesetProcessingParam.parse_obj(params)
-                    elif action == MLWorkerAction.runTestSuite:
-                        params = TestSuiteParam.parse_obj(params)
-                    elif action == MLWorkerAction.runModel:
-                        params = RunModelParam.parse_obj(params)
-                    elif action == MLWorkerAction.runModelForDataFrame:
-                        params = RunModelForDataFrameParam.parse_obj(params)
-                    elif action == MLWorkerAction.explain:
-                        params = ExplainParam.parse_obj(params)
-                    elif action == MLWorkerAction.explainText:
-                        params = ExplainTextParam.parse_obj(params)
-                    elif action == MLWorkerAction.echo:
-                        params = EchoMsg.parse_obj(params)
-                    elif action == MLWorkerAction.generateTestSuite:
-                        params = GenerateTestSuiteParam.parse_obj(params)
-                    elif action == MLWorkerAction.stopWorker:
-                        pass
-                    elif action == MLWorkerAction.getCatalog:
-                        pass
-                    elif action == MLWorkerAction.generateQueryBasedSlicingFunction:
-                        pass
-                    # Call the function and get the response
-                    info: websocket.WorkerReply = callback(
-                        ml_worker=ml_worker, action=action.name, params=params, *args, **kwargs
-                    )
-                except Exception as e:
-                    info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
-                    logger.warn(e)
-
-                if rep_id:
-                    # Reply if there is an ID
-                    logger.debug(f"[WRAPPED_CALLBACK] replying {info.json()} for {action.name}")
-                    ml_worker.ws_conn.send(
-                        f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
-                        json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
-                    )
-
-                # Post-processing of stopWorker
-                if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:
-                    ml_worker.ws_conn.disconnect()
+                # Open a new thread to process and reply, avoid slowing down the WebSocket message loop
+                threading.Thread(target=action_in_thread, args=(callback, ml_worker, action, req)).start()
 
             WEBSOCKET_ACTORS[action.name] = wrapped_callback
         return callback
