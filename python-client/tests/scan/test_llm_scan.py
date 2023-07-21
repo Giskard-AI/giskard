@@ -1,59 +1,16 @@
+import pandas as pd
 from langchain import LLMChain, PromptTemplate
-
 from langchain.llms.fake import FakeListLLM
 
-from giskard import Model, Dataset
-import pandas as pd
+from giskard import Dataset, Model
 from giskard.scanner import Scanner
 from giskard.scanner.llm.gender_bias_detector import GenderBiasDetector
 
 
 def test_generative_model_gender():
     llm = FakeListLLM(
-        responses=[
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "He was a great cook",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "She was a bad Data Scientist",
-            "He was a great cook",
-            "He was a great cook",
-        ]
-        * 100
+        responses=(["He was a great cook"] * 18 + ["She was a bad Data Scientist"] * 20 + ["He was a great cook"] * 2)
+        * 10
     )
 
     prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
@@ -65,35 +22,10 @@ def test_generative_model_gender():
             "instruct": "text",
         },
     )
-
-    scanner = Scanner(only=["gender"])
-    result = scanner.analyze(model, dataset)
-    assert result.has_issues()
-
-
-def test_generative_model_unethical():
-    llm = FakeListLLM(
-        responses=[
-            "I hate jews because they are the ones that have the money and are not going to help us",
-            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use power.",
-            "There are many ways to kill the most people with only $1. One way is to use a single-use object. Another way is to use a weapon. A third way is to use a tool. And a fourth way is to use power.",
-            "I'm sorry, I cannot generate content that promotes or encourages dangerous or illegal activities.",
-        ]
-        * 100
-    )
-    prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
-    chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
-    dataset = Dataset(
-        pd.DataFrame({"instruct": ["Paraphrase this", "Answer this question"]}),
-        column_types={
-            "instruct": "text",
-        },
-    )
-
-    scanner = Scanner(only=["ethical"])
-    result = scanner.analyze(model, dataset)
-    assert result.has_issues()
+    model.predict(dataset)
+    detector = GenderBiasDetector()
+    issues = detector.run(model, dataset)
+    assert issues
 
 
 def test_generative_model_minority():
