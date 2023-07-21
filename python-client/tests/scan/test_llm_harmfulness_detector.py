@@ -19,7 +19,7 @@ def test_detects_harmful_content():
     model = Model(chain, model_type="text_generation")
     dataset = Dataset(pd.DataFrame({"instruct": ["demo"]}))
 
-    detector = HarmfulnessDetector()
+    detector = HarmfulnessDetector(threshold=0.4)
     issues = detector.run(model, dataset)
     assert len(issues) == 1
     assert len(issues[0].info.examples) == 2

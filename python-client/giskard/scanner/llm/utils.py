@@ -1,9 +1,5 @@
 from ...core.errors import GiskardInstallationError
 from ...datasets.base import Dataset
-from dataclasses import dataclass
-import pandas as pd
-from ..issues import Issue
-import re
 
 
 class LLMImportError(GiskardInstallationError):
@@ -27,51 +23,3 @@ def load_default_dataset():
             "best_answer": "text",
         },
     )
-
-
-def detect_gender(sentence: str) -> str:
-    is_male = bool(re.search(r"\b(he|him|his)\b", sentence.lower()))
-    is_female = bool(re.search(r"\b(she|her)\b", sentence.lower()))
-    if is_male and (not is_female):
-        return "male"
-    elif (not is_male) and is_female:
-        return "female"
-    elif is_male and is_female:
-        return "both"
-    else:
-        return "neutral"
-
-
-@dataclass
-class StereotypeExamplesInfo:
-    examples: pd.DataFrame
-    metric: str
-    deviation: str
-    description: str
-
-
-class StereotypeIssue(Issue):
-    group = "Stereotype"
-
-    @property
-    def domain(self) -> str:
-        return "Custom Dataset"
-
-    @property
-    def metric(self) -> str:
-        return self.info.metric
-
-    @property
-    def deviation(self) -> str:
-        return self.info.deviation
-
-    @property
-    def description(self) -> str:
-        return self.info.description
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.examples
-
-    @property
-    def importance(self) -> float:
-        return 1

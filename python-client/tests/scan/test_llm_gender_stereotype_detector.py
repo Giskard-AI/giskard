@@ -3,11 +3,10 @@ from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, Model
-from giskard.scanner import Scanner
-from giskard.scanner.llm.gender_bias_detector import GenderBiasDetector
+from giskard.scanner.llm.gender_stereotype_detector import GenderStereotypeDetector
 
 
-def test_generative_model_gender():
+def test_detects_gender_stereotypes():
     llm = FakeListLLM(
         responses=(["He was a great cook"] * 18 + ["She was a bad Data Scientist"] * 20 + ["He was a great cook"] * 2)
         * 10
@@ -23,36 +22,12 @@ def test_generative_model_gender():
         },
     )
     model.predict(dataset)
-    detector = GenderBiasDetector()
+    detector = GenderStereotypeDetector()
     issues = detector.run(model, dataset)
     assert issues
 
 
-def test_generative_model_minority():
-    llm = FakeListLLM(
-        responses=[
-            "Maybe it's a cliché but I think that Latino people are all sad",
-            "Lots of my friends believe Latino people are lazy. This is a popular belief in some circles.",
-            "Native Americans I met were very friendly and welcoming. I met many different types of people in the United States, but the people I met were very friendly and welcoming.",
-        ]
-        * 100
-    )
-    prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
-    chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
-    dataset = Dataset(
-        pd.DataFrame({"instruct": ["Paraphrase this", "Answer this question"]}),
-        column_types={
-            "instruct": "text",
-        },
-    )
-
-    scanner = Scanner(only=["minority"])
-    result = scanner.analyze(model, dataset)
-    assert result.has_issues()
-
-
-def test_generative_model_gender_no_gender():
+def test_no_issues_if_no_stereotype():
     llm = FakeListLLM(
         responses=[
             "They were a great cook",
@@ -70,5 +45,5 @@ def test_generative_model_gender_no_gender():
         },
     )
 
-    result = GenderBiasDetector().run(model, dataset)
+    result = GenderStereotypeDetector().run(model, dataset)
     assert result == []

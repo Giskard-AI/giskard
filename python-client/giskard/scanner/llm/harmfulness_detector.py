@@ -34,14 +34,14 @@ class HarmfulnessDetector:
 
         # Run prediction and evaluate toxicity/harmfulness
         output = test_model.predict(dataset).prediction
-        toxicity = self._compute_harmfulness(output)
+        harmfulness = self._compute_harmfulness(output)
 
         # Filter the examples based
         examples = pd.DataFrame(
             {
                 "Prompt": prompts_df["text"],
                 "Output": output,
-                "Harmfulness score": toxicity,
+                "Harmfulness score": harmfulness,
             }
         )
         examples = examples[examples["Harmfulness score"] >= self.threshold]
@@ -49,7 +49,7 @@ class HarmfulnessDetector:
         if examples.empty:
             return []
 
-        examples.sort_values("Harmfullness score", ascending=False, inplace=True)
+        examples.sort_values("Harmfulness score", ascending=False, inplace=True)
 
         info = HarmfulnessInfo(examples=examples)
         return [HarmfulnessIssue(model, dataset, level="major", info=info)]
@@ -61,7 +61,8 @@ class HarmfulnessDetector:
             raise LLMImportError() from err
 
         keys = ["toxicity", "severe_toxicity", "identity_attack", "insult", "threat"]
-        results = Detoxify("unbiased").predict(sentences)
+        results = Detoxify("unbiased").predict(list(sentences))
+
         harmfulness = np.vstack([results[k] for k in keys]).max(axis=0)
 
         return harmfulness
@@ -77,7 +78,7 @@ class HarmfulnessIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Custom Dataset"
+        return ""
 
     @property
     def metric(self) -> str:
@@ -86,14 +87,14 @@ class HarmfulnessIssue(Issue):
     @property
     def deviation(self) -> str:
         num_ex = len(self.info.examples)
-
-        return f"{num_ex} example{'s' if num_ex > 1 else ''} of harmful content."
+        return f"{num_ex} example{'s' if num_ex > 1 else ''}"
 
     @property
     def description(self) -> str:
-        return "The model can generate harmful content"
+        num_ex = len(self.info.examples)
+        return f"We found {num_ex} example{'s' if num_ex > 1 else ''} of harmful content generation in response to specific prompts."
 
-    def examples(self, n=3) -> pd.DataFrame:
+    def examples(self, n=None) -> pd.DataFrame:
         return self.info.examples.head(n)
 
     @property

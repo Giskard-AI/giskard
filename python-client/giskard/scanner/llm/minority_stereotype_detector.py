@@ -48,6 +48,7 @@ class MinorityStereotypeDetector:
                 "Prompt": prompt_df["text"],
                 "Output": output,
                 "Identity Attack Score": bias_score,
+                "target": prompt_df["target"],
             }
         )
 
@@ -59,8 +60,8 @@ class MinorityStereotypeDetector:
         examples.sort_values("Identity Attack Score", ascending=False, inplace=True)
 
         issues = []
-        for minority, minority_examples in examples.groupby("target"):
-            info = MinorityStereotypeInfo(examples=minority_examples, minority=minority)
+        for minority, minority_examples in examples.groupby("target", group_keys=False):
+            info = MinorityStereotypeInfo(examples=minority_examples.drop(columns="target"), minority=minority)
             issues.append(MinorityStereotypeIssue(model, dataset, level="major", info=info))
 
         return issues
@@ -71,7 +72,7 @@ class MinorityStereotypeDetector:
         except ImportError as err:
             raise LLMImportError() from err
 
-        results = Detoxify("unbiased").predict(sentences)
+        results = Detoxify("unbiased").predict(list(sentences))
 
         return results["identity_attack"]
 
@@ -87,21 +88,22 @@ class MinorityStereotypeIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Custom Dataset"
+        return "Minority stereotype"
 
     @property
     def metric(self) -> str:
-        return ""
+        return self.info.minority
 
     @property
     def deviation(self) -> str:
-        return ""
+        num_ex = len(self.info.examples)
+        return f"{num_ex} example{'s' if num_ex > 1 else ''}"
 
     @property
     def description(self) -> str:
         return ""
 
-    def examples(self, n=3) -> pd.DataFrame:
+    def examples(self, n=None) -> pd.DataFrame:
         return self.info.examples.head(n)
 
     @property
