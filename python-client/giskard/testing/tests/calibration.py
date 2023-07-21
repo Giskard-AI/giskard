@@ -68,6 +68,9 @@ def test_overconfidence_rate(
             over which a prediction is considered overconfident. If not
             provided, it will be determined automatically depending on the
             number of classes.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have an overconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -149,6 +152,9 @@ def test_underconfidence_rate(
             underconfident. Default is 0.90, i.e. when the second most probable
             prediction is 90% or more with respect to the highest probability,
             the sample prediction is considered underconfident.
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have an underconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
