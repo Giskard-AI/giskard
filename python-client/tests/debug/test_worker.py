@@ -33,7 +33,7 @@ def test_service(data, model, request):
 
         with pytest.raises(
                 ValueError,
-                match=r"You have requested to debug the test, but the test did not return a debuggable output.",
+                match=r"This test does not return any examples to debug.*",
         ):
             MLWorkerServiceImpl.do_run_adhoc_test(client, arguments, test_f1, debug_info)
 
