@@ -64,11 +64,17 @@ class MLWorker:
             self.ml_worker_id = EXTERNAL_WORKER_ID
             # Use the URL path component provided by settings
             backend_url.path = settings.ws_path
+            # Use 443 port if https and no given port
+            if backend_url.scheme == "https" and backend_url.port is None:
+                backend_url.port = 443
         ws_conn = stomp.WSStompConnection(
             [(backend_url.host, backend_url.port)],
             ws_path=backend_url.path,
             reconnect_attempts_max=1,  # Reconnection managed by our Listener
         )
+        if backend_url.scheme == "https":
+            # Enable SSL/TLS
+            ws_conn.set_ssl([(backend_url.host, backend_url.port)])
         ws_conn.transport.override_threading(websocket_use_main_thread)  # Expose WebSocket loop function to ML Worker
         ws_conn.set_listener("ml-worker-action-listener", MLWorkerWebSocketListener(self))
         return ws_conn
