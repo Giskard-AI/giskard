@@ -152,6 +152,7 @@ dependencies = [
     "chardet", # text metadata
     "jinja2>=3", # scan template (temporary)
     "requests-toolbelt>=0.9.1",
+    "stomp-py>=8.1.0",
 ]
 
 [project.optional-dependencies]
