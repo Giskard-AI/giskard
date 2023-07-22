@@ -31,3 +31,10 @@ def bins_count(model, dataframe):  # done at the beggining
         flag = {value: count < ratio for value, count in counts.items()}
         value_counts[column] = {"value_counts": counts, "nunique": nunique, "ratio": ratio, "flag": flag}
     return value_counts
+
+
+def compute_mad(x):
+    med = np.median(x)
+    x = abs(x - med)
+    mad = np.median(x)
+    return mad

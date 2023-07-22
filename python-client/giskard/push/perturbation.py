@@ -1,9 +1,8 @@
-import numpy as np
 import pandas as pd
-
+from giskard.push.utils import compute_mad
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction, transformation_function
 from giskard.push import SupportedPerturbationType
 from giskard.scanner.robustness.text_transformations import (
     TextGenderTransformation,
@@ -71,12 +70,6 @@ class Perturbation:
         self._perturb_and_predict()
 
     def _perturb_and_predict(self):
-        def mad(x):
-            med = np.median(x)
-            x = abs(x - med)
-            mad = np.median(x)
-            return mad
-
         # idrow = self.idrow
         # ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
 
@@ -86,13 +79,24 @@ class Perturbation:
 
         row_perturbed = ds_slice.copy()
         if self.coltype == SupportedPerturbationType.NUMERIC:
-            mad = mad(self.ds.df[self.feature])
+            mad = compute_mad(self.ds.df[self.feature])
 
             t, row_perturbed = self._num_perturb(3 * mad, self.feature, ds_slice)
             self._generate_perturbation(ds_slice, row_perturbed)
 
             if self.passed:
-                self.transformation_function.append(t)
+
+                @transformation_function(name="MAD Increment", tags=["num"], row_level=False)
+                def mad_transformation(data: pd.DataFrame, column_name: str, factor: float = 3) -> pd.DataFrame:
+                    """
+                    Add factor times the MAD to the column
+                    """
+                    data = data.copy()
+                    mad = compute_mad(data[column_name])
+                    data[column_name] = data[column_name].apply(lambda x: x + factor * mad)
+                    return data
+
+                self.transformation_function.append(mad_transformation)
 
         elif self.coltype == SupportedPerturbationType.TEXT:
             for text_transformation in text_transfo_list:
