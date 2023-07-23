@@ -43,7 +43,7 @@ def scan(
         verbose (bool):
             Whether to print information messages. Enabled by default.
         raise_exceptions (bool):
-            Whether to raise an exception if detection errors are encoutered. By default, errors are logged and
+            Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
 
     """

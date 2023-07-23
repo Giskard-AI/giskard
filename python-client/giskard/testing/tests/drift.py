@@ -18,6 +18,7 @@ from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestM
 from giskard.ml_worker.testing.utils import check_slice_not_empty
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.models.base import BaseModel
+from . import debug_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -266,7 +267,7 @@ def test_drift_psi(
                 raise ValueError(
                     test_name + f": the categories {filtered_modalities} completely drifted as they are not present in the "
                                 f"'actual_dataset'")
-            output_ds.name = "Debug: " + test_name
+            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -359,7 +360,7 @@ def test_drift_chi_square(
             output_ds = actual_dataset.copy()  # copy all properties
             output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
             test_name = inspect.stack()[0][3]
-            output_ds.name = "Debug: " + test_name
+            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -588,7 +589,7 @@ def test_drift_prediction_psi(
                 raise ValueError(
                     test_name + f": the categories {filtered_modalities} completely drifted as they are not present "
                                 f"in the 'actual_dataset'")
-            output_ds.name = "Debug: " + test_name
+            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -712,7 +713,7 @@ def test_drift_prediction_chi_square(
             output_ds = actual_dataset.copy()  # copy all properties
             output_ds.df = actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values]
             test_name = inspect.stack()[0][3]
-            output_ds.name = "Debug: " + test_name
+            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(

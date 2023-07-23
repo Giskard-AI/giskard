@@ -10,6 +10,7 @@ from ...ml_worker.testing.test_result import TestResult
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
+from . import debug_prefix
 
 
 def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -93,7 +94,7 @@ def test_overconfidence_rate(
         output_ds = dataset.copy()
         output_ds.df = dataset.df.loc[overconfidence_mask[overconfidence_mask].index]
         test_name = inspect.stack()[0][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -174,7 +175,7 @@ def test_underconfidence_rate(
         output_ds = dataset.copy()
         output_ds.df = dataset.df.loc[underconfidence_mask[underconfidence_mask].index]
         test_name = inspect.stack()[0][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
