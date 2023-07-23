@@ -95,18 +95,18 @@ class BaseModel(ABC):
     """
 
     should_save_model_class = False
-    id: uuid.UUID
     _cache: ModelCache
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -127,7 +127,12 @@ class BaseModel(ABC):
             The initialized object contains the following attributes:
                 - meta: a ModelMeta object containing metadata about the model.
         """
-        self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
+
+        if id is None:
+            self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
+        else:
+            self.id = uuid.UUID(id)
+
         if type(model_type) == str:
             try:
                 model_type = SupportedModelTypes(model_type)
@@ -155,7 +160,7 @@ class BaseModel(ABC):
             classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,
-            classification_threshold=classification_threshold,
+            classification_threshold=classification_threshold
         )
 
     @property
@@ -212,7 +217,7 @@ class BaseModel(ABC):
                     "loader_class": self.meta.loader_class,
                     "id": str(self.id),
                     "name": self.meta.name,
-                    "size": get_size(local_path),
+                    "size": get_size(local_path)
                 },
                 f,
                 default_flow_style=False,
@@ -436,9 +441,8 @@ class BaseModel(ABC):
 
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
-
-        model = clazz.load(local_dir, **constructor_params)
-        return model
+        constructor_params['id'] = str(model_id)
+        return clazz.load(local_dir, **constructor_params)
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir):
@@ -505,16 +509,17 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the WrapperModel class.
@@ -533,7 +538,7 @@ class WrapperModel(BaseModel, ABC):
             ValueError: If `data_preprocessing_function` takes more than one argument.
             ValueError: If `model_postprocessing_function` takes more than one argument.
         """
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, **kwargs)
+        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, id, **kwargs)
         self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function

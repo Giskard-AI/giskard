@@ -74,7 +74,7 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False):
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
         ds = dataset.copy()
         is_slicing_only = True
 
@@ -98,14 +98,17 @@ class DataProcessor:
             if apply_only_last:
                 break
 
-        if len(self.pipeline):
-            ds.data_processor = self
+        if get_mask:
+            return dataset.df.index.isin(df.index)  # returns a boolean numpy.ndarray of shape len(dataset.df)
+        else:
+            if len(self.pipeline):
+                ds.data_processor = self
 
-        # If dataset had metadata, copy it to the new dataset
-        if is_slicing_only and hasattr(dataset, "column_meta"):
-            ds.load_metadata_from_instance(dataset.column_meta)
+            # If dataset had metadata, copy it to the new dataset
+            if is_slicing_only and hasattr(dataset, "column_meta"):
+                ds.load_metadata_from_instance(dataset.column_meta)
 
-        return ds
+            return ds
 
     def __repr__(self) -> str:
         return f"<DataProcessor ({len(self.pipeline)} steps)>"
@@ -149,14 +152,14 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: Optional[Hashable] = None,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[Hashable, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: Optional[Hashable] = None,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[Hashable, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -223,6 +226,8 @@ class Dataset(ColumnMetadataMixin):
             "Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class."
         )
 
+        self.data_processor = DataProcessor()
+
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
         Adds a slicing function to the data processor's list of steps.
@@ -245,6 +250,27 @@ class Dataset(ColumnMetadataMixin):
         self.data_processor.add_step(transformation_function)
         return self
 
+    @configured_validate_arguments
+    def filter(self, mask: List[int], axis: int = 0):
+        """
+        Filter the dataset using the specified `mask`.
+
+        Args:
+            mask (List[int]): A mask of int values to apply.
+            axis (int): The axis on which the `mask` should be applied. axis = 0 by default.
+
+        Returns:
+            Dataset:
+                The filtered dataset as a `Dataset` object.
+
+        """
+        return Dataset(df=self.df.filter(mask, axis=axis),
+                       name=self.name,
+                       target=self.target,
+                       cat_columns=self.cat_columns,
+                       column_types=self.column_types,
+                       validation=False)
+
     @cached_property
     def row_hashes(self):
         return pandas.Series(
@@ -262,8 +288,9 @@ class Dataset(ColumnMetadataMixin):
             self,
             slicing_function: Union[SlicingFunction, SlicingFunctionType],
             row_level: bool = True,
+            get_mask: bool = False,
             cell_level=False,
-            column_name: Optional[str] = None,
+            column_name: Optional[str] = None
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -276,6 +303,8 @@ class Dataset(ColumnMetadataMixin):
                 will be used directly to slice the DataFrame.
             row_level (bool): Whether the `slicing_function` should be applied to the rows (True) or
                 the whole dataframe (False). Defaults to True.
+            get_mask (bool): Whether the `slicing_function` returns a dataset (False) or a mask, i.e.
+                a list of indices (True).
             cell_level (bool): Whether the `slicing_function` should be applied to the cells (True) or
                 the whole dataframe (False). Defaults to False.
 
@@ -303,17 +332,17 @@ class Dataset(ColumnMetadataMixin):
 
         return self.data_processor.add_step(slicing_function).apply(
             self, apply_only_last=True
-        )
+        , get_mask=get_mask)
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[
+            self,
+            transformation_function: Union[
             TransformationFunction, TransformationFunctionType
         ],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -352,7 +381,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
         assert (
-            not transformation_function.cell_level
+                not transformation_function.cell_level
             or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(

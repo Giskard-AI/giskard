@@ -70,19 +70,20 @@ class PyTorchModel(MLFlowBasedModel):
     """
 
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            torch_dtype: TorchDType = "float32",
-            device="cpu",
-            name: Optional[str] = None,
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
-            iterate_dataset=True,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        torch_dtype: TorchDType = "float32",
+        device="cpu",
+        name: Optional[str] = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+        iterate_dataset=True,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         super().__init__(
             model=model,
@@ -93,6 +94,7 @@ class PyTorchModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            id=id,
             **kwargs,
         )
 
