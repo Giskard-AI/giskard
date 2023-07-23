@@ -60,20 +60,20 @@ class TorchMinimalDataset(torch_dataset):
 
 class PyTorchModel(MLFlowSerializableModel):
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        torch_dtype: TorchDType = "float32",
-        device="cpu",
-        name: Optional[str] = None,
-        data_preprocessing_function=None,
-        model_postprocessing_function=None,
-        feature_names=None,
-        classification_threshold=0.5,
-        classification_labels=None,
-        iterate_dataset: bool = True,
-        batch_size: Optional[int] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            torch_dtype: TorchDType = "float32",
+            device="cpu",
+            name: Optional[str] = None,
+            data_preprocessing_function=None,
+            model_postprocessing_function=None,
+            feature_names=None,
+            classification_threshold=0.5,
+            classification_labels=None,
+            iterate_dataset: bool = True,
+            batch_size: Optional[int] = None,
+            **kwargs,
     ) -> None:
         """Automatically wraps a PyTorch model.
 
@@ -214,14 +214,19 @@ class PyTorchModel(MLFlowSerializableModel):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
+        kwargs.update(cls.load_pytorch_meta(local_dir))
+        return super().load(local_dir, **kwargs)
+
+    @classmethod
+    def load_pytorch_meta(cls, local_dir):
         pytorch_meta_file = Path(local_dir) / "giskard-model-pytorch-meta.yaml"
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs["device"] = pytorch_meta["device"]
-                kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
-                kwargs["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
-                return super().load(local_dir, **kwargs)
+                pytorch_meta["device"] = pytorch_meta.get("device")
+                pytorch_meta["torch_dtype"] = pytorch_meta.get("torch_dtype")
+                pytorch_meta["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
+                return pytorch_meta
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
