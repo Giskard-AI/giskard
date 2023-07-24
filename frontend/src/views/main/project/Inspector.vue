@@ -4,14 +4,15 @@
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
           <v-card outlined>
-            <OverlayLoader :show="loadingData" />
+            <OverlayLoader :show="loadingData"/>
             <v-card-title>
               Input Data
               <v-spacer></v-spacer>
               <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'" :disabled="!(dirty || isInputNotOriginal)">reset
+              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'"
+                     :disabled="!(dirty || isInputNotOriginal)">reset
               </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
@@ -120,7 +121,11 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target" :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modified="dirty || isInputNotOriginal" :debouncingTimeout="debouncingTimeout" @result="setResult" />
+          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target"
+                             :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels"
+                             :predictionTask="model.modelType" :inputData="inputData"
+                             :modified="dirty || isInputNotOriginal" :debouncingTimeout="debouncingTimeout"
+                             @result="setResult"/>
           <v-card class="mb-4" outlined>
             <v-card-title>
               Explanation
@@ -147,11 +152,18 @@
 
                 <v-tab-item v-if='modelFeatures.length > 1'>
 
-                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout" />
+                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target"
+                                          :classificationLabels="model.classificationLabels"
+                                          :predictionTask="model.modelType" :inputData="inputData"
+                                          :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout"/>
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :classificationLabels='model.classificationLabels' :classificationResult='classificationResult' :inputData='inputData' />
-                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :inputData='inputData' />
+                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id'
+                                   :datasetId='dataset.id' :textFeatureNames='textFeatureNames'
+                                   :classificationLabels='model.classificationLabels'
+                                   :classificationResult='classificationResult' :inputData='inputData'/>
+                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id'
+                                             :textFeatureNames='textFeatureNames' :inputData='inputData'/>
                 </v-tab-item>
               </v-tabs>
             </v-card-text>
@@ -169,14 +181,12 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import RegressionTextExplanation from '@/views/main/project/RegressionTextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import { DatasetDTO, ModelDTO, ModelType } from '@/generated-sources';
-import { isClassification } from '@/ml-utils';
-import mixpanel from 'mixpanel-browser';
-import { anonymize } from '@/utils';
+import {DatasetDTO, ModelDTO, ModelType} from '@/generated-sources';
+import {isClassification} from '@/ml-utils';
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { onMounted, ref, computed, watch } from 'vue';
+import {useCatalogStore} from "@/stores/catalog";
+import {computed, onMounted, ref, watch} from 'vue';
 import PushPopover from "@/components/PushPopover.vue";
 
 const catalogStore = useCatalogStore();
@@ -190,51 +200,51 @@ interface Props {
   isMiniMode?: boolean;
 }
 
-  const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isMiniMode: false
 })
 
-  const debouncingTimeout: number = 500;
+const debouncingTimeout: number = 500;
 
-  const loadingData = ref(false);
+const loadingData = ref(false);
 const featuresToView = ref<string[]>([])
-  const errorLoadingMetadata = ref("")
-    const dataErrorMsg = ref("")
-    const classificationResult = ref("")
+const errorLoadingMetadata = ref("")
+const dataErrorMsg = ref("")
+const classificationResult = ref("")
 const dataFormObserver = ref(null);
 
-  const inputMetaData = computed(() =>{
-    if (!props.model) {
-      return [];
-    }
+const inputMetaData = computed(() => {
+  if (!props.model) {
+    return [];
+  }
 
-    return Object.entries(props.dataset.columnTypes)
-        .map(([name, type]) => ({
-          name,
-          type,
-                values: props.dataset.categoryFeatures[name] ?? []
-                  // Provide an empty list in case of null due to DB migration
-        }))
-  })
-
-  const isInputNotOriginal = computed(() => {
-  return JSON.stringify(props.inputData) !== JSON.stringify({ ...props.originalData, ...props.transformationModifications })
+  return Object.entries(props.dataset.columnTypes)
+      .map(([name, type]) => ({
+        name,
+        type,
+        values: props.dataset.categoryFeatures[name] ?? []
+        // Provide an empty list in case of null due to DB migration
+      }))
 })
 
-    const textFeatureNames = computed(() => {
+const isInputNotOriginal = computed(() => {
+  return JSON.stringify(props.inputData) !== JSON.stringify({...props.originalData, ...props.transformationModifications})
+})
+
+const textFeatureNames = computed(() => {
   return inputMetaData.value.filter(e => e.type == 'text').map(e => e.name)
-  })
+})
 
 const modelFeatures = computed(() => {
   return inputMetaData.value
-    .filter(x => (x.name !== props.dataset.target) && (!props.model.featureNames || props.model.featureNames.includes(x.name)))
-    .map(x => x.name);
+      .filter(x => (x.name !== props.dataset.target) && (!props.model.featureNames || props.model.featureNames.includes(x.name)))
+      .map(x => x.name);
 })
 
-  const datasetNonTargetColumns = computed(() => {
-    return _.sortBy(inputMetaData.value.filter(x => x.name !== props.dataset.target),
-    e => !props.model.featureNames?.includes(e.name),
-    'name'
+const datasetNonTargetColumns = computed(() => {
+  return _.sortBy(inputMetaData.value.filter(x => x.name !== props.dataset.target),
+      e => !props.model.featureNames?.includes(e.name),
+      'name'
   )
 })
 
@@ -242,36 +252,36 @@ function setResult(r: string) {
   if (isClassification(props.model.modelType)) {
     classificationResult.value = r
   }
-  }
+}
 
-  function resetInput() {
-    emit('reset');
+function resetInput() {
+  emit('reset');
   dataFormObserver.value && (dataFormObserver.value as HTMLFormElement).reset();
-  }
+}
 
-  function isFeatureEditable(featureName: string) {
-    if (!props.model.featureNames || props.model.featureNames.length == 0) {
-      // if user doesn't specify feature names consider all columns as feature names
+function isFeatureEditable(featureName: string) {
+  if (!props.model.featureNames || props.model.featureNames.length == 0) {
+    // if user doesn't specify feature names consider all columns as feature names
     return true;
   }
   return props.model.featureNames.includes(featureName)
-  }
+}
 
-  async functiononValuePerturbation(featureMeta) {
-    mixpanel.track("Feature perturbation", {
-      columnType: featureMeta.type,
-      featureName: anonymize(featureMeta.name),
-      modelId: props.model.id,
-      datasetId: props.dataset.id
-    })
-    emit('update:inputData', props.inputData)
-  }
+// async functiononValuePerturbation(featureMeta) {
+//   mixpanel.track("Feature perturbation", {
+//     columnType: featureMeta.type,
+//     featureName: anonymize(featureMeta.name),
+//     modelId: props.model.id,
+//     datasetId: props.dataset.id
+//   })
+//   emit('update:inputData', props.inputData)
+// }
 
-  async function loadMetaData() {
-    featuresToView.value = inputMetaData.value.map(e => e.name)
-  }
+async function loadMetaData() {
+  featuresToView.value = inputMetaData.value.map(e => e.name)
+}
 
-  const emit = defineEmits(['reset', 'update:inputData', 'submitValueVariationFeedback', 'submitValueFeedback']);
+const emit = defineEmits(['reset', 'update:inputData', 'submitValueVariationFeedback', 'submitValueFeedback']);
 
 watch(() => props.originalData, () => {
   resetInput();
@@ -331,7 +341,7 @@ select.common-style-input {
   padding-bottom: 8px;
 }
 
->>>.v-tabs.no-tab-header>.v-tabs-bar {
+> > > .v-tabs.no-tab-header > .v-tabs-bar {
   display: none;
 }
 </style>

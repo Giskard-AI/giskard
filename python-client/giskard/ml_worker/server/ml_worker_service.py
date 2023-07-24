@@ -541,9 +541,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     diff.abs(),
                     name="absDiff",
                     dtype=np.float64,
-                )abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent",
-                    dtype=np.float64,
-                ).replace([np.inf, -np.inf], np.nan)
+                )
+                abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent",
+                                             dtype=np.float64,
+                                             ).replace([np.inf, -np.inf], np.nan)
                 calculated = pd.concat(
                     [
                         preds_serie,
