@@ -40,20 +40,6 @@ suite_input_types: List[type] = [
 ]
 
 
-def _param_to_str(param: Any) -> str:
-    if issubclass(type(param), Dataset) or issubclass(type(param), BaseModel):
-        return param.name if getattr(param, "name", None) is not None else str(param.id)
-
-    if issubclass(type(param), Artifact):
-        return param.meta.name if param.meta.name is not None else str(param.meta.uuid)
-
-    return str(param)
-
-
-def _params_to_str(params: Dict[str, Any]) -> Dict[str, str]:
-    return {key: _param_to_str(value) for key, value in params.items()}
-
-
 class TestSuiteResult:
     """Represents the result of a test suite."""
 
@@ -65,25 +51,10 @@ class TestSuiteResult:
         return f"<TestSuiteResult ({'passed' if self.passed else 'failed'})>"
 
     def _repr_html_(self):
-        from jinja2 import Environment, PackageLoader, select_autoescape
-        from giskard.visualization.custom_jinja import pluralize, format_metric
+        from ..visualization.widget import TestSuiteResultWidget
 
-        env = Environment(
-            loader=PackageLoader("giskard.visualization", "templates"),
-            autoescape=select_autoescape(),
-        )
-        env.filters["pluralize"] = pluralize
-        env.filters["format_metric"] = format_metric
-
-        tpl = env.get_template("suite_results.html")
-
-        return tpl.render(
-            passed=self.passed,
-            test_results=[(name, result, _params_to_str(params)) for name, result, params in self.results],
-            num_passed_tests=len([res for _, res, _ in self.results if res.passed]),
-            num_failled_tests=len([res for _, res, _ in self.results if not res.passed and not res.is_error]),
-            num_error_tests=len([res for _, res, _ in self.results if res.is_error]),
-        )
+        widget = TestSuiteResultWidget(self)
+        return widget.render_html()
 
 
 class SuiteInput:
