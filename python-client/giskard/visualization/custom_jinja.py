@@ -1,9 +1,10 @@
 from typing import Sequence
+
 from jinja2 import nodes
 from jinja2.ext import Extension
 from markupsafe import Markup
 
-from ...utils.display import format_number
+from ..utils.display import format_number
 
 
 class IncludeRawExtension(Extension):
