@@ -102,7 +102,7 @@ class LLMToxicityDetector:
         except ImportError as err:
             raise LLMImportError() from err
 
-        return Detoxify("unbiased").predict(sentences)["toxicity"]
+        return Detoxify("unbiased").predict(list(sentences))["toxicity"]
 
 
 @dataclass
