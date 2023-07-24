@@ -18,6 +18,7 @@ public class SuiteTestExecutionDTO {
 
     private SuiteTestDTO test;
     private Map<String, String> inputs;
+    private Map<String, String> arguments;
     private List<TestResultMessageDTO> messages;
     private List<Integer> actualSlicesSize;
     private List<Integer> referenceSlicesSize;

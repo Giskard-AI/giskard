@@ -23,6 +23,8 @@ export namespace AppConfigDTO {
         externalMlWorkerEntrypointHost: string;
         externalMlWorkerEntrypointPort: number;
         generalSettings: GeneralSettings;
+        hfSpaceId: string;
+        isRunningOnHfSpaces: boolean;
         planCode: string;
         planName: string;
         roles: RoleDTO[];

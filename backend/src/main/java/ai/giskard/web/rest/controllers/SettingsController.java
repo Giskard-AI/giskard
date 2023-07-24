@@ -52,6 +52,7 @@ public class SettingsController {
     private String gitBuildCommitId;
     @Value("${git.commit.time:-}")
     private String gitCommitTime;
+
     private final GeneralSettingsService settingsService;
     private final ApplicationProperties applicationProperties;
 
@@ -99,6 +100,8 @@ public class SettingsController {
                 .planName(currentLicense.getPlanName())
                 .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
                 .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
+                .hfSpaceId(GeneralSettingsService.hfSpaceId)
+                .isRunningOnHfSpaces(GeneralSettingsService.isRunningInHFSpaces)
                 .roles(roles)
                 .build())
             .user(userDTO)
