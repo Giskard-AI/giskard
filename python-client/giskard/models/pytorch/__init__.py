@@ -82,6 +82,7 @@ class PyTorchModel(MLFlowBasedModel):
         classification_threshold=0.5,
         classification_labels=None,
         iterate_dataset=True,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -93,6 +94,7 @@ class PyTorchModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            id=id,
             **kwargs,
         )
 

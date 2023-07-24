@@ -35,11 +35,11 @@
 
 <script setup lang="ts">
 
-import {storeToRefs} from "pinia";
-import {useInspectionStore} from "@/stores/inspection";
-import {computed, ref} from "vue";
+import { storeToRefs } from "pinia";
+import { useInspectionStore } from "@/stores/inspection";
+import { computed, ref } from "vue";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
-import {ParameterizedCallableDTO} from "@/generated-sources";
+import { ParameterizedCallableDTO } from "@/generated-sources";
 
 const props = defineProps<{
   column: string,
@@ -54,7 +54,7 @@ const transformation = ref<Partial<ParameterizedCallableDTO>>({
 const opened = ref<boolean>(false);
 
 let inspectionStore = useInspectionStore();
-const {transformationFunctions} = storeToRefs(inspectionStore)
+const { transformationFunctions } = storeToRefs(inspectionStore)
 
 const hasTransformation = computed(() => transformationFunctions.hasOwnProperty(props.column));
 
@@ -70,7 +70,8 @@ div.v-card {
   opacity: 0.98;
   max-width: 500px;
 
-  & > *:nth-child(-n + 2) { // for the first two children: the title and the content
+  &>*:nth-child(-n + 2) {
+        // for the first two children: the title and the content
     padding-bottom: 0px;
   }
 

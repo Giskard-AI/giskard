@@ -143,6 +143,7 @@ message RunModelResponse{
 message RunAdHocTestRequest {
   string testUuid = 1;
   repeated FuncArgument arguments = 2;
+  bool debug = 3;
 }
 
 message DatasetProcessingRequest {
@@ -203,6 +204,7 @@ message NamedSingleTestResult{
 message IdentifierSingleTestResult{
   int64 id = 1;
   SingleTestResult result = 2;
+  repeated FuncArgument arguments = 3;
 }
 
 
@@ -217,7 +219,6 @@ message TestMessage{
 
 message SingleTestResult{
   bool passed = 13;
-  bool is_error = 23;
   repeated TestMessage messages = 16;
   map<string, string> props = 14;
   float metric = 15;
@@ -235,6 +236,8 @@ message SingleTestResult{
 
   repeated uint32 actual_slices_size = 21;
   repeated uint32 reference_slices_size = 22;
+  string output_df_id = 23;
+  bool is_error = 24;
 }
 
 message TestResultMessage {

@@ -14,9 +14,9 @@
     <property name="uuidType" value="uuid" dbms="h2, postgresql"/>
     <property name="datetimeType" value="datetime(6)" dbms="mysql, mariadb"/>
     <property name="datetimeType" value="datetime" dbms="oracle, mssql, postgresql, h2"/>
-    <include file="config/liquibase/changelog/initial-v2.xml" relativeToChangelogFile="false" />
+    <include file="config/liquibase/changelog/initial-v2.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230419181155_changelog.xml"
-        relativeToChangelogFile="false" />
+             relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230424155350_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230427154655_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230503092614_changelog.xml" relativeToChangelogFile="false"/>
@@ -24,6 +24,7 @@
     <include file="config/liquibase/changelog/20230522131655_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230531151413_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230531185842_changelog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230524124740_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230614134137_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230622130823_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230705162357_changelog.xml" relativeToChangelogFile="false"/>
