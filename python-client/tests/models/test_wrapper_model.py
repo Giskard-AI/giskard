@@ -17,7 +17,7 @@ def test_wrapper_model_handles_batching():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls):
+        def load_model(cls, path):
             pass
 
         def save_model(self, path):
@@ -56,3 +56,29 @@ def test_wrapper_model_saves_and_loads_batch_size():
         loaded_model = Model.load(tmpdir)
 
         assert loaded_model.batch_size == 127
+
+    class CustomModel(WrapperModel):
+        def model_predict(self, data):
+            return [0] * len(data)
+
+        @classmethod
+        def load_model(cls, path):
+            pass
+
+        def save_model(self, path):
+            pass
+
+    model = CustomModel(None, model_type="regression", batch_size=120)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        model.save(tmpdir)
+        assert CustomModel.load(tmpdir).batch_size == 120
+
+        # Can overwrite batch_size
+        assert CustomModel.load(tmpdir, batch_size=1).batch_size == 1
+
+        # Can overwrite data_preprocessing_function
+        def preprocessing_fn(df):
+            return df
+
+        loaded_model = CustomModel.load(tmpdir, data_preprocessing_function=preprocessing_fn)
+        assert loaded_model.data_preprocessing_function == preprocessing_fn

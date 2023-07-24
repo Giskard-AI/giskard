@@ -236,14 +236,16 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
-        kwargs["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
-        kwargs["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
-        kwargs.update(cls.load_wrapper_meta(local_dir))
+        params = cls.load_wrapper_meta(local_dir)
+        params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
+        params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
+        params.update(kwargs)
+
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
         constructor_params["id"] = model_id
         constructor_params = constructor_params.copy()
-        constructor_params.update(kwargs)
+        constructor_params.update(params)
 
         return cls(model=cls.load_model(local_dir), **constructor_params)
 
