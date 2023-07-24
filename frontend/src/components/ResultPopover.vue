@@ -77,6 +77,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const chartInit = {
+    renderer: 'svg'
+}
+
 const search = ref("");
 const showSlider = ref(true);
 const numberDisplayed = ref(0);
@@ -95,12 +99,6 @@ const maxLengthDisplayedCategoryCard = computed(() => maxLengthDisplayedCategory
 
 function isDefined(val: any) {
     return !_.isNil(val);
-}
-
-function chartInit() {
-    return {
-        renderer: 'svg'
-    }
 }
 
 const chartOptions = computed(() => {

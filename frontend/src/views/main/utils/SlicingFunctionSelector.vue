@@ -27,8 +27,6 @@
 </template>
 
 <script setup lang="ts">
-
-
 import { DatasetDTO, FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
 import { storeToRefs } from 'pinia';
 import { useCatalogStore } from '@/stores/catalog';
@@ -40,16 +38,18 @@ import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
 import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
 import { api } from '@/api';
 
-const props = withDefaults(defineProps<{
+interface Props {
   projectId: number,
   label: string,
-  fullWidth: boolean,
+  fullWidth?: boolean,
   value?: string,
   args?: Array<FunctionInputDTO>,
-  icon: boolean,
+  icon?: boolean,
   dataset?: DatasetDTO,
-  allowNoCodeSlicing: boolean
-}>(), {
+  allowNoCodeSlicing?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
   fullWidth: true,
   icon: false,
   allowNoCodeSlicing: false
@@ -102,39 +102,39 @@ async function onInput(value) {
 }
 
 async function updateArgs() {
-    const func = slicingFunctionsByUuid.value[props.value!];
-    await $vfm.show({
-        component: FunctionInputsModal,
-        bind: {
-            projectId: props.projectId,
-            title: `Update parameters for '${func.displayName ?? func.name}'`,
-            function: func,
-            defaultValue: chain(props.args).keyBy('name').value(),
-        },
-        on: {
-            async save(args: Array<FunctionInputDTO>) {
-                emit('update:args', args);
-                emit('onChanged');
-            }
-        },
-        cancel: {}
-    });
+  const func = slicingFunctionsByUuid.value[props.value!];
+  await $vfm.show({
+    component: FunctionInputsModal,
+    bind: {
+      projectId: props.projectId,
+      title: `Update parameters for '${func.displayName ?? func.name}'`,
+      function: func,
+      defaultValue: chain(props.args).keyBy('name').value(),
+    },
+    on: {
+      async save(args: Array<FunctionInputDTO>) {
+        emit('update:args', args);
+        emit('onChanged');
+      }
+    },
+    cancel: {}
+  });
 }
 
 async function createSlice() {
   const project = await api.getProject(props.projectId);
-    await $vfm.show({
-        component: CreateSliceModal,
-        bind: {
-          projectKey: project.key,
-          dataset: props.dataset
-        },
-        on: {
-            async created(uuid: string) {
-                await onInput(uuid);
-            }
-        },
-    })
+  await $vfm.show({
+      component: CreateSliceModal,
+      bind: {
+        projectKey: project.key,
+        dataset: props.dataset
+      },
+      on: {
+          async created(uuid: string) {
+              await onInput(uuid);
+          }
+      },
+  })
 }
 
 const hasArguments = computed(() => props.value && props.value !== "None" && slicingFunctionsByUuid.value[props.value].args.length > 0)
@@ -143,7 +143,7 @@ const hasArguments = computed(() => props.value && props.value !== "None" && sli
 
 <style scoped>
 .slice-function-selector {
-    min-width: 200px;
-    flex-grow: 1;
+  min-width: 200px;
+  flex-grow: 1;
 }
 </style>

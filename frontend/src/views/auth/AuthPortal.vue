@@ -14,7 +14,7 @@
             </v-row>
           </v-container>
         </v-col>
-        <v-col cols="12" md="6" class="background">
+        <v-col v-show="$vuetify.breakpoint.mdAndUp" cols="12" md="6" class="background">
         </v-col>
       </v-row>
     </v-container>

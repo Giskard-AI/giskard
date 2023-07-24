@@ -48,7 +48,7 @@ class TestSuiteResult(tuple):
         tests_results = "".join(
             [
                 f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value in self[1]
+                for key, value, _ in self[1]
             ]
         )
         return """
@@ -247,24 +247,24 @@ class Suite:
             - A list containing tuples of test name (`str`) and test result (`bool` or `TestResult`), it keeps the
             order of the `add_test` sequence.
         """
-        res: List[(str, Union[bool, TestResult])] = list()
+        res: List[(str, Union[bool, TestResult], Dict[str, Any])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, suite_run_args)
             try:
-                test_params = self.create_test_params(test_partial, suite_run_args)
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result))
+                res.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution")
+                logging.exception(f"An error happened during test execution for test: {test_partial.test_name}")
                 res.append(
                     (
                         test_partial.test_name,
@@ -273,14 +273,15 @@ class Suite:
                             is_error=True,
                             messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
+                        test_params,
                     )
                 )
 
-        result = single_binary_result([result for name, result in res])
+        result = single_binary_result([result for name, result, params in res])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if result else 'failed'}")
-        for test_name, r in res:
+        for test_name, r, a in res:
             logger.info(f"{test_name}: {format_test_result(r)}")
         return TestSuiteResult((result, res))
 

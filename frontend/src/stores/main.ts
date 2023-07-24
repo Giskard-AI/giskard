@@ -55,7 +55,9 @@ export const useMainStore = defineStore('main', {
                     "Giskard Instance": instanceId,
                     "Giskard Version": this.appSettings.version,
                     "Giskard Plan": this.appSettings.planCode,
-                    "Giskard LicenseID": this.license?.licenseId ?? "NONE"
+                    "Giskard LicenseID": this.license?.licenseId ?? "NONE",
+                    "Is HuggingFace": this.appSettings?.isRunningOnHfSpaces,
+                    "HuggingFace Space ID": this.appSettings?.hfSpaceId,
                 }
             );
             mixpanel.track("Read App Settings")
