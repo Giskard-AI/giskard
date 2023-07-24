@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.push.utils import compute_mad
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],
@@ -139,3 +140,17 @@ def change_writing_style(
 
     x.at[index, column_name] = chain_rewrite.run({"text": x.at[index, column_name], "style": style})
     return x
+
+
+@transformation_function(name="MAD Increment", tags=["num"], row_level=False)
+def mad_transformation(
+    data: pd.DataFrame, column_name: str, factor: float = 3, value_added: float = None
+) -> pd.DataFrame:
+    """
+    Add 3 times the value_added to the column, or if unavailable, add 3 times the MAD value.
+    """
+    data = data.copy()
+    if value_added is None:
+        value_added = compute_mad(data[column_name])
+    data[column_name] = data[column_name].apply(lambda x: x + factor * value_added)
+    return data

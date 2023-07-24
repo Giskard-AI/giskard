@@ -1,9 +1,7 @@
-import numpy as np
-import pandas as pd
-
+from giskard.ml_worker.testing.functions.transformation import mad_transformation
+from giskard.push.utils import compute_mad
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.push import SupportedPerturbationType
 from giskard.scanner.robustness.text_transformations import (
     TextGenderTransformation,
@@ -71,12 +69,6 @@ class Perturbation:
         self._perturb_and_predict()
 
     def _perturb_and_predict(self):
-        def mad(x):
-            med = np.median(x)
-            x = abs(x - med)
-            mad = np.median(x)
-            return mad
-
         # idrow = self.idrow
         # ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
 
@@ -86,7 +78,7 @@ class Perturbation:
 
         row_perturbed = ds_slice.copy()
         if self.coltype == SupportedPerturbationType.NUMERIC:
-            mad = mad(self.ds.df[self.feature])
+            mad = compute_mad(self.ds.df[self.feature])
 
             t, row_perturbed = self._num_perturb(3 * mad, self.feature, ds_slice)
             self._generate_perturbation(ds_slice, row_perturbed)
@@ -117,7 +109,7 @@ class Perturbation:
             self.passed = (new_val - ref_val) / ref_val >= 0.2
 
     def _num_perturb(self, perturbation_value, col, ds_slice):
-        t = NumTransformation(column=col, perturbation_value=perturbation_value)
+        t = mad_transformation(column_name=col, value_added=perturbation_value)
         transformed = ds_slice.transform(t)
         return t, transformed
 
@@ -125,18 +117,3 @@ class Perturbation:
         t = transformation_function(column=col)
         transformed = ds_slice.transform(t)
         return t, transformed
-
-
-class NumTransformation(TransformationFunction):
-    row_level = False
-    name = "mad perturbation"
-
-    def __init__(self, column, perturbation_value):
-        super().__init__(self.execute)
-        self.column = column
-        self.perturbation_value = perturbation_value
-
-    def execute(self, data: pd.DataFrame):
-        data = data.copy()
-        data[self.column] = data[self.column].apply(lambda x: x + self.perturbation_value)
-        return data
