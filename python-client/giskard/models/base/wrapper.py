@@ -1,6 +1,5 @@
 import logging
 import pickle
-import yaml
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
@@ -9,6 +8,7 @@ from typing import Any, Callable, Iterable, Optional, Union
 import cloudpickle
 import numpy as np
 import pandas as pd
+import yaml
 
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
@@ -30,17 +30,18 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            batch_size: Optional[int] = None,
-            **kwargs,
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        batch_size: Optional[int] = None,
+        **kwargs,
     ) -> None:
         """
         Parameters
@@ -67,7 +68,16 @@ class WrapperModel(BaseModel, ABC):
             The batch size to use for inference. Default is ``None``, which
             means inference will be done on the full dataframe.
         """
-        super().__init__(model_type, name, feature_names, classification_threshold, classification_labels, **kwargs)
+        super().__init__(
+            model_type=model_type,
+            name=name,
+            feature_names=feature_names,
+            classification_threshold=classification_threshold,
+            classification_labels=classification_labels,
+            id=id,
+            batch_size=batch_size,
+            **kwargs,
+        )
         self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function

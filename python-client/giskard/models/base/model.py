@@ -81,6 +81,7 @@ class BaseModel(ABC):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         """
@@ -102,7 +103,7 @@ class BaseModel(ABC):
             The initialized object contains the following attributes:
                 - meta: a ModelMeta object containing metadata about the model.
         """
-        self.id = uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
+        self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         if type(model_type) == str:
             try:
                 model_type = SupportedModelTypes(model_type)
@@ -407,7 +408,7 @@ class BaseModel(ABC):
         clazz = cls.determine_model_class(meta, local_dir)
 
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = str(model_id)
 
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
