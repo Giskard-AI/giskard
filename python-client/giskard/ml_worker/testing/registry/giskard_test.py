@@ -129,6 +129,11 @@ class GiskardTestMethod(GiskardTest):
     def execute(self) -> Result:
         analytics.track("test:execute", {"test_name": self.meta.full_name})
 
+        # if params contains debug then we check if test_fn has debug argument
+        if "debug" in self.params:
+            if "debug" not in list(inspect.signature(self.test_fn).parameters.keys()):
+                raise ValueError("This test does not support debugging mode at the moment.")
+
         return self.test_fn(**self.params)
 
     def __repr__(self) -> str:

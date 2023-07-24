@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from giskard import slicing_function
 from giskard.models._precooked import PrecookedModel
 

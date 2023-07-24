@@ -30,6 +30,7 @@ def validate_classification_label(func):
         ):
             try:
                 classification_label = int(classification_label)
+                kwargs["classification_label"] = classification_label
             except ValueError:
                 pass
 

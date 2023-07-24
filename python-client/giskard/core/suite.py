@@ -268,7 +268,7 @@ class Suite:
         List[TestSuiteResult]
             containing test execution information
         """
-        results: List[Tuple[str, TestResult, Dict[str, Any]]] = list()
+        results: List[(str, TestResult, Dict[str, Any])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
@@ -290,7 +290,7 @@ class Suite:
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution")
+                logging.exception(f"An error happened during test execution for test: {test_partial.test_name}")
                 results.append(
                     (
                         test_partial.test_name,
