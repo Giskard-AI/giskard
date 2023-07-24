@@ -3,6 +3,7 @@ package ai.giskard.config;
 import ai.giskard.ml.MLWorkerID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.socket.config.annotation.*;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.FilterChain;
@@ -95,10 +97,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.jHipsterProperties = jHipsterProperties;
     }
 
+    private final int maxSTOMPMessageSize = 64 * 1024 * 1024;   // 64MB
+
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
         // Allow to receive larger STOMP package (65535 bytes by default)
-        registry.setMessageSizeLimit(1024 * 1024);
+        registry.setMessageSizeLimit(maxSTOMPMessageSize);
+    }
+
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(maxSTOMPMessageSize);
+        container.setMaxBinaryMessageBufferSize(maxSTOMPMessageSize);
+        return container;
     }
 
     @Override

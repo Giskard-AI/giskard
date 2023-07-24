@@ -132,6 +132,7 @@ def action_in_thread(callback, ml_worker, action, req):
 
     if rep_id:
         # Reply if there is an ID
+        # TODO: Message fragmentation, multiple shot, async
         logger.debug(f"[WRAPPED_CALLBACK] replying {len(info.json())} {info.json()} for {action.name}")
         ml_worker.ws_conn.send(
             f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",

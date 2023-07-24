@@ -82,7 +82,8 @@ public class TestSuiteExecutionService {
                 result = mlWorkerWSCommService.performAction(
                     workerID,
                     MLWorkerWSAction.runTestSuite,
-                    param
+                    param,
+                    (long)24 * 3600 * 1000  // TODO: Replace by an async mechanism
                 );
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
