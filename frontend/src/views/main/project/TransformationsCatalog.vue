@@ -108,7 +108,7 @@
 
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
-                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTransformationFunction">
+                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTransformationFunction" :loading="isTransformationFunctionRunning">
                                         Run
                                     </v-btn>
                                 </div>
@@ -182,6 +182,7 @@ const transformationResult = ref<FunctionInputDTO | null>(null);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
 let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
+const isTransformationFunctionRunning = ref<boolean>(false);
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 const panel = ref<number[]>([0]);
@@ -222,27 +223,33 @@ onActivated(async () => {
 });
 
 async function runTransformationFunction() {
-    const params = Object.values(transformationArguments.value);
-    if (selected.value!.cellLevel) {
-        params.push({
-            isAlias: false,
-            name: 'column_name',
-            params: [],
-            type: 'str',
-            value: selectedColumn.value
-        })
+    isTransformationFunctionRunning.value = true;
+    try {
+        const params = Object.values(transformationArguments.value);
+        if (selected.value!.cellLevel) {
+            params.push({
+                isAlias: false,
+                name: 'column_name',
+                params: [],
+                type: 'str',
+                value: selectedColumn.value
+            })
+        }
+
+        mixpanel.track("Run transformation function from Catalog", {
+            transformationFunctionName: selected.value!.name,
+            inputs: anonymize(params),
+        });
+
+        transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+            uuid: selected.value!.uuid,
+            params,
+            type: 'TRANSFORMATION'
+        }]);
     }
-
-    mixpanel.track("Run transformation function from Catalog", {
-        transformationFunctionName: selected.value!.name,
-        inputs: anonymize(params),
-    });
-
-    transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
-        uuid: selected.value!.uuid,
-        params,
-        type: 'TRANSFORMATION'
-    }]);
+    finally {
+        isTransformationFunctionRunning.value = false;
+    }
 }
 
 watch(() => selected.value, () => {

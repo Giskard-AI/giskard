@@ -1,15 +1,16 @@
 package ai.giskard.web.socket;
 
+import ai.giskard.event.UpdateWorkerStatusEvent;
+import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ml.MLWorkerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
-import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 @Service
 @RequiredArgsConstructor
@@ -18,19 +19,31 @@ public class WorkerStatusSocketService {
     private final MLWorkerService mlWorkerService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    @PostConstruct
-    public void init() {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Map<String, Boolean> data = new HashMap<>();
-                data.put("connected", mlWorkerService.isExternalWorkerConnected());
+    @EventListener
+    public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
+        sendCurrentStatus();
+    }
 
-                simpMessagingTemplate.convertAndSend(
-                        "/topic/worker-status",
-                        data);
-            }
-        }, 0, 5000);
+    @EventListener()
+    public void handleWorkerStatusChangeEvent(UpdateWorkerStatusEvent event) {
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("connected", event.isConnected());
+        sendData(data);
+    }
+
+
+    public void sendCurrentStatus() {
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("connected",
+                    // HF Space uses internal worker that always connected
+                    mlWorkerService.isExternalWorkerConnected() || GeneralSettingsService.isRunningInHFSpaces
+                );
+        sendData(data);
+    }
+
+    private void sendData(Map<String, Boolean> data) {
+        simpMessagingTemplate.convertAndSend(
+                "/topic/worker-status",
+                data);
     }
 }

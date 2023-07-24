@@ -105,7 +105,7 @@
                                 <SuiteInputListSelector :editing="true" :modelValue="slicingArguments" :inputs="inputType" :project-id="props.projectId" class="pt-0 mt-0" :doc="doc"></SuiteInputListSelector>
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
-                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runSlicingFunction">
+                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runSlicingFunction" :loading="isSlicingFunctionRunning">
                                         Run
                                     </v-btn>
                                 </div>
@@ -182,6 +182,7 @@ const sliceResult = ref<SlicingResultDTO | null>(null);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
 let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
+const isSlicingFunctionRunning = ref<boolean>(false);
 
 const panel = ref<number[]>([0]);
 
@@ -222,27 +223,32 @@ onActivated(async () => {
 });
 
 async function runSlicingFunction() {
-    const params = Object.values(slicingArguments.value);
-    if (selected.value!.cellLevel) {
-        params.push({
-            isAlias: false,
-            name: 'column_name',
-            params: [],
-            type: 'str',
-            value: selectedColumn.value
-        })
+    isSlicingFunctionRunning.value = true;
+    try {
+        const params = Object.values(slicingArguments.value);
+        if (selected.value!.cellLevel) {
+            params.push({
+                isAlias: false,
+                name: 'column_name',
+                params: [],
+                type: 'str',
+                value: selectedColumn.value
+            })
+        }
+
+        mixpanel.track("Run slicing function from Catalog", {
+            slicingFunctionName: selected.value!.name,
+            inputs: anonymize(params),
+        });
+
+        sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+            uuid: selected.value!.uuid,
+            params,
+            type: 'SLICING',
+        }]);
+    } finally {
+        isSlicingFunctionRunning.value = false;
     }
-
-    mixpanel.track("Run slicing function from Catalog", {
-        slicingFunctionName: selected.value!.name,
-        inputs: anonymize(params),
-    });
-
-    sliceResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
-        uuid: selected.value!.uuid,
-        params,
-        type: 'SLICING',
-    }]);
 }
 
 watch(() => selected.value, () => {

@@ -109,7 +109,8 @@ async function launchInspector() {
         id: props.projectId.toString(),
         inspectionId: inspection.id.toString(),
       }
-    })
+    }).catch(() => {
+    });
 
 
   } finally {
