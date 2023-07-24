@@ -147,7 +147,7 @@ def mad_transformation(
     data: pd.DataFrame, column_name: str, factor: float = 3, value_added: float = None
 ) -> pd.DataFrame:
     """
-    Add 3 times the MAD value to the column
+    Add 3 times the value_added to the column, or if unavailable, add 3 times the MAD value.
     """
     data = data.copy()
     if value_added is None:

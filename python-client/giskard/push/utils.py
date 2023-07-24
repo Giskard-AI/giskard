@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import median_abs_deviation
 
 
 def slice_bounds(feature, value, ds):
@@ -34,7 +35,4 @@ def bins_count(model, dataframe):  # done at the beggining
 
 
 def compute_mad(x):
-    med = np.median(x)
-    x = abs(x - med)
-    mad = np.median(x)
-    return mad
+    return median_abs_deviation(x, scale=1)
