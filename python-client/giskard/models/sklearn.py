@@ -15,18 +15,18 @@ class SKLearnModel(MLFlowSerializableModel):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        id: Optional[str] = None,
-        batch_size: Optional[int] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            id: Optional[str] = None,
+            batch_size: Optional[int] = None,
+            **kwargs,
     ) -> None:
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if classification_labels is None and hasattr(model, "classes_"):
@@ -51,16 +51,17 @@ class SKLearnModel(MLFlowSerializableModel):
             **kwargs,
         )
 
-    def save_model(self, local_path, mlflow_meta):
+    def _get_pyfunc_predict_fn(self):
         if self.is_classification:
-            pyfunc_predict_fn = "predict_proba"
-        elif self.is_regression:
-            pyfunc_predict_fn = "predict"
+            return "predict_proba"
+        elif self.is_regression or self.is_text_generation:
+            return "predict"
         else:
             raise ValueError("Unsupported model type")
 
+    def save_model(self, local_path, mlflow_meta):
         mlflow.sklearn.save_model(
-            self.model, path=local_path, pyfunc_predict_fn=pyfunc_predict_fn, mlflow_model=mlflow_meta
+            self.model, path=local_path, pyfunc_predict_fn=self._get_pyfunc_predict_fn(), mlflow_model=mlflow_meta
         )
 
     @classmethod
@@ -68,7 +69,14 @@ class SKLearnModel(MLFlowSerializableModel):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):
-        if self.is_regression:
+        if self.is_regression or self.is_text_generation:
             return self.model.predict(df)
         else:
             return self.model.predict_proba(df)
+
+    def to_mlflow(self,
+                  artifact_path="sklearn-model-from-giskard",
+                  **kwargs):
+        return mlflow.sklearn.log_model(sk_model=self.model, artifact_path=artifact_path,
+                                        pyfunc_predict_fn=self._get_pyfunc_predict_fn(),
+                                        **kwargs)

@@ -1,6 +1,7 @@
 import tempfile
 import mlflow
 import pandas as pd
+from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
 
