@@ -35,18 +35,18 @@ class MLWorker:
     ml_worker_id: str
     client: GiskardClient
 
-    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None) -> None:
-        client = None if is_server else GiskardClient(backend_url, api_key)
+    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
+        client = None if is_server else GiskardClient(backend_url, api_key, hf_token)
         self.client = client
 
-        ws_conn = self._create_websocket_client(backend_url, is_server)
+        ws_conn = self._create_websocket_client(backend_url, is_server, hf_token)
 
         if not is_server:
             logger.info("Remote server host and port are specified, connecting as an external ML Worker")
 
         self.ws_conn = ws_conn
 
-    def _create_websocket_client(self, backend_url: AnyHttpUrl = None, is_server=False):
+    def _create_websocket_client(self, backend_url: AnyHttpUrl = None, is_server=False, hf_token=None):
         from giskard.ml_worker.websocket.listener import MLWorkerWebSocketListener
 
         if is_server:
@@ -71,6 +71,7 @@ class MLWorker:
             [(backend_url.host, backend_url.port)],
             ws_path=backend_url.path,
             reconnect_attempts_max=1,  # Reconnection managed by our Listener
+            header={"COOKIE": f"spaces-jwt={hf_token};" if hf_token else ""},  # To access a private HF Spaces
         )
         if backend_url.scheme == "https":
             # Enable SSL/TLS
