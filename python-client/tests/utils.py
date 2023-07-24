@@ -1,11 +1,17 @@
+import glob
+import logging
+import os
 import re
+import tarfile
 from pathlib import Path
 
+import requests
 import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
 
+logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
 
 headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
@@ -52,8 +58,8 @@ class MockedClient:
 
         self.mocked_requests.register_uri(
             requests_mock.GET,
-            "http://giskard-host:12345/api/v2/project?key=test_project_key",
-            json={"key": "test_project_key", "id": 1},
+            "http://giskard-host:12345/api/v2/project?key=test_project",
+            json={"key": "test_project", "id": 1},
         )
         self.mocked_requests.register_uri(
             requests_mock.GET,
@@ -106,3 +112,16 @@ def verify_model_upload(my_model, my_data):
         tests.utils.match_model_id(my_model.id)
         tests.utils.match_url_patterns(m.request_history, artifact_url_pattern)
         tests.utils.match_url_patterns(m.request_history, models_url_pattern)
+
+
+def get_email_files():
+    out_path = Path.home() / ".giskard"
+    enron_path = out_path / "enron_with_categories"
+    if not enron_path.exists():
+        url = "http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz"
+        logger.info(f"Downloading test data from: {url}")
+        response = requests.get(url, stream=True)
+        file = tarfile.open(fileobj=response.raw, mode="r|gz")
+        os.makedirs(out_path, exist_ok=True)
+        file.extractall(path=out_path)
+    return [f.replace(".cats", "") for f in glob.glob(str(enron_path) + "/*/*.cats")]
