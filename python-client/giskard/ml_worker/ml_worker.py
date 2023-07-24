@@ -21,8 +21,9 @@ class MLWorker:
     tunnel: MLWorkerBridge = None
     grpc_server: Server
 
-    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None) -> None:
-        client = None if is_server else GiskardClient(backend_url, api_key)
+    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
+        client = None if is_server else GiskardClient(backend_url, api_key, hf_token)
+        self.client = client
 
         server, address = self._create_grpc_server(client, is_server)
         if not is_server:
