@@ -159,7 +159,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token):
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
-            asyncio.get_event_loop().run_until_complete(ml_worker.stop())
+            ml_worker.stop()
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
         logger.warning(

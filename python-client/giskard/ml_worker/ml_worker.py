@@ -144,7 +144,7 @@ class MLWorker:
                 # and https://github.com/websocket-client/websocket-client/issues/930
                 logger.warn(f"WebSocket connection may not be properly closed: {e}")
 
-    async def stop(self):
+    def stop(self):
         if self.ws_conn:
             self.ws_stopping = True
             self.ws_conn.disconnect()
