@@ -1,10 +1,11 @@
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
 import numpy as np
 import pandas as pd
 
-from .base import BaseModel, ModelType, ModelPredictionResults
+from ..core.core import ModelType
 from ..datasets.base import Dataset
+from .base import BaseModel, ModelPredictionResults
 
 
 class PrecookedModel(BaseModel):
@@ -27,7 +28,20 @@ class PrecookedModel(BaseModel):
 
     @classmethod
     def from_model(cls, model: BaseModel, dataset: Dataset):
-        """Creates a PrecookedModel from an existing model and dataset."""
+        """Creates a PrecookedModel from an existing model and dataset.
+
+        Parameters
+        ----------
+        model : BaseModel
+            A instance of a Giskard model.
+        dataset : Dataset
+            Dataset for which predictions will be cached.
+
+        Returns
+        -------
+        PrecookedModel
+
+        """
         predictions = model.predict(dataset)
 
         return cls(

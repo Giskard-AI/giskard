@@ -1,6 +1,7 @@
 from sklearn.linear_model import LogisticRegression
+
 from giskard.models.automodel import Model
-from giskard.models.base import CloudpickleBasedModel
+from giskard.models.base import CloudpickleSerializableModel
 from tests.fixtures.german_credit_scoring import input_types
 
 
@@ -13,7 +14,7 @@ def test_Model(german_credit_raw_model):
         classification_labels=list(german_credit_raw_model.classes_),
     )
 
-    assert isinstance(my_model, CloudpickleBasedModel)
+    assert isinstance(my_model, CloudpickleSerializableModel)
 
 
 def test_bound_method_model():
@@ -26,4 +27,4 @@ def test_bound_method_model():
         classification_labels=[0, 1],
     )
 
-    assert isinstance(my_model, CloudpickleBasedModel)
+    assert isinstance(my_model, CloudpickleSerializableModel)

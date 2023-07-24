@@ -55,13 +55,13 @@ def extract_debug_info(request_arguments):
     info = {"suffix": "", "project_key": ""}
     for arg in request_arguments:
         if arg.HasField("model"):
-            filled_info = template_info.replace('xxx', arg.name)
-            info["suffix"] += filled_info.replace(arg.name + '_id', arg.model.id)
-            info['project_key'] = arg.model.project_key  # in case model is in the args and dataset is not
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
+            info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
         elif arg.HasField("dataset"):
-            filled_info = template_info.replace('xxx', arg.name)
-            info["suffix"] += filled_info.replace(arg.name + '_id', arg.dataset.id)
-            info['project_key'] = arg.dataset.project_key  # in case dataset is in the args and model is not
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
+            info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
     return info
 
 
@@ -231,7 +231,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return request
 
     def runAdHocTest(
-            self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
+        self, request: ml_worker_pb2.RunAdHocTestRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestResultMessage:
         test: GiskardTest = GiskardTest.download(request.testUuid, self.client, None)
 
@@ -259,19 +259,24 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         if test_result.output_df is not None:  # i.e. if debug is True and test has failed
 
             if debug_info is None:
-                raise ValueError("You have requested to debug the test, "
-                                 "but extract_debug_info did not return the information needed.")
+                raise ValueError(
+                    "You have requested to debug the test, "
+                    "but extract_debug_info did not return the information needed."
+                )
 
-            test_result.output_df.name += debug_info['suffix']
+            test_result.output_df.name += debug_info["suffix"]
 
-            test_result.output_df_id = test_result.output_df.upload(client=client,
-                                                                    project_key=debug_info['project_key'])
+            test_result.output_df_id = test_result.output_df.upload(
+                client=client, project_key=debug_info["project_key"]
+            )
             # for now, we won't return output_df from grpc, rather upload it
             test_result.output_df = None
         elif arguments["debug"]:
-            raise ValueError("This test does not return any examples to debug. "
-                             "Check the debugging method associated to this test at "
-                             "https://docs.giskard.ai/en/latest/reference/tests/index.html")
+            raise ValueError(
+                "This test does not return any examples to debug. "
+                "Check the debugging method associated to this test at "
+                "https://docs.giskard.ai/en/latest/reference/tests/index.html"
+            )
 
         return test_result
 
@@ -329,7 +334,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runTestSuite(
-            self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
+        self, request: ml_worker_pb2.RunTestSuiteRequest, context: grpc.ServicerContext
     ) -> ml_worker_pb2.TestSuiteResultMessage:
         log_listener = LogListener()
         try:
@@ -356,20 +361,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             for t in tests:
                 suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
 
-            is_pass, results = suite.run(**global_arguments)
+            result = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result, args in results:
+            for identifier, result, args in result.results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
-                        id=identifier, result=map_result_to_single_test_result(result),
-                        arguments=function_argument_to_proto(args)
+                        id=identifier,
+                        result=map_result_to_single_test_result(result),
+                        arguments=function_argument_to_proto(args),
                     )
                 )
 
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=False,
-                is_pass=is_pass,
+                is_pass=result.passed,
                 results=identifier_single_test_results,
                 logs=log_listener.close(),
             )
@@ -766,9 +772,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             return SuiteInput(i.name, i.type)
 
     def generateTestSuite(
-            self,
-            request: ml_worker_pb2.GenerateTestSuiteRequest,
-            context: grpc.ServicerContext,
+        self,
+        request: ml_worker_pb2.GenerateTestSuiteRequest,
+        context: grpc.ServicerContext,
     ) -> ml_worker_pb2.GenerateTestSuiteResponse:
         inputs = [self.map_suite_input(i) for i in request.inputs]
 
@@ -788,14 +794,14 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def stopWorker(
-            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> google.protobuf.empty_pb2.Empty:
         logger.info("Received request to stop the worker")
         self.loop.create_task(self.ml_worker.stop())
         return google.protobuf.empty_pb2.Empty()
 
     def getCatalog(
-            self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
+        self, request: google.protobuf.empty_pb2.Empty, context: grpc.ServicerContext
     ) -> ml_worker_pb2.CatalogResponse:
         return ml_worker_pb2.CatalogResponse(
             tests=map_function_meta("TEST"),
@@ -852,7 +858,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
-            output_df_id=result.output_df_id
+            output_df_id=result.output_df_id,
         )
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)
@@ -870,14 +876,19 @@ def function_argument_to_proto(value: Dict[str, Any]):
         elif isinstance(obj, BaseModel):
             funcargs = FuncArgument(name=v, model=ArtifactRef(project_key="test", id=str(obj.id)))
         elif isinstance(obj, SlicingFunction):
-            funcargs = FuncArgument(name=v, slicingFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
-                                    args=function_argument_to_proto(obj.params))
+            funcargs = FuncArgument(
+                name=v,
+                slicingFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_proto(obj.params),
+            )
         #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, TransformationFunction):
-            funcargs = FuncArgument(name=v,
-                                    transformationFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
-                                    args=function_argument_to_proto(obj.params))
+            funcargs = FuncArgument(
+                name=v,
+                transformationFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_proto(obj.params),
+            )
         #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, float):
