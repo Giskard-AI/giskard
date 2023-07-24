@@ -11,6 +11,7 @@ from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
+from . import debug_prefix
 
 
 @test(name="Right Label", tags=["heuristic", "classification"])
@@ -73,7 +74,7 @@ def test_right_label(
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.loc[~dataset.df.index.isin(passed_idx)]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -167,7 +168,7 @@ def test_output_in_range(
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.loc[~dataset.df.index.isin(passed_idx)]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -292,7 +293,7 @@ def test_disparate_impact(
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(

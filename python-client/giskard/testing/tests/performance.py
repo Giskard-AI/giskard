@@ -25,6 +25,7 @@ from giskard.ml_worker.testing.utils import Direction
 from giskard.ml_worker.testing.utils import check_slice_not_empty
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
+from . import debug_prefix
 
 
 def _verify_target_availability(dataset):
@@ -62,7 +63,7 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
     if not passed and debug:
         output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
@@ -82,7 +83,7 @@ def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 
     if not passed and debug:
         output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,
@@ -107,7 +108,7 @@ def _test_regression_score(score_fn, model: BaseModel, dataset: Dataset, thresho
             nlargest_abs_err_rows_slicing_fn(target=dataset.target, prediction=raw_prediction,
                                              debug_percent_rows=debug_percent_rows))
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -160,7 +161,7 @@ def _test_diff_prediction(
             output_ds.df = pd.concat([result_actual.output_df.df,
                                       result_reference.output_df.df], ignore_index=True)
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -230,7 +231,7 @@ def test_auc(
     if not passed and debug:
         output_ds = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
         test_name = inspect.stack()[0][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed,

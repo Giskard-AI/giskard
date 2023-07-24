@@ -810,7 +810,6 @@ def function_argument_to_proto(value: Dict[str, Any]):
     args = list()
 
     for v in value:
-        funcargs = FuncArgument()
         obj = value[v]
         if isinstance(obj, Dataset):
             funcargs = FuncArgument(name=v, dataset=ArtifactRef(project_key="test", id=str(obj.id)))

@@ -18,6 +18,7 @@ from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed
 from giskard.scanner.llm.utils import LLMImportError
+from . import debug_prefix
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -35,11 +36,11 @@ def _prediction_ratio(prediction, perturbed_prediction):
 
 @timer("Perturb and predict data")
 def _perturb_and_predict(
-    model: BaseModel,
-    ds: Dataset,
-    transformation_function: TransformationFunction,
-    output_proba=True,
-    classification_label=None,
+        model: BaseModel,
+        ds: Dataset,
+        transformation_function: TransformationFunction,
+        output_proba=True,
+        classification_label=None,
 ):
     fix_seed()
 
@@ -163,15 +164,15 @@ def _compare_probabilities_wilcoxon(result_df, direction, window_size=0.2, criti
 
 
 def _test_metamorphic(
-    model,
-    direction: Direction,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    threshold: float,
-    classification_label=None,
-    output_sensitivity=None,
-    output_proba=True,
-    debug: bool = False
+        model,
+        direction: Direction,
+        dataset: Dataset,
+        transformation_function: TransformationFunction,
+        threshold: float,
+        classification_label=None,
+        output_sensitivity=None,
+        output_proba=True,
+        debug: bool = False
 ) -> TestResult:
     results_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -189,7 +190,7 @@ def _test_metamorphic(
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -203,13 +204,13 @@ def _test_metamorphic(
 
 @test(name="Invariance (proportion)")
 def test_metamorphic_invariance(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.5,
-    output_sensitivity: float = None,
-    debug: bool = False,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation_function: TransformationFunction,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: float = 0.5,
+        output_sensitivity: float = None,
+        debug: bool = False,
 ):
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
@@ -271,13 +272,13 @@ def test_metamorphic_invariance(
 @test(name="Increasing (proportion)")
 @validate_classification_label
 def test_metamorphic_increasing(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.5,
-    classification_label: str = None,
-    debug: bool = False,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation_function: TransformationFunction,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: float = 0.5,
+        classification_label: str = None,
+        debug: bool = False,
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -336,13 +337,13 @@ def test_metamorphic_increasing(
 @test(name="Decreasing (proportion)")
 @validate_classification_label
 def test_metamorphic_decreasing(
-    model: BaseModel,
-    dataset: Dataset,
-    transformation_function: TransformationFunction,
-    slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.5,
-    classification_label: str = None,
-    debug: bool = False,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation_function: TransformationFunction,
+        slicing_function: Optional[SlicingFunction] = None,
+        threshold: float = 0.5,
+        classification_label: str = None,
+        debug: bool = False,
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -423,12 +424,12 @@ def _test_metamorphic_t_test(
     # --- debug ---
     output_ds = None
     if not passed and debug:
-        passed_idx, failed_idx = _compare_prediction(
+        _, failed_idx = _compare_prediction(
             result_df, model.meta.model_type, direction, None)
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -662,12 +663,12 @@ def _test_metamorphic_wilcoxon(
     # --- debug ---
     output_ds = None
     if not passed and debug:
-        passed_idx, failed_idx = _compare_prediction(
+        _, failed_idx = _compare_prediction(
             result_df, model.meta.model_type, direction, None)
         output_ds = dataset.copy()  # copy all properties
         output_ds.df = dataset.df.iloc[failed_idx]
         test_name = inspect.stack()[1][3]
-        output_ds.name = "Debug: " + test_name
+        output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
