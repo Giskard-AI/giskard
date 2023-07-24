@@ -236,7 +236,7 @@ class Suite:
 
         Returns
         -------
-        List[TestSuiteResult]
+        TestSuiteResult
             containing test execution information
         """
         results: List[(str, TestResult, Dict[str, Any])] = list()
