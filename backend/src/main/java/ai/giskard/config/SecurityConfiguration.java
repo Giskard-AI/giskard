@@ -95,6 +95,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
+            .antMatchers("/api/v2/dev/**").permitAll()
             .antMatchers("/api/v2/settings/license").permitAll()
             .antMatchers("/api/v2/settings/ml-worker-connect").hasAuthority(AuthoritiesConstants.API)
             .antMatchers("/api/v2/settings").permitAll()
