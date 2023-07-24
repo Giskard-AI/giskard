@@ -62,7 +62,7 @@ class TestSuiteResult:
         from giskard.integrations.mlflow.giskard_evaluator import process_text
 
         metrics = dict()
-        for test_result in self[1]:
+        for test_result in self.results:
             test_name = test_result[0]
             test_name = process_text(test_name)
             if mlflow_client is None and mlflow_run_id is None:
