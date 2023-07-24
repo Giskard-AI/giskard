@@ -1,22 +1,22 @@
-from typing import Iterable, Optional, Callable, Any
+from typing import Any, Callable, Iterable, Optional
 
 import mlflow
 import pandas as pd
 
 from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowBasedModel
+from giskard.models.base import MLFlowSerializableModel
 
 
-class LangchainModel(MLFlowBasedModel):
+class LangchainModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
         self,
         model,
         model_type: ModelType,
         name: Optional[str] = None,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,

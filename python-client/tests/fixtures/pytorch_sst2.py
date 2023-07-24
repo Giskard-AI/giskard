@@ -5,9 +5,8 @@ import torch.nn as nn
 import torchtext.functional as F
 import torchtext.transforms as T
 from torch.hub import load_state_dict_from_url
-from torchdata.datapipes.iter import IterableWrapper
 from torchtext.datasets import SST2
-from torchtext.models import RobertaClassificationHead, XLMR_BASE_ENCODER
+from torchtext.models import XLMR_BASE_ENCODER, RobertaClassificationHead
 
 from giskard import Dataset
 from giskard.models.pytorch import PyTorchModel
@@ -51,17 +50,8 @@ def sst2_model(sst2_dev_data):
     classifier_head = RobertaClassificationHead(num_classes=num_classes, input_dim=input_dim)
     model = XLMR_BASE_ENCODER.get_model(head=classifier_head, load_weights=False).to(device)
 
-    # Transform the raw dataset using non-batched API (i.e apply transformation line by line)
-    def apply_transform(x):
-        return text_transform(x[0]), x[1]
-
     def pandas_to_torch(test_df):
-        test_datapipe_transformed = IterableWrapper(sst2_dev_data.head()["text"]).map(apply_transform)
-        data_list = []
-        for entry in test_datapipe_transformed:
-            data_list.append(F.to_tensor([entry[0]], padding_value=padding_idx).to(device))
-
-        return data_list
+        return [F.to_tensor(text_transform(test_df.text.tolist()), padding_value=padding_idx)]
 
     classification_labels = [0, 1]
 

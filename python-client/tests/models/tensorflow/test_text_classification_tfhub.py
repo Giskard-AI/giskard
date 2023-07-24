@@ -1,12 +1,12 @@
+from pathlib import Path
+
 import pandas as pd
 import pytest
 import tensorflow as tf
-
 from sklearn import model_selection
 
-from giskard import Dataset
-
 import tests.utils
+from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
 
 
@@ -20,7 +20,7 @@ def test_text_classification_tfhub():
         "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-2_H-128_A-2/2", trainable=True
     )
 
-    data_filtered = pd.read_csv("tests/tensorflow/test_text_classification_tfhub.csv").dropna(axis=0)
+    data_filtered = pd.read_csv(Path(__file__).parent / "test_text_classification_tfhub.csv").dropna(axis=0)
 
     classification_labels_mapping = {"REGULATION": 0, "INTERNAL": 1, "CALIFORNIA CRISIS": 2, "INFLUENCE": 3}
 

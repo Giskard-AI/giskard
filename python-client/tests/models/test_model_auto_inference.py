@@ -3,6 +3,7 @@ from giskard.models.automodel import Model
 
 def test_sklearn():
     from sklearn.linear_model import LogisticRegression
+
     from giskard.models.sklearn import SKLearnModel
 
     my_model = LogisticRegression()
@@ -13,6 +14,7 @@ def test_sklearn():
 
 def test_catboost():
     from catboost import CatBoostClassifier
+
     from giskard.models.catboost import CatboostModel
 
     my_model = CatBoostClassifier()
@@ -22,8 +24,9 @@ def test_catboost():
 
 
 def test_huggingface():
-    from giskard.models.huggingface import HuggingFaceModel
     from transformers import BertForSequenceClassification
+
+    from giskard.models.huggingface import HuggingFaceModel
 
     model_name = "cross-encoder/ms-marco-TinyBERT-L-2"
     my_model = BertForSequenceClassification.from_pretrained(model_name, num_labels=4, ignore_mismatched_sizes=True)
@@ -34,8 +37,8 @@ def test_huggingface():
 
 
 def test_pytorch():
-    from .pytorch.test_linear_regression_pytorch_dataframe import FeedforwardNeuralNetModel
     from giskard.models.pytorch import PyTorchModel
+    from tests.models.pytorch.test_linear_regression_pytorch_dataframe import FeedforwardNeuralNetModel
 
     my_model = FeedforwardNeuralNetModel(1, 1, 1)
     kwargs = {"model": my_model, "model_type": "regression"}
@@ -46,6 +49,7 @@ def test_pytorch():
 def test_tensorflow():
     import tensorflow as tf
     from tensorflow import keras
+
     from giskard.models.tensorflow import TensorFlowModel
 
     my_model = tf.keras.Sequential(

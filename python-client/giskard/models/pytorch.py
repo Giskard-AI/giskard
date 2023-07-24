@@ -1,19 +1,19 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Union, Literal, get_args, Optional
+from typing import Literal, Optional, Union, get_args
 
 import mlflow
-import numpy as np
 import pandas as pd
 import torch
 import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from giskard.core.core import ModelType
-from giskard.models.base import MLFlowBasedModel
-from ..utils import map_to_tuples
+from ..client.python_utils import warning
+from ..core.core import ModelType
+from .base.serialization import MLFlowSerializableModel
+from .utils import map_to_tuples
 
 TorchDType = Literal[
     "float32",
@@ -58,17 +58,7 @@ class TorchMinimalDataset(torch_dataset):
         return torch.tensor(self.entries.iloc[idx].to_numpy(), dtype=string_to_torch_dtype(self.torch_dtype))
 
 
-class PyTorchModel(MLFlowBasedModel):
-    """
-    A wrapper class for PyTorch models that extends the functionality of the
-    MLFlowBasedModel class.
-
-    Attributes:
-        iterate_dataset (bool, optional): Whether to iterate over the dataset for prediction. Defaults to True.
-        device (str): The device to run the model on.
-        torch_dtype (TorchDType): The data type to be used for input tensors.
-    """
-
+class PyTorchModel(MLFlowSerializableModel):
     def __init__(
         self,
         model,
@@ -81,10 +71,48 @@ class PyTorchModel(MLFlowBasedModel):
         feature_names=None,
         classification_threshold=0.5,
         classification_labels=None,
-        iterate_dataset=True,
+        iterate_dataset: bool = True,
         id: Optional[str] = None,
+        batch_size: Optional[int] = None,
         **kwargs,
     ) -> None:
+        """Automatically wraps a PyTorch model.
+
+        This class provides a default wrapper around the PyTorch library for usage with Giskard.
+
+        Parameters
+        ----------
+        model : Any
+            The PyTorch model to wrap.
+        model_type : ModelType
+            The type of the model, either ``regression`` or ``classification``.
+        torch_dtype : TorchDType, optional
+            The data type to use for the input data. Default is "float32".
+        device : str, optional
+            The device to use for the model. We will ensure that the model is on
+            this device before running the inference. Default is "cpu". Make
+            sure that your ``data_preprocessing_function`` returns tensors on
+            the same device.
+        name : str, optional
+            A name for the wrapper. Default is ``None``.
+        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+            A function that will be applied to incoming data, before passing
+            them to the model. You may want use this to convert the data to
+            tensors. Default is ``None``.
+        model_postprocessing_function : Callable[[Any], Any], optional
+            A function that will be applied to the model's predictions. Default
+            is ``None``.
+        feature_names : Optional[Iterable], optional
+            A list of feature names. Default is ``None``.
+        classification_threshold : float, optional
+            The probability threshold for classification. Default is 0.5.
+        classification_labels : Optional[Iterable], optional
+            A list of classification labels. Default is ``None``.
+        iterate_dataset : bool, optional
+            Whether to iterate over the dataset. Default is ``True``.
+        batch_size : int, optional
+            The batch size to use for inference. Default is 1.
+        """
         super().__init__(
             model=model,
             model_type=model_type,
@@ -94,6 +122,7 @@ class PyTorchModel(MLFlowBasedModel):
             feature_names=feature_names,
             classification_threshold=classification_threshold,
             classification_labels=classification_labels,
+            batch_size=batch_size,
             id=id,
             **kwargs,
         )
@@ -101,6 +130,12 @@ class PyTorchModel(MLFlowBasedModel):
         self.device = device
         self.torch_dtype = torch_dtype
         self.iterate_dataset = iterate_dataset
+
+        if str(device).startswith("cuda") and batch_size is None:
+            warning(
+                "Your model is running on GPU. We recommend to set a batch "
+                "size and `iterate_dataset=False` to improve performance."
+            )
 
     @classmethod
     def load_model(cls, local_dir):
@@ -159,9 +194,9 @@ class PyTorchModel(MLFlowBasedModel):
 
     def _convert_to_numpy(self, raw_predictions):
         if isinstance(raw_predictions, torch.Tensor):
-            return raw_predictions.detach().numpy()
+            return raw_predictions.detach().cpu().numpy()
 
-        return np.asarray(raw_predictions)
+        return super()._convert_to_numpy(raw_predictions)
 
     def save_pytorch_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
@@ -181,14 +216,19 @@ class PyTorchModel(MLFlowBasedModel):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
+        kwargs.update(cls.load_pytorch_meta(local_dir))
+        return super().load(local_dir, **kwargs)
+
+    @classmethod
+    def load_pytorch_meta(cls, local_dir):
         pytorch_meta_file = Path(local_dir) / "giskard-model-pytorch-meta.yaml"
         if pytorch_meta_file.exists():
             with open(pytorch_meta_file) as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
-                kwargs["device"] = pytorch_meta["device"]
-                kwargs["torch_dtype"] = pytorch_meta["torch_dtype"]
-                kwargs["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
-                return super().load(local_dir, **kwargs)
+                pytorch_meta["device"] = pytorch_meta.get("device")
+                pytorch_meta["torch_dtype"] = pytorch_meta.get("torch_dtype")
+                pytorch_meta["iterate_dataset"] = pytorch_meta.get("iterate_dataset")
+                return pytorch_meta
         else:
             raise ValueError(
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{pytorch_meta_file} file not found"
@@ -200,11 +240,8 @@ def _get_dataset_from_dataloader(dl: DataLoader):
         return dl.dataset
 
     raise ValueError(
-        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. \n \
-                    The type we found was {dl.dataset} which we don't support. Please provide us \n \
-                    with a different iterable as output of your data_preprocessing_function."
+        f"We tried to infer the torch.utils.data.Dataset from your DataLoader. "
+        f"The type we found was {dl.dataset} which we don’t support. Please "
+        "provide us with a different iterable as output of your "
+        "data_preprocessing_function."
     )
-
-
-def _convert_to_numpy(self, predictions):
-    return torch.cat(predictions).detach().squeeze(0).numpy()
