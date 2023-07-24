@@ -4,6 +4,7 @@ import ai.giskard.domain.GeneralSettings;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
 import com.dataiku.j2ts.annotations.UIModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Instant;
@@ -43,5 +44,8 @@ public class AppConfigDTO {
         private GeneralSettings generalSettings;
         private int externalMlWorkerEntrypointPort;
         private String externalMlWorkerEntrypointHost;
+        private String hfSpaceId;
+        @JsonProperty(value = "isRunningOnHfSpaces")
+        private boolean isRunningOnHfSpaces;
     }
 }

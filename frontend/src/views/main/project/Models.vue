@@ -57,7 +57,7 @@
                 </template>
                 <span>Download</span>
               </v-tooltip>
-              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.fileName" type="model" @submit=" deleteModelPickle(m.id)" />
+              <DeleteModal v-if="isProjectOwnerOrAdmin" :id="m.id" :file-name="m.name" type="model" @submit=" deleteModelPickle(m.id)" />
             </div>
           </v-col>
         </v-row>
@@ -114,21 +114,22 @@
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
-import { Role } from "@/enums";
+import {api} from '@/api';
+import {Role} from "@/enums";
 import InspectorLauncher from './InspectorLauncher.vue';
-import { ModelDTO } from '@/generated-sources';
+import {ModelDTO} from '@/generated-sources';
 import mixpanel from "mixpanel-browser";
 import { computed, onBeforeMount, ref } from 'vue';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { useUserStore } from "@/stores/user";
-import { useProjectStore } from "@/stores/project";
-import { useMainStore } from "@/stores/main";
-import { useProjectArtifactsStore } from "@/stores/project-artifacts";
+import {useUserStore} from "@/stores/user";
+import {useProjectStore} from "@/stores/project";
+import {useMainStore} from "@/stores/main";
+import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { state } from "@/socket";
+import {state} from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import {generateGiskardClientSnippet} from "@/snippets";
 
 
 const userStore = useUserStore();
@@ -184,7 +185,7 @@ async function deleteModelPickle(id: string) {
   await projectArtifactsStore.loadModels();
 }
 
-function downloadModelPickle(id: number) {
+function downloadModelPickle(id: string) {
   mixpanel.track('Download model', { id });
   api.downloadModelFile(id)
 }

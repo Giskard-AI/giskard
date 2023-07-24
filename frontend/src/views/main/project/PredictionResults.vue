@@ -89,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import VChart from "vue-echarts";
 import { ref, onMounted, watch, getCurrentInstance, computed } from "vue";
 import ResultPopover from "@/components/ResultPopover.vue"
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
@@ -123,6 +124,10 @@ const props = withDefaults(defineProps<Props>(), {
   modified: false,
   debounceTime: 250,
 });
+
+const chartInit = {
+  renderer: 'svg'
+}
 
 const prediction = ref<string | number | undefined>("");
 const resultProbabilities = ref<any>({});
@@ -254,12 +259,6 @@ function sliceLongCategoryName(obj: Object, max_size: number) {
 
 function isDefined(val: any) {
   return !_.isNil(val);
-}
-
-function chartInit() {
-  return {
-    renderer: 'svg'
-  }
 }
 
 const emit = defineEmits(["result"]);
