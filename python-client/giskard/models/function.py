@@ -20,6 +20,7 @@ class PredictionFunctionModel(CloudpickleSerializableModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
         **kwargs,
     ) -> None:
         super().__init__(
@@ -31,6 +32,7 @@ class PredictionFunctionModel(CloudpickleSerializableModel):
             feature_names,
             classification_threshold,
             classification_labels,
+            id=id,
             **kwargs,
         )
 
