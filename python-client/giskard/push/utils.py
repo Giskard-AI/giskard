@@ -7,15 +7,15 @@ def slice_bounds(feature, value, ds):
         return value
     elif ds.column_types[feature] == "numeric":
         # Find the quartile bounds for the value
-        q1, q2, q3 = np.percentile(ds.df[feature], [25, 50, 75])
+        q1, q2, q3 = np.nanpercentile(ds.df[feature], [25, 50, 75])
         if value < q1:
-            return [-np.inf, q1]
+            return [ds.df[feature].min(), q1]
         elif q1 <= value < q2:
             return [q1, q2]
         elif q2 <= value < q3:
             return [q2, q3]
         else:
-            return [q3, np.inf]
+            return [q3, ds.df[feature].max()]
     else:
         return None
 
