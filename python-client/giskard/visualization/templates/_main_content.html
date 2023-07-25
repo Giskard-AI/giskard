@@ -106,6 +106,14 @@
                 Your model seems to exhibit offensive behaviour when we use adversarial “Do Anything Now” (DAN)
                 prompts.
             </p>
+            {% elif issues[0].__class__.__name__ == "HarmfulnessIssue" %}
+            <p>
+                Your model can generate harmful or toxic content in response to specific prompts.
+            </p>
+            {% elif issues[0].__class__.__name__.endswith("StereotypeIssue") %}
+            <p>
+                Your model exhibits social stereotypes about genders or minorities.
+            </p>
             {% elif issues[0].__class__.__name__ == "SpuriousCorrelationIssue" %}
             <p>
                 We found some potential spurious correlations between your data and the model predictions. Some data slices are highly correlated with your predictions. This happens when:
