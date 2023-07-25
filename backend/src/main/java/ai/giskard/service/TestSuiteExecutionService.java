@@ -5,6 +5,7 @@ import ai.giskard.domain.ml.*;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSErrorDTO;
 import ai.giskard.ml.dto.MLWorkerWSTestSuiteDTO;
 import ai.giskard.ml.dto.MLWorkerWSTestSuiteParamDTO;
 import ai.giskard.repository.TestSuiteExecutionRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,17 +80,18 @@ public class TestSuiteExecutionService {
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
             MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    workerID,
-                    MLWorkerWSAction.runTestSuite,
-                    param,
-                    (long)24 * 3600 * 1000  // TODO: Replace by an async mechanism
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (NullPointerException e) {
-                throw new NullPointerException("Cannot get ML Worker TestSuiteExecution reply");
+            UUID replyUuid = mlWorkerWSCommService.triggerAction(
+                workerID,
+                MLWorkerWSAction.runTestSuite,
+                param
+            );
+            String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
+            if (reply != null) {
+                try {
+                    result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.runTestSuite, reply);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             if (result instanceof MLWorkerWSTestSuiteDTO response) {
@@ -105,6 +108,8 @@ public class TestSuiteExecutionService {
                     .toList());
                 execution.setLogs(response.getLogs());
                 return;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new GiskardRuntimeException(error.getErrorStr());
             }
         }
         throw new NullPointerException("Error while executing test suite");
