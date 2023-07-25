@@ -71,12 +71,11 @@ public class TestSuiteExecutionService {
 
         try (MLWorkerClient client = mlWorkerService.createClient(suite.getProject().isUsingInternalWorker())) {
             TestSuiteResultMessage testSuiteResultMessage = client.getBlockingStub().runTestSuite(builder.build());
-
             execution.setResult(getResult(testSuiteResultMessage));
             execution.setResults(testSuiteResultMessage.getResultsList().stream()
                 .map(identifierSingleTestResult ->
                     new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
-                        identifierSingleTestResult.getResult()))
+                        identifierSingleTestResult.getResult(), identifierSingleTestResult.getArgumentsList()))
                 .collect(Collectors.toList()));
             execution.setLogs(testSuiteResultMessage.getLogs());
         } catch (Exception e) {

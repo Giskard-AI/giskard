@@ -9,6 +9,7 @@ export interface SingleTestResultDTO {
     metric: number;
     missingCount: number;
     missingPercent: number;
+    outputDfUuid: string;
     partialUnexpectedIndexList: number[];
     passed: boolean;
     referenceSlicesSize: number[];
