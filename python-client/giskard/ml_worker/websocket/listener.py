@@ -132,12 +132,25 @@ def action_in_thread(callback, ml_worker, action, req):
 
     if rep_id:
         # Reply if there is an ID
-        # TODO: Message fragmentation, multiple shot, async
+        # TODO: multiple shot, async
         logger.debug(f"[WRAPPED_CALLBACK] replying {len(info.json())} {info.json()} for {action.name}")
-        ml_worker.ws_conn.send(
-            f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
-            json.dumps({"id": rep_id, "action": action.name, "payload": info.json() if info else "{}"}),
-        )
+        # Message fragmentation
+        FRAG_LEN = 1500  # TODO: Make it configurable
+        payload = info.json() if info else "{}"
+        frag_count = math.ceil(len(payload) / FRAG_LEN)
+        for frag_i in range(frag_count):
+            ml_worker.ws_conn.send(
+                f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
+                json.dumps(
+                    {
+                        "id": rep_id,
+                        "action": action.name,
+                        "payload": payload[frag_i * FRAG_LEN : min((frag_i + 1) * FRAG_LEN, len(payload))],
+                        "f_index": frag_i,
+                        "f_count": frag_count,
+                    }
+                ),
+            )
 
     # Post-processing of stopWorker
     if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:

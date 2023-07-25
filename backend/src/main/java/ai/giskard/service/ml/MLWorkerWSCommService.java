@@ -36,7 +36,7 @@ public class MLWorkerWSCommService {
             throws NullPointerException, JsonProcessingException {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
-        BlockingQueue<String> queue = mlWorkerWSService.getResultWaiter(repId.toString(), true);
+        BlockingQueue<String> queue = mlWorkerWSService.getResultWaiter(repId.toString());
 
         // Prepare the parameters and publish message
         HashMap<String, Object> data = new HashMap<>();
