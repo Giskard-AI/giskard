@@ -55,11 +55,7 @@ public class PermissionEvaluator {
         Project project = this.projectRepository.findOneByKey(projectKey)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
 
-        if (isCurrentUserGuest(project) && isGuestWithAnyRole(project.getId(), AuthoritiesConstants.AICREATOR, AuthoritiesConstants.ADMIN)) {
-            return true;
-        }
-
-        return isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
+        return (isCurrentUserGuest(project) && this.canWrite()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
     }
 
     /**
