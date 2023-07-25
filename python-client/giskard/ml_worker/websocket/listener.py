@@ -88,6 +88,8 @@ def websocket_log_actor(ml_worker: MLWorker, req: dict, *args, **kwargs):
 
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
+MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
+
 
 def action_in_thread(callback, ml_worker, action, req):
     # Parse the response ID
@@ -135,7 +137,7 @@ def action_in_thread(callback, ml_worker, action, req):
         # TODO: multiple shot, async
         logger.debug(f"[WRAPPED_CALLBACK] replying {len(info.json())} {info.json()} for {action.name}")
         # Message fragmentation
-        FRAG_LEN = 1500  # TODO: Make it configurable
+        FRAG_LEN = max(ml_worker.ws_max_reply_payload_size, MAX_STOMP_ML_WORKER_REPLY_SIZE)
         payload = info.json() if info else "{}"
         frag_count = math.ceil(len(payload) / FRAG_LEN)
         for frag_i in range(frag_count):
@@ -183,9 +185,12 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
         self.ml_worker = worker
 
     def on_connected(self, frame):
-        logger.debug("Connected")
+        logger.debug(f"Connected: {frame}")
         self.ml_worker.ws_conn.subscribe(
             f"/ml-worker/{self.ml_worker.ml_worker_id}/action", f"ws-worker-{self.ml_worker.ml_worker_id}"
+        )
+        self.ml_worker.ws_conn.subscribe(
+            f"/ml-worker/{self.ml_worker.ml_worker_id}/config", f"ws-worker-{self.ml_worker.ml_worker_id}"
         )
 
     def on_error(self, frame):
@@ -207,6 +212,16 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
         if "action" in req.keys() and req["action"] in WEBSOCKET_ACTORS:
             # Dispatch the action
             WEBSOCKET_ACTORS[req["action"]](self.ml_worker, req)
+        elif "config" in req.keys():
+            # Change the configuration
+            if req["config"] == "MAX_STOMP_ML_WORKER_REPLY_SIZE" and "value" in req.keys():
+                mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
+                try:
+                    mtu = max(mtu, int(req["value"]))
+                except ValueError:
+                    mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
+                self.ml_worker.ws_max_reply_payload_size = mtu
+                logger.info(f"MAX_STOMP_ML_WORKER_REPLY_SIZE set to {mtu}")
 
 
 def map_function_meta_ws(callable_type):

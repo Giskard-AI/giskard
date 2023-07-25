@@ -105,6 +105,10 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                             Objects.requireNonNull(accessor.getSessionId()))) {
                         return message;
                     }
+                    if (destination.equals(WebSocketConfig.INTERNAL_ML_WORKER_CONFIG_TOPIC) ||
+                        destination.equals(WebSocketConfig.EXTERNAL_ML_WORKER_CONFIG_TOPIC))
+                        return message;
+
                     throw new AccessDeniedException("Cannot find available worker");
                 }
 

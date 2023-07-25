@@ -30,10 +30,15 @@ import java.util.Map;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public final static String ML_WORKER_TOPIC_PREFIX = "/ml-worker";
     public final static String ML_WORKER_ACTION_TOPIC = "action";
+    public final static String ML_WORKER_CONFIG_TOPIC = "config";
     public static final String INTERNAL_ML_WORKER_TOPIC =
         String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.INTERNAL.toString(), ML_WORKER_ACTION_TOPIC);
     public static final String EXTERNAL_ML_WORKER_TOPIC =
         String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.EXTERNAL.toString(), ML_WORKER_ACTION_TOPIC);
+    public static final String INTERNAL_ML_WORKER_CONFIG_TOPIC =
+        String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.INTERNAL.toString(), ML_WORKER_CONFIG_TOPIC);
+    public static final String EXTERNAL_ML_WORKER_CONFIG_TOPIC =
+        String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.EXTERNAL.toString(), ML_WORKER_CONFIG_TOPIC);
 
     public static final String WEBSOCKET_ENDPOINT = "/websocket";
 
@@ -97,20 +102,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.jHipsterProperties = jHipsterProperties;
     }
 
-    private final int maxSTOMPMessageSize = 64 * 1024 * 1024;   // 64MB
+    public static final int MAX_STOMP_MESSAGE_SIZE = 65535;   // 64MB
+    public static final int MAX_REPLY_PAYLOAD_SIZE = 4096;
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
         // Allow to receive larger STOMP package (65535 bytes by default)
-        registry.setMessageSizeLimit(maxSTOMPMessageSize);
-    }
-
-    @Bean
-    public ServletServerContainerFactoryBean createWebSocketContainer() {
-        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-        container.setMaxTextMessageBufferSize(maxSTOMPMessageSize);
-        container.setMaxBinaryMessageBufferSize(maxSTOMPMessageSize);
-        return container;
+        registry.setMessageSizeLimit(MAX_STOMP_MESSAGE_SIZE);
     }
 
     @Override

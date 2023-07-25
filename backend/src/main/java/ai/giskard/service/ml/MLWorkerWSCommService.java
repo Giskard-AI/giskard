@@ -26,6 +26,17 @@ public class MLWorkerWSCommService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+    public void notifyMaxReplyPayloadLength(MLWorkerID workerID, int maxPayloadLength) {
+        // Prepare the parameters and publish message
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("config", "MAX_STOMP_ML_WORKER_REPLY_SIZE");
+        data.put("value", maxPayloadLength);
+        simpMessagingTemplate.convertAndSend(
+            String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, workerID.toString(), WebSocketConfig.ML_WORKER_CONFIG_TOPIC),
+            data
+        );
+    }
+
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param)
             throws NullPointerException, JsonProcessingException {
         // Wait for result during 5 seconds/5000 milliseconds

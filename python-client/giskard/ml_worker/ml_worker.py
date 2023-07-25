@@ -32,6 +32,7 @@ class MLWorker:
     ws_stopping: bool = False
     ws_attempts: int = 0
     ws_max_attemps: int = 10
+    ws_max_reply_payload_size: int = 8192
     ml_worker_id: str
     client: GiskardClient
 
