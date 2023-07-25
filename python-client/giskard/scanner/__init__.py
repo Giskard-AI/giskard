@@ -1,9 +1,10 @@
 from typing import Optional
-from ..models.base import BaseModel
+
 from ..datasets.base import Dataset
-from .scanner import Scanner
+from ..models.base import BaseModel
 from .logger import logger
 from giskard.core.model_validation import ValidationFlags
+from .scanner import Scanner
 
 _default_detectors = [
     ".performance.performance_bias_detector",
@@ -15,6 +16,9 @@ _default_detectors = [
     ".calibration.underconfidence_detector",
     ".correlation.spurious_correlation_detector",
     ".llm.toxicity_detector",
+    ".llm.harmfulness_detector",
+    ".llm.gender_stereotype_detector",
+    ".llm.minority_stereotype_detector",
 ]
 
 

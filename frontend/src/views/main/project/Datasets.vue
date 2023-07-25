@@ -162,7 +162,7 @@ const datasets = computed(() => {
         (!search || search.length == 0) ||
         dataset.name.toLowerCase().includes(search) ||
         dataset.id.toString().includes(search)
-    ) && (!dataset.name.startsWith('Debug: ') || showDebugDatasets.value);
+    ) && ((dataset.name == undefined || !dataset.name.startsWith('Debug: ')) || showDebugDatasets.value);
   });
 });
 

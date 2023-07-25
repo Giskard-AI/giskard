@@ -1,0 +1,17 @@
+=============================================================
+Citation for the corefBias repository
+=============================================================
+
+If you use the corefBias repository in your research, please cite it using the following BibTeX entry:
+
+@misc{uclanlp_corefBias,
+  author = {UCLANLP},
+  title = {Gender Bias in Coreference Resolution:Evaluation and Debiasing Methods},
+  year = {2023},
+  publisher = {GitHub},
+  howpublished = {\url{https://github.com/uclanlp/corefBias/}},
+}
+
+Please replace "Year of publication" with the actual year when you accessed or used the repository.
+
+=============================================================
