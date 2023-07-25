@@ -76,9 +76,9 @@ catalogs/index
 <img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
 :::
 
-:::{card} <h2><center> Integrations </center></h2>
-:link: integrations/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="100%">
+:::{card} <h2><center> Contribute </center></h2>
+:link: contribute/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
 :::
 ::::
 
@@ -114,10 +114,12 @@ catalogs/index
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.5%">
 :::
 
-:::{card} <h2><center> Contribute </center></h2>
-:link: contribute/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
+:::{card} <h2><center> Integrations </center></h2>
+:link: integrations/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="100%">
 :::
+
 ::::
 :::::
 
+    
