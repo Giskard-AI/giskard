@@ -2,6 +2,8 @@ package ai.giskard.service.ml;
 
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerReplyAggregator;
+import ai.giskard.ml.MLWorkerReplyMessage;
+import ai.giskard.ml.MLWorkerReplyType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,8 +23,8 @@ public class MLWorkerWSService {
     private final ConcurrentHashMap<String, String> workers = new ConcurrentHashMap<>();
     private String potentialInternalWorkerId;
 
-    private ConcurrentHashMap<String, MLWorkerReplyAggregator> messagePool = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, BlockingQueue<String>> finalMessagePool = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MLWorkerReplyAggregator> messagePool = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, BlockingQueue<MLWorkerReplyMessage>> finalMessagePool = new ConcurrentHashMap<>();
 
     public boolean prepareInternalWorker(@NonNull String uuid) {
         if (uuid.equals(potentialInternalWorkerId)) return false;
@@ -66,6 +68,20 @@ public class MLWorkerWSService {
     }
 
     public void appendReply(String repId, int fragmentIndex, int fragmentCount, String result) {
+        String fullReply = aggregateReply(repId, fragmentIndex, fragmentCount, result);
+        if (fullReply != null) {
+            this.attachResult(repId, fullReply);
+        }
+    }
+
+    public void appendReply(String repId, int fragmentIndex, int fragmentCount, int index, int total, String result) {
+        String fullReply = aggregateReply(repId + "-" + index, fragmentIndex, fragmentCount, result);
+        if (fullReply != null) {
+            this.attachResult(repId, fullReply, false, index, total);
+        }
+    }
+
+    private String aggregateReply(String repId, int fragmentIndex, int fragmentCount, String result) {
         synchronized (messagePool) {
             MLWorkerReplyAggregator aggregator;
             if (!messagePool.containsKey(repId)) {
@@ -79,36 +95,50 @@ public class MLWorkerWSService {
                 log.debug("Replaced {} with {} in reply {}", previous, result, repId);
 
             if (aggregator.isFinished()) {
-                this.attachResult(repId, aggregator.aggregate());
+                return aggregator.aggregate();
             }
         }
+        return null;
     }
 
     public void attachResult(String repId, String result) {
-        if (finalMessagePool.containsKey(repId)) {
-            BlockingQueue<String> bq = finalMessagePool.get(repId);
-            if (!bq.offer(result)) {
-                log.warn("Cannot offer a reply {}", result);
-            } else {
-                // Remove once got final result
-                removeResultWaiter(repId);
-                // TODO: Multiple shot?
+        attachResult(repId, result, true, 0, 1);
+    }
+
+    public void attachResult(String repId, String result, boolean isOneShot, int index, int total) {
+        synchronized (finalMessagePool) {
+            if (finalMessagePool.containsKey(repId)) {
+                BlockingQueue<MLWorkerReplyMessage> bq = finalMessagePool.get(repId);
+                if (isOneShot) {
+                    if (!bq.offer(MLWorkerReplyMessage.builder().
+                        type(MLWorkerReplyType.FINISH).
+                        message(result).build())) {
+                        log.warn("Cannot offer a reply {}", result);
+                    } else {
+                        // Remove once got final result
+                        removeResultWaiter(repId);
+                    }
+                } else {
+                    // TODO: Currently multiple shot only keeps the newest
+                }
             }
         }
     }
 
-    public BlockingQueue<String> getResultWaiter(String repId) {
-        BlockingQueue<String> bq = new ArrayBlockingQueue<>(1);
+    public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId) {
+        if (finalMessagePool.containsKey(repId)) return finalMessagePool.get(repId);
+
+        BlockingQueue<MLWorkerReplyMessage> bq = new ArrayBlockingQueue<>(1);
         finalMessagePool.put(repId, bq);
         return bq;
     }
 
     public void removeResultWaiter(String repId) {
-        if (messagePool.containsKey(repId)) {
+        synchronized (messagePool) {
             messagePool.remove(repId);
         }
 
-        if (finalMessagePool.containsKey(repId)) {
+        synchronized (finalMessagePool) {
             finalMessagePool.remove(repId);
         }
     }
