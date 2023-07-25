@@ -99,11 +99,9 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
-    def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
+    def __init__(self, training_label, training_label_proba, dataset_row):
         self._borderline()
         self.pushkind = PushKind.Borderline
-        self.max_proba = max_proba
-        self.second_proba = second_proba
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
