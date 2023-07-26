@@ -31,10 +31,10 @@ public class TransformationFunctionController {
         return giskardMapper.toDTO(transformationFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping({"project/{projectKey}/transformations/{uuid}", "/transformations/{uuid}"})
+    @PutMapping("project/{projectKey}/transformations/{uuid}")
     @Transactional
     public TransformationFunctionDTO updateTransformationFunction(
-        @PathVariable(value = "projectKey", required = false) String projectKey,
+        @PathVariable(value = "projectKey") String projectKey,
         @PathVariable("uuid") @NotNull UUID uuid,
         @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
         transformationFunction.setProjectKeys(Set.of(projectKey));
