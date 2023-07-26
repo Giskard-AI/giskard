@@ -34,15 +34,15 @@ public class SlicingFunctionController {
         return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
+    @PutMapping("project/{projectKey}/slices/{uuid}")
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey") String projectKey,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         slicingFunction.setProjectKeys(Set.of(projectKey));
         return slicingFunctionService.save(slicingFunction);
     }
 
-    @PostMapping({"project/{projectKey}/slices/no-code", "slices/no-code"})
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) @NotNull String projectKey,
+    @PostMapping("project/{projectKey}/slices/no-code")
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey") @NotNull String projectKey,
                                                     @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
         return slicingFunctionService.generate(comparisonClauses, projectKey);
     }
