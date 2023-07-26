@@ -32,17 +32,17 @@
 <br />
 
 ## Table of contents
-* 🐢 **[Why Giskard?](#🐢-why-giskard)**
-* 📗 **[Getting started](#📗-getting-started)**
+* 🐢 **[Why Giskard?](#why-giskard)**
+* 📗 **[Getting started](#getting-started)**
   - [Install our Python library and testing server](#installation)
   - [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
   - [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
   - [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
-* 👋 **[How to contribute](#👋-how-to-contribute)**
-* 💖 **[Like what we're doing?](#💖-like-what-were-doing)**
+* 👋 **[How to contribute](#how-to-contribute)**
+* 💖 **[Like what we're doing?](#like-what-were-doing)**
 
 
-## 🐢 Why Giskard?
+## Why Giskard?
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
@@ -83,7 +83,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 
 
-## 📗 Getting started
+## Getting started
 
 ### Installation
 ```sh
@@ -181,14 +181,14 @@ test_suite.upload(client, "my_project")
     
 For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 
-## 👋 How to contribute
+## How to contribute
 We welcome contributions from the Machine Learning community!
 
 Read this [guide](CONTRIBUTING.md) to get started.
 
 <br />
 
-## 💖 Like what we're doing?
+## Like what we're doing?
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
