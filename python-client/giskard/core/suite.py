@@ -3,6 +3,7 @@ import logging
 import traceback
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional, Tuple
+from mlflow import MlflowClient
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
@@ -55,6 +56,22 @@ class TestSuiteResult:
 
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
+
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+        import mlflow
+        from giskard.integrations.mlflow.giskard_evaluator import process_text
+
+        metrics = dict()
+        for test_result in self.results:
+            test_name = test_result[0]
+            test_name = process_text(test_name)
+            if mlflow_client is None and mlflow_run_id is None:
+                mlflow.log_metric(test_name, test_result[1].metric)
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
+            metrics[test_name] = test_result[1].metric
+
+        return metrics
 
 
 class SuiteInput:

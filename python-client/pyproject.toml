@@ -45,6 +45,7 @@ dev = [
     "imbalanced-learn>=0.10.1",
     "pytest-xdist>=3.3.1",
     "ruff>=0.0.271",
+    "mlflow>2"
 ]
 proto = [
     "grpcio-tools>=1.46.3",
@@ -66,6 +67,7 @@ test = [
     "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
     "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
+    "mlflow>2"
 ]
 doc = [
     "furo>=2023.5.20",
@@ -88,10 +90,13 @@ include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
 [tool.setuptools.package-data]
-giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
+giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
 
 [project.scripts]
 giskard = "giskard.cli:cli"
+
+[project.entry-points."mlflow.model_evaluator"]
+giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 
 [project.urls]
 "Homepage" = "https://giskard.ai"
@@ -108,7 +113,7 @@ giskard = "giskard.cli:cli"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b11"
+version = "2.0.0b12"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
@@ -160,7 +165,8 @@ llm = [
     "torch",
     "langchain",
     "evaluate",
-    #    pdm lock -G:all doesn't work without fixing these two versions
+    "detoxify>=0.5.0",
+    # pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
 ]
