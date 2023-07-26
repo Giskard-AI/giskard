@@ -32,6 +32,8 @@ extensions = [
     "sphinx_click",
 ]
 
+autoclass_content = "both"
+
 # autodoc_mock_imports = ["giskard.ml_worker.generated"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
