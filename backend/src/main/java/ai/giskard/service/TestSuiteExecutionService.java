@@ -87,11 +87,7 @@ public class TestSuiteExecutionService {
             );
             String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
             if (reply != null) {
-                try {
-                    result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.runTestSuite, reply);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+                result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.runTestSuite, reply);
             }
 
             if (result instanceof MLWorkerWSTestSuiteDTO response) {

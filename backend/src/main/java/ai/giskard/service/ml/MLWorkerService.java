@@ -95,16 +95,11 @@ public class MLWorkerService {
             MLWorkerWSEchoMsgDTO echoMsg = MLWorkerWSEchoMsgDTO.builder()
                 .msg(HEARTBEAT_MESSAGE)
                 .build();
-            MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    MLWorkerID.EXTERNAL,
-                    MLWorkerWSAction.echo,
-                    echoMsg
-                );
-            } catch (JsonProcessingException | NullPointerException e) {
-                log.warn("Did not get a validate ML Worker heartbeat message");
-            }
+            MLWorkerWSBaseDTO result= mlWorkerWSCommService.performAction(
+                MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.echo,
+                echoMsg
+            );
             if (result instanceof MLWorkerWSEchoMsgDTO reply) {
                 if (!HEARTBEAT_MESSAGE.equals(reply.getMsg())) {
                     log.warn("ML Worker heartbeat returned unexpected result: {}", reply.getMsg());

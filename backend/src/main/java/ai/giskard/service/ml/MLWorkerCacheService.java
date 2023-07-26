@@ -87,18 +87,10 @@ public class MLWorkerCacheService {
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
-            MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
-                    MLWorkerWSAction.getCatalog, null
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (NullPointerException e) {
-                // Did not get a valid ML Worker getCatalog reply
-                return new CatalogDTO();
-            }
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.getCatalog, null
+            );
             if (result instanceof MLWorkerWSCatalogDTO response) {
 
                 return CatalogDTO.builder()

@@ -61,18 +61,11 @@ public class TestController {
                     ).toList()
                 ).build();
 
-            MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    workerID,
-                    MLWorkerWSAction.runAdHocTest,
-                    param
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (NullPointerException e) {
-                throw new NullPointerException("Did not get a valid ML Worker RunAdHocTest reply");
-            }
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.runAdHocTest,
+                param
+            );
             if (result instanceof MLWorkerWSRunAdHocTestDTO response) {
                 TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
                 res.setResult(response);

@@ -190,18 +190,11 @@ public class DatasetsController {
                 .functions(functions)
                 .build();
 
-            MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    workerID,
-                    MLWorkerWSAction.datasetProcessing,
-                    param
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (NullPointerException e) {
-                throw new NullPointerException("Did not get a valid ML Worker DatasetProcessing reply");
-            }
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.datasetProcessing,
+                param
+            );
             if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
                 response = (MLWorkerWSDatasetProcessingDTO) result;
 

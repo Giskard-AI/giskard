@@ -201,18 +201,11 @@ public class TestSuiteService {
                 .toList();
             param.setInputs(inputs);
 
-            MLWorkerWSBaseDTO result = null;
-            try {
-                result = mlWorkerWSCommService.performAction(
-                    workerID,
-                    MLWorkerWSAction.generateTestSuite,
-                    param
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (NullPointerException e) {
-                throw new NullPointerException("Cannot get ML Worker createTestSuite reply");
-            }
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.generateTestSuite,
+                param
+            );
             if (result instanceof MLWorkerWSGenerateTestSuiteDTO response) {
                 TestSuite suite = new TestSuite();
                 suite.setProject(project);
