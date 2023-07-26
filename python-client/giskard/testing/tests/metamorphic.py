@@ -421,6 +421,10 @@ def _test_metamorphic_t_test(
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
+    return _create_test_result(critical_quantile, dataset, debug, direction, messages, model, p_value, result_df)
+
+
+def _create_test_result(critical_quantile, dataset, debug, direction, messages, model, p_value, result_df):
     passed = bool(p_value < critical_quantile)
     # --- debug ---
     output_ds = None
@@ -431,7 +435,6 @@ def _test_metamorphic_t_test(
         test_name = inspect.stack()[1][3]
         output_ds.name = debug_prefix + test_name
     # ---
-
     return TestResult(
         actual_slices_size=[len(dataset.df)], metric=p_value, passed=passed, messages=messages, output_df=output_ds
     )
@@ -654,21 +657,8 @@ def _test_metamorphic_wilcoxon(
     p_value = _compare_probabilities_wilcoxon(result_df, direction, window_size, critical_quantile)
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
-    passed = bool(p_value < critical_quantile)
 
-    # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
-        test_name = inspect.stack()[1][3]
-        output_ds.name = debug_prefix + test_name
-    # ---
-
-    return TestResult(
-        actual_slices_size=[len(dataset.df)], metric=p_value, passed=passed, messages=messages, output_df=output_ds
-    )
+    return _create_test_result(critical_quantile, dataset, debug, direction, messages, model, p_value, result_df)
 
 
 @test(name="Decreasing (Wilcoxon)")
