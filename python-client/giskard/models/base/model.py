@@ -75,14 +75,14 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        id: Optional[str] = None,
-        **kwargs,
+            self,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            id: Optional[str] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -463,3 +463,6 @@ class BaseModel(ABC):
                 f"Cannot load model ({cls.__module__}.{cls.__name__}), "
                 f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
             )
+
+    def to_mlflow(self):
+        raise NotImplementedError
