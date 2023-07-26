@@ -74,12 +74,14 @@ class BearerAuth(AuthBase):
 
 
 class GiskardClient:
-    def __init__(self, url: str, token: str):
+    def __init__(self, url: str, token: str, hf_token: str = None):
         self.host_url = url
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(token)
+        if hf_token:
+            self._session.cookies["spaces-jwt"] = hf_token
 
         server_settings = self._session.get("settings/ml-worker-connect").json()
         analytics.init_server_info(server_settings)

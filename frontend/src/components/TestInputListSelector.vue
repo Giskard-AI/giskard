@@ -14,23 +14,17 @@
                             </v-tooltip>
                         </v-list-item-title>
                         <v-list-item-subtitle class="text-caption">{{ input.type }}</v-list-item-subtitle>
-                        <v-list-item-action-text
-                            v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
+                        <v-list-item-action-text v-if="props.test && !!props.test.args.find(a => a.name === input.name).optional">
                             Optional. Default:
                             <code>{{ props.test.args.find(a => a.name === input.name).defaultValue }}</code>
                         </v-list-item-action-text>
                     </v-list-item-content>
                 </v-col>
                 <v-col cols="3">
-                    <v-select v-model="buttonToggleValues[input.name]"
-                              outlined dense hide-details
-                              :items="inputTypeSelector"
-                              return-object
-                              item-text="name"
-                              @change="item => item.select(input.name)">
+                    <v-select v-model="buttonToggleValues[input.name]" outlined dense hide-details :items="inputTypeSelector" return-object item-text="name" @change="item => item.select(input.name)">
                         <template v-slot:item="data">
                             <div class="pt-2 pb-2">
-                                <span>{{ data.item.name }}</span><br/>
+                                <span>{{ data.item.name }}</span><br />
                                 <span class="text-caption">{{ data.item.description }}</span>
                             </div>
                         </template>
@@ -38,75 +32,29 @@
                 </v-col>
                 <v-col :cols="6">
                     <div v-if="editedInputs" class="d-flex">
-                      <span v-if="!editedInputs.hasOwnProperty(input.name)" class="font-italic">
-                        Suite input. Provided at the execution time.
-                      </span>
+                        <span v-if="!editedInputs.hasOwnProperty(input.name)" class="font-italic">
+                            Suite input. Provided at the execution time.
+                        </span>
                         <template v-else-if="!editedInputs[input.name].isAlias">
-                            <DatasetSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                             v-if="input.type === 'Dataset'"
-                                             :value.sync="editedInputs[input.name].value"/>
-                            <ModelSelector :project-id="projectId" :label="input.name" :return-object="false"
-                                           v-else-if="input.type === 'BaseModel'"
-                                           :value.sync="editedInputs[input.name].value"/>
-                            <SlicingFunctionSelector :project-id="projectId" :label="input.name"
-                                                     v-else-if="input.type === 'SlicingFunction'"
-                                                     :value.sync="editedInputs[input.name].value"
-                                                     :args.sync="editedInputs[input.name].params"/>
-                            <TransformationFunctionSelector :project-id="projectId" :label="input.name"
-                                                            v-else-if="input.type === 'TransformationFunction'"
-                                                            :value.sync="editedInputs[input.name].value"
-                                                            :args.sync="editedInputs[input.name].params"/>
-                            <KwargsCodeEditor v-else-if="input.type === 'Kwargs'"
-                                              :value.sync="editedInputs[input.name].value"/>
-                            <ValidationProvider
-                                name="value"
-                                v-else-if="['float', 'int'].includes(input.type)"
-                                mode="eager" rules="required" v-slot="{errors}">
-                                <v-text-field
-                                    :step='input.type === "float" ? 0.1 : 1'
-                                    v-model="editedInputs[input.name].value"
-                                    :error-messages="errors"
-                                    single-line
-                                    type="number"
-                                    outlined
-                                    dense
-                                />
+                            <DatasetSelector v-if="input.type === 'Dataset'" :project-id="projectId" :label="input.name" :return-object="false" :value.sync="editedInputs[input.name].value" />
+                            <ModelSelector v-else-if="input.type === 'BaseModel'" :project-id="projectId" :label="input.name" :return-object="false" :value.sync="editedInputs[input.name].value" />
+                            <SlicingFunctionSelector v-else-if="input.type === 'SlicingFunction'" :project-id="projectId" :label="input.name" :value.sync="editedInputs[input.name].value" :args.sync="editedInputs[input.name].params" />
+                            <TransformationFunctionSelector v-else-if="input.type === 'TransformationFunction'" :project-id="projectId" :label="input.name" :value.sync="editedInputs[input.name].value" :args.sync="editedInputs[input.name].params" />
+                            <KwargsCodeEditor v-else-if="input.type === 'Kwargs'" :value.sync="editedInputs[input.name].value" />
+                            <ValidationProvider v-else-if="['float', 'int'].includes(input.type)" name="value" mode="eager" rules="required" v-slot="{ errors }">
+                                <v-text-field :step='input.type === "float" ? 0.1 : 1' v-model="editedInputs[input.name].value" :error-messages="errors" single-line type="number" outlined dense />
                             </ValidationProvider>
-                            <ValidationProvider v-else-if="input.type === 'str'"
-                                                name="input"
-                                                mode="eager" rules="required"
-                                                v-slot="{errors}">
-                                <v-text-field
-                                    v-model="editedInputs[input.name].value"
-                                    :error-messages="errors"
-                                    single-line
-                                    type="text"
-                                    outlined
-                                    dense
-                                />
+                            <ValidationProvider v-else-if="input.type === 'str'" name="input" mode="eager" rules="required" v-slot="{ errors }">
+                                <v-text-field v-model="editedInputs[input.name].value" :error-messages="errors" single-line type="text" outlined dense />
                             </ValidationProvider>
                         </template>
-                        <ValidationProvider v-else name="alias"
-                                            mode="eager" rules="required"
-                                            v-slot="{errors}">
-                            <v-select
-                                clearable
-                                outlined
-                                v-model="editedInputs[input.name].value"
-                                :items="aliases[input.type] ?? []"
-                                :menu-props="{
-                                  closeOnClick: true,
-                                  closeOnContentClick: true,
-                                }"
-                                dense
-                                :error-messages="errors"
-                            >
+                        <ValidationProvider v-else name="alias" mode="eager" rules="required" v-slot="{ errors }">
+                            <v-select clearable outlined v-model="editedInputs[input.name].value" :items="aliases[input.type] ?? []" :menu-props="{
+                                closeOnClick: true,
+                                closeOnContentClick: true,
+                            }" dense :error-messages="errors">
                                 <template v-slot:prepend-item>
-                                    <v-list-item
-                                        ripple
-                                        @mousedown.prevent
-                                        @click="() => createAlias(input.name, input.type)"
-                                    >
+                                    <v-list-item ripple @mousedown.prevent @click="() => createAlias(input.name, input.type)">
                                         <v-list-item-action>
                                             <v-icon>
                                                 add
@@ -133,17 +81,17 @@
 <script setup lang="ts">
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import {computed, onMounted, ref, watch} from 'vue';
-import {FunctionInputDTO, TestFunctionDTO} from '@/generated-sources';
-import {storeToRefs} from 'pinia';
-import {useTestSuiteStore} from '@/stores/test-suite';
-import {chain} from "lodash";
-import {$vfm} from "vue-final-modal";
+import { computed, onMounted, ref, watch } from 'vue';
+import { FunctionInputDTO, TestFunctionDTO } from '@/generated-sources';
+import { storeToRefs } from 'pinia';
+import { useTestSuiteStore } from '@/stores/test-suite';
+import { chain } from "lodash";
+import { $vfm } from "vue-final-modal";
 import CreateAliasModal from "@/views/main/project/modals/CreateAliasModal.vue";
 import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.vue";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
-import {ParsedDocstring} from "@/utils/python-doc.utils";
+import { ParsedDocstring } from "@/utils/python-doc.utils";
 
 const props = defineProps<{
     testInputs?: { [key: string]: FunctionInputDTO },
@@ -156,7 +104,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['invalid', 'result']);
 
-const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
+const { models, datasets, suite } = storeToRefs(useTestSuiteStore());
 
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 
@@ -213,7 +161,7 @@ onMounted(() => {
 });
 
 
-watch(() => props.modelValue, () => updateEditedValue(), {deep: true})
+watch(() => props.modelValue, () => updateEditedValue(), { deep: true })
 
 const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
     name,
@@ -248,7 +196,7 @@ watch(() => [editedInputs.value, props.inputs], () => {
     } else {
         buttonToggleValues.value = {};
     }
-}, {deep: true});
+}, { deep: true });
 
 async function createAlias(name: string, type: string) {
     await $vfm.show({
@@ -260,7 +208,7 @@ async function createAlias(name: string, type: string) {
         on: {
             async save(input: FunctionInputDTO) {
                 editedInputs.value[name] = input;
-                editedInputs.value = {...editedInputs.value};
+                editedInputs.value = { ...editedInputs.value };
             }
         }
     });
@@ -268,22 +216,20 @@ async function createAlias(name: string, type: string) {
 
 
 watch(() => [editedInputs.value, buttonToggleValues], () => {
-  emit('result', editedInputs.value);
-  emit('invalid', Object.values(editedInputs.value)
-      .findIndex(param => {
+    emit('result', editedInputs.value);
+    emit('invalid', Object.values(editedInputs.value)
+        .findIndex(param => {
             let isOptional = props.test?.args.find(a => a.name === param.name)?.optional;
             return param && !isOptional && (param.value === null || param.value?.trim() === '');
-          }
-      ) !== -1);
-}, {deep: true})
+        }
+        ) !== -1);
+}, { deep: true })
 
 
 </script>
 
 <style scoped lang="scss">
-
-
 .shared-switch {
-  width: 150px;
+    width: 150px;
 }
 </style>

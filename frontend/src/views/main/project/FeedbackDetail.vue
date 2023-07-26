@@ -41,7 +41,7 @@
                   <MessageReply :replyId="data.id" :author="data.user" :created-on="data.createdOn" :content="data.feedbackMessage" :repliable="true" :replies=firstLevelReplies :type="'feedback'" :hideableBox="false" @reply="doSendReply($event)" @delete="deleteFeedback" />
                   <div v-for="(r, idx) in firstLevelReplies" :key="r.id">
                     <v-divider class="my-1" v-show="idx < firstLevelReplies.length"></v-divider>
-                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" />
+                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" :hideableBox="false" />
                   </div>
                 </v-card-text>
               </v-card>
