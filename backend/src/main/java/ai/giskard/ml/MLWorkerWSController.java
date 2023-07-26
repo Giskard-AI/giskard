@@ -25,7 +25,13 @@ public class MLWorkerWSController {
         if (body.getFragmentCount() <= 1) {
             if (body.getType() == MLWorkerReplyType.FINISH) {
                 // Message is completed, notifies the listener
-                mlWorkerWSService.attachResult(body.getId(), body.getPayload());
+                if (body.getIndex() > 0) {
+                    // Last message in a multiple-shot action
+                    mlWorkerWSService.attachResult(body.getId(), body.getPayload(),
+                        true, body.getIndex(), body.getTotal());
+                } else {
+                    mlWorkerWSService.attachResult(body.getId(), body.getPayload());
+                }
             } else if (body.getType() == MLWorkerReplyType.UPDATE) {
                 // Message is completed, update the listener
                 mlWorkerWSService.attachResult(body.getId(), body.getPayload(),

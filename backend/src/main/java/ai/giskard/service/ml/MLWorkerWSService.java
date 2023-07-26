@@ -105,31 +105,22 @@ public class MLWorkerWSService {
         attachResult(repId, result, true, 0, 1);
     }
 
-    public void attachResult(String repId, String result, boolean isOneShot, int index, int total) {
+    public void attachResult(String repId, String result, boolean isFinal, int index, int total) {
         synchronized (finalMessagePool) {
             if (!finalMessagePool.containsKey(repId)) {
                 return;
             }
 
             BlockingQueue<MLWorkerReplyMessage> bq = finalMessagePool.get(repId);
-            if (isOneShot) {
-                if (!bq.offer(MLWorkerReplyMessage.builder().
-                    type(MLWorkerReplyType.FINISH).
-                    message(result).build())) {
-                    log.warn("Cannot offer a reply {}", result);
-                } else {
-                    // Remove once got final result
-                    removeResultWaiter(repId);
-                }
-                return;
-            }
-
-            // Currently multiple shot only keeps the most recent reply
+            // Multiple-shot result should only keep the most recent reply
             MLWorkerReplyMessage message = bq.peek();
             if (message != null) {
                 if (message.getType() == MLWorkerReplyType.FINISH ||
                     (message.getType() == MLWorkerReplyType.UPDATE && index < message.getIndex())) {
-                    // Final or more recent message should not be updated
+                    // Final or more recent message should not be updated, drop the current finished reply
+                    synchronized (messagePool) {
+                        messagePool.remove(repId + "-" + index);
+                    }
                     return;
                 }
                 // Remove the recent
@@ -138,7 +129,7 @@ public class MLWorkerWSService {
 
             // Queue should be empty now
             if (!bq.offer(MLWorkerReplyMessage.builder().
-                type(MLWorkerReplyType.UPDATE).
+                type(isFinal ? MLWorkerReplyType.FINISH : MLWorkerReplyType.UPDATE).
                 message(result).index(index).total(total).build())) {
                 log.warn("Cannot offer a reply {}", result);
             }
@@ -146,10 +137,16 @@ public class MLWorkerWSService {
     }
 
     public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId) {
+        return getResultWaiter(repId, true);
+    }
+
+    public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId, boolean create) {
         if (finalMessagePool.containsKey(repId)) return finalMessagePool.get(repId);
 
         BlockingQueue<MLWorkerReplyMessage> bq = new ArrayBlockingQueue<>(1);
-        finalMessagePool.put(repId, bq);
+        if (create) {
+            finalMessagePool.put(repId, bq);
+        }
         return bq;
     }
 

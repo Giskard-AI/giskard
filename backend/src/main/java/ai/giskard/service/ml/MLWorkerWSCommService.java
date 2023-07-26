@@ -41,8 +41,21 @@ public class MLWorkerWSCommService {
 
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param)
             throws NullPointerException, JsonProcessingException {
-        // Wait for result during 5 seconds/5000 milliseconds
-        return this.performAction(workerID, action, param, 5000);
+        // Prepare to receive a one-shot result
+        UUID repId = UUID.randomUUID();
+        mlWorkerWSService.getResultWaiter(repId.toString());
+
+        // Prepare the parameters and publish message
+        send(workerID, action, param, repId);
+
+        String result = blockAwaitReply(repId);
+        if (result == null) {
+            mlWorkerWSService.removeResultWaiter(repId.toString());
+            log.warn("Received an empty reply for {} {}", action, repId);
+            throw new NullPointerException("Received an empty reply for " + action);
+        }
+
+        return parseReplyDTO(action, result);
     }
 
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds)
@@ -97,38 +110,13 @@ public class MLWorkerWSCommService {
     }
 
     public boolean isActionFinished(UUID uuid) {
-        BlockingQueue<MLWorkerReplyMessage> bq = mlWorkerWSService.getResultWaiter(uuid.toString());
+        BlockingQueue<MLWorkerReplyMessage> bq;
+        bq = mlWorkerWSService.getResultWaiter(uuid.toString(), false);
         if (!bq.isEmpty()) {
             MLWorkerReplyMessage message = bq.peek();
             return message.getType() == MLWorkerReplyType.FINISH && message.getMessage() != null;
         }
         return false;
-    }
-
-    public MLWorkerWSBaseDTO getFinalReply(UUID uuid, MLWorkerWSAction action) {
-        BlockingQueue<MLWorkerReplyMessage> bq = mlWorkerWSService.getResultWaiter(uuid.toString());
-        if (!bq.isEmpty()) {
-            MLWorkerReplyMessage message = bq.peek();
-            if (message.getType() == MLWorkerReplyType.FINISH) {
-                String result = message.getMessage();
-                ObjectMapper objectMapper = new ObjectMapper();
-                try {
-                    return parseReplyDTO(action, result);
-                } catch (JsonProcessingException e) {
-                    // Parse error information
-                    log.warn("Deserialization failed: {}", e.getMessage());
-                    MLWorkerWSErrorDTO error = null;
-                    try {
-                        error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
-                    } catch (JsonProcessingException ex) {
-                        return null;
-                    }
-                    log.warn("Parsed error: {}", error.getErrorStr());
-                    return error;
-                }
-            }
-        }
-        return null;
     }
 
     public MLWorkerWSBaseDTO parseReplyDTO(MLWorkerWSAction action, String result) throws JsonProcessingException {
@@ -148,17 +136,19 @@ public class MLWorkerWSCommService {
         };
     }
 
-    public String awaitReply(UUID repId, long milliseconds) {
+    public String awaitIntermediateReply(UUID repId, long milliseconds) {
         String result = null;
-        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString());
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
         try {
             // Waiting for the result
             MLWorkerReplyMessage message = queue.poll(milliseconds, TimeUnit.MILLISECONDS);
-            if (message == null) result = null;
-            else {
-                if (message.getType() == MLWorkerReplyType.FINISH) {
-                    result = message.getMessage();
-                }
+
+            if (message != null && message.getType() == MLWorkerReplyType.UPDATE) {
+                result = message.getMessage();
+            } else if (message != null && message.getType() == MLWorkerReplyType.FINISH) {
+                // Put back the final reply
+                queue.put(message);
+                return null;
             }
         } catch (InterruptedException e) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
@@ -167,18 +157,62 @@ public class MLWorkerWSCommService {
         return result;
     }
 
-    public String blockAwaitReply(UUID repId) {
+    public String awaitReply(UUID repId, long milliseconds) {
         String result = null;
-        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString());
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
+        try {
+            // Waiting for the result
+            long begin = System.currentTimeMillis();
+            MLWorkerReplyMessage message = null;
+            do {
+                long timeout = Math.max(begin + milliseconds - System.currentTimeMillis(), 0);
+                if (timeout == 0) break;
+
+                message = queue.poll(timeout, TimeUnit.MILLISECONDS);
+            } while (message == null || message.getType() != MLWorkerReplyType.FINISH);
+            if (message != null && message.getType() == MLWorkerReplyType.FINISH) {
+                result = message.getMessage();
+                // Remove waiter after receiving the final reply
+                mlWorkerWSService.removeResultWaiter(repId.toString());
+            }
+        } catch (InterruptedException e) {
+            mlWorkerWSService.removeResultWaiter(repId.toString());
+            Thread.currentThread().interrupt();
+        }
+        return result;
+    }
+
+    public String blockAwaitIntermediaReply(UUID repId) {
+        String result = null;
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
         try {
             // Waiting for the result
             MLWorkerReplyMessage message = queue.take();
-            if (message == null) result = null;
-            else {
-                if (message.getType() == MLWorkerReplyType.FINISH) {
-                    result = message.getMessage();
-                }
+            if (message.getType() == MLWorkerReplyType.UPDATE) {
+                result = message.getMessage();
+            } else if (message.getType() == MLWorkerReplyType.FINISH) {
+                // Put back the final reply
+                queue.put(message);
+                return null;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return result;
+    }
+
+    public String blockAwaitReply(UUID repId) {
+        String result = null;
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
+        try {
+            // Waiting for the result
+            MLWorkerReplyMessage message;
+            do {
+                message = queue.take();
+            } while (message.getType() != MLWorkerReplyType.FINISH);
+            result = message.getMessage();
+            // Remove waiter after receiving the final reply
+            mlWorkerWSService.removeResultWaiter(repId.toString());
         } catch (InterruptedException e) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
             Thread.currentThread().interrupt();
