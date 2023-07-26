@@ -11,19 +11,19 @@ from giskard.models.base import MLFlowSerializableModel
 class LangchainModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            **kwargs,
     ) -> None:
         assert (
-            model_type == SupportedModelTypes.TEXT_GENERATION
+                model_type == SupportedModelTypes.TEXT_GENERATION
         ), "LangchainModel only support text_generation ModelType"
 
         super().__init__(
@@ -69,3 +69,6 @@ class LangchainModel(MLFlowSerializableModel):
         model_kwargs.update(kwargs)
 
         return self.__class__(chain, **model_kwargs)
+
+    def to_mlflow(self, artifact_path: str = "langchain-model-from-giskard", **kwargs):
+        return mlflow.langchain.log_model(self.model, artifact_path, **kwargs)

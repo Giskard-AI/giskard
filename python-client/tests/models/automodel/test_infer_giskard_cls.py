@@ -5,6 +5,7 @@ from giskard.models.huggingface import HuggingFaceModel
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
 from giskard.models.tensorflow import TensorFlowModel
+from giskard.models.base import CloudpickleSerializableModel
 
 
 def pytorch_model():
@@ -28,6 +29,23 @@ def tensorflow_model():
             keras.layers.Dense(10, activation="softmax"),
         ]
     )
+
+
+def pyfunc_model():
+    import tensorflow as tf
+    from tensorflow import keras
+
+    tf_model = tf.keras.Sequential(
+        [
+            keras.layers.Dense(512, activation="relu", input_shape=(784,)),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(10, activation="softmax"),
+        ]
+    )
+
+    import mlflow
+    model_uri = mlflow.tensorflow.log_model(tf_model, "tensorflow_model").model_uri
+    return mlflow.pyfunc.load_model(model_uri)
 
 
 def huggingface_model():
@@ -54,3 +72,6 @@ def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_m
 
     giskard_cls = _infer_giskard_cls(huggingface_model())
     assert giskard_cls == HuggingFaceModel
+
+    giskard_cls = _infer_giskard_cls(pyfunc_model())
+    assert giskard_cls == CloudpickleSerializableModel

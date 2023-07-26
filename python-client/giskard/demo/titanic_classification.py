@@ -30,7 +30,7 @@ def get_test_df():
     return test_df
 
 
-def get_model_and_df():
+def get_model_and_df(max_iter=100):
     df = get_df()
     cat_cols = ["Pclass", "Sex", "SibSp", "Parch", "Embarked"]
     num_cols = ["PassengerId", "Age", "Fare"]
@@ -61,7 +61,7 @@ def get_model_and_df():
     )
 
     # Pipeline for the model Logistic Regression
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression())])
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=max_iter))])
 
     Y = df[target]
     X = df.drop(target, axis=1)
