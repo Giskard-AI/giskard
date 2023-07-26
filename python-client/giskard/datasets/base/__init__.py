@@ -15,6 +15,7 @@ from pandas.api.types import is_list_like
 from pandas.api.types import is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
+from mlflow import MlflowClient
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
@@ -717,6 +718,20 @@ class Dataset(ColumnMetadataMixin):
             dataset.load_metadata_from_instance(self.column_meta)
 
         return dataset
+
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+        import mlflow
+        with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv") as f:
+            local_path = f.name
+            artifact_name = local_path.split("/")[-1]
+            with open(local_path, "wb") as fw:
+                uncompressed_bytes = save_df(self.df)
+                fw.write(uncompressed_bytes)
+            if mlflow_client is None and mlflow_run_id is None:
+                mlflow.log_artifact(local_path)
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_artifact(mlflow_run_id, local_path=local_path)
+        return artifact_name
 
 
 def _cast_to_list_like(object):
