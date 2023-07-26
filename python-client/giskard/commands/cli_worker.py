@@ -79,7 +79,14 @@ def start_stop_options(func):
     default=False,
     help="Should ML Worker be started as a Daemon in a background",
 )
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
+@click.option(
+    "--token",
+    "-t",
+    "hf_token",
+    envvar="GSK_HF_TOKEN",
+    help="Access token for Giskard hosted in a private Hugging Face Spaces",
+)
+def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token):
     """\b
     Start ML Worker.
 
@@ -95,7 +102,8 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon):
         {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
     )
     api_key = initialize_api_key(api_key, is_server)
-    _start_command(is_server, url, api_key, is_daemon)
+    hf_token = initialize_hf_token(hf_token, is_server)
+    _start_command(is_server, url, api_key, is_daemon, hf_token)
 
 
 def initialize_api_key(api_key, is_server):
@@ -109,7 +117,17 @@ def initialize_api_key(api_key, is_server):
     return api_key
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
+def initialize_hf_token(hf_token, is_server):
+    if is_server:
+        return None
+    # HF token is not mandantory unless connection error
+    if "GSK_HF_TOKEN" in os.environ:
+        # delete HF token environment variable so that it doesn't get leaked when the test code is executed
+        del os.environ["GSK_HF_TOKEN"]
+    return hf_token
+
+
+def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token):
     from giskard.ml_worker.ml_worker import MLWorker
 
     start_msg = "Starting ML Worker"
@@ -134,14 +152,14 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon):
                 logger.error("Daemon mode is not supported on Windows.")
                 return
 
-            run_daemon(is_server, url, api_key)
+            run_daemon(is_server, url, api_key, hf_token)
         else:
-            ml_worker = MLWorker(is_server, url, api_key)
+            ml_worker = MLWorker(is_server, url, api_key, hf_token)
             asyncio.get_event_loop().run_until_complete(ml_worker.start())
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
-            asyncio.get_event_loop().run_until_complete(ml_worker.stop())
+            ml_worker.stop()
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
         logger.warning(

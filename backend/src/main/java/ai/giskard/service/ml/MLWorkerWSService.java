@@ -1,11 +1,15 @@
 package ai.giskard.service.ml;
 
 import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerReplyAggregator;
+import ai.giskard.ml.MLWorkerReplyMessage;
+import ai.giskard.ml.MLWorkerReplyType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -14,13 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class MLWorkerWSService {
-    private final Logger log = LoggerFactory.getLogger(MLWorkerWSService.class.getName());
+    private final Logger log = LoggerFactory.getLogger(MLWorkerWSService.class);
 
     private final ConcurrentHashMap<String, String> workers = new ConcurrentHashMap<>();
     private String potentialInternalWorkerId;
 
-    private ConcurrentHashMap<String, BlockingQueue<String>> messagePool = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, BlockingQueue<String>> oneShotMessagePool = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, MLWorkerReplyAggregator> messagePool = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, BlockingQueue<MLWorkerReplyMessage>> finalMessagePool = new ConcurrentHashMap<>();
 
     public boolean prepareInternalWorker(@NonNull String uuid) {
         if (uuid.equals(potentialInternalWorkerId)) return false;
@@ -63,43 +67,99 @@ public class MLWorkerWSService {
         return true;
     }
 
-    public void attachResult(String repId, String result) {
-        if (oneShotMessagePool.containsKey(repId)) {
-            if (!oneShotMessagePool.remove(repId).offer(result)) {
-                log.warn("Cannot offer a reply {}", result);
-            }
-            return;
+    public void appendReply(String repId, int fragmentIndex, int fragmentCount, String result) {
+        String fullReply = aggregateReply(repId, fragmentIndex, fragmentCount, result);
+        if (fullReply != null) {
+            this.attachResult(repId, fullReply);
         }
-        if (messagePool.containsKey(repId)) {
-            BlockingQueue<String> bq = messagePool.get(repId);
-            // Only keeps the newest
-            if (!bq.isEmpty()) {
-                String removed = bq.remove();
-                log.debug("Removed {} because a newer reply arrives.", removed);
+    }
+
+    public void appendReply(String repId, int fragmentIndex, int fragmentCount, int index, int total, String result) {
+        String fullReply = aggregateReply(repId + "-" + index, fragmentIndex, fragmentCount, result);
+        if (fullReply != null) {
+            this.attachResult(repId, fullReply, false, index, total);
+        }
+    }
+
+    private String aggregateReply(String repId, int fragmentIndex, int fragmentCount, String result) {
+        synchronized (messagePool) {
+            MLWorkerReplyAggregator aggregator;
+            if (!messagePool.containsKey(repId)) {
+                aggregator = new MLWorkerReplyAggregator(fragmentCount);
+                messagePool.put(repId, aggregator);
+            } else {
+                aggregator = messagePool.get(repId);
             }
-            if (!bq.offer(result)) {
+            String previous = aggregator.addReply(fragmentIndex, result);
+            if (StringUtils.hasText(previous))
+                log.debug("Replaced {} with {} in reply {}", previous, result, repId);
+
+            if (aggregator.isFinished()) {
+                return aggregator.aggregate();
+            }
+        }
+        return null;
+    }
+
+    public void attachResult(String repId, String result) {
+        attachResult(repId, result, true, 0, 1);
+    }
+
+    public void attachResult(String repId, String result, boolean isOneShot, int index, int total) {
+        synchronized (finalMessagePool) {
+            if (!finalMessagePool.containsKey(repId)) {
+                return;
+            }
+
+            BlockingQueue<MLWorkerReplyMessage> bq = finalMessagePool.get(repId);
+            if (isOneShot) {
+                if (!bq.offer(MLWorkerReplyMessage.builder().
+                    type(MLWorkerReplyType.FINISH).
+                    message(result).build())) {
+                    log.warn("Cannot offer a reply {}", result);
+                } else {
+                    // Remove once got final result
+                    removeResultWaiter(repId);
+                }
+                return;
+            }
+
+            // Currently multiple shot only keeps the most recent reply
+            MLWorkerReplyMessage message = bq.peek();
+            if (message != null) {
+                if (message.getType() == MLWorkerReplyType.FINISH ||
+                    (message.getType() == MLWorkerReplyType.UPDATE && index < message.getIndex())) {
+                    // Final or more recent message should not be updated
+                    return;
+                }
+                // Remove the recent
+                bq.poll();
+            }
+
+            // Queue should be empty now
+            if (!bq.offer(MLWorkerReplyMessage.builder().
+                type(MLWorkerReplyType.UPDATE).
+                message(result).index(index).total(total).build())) {
                 log.warn("Cannot offer a reply {}", result);
             }
         }
     }
 
-    public BlockingQueue<String> getResultWaiter(String repId, boolean isOneShot) {
-        BlockingQueue<String> bq = new ArrayBlockingQueue<>(1);
-        if (isOneShot)
-            oneShotMessagePool.put(repId, bq);
-        else
-            messagePool.put(repId, bq);
+    public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId) {
+        if (finalMessagePool.containsKey(repId)) return finalMessagePool.get(repId);
+
+        BlockingQueue<MLWorkerReplyMessage> bq = new ArrayBlockingQueue<>(1);
+        finalMessagePool.put(repId, bq);
         return bq;
     }
 
     public void removeResultWaiter(String repId) {
-        if (messagePool.containsKey(repId)) {
+        synchronized (messagePool) {
             messagePool.remove(repId);
-            return;
         }
 
-        if (oneShotMessagePool.containsKey(repId)) {
-            oneShotMessagePool.remove(repId);
+        synchronized (finalMessagePool) {
+            finalMessagePool.remove(repId);
         }
     }
 

@@ -18,7 +18,40 @@ public class MLWorkerWSController {
     @MessageMapping("/ml-worker/{workerId}/rep")
     public void onReplyReceived(@DestinationVariable String workerId, MLWorkerReplyDTO body) {
         logger.debug("Received rep from Worker {} {} {}", workerId, body.getId(), body.getAction());
-        // mlWorkerWSService notifies the listener
-        mlWorkerWSService.attachResult(body.getId(), body.getPayload());
+        logger.debug("Fragment count: {}, Fragment index: {}, {}/{}, Type: {}",
+            body.getFragmentCount(), body.getFragmentIndex(),
+            body.getIndex(), body.getTotal(), body.getType());
+
+        if (body.getFragmentCount() <= 1) {
+            if (body.getType() == MLWorkerReplyType.FINISH) {
+                // Message is completed, notifies the listener
+                mlWorkerWSService.attachResult(body.getId(), body.getPayload());
+            } else if (body.getType() == MLWorkerReplyType.UPDATE) {
+                // Message is completed, update the listener
+                mlWorkerWSService.attachResult(body.getId(), body.getPayload(),
+                    false, body.getIndex(), body.getTotal());
+            }
+        } else {
+            // Message is incomplete: fragment it
+            if (body.getType() == MLWorkerReplyType.FINISH) {
+                // Message is completed, notifies the listener
+                mlWorkerWSService.appendReply(
+                    body.getId(),
+                    body.getFragmentIndex(),
+                    body.getFragmentCount(),
+                    body.getPayload()
+                );
+            } else if (body.getType() == MLWorkerReplyType.UPDATE) {
+                mlWorkerWSService.appendReply(
+                    body.getId(),
+                    body.getFragmentIndex(),
+                    body.getFragmentCount(),
+                    body.getIndex(),
+                    body.getTotal(),
+                    body.getPayload()
+                );
+            }
+        }
+
     }
 }
