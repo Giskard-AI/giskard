@@ -32,6 +32,8 @@ __all__ = [
     "test_metamorphic_increasing_wilcoxon",
     "test_metamorphic_decreasing_wilcoxon",
     "test_metamorphic_invariance_wilcoxon",
+    "test_underconfidence_rate",
+    "test_overconfidence_rate"
 ]
 
 from giskard.testing.tests.drift import (
@@ -74,4 +76,8 @@ from giskard.testing.tests.statistic import (
     test_right_label,
     test_output_in_range,
     test_disparate_impact,
+)
+from giskard.testing.tests.calibration import (
+    test_underconfidence_rate,
+    test_overconfidence_rate
 )

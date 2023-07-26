@@ -10,6 +10,7 @@ import tempfile
 import time
 from io import StringIO
 from pathlib import Path
+from typing import Dict, Any
 
 import google
 import grpc
@@ -28,6 +29,7 @@ from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.generated import ml_worker_pb2
+from giskard.ml_worker.generated.ml_worker_pb2 import ArtifactRef, FuncArgument
 from giskard.ml_worker.generated.ml_worker_pb2_grpc import MLWorkerServicer
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -47,6 +49,21 @@ from giskard.models.model_explanation import (
 from giskard.path_utils import model_path, dataset_path, projects_dir
 
 logger = logging.getLogger(__name__)
+
+
+def extract_debug_info(request_arguments):
+    template_info = " | <xxx:xxx_id>"
+    info = {"suffix": "", "project_key": ""}
+    for arg in request_arguments:
+        if arg.HasField("model"):
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
+            info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
+        elif arg.HasField("dataset"):
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
+            info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
+    return info
 
 
 def file_already_exists(meta: ml_worker_pb2.FileUploadMetadata):
@@ -280,8 +297,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
         arguments = self.parse_function_arguments(request.arguments)
 
-        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-        test_result = test.get_builder()(**arguments).execute()
+        arguments["debug"] = request.debug if request.debug else None
+        debug_info = extract_debug_info(request.arguments) if request.debug else None
+
+        test_result = self.do_run_adhoc_test(self.client, arguments, test, debug_info)
 
         return ml_worker_pb2.TestResultMessage(
             results=[
@@ -291,6 +310,35 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 )
             ]
         )
+
+    @staticmethod
+    def do_run_adhoc_test(client, arguments, test, debug_info=None):
+
+        logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+        test_result = test.get_builder()(**arguments).execute()
+        if test_result.output_df is not None:  # i.e. if debug is True and test has failed
+
+            if debug_info is None:
+                raise ValueError(
+                    "You have requested to debug the test, "
+                    "but extract_debug_info did not return the information needed."
+                )
+
+            test_result.output_df.name += debug_info["suffix"]
+
+            test_result.output_df_id = test_result.output_df.upload(
+                client=client, project_key=debug_info["project_key"]
+            )
+            # for now, we won't return output_df from grpc, rather upload it
+            test_result.output_df = None
+        elif arguments["debug"]:
+            raise ValueError(
+                "This test does not return any examples to debug. "
+                "Check the debugging method associated to this test at "
+                "https://docs.giskard.ai/en/latest/reference/tests/index.html"
+            )
+
+        return test_result
 
     def datasetProcessing(
         self,
@@ -373,19 +421,21 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             for t in tests:
                 suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
 
-            is_pass, results = suite.run(**global_arguments)
+            result = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result in results:
+            for identifier, result, args in result.results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
-                        id=identifier, result=map_result_to_single_test_result(result)
+                        id=identifier,
+                        result=map_result_to_single_test_result(result),
+                        arguments=function_argument_to_proto(args),
                     )
                 )
 
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=False,
-                is_pass=is_pass,
+                is_pass=result.passed,
                 results=identifier_single_test_results,
                 logs=log_listener.close(),
             )
@@ -725,7 +775,7 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
         return result
     elif isinstance(result, TestResult):
         return ml_worker_pb2.SingleTestResult(
-            passed=result.passed,
+            passed=bool(result.passed),
             is_error=result.is_error,
             messages=[
                 ml_worker_pb2.TestMessage(
@@ -751,12 +801,55 @@ def map_result_to_single_test_result(result) -> ml_worker_pb2.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=result.output_df,
+            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
+            output_df_id=result.output_df_id,
         )
     elif isinstance(result, bool):
         return ml_worker_pb2.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+def function_argument_to_proto(value: Dict[str, Any]):
+    args = list()
+
+    for v in value:
+        obj = value[v]
+        if isinstance(obj, Dataset):
+            funcargs = FuncArgument(name=v, dataset=ArtifactRef(project_key="test", id=str(obj.id)))
+        elif isinstance(obj, BaseModel):
+            funcargs = FuncArgument(name=v, model=ArtifactRef(project_key="test", id=str(obj.id)))
+        elif isinstance(obj, SlicingFunction):
+            funcargs = FuncArgument(
+                name=v,
+                slicingFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_proto(obj.params),
+            )
+        #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        elif isinstance(obj, TransformationFunction):
+            funcargs = FuncArgument(
+                name=v,
+                transformationFunction=ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_proto(obj.params),
+            )
+        #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        elif isinstance(obj, float):
+            funcargs = FuncArgument(name=v, float=obj)
+        elif isinstance(obj, int):
+            funcargs = FuncArgument(name=v, int=obj)
+        elif isinstance(obj, str):
+            funcargs = FuncArgument(name=v, str=obj)
+        elif isinstance(obj, bool):
+            funcargs = FuncArgument(name=v, bool=obj)
+        elif isinstance(obj, dict):
+            funcargs = FuncArgument(name=v, kwargs=str(obj))
+        else:
+            raise IllegalArgumentError("Unknown argument type")
+        args.append(funcargs)
+
+    return args

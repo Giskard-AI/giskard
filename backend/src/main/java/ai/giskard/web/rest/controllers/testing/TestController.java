@@ -59,6 +59,7 @@ public class TestController {
                             giskardMapper.fromDTO(input).getParams(), sample)
                     ).toList()
                 ).build();
+            // TODO: builder.setDebug(request.isDebug());
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,

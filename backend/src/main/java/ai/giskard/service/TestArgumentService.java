@@ -116,6 +116,9 @@ public class TestArgumentService {
         }
 
         argumentBuilder.setNone(false);
+        if (inputType == null) {
+            throw new IllegalArgumentException("Empty input type for input `%s`".formatted(inputName));
+        }
 
         switch (inputType) {
             case "Dataset" -> argumentBuilder.setDataset(buildArtifactRef(projectKey, inputValue).setSample(sample));

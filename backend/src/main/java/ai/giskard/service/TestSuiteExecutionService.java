@@ -102,8 +102,10 @@ public class TestSuiteExecutionService {
                             identifierSingleTestResult.getResult()))
                     .toList());
                 execution.setLogs(response.getLogs());
+                execution.setCompletionDate(new Date());
                 return;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
+                execution.setCompletionDate(new Date());
                 throw new GiskardRuntimeException(error.getErrorStr());
             }
         }
