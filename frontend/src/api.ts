@@ -191,8 +191,9 @@ function downloadURL(urlString) {
 
 export const api = {
     async getHuggingFaceToken(spaceId: string) {
-    return await axios.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
-  },async logInGetToken(username: string, password: string) {
+      return await axios.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
+    },
+    async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
     async getLicense() {
@@ -243,6 +244,9 @@ export const api = {
     },
     async deleteUser(login: string) {
         return apiV2.delete<unknown, void>(`/admin/users/${login}`);
+    },
+    async disableUser(login: string) {
+      return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
     },
     async enableUser(login: string) {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
