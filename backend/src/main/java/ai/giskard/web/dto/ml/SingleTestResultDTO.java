@@ -26,6 +26,7 @@ public class SingleTestResultDTO {
     private Double unexpectedPercentTotal;
     private Double unexpectedPercentNonmissing;
     private float metric;
+    private String outputDfUuid;
 
     public SingleTestResultDTO(SingleTestResult message) {
         this.missingCount = message.getMissingCount();
@@ -42,5 +43,6 @@ public class SingleTestResultDTO {
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
         this.messages = message.getMessagesList().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
+        this.outputDfUuid = message.getOutputDfId();
     }
 }

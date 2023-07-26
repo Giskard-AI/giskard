@@ -74,6 +74,12 @@ catalogs/index
 :::{card} <h2><center> API Reference </center></h2>
 :link: reference/index.html
 <img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
+:::
+
+:::{card} <h2><center> Contribute </center></h2>
+:link: contribute/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
+:::
 ::::
 
 :::::
@@ -91,7 +97,8 @@ catalogs/index
 
 :::{card} <h2><center> Tutorials </center></h2>
 :link: tutorials/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="95%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="94%">
+:::
 ::::
 
 :::::
@@ -104,13 +111,15 @@ catalogs/index
 :::{card} <h2><center> Catalogs </center></h2>
 :link: catalogs/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.5%">
 :::
 
-:::{card} <h2><center> Contribute </center></h2>
-:link: contribute/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
-::::
+:::{card} <h2><center> Integrations </center></h2>
+:link: integrations/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="100%">
+:::
 
+::::
 :::::
-::::::
+
+    

@@ -89,19 +89,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, getCurrentInstance, computed } from "vue";
-import ResultPopover from "@/components/ResultPopover.vue"
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { api } from "@/api";
-import { use } from "echarts/core";
-import { BarChart } from "echarts/charts";
-import { CanvasRenderer } from "echarts/renderers";
-import { GridComponent } from "echarts/components";
-import { ModelDTO, ModelType } from "@/generated-sources";
-import { isClassification } from "@/ml-utils";
-import { abbreviateMiddle, maxLengthDisplayedCategory } from "@/results-utils";
-import * as _ from "lodash";
-import { CanceledError } from "axios";
+import VChart from 'vue-echarts';
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
+import ResultPopover from '@/components/ResultPopover.vue';
+import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
+import { api } from '@/api';
+import { use } from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GridComponent } from 'echarts/components';
+import { ModelDTO, ModelType } from '@/generated-sources';
+import { isClassification } from '@/ml-utils';
+import { abbreviateMiddle, maxLengthDisplayedCategory } from '@/results-utils';
+import * as _ from 'lodash';
+import { CanceledError } from 'axios';
 
 use([CanvasRenderer, BarChart, GridComponent]);
 
@@ -123,6 +124,10 @@ const props = withDefaults(defineProps<Props>(), {
   modified: false,
   debounceTime: 250,
 });
+
+const chartInit = {
+  renderer: 'svg'
+}
 
 const prediction = ref<string | number | undefined>("");
 const resultProbabilities = ref<any>({});
@@ -256,17 +261,11 @@ function isDefined(val: any) {
   return !_.isNil(val);
 }
 
-function chartInit() {
-  return {
-    renderer: 'svg'
-  }
-}
-
 const emit = defineEmits(["result"]);
 
 watch(() => props.inputData, async () => {
   await debouncedSubmitPrediction();
-})
+}, { deep: true })
 
 onMounted(async () => {
   const clientWidth = instance?.proxy.$parent?.$el.querySelector('#resultCard')?.clientWidth;

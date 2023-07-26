@@ -22,10 +22,7 @@ import tech.jhipster.config.JHipsterProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -68,9 +65,10 @@ public class TokenProvider {
             base64SecretProperty = secretProperty;
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
         } else {
-            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits", GENERATED_KEY_BITS);
             keyBytes = new byte[GENERATED_KEY_BITS / 8];
             new SecureRandom().nextBytes(keyBytes);
+            String base64Key = Base64.getEncoder().encodeToString(keyBytes);
+            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits: {}", GENERATED_KEY_BITS, base64Key);
         }
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
@@ -94,13 +92,17 @@ public class TokenProvider {
             validity = new Date(now + this.tokenValidityInMilliseconds);
         }
 
+        return createToken(authentication.getName(), ((GiskardUser) authentication.getPrincipal()).getId(), authorities, validity, key);
+    }
+
+    public static JWTToken createToken(String name, Long id, String authorities, Date validity, Key secretKey) {
         return new JWTToken(Jwts
             .builder()
-            .setSubject(authentication.getName())
+            .setSubject(name)
             .claim(AUTHORITIES_KEY, authorities)
-            .claim(ID, ((GiskardUser) authentication.getPrincipal()).getId())
+            .claim(ID, id)
             .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
-            .signWith(key, SIGNATURE_ALGORITHM)
+            .signWith(secretKey, SIGNATURE_ALGORITHM)
             .setExpiration(validity)
             .compact(), validity.toInstant());
     }

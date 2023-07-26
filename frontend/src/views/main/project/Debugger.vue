@@ -144,6 +144,7 @@ async function showPastSessions() {
     params: {
       projectId: props.projectId.toString()
     }
+  }).catch(() => {
   });
 }
 
@@ -212,6 +213,7 @@ async function openInspection(projectId: string, inspectionId: string) {
       id: projectId,
       inspectionId: inspectionId
     }
+  }).catch(() => {
   });
 }
 
@@ -245,7 +247,7 @@ onActivated(async () => {
 
 <style scoped>
 .debugger-logo {
-  width: min(17.5vw, 200px);
+  height: max(35vh, 150px);
   margin-top: 2rem;
 }
 
