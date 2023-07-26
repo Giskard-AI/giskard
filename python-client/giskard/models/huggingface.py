@@ -122,18 +122,18 @@ logger = logging.getLogger(__name__)
 class HuggingFaceModel(WrapperModel):
     @configured_validate_arguments
     def __init__(
-        self,
-        model,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        id: Optional[str] = None,
-        batch_size: Optional[int] = 1,
-        **kwargs,
+            self,
+            model,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            id: Optional[str] = None,
+            batch_size: Optional[int] = 1,
+            **kwargs,
     ) -> None:
         """Automatically wraps a HuggingFace model or pipeline.
 
@@ -257,3 +257,7 @@ class HuggingFaceModel(WrapperModel):
             return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
 
         return self.model(**data)
+
+    def to_mlflow(self, artifact_path: str = "transformers-model-from-giskard", **kwargs):
+        import mlflow
+        return mlflow.transformers.log_model(self.model, artifact_path, **kwargs)
