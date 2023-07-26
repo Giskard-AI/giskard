@@ -2,7 +2,6 @@ package ai.giskard.ml;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter

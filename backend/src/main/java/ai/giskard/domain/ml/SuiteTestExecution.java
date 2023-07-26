@@ -86,9 +86,11 @@ public class SuiteTestExecution extends BaseEntity {
         this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
         this.unexpectedIndexList = message.getUnexpectedIndexListList();
-        this.status = message.getIsError()
-            ? TestResult.ERROR : message.getPassed()
-            ? TestResult.PASSED : TestResult.FAILED;
+        if (message.getIsError()) {
+            this.status = TestResult.ERROR;
+        } else {
+            this.status = message.getPassed() ? TestResult.PASSED : TestResult.FAILED;
+        }
         this.metric = message.getMetric();
         this.actualSlicesSize = message.getActualSlicesSizeList();
         this.referenceSlicesSize = message.getReferenceSlicesSizeList();
@@ -111,9 +113,11 @@ public class SuiteTestExecution extends BaseEntity {
         this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
         this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexList();
         this.unexpectedIndexList = message.getUnexpectedIndexList();
-        this.status = message.getIsError()
-            ? TestResult.ERROR : message.getPassed()
-            ? TestResult.PASSED : TestResult.FAILED;
+        if (Boolean.TRUE.equals(message.getIsError())) {
+            this.status = TestResult.ERROR;
+        } else {
+            this.status = Boolean.TRUE.equals(message.getPassed()) ? TestResult.PASSED : TestResult.FAILED;
+        }
         this.metric = message.getMetric();
         this.actualSlicesSize = message.getActualSlicesSize();
         this.referenceSlicesSize = message.getReferenceSlicesSize();

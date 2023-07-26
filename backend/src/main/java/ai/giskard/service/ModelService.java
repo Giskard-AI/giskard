@@ -15,7 +15,6 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -23,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,7 +121,7 @@ public class ModelService {
         throw new NullPointerException("Cannot get ML Worker Explain reply");
     }
 
-    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
+    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSExplainTextParamDTO param = MLWorkerWSExplainTextParamDTO.builder()

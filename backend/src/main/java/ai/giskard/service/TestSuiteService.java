@@ -25,7 +25,6 @@ import ai.giskard.web.rest.errors.EntityNotFoundException;
 import ai.giskard.worker.DatasetMeta;
 import ai.giskard.worker.ModelMeta;
 import ai.giskard.worker.SuiteInput;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;

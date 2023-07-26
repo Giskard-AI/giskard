@@ -3,7 +3,6 @@ package ai.giskard.config;
 import ai.giskard.ml.MLWorkerID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.socket.config.annotation.*;
-import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.FilterChain;
@@ -28,9 +26,9 @@ import java.util.Map;
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    public final static String ML_WORKER_TOPIC_PREFIX = "/ml-worker";
-    public final static String ML_WORKER_ACTION_TOPIC = "action";
-    public final static String ML_WORKER_CONFIG_TOPIC = "config";
+    public static final String ML_WORKER_TOPIC_PREFIX = "/ml-worker";
+    public static final String ML_WORKER_ACTION_TOPIC = "action";
+    public static final String ML_WORKER_CONFIG_TOPIC = "config";
     public static final String INTERNAL_ML_WORKER_TOPIC =
         String.join("/", WebSocketConfig.ML_WORKER_TOPIC_PREFIX, MLWorkerID.INTERNAL.toString(), ML_WORKER_ACTION_TOPIC);
     public static final String EXTERNAL_ML_WORKER_TOPIC =

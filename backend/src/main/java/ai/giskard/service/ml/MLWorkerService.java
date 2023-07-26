@@ -9,7 +9,6 @@ import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
 import ai.giskard.ml.dto.MLWorkerWSEchoMsgDTO;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.service.GiskardRuntimeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.NettyChannelBuilder;

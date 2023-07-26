@@ -12,4 +12,6 @@ public class MLWorkerWSUtils {
             throw new GiskardRuntimeException("Failed to convert MLWorker WebSocket object", e);
         }
     }
+
+    private MLWorkerWSUtils() {}
 }

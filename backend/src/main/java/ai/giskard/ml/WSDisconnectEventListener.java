@@ -17,12 +17,12 @@ public class WSDisconnectEventListener implements ApplicationListener<SessionDis
 
     @Override
     public void onApplicationEvent(SessionDisconnectEvent event) {
-        logger.debug("Session " + event.getSessionId() + " closed");
+        logger.debug("Session {} closed", event.getSessionId());
 
         if (mlWorkerWSService.removeWorker(event.getSessionId())) {
-            logger.debug("Worker " + event.getSessionId() + " removed");
+            logger.debug("Worker{}} removed", event.getSessionId());
         } else {
-            logger.debug("Session " + event.getSessionId() + " is not a worker nor a potential worker");
+            logger.debug("Session {} is not a worker nor a potential worker", event.getSessionId());
         }
     }
 }

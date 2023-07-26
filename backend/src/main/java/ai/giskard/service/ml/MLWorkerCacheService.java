@@ -17,7 +17,6 @@ import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

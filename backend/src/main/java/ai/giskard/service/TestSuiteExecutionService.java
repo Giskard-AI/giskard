@@ -15,7 +15,6 @@ import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
 import ai.giskard.worker.TestSuiteResultMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

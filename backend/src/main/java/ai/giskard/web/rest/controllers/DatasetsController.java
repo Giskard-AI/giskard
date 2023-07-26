@@ -15,7 +15,6 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,8 +195,6 @@ public class DatasetsController {
                 param
             );
             if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
-                response = (MLWorkerWSDatasetProcessingDTO) result;
-
                 return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
             }
         }

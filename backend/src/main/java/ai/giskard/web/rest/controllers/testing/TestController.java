@@ -18,7 +18,6 @@ import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
