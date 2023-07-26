@@ -26,8 +26,11 @@ public class MLWorkerWSController {
             if (body.getType() == MLWorkerReplyType.FINISH) {
                 // Message is completed, notifies the listener
                 mlWorkerWSService.attachResult(body.getId(), body.getPayload());
+            } else if (body.getType() == MLWorkerReplyType.UPDATE) {
+                // Message is completed, update the listener
+                mlWorkerWSService.attachResult(body.getId(), body.getPayload(),
+                    false, body.getIndex(), body.getTotal());
             }
-            // TODO: if (body.getType() == MLWorkerReplyType.UPDATE) {}
         } else {
             // Message is incomplete: fragment it
             if (body.getType() == MLWorkerReplyType.FINISH) {
@@ -38,8 +41,16 @@ public class MLWorkerWSController {
                     body.getFragmentCount(),
                     body.getPayload()
                 );
+            } else if (body.getType() == MLWorkerReplyType.UPDATE) {
+                mlWorkerWSService.appendReply(
+                    body.getId(),
+                    body.getFragmentIndex(),
+                    body.getFragmentCount(),
+                    body.getIndex(),
+                    body.getTotal(),
+                    body.getPayload()
+                );
             }
-            // TODO: if (body.getType() == MLWorkerReplyType.UPDATE) {}
         }
 
     }

@@ -107,20 +107,40 @@ public class MLWorkerWSService {
 
     public void attachResult(String repId, String result, boolean isOneShot, int index, int total) {
         synchronized (finalMessagePool) {
-            if (finalMessagePool.containsKey(repId)) {
-                BlockingQueue<MLWorkerReplyMessage> bq = finalMessagePool.get(repId);
-                if (isOneShot) {
-                    if (!bq.offer(MLWorkerReplyMessage.builder().
-                        type(MLWorkerReplyType.FINISH).
-                        message(result).build())) {
-                        log.warn("Cannot offer a reply {}", result);
-                    } else {
-                        // Remove once got final result
-                        removeResultWaiter(repId);
-                    }
+            if (!finalMessagePool.containsKey(repId)) {
+                return;
+            }
+
+            BlockingQueue<MLWorkerReplyMessage> bq = finalMessagePool.get(repId);
+            if (isOneShot) {
+                if (!bq.offer(MLWorkerReplyMessage.builder().
+                    type(MLWorkerReplyType.FINISH).
+                    message(result).build())) {
+                    log.warn("Cannot offer a reply {}", result);
                 } else {
-                    // TODO: Currently multiple shot only keeps the newest
+                    // Remove once got final result
+                    removeResultWaiter(repId);
                 }
+                return;
+            }
+
+            // Currently multiple shot only keeps the most recent reply
+            MLWorkerReplyMessage message = bq.peek();
+            if (message != null) {
+                if (message.getType() == MLWorkerReplyType.FINISH ||
+                    (message.getType() == MLWorkerReplyType.UPDATE && index < message.getIndex())) {
+                    // Final or more recent message should not be updated
+                    return;
+                }
+                // Remove the recent
+                bq.poll();
+            }
+
+            // Queue should be empty now
+            if (!bq.offer(MLWorkerReplyMessage.builder().
+                type(MLWorkerReplyType.UPDATE).
+                message(result).index(index).total(total).build())) {
+                log.warn("Cannot offer a reply {}", result);
             }
         }
     }
