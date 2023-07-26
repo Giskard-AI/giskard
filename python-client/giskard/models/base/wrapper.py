@@ -289,9 +289,8 @@ class WrapperModel(BaseModel, ABC):
                 wrapper_meta["batch_size"] = int(wrapper_meta["batch_size"]) if wrapper_meta["batch_size"] else None
                 return wrapper_meta
         else:
-            raise ValueError(
-                f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{wrapper_meta_file} file not found"
-            )
+            # ensuring backward compatibility
+            return {"batch_size": None}
 
     def to_mlflow(self,
                   artifact_path: str = "prediction-function-from-giskard",
