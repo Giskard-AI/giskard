@@ -5,6 +5,7 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.MailService;
+import ai.giskard.service.UserDeletionService;
 import ai.giskard.service.UserService;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.utils.LicenseUtils;
@@ -16,7 +17,6 @@ import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -79,10 +79,9 @@ public class UserAdminController {
 
     private final Logger log = LoggerFactory.getLogger(UserAdminController.class);
 
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
-
     private final UserService userService;
+
+    private final UserDeletionService userDeletionService;
 
     private final UserRepository userRepository;
 
@@ -186,7 +185,20 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
-        userService.deleteUser(login);
+        userDeletionService.deleteUser(login);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * {@code PATCH /admin/users/:login/disable} : disable the "login" User.
+     *
+     * @param login the login of the user to disable.
+     */
+    @PatchMapping("/{login}/disable")
+    @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
+    public ResponseEntity<Void> disableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+        log.debug("REST request to disable User: {}", login);
+        userDeletionService.disableUser(login);
         return ResponseEntity.noContent().build();
     }
 
@@ -199,7 +211,7 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> enableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to restore User: {}", login);
-        userService.enableUser(login);
+        userDeletionService.enableUser(login);
         return ResponseEntity.noContent().build();
     }
 }
