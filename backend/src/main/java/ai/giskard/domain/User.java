@@ -118,7 +118,7 @@ public class User extends AbstractAuditingEntity {
     }
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "guests", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private Set<Project> projects = new HashSet<>();
 
     public String getDisplayNameOrLogin() {
