@@ -19,6 +19,7 @@ _ml_libraries = {
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
     ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
+    ("giskard.models.base", "CloudpickleSerializableModel"): [("mlflow.pyfunc", "PyFuncModel")]
 }
 
 

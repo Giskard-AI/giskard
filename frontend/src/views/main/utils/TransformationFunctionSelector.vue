@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex" :class="{ w100: fullWidth }">
-        <v-select attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label' :value='value' :items='availableTransformation' :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-magic-staff' : null"></v-select>
+        <v-select :attach='attach' clearable :outlined='fullWidth' class='slice-function-selector' :label='label' :value='value' :items='availableTransformation' :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-magic-staff' : null"></v-select>
         <v-btn icon v-if="hasArguments" @click="updateArgs">
             <v-icon>settings</v-icon>
         </v-btn>
@@ -26,12 +26,14 @@ interface Props {
     args?: Array<FunctionInputDTO>,
     icon?: boolean,
     columnType?: string,
-    columnName?: string
+    columnName?: string,
+    attach: string | boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
     fullWidth: true,
-    icon: false
+    icon: false,
+    attach: ''
 });
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);

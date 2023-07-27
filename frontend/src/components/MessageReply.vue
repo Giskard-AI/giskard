@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <span class="subtitle-2">{{ isCurrentUser ? 'me' : (author.displayName || author.user_id) }}</span>
+      <span class='subtitle-2'>{{ isCurrentUser ? 'me' : userDisplayName }}</span>
       <span class="caption font-weight-light mx-2">{{ createdOn | date }}</span>
       <v-btn icon small color="accent" v-if="isCurrentUser" @click="deleteReply(replyId)">
         <v-icon small>mdi-delete</v-icon>
@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useUserStore } from "@/stores/user";
+import { computed, ref } from 'vue';
+import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore();
 
@@ -46,14 +46,19 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["reply", "delete"])
+const emit = defineEmits(['reply', 'delete']);
 
 const replyBoxToggle = ref<boolean>(false);
-const reply = ref<string>("");
+const reply = ref<string>('');
 
 const isCurrentUser = computed(() => {
-  return userStore.userProfile!.user_id === props.author.user_id;
+  return userStore.userProfile!.user_id === props.author?.user_id;
 });
+
+
+const userDisplayName = computed(() => props.author
+  ? props.author.displayName ?? props.author.user_id
+  : 'Deleted user');
 
 const openReplyBox = computed(() => {
   return !props.hideableBox || replyBoxToggle.value;
