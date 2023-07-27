@@ -80,14 +80,14 @@ class Artifact(Generic[SMT], ABC):
         """
         name = self._get_name()
 
-        local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid
+        local_dir = settings.home_dir / settings.cache_dir / name / self.meta.uuid
 
         if not local_dir.exists():
             os.makedirs(local_dir)
         self.save(local_dir)
         logger.debug(f"Saved {name}.{self.meta.uuid}")
 
-        client.log_artifacts(local_dir, posixpath.join(project_key or "global", self._get_name(), self.meta.uuid))
+        client.log_artifacts(local_dir, posixpath.join(self._get_name(), self.meta.uuid))
         self.meta = client.save_meta(self._get_meta_endpoint(self.meta.uuid, project_key), self.meta)
 
         return self.meta.uuid
@@ -113,7 +113,7 @@ class Artifact(Generic[SMT], ABC):
         """
         name = cls._get_name()
 
-        local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / uuid
+        local_dir = settings.home_dir / settings.cache_dir / name / uuid
 
         if client is None:
             meta = cls._load_meta_locally(local_dir, uuid)
@@ -127,7 +127,7 @@ class Artifact(Generic[SMT], ABC):
 
         if data is None:
             assert client is not None, f"Cannot find existing {name} {uuid}"
-            client.load_artifact(local_dir, posixpath.join(project_key or "global", name, uuid))
+            client.load_artifact(local_dir, posixpath.join(name, uuid))
             data = cls.load(local_dir, uuid, meta)
 
         return data

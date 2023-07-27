@@ -15,6 +15,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .model_prediction import ModelPredictionResults
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -23,9 +26,6 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
-from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -75,14 +75,14 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -361,7 +361,7 @@ class BaseModel(ABC):
             self.save(f)
 
             if client is not None:
-                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
+                client.log_artifacts(f, posixpath.join("models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
 
         return str(self.id)
@@ -382,13 +382,13 @@ class BaseModel(ABC):
         Raises:
             AssertionError: If the local directory where the model should be saved does not exist.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
+        local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
         if client is None:
             # internal worker case, no token based http client [deprecated, to be removed]
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+            client.load_artifact(local_dir, posixpath.join("models", model_id))
             meta_response = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
