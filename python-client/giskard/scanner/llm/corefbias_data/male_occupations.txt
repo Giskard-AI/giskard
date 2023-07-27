@@ -1,0 +1,20 @@
+driver
+supervisor
+janitor
+cook
+mover
+laborer
+construction worker
+chief
+developer
+carpenter
+manager
+lawyer
+farmer
+salesperson
+physician
+guard
+analyst
+mechanic
+sheriff
+CEO

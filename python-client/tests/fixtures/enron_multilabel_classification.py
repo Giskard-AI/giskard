@@ -1,10 +1,10 @@
-import logging
 import email
+import logging
 from collections import defaultdict
-from dateutil import parser
 
 import pandas as pd
 import pytest
+from dateutil import parser
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -18,7 +18,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
 from tests import path
-from tests.huggingface.email_classification_utils import get_email_files
+from tests.utils import get_email_files
 
 logger = logging.getLogger(__name__)
 
