@@ -52,6 +52,7 @@ public class MLWorkerWSService {
         if (uuid.equals(potentialInternalWorkerId)) {
             // Clear the memorized internal worker id
             potentialInternalWorkerId = null;
+            return workers.remove(MLWorkerID.INTERNAL.toString(), uuid);
         }
 
         if (!workers.containsValue(uuid)) {
@@ -59,12 +60,8 @@ public class MLWorkerWSService {
             return false;
         }
 
-        // Try to firstly remove the external worker
-        if (!workers.remove(MLWorkerID.EXTERNAL.toString(), uuid)) {
-            // Otherwise could be an internal worker
-            return workers.remove(MLWorkerID.INTERNAL.toString(), uuid);
-        }
-        return true;
+        // Try to remove the external worker
+        return workers.remove(MLWorkerID.EXTERNAL.toString(), uuid);
     }
 
     public void appendReply(String repId, int fragmentIndex, int fragmentCount, String result) {
