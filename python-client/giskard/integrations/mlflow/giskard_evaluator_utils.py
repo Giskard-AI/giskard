@@ -1,9 +1,15 @@
 import inspect
 import re
+import logging
+
+import langchain.chains.base
 
 from giskard import Model, Dataset, scan
 from giskard.core.core import SupportedModelTypes
 from giskard.core.model_validation import ValidationFlags
+from giskard.models.pyfunc import PyFuncModel
+
+logger = logging.getLogger(__name__)
 
 gsk_model_types = {
     "classifier": SupportedModelTypes.CLASSIFICATION,
@@ -31,11 +37,6 @@ def unwrap_python_model_from_pyfunc(pyfunc_model):
     module = pyfunc_model.metadata.flavors["python_function"]["loader_module"]
     flavor = importlib.import_module(module)
     return flavor.load_model(pyfunc_model.metadata.get_model_info().model_uri)
-
-
-class PyFuncModel(Model):
-    def model_predict(self, df):
-        return self.model.predict(df)
 
 
 def process_text(some_string):
@@ -72,10 +73,18 @@ def setup_dataset(dataset, evaluator_config):
 
 def setup_model(model, model_type, feature_names, evaluator_config):
     model_config = evaluator_config.get("model_config", None)
+
+    # Special case scenario since we're currently using `rewrite_prompt` that needs access to the unwrapped model iff
+    # the latter is a langchain model
+    if model_type == "text":
+        unwrapped_model = unwrap_python_model_from_pyfunc(model)
+        if isinstance(unwrapped_model, langchain.chains.base.Chain):
+            model = unwrapped_model
+
     if model_config is None:
-        return PyFuncModel(model=model,
-                           model_type=gsk_model_types[model_type],
-                           feature_names=feature_names)
+        return Model(model=model,
+                     model_type=gsk_model_types[model_type],
+                     feature_names=feature_names)
     else:
         config_set = set(model_config.keys())
         sign = inspect.signature(Model)
@@ -86,8 +95,8 @@ def setup_model(model, model_type, feature_names, evaluator_config):
             if "feature_names" not in config_set:
                 model_config["feature_names"] = feature_names
 
-            return PyFuncModel(model=model,
-                               **model_config)
+            return Model(model=model,
+                         **model_config)
         else:
             raise ValueError(f"The provided parameters {config_set - sign_set} in model_config are not valid. "
                              f"Make sure to pass only the attributes of giskard.Model "
