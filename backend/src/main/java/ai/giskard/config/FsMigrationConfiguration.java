@@ -48,7 +48,7 @@ public class FsMigrationConfiguration implements InitializingBean {
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-        Process process = new ProcessBuilder("/bin/sh", "-c", getScriptPath("flatten-artifacts.sh"), "-h", env.getProperty("giskard.home"))
+        Process process = new ProcessBuilder(getScriptPath("flatten-artifacts.sh"), "-h", env.getProperty("giskard.home"))
             .start();
 
         StreamGobbler streamGobbler = new StreamGobbler(process.getInputStream(), value -> {
