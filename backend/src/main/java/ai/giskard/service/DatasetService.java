@@ -68,7 +68,7 @@ public class DatasetService {
     }
 
     private Path getDataFile(@NotNull Dataset dataset, boolean sample) {
-        return locationService.datasetsDirectory(dataset.getProject().getKey())
+        return locationService.datasetsDirectory()
             .resolve(dataset.getId().toString())
             .resolve(FileUtils.getFileName("data", "csv.zst", sample));
     }

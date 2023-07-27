@@ -260,7 +260,7 @@ public class InitService {
         List<UUID> ids = copyResource(project, "datasets");
 
         for (UUID id : ids) {
-            Path metaPath = fileLocationService.resolvedDatasetPath(project.getKey(), id).resolve("giskard-dataset-meta.yaml");
+            Path metaPath = fileLocationService.resolvedDatasetPath(id).resolve("giskard-dataset-meta.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             DatasetDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), DatasetDTO.class);
@@ -274,7 +274,7 @@ public class InitService {
         List<UUID> ids = copyResource(project, "models");
 
         for (UUID id : ids) {
-            Path metaPath = fileLocationService.resolvedModelPath(project.getKey(), id).resolve("giskard-model-meta.yaml");
+            Path metaPath = fileLocationService.resolvedModelPath(id).resolve("giskard-model-meta.yaml");
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             ModelDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), ModelDTO.class);

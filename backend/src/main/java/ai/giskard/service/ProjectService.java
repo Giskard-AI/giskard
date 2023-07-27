@@ -126,6 +126,7 @@ public class ProjectService {
         try {
             projectRepository.deleteById(id);
             projectRepository.flush();
+            // TODO: delete only used artifacts if no project assigned
             FileSystemUtils.deleteRecursively(locationService.resolvedProjectHome(project.getKey()));
         } catch (Exception e) {
             throw new GiskardRuntimeException("Failed to delete project %s".formatted(project.getKey()));
@@ -139,6 +140,7 @@ public class ProjectService {
         // Create a tmp folder
 
         // Get the project from repository
+        // TODO: load used artifacts
         Path homeProject = locationService.resolvedProjectHome(project.getKey());
         try {
             temporaryExportDir = locationService.temporaryMetadataDirectory("project_export-" + project.getKey());

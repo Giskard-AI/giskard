@@ -16,28 +16,24 @@ import java.util.UUID;
 public class FileLocationService {
     private final ApplicationProperties applicationProperties;
 
-    public Path modelsDirectory(String projectKey) {
-        return resolvedProjectHome(projectKey).resolve("models");
+    public Path modelsDirectory() {
+        return resolvedArtifactsDirectory().resolve("models");
     }
 
     public static Path projectHome(String projectKey) {
         return Paths.get("projects", projectKey);
     }
 
-    public Path datasetsDirectory(String projectKey) {
-        return resolvedProjectHome(projectKey).resolve("datasets");
-    }
-
-    public Path slicesDirectory(String projectKey) {
-        return resolvedProjectHome(projectKey).resolve("slices");
+    public Path datasetsDirectory() {
+        return resolvedArtifactsDirectory().resolve("datasets");
     }
 
     public Path resolvedDatasetPath(Dataset dataset) {
-        return resolvedDatasetPath(dataset.getProject().getKey(), dataset.getId());
+        return resolvedDatasetPath(dataset.getId());
     }
 
-    public Path resolvedDatasetPath(String projectKey, UUID datasetId) {
-        return datasetsDirectory(projectKey).resolve(datasetId.toString());
+    public Path resolvedDatasetPath(UUID datasetId) {
+        return datasetsDirectory().resolve(datasetId.toString());
     }
 
     public Path temporaryMetadataDirectory(String prefix) {
@@ -49,22 +45,23 @@ public class FileLocationService {
         return temporaryMetadataDir.resolve(entityName.toLowerCase() + "-metadata.yaml");
     }
 
-    public Path resolvedSlicePath(String projectKey, UUID datasetId, String sliceHash) {
-        return slicesDirectory(projectKey).resolve("slice_" + datasetId.toString() + "_" + sliceHash + ".slice");
-    }
-
     public Path resolvedModelPath(ProjectModel model) {
-        return resolvedModelPath(model.getProject().getKey(), model.getId());
+        return resolvedModelPath(model.getId());
     }
 
-    public Path resolvedModelPath(String projectKey, UUID modelId) {
-        return modelsDirectory(projectKey).resolve(modelId.toString());
+    public Path resolvedModelPath(UUID modelId) {
+        return modelsDirectory().resolve(modelId.toString());
     }
 
-    public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
-        return modelsDirectory(projectKey).resolve(Paths.get("inspections", inspectionId.toString()));
+    public Path resolvedInspectionPath(Long inspectionId) {
+        return modelsDirectory().resolve(Paths.get("inspections", inspectionId.toString()));
     }
 
+    public Path resolvedArtifactsDirectory() {
+        return giskardHome().resolve("artifacts");
+    }
+
+    // TODO: remove all usage and delete
     public Path resolvedProjectHome(String projectKey) {
         return giskardHome().resolve(projectHome(projectKey));
     }
@@ -81,12 +78,5 @@ public class FileLocationService {
         return applicationProperties.getHome();
     }
 
-    public static String createZSTname(String prefix, UUID id) {
-        return prefix + id.toString() + ".zst";
-    }
-
-    public static String createTXTname(String prefix, UUID id) {
-        return prefix + id.toString() + ".txt";
-    }
 
 }

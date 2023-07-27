@@ -135,13 +135,13 @@ public class InspectionService {
 
     public Path getPredictionsPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+        return fileLocationService.resolvedInspectionPath(inspection.getId())
             .resolve(FileUtils.getFileName("predictions", "csv", inspection.isSample()));
     }
 
     public Path getCalculatedPath(Inspection inspection) {
         String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
+        return fileLocationService.resolvedInspectionPath(inspection.getId())
             .resolve(FileUtils.getFileName("calculated", "csv", inspection.isSample()));
     }
 
@@ -219,7 +219,7 @@ public class InspectionService {
             List<Path> paths = inspections.stream().map(inspection -> {
                 // TODO: we should have a project key directly on inspection
                 String projectKey = inspection.getModel().getProject().getKey();
-                return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId());
+                return fileLocationService.resolvedInspectionPath(inspection.getId());
             }).toList();
             inspectionRepository.flush();
             for (Path path : paths) {

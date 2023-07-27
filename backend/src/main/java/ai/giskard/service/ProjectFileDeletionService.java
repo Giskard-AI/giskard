@@ -71,7 +71,7 @@ public class ProjectFileDeletionService {
         Path modelPath = locationService.resolvedModelPath(model);
         try {
             modelRepository.flush();
-            Path modelsDirectory = locationService.modelsDirectory(model.getProject().getKey());
+            Path modelsDirectory = locationService.modelsDirectory();
             log.info("Removing model: {}", modelPath);
             FileSystemUtils.deleteRecursively(modelsDirectory.resolve(modelPath));
         } catch (IOException e) {
