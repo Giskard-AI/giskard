@@ -2,6 +2,8 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
@@ -196,8 +198,11 @@ public class DatasetsController {
             );
             if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
                 return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Dataset processing failed");
         }
-        throw new NullPointerException("Dataset processing failed");
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 }

@@ -4,9 +4,12 @@ import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.ml.TestResult;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSErrorDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestParamDTO;
 import ai.giskard.repository.ProjectRepository;
@@ -75,8 +78,11 @@ public class TestController {
                     res.setStatus(TestResult.PASSED);
                 }
                 return res;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Unable to get results of AdHoc test");
         }
-        throw new NullPointerException("Unable to get results of AdHoc test");
+        throw new MLWorkerNotConnectedException(workerID);
     }
 }

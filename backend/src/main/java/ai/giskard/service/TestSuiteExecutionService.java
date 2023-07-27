@@ -2,6 +2,8 @@ package ai.giskard.service;
 
 import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.ml.*;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
@@ -107,10 +109,11 @@ public class TestSuiteExecutionService {
                 return;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
                 execution.setCompletionDate(new Date());
-                throw new GiskardRuntimeException(error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot run test suite");
         }
-        throw new NullPointerException("Error while executing test suite");
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
 

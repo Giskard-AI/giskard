@@ -4,6 +4,8 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
@@ -45,12 +47,11 @@ public class ModelService {
 
 
     public MLWorkerWSRunModelForDataFrameDTO predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        MLWorkerWSRunModelForDataFrameDTO response = null;
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            response = getRunModelForDataFrameResponse(model, dataset, features);
+            return getRunModelForDataFrameResponse(model, dataset, features);
         }
-        return response;
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
     private MLWorkerWSRunModelForDataFrameDTO getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features) {
@@ -91,8 +92,10 @@ public class ModelService {
         );
         if (result instanceof MLWorkerWSRunModelForDataFrameDTO response) {
             return response;
+        } else if (result instanceof MLWorkerWSErrorDTO error) {
+            throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
         }
-        throw new NullPointerException("Cannot get ML Worker RunModelForDataFrame reply");
+        throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker RunModelForDataFrame reply");
     }
 
     public boolean shouldDrop(String columnDtype, String value) {
@@ -116,9 +119,12 @@ public class ModelService {
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.explain, param);
             if (result instanceof MLWorkerWSExplainDTO response) {
                 return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker Explain reply");
         }
-        throw new NullPointerException("Cannot get ML Worker Explain reply");
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
     public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) {
@@ -138,9 +144,12 @@ public class ModelService {
             );
             if (result instanceof MLWorkerWSExplainTextDTO response) {
                 return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker explainText reply");
         }
-        throw new NullPointerException("Cannot get ML Worker explainText reply");
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
     public Inspection createInspection(String name, UUID modelId, UUID datasetId, boolean sample) {
@@ -178,7 +187,14 @@ public class ModelService {
                 .build();
 
             // Execute runModel action
-            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.runModel, param);
+            if (result instanceof MLWorkerWSEmptyDTO) {
+                return;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+            }
+            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker explainText reply");
         }
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 }

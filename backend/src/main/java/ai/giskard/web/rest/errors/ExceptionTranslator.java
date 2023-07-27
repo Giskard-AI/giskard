@@ -2,6 +2,7 @@ package ai.giskard.web.rest.errors;
 
 import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.exception.MLWorkerException;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
 import io.grpc.StatusRuntimeException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.WeakKeyException;
@@ -136,6 +137,22 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
         return create(
             problem,
+            request
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleWebSocketMLWorkerError(
+        MLWorkerIllegalReplyException ex,
+        NativeWebRequest request
+    ) {
+        return create(
+            Problem.builder()
+                .withType(DEFAULT_TYPE)
+                .withTitle(ex.getErrorType())
+                .withStatus(INTERNAL_SERVER_ERROR)
+                .withDetail(ex.getErrorString())
+                .build(),
             request
         );
     }

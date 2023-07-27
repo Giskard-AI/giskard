@@ -7,6 +7,8 @@ import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.jobs.JobType;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
@@ -217,10 +219,12 @@ public class TestSuiteService {
                     .toList());
 
                 return testSuiteRepository.save(suite).getId();
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
             }
-            throw new NullPointerException("Cannot create test suite");
+            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot create test suite");
         }
-        throw new GiskardRuntimeException("No available worker");
+        throw new MLWorkerNotConnectedException(workerID);
     }
 
     private static SuiteInput generateSuiteInput(GenerateTestSuiteInputDTO input) {
