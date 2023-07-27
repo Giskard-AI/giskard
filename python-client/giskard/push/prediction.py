@@ -38,9 +38,9 @@ def create_borderline_push(model, ds, df):
     prediction_results = model.predict(row_slice)
     values = row_slice.df
     target_value = values[ds.target].values.item()
-    target_value_proba = prediction_results.all_predictions[target_value].values.item()
 
     if model.is_classification:
+        target_value_proba = prediction_results.all_predictions[target_value].values.item()
         if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
             sorted_predictions = np.sort(prediction_results.raw[0])
             abs_diff = sorted_predictions[-1] - sorted_predictions[-2]
@@ -49,13 +49,7 @@ def create_borderline_push(model, ds, df):
             diff = prediction_results.all_predictions.iloc[0, 1].item() - threshold
             abs_diff = abs(diff)
 
-    else:
-        result = prediction_results.prediction.item()
-        if row_slice.target and row_slice.target in row_slice.df.columns:
-            diff = result - target_value
-            abs_diff = abs(diff)
-
-    if (
-        abs_diff <= 0.1
-    ):  # TODO: import ai.giskard.config.ApplicationProperties;  applicationProperties.getBorderLineThreshold()
-        return BorderlinePush(target_value, target_value_proba, row_slice)
+        if (
+            abs_diff <= 0.1
+        ):  # TODO: import ai.giskard.config.ApplicationProperties;  applicationProperties.getBorderLineThreshold()
+            return BorderlinePush(target_value, target_value_proba, row_slice)
