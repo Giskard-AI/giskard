@@ -21,6 +21,18 @@ alphanumeric_map = {
 }
 
 
+def unwrap_python_model_from_pyfunc(pyfunc_model):
+    """
+    An alternative to https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html?highlight=pyfunc#mlflow.pyfunc.PyFuncModel.unwrap_python_model
+    :param pyfunc_model: the pyfunc model
+    :return: unwrapped model
+    """
+    import importlib
+    module = pyfunc_model.metadata.flavors["python_function"]["loader_module"]
+    flavor = importlib.import_module(module)
+    return flavor.load_model(pyfunc_model.metadata.get_model_info().model_uri)
+
+
 class PyFuncModel(Model):
     def model_predict(self, df):
         return self.model.predict(df)
