@@ -116,8 +116,8 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     validation_size = min(len(dataset), 10)
     validation_ds = dataset.slice(SlicingFunction(lambda x: x.sample(validation_size), row_level=False))
     error_message = (
-        "Invalid model.predict() input.\nPlease make sure that model.predict(dataset) does not return an "
-        "error message before uploading to Giskard."
+        "Invalid prediction_function.\nBefore using Giskard, please make sure that "
+        "'prediction_function(df[feature_names].head())' does not return an error message."
     )
     try:
         prediction = model.predict(validation_ds)
