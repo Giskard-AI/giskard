@@ -30,4 +30,6 @@ public class ApplicationProperties {
     private int externalWorkerHeartbeatIntervalSeconds;
     private String auth;
     private String licensePublicKey;
+    private int maxStompMessageSize = 65535;
+    private int maxStompReplyMessagePayloadSize = 4096;
 }

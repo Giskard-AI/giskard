@@ -96,17 +96,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JHipsterProperties jHipsterProperties;
 
-    public WebSocketConfig(JHipsterProperties jHipsterProperties) {
+    public WebSocketConfig(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties) {
         this.jHipsterProperties = jHipsterProperties;
+        this.applicationProperties = applicationProperties;
     }
 
-    public static final int MAX_STOMP_MESSAGE_SIZE = 65535;   // 64MB
-    public static final int MAX_REPLY_PAYLOAD_SIZE = 4096;
+    private final ApplicationProperties applicationProperties;
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
         // Allow to receive larger STOMP package (65535 bytes by default)
-        registry.setMessageSizeLimit(MAX_STOMP_MESSAGE_SIZE);
+        registry.setMessageSizeLimit(applicationProperties.getMaxStompMessageSize());
     }
 
     @Override
