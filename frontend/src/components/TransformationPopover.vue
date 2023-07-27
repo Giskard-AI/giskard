@@ -1,31 +1,32 @@
 <template>
-  <v-menu offset-x :close-on-content-click="false" v-model="opened">
+  <v-menu offset-x :close-on-content-click='false' v-model='opened'>
 
-    <template v-slot:activator="{ on: onMenu }">
+    <template v-slot:activator='{ on: onMenu }'>
 
       <v-tooltip right>
-        <template v-slot:activator="{ on: onTooltip }">
+        <template v-slot:activator='{ on: onTooltip }'>
           <v-btn small icon
                  :color="hasTransformation ? 'primary' : 'grey'"
-                 v-on="{ ...onMenu, ...onTooltip }">
-            <v-icon size=18>mdi-swap-horizontal</v-icon>
+                 v-on='{ ...onMenu, ...onTooltip }'>
+            <v-icon size='18'>mdi-swap-horizontal</v-icon>
           </v-btn>
         </template>
         <span>Apply a transformation</span>
       </v-tooltip>
     </template>
 
-    <v-card dark color="primary">
+    <v-card dark color='primary'>
       <v-card-title>
         <p>Transformation for '{{ column }}'</p>
       </v-card-title>
       <v-card-text>
-        <TransformationFunctionSelector label="Transformation to apply"
-                                        :column-type="columnType"
-                                        :column-name="column"
-                                        :value.sync="transformation.uuid"
-                                        :args.sync="transformation.params"
-                                        @onChanged="handleOnChanged"/>
+        <TransformationFunctionSelector label='Transformation to apply'
+                                        :column-type='columnType'
+                                        :column-name='column'
+                                        :value.sync='transformation.uuid'
+                                        :args.sync='transformation.params'
+                                        @onChanged='handleOnChanged'
+                                          :attach='false'/>
       </v-card-text>
       <v-card-actions>
       </v-card-actions>
@@ -35,22 +36,22 @@
 
 <script setup lang="ts">
 
-import { storeToRefs } from "pinia";
-import { useInspectionStore } from "@/stores/inspection";
-import { computed, ref } from "vue";
-import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
-import { ParameterizedCallableDTO } from "@/generated-sources";
+import { storeToRefs } from 'pinia';
+import { useInspectionStore } from '@/stores/inspection';
+import { computed, ref } from 'vue';
+import TransformationFunctionSelector from '@/views/main/utils/TransformationFunctionSelector.vue';
+import { ParameterizedCallableDTO } from '@/generated-sources';
 
 const props = defineProps<{
   column: string,
   columnType: string
-}>()
+}>();
 
 const transformation = ref<Partial<ParameterizedCallableDTO>>({
   uuid: undefined,
   params: [],
   type: 'TRANSFORMATION'
-})
+});
 const opened = ref<boolean>(false);
 
 let inspectionStore = useInspectionStore();

@@ -9,6 +9,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
+import mlflow
 
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
@@ -30,18 +31,18 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model: Any,
-        model_type: ModelType,
-        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-        name: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        id: Optional[str] = None,
-        batch_size: Optional[int] = None,
-        **kwargs,
+            self,
+            model: Any,
+            model_type: ModelType,
+            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+            name: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            id: Optional[str] = None,
+            batch_size: Optional[int] = None,
+            **kwargs,
     ) -> None:
         """
         Parameters
@@ -288,6 +289,20 @@ class WrapperModel(BaseModel, ABC):
                 wrapper_meta["batch_size"] = int(wrapper_meta["batch_size"]) if wrapper_meta["batch_size"] else None
                 return wrapper_meta
         else:
-            raise ValueError(
-                f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{wrapper_meta_file} file not found"
-            )
+            # ensuring backward compatibility
+            return {"batch_size": None}
+
+    def to_mlflow(self,
+                  artifact_path: str = "prediction-function-from-giskard",
+                  **kwargs):
+
+        def _giskard_predict(df):
+            return self.predict(df)
+
+        class MLflowModel(mlflow.pyfunc.PythonModel):
+
+            def predict(self, df):
+                return _giskard_predict(df)
+
+        mlflow_model = MLflowModel()
+        return mlflow.pyfunc.log_model(artifact_path=artifact_path, python_model=mlflow_model)

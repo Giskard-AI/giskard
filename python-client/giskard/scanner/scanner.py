@@ -12,6 +12,7 @@ from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
+from giskard.core.model_validation import ValidationFlags
 from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
@@ -30,7 +31,8 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+            self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False,
+            validation_flags: Optional[ValidationFlags] = ValidationFlags()
     ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
 
@@ -57,7 +59,7 @@ class Scanner:
 
         if not model.is_text_generation:
             time_start = perf_counter()
-            validate_model(model=model, validate_ds=dataset)
+            validate_model(model=model, validate_ds=dataset, validation_flags=validation_flags)
             model_validation_time = perf_counter() - time_start
         else:
             model_validation_time = None
