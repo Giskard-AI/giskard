@@ -97,12 +97,12 @@ public class TestSuiteExecutionService {
                 execution.setResults(response.getResults().stream()
                     .map(identifierSingleTestResult ->
                         new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
-                            identifierSingleTestResult.getResult()))
+                            identifierSingleTestResult.getResult(), identifierSingleTestResult.getArguments()))
                     .toList());
                 execution.setResults(response.getResults().stream()
                     .map(identifierSingleTestResult ->
                         new SuiteTestExecution(tests.get(identifierSingleTestResult.getId()), execution,
-                            identifierSingleTestResult.getResult()))
+                            identifierSingleTestResult.getResult(), identifierSingleTestResult.getArguments()))
                     .toList());
                 execution.setLogs(response.getLogs());
                 execution.setCompletionDate(new Date());

@@ -57,4 +57,7 @@ public class MLWorkerWSSingleTestResultDTO implements MLWorkerWSBaseDTO {
 
     @JsonProperty("reference_slices_size")
     private List<Integer> referenceSlicesSize;
+
+    @JsonProperty("output_df_id")
+    private String outputDfId;
 }

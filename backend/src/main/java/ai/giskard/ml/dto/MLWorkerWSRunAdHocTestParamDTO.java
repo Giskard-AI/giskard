@@ -13,4 +13,6 @@ public class MLWorkerWSRunAdHocTestParamDTO implements MLWorkerWSBaseDTO {
     private String testUuid;
 
     private List<MLWorkerWSFuncArgumentDTO> arguments;
+
+    private Boolean debug;
 }

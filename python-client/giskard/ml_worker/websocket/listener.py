@@ -1,6 +1,6 @@
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 
 import logging
 
@@ -225,6 +225,21 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
                     mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
                 self.ml_worker.ws_max_reply_payload_size = mtu
                 logger.info(f"MAX_STOMP_ML_WORKER_REPLY_SIZE set to {mtu}")
+
+
+def extract_debug_info(request_arguments):
+    template_info = " | <xxx:xxx_id>"
+    info = {"suffix": "", "project_key": ""}
+    for arg in request_arguments:
+        if arg.HasField("model"):
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
+            info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
+        elif arg.HasField("dataset"):
+            filled_info = template_info.replace("xxx", arg.name)
+            info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
+            info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
+    return info
 
 
 def map_function_meta_ws(callable_type):
@@ -599,7 +614,7 @@ def dataset_processing(ml_worker: MLWorker, params: websocket.DatesetProcessingP
 def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
     if isinstance(result, TestResult):
         return websocket.SingleTestResult(
-            passed=result.passed,
+            passed=bool(result.passed),
             is_error=result.is_error,
             messages=[
                 websocket.TestMessage(
@@ -625,15 +640,42 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=result.output_df,
+            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
+            output_df_id=result.output_df_id,
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+def do_run_adhoc_test(client, arguments, test, debug_info=None):
+
+    logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
+    test_result = test.get_builder()(**arguments).execute()
+    if test_result.output_df is not None:  # i.e. if debug is True and test has failed
+
+        if debug_info is None:
+            raise ValueError(
+                "You have requested to debug the test, " "but extract_debug_info did not return the information needed."
+            )
+
+        test_result.output_df.name += debug_info["suffix"]
+
+        test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
+        # for now, we won't return output_df from grpc, rather upload it
+        test_result.output_df = None
+    elif arguments["debug"]:
+        raise ValueError(
+            "This test does not return any examples to debug. "
+            "Check the debugging method associated to this test at "
+            "https://docs.giskard.ai/en/latest/reference/tests/index.html"
+        )
+
+    return test_result
 
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
@@ -642,8 +684,10 @@ def run_ad_hoc_test(ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *a
 
     arguments = parse_function_arguments(ml_worker, params.arguments)
 
-    logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-    test_result = test.get_builder()(**arguments).execute()
+    arguments["debug"] = params.debug if params.debug else None
+    debug_info = extract_debug_info(params.arguments) if params.debug else None
+
+    test_result = do_run_adhoc_test(ml_worker.client, arguments, test, debug_info)
 
     return websocket.RunAdHocTest(
         results=[
@@ -684,9 +728,13 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
         is_pass, results = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result in results:
+        for identifier, result, args in results:
             identifier_single_test_results.append(
-                websocket.IdentifierSingleTestResult(id=identifier, result=map_result_to_single_test_result_ws(result))
+                websocket.IdentifierSingleTestResult(
+                    id=identifier,
+                    result=map_result_to_single_test_result_ws(result),
+                    arguments=function_argument_to_ws(args),
+                )
             )
 
         return websocket.TestSuite(
@@ -735,3 +783,45 @@ def generate_test_suite(
 @websocket_actor(MLWorkerAction.echo)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
+
+
+def function_argument_to_ws(value: Dict[str, Any]):
+    args = list()
+
+    for v in value:
+        obj = value[v]
+        if isinstance(obj, Dataset):
+            funcargs = websocket.FuncArgument(name=v, dataset=websocket.ArtifactRef(project_key="test", id=str(obj.id)))
+        elif isinstance(obj, BaseModel):
+            funcargs = websocket.FuncArgument(name=v, model=websocket.ArtifactRef(project_key="test", id=str(obj.id)))
+        elif isinstance(obj, SlicingFunction):
+            funcargs = websocket.FuncArgument(
+                name=v,
+                slicingFunction=websocket.ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_ws(obj.params),
+            )
+        #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        elif isinstance(obj, TransformationFunction):
+            funcargs = websocket.FuncArgument(
+                name=v,
+                transformationFunction=websocket.ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
+                args=function_argument_to_ws(obj.params),
+            )
+        #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
+        #         **self.parse_function_arguments(arg.args))
+        elif isinstance(obj, float):
+            funcargs = websocket.FuncArgument(name=v, float_arg=obj)
+        elif isinstance(obj, int):
+            funcargs = websocket.FuncArgument(name=v, int_arg=obj)
+        elif isinstance(obj, str):
+            funcargs = websocket.FuncArgument(name=v, str_arg=obj)
+        elif isinstance(obj, bool):
+            funcargs = websocket.FuncArgument(name=v, bool_arg=obj)
+        elif isinstance(obj, dict):
+            funcargs = websocket.FuncArgument(name=v, kwargs=str(obj))
+        else:
+            raise IllegalArgumentError("Unknown argument type")
+        args.append(funcargs)
+
+    return args

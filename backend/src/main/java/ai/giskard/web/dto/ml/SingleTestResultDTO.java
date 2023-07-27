@@ -62,5 +62,6 @@ public class SingleTestResultDTO {
         this.referenceSlicesSize = message.getReferenceSlicesSize();
         this.messages = message.getMessages().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
+        this.outputDfUuid = message.getOutputDfId();
     }
 }

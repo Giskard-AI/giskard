@@ -243,11 +243,13 @@ class SingleTestResult(BaseModel):
     number_of_perturbed_rows: Optional[int] = None
     actual_slices_size: Optional[List[int]] = None
     reference_slices_size: Optional[List[int]] = None
+    output_df_id: Optional[str] = None
 
 
 class IdentifierSingleTestResult(BaseModel):
     id: int
     result: SingleTestResult
+    arguments: Optional[List[FuncArgument]] = None
 
 
 class NamedSingleTestResult(BaseModel):
@@ -262,6 +264,7 @@ class RunAdHocTest(WorkerReply):
 class RunAdHocTestParam(BaseModel):
     testUuid: str
     arguments: Optional[List[FuncArgument]] = None
+    debug: Optional[bool] = None
 
 
 class RunModelForDataFrame(WorkerReply):
