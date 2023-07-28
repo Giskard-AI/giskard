@@ -5,8 +5,8 @@
             <v-alert class="pa-0 text-body-2" colored-border type="info">
                 <p class="mb-0">ML Worker is a python process that allows Giskard to execute models in a user's
                     environment</p>
-                <p v-if="appSettings">A worker communicates with the backend through TCP port <code class="font-weight-bold">{{ appSettings.externalMlWorkerEntrypointPort }}</code>. Make sure that
-                    it's accessible on the Giskard server machine.
+                <p v-if="appSettings">A worker communicates with the backend through WebSocket. Make sure that
+                    your worker machine can access the Giskard server machine.
                 </p>
             </v-alert>
             <div>
