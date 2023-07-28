@@ -72,17 +72,18 @@ class OverconfidencePush(ExamplePush):
         res = {
             "push_title": "This example is incorrect while having a high confidence.",
             "details": [
-                {
-                    "action": "Save this example for further inspection and testing",
-                    "explanation": "This may help you identify spurious correlation and create unit test based on "
-                    "these examples",
-                    "button": "Save Example",
-                    "cta": CallToActionKind.SaveExample,
-                },
+                # Disabled temporarily
+                # {
+                #    "action": "Save this example for further inspection and testing",
+                #    "explanation": "This may help you identify spurious correlation and create unit test based on "
+                #    "these examples",
+                #    "button": "Save Example",
+                #    "cta": CallToActionKind.SaveExample,
+                # },
                 {
                     "action": "Generate a unit test to check if this example has the right label",
                     "explanation": "This enables you to make sure this specific example has the right label "
-                    "with enough confidence",
+                                   "with enough confidence",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -115,17 +116,18 @@ class BorderlinePush(ExamplePush):
         res = {
             "push_title": "This example was predicted with very low confidence",
             "details": [
-                {
-                    "action": "Save this example for further inspection and testing",
-                    "explanation": "This may help you identify inconsistent patterns and create a unit test based "
-                    "on these examples",
-                    "button": "Save Example",
-                    "cta": CallToActionKind.SaveExample,
-                },
+                # Disabled temporarily
+                # {
+                #    "action": "Save this example for further inspection and testing",
+                #    "explanation": "This may help you identify inconsistent patterns and create a unit test based "
+                #                   "on these examples",
+                #    "button": "Save Example",
+                #    "cta": CallToActionKind.SaveExample,
+                # },
                 {
                     "action": "Generate an inconsistency test",
                     "explanation": "This may help you ensure this inconsistent pattern is not common to the "
-                    "whole dataset",
+                                   "whole dataset",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -275,7 +277,7 @@ class PerturbationPush(FeaturePush):
                 {
                     "action": "Generate a robustness test that slightly perturb this feature",
                     "explanation": "This will enable you to make sure the model is robust against small similar "
-                    "changes",
+                                   "changes",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
                 },

@@ -121,7 +121,6 @@ async function applyCta(kind: string) {
 
   switch (kind) {
     case "CreateSlice":
-    case "SaveExample":
       mainStore.addSimpleNotification("Successfully saved");
       break;
     case "CreateSliceOpenDebugger":
@@ -153,6 +152,8 @@ async function applyCta(kind: string) {
     case "OpenDebuggerOverconfidence":
       // Programmatically apply Overconfidence filter
       break;
+    case "SaveExample":
+      mainStore.addSimpleNotification("This feature is not yet implemented.");
     default:
       break;
   }
