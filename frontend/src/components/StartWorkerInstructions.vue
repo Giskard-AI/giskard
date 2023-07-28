@@ -1,5 +1,6 @@
 <template>
     <v-card outlined>
+        <HuggingFaceTokenPopover v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
         <v-card-text>
             <v-alert class="pa-0 text-body-2" colored-border type="info">
                 <p class="mb-0">ML Worker is a python process that allows Giskard to execute models in a user's
@@ -35,6 +36,9 @@ import { apiURL } from "@/env";
 import { JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import { api } from "@/api";
+import { saveLocalHFToken, getLocalHFSpacesToken, saveLocalHFSpacesToken } from "@/utils";
+import { fetchHFToken } from "@/snippets";
+import HuggingFaceTokenPopover from "./HuggingFaceTokenPopover.vue";
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -43,10 +47,21 @@ const route = useRoute();
 
 
 const apiAccessToken = ref<JWTToken | null>(null);
+const needFetchWithHFAccessToken = ref<boolean>(false);
 
-const codeContent = computed(() => {
+const generateMLWorkerConnectionInstruction = () => {
+    if (mainStore.appSettings!.isRunningOnHfSpaces) {
+        try {
+            const hfspaceToken = getLocalHFSpacesToken();
+            return `giskard worker start -u ${apiURL} -t ${hfspaceToken}`;
+        } catch (error) {
+            console.error(error);
+        }
+    }
     return `giskard worker start -u ${apiURL}`;
-})
+}
+
+const codeContent = ref<string>(generateMLWorkerConnectionInstruction());
 
 const generateApiAccessToken = async () => {
     try {
@@ -56,7 +71,31 @@ const generateApiAccessToken = async () => {
     }
 }
 
+async function fetchAndSaveHFSpacesToken() {
+    const token = await fetchHFToken();
+    if (token) {
+        saveLocalHFSpacesToken(token);
+        codeContent.value = generateMLWorkerConnectionInstruction();
+        needFetchWithHFAccessToken.value = false;
+    } else {
+        // Access Token seems invalidated
+        needFetchWithHFAccessToken.value = true;
+    }
+}
+
+async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
+    if (mainStore.appSettings!.isRunningOnHfSpaces) {
+        saveLocalHFToken(accessToken);
+        await fetchAndSaveHFSpacesToken();
+    }
+}
+
 onMounted(async () => {
     await generateApiAccessToken();
+    if (mainStore.appSettings!.isRunningOnHfSpaces) {
+        if (getLocalHFSpacesToken() == null) {
+            await fetchAndSaveHFSpacesToken();
+        }
+    }
 })
 </script>
