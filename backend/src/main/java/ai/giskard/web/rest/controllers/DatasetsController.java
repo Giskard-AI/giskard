@@ -139,7 +139,6 @@ public class DatasetsController {
             DatasetProcessingRequest.Builder builder = DatasetProcessingRequest.newBuilder()
                 .setDataset(ArtifactRef.newBuilder()
                     .setId(dataset.getId().toString())
-                    .setProjectKey(dataset.getProject().getKey())
                     .setSample(sample)
                     .build());
 
@@ -156,9 +155,6 @@ public class DatasetsController {
 
                 ArtifactRef.Builder artefactRefBuilder = ArtifactRef.newBuilder().setId(callable.getUuid().toString());
 
-                if (callable.getProjectKey() != null) {
-                    artefactRefBuilder.setProjectKey(callable.getProjectKey());
-                }
                 ArtifactRef artifactRef = artefactRefBuilder.build();
 
                 if (callable instanceof SlicingFunction) {
