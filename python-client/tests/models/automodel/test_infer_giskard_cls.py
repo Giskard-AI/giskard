@@ -5,7 +5,7 @@ from giskard.models.huggingface import HuggingFaceModel
 from giskard.models.pytorch import PyTorchModel
 from giskard.models.sklearn import SKLearnModel
 from giskard.models.tensorflow import TensorFlowModel
-from giskard.models.base import CloudpickleSerializableModel
+from giskard.models.pyfunc import PyFuncModel
 
 
 def pytorch_model():
@@ -74,4 +74,4 @@ def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_m
     assert giskard_cls == HuggingFaceModel
 
     giskard_cls = _infer_giskard_cls(pyfunc_model())
-    assert giskard_cls == CloudpickleSerializableModel
+    assert giskard_cls == PyFuncModel
