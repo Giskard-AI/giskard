@@ -52,7 +52,7 @@ public class TestController {
             for (FunctionInputDTO input : request.getInputs()) {
 
                 builder.addArguments(testArgumentService
-                    .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(),
+                    .buildTestArgument(arguments, input.getName(), input.getValue(),
                         giskardMapper.fromDTO(input).getParams(), sample));
             }
 

@@ -52,7 +52,7 @@ public class TestSuiteExecutionService {
         RunTestSuiteRequest.Builder builder = RunTestSuiteRequest.newBuilder();
         for (FunctionInput input : execution.getInputs()) {
             builder.addGlobalArguments(testArgumentService.buildTestArgument(arguments, input.getName(),
-                input.getValue(), suite.getProject().getKey(), input.getParams(), sample));
+                input.getValue(), input.getParams(), sample));
         }
 
         Map<String, FunctionInput> suiteInputsAndShared = Stream.concat(
@@ -62,7 +62,7 @@ public class TestSuiteExecutionService {
 
         for (SuiteTest suiteTest : suite.getTests()) {
             builder.addTests(testArgumentService.buildFixedTestArgument(suiteInputsAndShared, suiteTest,
-                suite.getProject().getKey(), sample));
+                sample));
         }
 
         Map<Long, SuiteTest> tests = suite.getTests().stream()

@@ -170,7 +170,7 @@ public class DatasetsController {
 
                 for (FunctionInputDTO input : processingFunction.getParams()) {
                     functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList(), sample));
+                        .buildTestArgument(arguments, input.getName(), input.getValue(), Collections.emptyList(), sample));
                 }
 
                 builder.addFunctions(functionBuilder.build());
