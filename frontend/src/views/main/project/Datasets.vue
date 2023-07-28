@@ -101,17 +101,18 @@
 </template>
 
 <script setup lang="ts">
-import {api} from "@/api";
-import {Role} from "@/enums";
-import mixpanel from "mixpanel-browser";
-import DeleteModal from "@/views/main/project/modals/DeleteModal.vue";
-import {computed, onBeforeMount, ref} from "vue";
-import InlineEditText from "@/components/InlineEditText.vue";
-import {useUserStore} from "@/stores/user";
-import {useProjectStore} from "@/stores/project";
-import {useProjectArtifactsStore} from "@/stores/project-artifacts";
-import {TYPE} from "vue-toastification";
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
+import { api } from '@/api';
+import { Role } from '@/enums';
+import mixpanel from 'mixpanel-browser';
+import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
+import { computed, onBeforeMount, ref } from 'vue';
+import InlineEditText from '@/components/InlineEditText.vue';
+import { useUserStore } from '@/stores/user';
+import { useProjectStore } from '@/stores/project';
+import { useProjectArtifactsStore } from '@/stores/project-artifacts';
+import { TYPE } from 'vue-toastification';
+import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
+import { useMainStore } from '@/stores/main';
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -151,7 +152,7 @@ async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  mainStore.addNotification({content: messageDTO.message});
+  useMainStore().addNotification({ content: messageDTO.message });
   await projectArtifactsStore.loadDatasets();
 }
 
