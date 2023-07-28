@@ -6,7 +6,7 @@ from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
 from giskard.models.base import BaseModel
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
-from giskard.testing.tests.performance import test_f1, test_rmse
+from giskard.testing.tests.performance import test_diff_rmse, test_f1, test_rmse
 
 
 class SupportedPerturbationType(Enum):
@@ -83,7 +83,7 @@ class OverconfidencePush(ExamplePush):
                 {
                     "action": "Generate a unit test to check if this example has the right label",
                     "explanation": "This enables you to make sure this specific example has the right label "
-                                   "with enough confidence",
+                    "with enough confidence",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -127,7 +127,7 @@ class BorderlinePush(ExamplePush):
                 {
                     "action": "Generate an inconsistency test",
                     "explanation": "This may help you ensure this inconsistent pattern is not common to the "
-                                   "whole dataset",
+                    "whole dataset",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -172,72 +172,69 @@ class ContributionPush(FeaturePush):
         self.feature = feature
         self.model_type = model_type
         self.correct_prediction = correct_prediction
-        # Push text creation
-        if correct_prediction:
-            self._contribution_correct(feature, value)
-        elif not correct_prediction:
-            self._contribution_incorrect(feature, value)
-        else:
-            pass
-        # Test and Slice creation
+        # Slice creation
         self._slicing_function()
-        self._test_selection()
+        # Push text creation
 
-    def _contribution_incorrect(self, feature, value):
-        res = {
-            "push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
-            "details": [
-                {
-                    "action": "Open the debugger session on similar examples",
-                    "explanation": "Debugging similar examples may help you find common spurious patterns",
-                    "button": "Open debugger",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
-                },
-                {
-                    "action": "Generate a new performance difference test",
-                    "explanation": "This may help ensure this spurious pattern is not common to the whole " "dataset",
-                    "button": "Create test",
-                    "cta": CallToActionKind.CreateTest,
-                },
-                {
-                    "action": "Save slice and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
-                },
-            ],
-        }
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-        return res
+        self._contribution(feature, value, correct_prediction)
+        self._test_selection(self._slicing_function, correct_prediction)
 
-    def _contribution_correct(self, feature, value):
-        res = {
-            "push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
-            "details": [
-                {
-                    "action": "Open the debugger session on similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
-                },
-                {
-                    "action": "Generate a test to check if this correlation holds with the whole dataset",
-                    "explanation": "Correlations may be spurious, double check if it has a business sense",
-                    "button": "Create test",
-                    "cta": CallToActionKind.CreateTest,
-                },
-                {
-                    "action": "Save slice and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
-                },
-            ],
-        }
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-        return res
+    def _contribution(self, feature, value, correct_prediction):
+        if not correct_prediction:
+            res = {
+                "push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
+                "details": [
+                    {
+                        "action": "Open the debugger session on similar examples",
+                        "explanation": "Debugging similar examples may help you find common spurious patterns",
+                        "button": "Open debugger",
+                        "cta": CallToActionKind.CreateSliceOpenDebugger,
+                    },
+                    {
+                        "action": "Generate a new performance difference test",
+                        "explanation": "This may help ensure this spurious pattern is not common to the whole "
+                        "dataset",
+                        "button": "Create test",
+                        "cta": CallToActionKind.CreateTest,
+                    },
+                    {
+                        "action": "Save slice and continue debugging session",
+                        "explanation": "Saving the slice will enable you to create tests more efficiently",
+                        "button": "Save Slice",
+                        "cta": CallToActionKind.CreateSlice,
+                    },
+                ],
+            }
+            self.push_title = res["push_title"]
+            self.details = res["details"]
+            return res
+        else:
+            res = {
+                "push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
+                "details": [
+                    {
+                        "action": "Open the debugger session on similar examples",
+                        "explanation": "Debugging similar examples may help you find common patterns",
+                        "button": "Open debugger",
+                        "cta": CallToActionKind.CreateSliceOpenDebugger,
+                    },
+                    {
+                        "action": "Generate a test to check if this correlation holds with the whole dataset",
+                        "explanation": "Correlations may be spurious, double check if it has a business sense",
+                        "button": "Create test",
+                        "cta": CallToActionKind.CreateTest,
+                    },
+                    {
+                        "action": "Save slice and continue debugging session",
+                        "explanation": "Saving the slice will enable you to create tests more efficiently",
+                        "button": "Save Slice",
+                        "cta": CallToActionKind.CreateSlice,
+                    },
+                ],
+            }
+            self.push_title = res["push_title"]
+            self.details = res["details"]
+            return res
 
     def _slicing_function(self):
         if isinstance(self.bounds, list):
@@ -247,11 +244,17 @@ class ContributionPush(FeaturePush):
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
 
-    def _test_selection(self):
-        if self.model_type == SupportedModelTypes.REGRESSION:
-            self.tests = [test_f1()]
-        elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-            self.tests = [test_rmse()]
+    def _test_selection(self, slicing_fn: QueryBasedSliceFunction, correct_prediction):
+        if not correct_prediction:
+            if self.model_type == SupportedModelTypes.REGRESSION:
+                self.tests = [test_diff_rmse(slicing_function=slicing_fn)]
+            elif self.model_type == SupportedModelTypes.CLASSIFICATION:
+                self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
+        else:
+            if self.model_type == SupportedModelTypes.REGRESSION:
+                self.tests = [test_rmse(slicing_function=slicing_fn)]
+            elif self.model_type == SupportedModelTypes.CLASSIFICATION:
+                self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
 
 
 class PerturbationPush(FeaturePush):
@@ -277,7 +280,7 @@ class PerturbationPush(FeaturePush):
                 {
                     "action": "Generate a robustness test that slightly perturb this feature",
                     "explanation": "This will enable you to make sure the model is robust against small similar "
-                                   "changes",
+                    "changes",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
                 },
