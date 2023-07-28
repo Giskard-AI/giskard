@@ -7,12 +7,6 @@
                  v-on="{ ...onMenu, ...onTooltip }">
             <div class="rim1"></div>
             <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
-            <!--<v-badge top overlap color="transparent">
-              <v-icon size="18" color="primary">mdi-warning</v-icon>
-              <template v-slot:badge>
-                <v-icon color="error" style="height: 6px;" small>mdi-exclamation</v-icon>
-              </template>
-            </v-badge>-->
           </v-btn>
         </template>
         <span>{{ push.pushTitle }}. Click for more details.</span>
@@ -52,12 +46,7 @@
 </template>
 
 <script setup lang="ts">
-
-//////// TODO BEFORE MERGE:
-// - Add a mixpanel event when the menu is opened (with the push type?)
-// - Add a mixpanel event when a CTA is clicked (with the CTA type?)
-
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {usePushStore} from "@/stores/push";
 import {useMainStore} from "@/stores/main";
 import {useCatalogStore} from "@/stores/catalog";
@@ -69,6 +58,7 @@ import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
 import {chain} from "lodash";
 import {TYPE} from "vue-toastification";
 import {RowFilterType} from "@/generated-sources";
+import mixpanel from "mixpanel-browser";
 
 const pushStore = usePushStore();
 const mainStore = useMainStore();
@@ -77,12 +67,12 @@ const catalogStore = useCatalogStore();
 const projectStore = useProjectStore();
 const debuggingStore = useDebuggingSessionsStore();
 
-//:modelFeatures="modelFeatures"
-//:inputData="inputData"
-const props = defineProps({
-  type: String,
-  column: String
-});
+interface Props {
+  type: string;
+  column: string;
+}
+
+const props = defineProps<Props>();
 
 const opened = ref<boolean>(false);
 const loading = ref<string>("");
@@ -101,22 +91,12 @@ const show = computed(() => {
     case "borderline":
       return value.value?.borderline.pushTitle && value.value?.borderline.pushTitle != "";
     default:
-      return false;
+      return undefined;
   }
 })
+
 const push = computed(() => {
-  switch (props.type) {
-    case "contribution":
-      return value.value?.contribution;
-    case "perturbation":
-      return value.value?.perturbation;
-    case "overconfidence":
-      return value.value?.overconfidence;
-    case "borderline":
-      return value.value?.borderline;
-    default:
-      return false;
-  }
+  return value.value?.hasOwnProperty(props.type) ? value.value[props.type] : undefined;
 })
 
 const icon = computed(() => {
@@ -135,11 +115,9 @@ const icon = computed(() => {
 });
 
 async function applyCta(kind: string) {
+  mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
-  // modelId: string, datasetId: string, rowNb: number, pushKind: string, ctaKind: string
-  // @ts-ignore
   let uuid = await pushStore.applyPush(push.value!.kind, kind);
-
 
   switch (kind) {
     case "CreateSlice":
@@ -170,7 +148,6 @@ async function applyCta(kind: string) {
       mainStore.addSimpleNotification("Perturbation saved");
       break;
     case "OpenDebuggerBorderline":
-      // Programmatically apply Borderline filter
       debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: false});
       break;
     case "OpenDebuggerOverconfidence":
@@ -202,6 +179,13 @@ function addToTestSuite(test) {
     }
   });
 }
+
+watch(() => opened, (newValue, oldValue) => {
+  if (newValue) {
+    mixpanel.track("push:open", {type: props.type});
+  }
+})
+
 </script>
 
 <style scoped>

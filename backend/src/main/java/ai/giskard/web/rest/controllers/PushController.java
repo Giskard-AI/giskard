@@ -9,7 +9,6 @@ import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.GRPCMapper;
-import ai.giskard.service.PushService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.web.dto.ApplyPushDTO;
 import ai.giskard.web.dto.PredictionInputDTO;
@@ -31,11 +30,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/")
 public class PushController {
-
     private final ModelRepository modelRepository;
     private final PermissionEvaluator permissionEvaluator;
     private final DatasetRepository datasetRepository;
-    private final PushService pushService;
 
     private final MLWorkerService mlWorkerService;
     private final GRPCMapper grpcMapper;
