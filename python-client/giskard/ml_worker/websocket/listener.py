@@ -38,7 +38,7 @@ from giskard.ml_worker.websocket import (
     TestSuiteParam,
     ExplainTextParam,
     RunAdHocTestParam,
-    DatesetProcessingParam,
+    DatasetProcessingParam,
     GenerateTestSuiteParam,
     RunModelForDataFrameParam,
 )
@@ -98,7 +98,7 @@ def parse_action_param(action, params):
     elif action == MLWorkerAction.runAdHocTest:
         return RunAdHocTestParam.parse_obj(params)
     elif action == MLWorkerAction.datasetProcessing:
-        return DatesetProcessingParam.parse_obj(params)
+        return DatasetProcessingParam.parse_obj(params)
     elif action == MLWorkerAction.runTestSuite:
         return TestSuiteParam.parse_obj(params)
     elif action == MLWorkerAction.runModel:
@@ -574,7 +574,7 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
 
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
-def dataset_processing(ml_worker: MLWorker, params: websocket.DatesetProcessingParam, *args, **kwargs):
+def dataset_processing(ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs):
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
     for function in params.functions:

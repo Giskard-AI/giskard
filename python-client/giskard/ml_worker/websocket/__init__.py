@@ -109,7 +109,7 @@ class DatasetProcessingFunction(BaseModel):
     arguments: Optional[List[FuncArgument]] = None
 
 
-class DatesetProcessingParam(BaseModel):
+class DatasetProcessingParam(BaseModel):
     dataset: ArtifactRef
     functions: Optional[List[DatasetProcessingFunction]] = None
 
