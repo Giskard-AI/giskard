@@ -1,5 +1,6 @@
 <template>
     <div class="vertical-container">
+        <HuggingFaceTokenPopover v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
         <v-container fluid class="vc" v-if="testSuitesStore.testSuites.length > 0">
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
@@ -236,7 +237,9 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import {TestResult} from '@/generated-sources';
 import {useProjectStore} from '@/stores/project';
 import {useProjectArtifactsStore} from '@/stores/project-artifacts';
-import {generateGiskardClientSnippet} from "@/snippets";
+import {generateGiskardClientSnippet, fetchHFToken} from "@/snippets";
+import {getLocalHFSpacesToken, saveLocalHFSpacesToken, saveLocalHFToken} from "@/utils";
+import HuggingFaceTokenPopover from "@/components/HuggingFaceTokenPopover.vue";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -406,6 +409,25 @@ function openCustomInstructions() {
     });
 }
 
+const needFetchWithHFAccessToken = ref<boolean>(false);
+async function fetchAndSaveHFSpacesToken() {
+    const token = await fetchHFToken();
+    if (token) {
+        saveLocalHFSpacesToken(token);
+        needFetchWithHFAccessToken.value = false;
+    } else {
+        // Access Token seems invalidated
+        needFetchWithHFAccessToken.value = true;
+    }
+}
+
+async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        saveLocalHFToken(accessToken);
+        await fetchAndSaveHFSpacesToken();
+    }
+}
+
 onActivated(async () => {
     searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
@@ -415,7 +437,12 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
-  giskardClientSnippet.value = await generateGiskardClientSnippet();
+    giskardClientSnippet.value = await generateGiskardClientSnippet();
+    if (useMainStore().appSettings!.isRunningOnHfSpaces && getLocalHFSpacesToken() == null) {
+        if (getLocalHFSpacesToken() == null) {
+            await fetchAndSaveHFSpacesToken();
+        }
+    }
 })
 </script>
 
