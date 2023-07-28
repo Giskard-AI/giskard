@@ -62,7 +62,8 @@ class LangchainModel(MLFlowSerializableModel):
             model_type=self.meta.model_type,
             data_preprocessing_function=self.data_preprocessing_function,
             model_postprocessing_function=self.model_postprocessing_function,
-            feature_names=self.meta.feature_names,
+            feature_names=None,
+            # The dataset passed with the new prompts could have different column name in the scan detectors
             classification_threshold=self.meta.classification_threshold,
             classification_labels=self.meta.classification_labels,
         )
