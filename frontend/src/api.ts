@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { apiURL } from '@/env';
-import { getLocalToken, removeLocalToken } from '@/utils';
+import { getLocalToken, removeLocalToken, getLocalHFToken } from '@/utils';
 import Vue from 'vue';
 
 import {
@@ -66,6 +66,15 @@ function jwtRequestInterceptor(config) {
     return config;
 }
 
+function hfRequestInterceptor(config) {
+    // Do something before request is sent
+    let hfToken = getLocalHFToken();
+    if (hfToken && config && config.headers) {
+        config.headers.Authorization = `Bearer ${hfToken}`;
+    }
+    return config;
+}
+
 function authHeaders(token: string | null) {
     return {
         headers: {
@@ -81,6 +90,9 @@ const axiosProject = axios.create({
 });
 const apiV2 = axios.create({
     baseURL: API_V2_ROOT,
+});
+const huggingface = axios.create({
+    baseURL: "https://huggingface.co/"
 });
 
 function unpackInterceptor(response) {
@@ -158,6 +170,8 @@ async function errorInterceptor(error) {
 apiV2.interceptors.response.use(unpackInterceptor, errorInterceptor);
 apiV2.interceptors.request.use(jwtRequestInterceptor);
 
+huggingface.interceptors.request.use(hfRequestInterceptor);
+
 axios.interceptors.request.use(jwtRequestInterceptor);
 
 // this is to automatically parse responses from the projects API, be it array or single objects
@@ -190,8 +204,8 @@ function downloadURL(urlString) {
 }
 
 export const api = {
-    async getHuggingFaceToken(spaceId: string) {
-      return await axios.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
+    async getHuggingFaceSpacesToken(spaceId: string) {
+      return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
