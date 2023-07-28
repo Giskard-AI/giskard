@@ -131,7 +131,6 @@ message RunModelRequest{
   ArtifactRef model = 1;
   ArtifactRef dataset = 2;
   uint64 inspectionId = 3;
-  string project_key = 4;
 }
 
 message RunModelResponse{
@@ -262,10 +261,9 @@ message TestSuiteResultMessage {
   string logs = 4;
 }
 
-message ArtifactRef{
-  string project_key = 1;
-  string id = 2;
-  optional bool sample = 3;
+message ArtifactRef {
+  string id = 1;
+  optional bool sample = 2;
 }
 
 message Chunk {

@@ -62,9 +62,14 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
-    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId,
+                                      @PathVariable @NotNull UUID datasetId,
+                                      @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
+
+        // TODO: validate can read any of all projects?
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
+
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         ExplainResponse explanations = modelService.explain(model, dataset, data.getFeatures());
         ExplainResponseDTO result = new ExplainResponseDTO();
@@ -84,13 +89,12 @@ public class ModelController {
     @PostMapping("project/{projectKey}/models")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createModelMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull ModelDTO dto) {
-        if (modelRepository.existsById(dto.getId())) {
-            log.info("Model already exists {}", dto.getId());
-            return;
-        }
+        ProjectModel model = modelRepository.findById(dto.getId())
+            .orElseGet(() -> giskardMapper.fromDTO(dto));
+
         Project project = projectRepository.getOneByKey(projectKey);
-        ProjectModel model = giskardMapper.fromDTO(dto);
-        model.setProject(project);
+        model.getProjects().add(project);
+
         modelRepository.save(model);
     }
 
@@ -99,7 +103,10 @@ public class ModelController {
     public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
+
+        // TODO: validate can read any of all projects?
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
+
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
         ExplainTextResponse textResponse = modelService.explainText(model, dataset, featureName, data.getFeatures());
         textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
@@ -120,7 +127,10 @@ public class ModelController {
                                  @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(data.getDatasetId());
+
+        // TODO: validate can read any of all projects?
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
+
         RunModelForDataFrameResponse result = modelService.predict(model, dataset, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
         if (model.getModelType() == ModelType.CLASSIFICATION) {
@@ -141,6 +151,7 @@ public class ModelController {
         ProjectModel model = modelRepository.findById(modelId)
             .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT_MODEL, modelId.toString()));
 
+        // TODO: validate can write any of all projects?
         permissionEvaluator.validateCanWriteProject(model.getProject().getId());
 
         model.setName(name);

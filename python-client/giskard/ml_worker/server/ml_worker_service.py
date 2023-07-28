@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 import os
 import platform
 import posixpath
@@ -14,6 +13,7 @@ from typing import Dict, Any
 
 import google
 import grpc
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -395,12 +395,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             if arg.HasField("dataset"):
                 arguments[arg.name] = Dataset.download(
                     self.client,
-                    arg.dataset.project_key,
                     arg.dataset.id,
                     arg.dataset.sample,
                 )
             elif arg.HasField("model"):
-                arguments[arg.name] = BaseModel.download(self.client, arg.model.project_key, arg.model.id)
+                arguments[arg.name] = BaseModel.download(self.client, arg.model.id)
             elif arg.HasField("slicingFunction"):
                 arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, self.client, None)(
                     **self.parse_function_arguments(arg.args)
@@ -426,10 +425,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return arguments
 
     def explain(self, request: ml_worker_pb2.ExplainRequest, context) -> ml_worker_pb2.ExplainResponse:
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.id)
         dataset = Dataset.download(
             self.client,
-            request.dataset.project_key,
             request.dataset.id,
             request.dataset.sample,
         )
@@ -443,7 +441,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def explainText(self, request: ml_worker_pb2.ExplainTextRequest, context) -> ml_worker_pb2.ExplainTextResponse:
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.id)
         text_column = request.feature_name
 
         if request.column_types[text_column] != "text":
@@ -470,7 +468,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         )
 
     def runModelForDataFrame(self, request: ml_worker_pb2.RunModelForDataFrameRequest, context):
-        model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+        model = BaseModel.download(self.client, request.model.id)
         df = pd.DataFrame.from_records([r.columns for r in request.dataframe.rows])
         ds = Dataset(
             model.prepare_dataframe(df, column_dtypes=request.column_dtypes),
@@ -491,10 +489,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     def runModel(self, request: ml_worker_pb2.RunModelRequest, context) -> ml_worker_pb2.RunModelResponse:
         try:
-            model = BaseModel.download(self.client, request.model.project_key, request.model.id)
+            model = BaseModel.download(self.client, request.model.id)
             dataset = Dataset.download(
                 self.client,
-                request.dataset.project_key,
                 request.dataset.id,
                 sample=request.dataset.sample,
             )

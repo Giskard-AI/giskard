@@ -117,16 +117,16 @@ public interface GiskardMapper {
     @Mapping(source = "featureNames", target = "featureNames")
     ModelMetadataDTO modelToModelMetadataDTO(ProjectModel model);
 
-    @Mapping(source = "projectId", target = "project")
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)
     @Mapping(target = "lastModifiedDate", ignore = true)
+    @Mapping(target = "projects", ignore = true)
     ProjectModel fromDTO(ModelDTO dto);
 
     @Mapping(source = "columnTypes", target = "columnTypes")
     @Mapping(target = "inspections", ignore = true)
-    @Mapping(target = "project", ignore = true)
+    @Mapping(target = "projects", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "lastModifiedBy", ignore = true)

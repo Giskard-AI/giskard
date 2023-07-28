@@ -60,10 +60,10 @@ public class DatasetsController {
         return giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId));
     }
 
-    @GetMapping("project/{projectKey}/datasets/{datasetId}")
-    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
-    public DatasetDTO getDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey,
-                                     @PathVariable("datasetId") @NotNull UUID datasetId) {
+    @GetMapping("datasets/{datasetId}")
+    // TODO: add permission
+    //@PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    public DatasetDTO getDatasetMeta(@PathVariable("datasetId") @NotNull UUID datasetId) {
         return giskardMapper.datasetToDatasetDTO(datasetRepository.getMandatoryById(datasetId));
     }
 

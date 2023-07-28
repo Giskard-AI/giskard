@@ -322,6 +322,7 @@ public class InitService {
     }
 
 
+    // TODO: should we totally remove the init of default projects?
     private List<UUID> loadClasspathArtifacts(String artifactType, Resource[] artifactResources, Path originalRoot, @NotNull String projectKey) throws IOException {
         List<UUID> artifactIds = new ArrayList<>();
         for (Resource resource : artifactResources) {

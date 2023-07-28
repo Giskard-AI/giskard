@@ -521,7 +521,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, dataset_id, sample: bool = False):
+    def download(cls, client: GiskardClient, dataset_id, sample: bool = False):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
@@ -530,7 +530,6 @@ class Dataset(ColumnMetadataMixin):
             client (GiskardClient):
                 The GiskardClient instance to use for downloading the dataset.
                 If None, the function looks for the dataset locally.
-            project_key (str): The key of the Giskard project that the dataset belongs to.
             dataset_id (str): The ID of the dataset to download.
             sample (bool): Only open a sample of 1000 rows if True
 
@@ -541,7 +540,7 @@ class Dataset(ColumnMetadataMixin):
 
         if client is None:
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing dataset {project_key}.{dataset_id}"
+            assert local_dir.exists(), f"Cannot find existing dataset {dataset_id}"
             with open(Path(local_dir) / "giskard-dataset-meta.yaml") as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = DatasetMeta(
@@ -554,7 +553,7 @@ class Dataset(ColumnMetadataMixin):
                 )
         else:
             client.load_artifact(local_dir, posixpath.join("datasets", dataset_id))
-            meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
+            meta: DatasetMeta = client.load_dataset_meta(dataset_id)
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)

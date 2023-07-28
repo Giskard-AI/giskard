@@ -6,7 +6,6 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.Project;
 import ai.giskard.utils.JSONStringAttributeConverter;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
@@ -51,9 +50,9 @@ public class Dataset extends AbstractAuditingEntity {
     @JsonIgnore
     private Set<Inspection> inspections = new HashSet<>();
 
-    @ManyToOne
-    @JsonBackReference
-    private Project project;
+    @ManyToMany(mappedBy = "datasets")
+    @JsonIgnore
+    private List<Project> projects;
 
     private Long originalSizeBytes;
 

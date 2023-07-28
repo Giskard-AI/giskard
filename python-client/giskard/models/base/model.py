@@ -367,13 +367,12 @@ class BaseModel(ABC):
         return str(self.id)
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, model_id):
+    def download(cls, client: GiskardClient, model_id):
         """
         Downloads the specified model from the Giskard server and loads it into memory.
 
         Args:
             client (GiskardClient): The client instance that will connect to the Giskard server.
-            project_key (str): The key for the project that the model belongs to.
             model_id (str): The ID of the model to download.
 
         Returns:
@@ -385,13 +384,13 @@ class BaseModel(ABC):
         local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
         if client is None:
             # internal worker case, no token based http client [deprecated, to be removed]
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
+            assert local_dir.exists(), f"Cannot find existing model {model_id} in {local_dir}"
             _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join("models", model_id))
-            meta_response = client.load_model_meta(project_key, model_id)
+            meta_response = client.load_model_meta(model_id)
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
+            assert local_dir.exists(), f"Cannot find existing model {model_id} in {local_dir}"
             with open(Path(local_dir) / META_FILENAME) as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 classification_labels = cls.cast_labels(meta_response)

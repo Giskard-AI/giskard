@@ -41,7 +41,7 @@ public class ModelDTO {
     private UUID id;
 
     @JsonIgnore
-    private ProjectDTO project;
+    private List<ProjectDTO> projects;
 
     private String name;
 
@@ -50,7 +50,7 @@ public class ModelDTO {
 
     private long size;
 
-    public Long getProjectId() {
-        return project == null ? null : project.getId();
+    public List<Long> getProjectIds() {
+        return projects.stream().map(ProjectDTO::getId).toList();
     }
 }

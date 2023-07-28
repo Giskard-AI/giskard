@@ -26,7 +26,7 @@ public class DatasetDTO {
     @JsonAlias("column_types")
     private Map<String, ColumnType> columnTypes;
     @JsonIgnore
-    private ProjectDTO project;
+    private List<ProjectDTO> projects;
     @JsonProperty("id")
     @NotNull
     private UUID id;

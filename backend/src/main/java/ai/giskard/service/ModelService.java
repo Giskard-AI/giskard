@@ -41,9 +41,11 @@ public class ModelService {
 
     public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         RunModelForDataFrameResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
+
+        try (MLWorkerClient client = mlWorkerService.createClient(model.getProjects().isUsingInternalWorker())) {
             response = getRunModelForDataFrameResponse(model, dataset, features, client);
         }
+
         return response;
     }
 
@@ -136,7 +138,6 @@ public class ModelService {
                 .setModel(grpcMapper.createRef(model))
                 .setDataset(grpcMapper.createRef(dataset, sample))
                 .setInspectionId(inspectionId)
-                .setProjectKey(model.getProject().getKey())
                 .build();
             client.getBlockingStub().runModel(request);
         }

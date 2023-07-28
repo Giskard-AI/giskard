@@ -58,7 +58,11 @@ public class Project extends AbstractAuditingEntity {
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "project", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+        name = "projects_models",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "model_uuid"))
     @JsonIgnore
     private Set<ProjectModel> models = new HashSet<>();
 
@@ -66,7 +70,11 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @JsonIgnore
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "project", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(
+        name = "projects_datasets",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "dataset_uuid"))
     private Set<Dataset> datasets = new HashSet<>();
 
     @Getter
