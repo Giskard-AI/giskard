@@ -12,10 +12,6 @@ def create_contribution_push(model, ds, df):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, df)
         slice_df = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
-        # slice_df = ds.copy()
-        # slice_df.df = df.reset_index(drop=True)
-        # slice_df.meta.number_of_rows = 1
-        # slice_df = ds.slice(lambda row: row.eq(df.iloc[0]).all(axis=None)) 3 solutions I think the first is the best
         values = slice_df.df
         training_label = values[ds.target].values[0]
         prediction = model.predict(slice_df).prediction[0]
