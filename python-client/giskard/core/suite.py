@@ -163,7 +163,7 @@ class TestPartial:
 
 
 def single_binary_result(test_results: List):
-    return all(map(lambda res: res.passed, test_results))
+    return all(res.passed for res in test_results)
 
 
 def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
