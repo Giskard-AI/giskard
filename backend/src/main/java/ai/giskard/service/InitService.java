@@ -265,7 +265,7 @@ public class InitService {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             DatasetDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), DatasetDTO.class);
             Dataset dataset = giskardMapper.fromDTO(loadedMeta);
-            dataset.setProject(project);
+            dataset.getProjects().add(project);
             datasetRepository.save(dataset);
         }
     }
@@ -279,7 +279,7 @@ public class InitService {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             ModelDTO loadedMeta = mapper.readValue(Files.newInputStream(metaPath), ModelDTO.class);
             ProjectModel model = giskardMapper.fromDTO(loadedMeta);
-            model.setProject(project);
+            model.getProjects().add(project);
             modelRepository.save(model);
         }
     }

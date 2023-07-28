@@ -81,6 +81,7 @@ public interface GiskardMapper {
 
     @Mapping(source = "classificationLabels", target = "classificationLabels")
     @Mapping(source = "featureNames", target = "featureNames")
+    @Mapping(target = "projectIds", ignore = true)
     ModelDTO modelToModelDTO(ProjectModel model);
 
     List<DatasetDTO> datasetsToDatasetDTOs(List<Dataset> datasets);

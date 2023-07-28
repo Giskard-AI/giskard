@@ -104,14 +104,13 @@ public class DatasetsController {
     @PostMapping("project/{projectKey}/datasets")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public void createDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull DatasetDTO dto) {
-        if (datasetRepository.existsById(dto.getId())) {
-            log.info("Dataset already exists {}", dto.getId());
-            return;
-        }
+        Dataset model = datasetRepository.findById(dto.getId())
+            .orElseGet(() -> giskardMapper.fromDTO(dto));
+
         Project project = projectRepository.getOneByKey(projectKey);
-        Dataset dataset = giskardMapper.fromDTO(dto);
-        dataset.setProject(project);
-        datasetRepository.save(dataset);
+        model.getProjects().add(project);
+
+        datasetRepository.save(model);
     }
 
     @PatchMapping("/dataset/{datasetId}/name/{name}")
