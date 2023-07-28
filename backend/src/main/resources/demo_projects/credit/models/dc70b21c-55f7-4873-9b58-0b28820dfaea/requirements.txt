@@ -1,4 +1,4 @@
-mlflow==2.3.1
+mlflow==2.5.0
 cloudpickle==2.2.1
 psutil==5.9.5
 scikit-learn==1.0.2
