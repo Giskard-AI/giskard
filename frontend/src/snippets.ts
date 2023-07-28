@@ -1,28 +1,29 @@
 import {useMainStore} from "@/stores/main";
-import axios from "axios";
 import {api} from "@/api";
 import {apiURL} from "@/env";
+import { getLocalHFSpacesToken } from "@/utils";
 
 const mainStore = useMainStore();
 
-async function fetchHFToken() {
-    const isRunningOnHF = mainStore.appSettings!.isRunningOnHfSpaces;
-    if (isRunningOnHF) {
-        const res = await axios.get(`https://huggingface.co/api/spaces/${mainStore.appSettings?.hfSpaceId}/jwt`);
-        return res.data.token;
+export async function fetchHFToken() {
+    if (mainStore.appSettings!.isRunningOnHfSpaces) {
+        try {
+            const res = await api.getHuggingFaceSpacesToken(mainStore.appSettings?.hfSpaceId!!);
+            return res.data.token;
+        } catch(error) {
+            if (error.response.status == 401) {
+                console.warn("Running in a private Hugging Face space, may need an access token.")
+                return null;
+            }
+        }
     }
+    return null;
 }
 
 export async function generateGiskardClientSnippet() {
     const giskardToken = await api.getApiAccessToken();
     const isRunningOnHF = mainStore.appSettings!.isRunningOnHfSpaces;
-    let hfToken: any;
-    if (isRunningOnHF) {
-        hfToken = await api.getHuggingFaceToken(mainStore.appSettings!.hfSpaceId);
-
-        const res = await axios.get(`https://huggingface.co/api/spaces/${mainStore.appSettings?.hfSpaceId}/jwt`);
-        hfToken.value = res.data.token;
-    }
+    let hfToken: any = (getLocalHFSpacesToken() ?? await fetchHFToken());
 
     let snippet = `
 # Create a Giskard client
@@ -32,7 +33,7 @@ client = giskard.GiskardClient(
 
     if (isRunningOnHF) {
         snippet += `,
-    hf_token="${hfToken?.value}"`;
+    hf_token="${hfToken}"`;
     }
     snippet += `)
 `;
