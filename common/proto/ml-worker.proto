@@ -403,7 +403,7 @@ enum PushKind {
   Perturbation = 1;
   Contribution = 2;
   Overconfidence = 3;
-  Borderline = 4;
+  Underconfidence = 4;
 }
 
 enum CallToActionKind {
@@ -417,7 +417,7 @@ enum CallToActionKind {
   OpenDebuggerBorderline = 7;
   AddTestToCatalog = 8;
   SaveExample = 9;
-  OpenDebuggerOverconfidence = 10;
+  OpenDebuggerUnderconfidence = 10;
 }
 
 message SuggestFilterRequest {
@@ -459,6 +459,6 @@ message SuggestFilterResponse {
   optional Push perturbation = 1;
   optional Push contribution = 2;
   optional Push overconfidence = 3;
-  optional Push borderline = 4;
+  optional Push underconfidence = 4;
   optional string object_uuid = 5;
 }

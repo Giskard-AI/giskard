@@ -1,7 +1,7 @@
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 
-from ..push import BorderlinePush, OverconfidencePush
+from ..push import UnderconfidencePush, OverconfidencePush
 
 from giskard.testing.tests.calibration import _default_overconfidence_threshold
 
@@ -32,7 +32,7 @@ def create_overconfidence_push(model, ds, df):
             return res
 
 
-def create_borderline_push(model, ds, df):
+def create_underconfidence_push(model, ds, df):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         # row_slice = ds.slice(lambda x: x.loc[[idrow]], row_level=False)
         row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
@@ -44,7 +44,7 @@ def create_borderline_push(model, ds, df):
         training_label_proba = model_prediction_results.all_predictions[training_label].values[0]
 
         if diff <= 0.1:
-            return BorderlinePush(max, second, training_label, training_label_proba, row_slice)
+            return UnderconfidencePush(max, second, training_label, training_label_proba, row_slice)
 
 
 def _var(x):

@@ -83,7 +83,7 @@ class OverconfidencePush(ExamplePush):
                 {
                     "action": "Generate a unit test to check if this example has the right label",
                     "explanation": "This enables you to make sure this specific example has the right label "
-                                   "with enough confidence",
+                    "with enough confidence",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -99,10 +99,10 @@ class OverconfidencePush(ExamplePush):
         self.details = res["details"]
 
 
-class BorderlinePush(ExamplePush):
+class UnderconfidencePush(ExamplePush):
     def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
-        self._borderline()
-        self.pushkind = PushKind.Borderline
+        self._underconfidence()
+        self.pushkind = PushKind.Underconfidence
         self.max_proba = max_proba
         self.second_proba = second_proba
 
@@ -112,7 +112,7 @@ class BorderlinePush(ExamplePush):
 
         self.tests = [self._increase_proba(), self._check_if_correct]
 
-    def _borderline(self):
+    def _underconfidence(self):
         res = {
             "push_title": "This example was predicted with very low confidence",
             "details": [
@@ -127,7 +127,7 @@ class BorderlinePush(ExamplePush):
                 {
                     "action": "Generate an inconsistency test",
                     "explanation": "This may help you ensure this inconsistent pattern is not common to the "
-                                   "whole dataset",
+                    "whole dataset",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
@@ -135,7 +135,7 @@ class BorderlinePush(ExamplePush):
                     "action": "Open the debugger session on similar examples",
                     "explanation": "Debugging similar examples may help you find common patterns",
                     "button": "Open debugger",
-                    "cta": CallToActionKind.OpenDebuggerBorderline,
+                    "cta": CallToActionKind.OpenDebuggerUnderconfidence,
                 },
             ],
         }
@@ -277,7 +277,7 @@ class PerturbationPush(FeaturePush):
                 {
                     "action": "Generate a robustness test that slightly perturb this feature",
                     "explanation": "This will enable you to make sure the model is robust against small similar "
-                                   "changes",
+                    "changes",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
                 },

@@ -5,7 +5,7 @@ from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.prediction import create_underconfidence_push, create_overconfidence_push
 from giskard.slicing.slice import QueryBasedSliceFunction
 import pandas as pd
 
@@ -17,7 +17,7 @@ def test_instance_if_not_none(german_credit_model, german_credit_data):
             create_contribution_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
             create_perturbation_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
             create_overconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_borderline_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
+            create_underconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
         ]
         for push in push_list:
             if push is not None:
@@ -37,7 +37,7 @@ def test_test_function(german_credit_model, german_credit_data):
             create_contribution_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
             create_perturbation_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
             create_overconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_borderline_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
+            create_underconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
         ]
         for push in push_list:
             if push is not None:
@@ -58,7 +58,7 @@ def test_instance_if_not_none_reg(linear_regression_diabetes, diabetes_dataset_w
             create_overconfidence_push(
                 linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
             ),
-            create_borderline_push(
+            create_underconfidence_push(
                 linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
             ),
         ]
@@ -88,7 +88,7 @@ def test_test_function_reg(linear_regression_diabetes, diabetes_dataset_with_tar
             create_overconfidence_push(
                 linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
             ),
-            create_borderline_push(
+            create_underconfidence_push(
                 linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
             ),
         ]
@@ -105,7 +105,7 @@ def test_instance_if_not_none_multi(enron_model, enron_data):
             create_contribution_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
             create_perturbation_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
             create_overconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_borderline_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
+            create_underconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
         ]
         for push in push_list:
             if push is not None:
@@ -125,7 +125,7 @@ def test_test_function_multi(enron_model, enron_data):
             create_contribution_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
             create_perturbation_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
             create_overconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_borderline_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
+            create_underconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
         ]
         for push in push_list:
             if push is not None:
