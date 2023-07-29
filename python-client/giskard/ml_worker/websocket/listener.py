@@ -231,11 +231,11 @@ def extract_debug_info(request_arguments):
     template_info = " | <xxx:xxx_id>"
     info = {"suffix": "", "project_key": ""}
     for arg in request_arguments:
-        if arg.HasField("model"):
+        if arg.model:
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
             info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
-        elif arg.HasField("dataset"):
+        elif arg.dataset:
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
             info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
