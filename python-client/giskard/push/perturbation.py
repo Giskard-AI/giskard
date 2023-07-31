@@ -80,7 +80,7 @@ class Perturbation:
         if self.coltype == SupportedPerturbationType.NUMERIC:
             mad = compute_mad(self.ds.df[self.feature])
 
-            t, row_perturbed = self._num_perturb(3 * mad, self.feature, ds_slice)
+            t, row_perturbed = self._num_perturb(2 * mad, self.feature, ds_slice)
             self._generate_perturbation(ds_slice, row_perturbed)
 
             if self.passed:
