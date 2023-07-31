@@ -56,3 +56,9 @@
 :link: ../../../reference/notebooks/credit_scoring.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center>💰 Wage classification</center></h3>
+:link: ../../../reference/notebooks/wage_classification.ipynb
+:::
+:::::
