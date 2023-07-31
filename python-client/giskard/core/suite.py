@@ -3,6 +3,7 @@ import logging
 import traceback
 from dataclasses import dataclass
 from typing import List, Any, Union, Dict, Mapping, Optional, Tuple
+
 from mlflow import MlflowClient
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
@@ -162,16 +163,7 @@ class TestPartial:
 
 
 def single_binary_result(test_results: List):
-    passed = True
-    for r in test_results:
-        if type(r) == bool:
-            passed = passed and r
-        elif hasattr(r, "passed"):
-            passed = passed and r.passed
-        else:
-            logger.error(f"Invalid test result: {r.__class__.__name__}")
-            passed = False
-    return passed
+    return all(res.passed for res in test_results)
 
 
 def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
