@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -207,7 +208,7 @@ public class SuiteTestExecution extends BaseEntity {
             result = funcArgument.getStrValue();
         }
 
-        Map<String, String> args = funcArgument.getArgs().stream()
+        Map<String, String> args = funcArgument.getArgs() == null ? new HashMap<>() : funcArgument.getArgs().stream()
             .collect(Collectors.toMap(MLWorkerWSFuncArgumentDTO::getName, this::getFuncArgValueWS));
 
         Map<String, Object> json = Map.of(
