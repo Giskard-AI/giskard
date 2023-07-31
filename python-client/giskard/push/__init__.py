@@ -7,7 +7,6 @@ from giskard.models.base import BaseModel
 from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
-from giskard.testing.tests.performance import test_diff_rmse, test_f1, test_rmse
 
 
 class SupportedPerturbationType(Enum):
