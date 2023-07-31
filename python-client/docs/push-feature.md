@@ -111,8 +111,6 @@ Test description | Check if the performance of an F1-score/RMSE test is more tha
 
 ## Perturbation 
 
-- [x]
-
 Title| Description
 -- | --
 Description| Tag features that make the prediction change after a small variation
