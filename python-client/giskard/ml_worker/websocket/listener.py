@@ -138,10 +138,12 @@ def action_in_thread(callback, ml_worker, action, req):
     if rep_id:
         # Reply if there is an ID
         # TODO: multiple shot
-        logger.debug(f"[WRAPPED_CALLBACK] replying {len(info.json())} {info.json()} for {action.name}")
+        logger.debug(
+            f"[WRAPPED_CALLBACK] replying {len(info.json(by_alias=True))} {info.json(by_alias=True)} for {action.name}"
+        )
         # Message fragmentation
         FRAG_LEN = max(ml_worker.ws_max_reply_payload_size, MAX_STOMP_ML_WORKER_REPLY_SIZE)
-        payload = info.json() if info else "{}"
+        payload = info.json(by_alias=True) if info else "{}"
         frag_count = math.ceil(len(payload) / FRAG_LEN)
         for frag_i in range(frag_count):
             ml_worker.ws_conn.send(
@@ -791,14 +793,19 @@ def function_argument_to_ws(value: Dict[str, Any]):
     for v in value:
         obj = value[v]
         if isinstance(obj, Dataset):
-            funcargs = websocket.FuncArgument(name=v, dataset=websocket.ArtifactRef(project_key="test", id=str(obj.id)))
+            funcargs = websocket.FuncArgument(
+                name=v, dataset=websocket.ArtifactRef(project_key="test", id=str(obj.id)), none=False
+            )
         elif isinstance(obj, BaseModel):
-            funcargs = websocket.FuncArgument(name=v, model=websocket.ArtifactRef(project_key="test", id=str(obj.id)))
+            funcargs = websocket.FuncArgument(
+                name=v, model=websocket.ArtifactRef(project_key="test", id=str(obj.id)), none=False
+            )
         elif isinstance(obj, SlicingFunction):
             funcargs = websocket.FuncArgument(
                 name=v,
                 slicingFunction=websocket.ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
                 args=function_argument_to_ws(obj.params),
+                none=False,
             )
         #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
@@ -807,19 +814,20 @@ def function_argument_to_ws(value: Dict[str, Any]):
                 name=v,
                 transformationFunction=websocket.ArtifactRef(project_key="test", id=str(obj.meta.uuid)),
                 args=function_argument_to_ws(obj.params),
+                none=False,
             )
         #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
         #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, float):
-            funcargs = websocket.FuncArgument(name=v, float_arg=obj)
+            funcargs = websocket.FuncArgument(name=v, float=obj, none=False)
         elif isinstance(obj, int):
-            funcargs = websocket.FuncArgument(name=v, int_arg=obj)
+            funcargs = websocket.FuncArgument(name=v, int=obj, none=False)
         elif isinstance(obj, str):
-            funcargs = websocket.FuncArgument(name=v, str_arg=obj)
+            funcargs = websocket.FuncArgument(name=v, str=obj, none=False)
         elif isinstance(obj, bool):
-            funcargs = websocket.FuncArgument(name=v, bool_arg=obj)
+            funcargs = websocket.FuncArgument(name=v, bool=obj, none=False)
         elif isinstance(obj, dict):
-            funcargs = websocket.FuncArgument(name=v, kwargs=str(obj))
+            funcargs = websocket.FuncArgument(name=v, kwargs=str(obj), none=False)
         else:
             raise IllegalArgumentError("Unknown argument type")
         args.append(funcargs)
