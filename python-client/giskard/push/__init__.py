@@ -4,6 +4,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
 from giskard.models.base import BaseModel
+from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.performance import test_diff_rmse, test_f1, test_rmse
@@ -110,7 +111,7 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba(), self._check_if_correct]
+        self.tests = [self._increase_proba(), self._check_if_correct()]
 
     def _borderline(self):
         res = {
@@ -247,14 +248,15 @@ class ContributionPush(FeaturePush):
     def _test_selection(self, slicing_fn: QueryBasedSliceFunction, correct_prediction):
         if not correct_prediction:
             if self.model_type == SupportedModelTypes.REGRESSION:
-                self.tests = [test_diff_rmse(slicing_function=slicing_fn)]
+                self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
             elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-                self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
-        else:
-            if self.model_type == SupportedModelTypes.REGRESSION:
-                self.tests = [test_rmse(slicing_function=slicing_fn)]
-            elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-                self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
+                self.tests = [test_diff_f1_push(slicing_function=slicing_fn, threshold=0.5)]
+        # TODO
+        # else:
+        #     if self.model_type == SupportedModelTypes.REGRESSION:
+        #         self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
+        #     elif self.model_type == SupportedModelTypes.CLASSIFICATION:
+        #         self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
 
 
 class PerturbationPush(FeaturePush):
