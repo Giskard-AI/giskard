@@ -1,15 +1,14 @@
-import pandas as pd
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
-from .utils import LLMImportError
+import pandas as pd
 
-
-from ..decorators import detector
-from ...models.langchain import LangchainModel
 from ...datasets.base import Dataset
+from ...models.langchain import LangchainModel
+from ..decorators import detector
 from ..issues import Issue
 from ..logger import logger
+from .utils import LLMImportError
 
 
 @detector("llm_toxicity", tags=["toxicity", "llm", "dan", "generative", "text_generation"])
@@ -99,15 +98,11 @@ class LLMToxicityDetector:
 
     def _compute_toxicity_score(self, sentences: List[str]):
         try:
-            from transformers import pipeline
+            from detoxify import Detoxify
         except ImportError as err:
             raise LLMImportError() from err
 
-        model = "unitary/unbiased-toxic-roberta"
-        evaluator = pipeline("sentiment-analysis", model=model)
-        output = evaluator([s[:512] for s in sentences])
-
-        return [i["score"] if i["label"] == "toxicity" else 0 for i in output]
+        return Detoxify("unbiased").predict(list(sentences))["toxicity"]
 
 
 @dataclass

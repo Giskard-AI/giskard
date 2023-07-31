@@ -16,7 +16,7 @@ tasks {
         minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("pdm:2.7.2", "urllib3:1.26.15"))
+        pip(listOf("pdm:2.7.2", "urllib3:1.26.15", "certifi:2023.5.7"))
         environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
     }
 
@@ -45,7 +45,7 @@ tasks {
 
     create<PythonTask>("sphinx-autobuild") {
         module = "sphinx_autobuild"
-        command = "docs docs/_build/html"
+        command = "--watch giskard docs docs/_build/html"
     }
 
     create<PythonTask>("generateProto") {
