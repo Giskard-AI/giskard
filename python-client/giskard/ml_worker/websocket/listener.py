@@ -727,10 +727,10 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
         for t in tests:
             suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
 
-        is_pass, results = suite.run(**global_arguments)
+        result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result, args in results:
+        for identifier, result, args in result.results:
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
@@ -741,7 +741,7 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
 
         return websocket.TestSuite(
             is_error=False,
-            is_pass=is_pass,
+            is_pass=result.passed,
             results=identifier_single_test_results,
             logs=log_listener.close(),
         )
