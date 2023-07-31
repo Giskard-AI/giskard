@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @Getter
 @Setter
 @Builder
+@Jacksonized
 public class MLWorkerWSFuncArgumentDTO implements MLWorkerWSBaseDTO {
     private String name;
 
