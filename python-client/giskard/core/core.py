@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from ..utils.artifacts import serialize_parameter
+
 try:
     from types import NoneType
 except ImportError:
@@ -146,6 +148,7 @@ class CallableMeta(SavableMeta, ABC):
         self.module_doc = None
         self.full_name = None
         self.args = None
+
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
@@ -171,7 +174,7 @@ class CallableMeta(SavableMeta, ABC):
                     name=parameter.name,
                     type=extract_optional(parameter.annotation).__qualname__,
                     optional=parameter.default != inspect.Parameter.empty,
-                    default=None if parameter.default == inspect.Parameter.empty else parameter.default,
+                    default=serialize_parameter(parameter.default),
                     argOrder=idx,
                 )
                 for idx, parameter in enumerate(parameters.values())
