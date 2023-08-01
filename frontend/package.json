@@ -39,7 +39,7 @@
     "vue": "^2.7.0",
     "vue-class-component": "^7.2.6",
     "vue-echarts": "^6.2.3",
-    "vue-final-modal": "^2.4.3",
+    "vue-final-modal": "^4.4.5",
     "vue-moment": "^4.1.0",
     "vue-monaco": "^1.2.2",
     "vue-property-decorator": "^9.1.2",
