@@ -4,8 +4,11 @@ from mlflow import MlflowClient
 from mlflow.models.evaluation import ModelEvaluator, EvaluationResult
 from mlflow.tracking.artifact_utils import get_artifact_uri
 
-from .evaluation_artifacts import GiskardDatasetEvaluationArtifact, GiskardScanResultEvaluationArtifact, \
-    GiskardScanSummaryEvaluationArtifact
+from .evaluation_artifacts import (
+    GiskardDatasetEvaluationArtifact,
+    GiskardScanResultEvaluationArtifact,
+    GiskardScanSummaryEvaluationArtifact,
+)
 from .giskard_evaluator_utils import setup_dataset, setup_model, setup_scan
 from ...scanner.result import ScanResult
 from ...utils.analytics_collector import analytics
@@ -36,9 +39,11 @@ class GiskardEvaluator(ModelEvaluator):
                         "error": str(e),
                     },
                 )
-                raise ValueError("An error occurred while wrapping the dataset. "
-                                 "Please submit the traceback as a GitHub issue in the following "
-                                 "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
+                raise ValueError(
+                    "An error occurred while wrapping the dataset. "
+                    "Please submit the traceback as a GitHub issue in the following "
+                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                ) from e
 
     def _wrap_model(self, model, model_type, feature_names):
         try:
@@ -52,17 +57,18 @@ class GiskardEvaluator(ModelEvaluator):
                     "error": str(e),
                 },
             )
-            raise ValueError("An error occurred while wrapping the model. "
-                             "Please submit the traceback as a GitHub issue in the following "
-                             "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
+            raise ValueError(
+                "An error occurred while wrapping the model. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
 
     def _perform_scan(self, giskard_model, giskard_dataset):
         try:
             scan_results = setup_scan(giskard_model, giskard_dataset, self.evaluator_config)
 
             # log html scan result
-            scan_artifact_names = scan_results.to_mlflow(mlflow_client=self.client,
-                                                         mlflow_run_id=self.run_id)
+            scan_artifact_names = scan_results.to_mlflow(mlflow_client=self.client, mlflow_run_id=self.run_id)
             return scan_results, scan_artifact_names
         except Exception as e:
             analytics.track(
@@ -72,9 +78,11 @@ class GiskardEvaluator(ModelEvaluator):
                     "error": str(e),
                 },
             )
-            raise ValueError("An error occurred while scanning the model for vulnerabilities. "
-                             "Please submit the traceback as a GitHub issue in the following "
-                             "repository for further assistance: https://github.com/Giskard-AI/giskard.") from e
+            raise ValueError(
+                "An error occurred while scanning the model for vulnerabilities. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
 
     def _generate_test_suite(self, scan_results):
         try:
@@ -100,7 +108,7 @@ class GiskardEvaluator(ModelEvaluator):
             )
 
     def evaluate(
-            self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
+        self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
     ) -> EvaluationResult:
         self.client = MlflowClient()
         self.run_id = run_id
@@ -113,17 +121,13 @@ class GiskardEvaluator(ModelEvaluator):
         # Wrapping dataset
         giskard_dataset, dataset_artifact_name = self._wrap_dataset(dataset)
         artifacts["giskard_dataset"] = GiskardDatasetEvaluationArtifact(
-            uri=get_artifact_uri(self.run_id, dataset_artifact_name),
-            content=giskard_dataset.df)
+            uri=get_artifact_uri(self.run_id, dataset_artifact_name), content=giskard_dataset.df
+        )
         properties.update({"dataset_id": str(giskard_dataset.id)} if giskard_dataset is not None else "none")
 
         # Wrapping model
-        giskard_model = self._wrap_model(model,
-                                         model_type=model_type,
-                                         feature_names=dataset.feature_names)
-        properties.update(
-            {"model_class": fullname(giskard_model),
-             "model_inner_class": fullname(giskard_model.model)})
+        giskard_model = self._wrap_model(model, model_type=model_type, feature_names=dataset.feature_names)
+        properties.update({"model_class": fullname(giskard_model), "model_inner_class": fullname(giskard_model.model)})
         analytics.track("mlflow_integration", properties)
 
         # Perform scan
@@ -131,17 +135,19 @@ class GiskardEvaluator(ModelEvaluator):
         scan_results_artifact_name, scan_summary_artifact_name = scan_artifact_names[0], scan_artifact_names[1]
         scan_summary = ScanResult.get_scan_summary_for_mlflow(scan_results)
         artifacts["giskard_scan_results"] = GiskardScanResultEvaluationArtifact(
-            uri=get_artifact_uri(self.run_id, scan_results_artifact_name),
-            content=scan_results)
+            uri=get_artifact_uri(self.run_id, scan_results_artifact_name), content=scan_results
+        )
         if scan_summary_artifact_name:
             artifacts["giskard_scan_summary"] = GiskardScanSummaryEvaluationArtifact(
-                uri=get_artifact_uri(self.run_id, scan_summary_artifact_name),
-                content=scan_summary)
+                uri=get_artifact_uri(self.run_id, scan_summary_artifact_name), content=scan_summary
+            )
 
         # Generate test suite
         _, metrics = self._generate_test_suite(scan_results)
 
-        print("The evaluation with giskard ran successfully! You can now visualise the results by running 'mlflow ui' "
-              "in the terminal.")
+        print(
+            "The evaluation with giskard ran successfully! You can now visualise the results by running 'mlflow ui' "
+            "in the terminal."
+        )
 
         return EvaluationResult(metrics=metrics, artifacts=artifacts)

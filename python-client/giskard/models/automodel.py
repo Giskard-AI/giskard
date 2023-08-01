@@ -18,7 +18,6 @@ _ml_libraries = {
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
     ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
-    ("giskard.models.pyfunc", "PyFuncModel"): [("mlflow.pyfunc", "PyFuncModel")]
 }
 
 
@@ -87,16 +86,16 @@ class Model(CloudpickleSerializableModel):
     should_save_model_class = True
 
     def __new__(
-            cls,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        cls,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ):
         """
         Used for dynamical inheritance and returns one of the following class instances:
