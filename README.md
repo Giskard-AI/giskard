@@ -32,17 +32,17 @@
 <br />
 
 ## Table of contents
-1. [What is Giskard?](#what-is-giskard)
-2. [Getting started](#getting-started)
-  * [Installation](#installation)
-  * [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
-  * [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
-  * [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
-3. [How to contribute](#how-to-contribute)
-4. [Like what we're doing?](#like-what-were-doing)
+* 🐢 **[Why Giskard?](#why-giskard)**
+* 📗 **[Getting started](#getting-started)**
+  - [Install our Python library and testing server](#installation)
+  - [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
+  - [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
+  - [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
+* 👋 **[How to contribute](#how-to-contribute)**
+* 💖 **[Like what we're doing?](#like-what-were-doing)**
 
 
-## What is Giskard?
+## Why Giskard?
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
@@ -57,7 +57,7 @@ Testing Machine Learning applications can be tedious. Since ML models depend on 
 
 At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
 
-- **Scan your model to find dozens of vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
+- **Scan your model to find dozens of hidden vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 
 <p align="center">
   <img src="readme/scan_example.png" alt="Scan Example" width="700px">
