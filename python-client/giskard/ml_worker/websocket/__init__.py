@@ -295,14 +295,6 @@ class SuiteTestArgument(BaseModel):
     arguments: Optional[List[FuncArgument]] = None
 
 
-class TestFunctionArgument(BaseModel):
-    name: str
-    type: str
-    optional: bool
-    default: str
-    argOrder: int
-
-
 class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
