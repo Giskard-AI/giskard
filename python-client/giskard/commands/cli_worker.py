@@ -127,7 +127,7 @@ def initialize_hf_token(hf_token, is_server):
     return hf_token
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token):
+def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
     start_msg = "Starting ML Worker"
@@ -202,7 +202,13 @@ def stop_command(is_server, url, stop_all):
 @common_options
 @start_stop_options
 @click.option("--api-key", "-k", "api_key", help="Giskard server API key")
-def restart_command(is_server, url, api_key):
+@click.option(
+    "--token",
+    "-t",
+    "hf_token",
+    help="Access token for Giskard hosted in a private Hugging Face Spaces",
+)
+def restart_command(is_server, url, api_key, hf_token):
     analytics.track(
         "giskard-worker:restart",
         {"is_server": is_server, "url": anonymize(url)},
@@ -210,7 +216,7 @@ def restart_command(is_server, url, api_key):
     api_key = initialize_api_key(api_key, is_server)
 
     _find_and_stop(is_server, url)
-    _start_command(is_server, url, api_key, is_daemon=True)
+    _start_command(is_server, url, api_key, is_daemon=True, hf_token=hf_token)
 
 
 def _stop_pid_fname(pid_fname):
