@@ -31,35 +31,36 @@ class TestFunctionArgument(BaseModel):
     argOrder: int
 
 
+# CallableMeta shows that all fields can be none
 class FunctionMeta(BaseModel):
     uuid: str
-    name: str
-    displayName: str
+    name: Optional[str] = None
+    displayName: Optional[str] = None
     version: Optional[int] = None
-    module: str
-    doc: str
-    moduleDoc: Optional[str] = None
-    args: Optional[List[TestFunctionArgument]] = None
-    tags: Optional[List[str]] = None
-    code: str
-    type: str
-
-
-class DatasetProcessFunctionMeta(BaseModel):
-    uuid: str
-    name: str
-    displayName: str
-    version: Optional[int] = None  # For backward compatibility
-    module: str
+    module: Optional[str] = None
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
-    code: str
-    type: str
-    cellLevel: bool
+    code: Optional[str] = None
+    type: Optional[str] = None
+
+
+class DatasetProcessFunctionMeta(BaseModel):
+    uuid: str
+    name: Optional[str] = None
+    displayName: Optional[str] = None
+    version: Optional[int] = None  # For backward compatibility
+    module: Optional[str] = None
+    doc: Optional[str] = None
+    moduleDoc: Optional[str] = None
+    args: Optional[List[TestFunctionArgument]] = None
+    tags: Optional[List[str]] = None
+    code: Optional[str] = None
+    type: Optional[str] = None
+    cellLevel: Optional[bool] = None
     columnType: Optional[str] = None
-    processType: str
+    processType: Optional[str] = None
 
 
 class Catalog(WorkerReply):
