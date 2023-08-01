@@ -317,7 +317,7 @@ def map_dataset_process_function_meta_ws(callable_type):
 
 
 @websocket_actor(MLWorkerAction.getInfo)
-def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kwargs) -> dict:
+def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
 
     installed_packages = (
@@ -345,7 +345,7 @@ def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kw
 
 
 @websocket_actor(MLWorkerAction.stopWorker)
-def on_ml_worker_stop_worker(ml_worker: MLWorker, *args, **kwargs):
+def on_ml_worker_stop_worker(ml_worker: MLWorker, *args, **kwargs) -> websocket.Empty:
     # Stop the server properly after sending disconnect
     logger.info("Stopping ML Worker")
     ml_worker.ws_stopping = True
@@ -576,7 +576,9 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
 
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
-def dataset_processing(ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs):
+def dataset_processing(
+    ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs
+) -> websocket.DatasetProcessing:
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
     for function in params.functions:
@@ -681,7 +683,9 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
 
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
-def run_ad_hoc_test(ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs):
+def run_ad_hoc_test(
+    ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs
+) -> websocket.RunAdHocTest:
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
     arguments = parse_function_arguments(ml_worker, params.arguments)
@@ -701,7 +705,7 @@ def run_ad_hoc_test(ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *a
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args, **kwargs):
+def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args, **kwargs) -> websocket.TestSuite:
     log_listener = LogListener()
     try:
         tests = [
