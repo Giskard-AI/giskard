@@ -73,7 +73,7 @@ class DataRow(BaseModel):
 
 
 class DataFrame(BaseModel):
-    rows: Optional[List[DataRow]] = None
+    rows: List[DataRow]
 
 
 class DatasetRowModificationResult(BaseModel):
