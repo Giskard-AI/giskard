@@ -36,8 +36,8 @@ def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
     if module == "mlflow.langchain":
         flavor = importlib.import_module(module)
         return flavor.load_model(pyfunc_model.metadata.get_model_info().model_uri)
-    else:
-        return pyfunc_model.predict
+
+    return pyfunc_model.predict
 
 
 def process_text(some_string):
@@ -68,12 +68,12 @@ def setup_dataset(dataset, evaluator_config):
             dataset_config["name"] = dataset.name
 
         return Dataset(df=data, **dataset_config)
-    else:
-        raise ValueError(
-            f"The provided parameters {config_set - sign_set} in dataset_config are not valid. "
-            "Make sure to pass only the attributes of giskard.Dataset "
-            "(see https://docs.giskard.ai/en/latest/reference/datasets)."
-        )
+
+    raise ValueError(
+        f"The provided parameters {config_set - sign_set} in dataset_config are not valid. "
+        "Make sure to pass only the attributes of giskard.Dataset "
+        "(see https://docs.giskard.ai/en/latest/reference/datasets)."
+    )
 
 
 def setup_model(model, model_type, feature_names, evaluator_config):
@@ -100,12 +100,12 @@ def setup_model(model, model_type, feature_names, evaluator_config):
             model_config["feature_names"] = feature_names
 
         return Model(model=model_to_be_wrapped, **model_config)
-    else:
-        raise ValueError(
-            f"The provided parameters {config_set - sign_set} in model_config are not valid. "
-            "Make sure to pass only the attributes of giskard.Model "
-            "(see https://docs.giskard.ai/en/latest/reference/models)."
-        )
+
+    raise ValueError(
+        f"The provided parameters {config_set - sign_set} in model_config are not valid. "
+        "Make sure to pass only the attributes of giskard.Model "
+        "(see https://docs.giskard.ai/en/latest/reference/models)."
+    )
 
 
 def setup_scan(giskard_model, giskard_dataset, evaluator_config):
@@ -121,8 +121,8 @@ def setup_scan(giskard_model, giskard_dataset, evaluator_config):
     sign_set = set(sign.parameters.keys())
     if config_set.issubset(sign_set):
         return scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags, **scan_config)
-    else:
-        raise ValueError(
-            f"The provided parameters {config_set - sign_set} in scan_config are not valid. "
-            "Make sure to pass only the attributes of giskard.scan."
-        )
+
+    raise ValueError(
+        f"The provided parameters {config_set - sign_set} in scan_config are not valid. "
+        "Make sure to pass only the attributes of giskard.scan."
+    )
