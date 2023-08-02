@@ -97,7 +97,7 @@ public class TestSuiteController {
     }
 
     @PostMapping("project/{projectId}/suite/{suiteId}/test")
-    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId(#projectId)")
     @Transactional
     public TestSuiteDTO addTestToSuite(@PathVariable("projectId") long projectId,
                                        @PathVariable("suiteId") long suiteId,
@@ -128,7 +128,7 @@ public class TestSuiteController {
 
 
     @PutMapping("project/{projectId}/suite/{suiteId}/test/{testId}/inputs")
-    @PreAuthorize("@permissionEvaluator.canWriteProject(#projectId)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId(#projectId)")
     @Transactional
     public TestSuiteDTO updateTestInputs(@PathVariable("projectId") long projectId,
                                          @PathVariable("suiteId") long suiteId,
