@@ -62,21 +62,23 @@ export const useUserStore = defineStore('user', {
     },
     async checkLoggedIn() {
       const mainStore = useMainStore();
-      if (mainStore.authAvailable && !this.isLoggedIn) {
-        let token = this.token || getLocalToken();
-        if (token) {
-          const response = await api.getUserAndAppSettings();
-          this.isLoggedIn = true;
-          this.userProfile = response.user;
-          mainStore.setAppSettings(response.app);
-        } else {
-          this.removeLogin();
-        }
-      } else if (!this.isLoggedIn) {
+
+      const fetchUserAndAppSettings = async () => {
         const response = await api.getUserAndAppSettings();
         this.isLoggedIn = true;
         this.userProfile = response.user;
         mainStore.setAppSettings(response.app);
+      };
+
+      if (mainStore.authAvailable && !this.isLoggedIn) {
+        let token = this.token || getLocalToken();
+        if (token) {
+          await fetchUserAndAppSettings();
+        } else {
+          this.removeLogin();
+        }
+      } else if (!this.isLoggedIn) {
+        await fetchUserAndAppSettings();
       }
     },
     removeLogin() {
