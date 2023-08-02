@@ -26,17 +26,6 @@ public class PermissionEvaluator {
         return login.equals(SecurityUtils.getCurrentAuthenticatedUserLogin());
     }
 
-    /**
-     * Determine if a user can write a project, i.e. is admin or is project's owner
-     *
-     * @param id id of the project
-     * @return true if the user can write
-     */
-    public boolean canWriteProject(@NotNull Long id) {
-        Project project = this.projectRepository.getMandatoryById(id);
-
-        return isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
-    }
 
     /**
      * Determine if the current user is a guest of a project and is granted any of the required roles
@@ -51,9 +40,40 @@ public class PermissionEvaluator {
         return SecurityUtils.hasCurrentUserAnyOfAuthorities(roles) && isCurrentUserGuest(project);
     }
 
+    /**
+     * Determine if a user can write a project, i.e. is admin or is project's owner
+     *
+     * @param project project to check
+     * @return true if the user can write
+     */
+    public boolean canWriteProject(@NotNull Project project) {
+        return (isCurrentUserGuest(project) && this.canWrite()) || isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin();
+    }
+
+    /**
+     * Determine if a user can write a project, i.e. is admin or is project's owner
+     *
+     * @param id id of the project
+     * @return true if the user can write
+     */
+    public boolean canWriteProjectId(@NotNull Long id) {
+        Project project = this.projectRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, id));
+
+        return canWriteProject(project);
+    }
+
+    /**
+     * Determine if a user can write a project, i.e. is admin or is project's owner
+     *
+     * @param projectKey key of the project
+     * @return true if the user can write
+     */
     public boolean canWriteProjectKey(@NotNull String projectKey) {
-        Project project = this.projectRepository.findOneByKey(projectKey).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
-        return (isCurrentUser(project.getOwner().getLogin()) || SecurityUtils.isCurrentUserAdmin());
+        Project project = this.projectRepository.findOneByKey(projectKey)
+            .orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, projectKey));
+
+        return canWriteProject(project);
     }
 
     /**
@@ -87,7 +107,7 @@ public class PermissionEvaluator {
     }
 
     public void validateCanWriteProject(@NotNull Long id) {
-        if (!canWriteProject(id)) {
+        if (!canWriteProjectId(id)) {
             throw new AccessDeniedException("Access denied to project id " + id);
         }
     }
