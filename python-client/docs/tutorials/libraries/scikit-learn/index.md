@@ -44,9 +44,3 @@
 :link: ../../../reference/notebooks/wage_classification.ipynb
 :::
 :::::
-
-:::::{grid-item}
-:::{card} <h3><center>💸 Insurance charges prediction</center></h3>
-:link: ../../../reference/notebooks/insurance_prediction_sklearn.ipynb
-:::
-:::::
