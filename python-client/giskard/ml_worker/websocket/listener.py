@@ -517,7 +517,7 @@ def explain_text_ws(ml_worker: MLWorker, params: websocket.ExplainTextParam, *ar
             str(k): websocket.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
             for k in map_features_weight
         },
-        words=list_words,
+        words=list(list_words),
     )
 
 
