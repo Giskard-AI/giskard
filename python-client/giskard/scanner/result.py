@@ -4,6 +4,7 @@ import pandas as pd
 from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
+from giskard.integrations.wandb.wandb_utils import wandb_run
 
 
 class ScanResult:
@@ -92,14 +93,20 @@ class ScanResult:
         results_df.metric = results_df.metric.replace("=.*", "", regex=True)
         return results_df
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None, summary: bool = True,
-                  model_artifact_path: str = ""):
+    def to_mlflow(
+        self,
+        mlflow_client: MlflowClient = None,
+        mlflow_run_id: str = None,
+        summary: bool = True,
+        model_artifact_path: str = "",
+    ):
         results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
 
-        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path + "-",
-                                         suffix=".html") as f:
+        with tempfile.NamedTemporaryFile(
+            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html"
+        ) as f:
             scan_results_local_path = f.name
             scan_results_artifact_name = scan_results_local_path.split("/")[-1]
             scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
@@ -112,6 +119,14 @@ class ScanResult:
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
-                    mlflow_client.log_table(mlflow_run_id, results_df,
-                                            artifact_file=scan_summary_artifact_name)
+                    mlflow_client.log_table(mlflow_run_id, results_df, artifact_file=scan_summary_artifact_name)
         return scan_results_artifact_name, scan_summary_artifact_name
+
+    def to_wandb(self, **kwargs):
+        with wandb_run(**kwargs) as run:
+            import wandb  # noqa library import already checked in wandb_run
+
+            with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
+                self.to_html(filename=f.name)
+                wandb_artifact_name = f.name.split("/")[-1].split(".html")[0]
+                run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})
