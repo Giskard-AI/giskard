@@ -100,7 +100,7 @@ class PermissionTest {
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
     void canWriteProjectADMIN() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -110,7 +110,7 @@ class PermissionTest {
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
     void canWriteProjectAITESTER() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -120,7 +120,7 @@ class PermissionTest {
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
     void canWriteProjectAICREATOR() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
 
@@ -131,7 +131,7 @@ class PermissionTest {
     @WithMockUser(username = ADMIN_KEY, authorities = AuthoritiesConstants.ADMIN)
     void canWriteOtherProjectADMIN() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -141,7 +141,7 @@ class PermissionTest {
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
     void canWriteOtherProjectAITESTER() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isFalse();
     }
 
     /**
@@ -151,7 +151,7 @@ class PermissionTest {
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
     void canWriteOtherProjectAICREATOR() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isFalse();
     }
 
 
@@ -172,7 +172,7 @@ class PermissionTest {
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
     void canReadProjectAICREATOR() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -182,7 +182,7 @@ class PermissionTest {
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
     void canReadProjectAITESTER() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_TESTER_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -202,7 +202,7 @@ class PermissionTest {
     @WithMockUser(username = AI_CREATOR_KEY, authorities = AuthoritiesConstants.AICREATOR)
     void canReadAnotherProjectAICREATOR() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(AI_CREATOR_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isTrue();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isTrue();
     }
 
     /**
@@ -212,7 +212,7 @@ class PermissionTest {
     @WithMockUser(username = AI_TESTER_KEY, authorities = AuthoritiesConstants.AITESTER)
     void canReadAnotherProjectAITESTER() {
         Project project = projectRepository.getOneByName(initService.getProjectByCreatorLogin(ADMIN_KEY));
-        assertThat(permissionEvaluator.canWriteProject(project.getId())).isFalse();
+        assertThat(permissionEvaluator.canWriteProjectId(project.getId())).isFalse();
     }
 
     /**
