@@ -147,7 +147,6 @@ class ExplainTextParam(BaseModel):
     feature_name: str
     columns: Dict[str, str]
     column_types: Dict[str, str]
-    n_samples: int
 
 
 class GeneratedTestInput(BaseModel):

@@ -20,7 +20,4 @@ public class MLWorkerWSExplainTextParamDTO implements MLWorkerWSBaseDTO {
 
     @JsonProperty("column_types")
     private Map<String, String> columnTypes;
-
-    @JsonProperty("n_samples")
-    private Integer nSamples;
 }

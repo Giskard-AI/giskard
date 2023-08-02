@@ -501,7 +501,6 @@ def explain_ws(ml_worker: MLWorker, params: websocket.ExplainParam, *args, **kwa
 
 @websocket_actor(MLWorkerAction.explainText)
 def explain_text_ws(ml_worker: MLWorker, params: websocket.ExplainTextParam, *args, **kwargs) -> websocket.ExplainText:
-    n_samples = 500 if params.n_samples <= 0 else params.n_samples
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     text_column = params.feature_name
 
@@ -511,7 +510,7 @@ def explain_text_ws(ml_worker: MLWorker, params: websocket.ExplainTextParam, *ar
     input_df = pd.DataFrame({k: [v] for k, v in params.columns.items()})
     if model.meta.feature_names:
         input_df = input_df[model.meta.feature_names]
-    (list_words, list_weights) = explain_text(model, input_df, text_column, text_document, n_samples)
+    (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
     map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
     return websocket.ExplainText(
         weights={
