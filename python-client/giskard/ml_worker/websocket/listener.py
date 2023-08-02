@@ -733,12 +733,12 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result, args in suite_result.results:
+        for identifier, result, arguments in suite_result.results:
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
                     result=map_result_to_single_test_result_ws(result),
-                    arguments=function_argument_to_ws(args),
+                    arguments=function_argument_to_ws(arguments),
                 )
             )
 
