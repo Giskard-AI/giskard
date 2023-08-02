@@ -128,12 +128,12 @@ class CallableMeta(SavableMeta, ABC):
     args: Dict[str, FunctionArgument]
 
     def __init__(
-        self,
-        callable_obj: Union[Callable, Type] = None,
-        name: Optional[str] = None,
-        tags: List[str] = None,
-        version: Optional[int] = None,
-        type: str = None,
+            self,
+            callable_obj: Union[Callable, Type] = None,
+            name: Optional[str] = None,
+            tags: List[str] = None,
+            version: Optional[int] = None,
+            type: str = None,
     ):
         self.version = version
         self.type = type
@@ -273,10 +273,48 @@ def __repr__(self) -> str:
 
 
 class TestFunctionMeta(CallableMeta):
+    debug_description: str
+
+    def __init__(self, callable_obj: Union[Callable, Type] = None, name: Optional[str] = None, tags: List[str] = None,
+                 debug_description: str = None,
+                 version: Optional[int] = None, type: str = None):
+        super().__init__(callable_obj, name, tags, version, type)
+        self.debug_description = debug_description
+
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
 
         return {p.name: p for p in parameters}
+
+    def to_json(self):
+        return {
+            "uuid": self.uuid,
+            "name": self.name,
+            "display_name": self.display_name,
+            "module": self.module,
+            "doc": self.doc,
+            "module_doc": self.module_doc,
+            "code": self.code,
+            "tags": self.tags,
+            "debug_description": self.debug_description,
+            "type": self.type,
+            "args": [
+                {
+                    "name": arg.name,
+                    "type": arg.type,
+                    "default": arg.default,
+                    "optional": arg.optional,
+                    "argOrder": arg.argOrder,
+                }
+                for arg in self.args.values()
+            ]
+            if self.args
+            else None,
+        }
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.debug_description = json["debug_description"]
 
 
 class DatasetProcessFunctionType(Enum):
@@ -291,15 +329,15 @@ class DatasetProcessFunctionMeta(CallableMeta):
     clauses: Optional[List[Dict[str, Any]]]
 
     def __init__(
-        self,
-        callable_obj: Union[Callable, Type] = None,
-        name: Optional[str] = None,
-        tags: List[str] = None,
-        version: Optional[int] = None,
-        type: str = None,
-        process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
-        cell_level: bool = False,
-        clauses: Optional[List[Dict[str, Any]]] = None,
+            self,
+            callable_obj: Union[Callable, Type] = None,
+            name: Optional[str] = None,
+            tags: List[str] = None,
+            version: Optional[int] = None,
+            type: str = None,
+            process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
+            cell_level: bool = False,
+            clauses: Optional[List[Dict[str, Any]]] = None,
     ):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
