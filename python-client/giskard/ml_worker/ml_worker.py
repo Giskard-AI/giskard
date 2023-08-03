@@ -10,6 +10,10 @@ from pydantic import AnyHttpUrl
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.settings import settings
+import giskard
+
+from websocket._exceptions import WebSocketException, WebSocketBadStatusException
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,28 +105,36 @@ class MLWorker:
         if self.ws_stopping:
             return
 
-        if not is_server:
-            # External ML Worker: use jwt token
-            # raise ConnectFailedException
-            self.ws_conn.connect(
-                with_connect_command=True,
-                wait=False,
-                headers={
-                    "jwt": self.client.session.auth.token,
-                },
-            )
-        else:
-            # Internal ML Worker
-            internal_ml_worker_token = secrets.token_hex(16)
-            with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
-                f.write(internal_ml_worker_token)
-            self.ws_conn.connect(
-                with_connect_command=True,
-                wait=False,
-                headers={
-                    "token": internal_ml_worker_token,
-                },
-            )
+        try:
+            if not is_server:
+                # External ML Worker: use jwt token
+                # raise ConnectFailedException
+                self.ws_conn.connect(
+                    with_connect_command=True,
+                    wait=False,
+                    headers={
+                        "jwt": self.client.session.auth.token,
+                    },
+                )
+            else:
+                # Internal ML Worker
+                internal_ml_worker_token = secrets.token_hex(16)
+                with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
+                    f.write(internal_ml_worker_token)
+                self.ws_conn.connect(
+                    with_connect_command=True,
+                    wait=False,
+                    headers={
+                        "token": internal_ml_worker_token,
+                    },
+                )
+        except (WebSocketException, WebSocketBadStatusException) as e:
+            logger.warn(f"Connection to Giskard Backend failed: {e.__class__.__name__}")
+            if isinstance(e, WebSocketBadStatusException) and e.status_code == 404:
+                # Backend may need upgrade or private HF Spaces
+                logger.error(f"Please make sure that the version of Giskard server is above '{giskard.__version__}'")
+                # TODO: Update instructions
+                self.stop()
 
     def is_remote_worker(self):
         return self.ml_worker_id is not INTERNAL_WORKER_ID

@@ -40,6 +40,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     public static final String WEBSOCKET_ENDPOINT = "/websocket";
 
+    // Another endpoint is needed to identify the previous version of Giskard server
+    public static final String MLWORKER_WEBSOCKET_ENDPOINT = "/ml-worker";
+
     /**
      * For some reason when running on HuggingFace the connection header is set replacement "UPGRADE" instead of "Upgrade"
      * it causes websocket handshake replacement fail. This filter fixes the header.
@@ -63,7 +66,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 @Override
                 public Enumeration<String> getHeaders(String name) {
                     String nameLowerCase = name.toLowerCase();
-                    if (WEBSOCKET_ENDPOINT.equals(request.getServletPath()) &&
+                    if ((WEBSOCKET_ENDPOINT.equals(request.getServletPath())  ||
+                        MLWORKER_WEBSOCKET_ENDPOINT.equals(request.getServletPath())) &&
                         HEADER_REPLACEMENTS.containsKey(nameLowerCase) &&
                         HEADER_REPLACEMENTS.get(nameLowerCase).original.equals(super.getHeaders(nameLowerCase).nextElement())) {
 
@@ -77,7 +81,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 @Override
                 public String getHeader(String name) {
                     String nameLowerCase = name.toLowerCase();
-                    if (WEBSOCKET_ENDPOINT.equals(request.getServletPath()) &&
+                    if ((WEBSOCKET_ENDPOINT.equals(request.getServletPath()) ||
+                        MLWORKER_WEBSOCKET_ENDPOINT.equals(request.getServletPath())) &&
                         HEADER_REPLACEMENTS.containsKey(nameLowerCase) &&
                         HEADER_REPLACEMENTS.get(nameLowerCase).original.equals(super.getHeader(name))) {
 
@@ -122,6 +127,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         StompWebSocketEndpointRegistration endpoint = registry.addEndpoint(WEBSOCKET_ENDPOINT);
         if (!CollectionUtils.isEmpty(allowedOrigins)) {
             endpoint.setAllowedOrigins(allowedOrigins.toArray(String[]::new));
+        }
+        StompWebSocketEndpointRegistration mlWorkerEndpoint = registry.addEndpoint(MLWORKER_WEBSOCKET_ENDPOINT);
+        if (!CollectionUtils.isEmpty(allowedOrigins)) {
+            mlWorkerEndpoint.setAllowedOrigins(allowedOrigins.toArray(String[]::new));
         }
     }
 }
