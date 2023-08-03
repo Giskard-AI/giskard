@@ -287,29 +287,10 @@ class TestFunctionMeta(CallableMeta):
         return {p.name: p for p in parameters}
 
     def to_json(self):
+        json = super().to_json()
         return {
-            "uuid": self.uuid,
-            "name": self.name,
-            "display_name": self.display_name,
-            "module": self.module,
-            "doc": self.doc,
-            "module_doc": self.module_doc,
-            "code": self.code,
-            "tags": self.tags,
+            **json,
             "debug_description": self.debug_description,
-            "type": self.type,
-            "args": [
-                {
-                    "name": arg.name,
-                    "type": arg.type,
-                    "default": arg.default,
-                    "optional": arg.optional,
-                    "argOrder": arg.argOrder,
-                }
-                for arg in self.args.values()
-            ]
-            if self.args
-            else None,
         }
 
     def init_from_json(self, json: Dict[str, Any]):
