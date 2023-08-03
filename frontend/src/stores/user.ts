@@ -71,8 +71,8 @@ export const useUserStore = defineStore('user', {
       };
 
       if (mainStore.authAvailable && !this.isLoggedIn) {
-        let token = this.token || getLocalToken();
-        if (token) {
+        this.token = this.token || getLocalToken() || '';
+        if (this.token) {
           await fetchUserAndAppSettings();
         } else {
           this.removeLogin();
