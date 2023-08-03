@@ -267,16 +267,6 @@ function isFeatureEditable(featureName: string) {
   return props.model.featureNames.includes(featureName)
 }
 
-// async functiononValuePerturbation(featureMeta) {
-//   mixpanel.track("Feature perturbation", {
-//     columnType: featureMeta.type,
-//     featureName: anonymize(featureMeta.name),
-//     modelId: props.model.id,
-//     datasetId: props.dataset.id
-//   })
-//   emit('update:inputData', props.inputData)
-// }
-
 async function loadMetaData() {
   featuresToView.value = inputMetaData.value.map(e => e.name)
 }

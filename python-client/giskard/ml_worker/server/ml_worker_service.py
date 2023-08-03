@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 import os
 import platform
 import posixpath
@@ -14,6 +13,7 @@ from typing import Dict, Any
 
 import google
 import grpc
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -361,10 +361,10 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             for t in tests:
                 suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
 
-            result = suite.run(**global_arguments)
+            suite_result = suite.run(**global_arguments)
 
             identifier_single_test_results = []
-            for identifier, result, args in result.results:
+            for identifier, result, args in suite_result.results:
                 identifier_single_test_results.append(
                     ml_worker_pb2.IdentifierSingleTestResult(
                         id=identifier,
@@ -375,7 +375,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
             return ml_worker_pb2.TestSuiteResultMessage(
                 is_error=False,
-                is_pass=result.passed,
+                is_pass=suite_result.passed,
                 results=identifier_single_test_results,
                 logs=log_listener.close(),
             )
