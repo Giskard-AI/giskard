@@ -108,7 +108,7 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba(), self._check_if_correct]
+        self.tests = [self._increase_proba(), self._check_if_correct()]
 
     def _borderline(self):
         res = {
