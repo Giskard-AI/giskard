@@ -31,6 +31,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.integrations.wandb.wandb_utils import wandb_run
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
@@ -239,7 +240,7 @@ class Dataset(ColumnMetadataMixin):
         return self
 
     def add_transformation_function(
-        self, transformation_function: TransformationFunction
+            self, transformation_function: TransformationFunction
     ):
         """
         Add a transformation function to the data processor's list of steps.
@@ -332,14 +333,14 @@ class Dataset(ColumnMetadataMixin):
 
         return self.data_processor.add_step(slicing_function).apply(
             self, apply_only_last=True
-        , get_mask=get_mask)
+            , get_mask=get_mask)
 
     @configured_validate_arguments
     def transform(
             self,
             transformation_function: Union[
-            TransformationFunction, TransformationFunctionType
-        ],
+                TransformationFunction, TransformationFunctionType
+            ],
             row_level: bool = True,
             cell_level=False,
             column_name: Optional[str] = None,
@@ -382,7 +383,7 @@ class Dataset(ColumnMetadataMixin):
 
         assert (
                 not transformation_function.cell_level
-            or "column_name" in transformation_function.params
+                or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(
             self, apply_only_last=True
@@ -398,10 +399,10 @@ class Dataset(ColumnMetadataMixin):
         return self.data_processor.apply(self)
 
     def _infer_column_types(
-        self,
-        column_types: Optional[Dict[str, str]],
-        cat_columns: Optional[List[str]],
-        validation: bool = True,
+            self,
+            column_types: Optional[Dict[str, str]],
+            cat_columns: Optional[List[str]],
+            validation: bool = True,
     ):
         """
         This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
@@ -561,7 +562,7 @@ class Dataset(ColumnMetadataMixin):
 
     @classmethod
     def download(
-        cls, client: GiskardClient, project_key, dataset_id, sample: bool = False
+            cls, client: GiskardClient, project_key, dataset_id, sample: bool = False
     ):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
@@ -579,11 +580,11 @@ class Dataset(ColumnMetadataMixin):
             Dataset: A Dataset object that represents the downloaded dataset.
         """
         local_dir = (
-            settings.home_dir
-            / settings.cache_dir
-            / project_key
-            / "datasets"
-            / dataset_id
+                settings.home_dir
+                / settings.cache_dir
+                / project_key
+                / "datasets"
+                / dataset_id
         )
 
         if client is None:
@@ -635,7 +636,7 @@ class Dataset(ColumnMetadataMixin):
 
     def save(self, local_path: Path, dataset_id):
         with open(local_path / "data.csv.zst", "wb") as f, open(
-            local_path / "data.sample.csv.zst", "wb"
+                local_path / "data.sample.csv.zst", "wb"
         ) as f_sample:
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
@@ -732,6 +733,13 @@ class Dataset(ColumnMetadataMixin):
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_artifact(mlflow_run_id, local_path=local_path)
         return artifact_name
+
+    def to_wandb(self, **kwargs) -> None:
+        """Log dataset to the WandB run in a table format."""
+        with wandb_run(**kwargs) as run:
+            import wandb
+            dataset_table = wandb.Table(dataframe=self.df)
+            run.log({"dataset": dataset_table})
 
 
 def _cast_to_list_like(object):
