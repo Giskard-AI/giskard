@@ -11,6 +11,6 @@ import lombok.EqualsAndHashCode;
 @AllArgsConstructor
 @UIModel
 public class TestFunctionDTO extends CallableDTO {
-    @JsonAlias("debug_description")
+    //@JsonAlias("debug_description")
     private String debugDescription;
 }
