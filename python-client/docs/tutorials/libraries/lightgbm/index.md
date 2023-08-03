@@ -8,3 +8,9 @@
 :link: ../../../reference/notebooks/ieee_fraud_detection_adversarial_validation.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center>💸 Insurance charges prediction</center></h3>
+:link: ../../../reference/notebooks/insurance_prediction_lgbm.ipynb
+:::
+:::::
