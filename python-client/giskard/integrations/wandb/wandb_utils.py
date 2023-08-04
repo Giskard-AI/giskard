@@ -1,5 +1,5 @@
 import contextlib
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Generator
 
 try:
     import wandb  # noqa
@@ -9,7 +9,7 @@ except ImportError as e:
 
 
 @contextlib.contextmanager
-def wandb_run(project: Optional[str] = None, **kwargs) -> Run:
+def wandb_run(project: Optional[str] = None, **kwargs) -> Generator[Run, None, None]:
     wandb.run = wandb.run or wandb.init(project=project or "giskard", **kwargs)
     wandb.run._label(repo="Giskard")  # noqa
     yield wandb.run
