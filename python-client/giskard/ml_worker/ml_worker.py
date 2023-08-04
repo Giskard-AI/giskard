@@ -130,10 +130,18 @@ class MLWorker:
                 )
         except (WebSocketException, WebSocketBadStatusException) as e:
             logger.warn(f"Connection to Giskard Backend failed: {e.__class__.__name__}")
-            if isinstance(e, WebSocketBadStatusException) and e.status_code == 404:
-                # Backend may need upgrade or private HF Spaces
-                logger.error(f"Please make sure that the version of Giskard server is above '{giskard.__version__}'")
-                # TODO: Update instructions
+            if isinstance(e, WebSocketBadStatusException):
+                if e.status_code == 404:
+                    # Backend may need upgrade or private HF Spaces
+                    logger.error(
+                        f"Please make sure that the version of Giskard server is above '{giskard.__version__}'"
+                    )
+                    # TODO: Update instructions
+                else:
+                    logger.error(
+                        f"WebSocket connection error {e.status_code}: "
+                        f"Please make sure that you are using {settings.ws_path} as the WebSocket endpoint"
+                    )
                 self.stop()
 
     def is_remote_worker(self):
