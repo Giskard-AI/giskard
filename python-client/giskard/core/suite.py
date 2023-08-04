@@ -27,7 +27,6 @@ from giskard.ml_worker.testing.test_result import (
     TestMessageLevel,
 )
 from giskard.models.base import BaseModel
-from giskard.integrations.wandb.wandb_utils import wandb_run
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +78,7 @@ class TestSuiteResult:
     def to_wandb(self, **kwargs) -> None:
         """Log test suite results to the WandB run."""
         import wandb
+        from giskard.integrations.wandb.wandb_utils import wandb_run
 
         def _parse_test_name(test_name: str) -> Tuple[str, str]:
             """[Temporary] Get a metric and a data slice from a test name."""
@@ -91,8 +91,7 @@ class TestSuiteResult:
             # Log just a test description and a metric.
             columns = ["Metric name", "Data slice", "Metric value", "Passed"]
             data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
-            table = wandb.Table(columns=columns, data=data)
-            run.log({"Test-Suite Results": table})
+            run.log({"Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
