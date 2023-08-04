@@ -78,14 +78,7 @@ class TestSuiteResult:
     def to_wandb(self, **kwargs) -> None:
         """Log test suite results to the WandB run."""
         import wandb
-        from giskard.integrations.wandb.wandb_utils import wandb_run
-
-        def _parse_test_name(test_name: str) -> Tuple[str, str]:
-            """[Temporary] Get a metric and a data slice from a test name."""
-            test_name = test_name.split("on data slice")
-            metric_name, data_slice = test_name[0], test_name[-1]
-            data_slice = data_slice.replace('"', '')
-            return metric_name, data_slice
+        from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
 
         with wandb_run(**kwargs) as run:
             # Log just a test description and a metric.
