@@ -1,9 +1,11 @@
 import contextlib
 from typing import Optional
 
+from wandb.wandb_run import Run
+
 
 @contextlib.contextmanager
-def wandb_run(project: Optional[str] = None, **kwargs):
+def wandb_run(project: Optional[str] = None, **kwargs) -> Run:
     try:
         import wandb  # noqa
     except ImportError as e:
