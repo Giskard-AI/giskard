@@ -28,6 +28,7 @@ from giskard.ml_worker.testing.test_result import (
 )
 from giskard.models.base import BaseModel
 
+
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -73,6 +74,17 @@ class TestSuiteResult:
             metrics[test_name] = test_result[1].metric
 
         return metrics
+
+    def to_wandb(self, **kwargs) -> None:
+        """Log test suite results to the WandB run."""
+        import wandb
+        from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
+
+        with wandb_run(**kwargs) as run:
+            # Log just a test description and a metric.
+            columns = ["Metric name", "Data slice", "Metric value", "Passed"]
+            data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+            run.log({"Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
