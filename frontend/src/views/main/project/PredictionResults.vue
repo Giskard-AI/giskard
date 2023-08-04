@@ -162,7 +162,7 @@ const isCorrectPrediction = computed(() => {
 })
 
 const classColorPrediction = computed(() => {
-  if (!actual.value) return 'info--text text--darken-2'
+  if (actual.value === null) return 'info--text text--darken-2'
   else return isCorrectPrediction.value ? 'primary--text' : 'error--text'
 })
 
