@@ -123,6 +123,7 @@ class ScanResult:
         return scan_results_artifact_name, scan_summary_artifact_name
 
     def to_wandb(self, **kwargs):
+        """Log scan results to the WandB run in an HTML format."""
         with wandb_run(**kwargs) as run:
             import wandb  # noqa library import already checked in wandb_run
 

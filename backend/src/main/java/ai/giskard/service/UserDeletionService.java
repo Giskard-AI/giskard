@@ -99,6 +99,7 @@ public class UserDeletionService {
             .findOneByLogin(login)
             .ifPresentOrElse(user -> {
                     user.setEnabled(true);
+                    userRepository.save(user);
                     log.info("Enable user : {}", user);
                 },
                 () -> log.warn("Cannot enable user because its login wasn't found : {}", login));
