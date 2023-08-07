@@ -41,7 +41,7 @@ def create_borderline_push(model, ds, df):
 
     if model.is_classification:
         target_value_proba = prediction_results.all_predictions[target_value].values.item()
-        if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+        if not model.is_binary_classification:
             sorted_predictions = np.sort(prediction_results.raw[0])
             abs_diff = sorted_predictions[-1] - sorted_predictions[-2]
         else:
