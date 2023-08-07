@@ -60,7 +60,7 @@ class TestSuiteResult:
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
-        from giskard.integrations.mlflow.giskard_evaluator import process_text
+        from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
 
         metrics = dict()
         for test_result in self.results:
