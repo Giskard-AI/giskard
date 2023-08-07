@@ -78,10 +78,14 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._decrease_overconfidence_rate(old_rate=rate)]  # TODO: Add Overconfidence rate test
-        self.unit_tests = [self._increase_proba(), self._check_if_correct()]
+        if_overconf_decrease, if_proba_increase, if_correct = self._create_tests(rate=rate)
+        self.tests = [if_overconf_decrease]
+        self.unit_tests = [if_proba_increase, if_correct]
         # To complete debugger filter
         self.predicted_label = predicted_label
+
+    def _create_tests(self, rate):
+        return self._decrease_overconfidence_rate(old_rate=rate), self._increase_proba(), self._check_if_correct()
 
     def _overconfidence(self):
         res = {
@@ -128,8 +132,12 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._decrease_underconfidence_rate(old_rate=rate)]  # TODO: Add Underconfidence rate test
-        self.unit_tests = [self._increase_proba(), self._check_if_correct()]
+        if_underconf_decrease, if_proba_increase, if_correct = self._create_tests(rate=rate)
+        self.tests = [if_underconf_decrease]
+        self.unit_tests = [if_proba_increase, if_correct]
+
+    def _create_tests(self, rate):
+        return self._decrease_underconfidence_rate(old_rate=rate), self._increase_proba(), self._check_if_correct()
 
     def _borderline(self):
         res = {

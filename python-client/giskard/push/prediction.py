@@ -2,13 +2,16 @@ import numpy as np
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.testing.tests.calibration import _default_overconfidence_threshold
+from giskard.testing.tests.calibration import (
+    _default_overconfidence_threshold,
+    test_overconfidence_rate,
+    test_underconfidence_rate,
+)
 
 from ..push import BorderlinePush, OverconfidencePush
 
 
 def create_overconfidence_push(model, ds, df):
-    # row_slice = ds.slice(lambda df: df.loc[[idrow]], row_level=False)
     row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
     values = row_slice.df
     training_label = values[ds.target].values[0]
@@ -24,12 +27,8 @@ def create_overconfidence_push(model, ds, df):
         if training_label != prediction and (
             prediction_proba - training_label_proba
         ) >= _default_overconfidence_threshold(model):
-            # if training_label != prediction and prediction_proba >= 2* training_label_proba:
-            # res = Push(push_type="contribution_wrong", feature=el,
-            #            value=values[el],
-            #            bounds=bounds
-            #            )
-            res = OverconfidencePush(training_label, training_label_proba, row_slice, prediction)
+            rate = test_overconfidence_rate(model, ds).metric
+            res = OverconfidencePush(training_label, training_label_proba, row_slice, prediction, rate=rate)
             return res
 
 
@@ -52,4 +51,5 @@ def create_borderline_push(model, ds, df):
         if (
             abs_diff <= 0.1
         ):  # TODO: import ai.giskard.config.ApplicationProperties;  applicationProperties.getBorderLineThreshold()
-            return BorderlinePush(target_value, target_value_proba, row_slice)
+            rate = test_underconfidence_rate(model, ds).metric
+            return BorderlinePush(target_value, target_value_proba, row_slice, rate=rate)
