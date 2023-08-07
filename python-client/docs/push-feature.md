@@ -16,15 +16,21 @@ Test description |  Check if this specific example has the right label with enou
 ```
 
 ```
-"action": "Save this example for further inspection and testing",
-"explanation": "This may help you identify spurious correlation and create unit test based on these examples",
-"button": "Save Example"
+# Disabled temporarily
+#    "action": "Save this example for further inspection and testing",
+#    "explanation": "This may help you identify spurious correlation and create unit test based on "
+#    "these examples",
+#    "button": "Save Example",
 
 "action": "Generate a unit test to check if this example is correctly predicted",
 "explanation": "This enables you to make sure this specific example is correct for a new model",
 "button": "Create unit test"
 
-"action": "Open the debugger session on similar examples",
+"action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
+"explanation": "This may help you ensure that the overconfidence rate is at an acceptable level",
+"button": "Create unit test"
+
+"action": "Filter this debugger session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
 "button": "Open debugger"
 ```
@@ -43,12 +49,17 @@ Test description |  Check if this specific example has the right label with enou
 ```
 
 ```
-"action": "Save this example for further inspection and testing",
-"explanation": "This may help you identify inconsistent patterns and create a unit test based on these examples",
-"button": "Save Example"
+# Disabled Temporarily
+# "action": "Save this example for further inspection and testing",
+# "explanation": "This may help you identify inconsistent patterns and create a unit test based on these examples",
+# "button": "Save Example"
 
 "action": "Generate a test specific to this example"
 "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
+"button": "Create unit test"
+
+"action": "Generate a test to check if the rate of <br>underconfidence</br> rows is decreasing",
+"explanation": "This may help you ensure that the underconfidence rate is at an acceptable level",
 "button": "Create unit test"
 
 "action": "Open the debugger session on similar examples",
@@ -83,7 +94,7 @@ Test description |  Check if the chi 2 / Kolmogorov-Smirnov correlation statisti
 "button": "Save Slice"
 ```
 
-## Contribution Wrong Prediction
+## Contribution Wrong Prediction (ON HOLD)
 
 Title| Description
 -- | --
@@ -96,16 +107,16 @@ Test description | Check if the performance of an F1-score/RMSE test is more tha
 ```
 
 ```
-"action": "Open the debugger session on similar examples",
-"explanation": "Debugging similar examples may help you find common spurious patterns",
-"button": "Open debugger"
+"action": "Filter this debugger session with similar examples",
+"explanation": "Debugging similar examples may help you find common patterns",
+"button": "Open debugger",
 
-"action": "Open the debugger session on similar examples",
-"explanation": "Debugging similar examples may help you find common spurious patterns",
-"button": "Open debugger"
+ "action": "Generate a performance difference test",
+ "explanation": "This may help ensure this spurious pattern is not common to the whole dataset",
+ "button": "Create test",
 
 "action": "Save slice and continue debugging session",
-"explanation": "Saving the slice will enable you to create tests more efficiently",
+"explanation": "Saving the slice will enable you to use it later",
 "button": "Save Slice"
 ```
 
@@ -115,18 +126,14 @@ Title| Description
 -- | --
 Description| Tag features that make the prediction change after a small variation
 Requirement| Applicable only to numerical features and textual feature
-Triggering event |  When we switch examples and the prediction changes after: 3 MAD (Median absolute deviation) variation or for textual feature, a small variation such as uppercase or punctuation transformation
+Triggering event |  When we switch examples and the prediction changes after: 2 MAD (Median absolute deviation) variation or for textual feature, a small variation such as uppercase or punctuation transformation
 Test description | Check if the prediction change ratio is not higher than a certain threshold after the perturbation of the whole dataset
 ```
  Check if the prediction change ratio is not higher than a certain threshold after the perturbation of the whole dataset
 ```
 
 ```
-"action": "Generate a robustness test that slightly perturb this feature",
-"explanation": "This will enable you to make sure the model is robust against similar small changes",
-"button": "Create test"
-
-"action": "Generate a robustness test that slightly perturb this feature",
-"explanation": "This will enable you to make sure the model is robust against similar small changes",
+"action": "Generate a robustness test that slightly perturbs this feature",
+"explanation": "This will enable you to make sure the model is invariant against similar small changes",
 "button": "Create test"
 ```
