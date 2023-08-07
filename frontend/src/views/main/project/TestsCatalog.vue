@@ -222,7 +222,7 @@ const selectedTestUsage = computed(() => {
 
   const parametersWithDefaults = selected.value.args.map(arg => {
     if (arg.name === 'kwargs') return '**kwargs';
-    if (arg.optional) return `${arg.name}=${arg.defaultValue}`;
+    if (arg.optional) return `${arg.name}=${arg.defaultValue ?? 'None'}`;
     return arg.name;
   });
   content += `test_result, passed = ${selected.value.name}(${parametersWithDefaults.join(', ')})`;
