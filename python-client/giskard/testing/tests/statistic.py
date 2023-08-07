@@ -311,7 +311,7 @@ def _theil_u(x, y):
     return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
 
 
-@test(name="Nominal Association", tags=["statistic", "classification"])
+@test(name="Nominal Association", tags=["statistic", "nominal association", "classification"])
 def test_nominal_association(
     model: BaseModel,
     dataset: Dataset,
@@ -379,7 +379,7 @@ def test_nominal_association(
     return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
 
 
-@test(name="Cramer's V", tags=["statistic", "classification"])
+@test(name="Cramer's V", tags=["statistic", "nominal association", "classification"])
 def test_cramer_v(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
@@ -406,7 +406,7 @@ def test_cramer_v(
     return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug)
 
 
-@test(name="Mutual Information", tags=["statistic", "classification"])
+@test(name="Mutual Information", tags=["statistic", "nominal association", "classification"])
 def test_mutual_information(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
@@ -433,7 +433,7 @@ def test_mutual_information(
     return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug)
 
 
-@test(name="Theil's U", tags=["statistic", "classification"])
+@test(name="Theil's U", tags=["statistic", "nominal association", "classification"])
 def test_theil_u(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
