@@ -1,12 +1,14 @@
 from enum import Enum
 
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
 from giskard.models.base import BaseModel
 from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
+from giskard import test_overconfidence_rate, TestResult, test, test_underconfidence_rate
 
 
 class SupportedPerturbationType(Enum):
@@ -35,8 +37,6 @@ class ExamplePush(Push):
         )
 
     def _increase_proba(self):
-        from giskard import TestResult, test
-
         @test(name="Increase Probability", tags=["unit test", "custom"])
         def increase_probability(model: BaseModel):
             proba = model.predict(self.saved_example).all_predictions[self.training_label].values[0]
@@ -45,8 +45,6 @@ class ExamplePush(Push):
         return increase_probability
 
     def _check_if_correct(self):
-        from giskard import TestResult, test
-
         @test(name="Example Correctness", tags=["unit test", "custom"])
         def correct_example(model: BaseModel):
             prediction = model.predict(self.saved_example).prediction.values[0]
@@ -54,9 +52,25 @@ class ExamplePush(Push):
 
         return correct_example
 
+    def _decrease_overconfidence_rate(self, old_rate: float):
+        @test(name="If Overconfidence Decreases", tags=["custom"])
+        def if_overconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float = old_rate):
+            new_rate = test_overconfidence_rate(model, dataset).metric
+            return TestResult(passed=new_rate < rate, metric=new_rate - rate)
+
+        return if_overconfidence_rate_decrease
+
+    def _decrease_underconfidence_rate(self, old_rate: float):
+        @test(name="If Underconfidence Decreases", tags=["custom"])
+        def if_underconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float = old_rate):
+            new_rate = test_underconfidence_rate(model, dataset).metric
+            return TestResult(passed=new_rate < rate, metric=new_rate - rate)
+
+        return if_underconfidence_rate_decrease
+
 
 class OverconfidencePush(ExamplePush):
-    def __init__(self, training_label, training_label_proba, dataset_row, predicted_label):
+    def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
         self._overconfidence()
         self.pushkind = PushKind.Overconfidence
 
@@ -64,7 +78,7 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba()]  # TODO: Add Overconfidence rate test
+        self.tests = [self._decrease_overconfidence_rate(old_rate=rate)]  # TODO: Add Overconfidence rate test
         self.unit_tests = [self._increase_proba(), self._check_if_correct()]
         # To complete debugger filter
         self.predicted_label = predicted_label
@@ -106,17 +120,17 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
-    def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row):
+    def __init__(self, max_proba, second_proba, training_label, training_label_proba, dataset_row, rate):
         self._borderline()
         self.pushkind = PushKind.Borderline
+
         self.max_proba = max_proba
         self.second_proba = second_proba
-
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba()]  # TODO: Add Underconfidence rate test
+        self.tests = [self._decrease_underconfidence_rate(old_rate=rate)]  # TODO: Add Underconfidence rate test
         self.unit_tests = [self._increase_proba(), self._check_if_correct()]
 
     def _borderline(self):
