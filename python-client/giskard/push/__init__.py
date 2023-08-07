@@ -125,9 +125,9 @@ class BorderlinePush(ExamplePush):
                 #    "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate an inconsistency test",
-                    "explanation": "This may help you ensure this inconsistent pattern is not common to the "
-                                   "whole dataset",
+                    "action": "Generate a test specific to this example",
+                    "explanation": "This may help you ensure that this example is not predicted with low confidence "
+                                   "for a new model",
                     "button": "Create test",
                     "cta": CallToActionKind.AddTestToCatalog,
                 },
