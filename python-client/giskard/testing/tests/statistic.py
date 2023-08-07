@@ -17,12 +17,12 @@ from . import debug_prefix
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
 def test_right_label(
-        model: BaseModel,
-        dataset: Dataset,
-        classification_label: str,
-        slicing_function: Optional[SlicingFunction] = None,
-        threshold: float = 0.5,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    classification_label: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 0.5,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -77,25 +77,20 @@ def test_right_label(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)],
-        metric=passed_ratio,
-        passed=passed,
-        output_df=output_ds
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
 def test_output_in_range(
-        model: BaseModel,
-        dataset: Dataset,
-        slicing_function: Optional[SlicingFunction] = None,
-        classification_label: Optional[str] = None,
-        min_range: float = 0.3,
-        max_range: float = 0.7,
-        threshold: float = 0.5,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    classification_label: Optional[str] = None,
+    min_range: float = 0.3,
+    max_range: float = 0.7,
+    threshold: float = 0.5,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -171,25 +166,20 @@ def test_output_in_range(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)],
-        metric=passed_ratio,
-        passed=passed,
-        output_df=output_ds
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(
-        model: BaseModel,
-        dataset: Dataset,
-        protected_slicing_function: SlicingFunction,
-        unprotected_slicing_function: SlicingFunction,
-        positive_outcome: str,
-        slicing_function: Optional[SlicingFunction] = None,
-        min_threshold: float = 0.8,
-        max_threshold: float = 1.25,
-        debug: bool = False,
+    model: BaseModel,
+    dataset: Dataset,
+    protected_slicing_function: SlicingFunction,
+    unprotected_slicing_function: SlicingFunction,
+    positive_outcome: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    min_threshold: float = 0.8,
+    max_threshold: float = 1.25,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -296,9 +286,155 @@ def test_disparate_impact(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        metric=disparate_impact_score,
-        passed=passed,
-        messages=messages,
-        output_df=output_ds
+    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, output_df=output_ds)
+
+
+def _cramer_v(x, y):
+    import pandas as pd
+    from scipy import stats
+
+    ct = pd.crosstab(x, y)
+    return stats.contingency.association(ct, method="cramer")
+
+
+@test(name="Cramer's V", tags=["statistic", "classification"])
+def test_cramer_v(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    TBF
+    :param model:
+    :param dataset:
+    :param slicing_function:
+    :param threshold:
+    :param debug:
+    :return:
+    """
+    import pandas as pd
+
+    sliced_dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset", test_name="test_cramer_v")
+
+    dx = pd.DataFrame(
+        {
+            "slice": dataset.df.index.isin(sliced_dataset.df.index).astype(int),
+            "prediction": model.predict(dataset).prediction,
+        },
+        index=dataset.df.index,
     )
+    dx.dropna(inplace=True)
+
+    metric = _cramer_v(dx.slice, dx.prediction)
+    passed = metric < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = sliced_dataset.copy()  # copy all properties
+        test_name = inspect.stack()[0][3]
+        output_ds.name = debug_prefix + test_name
+    # ---
+
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
+
+    return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
+
+
+def _mutual_information(x, y):
+    from sklearn.metrics import adjusted_mutual_info_score
+
+    return adjusted_mutual_info_score(x, y)
+
+
+@test(name="Mutual Information", tags=["statistic", "classification"])
+def test_mutual_information(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    TBF
+    :param model:
+    :param dataset:
+    :param slicing_function:
+    :param threshold:
+    :param debug:
+    :return:
+    """
+    import pandas as pd
+
+    sliced_dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset", test_name="test_mutual_information")
+
+    dx = pd.DataFrame(
+        {
+            "slice": dataset.df.index.isin(sliced_dataset.df.index).astype(int),
+            "prediction": model.predict(dataset).prediction,
+        },
+        index=dataset.df.index,
+    )
+    dx.dropna(inplace=True)
+
+    metric = _mutual_information(dx.slice, dx.prediction)
+    passed = metric < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = sliced_dataset.copy()  # copy all properties
+        test_name = inspect.stack()[0][3]
+        output_ds.name = debug_prefix + test_name
+    # ---
+
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
+
+    return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
+
+
+def _theil_u(x, y):
+    import pandas as pd
+    from sklearn.metrics import mutual_info_score
+    from scipy import stats
+
+    return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
+
+
+@test(name="Theil's U", tags=["statistic", "classification"])
+def test_theil_u(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    TBF
+    :param model:
+    :param dataset:
+    :param slicing_function:
+    :param threshold:
+    :param debug:
+    :return:
+    """
+    import pandas as pd
+
+    sliced_dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset", test_name="test_theil_u")
+
+    dx = pd.DataFrame(
+        {
+            "slice": dataset.df.index.isin(sliced_dataset.df.index).astype(int),
+            "prediction": model.predict(dataset).prediction,
+        },
+        index=dataset.df.index,
+    )
+    dx.dropna(inplace=True)
+
+    metric = _theil_u(dx.slice, dx.prediction)
+    passed = metric < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = sliced_dataset.copy()  # copy all properties
+        test_name = inspect.stack()[0][3]
+        output_ds.name = debug_prefix + test_name
+    # ---
+
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
+
+    return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
