@@ -81,14 +81,19 @@ class OverconfidencePush(ExamplePush):
                 #    "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a unit test to check if this example has the right label",
-                    "explanation": "This enables you to make sure this specific example has the right label "
-                                   "with enough confidence",
-                    "button": "Create test",
-                    "cta": CallToActionKind.AddTestToCatalog,
+                    "action": "Generate unit tests to check if this example is correctly predicted",
+                    "explanation": "This enables you to make sure this specific example is correct for a new model",
+                    "button": "Create unit tests",
+                    "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Open the debugger session on similar examples",
+                    "action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
+                    "explanation": "This may help you ensure that the overconfidence rate is at an acceptable level",
+                    "button": "Create test",
+                    "cta": CallToActionKind.CreateTest,
+                },
+                {
+                    "action": "Filter this debugger session with similar examples",
                     "explanation": "Debugging similar examples may help you find common patterns",
                     "button": "Open debugger",
                     "cta": CallToActionKind.OpenDebuggerOverconfidence,
@@ -125,9 +130,15 @@ class BorderlinePush(ExamplePush):
                 {
                     "action": "Generate a test specific to this example",
                     "explanation": "This may help you ensure that this example is not predicted with low confidence "
-                                   "for a new model",
+                    "for a new model",
                     "button": "Create test",
-                    "cta": CallToActionKind.AddTestToCatalog,
+                    "cta": CallToActionKind.CreateTest,
+                },
+                {
+                    "action": "Generate a test to check if the rate of <br>underconfidence</br> rows is decreasing",
+                    "explanation": "This may help you ensure that the underconfidence rate is at an acceptable level",
+                    "button": "Create test",
+                    "cta": CallToActionKind.CreateTest,
                 },
                 {
                     "action": "Open the debugger session on similar examples",
@@ -186,14 +197,14 @@ class ContributionPush(FeaturePush):
             "push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
             "details": [
                 {
-                    "action": "Open the debugger session on similar examples",
-                    "explanation": "Debugging similar examples may help you find common spurious patterns",
+                    "action": "Filter this debugger session with similar examples",
+                    "explanation": "Debugging similar examples may help you find common patterns",
                     "button": "Open debugger",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
                 {
-                    "action": "Generate a new performance difference test",
-                    "explanation": "This may help ensure this spurious pattern is not common to the whole " "dataset",
+                    "action": "Generate a performance difference test",
+                    "explanation": "This may help ensure this spurious pattern is not common to the whole dataset",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
                 },
@@ -274,16 +285,10 @@ class PerturbationPush(FeaturePush):
             "details": [
                 {
                     "action": "Generate a robustness test that slightly perturb this feature",
-                    "explanation": "This will enable you to make sure the model is robust against small similar "
-                                   "changes",
+                    "explanation": "This will enable you to make sure the model is invariant against small similar "
+                    "changes",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
-                },
-                {
-                    "action": "Save the perturbation that made the model change and continue debugging session",
-                    "explanation": "Saving this perturbation will enable you to create tests more efficiently",
-                    "button": "Save Perturbation",
-                    "cta": CallToActionKind.SavePerturbation,
                 },
             ],
         }
