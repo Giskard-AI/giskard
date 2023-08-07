@@ -69,7 +69,9 @@
                   <ValidationProvider name="Email" mode="eager" rules="required|email" v-slot="{ errors }">
                     <v-text-field label="Email*" v-model="email" :error-messages="errors" type="email"></v-text-field>
                   </ValidationProvider>
-                  <v-text-field label="Company name" v-model="companyName"></v-text-field>
+                  <ValidationProvider name="Company name" mode="eager" rules="required" v-slot="{ errors }">
+                    <v-text-field label="Company name*" v-model="companyName" :error-messages="errors"></v-text-field>
+                  </ValidationProvider>
                   <ValidationProvider name="Agreement with the privacy policy" mode="eager" :rules="{ required: { allowFalse: false } }" v-slot="{ errors }">
 
                     <v-checkbox v-model="termsOfServiceAgree" dense :error-messages="errors">
@@ -118,13 +120,13 @@
 
 <script setup lang="ts">
 
-import {ref} from "vue";
-import axios, {AxiosError} from "axios";
-import {useMainStore} from "@/stores/main";
-import {api} from "@/api";
-import {useRouter} from "vue-router/composables";
+import { ref } from "vue";
+import axios, { AxiosError } from "axios";
+import { useMainStore } from "@/stores/main";
+import { api } from "@/api";
+import { useRouter } from "vue-router/composables";
 import mixpanel from "mixpanel-browser";
-import {TYPE} from "vue-toastification";
+import { TYPE } from "vue-toastification";
 
 const router = useRouter();
 
