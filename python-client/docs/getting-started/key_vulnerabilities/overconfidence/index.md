@@ -1,4 +1,4 @@
-# Overconfidence Issue
+# Overconfidence
 
 The overconfidence issue in machine learning refers to the phenomenon where a machine learning model produces predictions that are incorrect but are assigned high probabilities or confidence scores. This means that the model is overly confident in its predictions, even when it is not accurate. Such overconfidence can have significant implications in real-world applications, leading to incorrect decisions and potentially harmful consequences.
 
