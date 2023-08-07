@@ -37,7 +37,17 @@
                                         </v-list-item-content>
                                     </v-list-item>
                                 </template>
+                                <v-divider />
                             </v-list-item-group>
+                            <v-list-item @click="openSliceModal">
+                                <v-list-item-content>
+                                    <v-list-item-title class="create-slice-item">
+                                        <v-icon class="mb-1">add</v-icon>
+                                        CREATE NEW SLICING FUNCTION
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-divider />
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
@@ -277,6 +287,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
+function openSliceModal() {
+
+}
+
 
 </script>
 
@@ -360,5 +374,11 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 .list-func-name {
     font-weight: 500;
+}
+
+.create-slice-item {
+    font-size: 1.25rem !important;
+    letter-spacing: 0.0125em !important;
+    font-family: "Roboto", sans-serif !important;
 }
 </style>
