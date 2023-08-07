@@ -64,7 +64,8 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba(), self._check_if_correct()]
+        self.tests = [self._increase_proba()]  # TODO: Add Overconfidence rate test
+        self.unit_tests = [self._increase_proba(), self._check_if_correct()]
         # To complete debugger filter
         self.predicted_label = predicted_label
 
@@ -84,7 +85,7 @@ class OverconfidencePush(ExamplePush):
                     "action": "Generate unit tests to check if this example is correctly predicted",
                     "explanation": "This enables you to make sure this specific example is correct for a new model",
                     "button": "Create unit tests",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CreateUnitTest,
                 },
                 {
                     "action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
@@ -115,7 +116,8 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [self._increase_proba(), self._check_if_correct()]
+        self.tests = [self._increase_proba()]  # TODO: Add Underconfidence rate test
+        self.unit_tests = [self._increase_proba(), self._check_if_correct()]
 
     def _borderline(self):
         res = {
@@ -130,11 +132,11 @@ class BorderlinePush(ExamplePush):
                 #    "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a test specific to this example",
+                    "action": "Generate tests specific to this example",
                     "explanation": "This may help you ensure that this example is not predicted with low confidence "
                     "for a new model",
                     "button": "Create test",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CreateUnitTest,
                 },
                 {
                     "action": "Generate a test to check if the rate of <br>underconfidence</br> rows is decreasing",
@@ -256,7 +258,7 @@ class ContributionPush(FeaturePush):
             if self.model_type == SupportedModelTypes.REGRESSION:
                 self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
             elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-                self.tests = [test_diff_f1_push(slicing_function=slicing_fn, threshold=0.5)]
+                self.tests = [test_diff_f1_push(slicing_function=slicing_fn)]
         # TODO
         # else:
         #     if self.model_type == SupportedModelTypes.REGRESSION:
