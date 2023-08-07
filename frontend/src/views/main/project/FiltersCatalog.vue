@@ -177,6 +177,8 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import IEditorOptions = editor.IEditorOptions;
 import mixpanel from "mixpanel-browser";
 import { anonymize } from "@/utils";
+import { $vfm } from 'vue-final-modal';
+import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
 
 let props = defineProps<{
     projectId: number,
@@ -288,7 +290,9 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 function openSliceModal() {
-
+    $vfm.show({
+        component: CreateSliceCatalogModal,
+    })
 }
 
 
