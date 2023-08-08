@@ -97,13 +97,18 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
                         throw new AccessDeniedException("Cannot find available worker");
                     if (!destination.startsWith("/ml-worker/"))
                         return message; // By-pass the other subscriptions
-                    if (destination.equals(WebSocketConfig.INTERNAL_ML_WORKER_TOPIC) &&
-                        mlWorkerWSService.associateWorker(MLWorkerID.INTERNAL.toString(),
-                            Objects.requireNonNull(accessor.getSessionId())) ||
-                        destination.equals(WebSocketConfig.EXTERNAL_ML_WORKER_TOPIC) &&
-                        mlWorkerWSService.associateWorker(MLWorkerID.EXTERNAL.toString(),
+
+                    // Check MLWorker-related topics
+                    if (destination.equals(WebSocketConfig.INTERNAL_ML_WORKER_TOPIC)) {
+                        if (mlWorkerWSService.associateWorker(MLWorkerID.INTERNAL.toString(),
                             Objects.requireNonNull(accessor.getSessionId()))) {
-                        return message;
+                            return message;
+                        }
+                    } else if (destination.equals(WebSocketConfig.EXTERNAL_ML_WORKER_TOPIC)) {
+                        if (mlWorkerWSService.associateWorker(MLWorkerID.EXTERNAL.toString(),
+                            Objects.requireNonNull(accessor.getSessionId()))) {
+                            return message;
+                        }
                     }
                     if (destination.equals(WebSocketConfig.INTERNAL_ML_WORKER_CONFIG_TOPIC) ||
                         destination.equals(WebSocketConfig.EXTERNAL_ML_WORKER_CONFIG_TOPIC))

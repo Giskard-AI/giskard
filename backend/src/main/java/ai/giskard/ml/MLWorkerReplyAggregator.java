@@ -1,13 +1,14 @@
 package ai.giskard.ml;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MLWorkerReplyAggregator {
-    private ArrayList<String> replies;
+    private List<String> replies;
     private int count;
 
     public MLWorkerReplyAggregator(int fragmentCount) {
-        this.replies = new ArrayList<>(Integer.min(1, fragmentCount));
+        this.replies = new ArrayList<>(Integer.max(1, fragmentCount));
         for (int i = 0; i < fragmentCount; i++) {
             this.replies.add(null);
         }
@@ -20,7 +21,7 @@ public class MLWorkerReplyAggregator {
                 this.count++;    // First add
             return this.replies.set(fragmentIndex, result);
         }
-        return null;
+        throw new IndexOutOfBoundsException();
     }
 
     public boolean isFinished() {

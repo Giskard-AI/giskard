@@ -1,5 +1,6 @@
 package ai.giskard.ml;
 
+import ai.giskard.ml.dto.MLWorkerReplyDTO;
 import ai.giskard.service.ml.MLWorkerWSService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

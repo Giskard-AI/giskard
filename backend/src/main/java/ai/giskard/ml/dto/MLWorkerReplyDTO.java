@@ -1,5 +1,6 @@
-package ai.giskard.ml;
+package ai.giskard.ml.dto;
 
+import ai.giskard.ml.MLWorkerReplyType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
