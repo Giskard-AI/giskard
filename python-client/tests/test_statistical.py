@@ -137,6 +137,9 @@ def test_nominal_association(data, model, request):
     assert round(results_theil_u_f.metric, 2) == 0.7
     assert not results_theil_u_f.passed
 
+    results_theil_u_f_bench = statistical.test_theil_u(model=model, dataset=data, slicing_function=sff).execute()
+    assert results_theil_u_f.metric == results_theil_u_f_bench.metric
+
     results_theil_u_m = statistical.test_nominal_association(model=model, dataset=data, slicing_function=sfm).execute()
     assert round(results_theil_u_m.metric, 2) == 0.7
     assert not results_theil_u_f.passed
