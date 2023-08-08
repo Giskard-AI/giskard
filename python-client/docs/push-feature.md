@@ -26,7 +26,7 @@ Test description |  Check if this specific example is overconfident - one-sample
 
 "action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
-"button": "Open debugger"
+"button": "Filter debugger"
 ```
 
 ## Underconfidence
@@ -54,7 +54,7 @@ Test description |   Check if this specific example is underconfident - one-samp
 
 "action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
-"button": "Open debugger"
+"button": "Filter debugger"
 ```
 
 ## Contribution Right Prediction
@@ -79,9 +79,9 @@ Test description | Create Theil's U test automatically
 "explanation": "Correlations may be spurious, double check if it has a business sense",
 "button": "Create Test"
 
-"action": "Filter this debugging session with similar examples",
+"action": "Apply this slice to the current debugging session",
 "explanation": "Debugging similar examples may help you find common patterns",
-"button": "Open debugger"
+"button": "Apply Slice"
 
 
 
@@ -108,9 +108,9 @@ Test description | Check if the performance of an F1-score/RMSE test is more tha
 "explanation": "Correlations may be spurious, double check if it has a business sense",
 "button": "Create Test"
 
-"action": "Filter this debugging session with similar examples",
+"action": "Apply this slice to the current debugging session",
 "explanation": "Debugging similar examples may help you find common spurious patterns",
-"button": "Open Debugger"
+"button": "Apply slice"
 ```
 
 ## Perturbation 
