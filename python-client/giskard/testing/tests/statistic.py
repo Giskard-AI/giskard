@@ -17,12 +17,12 @@ from . import debug_prefix
 @test(name="Right Label", tags=["heuristic", "classification"])
 @validate_classification_label
 def test_right_label(
-        model: BaseModel,
-        dataset: Dataset,
-        classification_label: str,
-        slicing_function: Optional[SlicingFunction] = None,
-        threshold: float = 0.5,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    classification_label: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 0.5,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -77,25 +77,20 @@ def test_right_label(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)],
-        metric=passed_ratio,
-        passed=passed,
-        output_df=output_ds
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
 @test(name="Output in range", tags=["heuristic", "classification", "regression"])
 @validate_classification_label
 def test_output_in_range(
-        model: BaseModel,
-        dataset: Dataset,
-        slicing_function: Optional[SlicingFunction] = None,
-        classification_label: Optional[str] = None,
-        min_range: float = 0.3,
-        max_range: float = 0.7,
-        threshold: float = 0.5,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    classification_label: Optional[str] = None,
+    min_range: float = 0.3,
+    max_range: float = 0.7,
+    threshold: float = 0.5,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -171,25 +166,20 @@ def test_output_in_range(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)],
-        metric=passed_ratio,
-        passed=passed,
-        output_df=output_ds
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
 @test(name="Disparate impact", tags=["heuristic", "classification"])
 def test_disparate_impact(
-        model: BaseModel,
-        dataset: Dataset,
-        protected_slicing_function: SlicingFunction,
-        unprotected_slicing_function: SlicingFunction,
-        positive_outcome: str,
-        slicing_function: Optional[SlicingFunction] = None,
-        min_threshold: float = 0.8,
-        max_threshold: float = 1.25,
-        debug: bool = False,
+    model: BaseModel,
+    dataset: Dataset,
+    protected_slicing_function: SlicingFunction,
+    unprotected_slicing_function: SlicingFunction,
+    positive_outcome: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    min_threshold: float = 0.8,
+    max_threshold: float = 1.25,
+    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -296,9 +286,217 @@ def test_disparate_impact(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        metric=disparate_impact_score,
-        passed=passed,
-        messages=messages,
-        output_df=output_ds
+    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, output_df=output_ds)
+
+
+def _cramer_v(x, y):
+    import pandas as pd
+    from scipy import stats
+
+    ct = pd.crosstab(x, y)
+    return stats.contingency.association(ct, method="cramer")
+
+
+def _mutual_information(x, y):
+    from sklearn.metrics import adjusted_mutual_info_score
+
+    return adjusted_mutual_info_score(x, y)
+
+
+def _theil_u(x, y):
+    import pandas as pd
+    from sklearn.metrics import mutual_info_score
+    from scipy import stats
+
+    return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
+
+
+@test(name="Nominal Association", tags=["statistic", "nominal association", "classification"])
+def test_nominal_association(
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: SlicingFunction,
+    method: Optional[str] = "theil_u",
+    threshold: float = 0.5,
+    debug: bool = False,
+):
+    """
+    Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to
+    determine whether there is a significant relationship or dependency between the two. It assesses whether the
+    observed association is likely to occur by chance or if it represents a true association.
+    Description: The general procedure involves setting up a null hypothesis that assumes no association between the
+    variables and an alternative hypothesis that suggests an association exists. The statistical test is calculated
+    based on three methods: "theil_u", "cramer_v" and "mutual_information".
+
+    Args:
+      model(BaseModel):
+          Model used to compute the test
+      dataset(Dataset):
+          Dataset used to compute the test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
+      method(Optional[str]):
+          The association test statistic. Choose between "theil_u", "cramer_v", and "mutual_information".
+          (default = "theil_u")
+      threshold(float):
+          Threshold value for the Cramer's V score
+      debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the rows of the dataset slice.
+    """
+    import pandas as pd
+
+    sliced_dataset = dataset.slice(slicing_function)
+    check_slice_not_empty(sliced_dataset=sliced_dataset, dataset_name="dataset", test_name="test_nominal_association")
+
+    dx = pd.DataFrame(
+        {
+            "slice": dataset.df.index.isin(sliced_dataset.df.index).astype(int),
+            "prediction": model.predict(dataset).prediction,
+        },
+        index=dataset.df.index,
     )
+    dx.dropna(inplace=True)
+
+    if method == "theil_u":
+        metric = _theil_u(dx.slice, dx.prediction)
+    elif method == "cramer_v":
+        metric = _cramer_v(dx.slice, dx.prediction)
+    elif method == "mutual_information":
+        metric = _mutual_information(dx.slice, dx.prediction)
+    else:
+        raise ValueError(
+            "Invalid argument value: 'method' argument must " "be 'theil_u', 'cramer_v', or 'mutual_information'"
+        )
+
+    passed = metric < threshold
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = sliced_dataset.copy()  # copy all properties
+        test_name = inspect.stack()[0][3]
+        output_ds.name = debug_prefix + test_name
+    # ---
+
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
+
+    return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
+
+
+@test(name="Cramer's V", tags=["statistic", "nominal association", "classification"])
+def test_cramer_v(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    Summary: Cramer's V is a statistical measure used to assess the strength and nature of association between two
+    categorical variables. It is an extension of the chi-squared test for independence and takes into account the
+    dimensions of the contingency table. Cramer's V ranges from 0 to 1, where 0 indicates no association and 1
+    indicates a perfect association.
+
+    Description: Cramer's V is particularly useful for analyzing nominal data and understanding the relationship between
+    categorical variables. It's a normalized version of the chi-squared statistic that considers the dimensions of the
+    contingency table. The formula adjusts for the number of observations and the number of categories in the
+    variables to provide a more interpretable measure of association.
+    Mathematically, the Cramer's V metric can be expressed as:
+
+    .. math::
+
+      V = \sqrt{\\frac{\chi^2}{n \cdot \min(k-1, r-1)}}
+
+    where: :math:`\chi^2` is the chi-squared statistic for the two variables. n is the total number of observations.
+    :math:`k` is the
+    number of categories in one variable. :math:`r` is the number of categories in the other variable.
+
+    Args:
+      model(BaseModel):
+          Model used to compute the test
+      dataset(Dataset):
+          Dataset used to compute the test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
+      threshold(float):
+          Threshold value for the Cramer's V score
+      debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the rows of the dataset slice.
+    """
+    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug).execute()
+
+
+@test(name="Mutual Information", tags=["statistic", "nominal association", "classification"])
+def test_mutual_information(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    Summary: The mutual information statistical test is a measure used to quantify the degree of association between two
+    categorical variables. It assesses how much information about one variable can be gained from knowing the other
+    variable's value. Mutual information is based on the concept of entropy and provides a way to determine the level
+    of dependency or correlation between categorical variables.
+
+    Description: Mutual information measures the reduction in uncertainty about one variable given knowledge of the
+    other variable. It takes into account both individual and joint distributions of the variables and provides a value
+    indicating how much information is shared between them. Higher mutual information values suggest stronger
+    association, while lower values indicate weaker or no association.
+    Mathematically, the mutual information metric can be expressed as:
+
+    .. math::
+
+      I(X;Y) = \sum_{x \in X} \sum_{y \in Y} p(x, y) \cdot \log ( \\frac{p(x, y)}{p(x) \cdot p(y)})
+
+    where: :math:`p(x,y)` is the joint probability mass function of variables :math:`X` and :math:`Y`. :math:`p(x)` and
+    :math:`p(y)` are the marginal probability mass functions of variables :math:`X` and :math:`Y` respectively.
+
+    Args:
+      model(BaseModel):
+          Model used to compute the test
+      dataset(Dataset):
+          Dataset used to compute the test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
+      threshold(float):
+          Threshold value for the mutual information score
+      debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the rows of the dataset slice.
+    """
+    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug).execute()
+
+
+@test(name="Theil's U", tags=["statistic", "nominal association", "classification"])
+def test_theil_u(
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+) -> TestResult:
+    """
+    Summary: Theil's U statistical test for nominal association is a measure used to assess the strength and direction
+    of association between two categorical variables. It quantifies the inequality in the distribution of one variable
+    relative to the distribution of the other variable, providing insights into the pattern of association between
+    them. Theil's U ranges from 0 to 1, where 0 indicates no association, and 1 indicates a perfect association.
+
+    Description: Theil's U for nominal association is commonly used to analyze the relationships between variables like
+    ethnicity, gender, or occupation. It considers the proportions of one variable's categories within each category of
+    the other variable. The calculation involves comparing the observed joint distribution of the two variables with
+    what would be expected if there were no association.
+    Mathematically, Theil's U for nominal association can be expressed as:
+
+    .. math::
+
+      U = \\frac{H(x|y) - H(y|x)}{H(x)}
+
+    where :math:`H(x|y)`, :math:`H(y|x)` are the conditional entropies of the two variables and :math:`H(x)` is the
+    entropy of the first variable.
+
+    Args:
+      model(BaseModel):
+          Model used to compute the test
+      dataset(Dataset):
+          Dataset used to compute the test
+      slicing_function(SlicingFunction):
+          Slicing function to be applied on the dataset
+      threshold(float):
+          Threshold value for the Theil's U score
+      debug(bool):
+          If True and the test fails,
+          a dataset will be provided containing the rows of the dataset slice.
+    """
+    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold, debug).execute()
