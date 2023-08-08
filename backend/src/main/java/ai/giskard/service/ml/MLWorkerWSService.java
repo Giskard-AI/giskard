@@ -133,10 +133,30 @@ public class MLWorkerWSService {
         }
     }
 
-    public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId) {
-        return getResultWaiter(repId, true);
+    /**
+     * Create a BlockingQueue as a waiter of result for a request with given repId. Create one if not exists.
+     * @param repId     the id of the request
+     */
+    public void prepareResultWaiter(String repId) {
+        getResultWaiter(repId, true);
     }
 
+    /**
+     * Returns a BlockingQueue as a waiter of result for a request with given repId.
+     * @param repId the id of the request
+     * @return      the corresponding BlockingQueue
+     */
+    public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId) {
+        return getResultWaiter(repId, false);
+    }
+
+    /**
+     * Returns a BlockingQueue as a waiter of result for a request with given repId.
+     * Create one in message pool if indicated.
+     * @param repId     the id of the request
+     * @param create    whether to create a new BlockingQueue for the request if not exists
+     * @return          the corresponding or created BlockingQueue
+     */
     public BlockingQueue<MLWorkerReplyMessage> getResultWaiter(String repId, boolean create) {
         if (finalMessagePool.containsKey(repId)) return finalMessagePool.get(repId);
 

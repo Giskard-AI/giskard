@@ -45,7 +45,7 @@ public class MLWorkerWSCommService {
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
-        mlWorkerWSService.getResultWaiter(repId.toString());
+        mlWorkerWSService.prepareResultWaiter(repId.toString());
 
         // Prepare the parameters and publish message
         send(workerID, action, param, repId);
@@ -64,7 +64,7 @@ public class MLWorkerWSCommService {
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
-        mlWorkerWSService.getResultWaiter(repId.toString());
+        mlWorkerWSService.prepareResultWaiter(repId.toString());
 
         // Prepare the parameters and publish message
         send(workerID, action, param, repId);
@@ -83,7 +83,7 @@ public class MLWorkerWSCommService {
     public UUID triggerAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
         // Prepare to receive a one-shot result
         UUID repId = UUID.randomUUID();
-        mlWorkerWSService.getResultWaiter(repId.toString());
+        mlWorkerWSService.prepareResultWaiter(repId.toString());
 
         // Prepare the parameters and publish message
         send(workerID, action, param, repId);
@@ -134,7 +134,7 @@ public class MLWorkerWSCommService {
 
     public String awaitReply(UUID repId, long milliseconds) {
         String result = null;
-        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString());
         try {
             // Waiting for the result
             long begin = System.currentTimeMillis();
@@ -159,7 +159,7 @@ public class MLWorkerWSCommService {
 
     public String blockAwaitReply(UUID repId) {
         String result = null;
-        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString(), false);
+        BlockingQueue<MLWorkerReplyMessage> queue = mlWorkerWSService.getResultWaiter(repId.toString());
         try {
             // Waiting for the result
             MLWorkerReplyMessage message;
