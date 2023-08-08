@@ -324,6 +324,7 @@ def test_nominal_association(
     Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to
     determine whether there is a significant relationship or dependency between the two. It assesses whether the
     observed association is likely to occur by chance or if it represents a true association.
+
     Description: The general procedure involves setting up a null hypothesis that assumes no association between the
     variables and an alternative hypothesis that suggests an association exists. The statistical test is calculated
     based on three methods: "theil_u", "cramer_v" and "mutual_information".
