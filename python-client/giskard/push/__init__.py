@@ -52,6 +52,20 @@ def increase_probability(model: BaseModel, saved_example: Dataset, training_labe
     return TestResult(passed=proba > training_label_proba, metric=proba - training_label_proba)
 
 
+@test(name="One-Sample Overconfidence test", tags=["one-sample test", "custom"])
+def one_sample_overconfidence_test(model: BaseModel, saved_example: Dataset):
+    if model.is_classification:
+        test_result = test_overconfidence_rate(model, saved_example).execute()
+        return TestResult(passed=test_result.passed, metric=test_result.metric)
+
+
+@test(name="One-Sample Underconfidence test", tags=["one-sample test", "custom"])
+def one_sample_underconfidence_test(model: BaseModel, saved_example: Dataset):
+    if model.is_classification:
+        test_result = test_underconfidence_rate(model, saved_example).execute()
+        return TestResult(passed=test_result.passed, metric=test_result.metric)
+
+
 class ExamplePush(Push):
     saved_example = None
     training_label = None
@@ -77,14 +91,12 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [
-            if_overconfidence_rate_decrease(rate=rate),
-            correct_example(saved_example=dataset_row, training_label=training_label),
-            increase_probability(
-                saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
-            ),
-        ]
-        # To complete debugger filter
+        self.tests = [one_sample_overconfidence_test(saved_example=dataset_row)]  #
+        # if_overconfidence_rate_decrease(rate=rate),
+        #     correct_example(saved_example=dataset_row, training_label=training_label),
+        #     increase_probability(
+        #         saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
+        #     ),
         self.predicted_label = predicted_label
 
     def _overconfidence(self):
@@ -93,26 +105,19 @@ class OverconfidencePush(ExamplePush):
             "details": [
                 # Disabled temporarily
                 # {
-                #    "action": "Save this example for further inspection and testing",
-                #    "explanation": "This may help you identify spurious correlation and create unit test based on "
-                #    "these examples",
-                #    "button": "Save Example",
-                #    "cta": CallToActionKind.SaveExample,
-                # },
-                # {
-                #     "action": "Generate unit tests to check if this example is correctly predicted",
-                #     "explanation": "This enables you to make sure this specific example is correct for a new model",
-                #     "button": "Create unit tests",
-                #     "cta": CallToActionKind.CreateUnitTest,
+                # "action": "Save this example for further inspection and testing",
+                # "explanation": "This may help you identify spurious correlation and create one-sample tests based on these examples",
+                # "button": "Save Example",
+                #  "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
-                    "explanation": "This may help you ensure that the overconfidence rate is at an acceptable level",
-                    "button": "Create test",
+                    "action": "Generate a one-sample test automatically to check if this example is correctly predicted",
+                    "explanation": "This enables you to make sure this specific example is correct for a new model",
+                    "button": "Create one-sample test",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Filter this debugger session with similar examples",
+                    "action": "Filter this debugging session with similar examples",
                     "explanation": "Debugging similar examples may help you find common patterns",
                     "button": "Open debugger",
                     "cta": CallToActionKind.OpenDebuggerOverconfidence,
@@ -132,13 +137,15 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [
-            if_underconfidence_rate_decrease(rate=rate),
-            correct_example(saved_example=dataset_row, training_label=training_label),
-            increase_probability(
-                saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
-            ),
-        ]
+        self.tests = [one_sample_underconfidence_test(saved_example=dataset_row)]
+
+        # [
+        #     if_underconfidence_rate_decrease(rate=rate),
+        #     correct_example(saved_example=dataset_row, training_label=training_label),
+        #     increase_probability(
+        #         saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
+        #     ),
+        # ]
 
     def _borderline(self):
         res = {
@@ -146,27 +153,19 @@ class BorderlinePush(ExamplePush):
             "details": [
                 # Disabled temporarily
                 # {
-                #    "action": "Save this example for further inspection and testing",
-                #    "explanation": "This may help you identify inconsistent patterns and create a unit test based "
-                #                   "on these examples",
-                #    "button": "Save Example",
-                #    "cta": CallToActionKind.SaveExample,
-                # },
-                # {
-                #     "action": "Generate tests specific to this example",
-                #     "explanation": "This may help you ensure that this example is not predicted with low confidence "
-                #     "for a new model",
-                #     "button": "Create test",
-                #     "cta": CallToActionKind.CreateUnitTest,
+                # "action": "Save this example for further inspection and testing",
+                # "explanation": "This may help you identify inconsistent patterns and create one-sample tests based on these examples",
+                # "button": "Save Example",
+                # "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a test to check if the rate of <br>underconfidence</br> rows is decreasing",
-                    "explanation": "This may help you ensure that the underconfidence rate is at an acceptable level",
-                    "button": "Create test",
+                    "action": "Generate a one-sample test automatically the underconfidence",
+                    "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
+                    "button": "Create one-sample test",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Open the debugger session on similar examples",
+                    "action": "Filter this debugging session with similar examples",
                     "explanation": "Debugging similar examples may help you find common patterns",
                     "button": "Open debugger",
                     "cta": CallToActionKind.OpenDebuggerBorderline,
@@ -221,22 +220,22 @@ class ContributionPush(FeaturePush):
             "push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
             "details": [
                 {
-                    "action": "Filter this debugger session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
+                    "action": "Save slice and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CreateSlice,
                 },
                 {
-                    "action": "Generate a performance difference test",
-                    "explanation": "This may help ensure this spurious pattern is not common to the whole dataset",
-                    "button": "Create test",
+                    "action": "Generate a test to check if this correlation holds with the whole dataset",
+                    "explanation": "Correlations may be spurious, double check if it has a business sense",
+                    "button": "Create Test",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Save slice and continue debugging session",
-                    "explanation": "Saving the slice will enable you to use it later",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
+                    "action": "Filter this debugging session with similar examples",
+                    "explanation": "Debugging similar examples may help you find common spurious patterns",
+                    "button": "Open Debugger",
+                    "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
             ],
         }
@@ -249,22 +248,22 @@ class ContributionPush(FeaturePush):
             "push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
             "details": [
                 {
-                    "action": "Open the debugger session on similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
-                },
-                {
-                    "action": "Generate a test to check if this correlation holds with the whole dataset",
-                    "explanation": "Correlations may be spurious, double check if it has a business sense",
-                    "button": "Create test",
-                    "cta": CallToActionKind.CreateTest,
-                },
-                {
                     "action": "Save slice and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
+                },
+                {
+                    "action": "Generate a test to check if this correlation holds with the whole dataset",
+                    "explanation": "Correlations may be spurious, double check if it has a business sense",
+                    "button": "Create Test",
+                    "cta": CallToActionKind.CreateTest,
+                },
+                {
+                    "action": "Filter this debugging session with similar examples",
+                    "explanation": "Debugging similar examples may help you find common patterns",
+                    "button": "Open debugger",
+                    "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
             ],
         }
@@ -312,8 +311,7 @@ class PerturbationPush(FeaturePush):
             "details": [
                 {
                     "action": "Generate a robustness test that slightly perturb this feature",
-                    "explanation": "This will enable you to make sure the model is invariant against small similar "
-                    "changes",
+                    "explanation": "This will enable you to make sure the model is robust against similar small changes",
                     "button": "Create test",
                     "cta": CallToActionKind.CreateTest,
                 },
