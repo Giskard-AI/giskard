@@ -133,7 +133,7 @@ def action_in_thread(callback, ml_worker, action, req):
 
     except Exception as e:
         info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
-        logger.warn(e)
+        logger.warning(e)
 
     if rep_id:
         # Reply if there is an ID
