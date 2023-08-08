@@ -62,7 +62,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 
 
 def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> Tuple[np.ndarray, shap.Explainer]:
-    """Performs SHAP values calculation for each sample of a given dataset."""
+    """Perform SHAP values calculation for each sample of a given dataset."""
 
     def prepare_df(_df):
         _df = model.prepare_dataframe(_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
@@ -72,10 +72,7 @@ def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -
         else:
             prepared_dataset = Dataset(_df, column_types=dataset.column_types)
 
-        # Why to repeat this step?
-        prepared_df = model.prepare_dataframe(
-            prepared_dataset.df, column_dtypes=prepared_dataset.column_dtypes, target=prepared_dataset.target
-        )
+        prepared_df = prepared_dataset.df
 
         columns_original_order = (
             model.meta.feature_names
@@ -108,6 +105,7 @@ def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_val
 
     # Select SHAP values, which explain model's predictions with the highest probability.
     filtered_shap_values = list()
+
     for sample_idx, sample_prediction_idx in enumerate(predictions):
         prediction_explanation = shap_values[sample_prediction_idx][sample_idx]
         filtered_shap_values.append(prediction_explanation)
@@ -166,6 +164,7 @@ def _wandb_general_bar_plot(shap_explanations: shap.Explanation, feature_names: 
 
     # Calculate global shap means.
     shap_general_means = list()
+
     for feature_name in feature_names:
         shap_general_means.append(np.abs(shap_explanations[:, feature_name].values).mean())
 
