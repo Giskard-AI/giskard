@@ -57,7 +57,23 @@ public class MLWorkerWSCommService {
             return null;
         }
 
-        return parseReplyDTO(action, result);
+        try {
+            return switch (action) {
+                case getInfo -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
+                case runAdHocTest -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
+                case datasetProcessing -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
+                case runTestSuite -> parseReplyDTO(result, MLWorkerWSTestSuiteDTO.class);
+                case runModel, stopWorker, generateQueryBasedSlicingFunction -> new MLWorkerWSEmptyDTO();
+                case runModelForDataFrame -> parseReplyDTO(result, MLWorkerWSRunModelForDataFrameDTO.class);
+                case explain -> parseReplyDTO(result, MLWorkerWSExplainDTO.class);
+                case explainText -> parseReplyDTO(result, MLWorkerWSExplainTextDTO.class);
+                case echo -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
+                case generateTestSuite -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
+                case getCatalog -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
+            };
+        } catch (JsonProcessingException e) {
+            return parseReplyErrorDTO(result);
+        }
     }
 
     @Transactional(propagation = Propagation.NEVER)
@@ -77,7 +93,23 @@ public class MLWorkerWSCommService {
             return null;
         }
 
-        return parseReplyDTO(action, result);
+        try {
+            return switch (action) {
+                case getInfo -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
+                case runAdHocTest -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
+                case datasetProcessing -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
+                case runTestSuite -> parseReplyDTO(result, MLWorkerWSTestSuiteDTO.class);
+                case runModel, stopWorker, generateQueryBasedSlicingFunction -> new MLWorkerWSEmptyDTO();
+                case runModelForDataFrame -> parseReplyDTO(result, MLWorkerWSRunModelForDataFrameDTO.class);
+                case explain -> parseReplyDTO(result, MLWorkerWSExplainDTO.class);
+                case explainText -> parseReplyDTO(result, MLWorkerWSExplainTextDTO.class);
+                case echo -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
+                case generateTestSuite -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
+                case getCatalog -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
+            };
+        } catch (JsonProcessingException e) {
+            return parseReplyErrorDTO(result);
+        }
     }
 
     public UUID triggerAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
@@ -102,34 +134,21 @@ public class MLWorkerWSCommService {
         );
     }
 
-    public MLWorkerWSBaseDTO parseReplyDTO(MLWorkerWSAction action, String result) {
+    public <T> T parseReplyDTO(String result, Class<T> valueType) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(result, valueType);
+    }
+
+    public MLWorkerWSErrorDTO parseReplyErrorDTO(String result) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return switch (action) {
-                case getInfo -> objectMapper.readValue(result, MLWorkerWSGetInfoDTO.class);
-                case runAdHocTest -> objectMapper.readValue(result, MLWorkerWSRunAdHocTestDTO.class);
-                case datasetProcessing -> objectMapper.readValue(result, MLWorkerWSDatasetProcessingDTO.class);
-                case runTestSuite -> objectMapper.readValue(result, MLWorkerWSTestSuiteDTO.class);
-                case runModel, stopWorker, generateQueryBasedSlicingFunction -> new MLWorkerWSEmptyDTO();
-                case runModelForDataFrame -> objectMapper.readValue(result, MLWorkerWSRunModelForDataFrameDTO.class);
-                case explain -> objectMapper.readValue(result, MLWorkerWSExplainDTO.class);
-                case explainText -> objectMapper.readValue(result, MLWorkerWSExplainTextDTO.class);
-                case echo -> objectMapper.readValue(result, MLWorkerWSEchoMsgDTO.class);
-                case generateTestSuite -> objectMapper.readValue(result, MLWorkerWSGenerateTestSuiteDTO.class);
-                case getCatalog -> objectMapper.readValue(result, MLWorkerWSCatalogDTO.class);
-            };
-        } catch (JsonProcessingException e) {
-            // Parse error information
-            log.warn("Deserialization failed: {}", e.getMessage());
-            try {
-                MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
-                log.warn("Parsed error: {}", error.getErrorStr());
-                return error;
-            } catch (JsonProcessingException e1) {
-                log.warn("Neither a reply nor an error: {}", result);
-                return null;
-            }
+            MLWorkerWSErrorDTO error = objectMapper.readValue(result, MLWorkerWSErrorDTO.class);
+            log.warn("Parsed error: {}", error.getErrorStr());
+            return error;
+        } catch (JsonProcessingException e1) {
+            log.warn("Not an valid error: {}", result);
         }
+        return null;
     }
 
     public String awaitReply(UUID repId, long milliseconds) {

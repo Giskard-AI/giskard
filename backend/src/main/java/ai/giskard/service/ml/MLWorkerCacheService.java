@@ -2,7 +2,6 @@ package ai.giskard.service.ml;
 
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
-import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
 import ai.giskard.ml.dto.MLWorkerWSCatalogDTO;
 import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.repository.ProjectRepository;
@@ -17,6 +16,7 @@ import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,28 +87,29 @@ public class MLWorkerCacheService {
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
-            MLWorkerWSBaseDTO result = null;
+            MLWorkerWSCatalogDTO response = null;
             UUID replyUuid = mlWorkerWSCommService.triggerAction(
                 isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
                 MLWorkerWSAction.getCatalog, null
             );
             String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
             if (reply != null) {
-                result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.getCatalog, reply);
-            }
-            if (result instanceof MLWorkerWSCatalogDTO response) {
-
-                return CatalogDTO.builder()
-                    .tests(response.getTests().values().stream()
-                        .map(test -> convertMLWorkerWSObject(test, TestFunctionDTO.class))
-                        .toList())
-                    .slices(response.getSlices().values().stream()
-                        .map(test -> convertMLWorkerWSObject(test, SlicingFunctionDTO.class))
-                        .toList())
-                    .transformations(response.getTransformations().values().stream()
-                        .map(test -> convertMLWorkerWSObject(test, TransformationFunctionDTO.class))
-                        .toList())
-                    .build();
+                try {
+                    response = mlWorkerWSCommService.parseReplyDTO(reply, MLWorkerWSCatalogDTO.class);
+                    return CatalogDTO.builder()
+                        .tests(response.getTests().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, TestFunctionDTO.class))
+                            .toList())
+                        .slices(response.getSlices().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, SlicingFunctionDTO.class))
+                            .toList())
+                        .transformations(response.getTransformations().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, TransformationFunctionDTO.class))
+                            .toList())
+                        .build();
+                } catch (JsonProcessingException e) {
+                    mlWorkerWSCommService.parseReplyErrorDTO(reply);
+                }
             }
         } else if (!isInternal) {
             // Fallback to internal ML worker to not display empty catalog
