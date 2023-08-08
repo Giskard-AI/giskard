@@ -27,7 +27,6 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import GetInfoParam
 from giskard.ml_worker.websocket.utils import (
-    action_in_thread,
     do_run_adhoc_test,
     extract_debug_info,
     fragment_message,
@@ -46,6 +45,7 @@ from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
+from giskard.utils import threaded
 
 import math
 import tempfile
@@ -68,6 +68,8 @@ WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorke
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
+# Open a new thread to process and reply, avoid slowing down the WebSocket message loop
+@threaded
 def dispatch_action(callback, ml_worker, action, req):
     # Parse the response ID
     rep_id = req["id"] if "id" in req.keys() else None
@@ -122,8 +124,7 @@ def websocket_actor(action: MLWorkerAction):
             logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
             def wrapped_callback(ml_worker: MLWorker, req: dict, *args, **kwargs):
-                # Open a new thread to process and reply, avoid slowing down the WebSocket message loop
-                action_in_thread(dispatch_action, callback, ml_worker, action, req)
+                dispatch_action(callback, ml_worker, action, req)
 
             WEBSOCKET_ACTORS[action.name] = wrapped_callback
         return callback

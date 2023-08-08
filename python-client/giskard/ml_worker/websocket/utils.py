@@ -37,7 +37,6 @@ import shutil
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
-import threading
 
 logger = logging.getLogger(__name__)
 
@@ -69,10 +68,6 @@ def parse_action_param(action, params):
 
 def fragment_message(payload: str, frag_i: int, frag_length: int):
     return payload[frag_i * frag_length : min((frag_i + 1) * frag_length, len(payload))]
-
-
-def action_in_thread(dispatcher, callback, ml_worker, action, req):
-    threading.Thread(target=dispatcher, args=(callback, ml_worker, action, req)).start()
 
 
 def extract_debug_info(request_arguments):
