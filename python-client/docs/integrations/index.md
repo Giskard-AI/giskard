@@ -7,6 +7,7 @@
 :hidden:
 
 mlflow/index
+wandb/index
 ```
 
 ::::::{grid} 1 1 2 2
