@@ -18,6 +18,10 @@ Classification tests
   - :func:`~.giskard.testing.test_right_label`
   - :func:`~.giskard.testing.test_output_in_range`
   - :func:`~.giskard.testing.test_disparate_impact`
+  - :func:`~.giskard.testing.test_nominal_association`
+  - :func:`~.giskard.testing.test_cramer_v`
+  - :func:`~.giskard.testing.test_mutual_information`
+  - :func:`~.giskard.testing.test_theil_u`
 
 - **Performance tests**
 
