@@ -292,6 +292,14 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 function openSliceModal() {
     $vfm.show({
         component: CreateSliceCatalogModal,
+        bind: {
+            projectId: props.projectId,
+        },
+        on: {
+            created: (uuid) => {
+                selected.value = slicingFunctions.value.find(t => t.uuid === uuid);
+            }
+        }
     })
 }
 
