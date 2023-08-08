@@ -88,7 +88,7 @@ public class MLWorkerCacheService {
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
             MLWorkerWSCatalogDTO response = null;
-            UUID replyUuid = mlWorkerWSCommService.triggerAction(
+            UUID replyUuid = mlWorkerWSCommService.performActionAsync(
                 isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
                 MLWorkerWSAction.getCatalog, null
             );

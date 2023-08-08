@@ -43,49 +43,24 @@ public class MLWorkerWSCommService {
 
     @Transactional(propagation = Propagation.NEVER)
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
-        // Prepare to receive a one-shot result
-        UUID repId = UUID.randomUUID();
-        mlWorkerWSService.prepareResultWaiter(repId.toString());
-
-        // Prepare the parameters and publish message
-        send(workerID, action, param, repId);
-
-        String result = blockAwaitReply(repId);
-        if (result == null) {
-            mlWorkerWSService.removeResultWaiter(repId.toString());
-            log.warn("Received an empty reply for {} {}", action, repId);
-            return null;
-        }
-
-        try {
-            return switch (action) {
-                case getInfo -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
-                case runAdHocTest -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
-                case datasetProcessing -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
-                case runTestSuite -> parseReplyDTO(result, MLWorkerWSTestSuiteDTO.class);
-                case runModel, stopWorker, generateQueryBasedSlicingFunction -> new MLWorkerWSEmptyDTO();
-                case runModelForDataFrame -> parseReplyDTO(result, MLWorkerWSRunModelForDataFrameDTO.class);
-                case explain -> parseReplyDTO(result, MLWorkerWSExplainDTO.class);
-                case explainText -> parseReplyDTO(result, MLWorkerWSExplainTextDTO.class);
-                case echo -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
-                case generateTestSuite -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
-                case getCatalog -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
-            };
-        } catch (JsonProcessingException e) {
-            return parseReplyErrorDTO(result);
-        }
+        return performAction(workerID, action, param, 0);
     }
 
     @Transactional(propagation = Propagation.NEVER)
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
-        // Prepare to receive a one-shot result
+        // Prepare to receive the final result
         UUID repId = UUID.randomUUID();
         mlWorkerWSService.prepareResultWaiter(repId.toString());
 
         // Prepare the parameters and publish message
         send(workerID, action, param, repId);
 
-        String result = awaitReply(repId, milliseconds);
+        String result = null;
+        if (milliseconds > 0) {
+            result = awaitReply(repId, milliseconds);
+        } else {
+            result = blockAwaitReply(repId);
+        }
 
         if (result == null) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
@@ -112,8 +87,8 @@ public class MLWorkerWSCommService {
         }
     }
 
-    public UUID triggerAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
-        // Prepare to receive a one-shot result
+    public UUID performActionAsync(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
+        // Prepare to receive the final result
         UUID repId = UUID.randomUUID();
         mlWorkerWSService.prepareResultWaiter(repId.toString());
 
