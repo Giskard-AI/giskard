@@ -321,8 +321,12 @@ def test_nominal_association(
     debug: bool = False,
 ):
     """
-    Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to determine whether there is a significant relationship or dependency between the two. It assesses whether the observed association is likely to occur by chance or if it represents a true association.
-    Description: The general procedure involves setting up a null hypothesis that assumes no association between the variables and an alternative hypothesis that suggests an association exists. The statistical test is calculated based on three methods: "theil_u", "cramer_v" and "mutual_information".
+    Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to
+    determine whether there is a significant relationship or dependency between the two. It assesses whether the
+    observed association is likely to occur by chance or if it represents a true association.
+    Description: The general procedure involves setting up a null hypothesis that assumes no association between the
+    variables and an alternative hypothesis that suggests an association exists. The statistical test is calculated
+    based on three methods: "theil_u", "cramer_v" and "mutual_information".
 
     Args:
       model(BaseModel):
@@ -332,7 +336,8 @@ def test_nominal_association(
       slicing_function(SlicingFunction):
           Slicing function to be applied on the dataset
       method(Optional[str]):
-          The association test statistic. Choose between "theil_u", "cramer_v", and "mutual_information" (default = "theil_u")
+          The association test statistic. Choose between "theil_u", "cramer_v", and "mutual_information".
+          (default = "theil_u")
       threshold(float):
           Threshold value for the Cramer's V score
       debug(bool):
@@ -384,11 +389,24 @@ def test_cramer_v(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
     """
-    Summary: Cramer's V is a statistical measure used to assess the strength and nature of association between two categorical variables. It is an extension of the chi-squared test for independence and takes into account the dimensions of the contingency table. Cramer's V ranges from 0 to 1, where 0 indicates no association and 1 indicates a perfect association.
+    Summary: Cramer's V is a statistical measure used to assess the strength and nature of association between two
+    categorical variables. It is an extension of the chi-squared test for independence and takes into account the
+    dimensions of the contingency table. Cramer's V ranges from 0 to 1, where 0 indicates no association and 1
+    indicates a perfect association.
 
-    Description: Cramer's V is particularly useful for analyzing nominal data and understanding the relationship between categorical variables. It's a normalized version of the chi-squared statistic that considers the dimensions of the contingency table. The formula adjusts for the number of observations and the number of categories in the variables to provide a more interpretable measure of association.
-    Mathematically, the Cramer's V metric can be expressed as: V = \sqrt{\frac{\chi^2}{n \cdot \min(k-1, r-1)}}
-    where: chi^2 is the chi-squared statistic for the two variables. n is the total number of observations. k is the number of categories in one variable. r is the number of categories in the other variable.
+    Description: Cramer's V is particularly useful for analyzing nominal data and understanding the relationship between
+    categorical variables. It's a normalized version of the chi-squared statistic that considers the dimensions of the
+    contingency table. The formula adjusts for the number of observations and the number of categories in the
+    variables to provide a more interpretable measure of association.
+    Mathematically, the Cramer's V metric can be expressed as:
+
+    .. math::
+
+      V = \sqrt{\\frac{\chi^2}{n \cdot \min(k-1, r-1)}}
+
+    where: :math:`\chi^2` is the chi-squared statistic for the two variables. n is the total number of observations.
+    :math:`k` is the
+    number of categories in one variable. :math:`r` is the number of categories in the other variable.
 
     Args:
       model(BaseModel):
@@ -411,11 +429,23 @@ def test_mutual_information(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
     """
-    The mutual information statistical test is a measure used to quantify the degree of association between two categorical variables. It assesses how much information about one variable can be gained from knowing the other variable's value. Mutual information is based on the concept of entropy and provides a way to determine the level of dependency or correlation between categorical variables.
+    Summary: The mutual information statistical test is a measure used to quantify the degree of association between two
+    categorical variables. It assesses how much information about one variable can be gained from knowing the other
+    variable's value. Mutual information is based on the concept of entropy and provides a way to determine the level
+    of dependency or correlation between categorical variables.
 
-    Description: Mutual information measures the reduction in uncertainty about one variable given knowledge of the other variable. It takes into account both individual and joint distributions of the variables and provides a value indicating how much information is shared between them. Higher mutual information values suggest stronger association, while lower values indicate weaker or no association.
-    Mathematically, the mutual information metric can be expressed as: I(X;Y) = \sum_{x \in X} \sum_{y \in Y} p(x, y) \cdot \log \left( \frac{p(x, y)}{p(x) \cdot p(y)} \right)
-    where: p(x,y) is the joint probability mass function of variables X and Y. p(x) and p(y) are the marginal probability mass functions of variables X and Y respectively.
+    Description: Mutual information measures the reduction in uncertainty about one variable given knowledge of the
+    other variable. It takes into account both individual and joint distributions of the variables and provides a value
+    indicating how much information is shared between them. Higher mutual information values suggest stronger
+    association, while lower values indicate weaker or no association.
+    Mathematically, the mutual information metric can be expressed as:
+
+    .. math::
+
+      I(X;Y) = \sum_{x \in X} \sum_{y \in Y} p(x, y) \cdot \log ( \\frac{p(x, y)}{p(x) \cdot p(y)})
+
+    where: :math:`p(x,y)` is the joint probability mass function of variables :math:`X` and :math:`Y`. :math:`p(x)` and
+    :math:`p(y)` are the marginal probability mass functions of variables :math:`X` and :math:`Y` respectively.
 
     Args:
       model(BaseModel):
@@ -438,11 +468,23 @@ def test_theil_u(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
     """
-    Summary: Theil's U statistical test for nominal association is a measure used to assess the strength and direction of association between two categorical variables. It quantifies the inequality in the distribution of one variable relative to the distribution of the other variable, providing insights into the pattern of association between them. Theil's U ranges from 0 to 1, where 0 indicates no association, and 1 indicates a perfect association.
+    Summary: Theil's U statistical test for nominal association is a measure used to assess the strength and direction
+    of association between two categorical variables. It quantifies the inequality in the distribution of one variable
+    relative to the distribution of the other variable, providing insights into the pattern of association between
+    them. Theil's U ranges from 0 to 1, where 0 indicates no association, and 1 indicates a perfect association.
 
-    Description: Theil's U for nominal association is commonly used to analyze the relationships between variables like ethnicity, gender, or occupation. It considers the proportions of one variable's categories within each category of the other variable. The calculation involves comparing the observed joint distribution of the two variables with what would be expected if there were no association.
-    Mathematically, Theil's U for nominal association can be expressed as: U = \frac{H(x|y) - H(y|x)}{H(x)}
-    where H(x|y), H(y|x) are the conditional entropies of the two variables and H(x) is the entropy of the first variable.
+    Description: Theil's U for nominal association is commonly used to analyze the relationships between variables like
+    ethnicity, gender, or occupation. It considers the proportions of one variable's categories within each category of
+    the other variable. The calculation involves comparing the observed joint distribution of the two variables with
+    what would be expected if there were no association.
+    Mathematically, Theil's U for nominal association can be expressed as:
+
+    .. math::
+
+      U = \\frac{H(x|y) - H(y|x)}{H(x)}
+
+    where :math:`H(x|y)`, :math:`H(y|x)` are the conditional entropies of the two variables and :math:`H(x)` is the
+    entropy of the first variable.
 
     Args:
       model(BaseModel):
