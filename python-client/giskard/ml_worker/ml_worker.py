@@ -58,7 +58,7 @@ class MLWorker:
             # Retrieve from settings for internal ML Worker
             self.ml_worker_id = INTERNAL_WORKER_ID
             backend_url = AnyHttpUrl(
-                url=f"http://{settings.host}:{settings.ws_port}/{settings.ws_path}",
+                url=f"http://{settings.host}:{settings.ws_port}/{settings.ws_path}",  # noqa NOSONAR - we don't actually use http here
                 scheme="http",
                 host=settings.host,
                 port=settings.ws_port,
@@ -94,7 +94,7 @@ class MLWorker:
         try:
             self._connect_websocket_client(self.ml_worker_id == INTERNAL_WORKER_ID)
         except Exception as e:
-            time.sleep(1 + random.random() * 2)
+            time.sleep(1 + random.random() * 2)  # noqa NOSONAR - we won't be affected by the waiting time
             self.ws_attempts += 1
             logger.debug(f"Disconnected due to {e}, reconnecting...")
             self.connect_websocket_client()
