@@ -81,16 +81,11 @@ public class TestSuiteExecutionService {
             Map<Long, SuiteTest> tests = suite.getTests().stream()
                 .collect(Collectors.toMap(SuiteTest::getId, Function.identity()));
 
-            MLWorkerWSBaseDTO result = null;
-            UUID replyUuid = mlWorkerWSCommService.triggerAction(
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
                 MLWorkerWSAction.runTestSuite,
                 param
             );
-            String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
-            if (reply != null) {
-                result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.runTestSuite, reply);
-            }
 
             if (result instanceof MLWorkerWSTestSuiteDTO response) {
                 execution.setResult(getResult(response));

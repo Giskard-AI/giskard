@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
@@ -86,10 +87,15 @@ public class MLWorkerCacheService {
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+            MLWorkerWSBaseDTO result = null;
+            UUID replyUuid = mlWorkerWSCommService.triggerAction(
                 isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
                 MLWorkerWSAction.getCatalog, null
             );
+            String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
+            if (reply != null) {
+                result = mlWorkerWSCommService.parseReplyDTO(MLWorkerWSAction.getCatalog, reply);
+            }
             if (result instanceof MLWorkerWSCatalogDTO response) {
 
                 return CatalogDTO.builder()
