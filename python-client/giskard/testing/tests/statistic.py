@@ -421,7 +421,7 @@ def test_cramer_v(
           If True and the test fails,
           a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug)
+    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug).execute()
 
 
 @test(name="Mutual Information", tags=["statistic", "nominal association", "classification"])
@@ -460,7 +460,7 @@ def test_mutual_information(
           If True and the test fails,
           a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug)
+    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug).execute()
 
 
 @test(name="Theil's U", tags=["statistic", "nominal association", "classification"])
@@ -499,4 +499,4 @@ def test_theil_u(
           If True and the test fails,
           a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold, debug)
+    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold, debug).execute()
