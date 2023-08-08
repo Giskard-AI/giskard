@@ -29,15 +29,15 @@ def create_contribution_push(model, ds, df):
                     )
                     return res
 
-                # else:
-                #     res = ContributionPush(
-                #         feature=el,
-                #         value=values[el].values[0],
-                #         bounds=bounds,
-                #         model_type=SupportedModelTypes.CLASSIFICATION,
-                #         correct_prediction=True,
-                #     )
-                #     return res
+                else:
+                    res = ContributionPush(
+                        feature=el,
+                        value=values[el].values[0],
+                        bounds=bounds,
+                        model_type=SupportedModelTypes.CLASSIFICATION,
+                        correct_prediction=True,
+                    )
+                    return res
 
     if model.meta.model_type == SupportedModelTypes.REGRESSION and _existing_shap_values(ds):
         shap_res = _contribution_push(model, ds, df)
@@ -61,15 +61,15 @@ def create_contribution_push(model, ds, df):
                     )
                     return res
 
-                # else:
-                #     res = ContributionPush(
-                #         feature=el,
-                #         value=values[el].values[0],
-                #         bounds=bounds,
-                #         model_type=SupportedModelTypes.REGRESSION,
-                #         correct_prediction=True,
-                #     )
-                #     return res
+                else:
+                    res = ContributionPush(
+                        feature=el,
+                        value=values[el].values[0],
+                        bounds=bounds,
+                        model_type=SupportedModelTypes.REGRESSION,
+                        correct_prediction=True,
+                    )
+                    return res
 
 
 def _contribution_push(model, ds, df):

@@ -27,7 +27,7 @@ def create_overconfidence_push(model, ds, df):
         if training_label != prediction and (
             prediction_proba - training_label_proba
         ) >= _default_overconfidence_threshold(model):
-            rate = test_overconfidence_rate(model, ds).metric
+            rate = test_overconfidence_rate(model, ds).execute().metric
             res = OverconfidencePush(training_label, training_label_proba, row_slice, prediction, rate=rate)
             return res
 
@@ -51,5 +51,5 @@ def create_borderline_push(model, ds, df):
         if (
             abs_diff <= 0.1
         ):  # TODO: import ai.giskard.config.ApplicationProperties;  applicationProperties.getBorderLineThreshold()
-            rate = test_underconfidence_rate(model, ds).metric
+            rate = test_underconfidence_rate(model, ds).execute().metric
             return BorderlinePush(target_value, target_value_proba, row_slice, rate=rate)

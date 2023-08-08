@@ -8,7 +8,11 @@ from giskard.models.base import BaseModel
 from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
-from giskard import test_overconfidence_rate, TestResult, test, test_underconfidence_rate
+from giskard import TestResult, test
+
+from giskard.testing.tests.statistic import test_theil_u
+from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate
+from typing import Any
 
 
 class SupportedPerturbationType(Enum):
@@ -24,6 +28,30 @@ class Push:
     pushkind = None
 
 
+@test(name="If Underconfidence Decreases", tags=["custom"])
+def if_underconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float):
+    new_rate = test_underconfidence_rate(model, dataset).metric
+    return TestResult(passed=new_rate < rate, metric=new_rate - rate)
+
+
+@test(name="If Overconfidence Decreases", tags=["custom"])
+def if_overconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float):
+    new_rate = test_overconfidence_rate(model, dataset).metric
+    return TestResult(passed=new_rate < rate, metric=new_rate - rate)
+
+
+@test(name="Example Correctness", tags=["unit test", "custom"])
+def correct_example(model: BaseModel, saved_example: Dataset, training_label: Any):
+    prediction = model.predict(saved_example).prediction.values[0]
+    return TestResult(passed=prediction == training_label, metric=prediction == training_label)
+
+
+@test(name="Increase Probability", tags=["unit test", "custom"])
+def increase_probability(model: BaseModel, saved_example: Dataset, training_label: Any, training_label_proba: Any):
+    proba = model.predict(saved_example).all_predictions[training_label].values[0]
+    return TestResult(passed=proba > training_label_proba, metric=proba - training_label_proba)
+
+
 class ExamplePush(Push):
     saved_example = None
     training_label = None
@@ -36,41 +64,12 @@ class ExamplePush(Push):
             push_details=self.details,
         )
 
-    def _increase_proba(self):
-        @test(name="Increase Probability", tags=["unit test", "custom"])
-        def increase_probability(model: BaseModel):
-            proba = model.predict(self.saved_example).all_predictions[self.training_label].values[0]
-            return TestResult(passed=proba > self.training_label_proba, metric=proba - self.training_label_proba)
-
-        return increase_probability
-
-    def _check_if_correct(self):
-        @test(name="Example Correctness", tags=["unit test", "custom"])
-        def correct_example(model: BaseModel):
-            prediction = model.predict(self.saved_example).prediction.values[0]
-            return TestResult(passed=prediction == self.training_label, metric=prediction == self.training_label)
-
-        return correct_example
-
-    def _decrease_overconfidence_rate(self, old_rate: float):
-        @test(name="If Overconfidence Decreases", tags=["custom"])
-        def if_overconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float = old_rate):
-            new_rate = test_overconfidence_rate(model, dataset).metric
-            return TestResult(passed=new_rate < rate, metric=new_rate - rate)
-
-        return if_overconfidence_rate_decrease
-
-    def _decrease_underconfidence_rate(self, old_rate: float):
-        @test(name="If Underconfidence Decreases", tags=["custom"])
-        def if_underconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float = old_rate):
-            new_rate = test_underconfidence_rate(model, dataset).metric
-            return TestResult(passed=new_rate < rate, metric=new_rate - rate)
-
-        return if_underconfidence_rate_decrease
-
 
 class OverconfidencePush(ExamplePush):
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
+        # self.qqqq = increase_probability(
+        #     saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
+        # )
         self._overconfidence()
         self.pushkind = PushKind.Overconfidence
 
@@ -78,14 +77,15 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        if_overconf_decrease, if_proba_increase, if_correct = self._create_tests(rate=rate)
-        self.tests = [if_overconf_decrease]
-        self.unit_tests = [if_proba_increase, if_correct]
+        self.tests = [
+            if_overconfidence_rate_decrease(rate=rate),
+            correct_example(saved_example=dataset_row, training_label=training_label),
+            increase_probability(
+                saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
+            ),
+        ]
         # To complete debugger filter
         self.predicted_label = predicted_label
-
-    def _create_tests(self, rate):
-        return self._decrease_overconfidence_rate(old_rate=rate), self._increase_proba(), self._check_if_correct()
 
     def _overconfidence(self):
         res = {
@@ -99,12 +99,12 @@ class OverconfidencePush(ExamplePush):
                 #    "button": "Save Example",
                 #    "cta": CallToActionKind.SaveExample,
                 # },
-                {
-                    "action": "Generate unit tests to check if this example is correctly predicted",
-                    "explanation": "This enables you to make sure this specific example is correct for a new model",
-                    "button": "Create unit tests",
-                    "cta": CallToActionKind.CreateUnitTest,
-                },
+                # {
+                #     "action": "Generate unit tests to check if this example is correctly predicted",
+                #     "explanation": "This enables you to make sure this specific example is correct for a new model",
+                #     "button": "Create unit tests",
+                #     "cta": CallToActionKind.CreateUnitTest,
+                # },
                 {
                     "action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
                     "explanation": "This may help you ensure that the overconfidence rate is at an acceptable level",
@@ -132,12 +132,13 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        if_underconf_decrease, if_proba_increase, if_correct = self._create_tests(rate=rate)
-        self.tests = [if_underconf_decrease]
-        self.unit_tests = [if_proba_increase, if_correct]
-
-    def _create_tests(self, rate):
-        return self._decrease_underconfidence_rate(old_rate=rate), self._increase_proba(), self._check_if_correct()
+        self.tests = [
+            if_underconfidence_rate_decrease(rate=rate),
+            correct_example(saved_example=dataset_row, training_label=training_label),
+            increase_probability(
+                saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
+            ),
+        ]
 
     def _borderline(self):
         res = {
@@ -151,13 +152,13 @@ class BorderlinePush(ExamplePush):
                 #    "button": "Save Example",
                 #    "cta": CallToActionKind.SaveExample,
                 # },
-                {
-                    "action": "Generate tests specific to this example",
-                    "explanation": "This may help you ensure that this example is not predicted with low confidence "
-                    "for a new model",
-                    "button": "Create test",
-                    "cta": CallToActionKind.CreateUnitTest,
-                },
+                # {
+                #     "action": "Generate tests specific to this example",
+                #     "explanation": "This may help you ensure that this example is not predicted with low confidence "
+                #     "for a new model",
+                #     "button": "Create test",
+                #     "cta": CallToActionKind.CreateUnitTest,
+                # },
                 {
                     "action": "Generate a test to check if the rate of <br>underconfidence</br> rows is decreasing",
                     "explanation": "This may help you ensure that the underconfidence rate is at an acceptable level",
@@ -208,6 +209,12 @@ class ContributionPush(FeaturePush):
         # Slice creation
         self._slicing_function()
         # Push text creation
+        if self.correct_prediction:
+            self._contribution_correct(feature, value)
+        else:
+            self._contribution_incorrect(feature, value)
+        # Test selection
+        self._test_selection(self.slicing_function, self.correct_prediction)
 
     def _contribution_incorrect(self, feature, value):
         res = {
@@ -279,12 +286,8 @@ class ContributionPush(FeaturePush):
                 self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
             elif self.model_type == SupportedModelTypes.CLASSIFICATION:
                 self.tests = [test_diff_f1_push(slicing_function=slicing_fn)]
-        # TODO
-        # else:
-        #     if self.model_type == SupportedModelTypes.REGRESSION:
-        #         self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
-        #     elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-        #         self.tests = [test_f1(slicing_function=slicing_fn, threshold=0.5)]
+        elif correct_prediction:
+            self.tests = [test_theil_u(slicing_function=slicing_fn)]
 
 
 class PerturbationPush(FeaturePush):

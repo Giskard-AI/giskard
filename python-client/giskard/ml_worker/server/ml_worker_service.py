@@ -744,10 +744,6 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                 for test in push.tests:
                     uuid = test.upload(self.client)
 
-            if request.cta_kind == CallToActionKind.CreateUnitTest:
-                for unit_test in push.unit_tests:
-                    uuid = unit_test.upload(self.client)
-
             if uuid != "":
                 logger.info(f"Uploaded object for CTA with uuid: {uuid}")
 
