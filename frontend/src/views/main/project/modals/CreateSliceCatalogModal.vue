@@ -10,21 +10,12 @@
             <v-col>
               <p class="text-subtitle-1 text-left mb-0">Select the scope</p>
               <v-radio-group v-model="scope" class="mt-0" row>
-                <v-radio label="Dataset" value="dataset"></v-radio>
+                <v-radio label="Specific dataset" value="dataset"></v-radio>
 
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
                     <div v-on="on">
-                      <v-radio label="Project" value="project" disabled></v-radio>
-                    </div>
-                  </template>
-                  <span>Coming soon</span>
-                </v-tooltip>
-
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <div v-on="on">
-                      <v-radio label="Global" value="global" disabled></v-radio>
+                      <v-radio label="General" value="general" disabled></v-radio>
                     </div>
                   </template>
                   <span>Coming soon</span>
