@@ -24,7 +24,7 @@ Test description |  Check if this specific example is overconfident - one-sample
 "explanation": "This enables you to make sure this specific example is correct for a new model",
 "button": "Create one-sample test"
 
-"action": "Open the debugger session on similar examples",
+"action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
 "button": "Open debugger"
 ```
@@ -52,7 +52,7 @@ Test description |   Check if this specific example is underconfident - one-samp
 "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
 "button": "Create one-sample test"
 
-"action": "Open the debugger session on similar examples",
+"action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
 "button": "Open debugger"
 ```
@@ -79,7 +79,7 @@ Test description | Create Theil's U test automatically
 "explanation": "Correlations may be spurious, double check if it has a business sense",
 "button": "Create Test"
 
-"action": "Open the debugger session on similar examples",
+"action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
 "button": "Open debugger"
 
@@ -108,7 +108,7 @@ Test description | Check if the performance of an F1-score/RMSE test is more tha
 "explanation": "Correlations may be spurious, double check if it has a business sense",
 "button": "Create Test"
 
-"action": "Open the debugger session on similar examples",
+"action": "Filter this debugging session with similar examples",
 "explanation": "Debugging similar examples may help you find common spurious patterns",
 "button": "Open Debugger"
 ```
