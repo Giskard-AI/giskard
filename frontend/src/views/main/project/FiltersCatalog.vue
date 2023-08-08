@@ -389,8 +389,8 @@ function openSliceModal() {
 }
 
 .create-slice-item {
-    font-size: 1.25rem !important;
-    letter-spacing: 0.0125em !important;
-    font-family: "Roboto", sans-serif !important;
+    text-align: center;
+    font-size: 1.125rem;
+    white-space: break-spaces;
 }
 </style>
