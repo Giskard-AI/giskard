@@ -1,12 +1,14 @@
 from giskard.datasets.base import Dataset
+from giskard.models.base.model import BaseModel
 from giskard.testing.tests.calibration import (
     test_overconfidence_rate,
     test_underconfidence_rate,
 )
 from ..push import BorderlinePush, OverconfidencePush
+import pandas as pd
 
 
-def create_overconfidence_push(model, ds, df):
+def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
     if model.is_classification:
         row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
 
@@ -24,7 +26,7 @@ def create_overconfidence_push(model, ds, df):
             return res
 
 
-def create_borderline_push(model, ds, df):
+def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
     if model.is_classification:
         row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
         values = row_slice.df
