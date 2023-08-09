@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Callable, Dict, List, Any, Tuple, Iterable
+from typing import Callable, Dict, List, Any, Iterable
 
 import wandb
 import numpy as np
@@ -16,7 +16,7 @@ import shap  # noqa
 logger = logging.getLogger(__name__)
 
 
-def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> Tuple[np.ndarray, shap.Explainer]:
+def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> np.ndarray:
     """Perform SHAP values calculation for samples of a given dataset."""
 
     def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -51,7 +51,7 @@ def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -
     )
     shap_values = explainer.shap_values(input_df, silent=True)
 
-    return shap_values, explainer
+    return shap_values
 
 
 def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
@@ -142,7 +142,7 @@ def shap_to_wandb(model: BaseModel, dataset: Dataset, **kwargs) -> None:
         feature_types = {key: dataset.column_types[key] for key in feature_names}
 
         # Calculate SHAP values.
-        shap_values, _ = explain_full(model, dataset, dataset.df)
+        shap_values = explain_full(model, dataset, dataset.df)
 
         # For classification, take SHAP of prediction with the highest probability.
         if model.is_classification:
