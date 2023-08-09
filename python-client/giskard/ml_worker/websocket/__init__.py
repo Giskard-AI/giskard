@@ -19,7 +19,7 @@ class ErrorReply(WorkerReply):
 
 
 class ArtifactRef(BaseModel):
-    project_key: str
+    project_key: Optional[str] = None
     id: str
     sample: Optional[bool] = None
 
