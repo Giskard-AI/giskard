@@ -80,7 +80,7 @@ def start_stop_options(func):
     help="Should ML Worker be started as a Daemon in a background",
 )
 @click.option(
-    "--token",
+    "--hf-token",
     "-t",
     "hf_token",
     envvar="GSK_HF_TOKEN",
@@ -203,7 +203,7 @@ def stop_command(is_server, url, stop_all):
 @start_stop_options
 @click.option("--api-key", "-k", "api_key", help="Giskard server API key")
 @click.option(
-    "--token",
+    "--hf-token",
     "-t",
     "hf_token",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
