@@ -1,18 +1,19 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import zscore
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.models.base.model import BaseModel
-from .utils import slice_bounds
+
 from ..models.model_explanation import explain
 from ..push import ContributionPush
-import pandas as pd
+from .utils import slice_bounds
 
 
 def create_contribution_push(model, ds, df):
     if existing_shap_values(ds):
-        shap_res = contribution_push(model, ds, df)
+        shap_res = detect_shap_outlier(model, ds, df)
         slice_df = ds.slice(
             lambda row: row.equals(df.iloc[0])
         )  # Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
@@ -28,6 +29,7 @@ def create_contribution_push(model, ds, df):
             y = values[ds.target].values[0]
             y_hat = model.predict(slice_df).prediction[0]
             error = abs(y_hat - y)
+
             correct_prediction = abs(error - y) / y < 0.2
 
         if shap_res is not None:
@@ -41,7 +43,7 @@ def create_contribution_push(model, ds, df):
             )
 
 
-def contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+def detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
     feature_shap = get_shap_values(model, ds, df)
     keys = list(feature_shap.keys())
 

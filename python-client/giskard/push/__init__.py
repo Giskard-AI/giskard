@@ -1,3 +1,6 @@
+from typing import Any
+
+from giskard import TestResult, test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated import ml_worker_pb2
@@ -6,12 +9,9 @@ from giskard.models.base import BaseModel
 from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
 from giskard.push.utils import TransformationInfo
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
+from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
-from giskard import TestResult, test
-
 from giskard.testing.tests.statistic import test_theil_u
-from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate
-from typing import Any
 
 
 class Push:
