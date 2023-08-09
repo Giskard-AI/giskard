@@ -2,30 +2,18 @@
   <div v-if="mainStore.authAvailable">
     <v-toolbar flat dense light>
       <v-spacer></v-spacer>
-      <v-text-field
-          v-model="searchTerm"
-          label="Search"
-          single-line
-          hide-details
-          outlined
-          dense
-          clearable
-          class="shrink"
-          append-icon="mdi-magnify"
-      ></v-text-field>
+      <v-text-field v-model="searchTerm" label="Search" single-line hide-details outlined dense clearable class="shrink" append-icon="mdi-magnify"></v-text-field>
       <v-checkbox dense v-model="showInactive" label="Show inactive" class="pt-4 mx-1"></v-checkbox>
 
       <v-tooltip bottom :disabled="canAddUsers">
-        <template v-slot:activator="{ on}">
+        <template v-slot:activator="{ on }">
           <div v-on="on">
 
-            <v-btn small tile color="primary" to="/main/admin/users/invite" class="mx-1"
-                   :disabled="!canAddUsers">
+            <v-btn small tile color="primary" to="/main/admin/users/invite" class="mx-1" :disabled="!canAddUsers">
               <v-icon left>send</v-icon>
               Invite
             </v-btn>
-            <v-btn small tile color="primary" to="/main/admin/users/create" class="mx-1"
-                   :disabled="!canAddUsers">
+            <v-btn small tile color="primary" to="/main/admin/users/create" class="mx-1" :disabled="!canAddUsers">
               <v-icon left>add_circle</v-icon>
               Create
             </v-btn>
@@ -42,23 +30,43 @@
         <template v-slot:item.roles="{ item }">
           <v-chip small v-for='r in item.roles'>{{ r | roleName }}</v-chip>
         </template>
-        <template v-slot:item.enabled="{item}">
+        <template v-slot:item.enabled="{ item }">
           <v-icon v-if="item.enabled">checkmark</v-icon>
           <v-icon v-else>close</v-icon>
         </template>
-        <template v-slot:item.action='{item}' v-slot:item.id='{item}'>
-          <v-btn icon slot='activator' :to="{name: 'main-admin-users-edit', params: {id: item.id}}">
-            <v-icon color='primary'>edit</v-icon>
-          </v-btn>
-          <v-btn v-if='item.enabled' icon @click='disableUser(item)'>
-            <v-icon color='accent'>mdi-account-cancel</v-icon>
-          </v-btn>
-          <v-btn v-else icon @click='enableUser(item)'>
-            <v-icon color='warning'>restore</v-icon>
-          </v-btn>
-          <v-btn v-if='!item.enabled' icon @click='deleteUser(item)'>
-            <v-icon color='accent'>delete</v-icon>
-          </v-btn>
+        <template v-slot:item.action='{ item }' v-slot:item.id='{item}'>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn icon v-on="on" slot='activator' :to="{ name: 'main-admin-users-edit', params: { id: item.id } }">
+                <v-icon color='primary'>edit</v-icon>
+              </v-btn>
+            </template>
+            <span>Edit</span>
+          </v-tooltip>
+          <v-tooltip v-if="item.enabled" bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" icon @click='disableUser(item)'>
+                <v-icon color='accent'>mdi-account-cancel</v-icon>
+              </v-btn>
+            </template>
+            <span>Disable</span>
+          </v-tooltip>
+          <v-tooltip v-else bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" icon @click='enableUser(item)'>
+                <v-icon color='warning'>restore</v-icon>
+              </v-btn>
+            </template>
+            <span>Restore</span>
+          </v-tooltip>
+          <v-tooltip v-if="!item.enabled" bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" icon @click='deleteUser(item)'>
+                <v-icon color='accent'>delete</v-icon>
+              </v-btn>
+            </template>
+            <span>Delete</span>
+          </v-tooltip>
         </template>
       </v-data-table>
     </v-container>

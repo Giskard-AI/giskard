@@ -10,6 +10,10 @@ __all__ = [
     "test_right_label",
     "test_output_in_range",
     "test_disparate_impact",
+    "test_nominal_association",
+    "test_cramer_v",
+    "test_mutual_information",
+    "test_theil_u",
     "test_mae",
     "test_rmse",
     "test_recall",
@@ -33,7 +37,7 @@ __all__ = [
     "test_metamorphic_decreasing_wilcoxon",
     "test_metamorphic_invariance_wilcoxon",
     "test_underconfidence_rate",
-    "test_overconfidence_rate"
+    "test_overconfidence_rate",
 ]
 
 from giskard.testing.tests.drift import (
@@ -76,8 +80,9 @@ from giskard.testing.tests.statistic import (
     test_right_label,
     test_output_in_range,
     test_disparate_impact,
+    test_nominal_association,
+    test_cramer_v,
+    test_mutual_information,
+    test_theil_u,
 )
-from giskard.testing.tests.calibration import (
-    test_underconfidence_rate,
-    test_overconfidence_rate
-)
+from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate
