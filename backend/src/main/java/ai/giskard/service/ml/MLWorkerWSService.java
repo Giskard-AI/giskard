@@ -21,15 +21,15 @@ public class MLWorkerWSService {
     private final Logger log = LoggerFactory.getLogger(MLWorkerWSService.class);
 
     private final ConcurrentHashMap<String, String> workers = new ConcurrentHashMap<>();
-    private String potentialInternalWorkerId;
+    private String pendingInternalWorkerId;
 
     private final ConcurrentHashMap<String, MLWorkerReplyAggregator> messagePool = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, BlockingQueue<MLWorkerReplyMessage>> finalMessagePool = new ConcurrentHashMap<>();
 
     public boolean prepareInternalWorker(@NonNull String uuid) {
-        if (uuid.equals(potentialInternalWorkerId)) return false;
+        if (uuid.equals(pendingInternalWorkerId)) return false;
 
-        potentialInternalWorkerId = uuid;
+        pendingInternalWorkerId = uuid;
         return true;
     }
 
@@ -39,7 +39,7 @@ public class MLWorkerWSService {
             return false;
         }
         // Check for internal worker
-        if (id.equals(MLWorkerID.INTERNAL.toString()) && !uuid.equals(this.potentialInternalWorkerId)) {
+        if (id.equals(MLWorkerID.INTERNAL.toString()) && !uuid.equals(this.pendingInternalWorkerId)) {
             // UUID not matched, could be an attacker
             return false;
         }
@@ -49,9 +49,9 @@ public class MLWorkerWSService {
     }
 
     public boolean removeWorker(@NonNull String uuid) {
-        if (uuid.equals(potentialInternalWorkerId)) {
+        if (uuid.equals(pendingInternalWorkerId)) {
             // Clear the memorized internal worker id
-            potentialInternalWorkerId = null;
+            pendingInternalWorkerId = null;
             return workers.remove(MLWorkerID.INTERNAL.toString(), uuid);
         }
 
