@@ -36,6 +36,7 @@ def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -
 
 
 def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
+    """Get SHAP of predictions with the highest probability."""
     # Get raw indices of predictions with the highest probability.
     predictions = model.predict(dataset).raw_prediction
 
