@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -104,7 +103,7 @@ public class TestSuiteExecutionService {
                 return;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
                 execution.setCompletionDate(new Date());
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Cannot run test suite");
         }

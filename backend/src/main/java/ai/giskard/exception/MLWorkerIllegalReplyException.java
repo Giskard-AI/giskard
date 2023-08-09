@@ -1,5 +1,6 @@
 package ai.giskard.exception;
 
+import ai.giskard.ml.dto.MLWorkerWSErrorDTO;
 import lombok.Getter;
 
 @Getter
@@ -12,5 +13,11 @@ public class MLWorkerIllegalReplyException extends RuntimeException {
         super(errorString);
         this.errorType = errorType;
         this.errorString = errorString;
+    }
+
+    public MLWorkerIllegalReplyException(MLWorkerWSErrorDTO error) {
+        super(error.getErrorStr());
+        this.errorType = error.getErrorType() + ": " + error.getErrorStr();
+        this.errorString = error.getDetail();
     }
 }

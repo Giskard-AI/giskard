@@ -93,7 +93,7 @@ public class ModelService {
         if (result instanceof MLWorkerWSRunModelForDataFrameDTO response) {
             return response;
         } else if (result instanceof MLWorkerWSErrorDTO error) {
-            throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+            throw new MLWorkerIllegalReplyException(error);
         }
         throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker RunModelForDataFrame reply");
     }
@@ -120,7 +120,7 @@ public class ModelService {
             if (result instanceof MLWorkerWSExplainDTO response) {
                 return response;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker Explain reply");
         }
@@ -145,7 +145,7 @@ public class ModelService {
             if (result instanceof MLWorkerWSExplainTextDTO response) {
                 return response;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker explainText reply");
         }
@@ -191,7 +191,7 @@ public class ModelService {
             if (result instanceof MLWorkerWSEmptyDTO) {
                 return;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Cannot get ML Worker explainText reply");
         }

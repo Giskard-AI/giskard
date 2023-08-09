@@ -10,4 +10,6 @@ public class MLWorkerWSErrorDTO implements MLWorkerWSBaseDTO {
 
     @JsonProperty("error_type")
     private String errorType;
+
+    private String detail;
 }

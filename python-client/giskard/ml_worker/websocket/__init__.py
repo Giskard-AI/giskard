@@ -15,6 +15,7 @@ class Empty(WorkerReply):
 class ErrorReply(WorkerReply):
     error_str: str
     error_type: str
+    detail: Optional[str] = None
 
 
 class ArtifactRef(BaseModel):

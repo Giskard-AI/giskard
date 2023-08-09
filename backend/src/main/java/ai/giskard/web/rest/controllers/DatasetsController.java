@@ -199,7 +199,7 @@ public class DatasetsController {
             if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
                 return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Dataset processing failed");
         }

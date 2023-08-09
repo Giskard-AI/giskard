@@ -80,7 +80,7 @@ public class TestController {
                 }
                 return res;
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Unable to get results of AdHoc test");
         }

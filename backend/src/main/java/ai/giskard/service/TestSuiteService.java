@@ -220,7 +220,7 @@ public class TestSuiteService {
 
                 return testSuiteRepository.save(suite).getId();
             } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error.getErrorType(), error.getErrorStr());
+                throw new MLWorkerIllegalReplyException(error);
             }
             throw new MLWorkerIllegalReplyException("Invalid response", "Cannot create test suite");
         }

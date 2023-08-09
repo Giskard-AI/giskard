@@ -10,6 +10,7 @@ import platform
 import pkg_resources
 import psutil
 import sys
+import traceback
 import os
 import giskard
 
@@ -82,7 +83,9 @@ def dispatch_action(callback, ml_worker, action, req):
         # TODO: Allow to reply multiple messages for multiple shot
 
     except Exception as e:
-        info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
+        info: websocket.WorkerReply = websocket.ErrorReply(
+            error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
+        )
         logger.warning(e)
 
     if rep_id:
