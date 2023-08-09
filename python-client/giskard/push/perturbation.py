@@ -1,8 +1,15 @@
-from giskard.ml_worker.testing.functions.transformation import mad_transformation
-from giskard.push.utils import compute_mad
+import pandas as pd
+
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.push import SupportedPerturbationType
+from giskard.ml_worker.testing.functions.transformation import mad_transformation
+from giskard.models.base.model import BaseModel
+from giskard.push.utils import (
+    SupportedPerturbationType,
+    TransformationInfo,
+    coltype_to_supported_perturbation_type,
+    compute_mad,
+)
 from giskard.scanner.robustness.text_transformations import (
     TextGenderTransformation,
     TextLowercase,
@@ -11,6 +18,7 @@ from giskard.scanner.robustness.text_transformations import (
     TextTypoTransformation,
     TextUppercase,
 )
+
 from ..push import PerturbationPush
 
 text_transfo_list = [
@@ -23,97 +31,96 @@ text_transfo_list = [
 ]
 
 
-def create_perturbation_push(model, ds, df):
+def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
     for feat, coltype in ds.column_types.items():
-        perturbation_res = Perturbation(model, ds, df, feat, coltype)
-        if perturbation_res.coltype == SupportedPerturbationType.NUMERIC and perturbation_res.passed:
-            res = PerturbationPush(
-                feature=feat,
-                value=df.iloc[0][feat],
-                transformation_function=perturbation_res.transformation_function,
-            )
-            return res
+        coltype = coltype_to_supported_perturbation_type(coltype)
+        transformation_info = apply_perturbation(model, ds, df, feat, coltype)
+        value = df.iloc[0][feat]
+        if transformation_info is not None:
+            if coltype == SupportedPerturbationType.NUMERIC:
+                res = PerturbationPush(
+                    feature=feat,
+                    value=value,
+                    transformation_info=transformation_info,
+                )
+                return res
 
-        if perturbation_res.coltype == SupportedPerturbationType.TEXT and perturbation_res.passed:
-            res = PerturbationPush(
-                feature=feat,
-                value=df.iloc[0][feat],
-                text_perturbed=perturbation_res.text_perturbed,
-                transformation_function=perturbation_res.transformation_function,
-            )
-            return res
+            if coltype == SupportedPerturbationType.TEXT:
+                res = PerturbationPush(
+                    feature=feat,
+                    value=value,
+                    transformation_info=transformation_info,
+                )
+                return res
 
 
-class Perturbation:
-    model = None
-    ds = None
-    df = None
-    feat = None
-    coltype = None
-    passed = None
-    perturbation_value = None
-    text_perturbed = None
-    transformation_function = None
+def apply_perturbation(model, ds, df, feature, coltype):
+    transformation_function = list()
+    text_perturbed = list()
+    passed = False
+    # Create a slice of the dataset with only the row to perturb
+    ds_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
 
-    def __init__(self, model, ds, df, feature, coltype):
-        self.model = model
-        self.ds = ds
-        self.df = df
-        self.feature = feature
-        if coltype == "numeric":
-            self.coltype = SupportedPerturbationType.NUMERIC
-        elif coltype == "text":
-            self.coltype = SupportedPerturbationType.TEXT
-        self.transformation_function = list()
-        self.text_perturbed = list()
-        self._perturb_and_predict()
+    # Create a copy of the slice to apply the transformation
+    ds_slice_copy = ds_slice.copy()
 
-    def _perturb_and_predict(self):
-        # idrow = self.idrow
-        # ds_slice = self.ds.slice(lambda df: df.loc[df.index == idrow], row_level=False)
+    # Apply the transformation
+    if coltype == SupportedPerturbationType.NUMERIC:
+        # Compute the MAD of the column
+        mad = compute_mad(ds.df[feature])
 
-        ds_slice = Dataset(
-            df=self.df, target=self.ds.target, column_types=self.ds.column_types.copy(), validation=False
-        )
+        # Create the transformation
+        t = mad_transformation(column_name=feature, value_added=2 * mad)
 
-        row_perturbed = ds_slice.copy()
-        if self.coltype == SupportedPerturbationType.NUMERIC:
-            mad = compute_mad(self.ds.df[self.feature])
+        # Transform the slice
+        transformed = ds_slice_copy.transform(t)
 
-            t, row_perturbed = self._num_perturb(2 * mad, self.feature, ds_slice)
-            self._generate_perturbation(ds_slice, row_perturbed)
+        # Generate the perturbation
+        passed = check_after_perturbation(model, ds_slice, transformed)
+        if passed:
+            transformation_function.append(t)
 
-            if self.passed:
-                self.transformation_function.append(t)
+    elif coltype == SupportedPerturbationType.TEXT:
+        # Iterate over the possible text transformations
+        for text_transformation in text_transfo_list:
+            # Create the transformation
+            t = text_transformation(column=feature)
 
-        elif self.coltype == SupportedPerturbationType.TEXT:
-            for text_transformation in text_transfo_list:
-                t, row_perturbed = self._text_perturb(text_transformation, self.feature, ds_slice)
-                self._generate_perturbation(ds_slice, row_perturbed)
+            # Transform the slice
+            transformed = ds_slice_copy.transform(t)
 
-                if self.passed:
-                    self.text_perturbed.append(row_perturbed.df[self.feature])
-                    self.transformation_function.append(t)
+            # Generate the perturbation
+            passed = check_after_perturbation(model, ds_slice, transformed)
 
-            if len(self.text_perturbed) > 0:
-                self.passed = True
+            if passed:
+                text_perturbed.append(transformed.df[feature])
+                transformation_function.append(t)
 
-    def _generate_perturbation(self, ref_row, row_perturbed):
-        if self.model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-            ref_prob = self.model.predict(ref_row).prediction[0]
-            probabilities = self.model.predict(row_perturbed).prediction[0]
-            self.passed = ref_prob[0] != probabilities[0]
-        elif self.model.meta.model_type == SupportedModelTypes.REGRESSION:
-            ref_val = self.model.predict(ref_row).prediction[0]
-            new_val = self.model.predict(row_perturbed).prediction[0]
-            self.passed = (new_val - ref_val) / ref_val >= 0.2
+        if len(text_perturbed) > 0:
+            passed = True
 
-    def _num_perturb(self, perturbation_value, col, ds_slice):
-        t = mad_transformation(column_name=col, value_added=perturbation_value)
-        transformed = ds_slice.transform(t)
-        return t, transformed
+    return (
+        TransformationInfo(text_perturbed=text_perturbed, transformation_functions=transformation_function)
+        if passed
+        else None
+    )
 
-    def _text_perturb(self, transformation_function, col, ds_slice):
-        t = transformation_function(column=col)
-        transformed = ds_slice.transform(t)
-        return t, transformed
+
+def check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset):
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        # Compute the probability of the reference row
+        ref_prob = model.predict(ref_row).prediction[0]
+        # Compute the probability of the perturbed row
+        probabilities = model.predict(row_perturbed).prediction[0]
+        # Check if the probability of the reference row is different from the probability of the perturbed row
+        passed = ref_prob[0] != probabilities[0]
+        return passed
+
+    elif model.meta.model_type == SupportedModelTypes.REGRESSION:
+        # Compute the prediction of the reference row
+        ref_val = model.predict(ref_row).prediction[0]
+        # Compute the prediction of the perturbed row
+        new_val = model.predict(row_perturbed).prediction[0]
+        # Check if the prediction of the reference row is different from the prediction of the perturbed row
+        passed = (new_val - ref_val) / ref_val >= 0.2
+        return passed

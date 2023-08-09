@@ -1,11 +1,10 @@
-from enum import Enum
-
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
 from giskard.models.base import BaseModel
 from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
+from giskard.push.utils import TransformationInfo
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard import TestResult, test
@@ -13,11 +12,6 @@ from giskard import TestResult, test
 from giskard.testing.tests.statistic import test_theil_u
 from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate
 from typing import Any
-
-
-class SupportedPerturbationType(Enum):
-    NUMERIC = "numeric"
-    TEXT = "text"
 
 
 class Push:
@@ -292,32 +286,22 @@ class ContributionPush(FeaturePush):
 class PerturbationPush(FeaturePush):
     text_perturbed: list = None
     transformation_function: list = None
+    details = [
+        {
+            "action": "Generate a robustness test that slightly perturb this feature",
+            "explanation": "This will enable you to make sure the model is robust against similar small changes",
+            "button": "Create test",
+            "cta": CallToActionKind.CreateTest,
+        },
+    ]
 
-    def __init__(self, value=None, feature=None, text_perturbed=None, transformation_function=None):
+    def __init__(self, value, feature, transformation_info: TransformationInfo):
         self.pushkind = PushKind.Perturbation
-        # FeaturePush attributes
         self.feature = feature
         self.value = value
-        # PerturbationPush attributes
-        self.text_perturbed = text_perturbed
-        self.transformation_function = transformation_function
-        self.tests = [test_metamorphic_invariance(transformation_function=self.transformation_function)]
-        # Push text creation
-        self._perturbation(feature, value)
-
-    def _perturbation(self, feature, value):
-        res = {
-            "push_title": f"A small variation of {str(feature)}=={str(value)} makes the prediction change",
-            "details": [
-                {
-                    "action": "Generate a robustness test that slightly perturb this feature",
-                    "explanation": "This will enable you to make sure the model is robust against similar small changes",
-                    "button": "Create test",
-                    "cta": CallToActionKind.CreateTest,
-                },
-            ],
-        }
-
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-        return res
+        self.text_perturbed = transformation_info.text_perturbed
+        self.transformation_functions = transformation_info.transformation_functions
+        self.tests = [
+            test_metamorphic_invariance(transformation_function=transfo) for transfo in self.transformation_functions
+        ]
+        self.push_title = (f"A small variation of {str(feature)}=={str(value)} makes the prediction change",)
