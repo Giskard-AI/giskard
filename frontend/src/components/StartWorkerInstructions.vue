@@ -104,6 +104,8 @@ onMounted(async () => {
     await generateApiAccessToken();
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
         await attemptFetchHFSpacesToken();
+    } else {
+        needFetchWithHFAccessToken.value = false;
     }
 })
 </script>
