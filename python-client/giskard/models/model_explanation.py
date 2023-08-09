@@ -16,51 +16,6 @@ import shap  # noqa
 logger = logging.getLogger(__name__)
 
 
-@timer()
-def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
-    def prepare_df(df):
-        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-        if dataset.target in df.columns:
-            prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
-        else:
-            prepared_ds = Dataset(df=df, column_types=dataset.column_types)
-        prepared_df = model.prepare_dataframe(
-            prepared_ds.df, column_dtypes=prepared_ds.column_dtypes, target=prepared_ds.target
-        )
-        columns_in_original_order = (
-            model.meta.feature_names
-            if model.meta.feature_names
-            else [c for c in dataset.df.columns if c in prepared_df.columns]
-        )
-        # Make sure column order is the same as in df
-        return prepared_df[columns_in_original_order]
-
-    df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-    feature_names = list(df.columns)
-
-    input_df = prepare_df(pd.DataFrame([input_data]))
-
-    def predict_array(array):
-        arr_df = pd.DataFrame(array, columns=list(df.columns))
-        return model.predict_df(prepare_df(arr_df))
-
-    example = background_example(df, dataset.column_types)
-    kernel = shap.KernelExplainer(predict_array, example)
-    shap_values = kernel.shap_values(input_df, silent=True)
-
-    if model.is_regression:
-        explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
-    elif model.is_classification:
-        explanation_chart_data = summary_shap_classification(
-            shap_values=shap_values,
-            feature_names=feature_names,
-            class_names=model.meta.classification_labels,
-        )
-    else:
-        raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
-    return explanation_chart_data
-
-
 def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> Tuple[np.ndarray, shap.Explainer]:
     """Perform SHAP values calculation for each sample of a given dataset."""
 
@@ -218,6 +173,51 @@ def shap_to_wandb(model: BaseModel, dataset: Dataset, **kwargs) -> None:
         general_bar_plot = _wandb_general_bar_plot(shap_explanations, _FEATURE_NAMES)
         log_plots_dict.update({"Global feature importance/general_shap_bar_plot": general_bar_plot})
         run.log(log_plots_dict)
+
+
+@timer()
+def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
+    def prepare_df(df):
+        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+        if dataset.target in df.columns:
+            prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
+        else:
+            prepared_ds = Dataset(df=df, column_types=dataset.column_types)
+        prepared_df = model.prepare_dataframe(
+            prepared_ds.df, column_dtypes=prepared_ds.column_dtypes, target=prepared_ds.target
+        )
+        columns_in_original_order = (
+            model.meta.feature_names
+            if model.meta.feature_names
+            else [c for c in dataset.df.columns if c in prepared_df.columns]
+        )
+        # Make sure column order is the same as in df
+        return prepared_df[columns_in_original_order]
+
+    df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+    feature_names = list(df.columns)
+
+    input_df = prepare_df(pd.DataFrame([input_data]))
+
+    def predict_array(array):
+        arr_df = pd.DataFrame(array, columns=list(df.columns))
+        return model.predict_df(prepare_df(arr_df))
+
+    example = background_example(df, dataset.column_types)
+    kernel = shap.KernelExplainer(predict_array, example)
+    shap_values = kernel.shap_values(input_df, silent=True)
+
+    if model.is_regression:
+        explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
+    elif model.is_classification:
+        explanation_chart_data = summary_shap_classification(
+            shap_values=shap_values,
+            feature_names=feature_names,
+            class_names=model.meta.classification_labels,
+        )
+    else:
+        raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
+    return explanation_chart_data
 
 
 @timer()
