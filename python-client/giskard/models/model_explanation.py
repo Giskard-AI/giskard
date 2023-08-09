@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+from giskard.ml_worker.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap  # noqa
@@ -17,26 +17,26 @@ logger = logging.getLogger(__name__)
 
 
 def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> Tuple[np.ndarray, shap.Explainer]:
-    """Perform SHAP values calculation for each sample of a given dataset."""
+    """Perform SHAP values calculation for samples of a given dataset."""
 
-    def prepare_df(_df):
-        _df = model.prepare_dataframe(_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+    def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
+        """Prepare dataframe for an inference step."""
+        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
-        if dataset.target in _df.columns:
-            prepared_dataset = Dataset(_df, target=dataset.target, column_types=dataset.column_types)
+        if dataset.target in df.columns:
+            prepared_dataset = Dataset(df, column_types=dataset.column_types, target=dataset.target)
         else:
-            prepared_dataset = Dataset(_df, column_types=dataset.column_types)
+            prepared_dataset = Dataset(df, column_types=dataset.column_types)
 
-        prepared_df = prepared_dataset.df
-
+        # Make sure column order is the same as in the dataset.df.
         columns_original_order = (
             model.meta.feature_names
             if model.meta.feature_names
-            else [c for c in dataset.df.columns if c in prepared_df.columns]
+            else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
         )
+        prepared_df = prepared_dataset.df[columns_original_order]
 
-        # Make sure column order is the same as in df.
-        return prepared_df[columns_original_order]
+        return prepared_df
 
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
@@ -47,14 +47,14 @@ def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -
 
     # Obtain SHAP explanations.
     explainer = shap.KernelExplainer(
-        model.predict_df, background_sample, keep_index=True, feature_names=input_df.columns
+        model=model.predict_df, data=background_sample, feature_names=input_df.columns, keep_index=True
     )
     shap_values = explainer.shap_values(input_df, silent=True)
 
     return shap_values, explainer
 
 
-def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list):
+def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
     # Get raw indices of predictions with the highest probability.
     predictions = model.predict(dataset).raw_prediction
 
@@ -68,7 +68,7 @@ def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_val
     return filtered_shap_values
 
 
-def _wandb_bar_plot(shap_explanations: shap.Explanation, feature_name: str):
+def _wandb_bar_plot(shap_explanations: shap.Explanation, feature_name: str) -> Any:
     """Get wandb bar plot of shap values of the categorical feature."""
     _FEATURE_COLUMN = "feature_values"
     _SHAP_COLUMN = "shap_abs_values"
@@ -93,7 +93,7 @@ def _wandb_bar_plot(shap_explanations: shap.Explanation, feature_name: str):
     return plot
 
 
-def _wandb_scatter_plot(shap_explanations: shap.Explanation, feature_name: str):
+def _wandb_scatter_plot(shap_explanations: shap.Explanation, feature_name: str) -> Any:
     """Get wandb scatter plot of shap values of the numerical feature."""
     _FEATURE_COLUMN = "feature_values"
     _SHAP_COLUMN = "shap_values"
@@ -112,7 +112,7 @@ def _wandb_scatter_plot(shap_explanations: shap.Explanation, feature_name: str):
     return plot
 
 
-def _wandb_general_bar_plot(shap_explanations: shap.Explanation, feature_names: Iterable):
+def _wandb_general_bar_plot(shap_explanations: shap.Explanation, feature_names: Iterable) -> Any:
     """Get wandb bar plot of general shap mean values."""
     _FEATURE_COLUMN = "feature"
     _SHAP_COLUMN = "global_shap_mean"
@@ -142,7 +142,7 @@ def shap_to_wandb(model: BaseModel, dataset: Dataset, **kwargs) -> None:
         _FEATURE_TYPES = {key: dataset.column_types[key] for key in _FEATURE_NAMES}
 
         # Calculate SHAP values.
-        shap_values, explainer = explain_full(model, dataset, dataset.df)
+        shap_values, _ = explain_full(model, dataset, dataset.df)
 
         # For classification, take SHAP of prediction with the highest probability.
         if model.is_classification:
