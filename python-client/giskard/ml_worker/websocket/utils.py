@@ -167,32 +167,32 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
     for arg in request_arguments:
         if arg.is_none:
             continue
-        if arg.dataset:
+        if arg.dataset is not None:
             arguments[arg.name] = Dataset.download(
                 ml_worker.client,
                 arg.dataset.project_key,
                 arg.dataset.id,
                 arg.dataset.sample,
             )
-        elif arg.model:
+        elif arg.model is not None:
             arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
-        elif arg.slicingFunction:
+        elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, ml_worker.client, None)(
                 **parse_function_arguments(ml_worker, arg.args)
             )
-        elif arg.transformationFunction:
+        elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, ml_worker.client, None
             )(**parse_function_arguments(ml_worker, arg.args))
-        elif arg.float_arg:
+        elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
-        elif arg.int_arg:
+        elif arg.int_arg is not None:
             arguments[arg.name] = int(arg.int_arg)
-        elif arg.str_arg:
+        elif arg.str_arg is not None:
             arguments[arg.name] = str(arg.str_arg)
-        elif arg.bool_arg:
+        elif arg.bool_arg is not None:
             arguments[arg.name] = bool(arg.bool_arg)
-        elif arg.kwargs:
+        elif arg.kwargs is not None:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
             arguments.update(kwargs)
