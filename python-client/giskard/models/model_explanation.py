@@ -8,6 +8,7 @@ import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
+from giskard.models.utils import prepare_df
 from giskard.ml_worker.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
@@ -18,32 +19,12 @@ logger = logging.getLogger(__name__)
 
 def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> np.ndarray:
     """Perform SHAP values calculation for samples of a given dataset."""
-
-    def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
-        """Prepare dataframe for an inference step."""
-        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-
-        if dataset.target in df.columns:
-            prepared_dataset = Dataset(df, column_types=dataset.column_types, target=dataset.target)
-        else:
-            prepared_dataset = Dataset(df, column_types=dataset.column_types)
-
-        # Make sure column order is the same as in the dataset.df.
-        columns_original_order = (
-            model.meta.feature_names
-            if model.meta.feature_names
-            else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
-        )
-        prepared_df = prepared_dataset.df[columns_original_order]
-
-        return prepared_df
-
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
     background_sample = background_example(background_df, dataset.column_types)
 
     # Prepare input data for explanation.
-    input_df = prepare_df(input_data)
+    input_df = prepare_df(input_data, model=model, dataset=dataset)
 
     # Obtain SHAP explanations.
     explainer = shap.KernelExplainer(
@@ -177,31 +158,13 @@ def shap_to_wandb(model: BaseModel, dataset: Dataset, **kwargs) -> None:
 
 @timer()
 def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
-    def prepare_df(df):
-        df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-        if dataset.target in df.columns:
-            prepared_ds = Dataset(df=df, target=dataset.target, column_types=dataset.column_types)
-        else:
-            prepared_ds = Dataset(df=df, column_types=dataset.column_types)
-        prepared_df = model.prepare_dataframe(
-            prepared_ds.df, column_dtypes=prepared_ds.column_dtypes, target=prepared_ds.target
-        )
-        columns_in_original_order = (
-            model.meta.feature_names
-            if model.meta.feature_names
-            else [c for c in dataset.df.columns if c in prepared_df.columns]
-        )
-        # Make sure column order is the same as in df
-        return prepared_df[columns_in_original_order]
-
     df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
     feature_names = list(df.columns)
-
-    input_df = prepare_df(pd.DataFrame([input_data]))
+    input_df = prepare_df(pd.DataFrame([input_data]), model=model, dataset=dataset)
 
     def predict_array(array):
         arr_df = pd.DataFrame(array, columns=list(df.columns))
-        return model.predict_df(prepare_df(arr_df))
+        return model.predict_df(prepare_df(arr_df, model=model, dataset=dataset))
 
     example = background_example(df, dataset.column_types)
     kernel = shap.KernelExplainer(predict_array, example)
