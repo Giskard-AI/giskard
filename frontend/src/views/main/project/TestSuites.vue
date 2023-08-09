@@ -1,6 +1,5 @@
 <template>
     <div class="vertical-container">
-        <HuggingFaceTokenPopover v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
         <v-container fluid class="vc" v-if="testSuitesStore.testSuites.length > 0">
             <div v-if="testSuitesStore.currentTestSuiteId === null">
                 <v-row>
@@ -158,9 +157,12 @@
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-12 mb-6">
-                <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
-                <div class="mt-6 mb-6">
-                    <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                <HuggingFaceTokenCard v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+                <div v-else>
+                    <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
+                    <div class="mt-6 mb-6">
+                        <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                    </div>
                 </div>
             </div>
             <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
@@ -237,9 +239,9 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import {TestResult} from '@/generated-sources';
 import {useProjectStore} from '@/stores/project';
 import {useProjectArtifactsStore} from '@/stores/project-artifacts';
-import {generateGiskardClientSnippet, fetchHFToken} from "@/snippets";
-import {getLocalHFSpacesToken, saveLocalHFSpacesToken, saveLocalHFToken} from "@/utils";
-import HuggingFaceTokenPopover from "@/components/HuggingFaceTokenPopover.vue";
+import {generateGiskardClientSnippet, fetchHFSpacesToken} from "@/snippets";
+import {saveLocalHFToken, getLocalHFToken} from "@/utils";
+import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -253,7 +255,8 @@ const searchSession = ref("");
 const toggleSnippetType = ref<string | undefined>(undefined);
 const giskardClientSnippet = ref<string | null>(null);
 
-const codeContent = computed(() => {
+const codeContent = ref<string | null>(null);
+const generateCodeContent = () => {
     return `import giskard
 
 # Replace this with your own data & model creation.
@@ -285,7 +288,7 @@ ${giskardClientSnippet.value}
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-});
+};
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -410,13 +413,16 @@ function openCustomInstructions() {
 }
 
 const needFetchWithHFAccessToken = ref<boolean>(false);
-async function fetchAndSaveHFSpacesToken() {
-    const token = await fetchHFToken();
+async function attemptFetchHFSpacesToken() {
+    const token = await fetchHFSpacesToken();
     if (token) {
-        saveLocalHFSpacesToken(token);
+        if (getLocalHFToken()) {
+            giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+            codeContent.value = generateCodeContent();
+        }
         needFetchWithHFAccessToken.value = false;
     } else {
-        // Access Token seems invalidated
+        // Access Token seems invalidated or private
         needFetchWithHFAccessToken.value = true;
     }
 }
@@ -424,7 +430,15 @@ async function fetchAndSaveHFSpacesToken() {
 async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     if (useMainStore().appSettings!.isRunningOnHfSpaces) {
         saveLocalHFToken(accessToken);
-        await fetchAndSaveHFSpacesToken();
+        const token = await fetchHFSpacesToken();
+        if (token) {
+            giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+            codeContent.value = generateCodeContent();
+            needFetchWithHFAccessToken.value = false;
+        } else {
+            needFetchWithHFAccessToken.value = true;
+            useMainStore().addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+        }
     }
 }
 
@@ -438,10 +452,9 @@ onActivated(async () => {
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
     giskardClientSnippet.value = await generateGiskardClientSnippet();
-    if (useMainStore().appSettings!.isRunningOnHfSpaces && getLocalHFSpacesToken() == null) {
-        if (getLocalHFSpacesToken() == null) {
-            await fetchAndSaveHFSpacesToken();
-        }
+    codeContent.value = generateCodeContent();
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        await attemptFetchHFSpacesToken();
     }
 })
 </script>

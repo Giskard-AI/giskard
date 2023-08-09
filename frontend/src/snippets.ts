@@ -1,11 +1,10 @@
 import {useMainStore} from "@/stores/main";
 import {api} from "@/api";
 import {apiURL} from "@/env";
-import { getLocalHFSpacesToken } from "@/utils";
 
 const mainStore = useMainStore();
 
-export async function fetchHFToken() {
+export async function fetchHFSpacesToken() {
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
         try {
             const res = await api.getHuggingFaceSpacesToken(mainStore.appSettings?.hfSpaceId!!);
@@ -20,10 +19,9 @@ export async function fetchHFToken() {
     return null;
 }
 
-export async function generateGiskardClientSnippet() {
+export async function generateGiskardClientSnippet(hfToken=null) {
     const giskardToken = await api.getApiAccessToken();
     const isRunningOnHF = mainStore.appSettings!.isRunningOnHfSpaces;
-    let hfToken: any = (getLocalHFSpacesToken() ?? await fetchHFToken());
 
     let snippet = `
 # Create a Giskard client
@@ -31,7 +29,7 @@ client = giskard.GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
     token="${giskardToken?.id_token}"`;
 
-    if (isRunningOnHF) {
+    if (isRunningOnHF && hfToken) {
         snippet += `,
     hf_token="${hfToken}"`;
     }

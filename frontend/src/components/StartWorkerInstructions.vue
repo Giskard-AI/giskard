@@ -1,6 +1,5 @@
 <template>
-    <v-card outlined>
-        <HuggingFaceTokenPopover v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+    <v-card outlined v-if="needFetchWithHFAccessToken === false">
         <v-card-text>
             <v-alert class="pa-0 text-body-2" colored-border type="info">
                 <p class="mb-0">ML Worker is a python process that allows Giskard to execute models in a user's
@@ -26,6 +25,8 @@
             </div>
         </v-card-text>
     </v-card>
+    <HuggingFaceTokenCard v-else-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+    <LoadingFullscreen v-else :name="'MLWorker instructions'"/>
 </template>
 
 <script setup lang="ts">
@@ -36,9 +37,11 @@ import { apiURL } from "@/env";
 import { JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import { api } from "@/api";
-import { saveLocalHFToken, getLocalHFSpacesToken, saveLocalHFSpacesToken } from "@/utils";
-import { fetchHFToken } from "@/snippets";
-import HuggingFaceTokenPopover from "./HuggingFaceTokenPopover.vue";
+import { saveLocalHFToken, getLocalHFToken } from "@/utils";
+import { fetchHFSpacesToken } from "@/snippets";
+import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
+import LoadingFullscreen from "./LoadingFullscreen.vue";
+import {TYPE} from 'vue-toastification';
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -47,12 +50,11 @@ const route = useRoute();
 
 
 const apiAccessToken = ref<JWTToken | null>(null);
-const needFetchWithHFAccessToken = ref<boolean>(false);
+const needFetchWithHFAccessToken = ref<boolean | null>(null);
 
-const generateMLWorkerConnectionInstruction = () => {
-    if (mainStore.appSettings!.isRunningOnHfSpaces) {
+const generateMLWorkerConnectionInstruction = (hfspaceToken=null) => {
+    if (mainStore.appSettings!.isRunningOnHfSpaces && hfspaceToken) {
         try {
-            const hfspaceToken = getLocalHFSpacesToken();
             return `giskard worker start -u ${apiURL} -t ${hfspaceToken}`;
         } catch (error) {
             console.error(error);
@@ -71,31 +73,37 @@ const generateApiAccessToken = async () => {
     }
 }
 
-async function fetchAndSaveHFSpacesToken() {
-    const token = await fetchHFToken();
-    if (token) {
-        saveLocalHFSpacesToken(token);
-        codeContent.value = generateMLWorkerConnectionInstruction();
-        needFetchWithHFAccessToken.value = false;
-    } else {
-        // Access Token seems invalidated
-        needFetchWithHFAccessToken.value = true;
-    }
-}
-
 async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
         saveLocalHFToken(accessToken);
-        await fetchAndSaveHFSpacesToken();
+        const token = await fetchHFSpacesToken();
+        if (token) {
+            needFetchWithHFAccessToken.value = false;
+            codeContent.value = generateMLWorkerConnectionInstruction(token);
+        } else {
+            needFetchWithHFAccessToken.value = true;
+            mainStore.addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+        }
+    }
+}
+
+async function attemptFetchHFSpacesToken() {
+    const token = await fetchHFSpacesToken();
+    if (token) {
+        if (getLocalHFToken()) {
+            codeContent.value = generateMLWorkerConnectionInstruction(token);
+        }
+        needFetchWithHFAccessToken.value = false;
+    } else {
+        // Access Token seems invalidated or private
+        needFetchWithHFAccessToken.value = true;
     }
 }
 
 onMounted(async () => {
     await generateApiAccessToken();
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
-        if (getLocalHFSpacesToken() == null) {
-            await fetchAndSaveHFSpacesToken();
-        }
+        await attemptFetchHFSpacesToken();
     }
 })
 </script>

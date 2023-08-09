@@ -91,9 +91,7 @@ const axiosProject = axios.create({
 const apiV2 = axios.create({
     baseURL: API_V2_ROOT,
 });
-const huggingface = axios.create({
-    baseURL: "https://huggingface.co/"
-});
+const huggingface = axios.create();
 
 function unpackInterceptor(response) {
     return response.data;

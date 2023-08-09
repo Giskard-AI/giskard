@@ -18,12 +18,6 @@ export const saveLocalHFToken = (token: string) => localStorage.setItem('hf_toke
 
 export const removeLocalHFToken = () => localStorage.removeItem('hf_token');
 
-export const getLocalHFSpacesToken = (): string | null => localStorage.getItem('hfspaces_token');
-
-export const saveLocalHFSpacesToken = (token: string) => localStorage.setItem('hfspaces_token', token);
-
-export const removeLocalHFSpacesToken = () => localStorage.removeItem('hfspaces_token');
-
 export const getUserFullDisplayName = (user: UserDTO): string => {
   return user.displayName ? `${user.displayName} (${user.user_id})` : user.user_id;
 };
