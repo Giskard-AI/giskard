@@ -37,21 +37,11 @@ def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
         transformation_info = apply_perturbation(model, ds, df, feat, coltype)
         value = df.iloc[0][feat]
         if transformation_info is not None:
-            if coltype == SupportedPerturbationType.NUMERIC:
-                res = PerturbationPush(
-                    feature=feat,
-                    value=value,
-                    transformation_info=transformation_info,
-                )
-                return res
-
-            if coltype == SupportedPerturbationType.TEXT:
-                res = PerturbationPush(
-                    feature=feat,
-                    value=value,
-                    transformation_info=transformation_info,
-                )
-                return res
+            return PerturbationPush(
+                feature=feat,
+                value=value,
+                transformation_info=transformation_info,
+            )
 
 
 def apply_perturbation(model, ds, df, feature, coltype):
