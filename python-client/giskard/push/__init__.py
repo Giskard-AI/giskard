@@ -73,11 +73,22 @@ class ExamplePush(Push):
         )
 
 
+class FeaturePush(Push):
+    feature = None
+    value = None
+
+    def to_grpc(self):
+        return ml_worker_pb2.Push(
+            kind=self.pushkind,
+            key=self.feature,
+            value=str(self.value),
+            push_title=self.push_title,
+            push_details=self.details,
+        )
+
+
 class OverconfidencePush(ExamplePush):
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
-        # self.qqqq = increase_probability(
-        #     saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
-        # )
         self._overconfidence()
         self.pushkind = PushKind.Overconfidence
 
@@ -170,20 +181,6 @@ class BorderlinePush(ExamplePush):
         self.details = res["details"]
 
 
-class FeaturePush(Push):
-    feature = None
-    value = None
-
-    def to_grpc(self):
-        return ml_worker_pb2.Push(
-            kind=self.pushkind,
-            key=self.feature,
-            value=str(self.value),
-            push_title=self.push_title,
-            push_details=self.details,
-        )
-
-
 class ContributionPush(FeaturePush):
     slicing_function = None
     bounds = None
@@ -192,55 +189,21 @@ class ContributionPush(FeaturePush):
 
     def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
         self.pushkind = PushKind.Contribution
-        # FeaturePush attributes initialisation
+
         self.value = value
         self.bounds = bounds
-        # ContributionPush attributes initialisation
         self.feature = feature
         self.model_type = model_type
         self.correct_prediction = correct_prediction
-        # Slice creation
+
         self._slicing_function()
-        # Push text creation
+        self._set_title_and_details()
+        self._test_selection()
+
+    def _set_title_and_details(self):
         if self.correct_prediction:
-            self._contribution_correct(feature, value)
-        else:
-            self._contribution_incorrect(feature, value)
-        # Test selection
-        self._test_selection(self.slicing_function, self.correct_prediction)
-
-    def _contribution_incorrect(self, feature, value):
-        res = {
-            "push_title": f"{str(feature)}=={str(value)} is responsible for the incorrect prediction",
-            "details": [
-                {
-                    "action": "Save slice and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
-                },
-                {
-                    "action": "Generate a test to check if this correlation holds with the whole dataset",
-                    "explanation": "Correlations may be spurious, double check if it has a business sense",
-                    "button": "Create Test",
-                    "cta": CallToActionKind.CreateTest,
-                },
-                {
-                    "action": "Filter this debugging session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common spurious patterns",
-                    "button": "Open Debugger",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
-                },
-            ],
-        }
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-        return res
-
-    def _contribution_correct(self, feature, value):  # ON HOLD
-        res = {
-            "push_title": f"{str(feature)}=={str(value)} contributes a lot to the prediction",
-            "details": [
+            self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the prediction"
+            self.details = [
                 {
                     "action": "Save slice and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
@@ -259,11 +222,29 @@ class ContributionPush(FeaturePush):
                     "button": "Open debugger",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
-            ],
-        }
-        self.push_title = res["push_title"]
-        self.details = res["details"]
-        return res
+            ]
+        else:
+            self.push_title = f"{str(self.feature)}=={str(self.value)} is responsible for the incorrect prediction"
+            self.details = [
+                {
+                    "action": "Save slice and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CreateSlice,
+                },
+                {
+                    "action": "Generate a test to check if this correlation holds with the whole dataset",
+                    "explanation": "Correlations may be spurious, double check if it has a business sense",
+                    "button": "Create Test",
+                    "cta": CallToActionKind.CreateTest,
+                },
+                {
+                    "action": "Filter this debugging session with similar examples",
+                    "explanation": "Debugging similar examples may help you find common spurious patterns",
+                    "button": "Open Debugger",
+                    "cta": CallToActionKind.CreateSliceOpenDebugger,
+                },
+            ]
 
     def _slicing_function(self):
         if isinstance(self.bounds, list):
@@ -273,14 +254,14 @@ class ContributionPush(FeaturePush):
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
 
-    def _test_selection(self, slicing_fn: QueryBasedSliceFunction, correct_prediction):
-        if not correct_prediction:
+    def _test_selection(self):
+        if not self.correct_prediction:
             if self.model_type == SupportedModelTypes.REGRESSION:
-                self.tests = [test_diff_rmse_push(slicing_function=slicing_fn)]
+                self.tests = [test_diff_rmse_push(slicing_function=self.slicing_function)]
             elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-                self.tests = [test_diff_f1_push(slicing_function=slicing_fn)]
-        elif correct_prediction:
-            self.tests = [test_theil_u(slicing_function=slicing_fn)]
+                self.tests = [test_diff_f1_push(slicing_function=self.slicing_function)]
+        elif self.correct_prediction:
+            self.tests = [test_theil_u(slicing_function=self.slicing_function)]
 
 
 class PerturbationPush(FeaturePush):
