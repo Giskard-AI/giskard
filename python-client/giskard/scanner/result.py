@@ -129,5 +129,5 @@ class ScanResult:
 
             with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
                 self.to_html(filename=f.name)
-                wandb_artifact_name = f.name.split("/")[-1].split(".html")[0]
+                wandb_artifact_name = "Vulnerability scan results/" + f.name.split("/")[-1].split(".html")[0]
                 run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})

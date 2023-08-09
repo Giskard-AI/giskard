@@ -84,7 +84,7 @@ class TestSuiteResult:
             # Log just a test description and a metric.
             columns = ["Metric name", "Data slice", "Metric value", "Passed"]
             data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
-            run.log({"Test-Suite Results": wandb.Table(columns=columns, data=data)})
+            run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
