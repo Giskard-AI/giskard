@@ -1,38 +1,19 @@
 import logging
 import warnings
-from typing import Callable, Dict, List, Any, Iterable
+from typing import Callable, Dict, List, Any
 
-import wandb
 import numpy as np
 import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
-from giskard.models.utils import prepare_df
+from giskard.models.shap_result import ShapResult
 from giskard.ml_worker.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 import shap  # noqa
 
 logger = logging.getLogger(__name__)
-
-
-def explain_full(model: BaseModel, dataset: Dataset, input_data: pd.DataFrame) -> np.ndarray:
-    """Perform SHAP values calculation for samples of a given dataset."""
-    # Prepare background sample to be used in the KernelSHAP.
-    background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
-    background_sample = background_example(background_df, dataset.column_types)
-
-    # Prepare input data for explanation.
-    input_df = prepare_df(input_data, model=model, dataset=dataset)
-
-    # Obtain SHAP explanations.
-    explainer = shap.KernelExplainer(
-        model=model.predict_df, data=background_sample, feature_names=input_df.columns, keep_index=True
-    )
-    shap_values = explainer.shap_values(input_df, silent=True)
-
-    return shap_values
 
 
 def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
@@ -50,111 +31,54 @@ def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_val
     return filtered_shap_values
 
 
-def _wandb_bar_plot(shap_explanations: shap.Explanation, feature_name: str) -> Any:
-    """Get wandb bar plot of shap values of the categorical feature."""
-    feature_column = "feature_values"
-    shap_column = "shap_abs_values"
+def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
+    """Prepare dataframe for an inference step."""
+    df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
-    # Extract feature values and related shap explanations.
-    shap_values = shap_explanations[:, feature_name].values
-    feature_values = shap_explanations[:, feature_name].data
+    if dataset.target in df.columns:
+        prepared_dataset = Dataset(df, column_types=dataset.column_types, target=dataset.target)
+    else:
+        prepared_dataset = Dataset(df, column_types=dataset.column_types)
 
-    # We are interested in magnitude.
-    shap_abs_values = np.abs(shap_values)
-
-    # Calculate mean shap value per feature value.
-    df = pd.DataFrame(data={feature_column: feature_values, shap_column: shap_abs_values})
-    shap_abs_means = pd.DataFrame(df.groupby(feature_column)[shap_column].mean()).reset_index()
-
-    # Create bar plot.
-    table = wandb.Table(dataframe=shap_abs_means)
-    plot = wandb.plot.bar(
-        table, label=feature_column, value=shap_column, title=f"Mean(Abs(SHAP)) of '{feature_name}' feature values"
+    # Make sure column order is the same as in the dataset.df.
+    columns_original_order = (
+        model.meta.feature_names
+        if model.meta.feature_names
+        else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
     )
 
-    return plot
+    prepared_df = prepared_dataset.df[columns_original_order]
+    return prepared_df
 
 
-def _wandb_scatter_plot(shap_explanations: shap.Explanation, feature_name: str) -> Any:
-    """Get wandb scatter plot of shap values of the numerical feature."""
-    feature_column = "feature_values"
-    shap_column = "shap_values"
+def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
+    """Perform SHAP values calculation for samples of a given dataset."""
+    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+    feature_types = {key: dataset.column_types[key] for key in feature_names}
 
-    # Extract feature values and related shap explanations.
-    shap_values = shap_explanations[:, feature_name].values
-    feature_values = shap_explanations[:, feature_name].data
+    # Prepare background sample to be used in the KernelSHAP.
+    background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
+    background_sample = background_example(background_df, dataset.column_types)
 
-    # Create scatter plot.
-    df = pd.DataFrame(data={feature_column: feature_values, shap_column: shap_values})
-    table = wandb.Table(dataframe=df)
-    plot = wandb.plot.scatter(
-        table, y=feature_column, x=shap_column, title=f"'{feature_name}' feature values vs SHAP values"
+    # Prepare input data for explanation.
+    input_df = prepare_df(dataset.df, model=model, dataset=dataset)
+
+    # Obtain SHAP explanations.
+    explainer = shap.KernelExplainer(
+        model=model.predict_df, data=background_sample, feature_names=input_df.columns, keep_index=True
+    )
+    shap_values = explainer.shap_values(input_df, silent=True)
+
+    # For classification, take SHAP of prediction with the highest probability.
+    if model.is_classification:
+        shap_values = _get_cls_prediction_explanation(model, dataset, shap_values)
+
+    # Put shap and feature names to the Explanation object for a convenience.
+    shap_explanations = shap.Explanation(
+        values=shap_values, data=dataset.df[feature_names], feature_names=feature_names
     )
 
-    return plot
-
-
-def _wandb_general_bar_plot(shap_explanations: shap.Explanation, feature_names: Iterable) -> Any:
-    """Get wandb bar plot of general shap mean values."""
-    feature_column = "feature"
-    shap_column = "global_shap_mean"
-
-    # Calculate global shap means.
-    shap_general_means = list()
-
-    for feature_name in feature_names:
-        shap_general_means.append(np.abs(shap_explanations[:, feature_name].values).mean())
-
-    # Create bar plot.
-    df = pd.DataFrame(data={feature_column: feature_names, shap_column: shap_general_means})
-    table = wandb.Table(dataframe=df)
-    plot = wandb.plot.bar(
-        table, label=feature_column, value=shap_column, title="General Mean(Abs(SHAP)) across all features"
-    )
-
-    return plot
-
-
-def shap_to_wandb(model: BaseModel, dataset: Dataset, **kwargs) -> None:
-    """Log SHAP explanation graphs to the WandB run."""
-    from giskard.integrations.wandb.wandb_utils import wandb_run
-
-    with wandb_run(**kwargs) as run:
-        feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
-        feature_types = {key: dataset.column_types[key] for key in feature_names}
-
-        # Calculate SHAP values.
-        shap_values = explain_full(model, dataset, dataset.df)
-
-        # For classification, take SHAP of prediction with the highest probability.
-        if model.is_classification:
-            shap_values = _get_cls_prediction_explanation(model, dataset, shap_values)
-
-        # Put shap and feature names to the Explanation object for a convenience.
-        shap_explanations = shap.Explanation(
-            values=shap_values, data=dataset.df[feature_names], feature_names=feature_names
-        )
-
-        # Create and log plots to the wandb run.
-        log_plots_dict = dict()
-
-        for feature_name, feature_type in feature_types.items():
-            if feature_type == "category":
-                bar_plot = _wandb_bar_plot(shap_explanations, feature_name)
-                log_plots_dict.update(
-                    {f"Feature importance for categorical features/{feature_name}_shap_bar_plot": bar_plot}
-                )
-            elif feature_type == "numeric":
-                scatter_plot = _wandb_scatter_plot(shap_explanations, feature_name)
-                log_plots_dict.update(
-                    {f"Feature importance for numerical features/{feature_name}_shap_scatter_plot": scatter_plot}
-                )
-            else:
-                raise NotImplementedError("We do not support the SHAP logging of text features yet.")
-
-        general_bar_plot = _wandb_general_bar_plot(shap_explanations, feature_names)
-        log_plots_dict.update({"Global feature importance/general_shap_bar_plot": general_bar_plot})
-        run.log(log_plots_dict)
+    return ShapResult(shap_explanations, feature_types, feature_names)
 
 
 @timer()

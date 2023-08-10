@@ -5,10 +5,6 @@ from functools import lru_cache
 from typing import List
 
 import numpy as np
-import pandas as pd
-
-from giskard import Dataset
-from giskard.models.base import BaseModel
 
 
 def map_to_tuples(data: Iterator):
@@ -46,23 +42,3 @@ def fix_seed(seed=1337):
 @lru_cache(None)
 def warn_once(logger, msg: str):
     logger.warning(msg)
-
-
-def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-    """Prepare dataframe for an inference step."""
-    df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-
-    if dataset.target in df.columns:
-        prepared_dataset = Dataset(df, column_types=dataset.column_types, target=dataset.target)
-    else:
-        prepared_dataset = Dataset(df, column_types=dataset.column_types)
-
-    # Make sure column order is the same as in the dataset.df.
-    columns_original_order = (
-        model.meta.feature_names
-        if model.meta.feature_names
-        else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
-    )
-
-    prepared_df = prepared_dataset.df[columns_original_order]
-    return prepared_df
