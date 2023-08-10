@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 import pandas as pd
-from sklearn.metrics import adjusted_mutual_info_score, mutual_info_score
-from scipy import stats
 
 from ..common.examples import ExampleExtractor
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -12,6 +10,7 @@ from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..registry import Detector
 from ..decorators import detector
+from ...testing.tests.statistic import _cramer_v, _mutual_information, _theil_u
 
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
@@ -72,7 +71,14 @@ class SpuriousCorrelationDetector(Detector):
 
                 if metric_value > self.threshold:
                     predictions = dx[dx.feature > 0].prediction.value_counts(normalize=True)
-                    info = SpuriousCorrelationInfo(col, slice_fn, metric_value, measure_name, predictions)
+                    info = SpuriousCorrelationInfo(
+                        feature=col,
+                        slice_fn=slice_fn,
+                        metric_value=metric_value,
+                        metric_name=measure_name,
+                        threshold=self.threshold,
+                        predictions=predictions,
+                    )
                     issues.append(SpuriousCorrelationIssue(model, dataset, "info", info))
 
         return issues
@@ -87,25 +93,13 @@ class SpuriousCorrelationDetector(Detector):
         raise ValueError(f"Unknown method `{self.method}`")
 
 
-def _cramer_v(x, y):
-    ct = pd.crosstab(x, y)
-    return stats.contingency.association(ct, method="cramer")
-
-
-def _mutual_information(x, y):
-    return adjusted_mutual_info_score(x, y)
-
-
-def _theil_u(x, y):
-    return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
-
-
 @dataclass
 class SpuriousCorrelationInfo:
     feature: str
     slice_fn: SlicingFunction
     metric_value: float
     metric_name: str
+    threshold: float
     predictions: pd.DataFrame
 
 
@@ -149,3 +143,41 @@ class SpuriousCorrelationIssue(Issue):
     @property
     def importance(self) -> float:
         return self.info.metric_value
+
+    def generate_tests(self, with_names=False) -> list:
+        test_fn = _metric_to_test_object(self.info.metric_name)
+
+        if test_fn is None:
+            return []
+
+        tests = [
+            test_fn(
+                model=self.model,
+                dataset=self.dataset,
+                slicing_function=self.info.slice_fn,
+                threshold=self.info.threshold,
+            )
+        ]
+
+        if with_names:
+            names = [f"{self.info.metric_name} on data slice “{self.info.slice_fn}”"]
+            return list(zip(tests, names))
+
+        return tests
+
+
+_metric_test_mapping = {
+    "Cramer's V": "test_cramer_v",
+    "Mutual information": "test_mutual_information",
+    "Theil's U": "test_theil_u",
+}
+
+
+def _metric_to_test_object(metric_name):
+    from ...testing.tests import statistic
+
+    try:
+        test_name = _metric_test_mapping[metric_name]
+        return getattr(statistic, test_name)
+    except (KeyError, AttributeError):
+        return None
