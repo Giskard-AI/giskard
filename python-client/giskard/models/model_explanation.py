@@ -51,6 +51,20 @@ def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataF
     return prepared_df
 
 
+def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
+    """Create back-ground example for the SHAP explainer as a mode/median of features of the data to explain."""
+    example = df.mode(dropna=False).head(1)
+    median = df.median()
+    num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
+
+    # Replace a numerical features' mode on their median.
+    for column in num_columns:
+        example[column] = median[column]
+
+    example = example.astype(df.dtypes)
+    return example
+
+
 def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
     """Perform SHAP values calculation for samples of a given dataset."""
     feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
@@ -126,16 +140,6 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
     except Exception as e:
         logger.exception(f"Failed to explain text: {text_document}", e)
         raise Exception("Failed to create text explanation") from e
-
-
-def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
-    example = df.mode(dropna=False).head(1)  # si plusieurs modes, on prend le premier
-    # example.fillna("", inplace=True)
-    median = df.median()
-    num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
-    for column in num_columns:
-        example[column] = median[column]
-    return example.astype(df.dtypes)
 
 
 def summary_shap_classification(
