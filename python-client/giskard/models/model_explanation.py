@@ -11,7 +11,8 @@ from giskard.models.shap_result import ShapResult
 from giskard.ml_worker.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
-import shap  # noqa
+from shap.maskers import Text  # noqa
+from shap import KernelExplainer, Explanation, Explainer  # noqa
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,6 @@ def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_val
 
     # Select SHAP values, which explain model's predictions with the highest probability.
     filtered_shap_values = list()
-
     for sample_idx, sample_prediction_idx in enumerate(predictions):
         prediction_explanation = shap_values[sample_prediction_idx][sample_idx]
         filtered_shap_values.append(prediction_explanation)
@@ -53,8 +53,8 @@ def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataF
 
 def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
     """Create back-ground example for the SHAP explainer as a mode/median of features of the data to explain."""
-    example = df.mode(dropna=False).head(1)
     median = df.median()
+    example = df.mode(dropna=False).head(1)
     num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
 
     # Replace a numerical features' mode on their median.
@@ -78,9 +78,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
     input_df = prepare_df(dataset.df, model=model, dataset=dataset)
 
     # Obtain SHAP explanations.
-    explainer = shap.KernelExplainer(
-        model=model.predict_df, data=background_sample, feature_names=input_df.columns, keep_index=True
-    )
+    explainer = KernelExplainer(model.predict_df, background_sample, feature_names=input_df.columns, keep_index=True)
     shap_values = explainer.shap_values(input_df, silent=True)
 
     # For classification, take SHAP of prediction with the highest probability.
@@ -88,10 +86,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
         shap_values = _get_cls_prediction_explanation(model, dataset, shap_values)
 
     # Put shap and feature names to the Explanation object for a convenience.
-    shap_explanations = shap.Explanation(
-        values=shap_values, data=dataset.df[feature_names], feature_names=feature_names
-    )
-
+    shap_explanations = Explanation(values=shap_values, data=dataset.df[feature_names], feature_names=feature_names)
     return ShapResult(shap_explanations, feature_types, feature_names)
 
 
@@ -106,7 +101,7 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
         return model.predict_df(prepare_df(arr_df, model=model, dataset=dataset))
 
     example = background_example(df, dataset.column_types)
-    kernel = shap.KernelExplainer(predict_array, example)
+    kernel = KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df, silent=True)
 
     if model.is_regression:
@@ -125,11 +120,8 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str):
     try:
-        text_explainer = shap.Explainer(
-            text_explanation_prediction_wrapper(model.predict_df, input_df, text_column),
-            shap.maskers.Text(tokenizer=r"\W+"),
-        )
-
+        masker = Text(tokenizer=r"\W+")
+        text_explainer = Explainer(text_explanation_prediction_wrapper(model.predict_df, input_df, text_column), masker)
         shap_values = text_explainer(pd.Series([text_document]))
 
         return (
