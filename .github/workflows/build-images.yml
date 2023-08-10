@@ -17,12 +17,12 @@ jobs:
         uses: docker/setup-buildx-action@master
 
 
-      - name: "Append ARM buildx builder from AWS"
-        uses: baschny/append-buildx-action@v1
-        with:
-          builder: ${{ steps.builder.outputs.name }}
-          endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
-          ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
+#       - name: "Append ARM buildx builder from AWS"
+#         uses: baschny/append-buildx-action@v1
+#         with:
+#           builder: ${{ steps.builder.outputs.name }}
+#           endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
+#           ssh_private_key: ${{ secrets.ARM_SSH_PRIVATE_KEY }}
 
       - name: Extract branch name
         shell: bash
