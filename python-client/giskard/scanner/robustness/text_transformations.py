@@ -4,6 +4,7 @@ import random
 import re
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ...core.core import DatasetProcessFunctionMeta
@@ -66,42 +67,54 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column):
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=None):
         super().__init__(column)
         from .entity_swap import typos
 
-        self._typos = typos
+        self.rate = rate
+        self.min_length = min_length
+        self._key_typos = typos
+        self.rng = np.random.default_rng(seed=rng_seed)
 
     def make_perturbation(self, x):
-        split_text = x.split(" ")
-        new_text = []
-        for token in split_text:
-            new_text.append(self._add_typos(token))
-        return " ".join(new_text)
+        # Skip if the text is too short
+        if len(x) < self.min_length:
+            return x
 
-    def _add_typos(self, word):
-        # Get the token's word and apply a perturbation with probability 0.1
-        if random.random() < 0.2 and len(word) > 1:
-            # Choose a perturbation type randomly
-            perturbation_type = random.choice(["insert", "delete", "replace"])
-            # Apply the perturbation
-            if perturbation_type == "insert":
-                idx = random.randint(0, len(word))
-                new_char = chr(random.randint(33, 126))
-                word = word[:idx] + new_char + word[idx:]
-                return word
-            elif perturbation_type == "delete":
-                idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
-                return word
-            elif perturbation_type == "replace":
-                j = random.randint(0, len(word) - 1)
-                c = word[j]
-                if c in self._typos:
-                    replacement = random.choice(self._typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
-                    return text_modified
-        return word
+        # We consider four types of typos:
+        # - Insertion
+        # - Deletion
+        # - Replacement
+        # - Transposition
+
+        # Empirical probabilities for each category
+        category_prob = [0.2, 0.2, 0.5, 0.1]
+
+        # How many typos we generate and in which positions
+        num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
+        pos = self.rng.choice(len(x), size=num_typos, replace=False)
+
+        # Are they insertion, deletion, replacement, or transposition?
+        pos_cat = self.rng.choice(4, size=num_typos, p=category_prob, replace=True)
+        for i, cat in zip(pos, pos_cat):
+            if cat == 0:  # insertion
+                x = x[:i] + self._random_key_typo(x[i]) + x[i:]
+            elif cat == 1:  # deletion
+                if x[i].isspace():  # don’t delete spaces
+                    i = min(i + 1, len(x) - 1)
+                x = x[:i] + x[i + 1 :]
+            elif cat == 2:  # replacement
+                x = x[:i] + self._random_key_typo(x[i]) + x[i + 1 :]
+            else:  # transposition
+                if i < len(x) - 1:
+                    x = x[:i] + x[i + 1] + x[i] + x[i + 2 :]
+        return x
+
+    def _random_key_typo(self, char):
+        if char in self._key_typos:
+            typo = self.rng.choice(self._key_typos[char.lower()])
+            return typo if char.islower() else typo.upper()
+        return char
 
 
 class TextPunctuationRemovalTransformation(TextTransformation):

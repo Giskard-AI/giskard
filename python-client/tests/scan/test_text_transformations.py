@@ -242,3 +242,12 @@ def test_country_based_transformation_escapes_special_chars():
     assert t.make_perturbation(df.iloc[1]) == "Same for U0KX!"
     assert t.make_perturbation(df.iloc[2]) != "But U.S. should be replaced"
     assert t.make_perturbation(df.iloc[3]) != "And also U.K., that must be replaced"
+
+
+def test_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+
+    t = TextTypoTransformation(column="text", rng_seed=10)
+    p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+
+    assert p == "If one dodsn't know his mistakes, he won't want to ocrrect them."
