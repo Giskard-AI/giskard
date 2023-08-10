@@ -4,21 +4,6 @@ import {apiURL} from "@/env";
 
 const mainStore = useMainStore();
 
-export async function fetchHFSpacesToken() {
-    if (mainStore.appSettings!.isRunningOnHfSpaces) {
-        try {
-            const res = await api.getHuggingFaceSpacesToken(mainStore.appSettings?.hfSpaceId!!);
-            return res.data.token;
-        } catch(error) {
-            if (error.response.status == 401) {
-                console.warn("Running in a private Hugging Face space, may need an access token.")
-                return null;
-            }
-        }
-    }
-    return null;
-}
-
 export async function generateGiskardClientSnippet(hfToken=null) {
     const giskardToken = await api.getApiAccessToken();
     const isRunningOnHF = mainStore.appSettings!.isRunningOnHfSpaces;

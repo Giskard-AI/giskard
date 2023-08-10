@@ -38,8 +38,8 @@ import { JWTToken } from "@/generated-sources";
 import CodeSnippet from "./CodeSnippet.vue";
 import { api } from "@/api";
 import { saveLocalHFToken, getLocalHFToken } from "@/utils";
-import { fetchHFSpacesToken } from "@/snippets";
 import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
+import { attemptFetchHFSpacesToken } from "@/hf-utils";
 import LoadingFullscreen from "./LoadingFullscreen.vue";
 import {TYPE} from 'vue-toastification';
 
@@ -76,34 +76,28 @@ const generateApiAccessToken = async () => {
 async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
         saveLocalHFToken(accessToken);
-        const token = await fetchHFSpacesToken();
-        if (token) {
+        await attemptFetchHFSpacesToken((token) => {
             needFetchWithHFAccessToken.value = false;
             codeContent.value = generateMLWorkerConnectionInstruction(token);
-        } else {
+        }, () => {
             needFetchWithHFAccessToken.value = true;
             mainStore.addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
-        }
-    }
-}
-
-async function attemptFetchHFSpacesToken() {
-    const token = await fetchHFSpacesToken();
-    if (token) {
-        if (getLocalHFToken()) {
-            codeContent.value = generateMLWorkerConnectionInstruction(token);
-        }
-        needFetchWithHFAccessToken.value = false;
-    } else {
-        // Access Token seems invalidated or private
-        needFetchWithHFAccessToken.value = true;
+        });
     }
 }
 
 onMounted(async () => {
     await generateApiAccessToken();
     if (mainStore.appSettings!.isRunningOnHfSpaces) {
-        await attemptFetchHFSpacesToken();
+        await attemptFetchHFSpacesToken((token) => {
+            if (getLocalHFToken()) {
+                codeContent.value = generateMLWorkerConnectionInstruction(token);
+            }
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            // Access Token seems invalidated or private
+            needFetchWithHFAccessToken.value = true;
+        });
     } else {
         needFetchWithHFAccessToken.value = false;
     }

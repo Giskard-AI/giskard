@@ -239,9 +239,10 @@ import CodeSnippet from '@/components/CodeSnippet.vue';
 import {TestResult} from '@/generated-sources';
 import {useProjectStore} from '@/stores/project';
 import {useProjectArtifactsStore} from '@/stores/project-artifacts';
-import {generateGiskardClientSnippet, fetchHFSpacesToken} from "@/snippets";
+import {generateGiskardClientSnippet} from "@/snippets";
 import {saveLocalHFToken, getLocalHFToken} from "@/utils";
 import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
+import {attemptFetchHFSpacesToken} from "@/hf-utils";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -413,32 +414,17 @@ function openCustomInstructions() {
 }
 
 const needFetchWithHFAccessToken = ref<boolean>(false);
-async function attemptFetchHFSpacesToken() {
-    const token = await fetchHFSpacesToken();
-    if (token) {
-        if (getLocalHFToken()) {
-            giskardClientSnippet.value = await generateGiskardClientSnippet(token);
-            codeContent.value = generateCodeContent();
-        }
-        needFetchWithHFAccessToken.value = false;
-    } else {
-        // Access Token seems invalidated or private
-        needFetchWithHFAccessToken.value = true;
-    }
-}
-
 async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     if (useMainStore().appSettings!.isRunningOnHfSpaces) {
         saveLocalHFToken(accessToken);
-        const token = await fetchHFSpacesToken();
-        if (token) {
+        await attemptFetchHFSpacesToken(async (token) => {
             giskardClientSnippet.value = await generateGiskardClientSnippet(token);
             codeContent.value = generateCodeContent();
             needFetchWithHFAccessToken.value = false;
-        } else {
+        }, () => {
             needFetchWithHFAccessToken.value = true;
             useMainStore().addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
-        }
+        });
     }
 }
 
@@ -454,7 +440,16 @@ onActivated(async () => {
     giskardClientSnippet.value = await generateGiskardClientSnippet();
     codeContent.value = generateCodeContent();
     if (useMainStore().appSettings!.isRunningOnHfSpaces) {
-        await attemptFetchHFSpacesToken();
+        await attemptFetchHFSpacesToken(async (token) => {
+            if (getLocalHFToken()) {
+                giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+                codeContent.value = generateCodeContent();
+            }
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            // Access Token seems invalidated or private
+            needFetchWithHFAccessToken.value = true;
+        });
     }
 })
 </script>
