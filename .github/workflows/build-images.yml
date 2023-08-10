@@ -19,6 +19,7 @@ jobs:
 
       - name: "Append ARM buildx builder from AWS"
         uses: baschny/append-buildx-action@v1
+        timeout-minutes: 1  # Limit the connection time to one minute
         if: ${{ always() }}
         with:
           builder: ${{ steps.builder.outputs.name }}
