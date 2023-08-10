@@ -20,6 +20,7 @@ jobs:
 
       - name: Append ARM buildx builder from AWS
         uses: baschny/append-buildx-action@v1
+        if: ${{ always() }}
         with:
           builder: ${{ steps.builder.outputs.name }}
           endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
