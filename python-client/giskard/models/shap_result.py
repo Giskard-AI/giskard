@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import Any, Iterable
 from dataclasses import dataclass
 
@@ -5,6 +6,12 @@ import wandb
 import numpy as np
 import pandas as pd
 from shap import Explanation
+
+
+class PanelNames(StrEnum):
+    CATEGORICAL = "Feature importance for categorical features"
+    NUMERICAL = "Feature importance for numerical features"
+    GENERAL = "Global feature importance"
 
 
 def _wandb_bar_plot(shap_explanations: Explanation, feature_name: str) -> Any:
@@ -79,26 +86,26 @@ class ShapResult:
     feature_names: list = None
 
     def to_wandb(self, **kwargs) -> None:
+        """Create and log to the WandB run SHAP charts."""
         from giskard.integrations.wandb.wandb_utils import wandb_run
 
         with wandb_run(**kwargs) as run:
-            # Create and log plots to the wandb run.
-            log_plots_dict = dict()
+            charts = dict()
 
+            # Create general SHAP feature importance plot.
+            general_bar_plot = _wandb_general_bar_plot(self.explanations, self.feature_names)
+            charts.update({f"{PanelNames.GENERAL}/general_shap_bar_plot": general_bar_plot})
+
+            # Create per-feature SHAP plots.
             for feature_name, feature_type in self.feature_types.items():
                 if feature_type == "category":
                     bar_plot = _wandb_bar_plot(self.explanations, feature_name)
-                    log_plots_dict.update(
-                        {f"Feature importance for categorical features/{feature_name}_shap_bar_plot": bar_plot}
-                    )
+                    charts.update({f"{PanelNames.CATEGORICAL}/{feature_name}_shap_bar_plot": bar_plot})
                 elif feature_type == "numeric":
                     scatter_plot = _wandb_scatter_plot(self.explanations, feature_name)
-                    log_plots_dict.update(
-                        {f"Feature importance for numerical features/{feature_name}_shap_scatter_plot": scatter_plot}
-                    )
+                    charts.update({f"{PanelNames.NUMERICAL}/{feature_name}_shap_scatter_plot": scatter_plot})
                 else:
                     raise NotImplementedError("We do not support the SHAP logging of text features yet.")
 
-            general_bar_plot = _wandb_general_bar_plot(self.explanations, self.feature_names)
-            log_plots_dict.update({"Global feature importance/general_shap_bar_plot": general_bar_plot})
-            run.log(log_plots_dict)
+            # Log created plots.
+            run.log(charts)
