@@ -6,7 +6,7 @@
           Create new slicing function
         </v-card-title>
         <v-card-text>
-          <v-row>
+          <v-row v-if="false">
             <v-col>
               <p class="text-subtitle-1 text-left mb-0">Select the scope</p>
               <v-radio-group v-model="scope" class="mt-0" row>
