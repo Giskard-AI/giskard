@@ -25,7 +25,7 @@
           </v-row>
           <v-row v-if="scope === 'dataset'">
             <v-col>
-              <p class="text-subtitle-1 text-left mb-1">Select a dataset</p>
+              <p class="text-subtitle-1 text-left mb-1">Select a dataset to check the validity of your slicing function</p>
               <DatasetSelector :projectId="projectId" :value.sync="selectedDataset" :return-object="true" label="Dataset" class="selector mb-4">
               </DatasetSelector>
             </v-col>
