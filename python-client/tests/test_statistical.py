@@ -111,3 +111,57 @@ def test_disparate_impact(data, model, request):
         positive_outcome="Not default",
     ).execute()
     assert results.passed, f"DI = {results.metric}"
+
+
+@pytest.mark.parametrize(
+    "data,model",
+    [("titanic_dataset", "titanic_model")],
+)
+def test_nominal_association(data, model, request):
+    import giskard
+    import pandas as pd
+
+    data = request.getfixturevalue(data)
+    model = request.getfixturevalue(model)
+
+    @giskard.slicing_function
+    def sff(row: pd.Series):
+        return row.Sex == "female"
+
+    @giskard.slicing_function
+    def sfm(row: pd.Series):
+        return row.Sex == "male"
+
+    results_theil_u_f = statistical.test_nominal_association(model=model, dataset=data, slicing_function=sff).execute()
+
+    assert round(results_theil_u_f.metric, 2) == 0.7
+    assert not results_theil_u_f.passed
+
+    results_theil_u_f_bench = statistical.test_theil_u(model=model, dataset=data, slicing_function=sff).execute()
+    assert results_theil_u_f.metric == results_theil_u_f_bench.metric
+
+    results_theil_u_m = statistical.test_nominal_association(model=model, dataset=data, slicing_function=sfm).execute()
+    assert round(results_theil_u_m.metric, 2) == 0.7
+    assert not results_theil_u_f.passed
+
+    results_cramer_v_f = statistical.test_nominal_association(
+        model=model, dataset=data, slicing_function=sff, method="cramer_v"
+    ).execute()
+
+    assert not results_cramer_v_f.passed
+
+    results_cramer_v_m = statistical.test_nominal_association(
+        model=model, dataset=data, slicing_function=sfm, method="cramer_v"
+    ).execute()
+    assert not results_cramer_v_m.passed
+
+    results_mutual_information_f = statistical.test_nominal_association(
+        model=model, dataset=data, slicing_function=sff, method="mutual_information"
+    ).execute()
+
+    assert not results_mutual_information_f.passed
+
+    results_mutual_information_m = statistical.test_nominal_association(
+        model=model, dataset=data, slicing_function=sfm, method="mutual_information"
+    ).execute()
+    assert not results_mutual_information_m.passed
