@@ -14,9 +14,7 @@ from .utils import slice_bounds
 def create_contribution_push(model, ds, df):
     if existing_shap_values(ds):
         shap_res = detect_shap_outlier(model, ds, df)
-        slice_df = ds.slice(
-            lambda row: row.equals(df.iloc[0])
-        )  # Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
+        slice_df = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
         values = slice_df.df
 
         if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:

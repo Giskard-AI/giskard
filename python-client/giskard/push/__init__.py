@@ -285,4 +285,4 @@ class PerturbationPush(FeaturePush):
         self.tests = [
             test_metamorphic_invariance(transformation_function=transfo) for transfo in self.transformation_functions
         ]
-        self.push_title = (f"A small variation of {str(feature)}=={str(value)} makes the prediction change",)
+        self.push_title = f"A small variation of {str(feature)}=={str(value)} makes the prediction change"
