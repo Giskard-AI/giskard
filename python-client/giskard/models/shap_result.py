@@ -1,4 +1,4 @@
-from enum import StrEnum
+from enum import Enum
 from typing import Any, Iterable
 from dataclasses import dataclass
 
@@ -8,7 +8,7 @@ import pandas as pd
 from shap import Explanation
 
 
-class PanelNames(StrEnum):
+class PanelNames(str, Enum):
     CATEGORICAL = "Feature importance for categorical features"
     NUMERICAL = "Feature importance for numerical features"
     GENERAL = "Global feature importance"
