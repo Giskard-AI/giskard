@@ -256,7 +256,7 @@ watch(selected, (value) => {
       isAlias: false,
       type: arg.type,
       value: arg.optional ? arg.defaultValue : null
-    }))
+    } as FunctionInputDTO))
     .value();
 });
 
