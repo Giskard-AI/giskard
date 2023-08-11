@@ -65,11 +65,8 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
     return example
 
 
-def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
+def explain_full(model: BaseModel, dataset: Dataset) -> np.ndarray:
     """Perform SHAP values calculation for samples of a given dataset."""
-    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
-    feature_types = {key: dataset.column_types[key] for key in feature_names}
-
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
     background_sample = background_example(background_df, dataset.column_types)
@@ -80,20 +77,27 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
     # Obtain SHAP explanations.
     explainer = KernelExplainer(model.predict_df, background_sample, feature_names=input_df.columns, keep_index=True)
     shap_values = explainer.shap_values(input_df, silent=True)
+    return shap_values
+
+
+def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
+    """Get SHAP explanation result."""
+    # Obtain SHAP explanations.
+    shap_values = explain_full(model, dataset)
 
     # For classification, take SHAP of prediction with the highest probability.
     if model.is_classification:
         shap_values = _get_cls_prediction_explanation(model, dataset, shap_values)
 
     # Put shap and feature names to the Explanation object for a convenience.
+    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+    feature_types = {key: dataset.column_types[key] for key in feature_names}
     shap_explanations = Explanation(values=shap_values, data=dataset.df[feature_names], feature_names=feature_names)
     return ShapResult(shap_explanations, feature_types, feature_names)
 
 
-@timer()
-def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
+def explain_one(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
     df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-    feature_names = list(df.columns)
     input_df = prepare_df(pd.DataFrame([input_data]), model=model, dataset=dataset)
 
     def predict_array(array):
@@ -103,6 +107,13 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
     example = background_example(df, dataset.column_types)
     kernel = KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(input_df, silent=True)
+    return shap_values
+
+
+@timer()
+def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
+    shap_values = explain_one(model, dataset, input_data)
+    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
 
     if model.is_regression:
         explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
