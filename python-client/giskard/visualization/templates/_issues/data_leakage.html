@@ -1,8 +1,11 @@
 <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
     <td class="p-3">
+        <code class="mono text-blue-300">{{issue.domain}}</code>
+    </td>
+    <td class="p-3">
         <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
-            Data leakage
-        </span>        
+            {{ issue.deviation }}
+        </span>
     </td>
     <td class="p-3">
         <span class="text-gray-400">
@@ -10,14 +13,12 @@
         </span>
     </td>
     <td class="p-3 text-xs text-right space-x-1">
-        <a href="#"
-            class="gsk-issue-detail-btn inline-block group-[.open]:hidden border border-zinc-100/50 text-zinc-100/90 hover:bg-zinc-500 hover:border-zinc-500 hover:text-white px-2 py-0.5 rounded-sm">Show details</a>
-        <a href="#"
-            class="hidden group-[.open]:inline-block gsk-issue-detail-btn border border-zinc-500 text-zinc-100/90 bg-zinc-500 hover:bg-zinc-400 hover:text-white px-2 py-0.5 rounded-sm">Hide details</a>
+        <a href="#" class="gsk-issue-detail-btn inline-block group-[.open]:hidden border border-zinc-100/50 text-zinc-100/90 hover:bg-zinc-500 hover:border-zinc-500 hover:text-white px-2 py-0.5 rounded-sm">Show details</a>
+        <a href="#" class="hidden group-[.open]:inline-block gsk-issue-detail-btn border border-zinc-500 text-zinc-100/90 bg-zinc-500 hover:bg-zinc-400 hover:text-white px-2 py-0.5 rounded-sm">Hide details</a>
     </td>
 </tr>
 <tr class="gsk-issue-detail text-left hidden  peer-[.open]:table-row border-b border-zinc-500 bg-zinc-700">
-    <td colspan="3" class="p-3">
+    <td colspan="4" class="p-3">
         <h4 class="font-bold text-sm">Description</h4>
         {{ issue.description | safe }}
 
