@@ -133,7 +133,7 @@ You can then upload the test suite to the local Giskard server. This will enable
     # Upload to the current project ✉️
     test_suite.upload(client, "my_project")
     
-For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](../upload/index.md) page.
+For more information on uploading to your local Giskard server, go to the `Upload an object to the Giskard server <../../guides/upload/index.md>`_ page.
 
 .. note::
    Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
@@ -142,7 +142,7 @@ For more information on uploading to your local Giskard server, go to the [Uploa
 Troubleshooting
 ^^^^^^^^^^^^^^^
 
-If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and navigate to the #support channel. Our community
+If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and ask questions in our #support channel. Our community
 will gladly help!
 
 
