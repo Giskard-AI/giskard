@@ -85,7 +85,7 @@ def _compare_explain_functions(model, dataset):
     # Define 'explain_full' input.
     explain_full_input = {"model": model, "dataset": one_sample_dataset}
 
-    # Define 'explain' input.
+    # Define 'explain_one' input.
     explain_one_input = explain_full_input.copy()
     explain_one_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
 
