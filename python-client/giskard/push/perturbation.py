@@ -99,11 +99,11 @@ def apply_perturbation(model, ds, df, feature, coltype):
 def check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset):
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         # Compute the probability of the reference row
-        ref_prob = model.predict(ref_row).prediction[0]
+        ref_pred = model.predict(ref_row).prediction[0]
         # Compute the probability of the perturbed row
-        probabilities = model.predict(row_perturbed).prediction[0]
+        pred = model.predict(row_perturbed).prediction[0]
         # Check if the probability of the reference row is different from the probability of the perturbed row
-        passed = ref_prob[0] != probabilities[0]
+        passed = ref_pred != pred
         return passed
 
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
