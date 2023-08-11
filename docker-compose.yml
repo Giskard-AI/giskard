@@ -1,7 +1,7 @@
 version: "3.8"
 services:
 
-  backend:
+  mono:
     image: 'docker.io/giskardai/giskard:${TAG-latest}'
     build:
       dockerfile: ./Dockerfile
