@@ -1,15 +1,30 @@
 <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
     <td class="p-3">
-        <code class="mono text-blue-300">{{issue.domain}}</code>
+        <code class="mono text-blue-300">
+        {{issue.visualization_attributes.domain|replace("&", "<br>")|safe}}
+    </code>
     </td>
+    {% if issue.visualization_attributes.metric %}
     <td class="p-3">
-        <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
-            {{ issue.deviation }}
+        <span>
+            {{ issue.visualization_attributes.metric }}
         </span>
     </td>
+    {% endif %}
+    {% if issue.visualization_attributes.deviation %}
+    <td class="p-3">
+        <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
+            {{ issue.visualization_attributes.deviation }}
+        </span>
+    </td>
+    {% endif %}
     <td class="p-3">
         <span class="text-gray-400">
-            {{ issue.info.samples|length }} examples
+            {% if issue.visualization_attributes.description_hidden %}
+            {{ issue.visualization_attributes.description_hidden | safe }}
+            {% else %}
+            {{ issue.visualization_attributes.description | safe }}
+            {% endif %}
         </span>
     </td>
     <td class="p-3 text-xs text-right space-x-1">
@@ -18,14 +33,14 @@
     </td>
 </tr>
 <tr class="gsk-issue-detail text-left hidden  peer-[.open]:table-row border-b border-zinc-500 bg-zinc-700">
-    <td colspan="4" class="p-3">
+    <td colspan="10" class="p-3">
         <h4 class="font-bold text-sm">Description</h4>
-        {{ issue.description | safe }}
+        {{ issue.visualization_attributes.description | safe }}
 
-        {% if issue.examples(3)|length %}
+        {% if issue.visualization_attributes.examples|length %}
         <h4 class="font-bold text-sm mt-4">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.examples(3).to_html(notebook=True) | replace("\\n", "<br>") | safe }}
+            {{ issue.visualization_attributes.examples.to_html(notebook=True) | replace("\\n", "<br>") | safe }}
         </div>
         {% endif %}
     </td>

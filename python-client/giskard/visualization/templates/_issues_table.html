@@ -3,27 +3,25 @@
         {% for issue in issues %}
         <tbody class="first:border-t border-b border-zinc-500">
             {% if issue.__class__.__name__ == 'PerformanceIssue' %}
-                {% include "_issues/performance.html" %}
+            {% include "_issues/performance.html" %}
             {% elif issue.__class__.__name__ == 'RobustnessIssue' or issue.__class__.__name__ == 'EthicalIssue' %}
-                {% include "_issues/robustness.html" %}
+            {% include "_issues/robustness.html" %}
             {% elif issue.__class__.__name__ == 'OverconfidenceIssue' %}
-                {% include "_issues/overconfidence.html" %}
+            {% include "_issues/overconfidence.html" %}
             {% elif issue.__class__.__name__ == 'UnderconfidenceIssue' %}
-                {% include "_issues/underconfidence.html" %}
-            {% elif issue.__class__.__name__ == 'DataLeakageIssue' %}
-                {% include "_issues/data_leakage.html" %}
+            {% include "_issues/underconfidence.html" %}
             {% elif issue.__class__.__name__ == 'StochasticityIssue' %}
-                {% include "_issues/stochasticity.html" %}
+            {% include "_issues/stochasticity.html" %}
             {% elif issue.__class__.__name__ == 'LLMToxicityIssue' %}
-                {% include "_issues/llm_toxicity.html" %}
+            {% include "_issues/llm_toxicity.html" %}
             {% elif issue.__class__.__name__ == 'SpuriousCorrelationIssue' %}
-                {% include "_issues/spurious_correlation.html" %}
+            {% include "_issues/spurious_correlation.html" %}
             {% elif issue.__class__.__name__ == 'HarmfulnessIssue' %}
-                {% include "_issues/llm_harmfulness.html" %}
+            {% include "_issues/llm_harmfulness.html" %}
             {% elif issue.__class__.__name__.endswith('StereotypeIssue') %}
-                {% include "_issues/llm_stereotype.html" %}
+            {% include "_issues/llm_stereotype.html" %}
             {% else %}
-                {% include "_issues/default.html" %}
+            {% include "_issues/default_new.html" %}
             {% endif %}
         </tbody>
         {% endfor %}

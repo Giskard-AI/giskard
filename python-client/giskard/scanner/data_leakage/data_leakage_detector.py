@@ -58,6 +58,16 @@ class DataLeakageIssue(Issue):
     group = "Data Leakage"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "deviation": self.deviation,
+            "description_hidden": f"{self.info.samples.shape[0]} examples",
+            "description": self.description,
+            "examples": self.examples(3),
+        }
+
+    @property
     def domain(self) -> str:
         return "Whole dataset"
 
