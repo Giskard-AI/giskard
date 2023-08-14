@@ -180,26 +180,26 @@ First, make sure Giskard server is installed ( check if http://localhost:19000 i
 
 Then execute the ML worker:
 <details>
-  <summary>About the ML worker<summary/>
+  <summary>About the ML worker</summary>
   Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from local notebook, Colab notebook or a terminal. 
-<details/>
+  </details>
 
 ```python
 !giskard worker start -d -k YOUR_TOKEN
 ```
 
 <details>
-  <summary>How to get the API key<summary/>
+  <summary>How to get the API key</summary>
   Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
-<details/>
+</details>
 
 <details>
-  <summary>If Giskard server is installed on an external server<summary/>
+  <summary>If Giskard server is installed on an external server</summary>
 
   ```python
     !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
-<details/>
+</details>
 
 
 Follow [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) if you have any trouble
