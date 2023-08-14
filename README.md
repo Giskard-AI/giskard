@@ -174,13 +174,13 @@ You can then **upload the test suite** to the local Giskard server. This will en
 - Compare the quality of different models to decide which one to promote
 - Debug your tests to diagnose the identified issues
 - Create more domain-specific tests relevant to your use case
-4. Share results, and collaborate with your team to integrate business feedback
+- Share results, and collaborate with your team to integrate business feedback
 
 First, make sure Giskard server is installed ( check if http://localhost:19000 is up or use `giskard server status` if needed)
 
 Then execute the ML worker:
 ```python
-\!giskard worker start -d -k YOUR_TOKEN
+ !giskard worker start -d -k YOUR_TOKEN
 ```
 <details>
   <summary>About the ML worker</summary>
@@ -197,7 +197,7 @@ Then execute the ML worker:
   <summary>If Giskard server is installed on an external server</summary>
 
   ```python
-    \!giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
 
