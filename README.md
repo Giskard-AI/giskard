@@ -47,7 +47,7 @@
     <li><a href="#like-what-were-doing">💖 Like what we're doing?</a></li>
   </ol>
 
-# Why Giskard?
+# 🐢 Why Giskard?
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
@@ -88,9 +88,9 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 
 
-# Getting started
+# 📗 Getting started
 
-## Installation
+## 📥 Installation
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 
@@ -99,7 +99,7 @@ giskard server start
 
 That's it. Access at http://localhost:19000
 
-## Scan your model to detect vulnerabilities
+## 🔎 Scan your model to detect vulnerabilities
 
 After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html), you can scan your model for vulnerabilities using:
 
@@ -145,7 +145,7 @@ Once the scan completes, you can display the results directly in your notebook:
 display(scan_results)  # in your notebook
 ```
 
-## Automatically generate a test suite based on the scan results
+## 🪄 Automatically generate a test suite based on the scan results
 
 If the scan found potential issues in your model, you can automatically generate a test suite.
 
@@ -160,7 +160,7 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 test_suite.run()
 ```
 
-## Upload your test suite to the Giskard server
+## ⌛️ Upload your test suite to the Giskard server
 
 You can then upload the test suite to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
@@ -186,14 +186,14 @@ test_suite.upload(client, "my_project")
     
 For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 
-# How to contribute
+# 👋 How to contribute
 We welcome contributions from the Machine Learning community!
 
 Read this [guide](CONTRIBUTING.md) to get started.
 
 <br />
 
-# Like what we're doing?
+# 💖 Like what we're doing?
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
