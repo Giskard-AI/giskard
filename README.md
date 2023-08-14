@@ -90,7 +90,7 @@ And of course, Giskard works with any model, any environment and integrates seam
 
 # 📗 Getting started
 
-## 📥 Installation
+## 1. 📥 Installation
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 
@@ -99,7 +99,7 @@ giskard server start
 
 That's it. Access at http://localhost:19000
 
-## 🔎 Scan your model to detect vulnerabilities
+## 2. 🔎 Scan your model to detect vulnerabilities
 
 After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html), you can scan your model for vulnerabilities using:
 
@@ -145,7 +145,7 @@ Once the scan completes, you can display the results directly in your notebook:
 display(scan_results)  # in your notebook
 ```
 
-## 🪄 Automatically generate a test suite based on the scan results
+## 3. 🪄 Automatically generate a test suite based on the scan results
 
 If the scan found potential issues in your model, you can automatically generate a test suite.
 
@@ -160,7 +160,7 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 test_suite.run()
 ```
 
-## ⌛️ Upload your test suite to the Giskard server
+## 4. ⌛️ Upload your test suite to the Giskard server
 
 You can then upload the test suite to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
