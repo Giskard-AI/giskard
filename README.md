@@ -48,7 +48,8 @@
   </ol>
 
 # 🐢 Why Giskard?
-> Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.
+
+**Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
 
