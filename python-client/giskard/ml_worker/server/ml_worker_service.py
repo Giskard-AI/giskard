@@ -149,12 +149,12 @@ def map_dataset_process_function_meta(callable_type):
 
 class MLWorkerServiceImpl(MLWorkerServicer):
     def __init__(
-            self,
-            ml_worker: MLWorker,
-            client: GiskardClient,
-            address=None,
-            remote=None,
-            loop=asyncio.get_event_loop(),
+        self,
+        ml_worker: MLWorker,
+        client: GiskardClient,
+        address=None,
+        remote=None,
+        loop=asyncio.get_event_loop(),
     ) -> None:
         super().__init__()
         self.ml_worker = ml_worker
@@ -253,11 +253,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
 
     @staticmethod
     def do_run_adhoc_test(client, arguments, test, debug_info=None):
-
         logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
         test_result = test.get_builder()(**arguments).execute()
         if test_result.output_df is not None:  # i.e. if debug is True and test has failed
-
             if debug_info is None:
                 raise ValueError(
                     "You have requested to debug the test, "
@@ -281,9 +279,9 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         return test_result
 
     def datasetProcessing(
-            self,
-            request: ml_worker_pb2.DatasetProcessingRequest,
-            context: grpc.ServicerContext,
+        self,
+        request: ml_worker_pb2.DatasetProcessingRequest,
+        context: grpc.ServicerContext,
     ) -> ml_worker_pb2.DatasetProcessingResultMessage:
         dataset = Dataset.download(
             self.client,
@@ -548,9 +546,11 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     name="absDiff",
                     dtype=np.float64,
                 )
-                abs_diff_percent = pd.Series(abs_diff / target_serie, name="absDiffPercent",
-                                             dtype=np.float64,
-                                             ).replace([np.inf, -np.inf], np.nan)
+                abs_diff_percent = pd.Series(
+                    abs_diff / target_serie,
+                    name="absDiffPercent",
+                    dtype=np.float64,
+                ).replace([np.inf, -np.inf], np.nan)
                 calculated = pd.concat(
                     [
                         preds_serie,
@@ -680,11 +680,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
         # if df is empty, return early
         if df.empty:
             return ml_worker_pb2.SuggestFilterResponse(
-                contribution=None,
-                perturbation=None,
-                overconfidence=None,
-                borderline=None,
-                object_uuid=None
+                contribution=None, perturbation=None, overconfidence=None, borderline=None, object_uuid=None
             )
 
         from giskard.push.contribution import create_contribution_push
@@ -734,8 +730,8 @@ class MLWorkerServiceImpl(MLWorkerServicer):
             # Upload related object depending on CTA type
             # if cta kind is CreateSlice or CreateSliceOpenDebugger
             if (
-                    request.cta_kind == CallToActionKind.CreateSlice
-                    or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger
+                request.cta_kind == CallToActionKind.CreateSlice
+                or request.cta_kind == CallToActionKind.CreateSliceOpenDebugger
             ):
                 push.slicing_function.meta.tags.append("generated")
                 uuid = push.slicing_function.upload(self.client)
@@ -744,10 +740,7 @@ class MLWorkerServiceImpl(MLWorkerServicer):
                     uuid = perturbation.upload(self.client)
             if request.cta_kind == CallToActionKind.SaveExample:
                 uuid = push.saved_example.upload(self.client, request.project_key)
-            if (
-                    request.cta_kind == CallToActionKind.CreateTest
-                    or request.cta_kind == CallToActionKind.AddTestToCatalog
-            ):
+            if request.cta_kind == CallToActionKind.CreateTest or request.cta_kind == CallToActionKind.AddTestToCatalog:
                 for test in push.tests:
                     uuid = test.upload(self.client)
 

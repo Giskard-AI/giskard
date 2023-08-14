@@ -1,5 +1,12 @@
+from dataclasses import dataclass
 import numpy as np
 from scipy.stats import median_abs_deviation
+from enum import Enum
+
+
+class SupportedPerturbationType(Enum):
+    NUMERIC = "numeric"
+    TEXT = "text"
 
 
 def slice_bounds(feature, value, ds):
@@ -36,3 +43,16 @@ def bins_count(model, dataframe):  # done at the beggining
 
 def compute_mad(x):
     return median_abs_deviation(x, scale=1)
+
+
+@dataclass
+class TransformationInfo:
+    text_perturbed: list
+    transformation_functions: list
+
+
+def coltype_to_supported_perturbation_type(coltype: str) -> SupportedPerturbationType:
+    if coltype == "numeric":
+        return SupportedPerturbationType.NUMERIC
+    elif coltype == "text":
+        return SupportedPerturbationType.TEXT

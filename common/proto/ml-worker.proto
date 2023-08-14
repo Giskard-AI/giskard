@@ -418,6 +418,7 @@ enum CallToActionKind {
   AddTestToCatalog = 8;
   SaveExample = 9;
   OpenDebuggerOverconfidence = 10;
+  CreateUnitTest = 11;
 }
 
 message SuggestFilterRequest {
