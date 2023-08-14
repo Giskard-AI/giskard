@@ -171,25 +171,25 @@ test_suite.run()
 ## 4. ⌛️ Upload your test suite to the Giskard server
 
 You can then **upload the test suite** to the local Giskard server. This will enable you to:
-1. Compare the quality of different models to decide which one to promote
-2. Debug your tests to diagnose the identified issues
-3. Create more domain-specific tests relevant to your use case
+- Compare the quality of different models to decide which one to promote
+- Debug your tests to diagnose the identified issues
+- Create more domain-specific tests relevant to your use case
 4. Share results, and collaborate with your team to integrate business feedback
 
 First, make sure Giskard server is installed ( check if http://localhost:19000 is up or use `giskard server status` if needed)
 
 Then execute the ML worker:
+```python
+\!giskard worker start -d -k YOUR_TOKEN
+```
 <details>
   <summary>About the ML worker</summary>
   Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from local notebook, Colab notebook or a terminal. 
   </details>
-
-```python
-\!giskard worker start -d -k YOUR_TOKEN
-```
-
+  
 <details>
   <summary>How to get the API key</summary>
+  
   Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
 </details>
 
