@@ -182,6 +182,25 @@ Then execute the ML worker:
 ```python
  !giskard worker start -d -k YOUR_TOKEN
 ```
+
+
+
+Follow [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) if you have any trouble
+
+Fianlly upload test suite to the giskard server using the following code:
+```python
+token = "API_TOKEN"  # Find it in Settings in the Giskard server
+client = GiskardClient(
+    url="http://localhost:19000", token=token  # URL of your Giskard instance
+)
+
+my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
+
+# Upload to the current project
+test_suite.upload(client, "my_project")
+
+```
+### Help
 <details>
   <summary>About the ML worker</summary>
   Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from local notebook, Colab notebook or a terminal. 
@@ -200,23 +219,6 @@ Then execute the ML worker:
     !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
-
-
-Follow [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) if you have any trouble
-
-Fianlly upload test suite to the giskard server using the following code:
-```python
-token = "API_TOKEN"  # Find it in Settings in the Giskard server
-client = GiskardClient(
-    url="http://localhost:19000", token=token  # URL of your Giskard instance
-)
-
-my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
-
-# Upload to the current project
-test_suite.upload(client, "my_project")
-
-```
     
 For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 
