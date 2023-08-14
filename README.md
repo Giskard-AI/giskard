@@ -31,19 +31,11 @@
  </h3>
 <br />
 
-# Table of contents
-
-1. 🐢 **[Why Giskard?](#why-giskard)**
-2. 📗 **[Quickstart](#getting-started)**
-3. 👋 **[How to contribute](#how-to-contribute)**
-4. 💖 **[Like what we're doing?](#like-what-were-doing)**
-5. 💖 **[To go further](#like-what-were-doing)**
-
-# 🐢 Why Giskard?
 
 <p align="center">
-  <img src="https://giskard.readthedocs.io/en/latest/_images/hey.png" alt="hey" width="20%">
+  <img width='600' src="readme/tools.png">
 </p>
+<br/>
 
 At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
 
@@ -53,41 +45,28 @@ At Giskard, we believe that Machine Learning needs its own testing framework. Cr
   <img src="readme/scan_example.png" alt="Scan Example" width="700px">
 </p>
 
-- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
-
-<p align="center">
-  <img src="readme/test_suite_example.png" alt="Scan Example" width="700px">
-</p>
-
-- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
-
-<p align="center">
-  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
-</p>
 
 And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
-<p align="center">
-  <img width='600' src="readme/tools.png">
-</p>
-<br/>
+
+# Table of contents
+
+1. 🤸‍♀️ **[Quickstart](#getting-started)**
+2. ❓ **[FAQ](#getting-started)**
+3. 🚀 **[To go further](#like-what-were-doing)**
+4. 👋 **[How to contribute](#how-to-contribute)**
+5. 💖 **[Like what we're doing?](#like-what-were-doing)**
 
 
-
-# 📗 Getting started
+# 🤸‍♀️ Quickstart
 
 ## 1. 📥 Installation
 Install **Giskard** via PyPI:
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
-For full functionality start **Giskard server** with: 
-```sh
-giskard server start
-```
 
-🚀 That's it! Access at http://localhost:19000
 
-## 2. 🔎 Scan your model to detect vulnerabilities
+## 2. 🔎 Scan your model
 Here's an example of a *hello world* Giskard scan in code:
 
 ```python
@@ -134,7 +113,7 @@ Once the scan completes, you can display the results directly in your notebook:
 display(scan_results)  # in your notebook
 ```
 
-## 3. 🪄 Automatically generate a test suite based on the scan results
+## 3. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite**.
 
@@ -150,7 +129,30 @@ You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()
 ```
 
-## 4. ⌛️ Upload your test suite to the Giskard server
+
+
+# 🚀 To go further?
+
+- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+
+<p align="center">
+  <img src="readme/test_suite_example.png" alt="Scan Example" width="700px">
+</p>
+
+- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
+
+<p align="center">
+  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
+</p>
+
+For full functionality start **Giskard server** with: 
+```sh
+giskard server start
+```
+
+🚀 That's it! Access at http://localhost:19000
+
+## ⌛️ Upload your test suite to the Giskard server
 
 You can then **upload the test suite** to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
@@ -187,7 +189,7 @@ You can then **upload the test suite** to the local Giskard server. This will en
     test_suite.upload(client, "my_project")
     
     ```
-### Help
+# ❓ FAQ
 <details>
   <summary>About the ML worker</summary>
   Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
@@ -232,3 +234,6 @@ Read this [guide](CONTRIBUTING.md) to get started.
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
 ❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
+
+
+
