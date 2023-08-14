@@ -176,16 +176,15 @@ You can then **upload the test suite** to the local Giskard server. This will en
 - Create more domain-specific tests relevant to your use case
 - Share results, and collaborate with your team to integrate business feedback
 
-First, make sure Giskard server is installed ( check if http://localhost:19000 is up or use `giskard server status` if needed)
+First, make sure Giskard server is installed ( check if http://localhost:19000 is running or use `giskard server status` if needed)
 
-Then execute the ML worker:
+Then execute the ML worker in your notebook:
 ```python
  !giskard worker start -d -k YOUR_TOKEN
 ```
 
 
 
-Follow [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) if you have any trouble
 
 Fianlly upload test suite to the giskard server using the following code:
 ```python
@@ -219,7 +218,8 @@ test_suite.upload(client, "my_project")
     !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
-    
+For more information on the server and ML worker installation, go to [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html).
+
 For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 
 # 👋 How to contribute
