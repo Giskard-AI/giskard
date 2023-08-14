@@ -96,7 +96,8 @@ class OverconfidencePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [one_sample_overconfidence_test(saved_example=dataset_row)]  #
+        self.tests = [one_sample_overconfidence_test()]
+        self.test_params = {"saved_example": dataset_row}
         # if_overconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
         #     increase_probability(
@@ -143,7 +144,7 @@ class BorderlinePush(ExamplePush):
         self.saved_example = dataset_row
 
         self.tests = [one_sample_underconfidence_test(saved_example=dataset_row)]
-
+        self.test_params = {"saved_example": dataset_row}
         # [
         #     if_underconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
@@ -253,15 +254,16 @@ class ContributionPush(FeaturePush):
             clause = [EqualTo(self.feature, self.bounds)]
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
+        self.test_params = {"slicing_function": slicing_func}
 
     def _test_selection(self):
         if not self.correct_prediction:
             if self.model_type == SupportedModelTypes.REGRESSION:
-                self.tests = [test_diff_rmse_push(slicing_function=self.slicing_function)]
+                self.tests = [test_diff_rmse_push]
             elif self.model_type == SupportedModelTypes.CLASSIFICATION:
-                self.tests = [test_diff_f1_push(slicing_function=self.slicing_function)]
+                self.tests = [test_diff_f1_push]
         elif self.correct_prediction:
-            self.tests = [test_theil_u(slicing_function=self.slicing_function)]
+            self.tests = [test_theil_u]
 
 
 class PerturbationPush(FeaturePush):
@@ -282,7 +284,6 @@ class PerturbationPush(FeaturePush):
         self.value = value
         self.text_perturbed = transformation_info.text_perturbed
         self.transformation_functions = transformation_info.transformation_functions
-        self.tests = [
-            test_metamorphic_invariance(transformation_function=transfo) for transfo in self.transformation_functions
-        ]
+        self.tests = [test_metamorphic_invariance]
+        self.test_params = {"transformation_function": self.transformation_functions}
         self.push_title = f"A small variation of {str(feature)}=={str(value)} makes the prediction change"
