@@ -101,7 +101,10 @@ giskard_model = giskard.Model(
     # classification_threshold=0.5,  # Default: 0.5
 )
 
-# Then apply the scan
+```
+
+Then apply the scan
+```python
 results = giskard.scan(giskard_model, giskard_dataset)
 ```
 
