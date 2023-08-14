@@ -173,7 +173,7 @@ You can then **upload the test suite** to the local Giskard server. This will en
 
 2. Then execute the ML worker in your notebook:
     ```python
-     !giskard worker start -d -k YOUR_TOKEN
+       !giskard worker start -d -k YOUR_TOKEN
     ```
 
 
