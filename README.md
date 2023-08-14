@@ -32,15 +32,20 @@
 <br />
 
 ## Table of contents
-1. 🐢 **[Why Giskard?](#why-giskard)**
-2. 📗 **[Quickstart](#getting-started)**
-  - [Install our Python library and testing server](#installation)
-  - [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
-  - [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
-  - [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
-3. 👋 **[How to contribute](#how-to-contribute)**
-4. 💖 **[Like what we're doing?](#like-what-were-doing)**
-
+<ol>
+    <li><a href="#why-giskard">🐢 Why Giskard?</a></li>
+    <li>
+      <a href="#getting-started">📗 Quickstart</a>
+      <ul>
+        <li><a href="#installation">Deploy ZenML</a></li>
+        <li><a href="#scan-your-model-to-detect-vulnerabilities">Scan your model to detect vulnerabilities</a></li>
+        <li><a href="#automatically-generate-a-test-suite-based-on-the-scan-results">Automatically generate a test suite</a></li>
+        <li><a href="#upload-your-test-suite-to-the-giskard-server">Upload your test suite to the Giskard server/a></li>
+      </ul>
+    </li>
+    <li><a href="#how-to-contribute">👋 How to contribute</a></li>
+    <li><a href="#like-what-were-doing">💖 Like what we're doing?</a></li>
+  </ol>
 
 ## Why Giskard?
 **Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
