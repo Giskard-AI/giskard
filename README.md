@@ -37,7 +37,7 @@
     <li>
       <a href="#getting-started">📗 Quickstart</a>
       <ul>
-        <li><a href="#installation">Deploy ZenML</a></li>
+        <li><a href="#installation">Install our Python library and testing server</a></li>
         <li><a href="#scan-your-model-to-detect-vulnerabilities">Scan your model to detect vulnerabilities</a></li>
         <li><a href="#automatically-generate-a-test-suite-based-on-the-scan-results">Automatically generate a test suite</a></li>
         <li><a href="#upload-your-test-suite-to-the-giskard-server">Upload your test suite to the Giskard server/a></li>
