@@ -96,7 +96,7 @@ public class MLWorkerService {
                 .build();
             MLWorkerWSBaseDTO result= mlWorkerWSCommService.performAction(
                 MLWorkerID.EXTERNAL,
-                MLWorkerWSAction.echo,
+                MLWorkerWSAction.ECHO,
                 echoMsg
             );
             if (result instanceof MLWorkerWSEchoMsgDTO reply) {

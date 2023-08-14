@@ -10,7 +10,6 @@ import ai.giskard.ml.dto.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.*;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.utils.FunctionArguments;
@@ -47,7 +46,6 @@ public class DatasetsController {
     private final UsageService usageService;
     private final SlicingFunctionService slicingFunctionService;
     private final TransformationFunctionService transformationFunctionService;
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestArgumentService testArgumentService;
@@ -193,7 +191,7 @@ public class DatasetsController {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
-                MLWorkerWSAction.datasetProcessing,
+                MLWorkerWSAction.DATASET_PROCESSING,
                 param
             );
             if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
@@ -201,7 +199,7 @@ public class DatasetsController {
             } else if (result instanceof MLWorkerWSErrorDTO error) {
                 throw new MLWorkerIllegalReplyException(error);
             }
-            throw new MLWorkerIllegalReplyException("Invalid response", "Dataset processing failed");
+            throw new MLWorkerIllegalReplyException("Dataset processing failed");
         }
         throw new MLWorkerNotConnectedException(workerID, log);
     }

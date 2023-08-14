@@ -11,12 +11,10 @@ import ai.giskard.ml.dto.MLWorkerWSErrorDTO;
 import ai.giskard.ml.dto.MLWorkerWSTestSuiteDTO;
 import ai.giskard.ml.dto.MLWorkerWSTestSuiteParamDTO;
 import ai.giskard.repository.TestSuiteExecutionRepository;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestSuiteExecutionDTO;
-import ai.giskard.worker.TestSuiteResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,6 @@ public class TestSuiteExecutionService {
 
     private final Logger log = LoggerFactory.getLogger(TestSuiteExecutionService.class);
 
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestArgumentService testArgumentService;
@@ -82,7 +79,7 @@ public class TestSuiteExecutionService {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
-                MLWorkerWSAction.runTestSuite,
+                MLWorkerWSAction.RUN_TEST_SUITE,
                 param
             );
 
@@ -105,7 +102,7 @@ public class TestSuiteExecutionService {
                 execution.setCompletionDate(new Date());
                 throw new MLWorkerIllegalReplyException(error);
             }
-            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot run test suite");
+            throw new MLWorkerIllegalReplyException("Cannot run test suite");
         }
         throw new MLWorkerNotConnectedException(workerID, log);
     }
@@ -115,16 +112,6 @@ public class TestSuiteExecutionService {
         if (Boolean.TRUE.equals(testSuiteResultMessage.getIsError())) {
             return TestResult.ERROR;
         } else if (Boolean.TRUE.equals(testSuiteResultMessage.getIsPass())) {
-            return TestResult.PASSED;
-        } else {
-            return TestResult.FAILED;
-        }
-    }
-
-    private static TestResult getResult(TestSuiteResultMessage testSuiteResultMessage) {
-        if (testSuiteResultMessage.getIsError()) {
-            return TestResult.ERROR;
-        } else if (testSuiteResultMessage.getIsPass()) {
             return TestResult.PASSED;
         } else {
             return TestResult.FAILED;

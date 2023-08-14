@@ -9,9 +9,11 @@ public class MLWorkerIllegalReplyException extends RuntimeException {
     private final String errorString;
     private final String errorType;
 
-    public MLWorkerIllegalReplyException(String errorType, String errorString) {
+    public static final String INVALID_RESPONSE_ERROR_TYPE = "Invalid response";
+
+    public MLWorkerIllegalReplyException(String errorString) {
         super(errorString);
-        this.errorType = errorType;
+        this.errorType = INVALID_RESPONSE_ERROR_TYPE;
         this.errorString = errorString;
     }
 

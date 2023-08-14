@@ -55,7 +55,7 @@ public class MLWorkerWSCommService {
         // Prepare the parameters and publish message
         send(workerID, action, param, repId);
 
-        String result = null;
+        String result;
         if (milliseconds > 0) {
             result = awaitReply(repId, milliseconds);
         } else {
@@ -70,17 +70,17 @@ public class MLWorkerWSCommService {
 
         try {
             return switch (action) {
-                case getInfo -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
-                case runAdHocTest -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
-                case datasetProcessing -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
-                case runTestSuite -> parseReplyDTO(result, MLWorkerWSTestSuiteDTO.class);
-                case runModel, stopWorker, generateQueryBasedSlicingFunction -> new MLWorkerWSEmptyDTO();
-                case runModelForDataFrame -> parseReplyDTO(result, MLWorkerWSRunModelForDataFrameDTO.class);
-                case explain -> parseReplyDTO(result, MLWorkerWSExplainDTO.class);
-                case explainText -> parseReplyDTO(result, MLWorkerWSExplainTextDTO.class);
-                case echo -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
-                case generateTestSuite -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
-                case getCatalog -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
+                case GET_INFO -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
+                case RUN_AD_HOC_TEST -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
+                case DATASET_PROCESSING -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
+                case RUN_TEST_SUITE -> parseReplyDTO(result, MLWorkerWSTestSuiteDTO.class);
+                case RUN_MODEL, STOP_WORKER, GENERATE_QUERY_BASED_SLICING_FUNCTION -> new MLWorkerWSEmptyDTO();
+                case RUN_MODEL_FOR_DATA_FRAME -> parseReplyDTO(result, MLWorkerWSRunModelForDataFrameDTO.class);
+                case EXPLAIN -> parseReplyDTO(result, MLWorkerWSExplainDTO.class);
+                case EXPLAIN_TEXT -> parseReplyDTO(result, MLWorkerWSExplainTextDTO.class);
+                case ECHO -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
+                case GENERATE_TEST_SUITE -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
+                case GET_CATALOG -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
             };
         } catch (JsonProcessingException e) {
             return parseReplyErrorDTO(result);

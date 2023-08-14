@@ -12,8 +12,6 @@ import ai.giskard.web.dto.config.MLWorkerInfoDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/ml-workers")
 public class MLWorkerController {
-    private final Logger log = LoggerFactory.getLogger(getClass());
     private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
@@ -43,7 +40,7 @@ public class MLWorkerController {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 MLWorkerID.INTERNAL,
-                MLWorkerWSAction.getInfo,
+                MLWorkerWSAction.GET_INFO,
                 param
             );
             if (result instanceof MLWorkerWSGetInfoDTO info) {
@@ -53,7 +50,7 @@ public class MLWorkerController {
         if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 MLWorkerID.EXTERNAL,
-                MLWorkerWSAction.getInfo,
+                MLWorkerWSAction.GET_INFO,
                 param
             );
             if (result instanceof MLWorkerWSGetInfoDTO info) {
@@ -75,7 +72,7 @@ public class MLWorkerController {
     public void stopWorker(boolean internal) {
         MLWorkerID workerID = internal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.stopWorker, null);
+            mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.STOP_WORKER, null);
         }
     }
 

@@ -17,16 +17,12 @@ import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.DatasetMeta;
-import ai.giskard.worker.ModelMeta;
-import ai.giskard.worker.SuiteInput;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +45,6 @@ public class TestSuiteService {
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestFunctionRepository testFunctionRepository;
@@ -204,7 +199,7 @@ public class TestSuiteService {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
-                MLWorkerWSAction.generateTestSuite,
+                MLWorkerWSAction.GENERATE_TEST_SUITE,
                 param
             );
             if (result instanceof MLWorkerWSGenerateTestSuiteDTO response) {
@@ -222,27 +217,9 @@ public class TestSuiteService {
             } else if (result instanceof MLWorkerWSErrorDTO error) {
                 throw new MLWorkerIllegalReplyException(error);
             }
-            throw new MLWorkerIllegalReplyException("Invalid response", "Cannot create test suite");
+            throw new MLWorkerIllegalReplyException("Cannot create test suite");
         }
         throw new MLWorkerNotConnectedException(workerID);
-    }
-
-    private static SuiteInput generateSuiteInput(GenerateTestSuiteInputDTO input) {
-        SuiteInput.Builder builder = SuiteInput.newBuilder()
-            .setName(input.getName())
-            .setType(input.getType());
-
-        if (input instanceof GenerateTestModelInputDTO generateTestModelInputDTO) {
-            builder.setModelMeta(ModelMeta.newBuilder()
-                    .setModelType(generateTestModelInputDTO.getModelType())
-                    .build());
-        } else if (input instanceof GenerateTestDatasetInputDTO generateTestDatasetInputDTO) {
-            builder.setDatasetMeta(DatasetMeta.newBuilder()
-                    .setTarget(generateTestDatasetInputDTO.getTarget())
-                    .build());
-        }
-
-        return builder.build();
     }
 
     private static MLWorkerWSSuiteInputDTO generateSuiteInputWS(GenerateTestSuiteInputDTO input) {

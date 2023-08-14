@@ -19,9 +19,6 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.ExplainResponse;
-import ai.giskard.worker.ExplainTextResponse;
-import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +61,7 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
-    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
@@ -101,7 +97,7 @@ public class ModelController {
 
 
     @PostMapping("models/explain-text/{featureName}")
-    public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());

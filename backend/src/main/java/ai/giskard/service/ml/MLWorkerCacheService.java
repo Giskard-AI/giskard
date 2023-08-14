@@ -30,7 +30,6 @@ import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
 @RequiredArgsConstructor
 public class MLWorkerCacheService {
 
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final MLWorkerTunnelService mlWorkerTunnelService;
@@ -87,10 +86,10 @@ public class MLWorkerCacheService {
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
         if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
-            MLWorkerWSCatalogDTO response = null;
+            MLWorkerWSCatalogDTO response;
             UUID replyUuid = mlWorkerWSCommService.performActionAsync(
                 isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
-                MLWorkerWSAction.getCatalog, null
+                MLWorkerWSAction.GET_CATALOG, null
             );
             String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
             if (reply != null) {

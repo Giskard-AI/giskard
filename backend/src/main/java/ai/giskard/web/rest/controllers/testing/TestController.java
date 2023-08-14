@@ -15,7 +15,6 @@ import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestParamDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestArgumentService;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/testing/tests")
 @RequiredArgsConstructor
 public class TestController {
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final ProjectRepository projectRepository;
@@ -67,7 +65,7 @@ public class TestController {
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
                 workerID,
-                MLWorkerWSAction.runAdHocTest,
+                MLWorkerWSAction.RUN_AD_HOC_TEST,
                 builder.build()
             );
             if (result instanceof MLWorkerWSRunAdHocTestDTO response) {
@@ -82,7 +80,7 @@ public class TestController {
             } else if (result instanceof MLWorkerWSErrorDTO error) {
                 throw new MLWorkerIllegalReplyException(error);
             }
-            throw new MLWorkerIllegalReplyException("Invalid response", "Unable to get results of AdHoc test");
+            throw new MLWorkerIllegalReplyException("Unable to get results of AdHoc test");
         }
         throw new MLWorkerNotConnectedException(workerID);
     }

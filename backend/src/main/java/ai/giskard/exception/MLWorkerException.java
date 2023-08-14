@@ -3,12 +3,10 @@ package ai.giskard.exception;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class MLWorkerException extends StatusRuntimeException {
-    @Setter
-    private String errorClass;
+    private final String errorClass;
     private final String message;
     private final String stack;
 

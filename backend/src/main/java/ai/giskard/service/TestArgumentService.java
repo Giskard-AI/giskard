@@ -9,7 +9,6 @@ import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
 import ai.giskard.ml.dto.MLWorkerWSSuiteTestArgumentDTO;
 import ai.giskard.worker.ArtifactRef;
 import ai.giskard.worker.FuncArgument;
-import ai.giskard.worker.SuiteTestArgument;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
@@ -23,30 +22,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TestArgumentService {
-
-    public SuiteTestArgument buildFixedTestArgument(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey,
-                                                    boolean sample) {
-        TestFunction testFunction = test.getTestFunction();
-        SuiteTestArgument.Builder builder = SuiteTestArgument.newBuilder()
-            .setTestUuid(testFunction.getUuid().toString())
-            .setId(test.getId());
-
-        Map<String, FunctionArgument> arguments = testFunction.getArgs().stream()
-            .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
-
-
-        for (FunctionInput input : test.getFunctionInputs()) {
-            if (input.isAlias()) {
-                FunctionInput shared = globalArguments.get(input.getValue());
-                builder.addArguments(buildTestArgument(arguments, shared.getName(), shared.getValue(), projectKey, shared.getParams(), sample));
-            } else {
-                builder.addArguments(buildTestArgument(arguments, input.getName(), input.getValue(), projectKey, input.getParams(), sample));
-            }
-
-        }
-
-        return builder.build();
-    }
 
     public MLWorkerWSSuiteTestArgumentDTO buildFixedTestArgumentWS(Map<String, FunctionInput> globalArguments, SuiteTest test, String projectKey,
                                                                    boolean sample) {
@@ -180,7 +155,7 @@ public class TestArgumentService {
                     buildTestArgumentWS(
                         child.getName(), child.getValue(), projectKey, child.getType(), child.getParams(), sample
                     )
-                ).collect(Collectors.toList())
+                ).toList()
             );
         }
 
