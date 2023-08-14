@@ -185,7 +185,7 @@ Then execute the ML worker:
   </details>
 
 ```python
-!giskard worker start -d -k YOUR_TOKEN
+\!giskard worker start -d -k YOUR_TOKEN
 ```
 
 <details>
@@ -197,7 +197,7 @@ Then execute the ML worker:
   <summary>If Giskard server is installed on an external server</summary>
 
   ```python
-    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+    \!giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
 
