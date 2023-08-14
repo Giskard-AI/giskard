@@ -92,11 +92,11 @@ And of course, Giskard works with any model, any environment and integrates seam
 # 📗 Getting started
 
 ## 1. 📥 Installation
-Install Giskard via PyPI:
+Install **Giskard** via PyPI:
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
-For full functionality start Giskard server with: 
+For full functionality start **Giskard server** with: 
 ```sh
 giskard server start
 ```
@@ -104,7 +104,7 @@ giskard server start
 🚀 That's it! Access at http://localhost:19000
 
 ## 2. 🔎 Scan your model to detect vulnerabilities
-Here's an example of a hello world Giskard scan in code:
+Here's an example of a *hello world* Giskard scan in code:
 
 ```python
 import giskard
@@ -152,17 +152,14 @@ display(scan_results)  # in your notebook
 
 ## 3. 🪄 Automatically generate a test suite based on the scan results
 
-If the scan found potential issues in your model, you can automatically generate a test suite.
+If the scan found potential issues in your model, you can automatically generate a **test suite**.
 
 Generating a test suite from your scan results will enable you to:
-1. Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
-2. Diagnose your vulnerabilities and debug the issues you found in the scan
+1. Turn the issues you found into actionable tests that you can directly integrate in your **CI/CD pipeline**
+2. Diagnose your vulnerabilities and **debug** the issues you found in the scan
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
-
-# You can run the test suite locally to verify that it reproduces the issues
-test_suite.run()
 ```
 You can run the test suite locally to verify that it reproduces the issues
 ```python
@@ -177,33 +174,39 @@ You can then **upload the test suite** to the local Giskard server. This will en
 - Create more domain-specific tests relevant to your use case
 - Share results, and collaborate with your team to integrate business feedback
 
-First, make sure Giskard server is installed ( check if http://localhost:19000 is running or use `giskard server status` if needed)
+1. First, make sure Giskard server is installed 
+    <details>
+      <summary>How to check if the Giskard server is running</summary>
+      
+      - check if http://localhost:19000 is running
+      - or use `giskard server status`
+    </details>
 
-Then execute the ML worker in your notebook:
-```python
- !giskard worker start -d -k YOUR_TOKEN
-```
+2. Then execute the ML worker in your notebook:
+    ```python
+     !giskard worker start -d -k YOUR_TOKEN
+    ```
 
 
 
 
-Fianlly upload test suite to the giskard server using the following code:
-```python
-token = "API_TOKEN"  # Find it in Settings in the Giskard server
-client = GiskardClient(
-    url="http://localhost:19000", token=token  # URL of your Giskard instance
-)
-
-my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
-
-# Upload to the current project
-test_suite.upload(client, "my_project")
-
-```
+3. Finally upload test suite to the giskard server using the following code:
+    ```python
+    token = "API_TOKEN"  # Find it in Settings in the Giskard server
+    client = GiskardClient(
+        url="http://localhost:19000", token=token  # URL of your Giskard instance
+    )
+    
+    my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
+    
+    # Upload to the current project
+    test_suite.upload(client, "my_project")
+    
+    ```
 ### Help
 <details>
   <summary>About the ML worker</summary>
-  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from local notebook, Colab notebook or a terminal. 
+  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
   </details>
   
 <details>
@@ -213,15 +216,25 @@ test_suite.upload(client, "my_project")
 </details>
 
 <details>
+  <summary>If Giskard server/ML worker is not installed</summary>
+
+  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+</details>
+
+<details>
   <summary>If Giskard server is installed on an external server</summary>
 
   ```python
     !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
-For more information on the server and ML worker installation, go to [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html).
 
-For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+<details>
+  <summary>For more information on uploading to your local Giskard server</summary>
+
+  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+</details>
+
 
 # 👋 How to contribute
 We welcome contributions from the Machine Learning community!
