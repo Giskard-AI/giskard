@@ -48,7 +48,7 @@
   </ol>
 
 # 🐢 Why Giskard?
-**Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.**
+> Giskard is an open-source testing framework dedicated to ML models, from tabular models to LLMs.
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite. 
 
@@ -91,17 +91,19 @@ And of course, Giskard works with any model, any environment and integrates seam
 # 📗 Getting started
 
 ## 1. 📥 Installation
+Install Giskard via PyPI:
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
-
+```
+For full functionality start Giskard server with: 
+```sh
 giskard server start
 ```
 
-That's it. Access at http://localhost:19000
+🚀 That's it! Access at http://localhost:19000
 
 ## 2. 🔎 Scan your model to detect vulnerabilities
-
-After having wrapped your [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html), you can scan your model for vulnerabilities using:
+Here's an example of a hello world Giskard scan in code:
 
 ```python
 import giskard
@@ -110,14 +112,6 @@ import giskard
 df = giskard.demo.titanic_df()
 data_preprocessor, clf = giskard.demo.titanic_pipeline()
 
-# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
-giskard_dataset = giskard.Dataset(
-    df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
-    target="Survived",  # Ground truth variable
-    name="Titanic dataset", # Optional
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
-)
-
 # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
 # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
 # for classification, regression & text generation.
@@ -125,6 +119,14 @@ def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     preprocessed_df = data_preprocessor(df)
     return clf.predict_proba(preprocessed_df)
+
+# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
+giskard_dataset = giskard.Dataset(
+    df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
+    target="Survived",  # Ground truth variable
+    name="Titanic dataset", # Optional
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+)
 
 giskard_model = giskard.Model(
     model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
@@ -139,6 +141,8 @@ giskard_model = giskard.Model(
 results = giskard.scan(giskard_model, giskard_dataset)
 ```
 
+*(Check our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.)*
+
 Once the scan completes, you can display the results directly in your notebook:
 
 ```python
@@ -150,8 +154,8 @@ display(scan_results)  # in your notebook
 If the scan found potential issues in your model, you can automatically generate a test suite.
 
 Generating a test suite from your scan results will enable you to:
-- Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
-- Diagnose your vulnerabilities and debug the issues you found in the scan
+1. Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
+2. Diagnose your vulnerabilities and debug the issues you found in the scan
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
@@ -159,19 +163,49 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 # You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()
 ```
+You can run the test suite locally to verify that it reproduces the issues
+```python
+test_suite.run()
+```
 
 ## 4. ⌛️ Upload your test suite to the Giskard server
 
-You can then upload the test suite to the local Giskard server. This will enable you to:
-- Compare the quality of different models to decide which one to promote
-- Debug your tests to diagnose the identified issues
-- Create more domain-specific tests relevant to your use case
-- Share results, and collaborate with your team to integrate business feedback
+You can then **upload the test suite** to the local Giskard server. This will enable you to:
+1. Compare the quality of different models to decide which one to promote
+2. Debug your tests to diagnose the identified issues
+3. Create more domain-specific tests relevant to your use case
+4. Share results, and collaborate with your team to integrate business feedback
 
-First, install the Giskard server by following [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html)
+First, make sure Giskard server is installed ( check if http://localhost:19000 is up or use `giskard server status` if needed)
+
+Then execute the ML worker:
+<details>
+  <summary>About the ML worker<summary/>
+  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from local notebook, Colab notebook or a terminal. 
+<details/>
 
 ```python
-# Create a Giskard client after having installed the Giskard server (see documentation)
+!giskard worker start -d -k YOUR_TOKEN
+```
+
+<details>
+  <summary>How to get the API key<summary/>
+  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
+<details/>
+
+<details>
+  <summary>If Giskard server is installed on an external server<summary/>
+
+  ```python
+    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+  ```
+<details/>
+
+
+Follow [this documentation](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) if you have any trouble
+
+Fianlly upload test suite to the giskard server using the following code:
+```python
 token = "API_TOKEN"  # Find it in Settings in the Giskard server
 client = GiskardClient(
     url="http://localhost:19000", token=token  # URL of your Giskard instance
