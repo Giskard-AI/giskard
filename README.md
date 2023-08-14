@@ -32,14 +32,14 @@
 <br />
 
 ## Table of contents
-* 🐢 **[Why Giskard?](#why-giskard)**
-* 📗 **[Getting started](#getting-started)**
+1. 🐢 **[Why Giskard?](#why-giskard)**
+2. 📗 **[Quickstart](#getting-started)**
   - [Install our Python library and testing server](#installation)
   - [Scan your model to detect vulnerabilities](#scan-your-model-to-detect-vulnerabilities)
   - [Automatically generate a test suite](#automatically-generate-a-test-suite-based-on-the-scan-results)
   - [Upload your test suite to the Giskard server](#upload-your-test-suite-to-the-giskard-server)
-* 👋 **[How to contribute](#how-to-contribute)**
-* 💖 **[Like what we're doing?](#like-what-were-doing)**
+3. 👋 **[How to contribute](#how-to-contribute)**
+4. 💖 **[Like what we're doing?](#like-what-were-doing)**
 
 
 ## Why Giskard?
