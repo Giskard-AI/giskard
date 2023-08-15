@@ -2,8 +2,6 @@ package ai.giskard.web.socket;
 
 import ai.giskard.event.UpdateWorkerStatusEvent;
 import ai.giskard.ml.MLWorkerID;
-import ai.giskard.service.GeneralSettingsService;
-import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -18,7 +16,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class WorkerStatusSocketService {
 
-    private final MLWorkerService mlWorkerService;
     private final MLWorkerWSService mlWorkerWSService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 

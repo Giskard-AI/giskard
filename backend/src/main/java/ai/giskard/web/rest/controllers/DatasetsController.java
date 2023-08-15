@@ -139,68 +139,69 @@ public class DatasetsController {
             .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
-        if (mlWorkerWSService.isWorkerConnected(workerID)) {
-            List<MLWorkerWSDatasetProcessingFunctionDTO> functions =
-                processingFunctions.stream().map(processingFunction -> {
-                    MLWorkerWSDatasetProcessingFunctionDTO.MLWorkerWSDatasetProcessingFunctionDTOBuilder functionBuilder =
-                        MLWorkerWSDatasetProcessingFunctionDTO.builder();
-
-                    DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
-                    Map<String, FunctionArgument> arguments = callable.getArgs().stream()
-                        .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
-
-                    if (callable.isCellLevel()) {
-                        arguments.put("column_name", FunctionArguments.COLUMN_NAME);
-                    }
-
-                    MLWorkerWSArtifactRefDTO artifactRef = MLWorkerWSArtifactRefDTO.builder()
-                        .id(callable.getUuid().toString())
-                        .build();
-                    if (callable.getProjectKey() != null) {
-                        artifactRef.setProjectKey(callable.getProjectKey());
-                    }
-
-                    if (callable instanceof SlicingFunction) {
-                        functionBuilder.slicingFunction(artifactRef);
-                    } else {
-                        functionBuilder.transformationFunction(artifactRef);
-                    }
-
-                    List<MLWorkerWSFuncArgumentDTO> argumentList = new ArrayList<>(processingFunction.getParams().size());
-                    for (FunctionInputDTO input : processingFunction.getParams()) {
-                            argumentList.add(testArgumentService
-                                .buildTestArgumentWS(
-                                    arguments,
-                                    input.getName(),
-                                    input.getValue(),
-                                    project.getKey(),
-                                    Collections.emptyList(),
-                                    sample
-                                )
-                            );
-                    }
-                    functionBuilder.arguments(argumentList);
-
-                    return functionBuilder.build();
-                }).toList();
-
-            MLWorkerWSDatasetProcessingParamDTO param = MLWorkerWSDatasetProcessingParamDTO.builder()
-                .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
-                .functions(functions)
-                .build();
-
-            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.DATASET_PROCESSING,
-                param
-            );
-            if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
-                return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
-            } else if (result instanceof MLWorkerWSErrorDTO error) {
-                throw new MLWorkerIllegalReplyException(error);
-            }
-            throw new MLWorkerIllegalReplyException("Dataset processing failed");
+        if (!mlWorkerWSService.isWorkerConnected(workerID)) {
+            throw new MLWorkerNotConnectedException(workerID, log);
         }
-        throw new MLWorkerNotConnectedException(workerID, log);
+
+        List<MLWorkerWSDatasetProcessingFunctionDTO> functions =
+            processingFunctions.stream().map(processingFunction -> {
+                MLWorkerWSDatasetProcessingFunctionDTO.MLWorkerWSDatasetProcessingFunctionDTOBuilder functionBuilder =
+                    MLWorkerWSDatasetProcessingFunctionDTO.builder();
+
+                DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
+                Map<String, FunctionArgument> arguments = callable.getArgs().stream()
+                    .collect(Collectors.toMap(FunctionArgument::getName, Function.identity()));
+
+                if (callable.isCellLevel()) {
+                    arguments.put("column_name", FunctionArguments.COLUMN_NAME);
+                }
+
+                MLWorkerWSArtifactRefDTO artifactRef = MLWorkerWSArtifactRefDTO.builder()
+                    .id(callable.getUuid().toString())
+                    .build();
+                if (callable.getProjectKey() != null) {
+                    artifactRef.setProjectKey(callable.getProjectKey());
+                }
+
+                if (callable instanceof SlicingFunction) {
+                    functionBuilder.slicingFunction(artifactRef);
+                } else {
+                    functionBuilder.transformationFunction(artifactRef);
+                }
+
+                List<MLWorkerWSFuncArgumentDTO> argumentList = new ArrayList<>(processingFunction.getParams().size());
+                for (FunctionInputDTO input : processingFunction.getParams()) {
+                        argumentList.add(testArgumentService
+                            .buildTestArgumentWS(
+                                arguments,
+                                input.getName(),
+                                input.getValue(),
+                                project.getKey(),
+                                Collections.emptyList(),
+                                sample
+                            )
+                        );
+                }
+                functionBuilder.arguments(argumentList);
+
+                return functionBuilder.build();
+            }).toList();
+
+        MLWorkerWSDatasetProcessingParamDTO param = MLWorkerWSDatasetProcessingParamDTO.builder()
+            .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
+            .functions(functions)
+            .build();
+
+        MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+            workerID,
+            MLWorkerWSAction.DATASET_PROCESSING,
+            param
+        );
+        if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
+            return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
+        } else if (result instanceof MLWorkerWSErrorDTO error) {
+            throw new MLWorkerIllegalReplyException(error);
+        }
+        throw new MLWorkerIllegalReplyException("Dataset processing failed");
     }
 }

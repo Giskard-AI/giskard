@@ -41,11 +41,13 @@ public class MLWorkerWSCommService {
         );
     }
 
+    // This operation can be slow so that it should not be executed inside a DB transaction
     @Transactional(propagation = Propagation.NEVER)
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {
         return performAction(workerID, action, param, 0);
     }
 
+    // This operation can be slow so that it should not be executed inside a DB transaction
     @Transactional(propagation = Propagation.NEVER)
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
         // Prepare to receive the final result
