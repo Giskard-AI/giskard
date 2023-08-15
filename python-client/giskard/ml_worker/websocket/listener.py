@@ -80,8 +80,6 @@ def dispatch_action(callback, ml_worker, action, req):
         params = parse_action_param(action, params)
         # Call the function and get the response
         info: websocket.WorkerReply = callback(ml_worker=ml_worker, action=action.name, params=params)
-        # TODO: Allow to reply multiple messages for multiple shot
-
     except Exception as e:
         info: websocket.WorkerReply = websocket.ErrorReply(
             error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
@@ -90,7 +88,6 @@ def dispatch_action(callback, ml_worker, action, req):
 
     if rep_id:
         # Reply if there is an ID
-        # TODO: multiple shot
         logger.debug(
             f"[WRAPPED_CALLBACK] replying {len(info.json(by_alias=True))} {info.json(by_alias=True)} for {action.name}"
         )
@@ -217,6 +214,61 @@ def on_ml_worker_stop_worker(ml_worker: MLWorker, *args, **kwargs) -> websocket.
     return websocket.Empty()
 
 
+def run_classification_mode(model, dataset, prediction_results):
+    results = prediction_results.all_predictions
+    labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
+    label_serie = dataset.df[dataset.target] if dataset.target else None
+    if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+        preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
+        sorted_predictions = np.sort(prediction_results.all_predictions.values)
+        abs_diff = pd.Series(
+            sorted_predictions[:, -1] - sorted_predictions[:, -2],
+            name="absDiff",
+        )
+    else:
+        diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
+        preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
+        abs_diff = pd.Series(diff.abs(), name="absDiff")
+    calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
+    return results, calculated
+
+
+def run_other_model(model, dataset, prediction_results):
+    results = pd.Series(prediction_results.prediction)
+    preds_serie = results
+    if dataset.target and dataset.target in dataset.df.columns:
+        target_serie = dataset.df[dataset.target]
+        diff = preds_serie - target_serie
+        diff_percent = pd.Series(
+            diff / target_serie,
+            name="diffPercent",
+            dtype=np.float64,
+        ).replace([np.inf, -np.inf], np.nan)
+        abs_diff = pd.Series(
+            diff.abs(),
+            name="absDiff",
+            dtype=np.float64,
+        )
+        abs_diff_percent = pd.Series(
+            abs_diff / target_serie,
+            name="absDiffPercent",
+            dtype=np.float64,
+        ).replace([np.inf, -np.inf], np.nan)
+        calculated = pd.concat(
+            [
+                preds_serie,
+                target_serie,
+                abs_diff,
+                abs_diff_percent,
+                diff_percent,
+            ],
+            axis=1,
+        )
+    else:
+        calculated = pd.concat([preds_serie], axis=1)
+    return results, calculated
+
+
 @websocket_actor(MLWorkerAction.runModel)
 def run_model(ml_worker: MLWorker, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
@@ -245,80 +297,35 @@ def run_model(ml_worker: MLWorker, params: websocket.RunModelParam, *args, **kwa
     prediction_results = model.predict(dataset)
 
     if model.is_classification:
-        results = prediction_results.all_predictions
-        labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
-        label_serie = dataset.df[dataset.target] if dataset.target else None
-        if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
-            preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
-            sorted_predictions = np.sort(prediction_results.all_predictions.values)
-            abs_diff = pd.Series(
-                sorted_predictions[:, -1] - sorted_predictions[:, -2],
-                name="absDiff",
-            )
-        else:
-            diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
-            preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
-            abs_diff = pd.Series(diff.abs(), name="absDiff")
-        calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
+        results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results = pd.Series(prediction_results.prediction)
-        preds_serie = results
-        if dataset.target and dataset.target in dataset.df.columns:
-            target_serie = dataset.df[dataset.target]
-            diff = preds_serie - target_serie
-            diff_percent = pd.Series(
-                diff / target_serie,
-                name="diffPercent",
-                dtype=np.float64,
-            ).replace([np.inf, -np.inf], np.nan)
-            abs_diff = pd.Series(
-                diff.abs(),
-                name="absDiff",
-                dtype=np.float64,
-            )
-            abs_diff_percent = pd.Series(
-                abs_diff / target_serie,
-                name="absDiffPercent",
-                dtype=np.float64,
-            ).replace([np.inf, -np.inf], np.nan)
-            calculated = pd.concat(
-                [
-                    preds_serie,
-                    target_serie,
-                    abs_diff,
-                    abs_diff_percent,
-                    diff_percent,
-                ],
-                axis=1,
-            )
-        else:
-            calculated = pd.concat([preds_serie], axis=1)
+        results, calculated = run_other_model(model, dataset, prediction_results)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
-        dir = Path(f)
+        tmp_dir = Path(f)
         predictions_csv = get_file_name("predictions", "csv", params.dataset.sample)
-        results.to_csv(index=False, path_or_buf=dir / predictions_csv)
+        results.to_csv(index=False, path_or_buf=tmp_dir / predictions_csv)
         if ml_worker.client:
             ml_worker.client.log_artifact(
-                dir / predictions_csv,
+                tmp_dir / predictions_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
         else:
             log_artifact_local(
-                dir / predictions_csv,
+                tmp_dir / predictions_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
 
         calculated_csv = get_file_name("calculated", "csv", params.dataset.sample)
-        calculated.to_csv(index=False, path_or_buf=dir / calculated_csv)
+        calculated.to_csv(index=False, path_or_buf=tmp_dir / calculated_csv)
         if ml_worker.client:
             ml_worker.client.log_artifact(
-                dir / calculated_csv,
+                tmp_dir / calculated_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
         else:
             log_artifact_local(
-                dir / calculated_csv,
+                tmp_dir / calculated_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
     return websocket.Empty()
@@ -427,7 +434,7 @@ def dataset_processing(
                 modifications={
                     key: str(value)
                     for key, value in row[1].items()
-                    if not type(value) == float or not math.isnan(value)
+                    if isinstance(value, float) or not math.isnan(value)
                 },
             )
             for row in modified_rows.iterrows()

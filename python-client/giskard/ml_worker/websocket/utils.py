@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_action_param(action, params):
-    # TODO: Sort by usage frequency
+    # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
     elif action == MLWorkerAction.runAdHocTest:
@@ -250,7 +250,8 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
 
         if debug_info is None:
             raise ValueError(
-                "You have requested to debug the test, " "but extract_debug_info did not return the information needed."
+                "You have requested to debug the test, "
+                + "but extract_debug_info did not return the information needed."
             )
 
         test_result.output_df.name += debug_info["suffix"]
