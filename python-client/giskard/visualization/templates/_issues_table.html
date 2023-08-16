@@ -2,9 +2,7 @@
     <table class="table-auto w-full text-white">
         {% for issue in issues %}
         <tbody class="first:border-t border-b border-zinc-500">
-            {% if issue.__class__.__name__ == 'OverconfidenceIssue' %}
-            {% include "_issues/overconfidence.html" %}
-            {% elif issue.__class__.__name__ == 'UnderconfidenceIssue' %}
+            {% if issue.__class__.__name__ == 'UnderconfidenceIssue' %}
             {% include "_issues/underconfidence.html" %}
             {% elif issue.__class__.__name__ == 'StochasticityIssue' %}
             {% include "_issues/stochasticity.html" %}
