@@ -52,7 +52,7 @@ def test_slow(dataset_name, model_name, request):
     if dataset_name in exception_fixtures:
         with pytest.raises(NotImplementedError) as e:
             _to_wandb(model, dataset)
-        assert e.match(r"We do not support the SHAP logging of text*")
+        assert e.match(r"We do not support the wandb logging of ShapResult for text features yet.")
     else:
         _to_wandb(model, dataset)
 
