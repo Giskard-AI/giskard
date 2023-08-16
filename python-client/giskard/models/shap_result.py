@@ -87,10 +87,10 @@ class ShapResult:
     feature_types: dict = None
     feature_names: list = None
     model_type: ModelType = None
-    only_highest_prob: bool = True
+    only_highest_proba: bool = True
 
-    def _validate_config(self):
-        if not self.only_highest_prob and self.model_type == SupportedModelTypes.CLASSIFICATION:
+    def _validate_wandb_config(self):
+        if not self.only_highest_proba and self.model_type == SupportedModelTypes.CLASSIFICATION:
             raise ValueError(
                 "We currently support 'ShapResult.to_wandb()' only with 'only_highest_proba == True' for "
                 "classification models."
@@ -100,7 +100,7 @@ class ShapResult:
         """Create and log to the WandB run SHAP charts."""
         from giskard.integrations.wandb.wandb_utils import wandb_run
 
-        self._validate_config()
+        self._validate_wandb_config()
 
         with wandb_run(**kwargs) as run:
             charts = dict()

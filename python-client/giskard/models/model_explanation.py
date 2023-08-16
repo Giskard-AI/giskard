@@ -61,24 +61,24 @@ def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.nda
     return shap_values
 
 
-def _get_highest_prob_shap(shap_values: list, model: BaseModel, dataset: Dataset) -> list:
+def _get_highest_proba_shap(shap_values: list, model: BaseModel, dataset: Dataset) -> list:
     """Get SHAP explanations of classes with the highest predicted probability."""
     predictions = model.predict(dataset).raw_prediction
     return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
 
 
-def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_prob: bool = True) -> ShapResult:
+def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bool = True) -> ShapResult:
     """Get SHAP explanation result."""
     shap_values = _calculate_dataset_shap_values(model, dataset)
-    if only_highest_prob and model.is_classification:
-        shap_values = _get_highest_prob_shap(shap_values, model, dataset)
+    if only_highest_proba and model.is_classification:
+        shap_values = _get_highest_proba_shap(shap_values, model, dataset)
 
     # Put SHAP values to the Explanation object for a convenience.
     feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
     shap_explanations = Explanation(shap_values, data=dataset.df[feature_names], feature_names=feature_names)
 
     feature_types = {key: dataset.column_types[key] for key in feature_names}
-    return ShapResult(shap_explanations, feature_types, feature_names, model.meta.model_type, only_highest_prob)
+    return ShapResult(shap_explanations, feature_types, feature_names, model.meta.model_type, only_highest_proba)
 
 
 def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
