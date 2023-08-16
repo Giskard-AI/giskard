@@ -31,6 +31,20 @@ class RobustnessIssue(Issue):
         super().__init__(model, dataset, level, info)
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": self.metric,
+            "deviation": self.deviation,
+            "description_hidden": " ",
+            "description": f"""When we perturb the content of feature "{ self.info.feature }” with the transformation
+                "{ self.info.transformation_fn.name }" (see examples below), your model changes its prediction in about
+                {abs(self.info.fail_ratio * 100):.1f}% of the cases.
+                We expected the predictions not to be affected by this transformation.""",
+            "examples": self.examples(3),
+        }
+
+    @property
     def features(self) -> List[str]:
         return [self.info.feature]
 
