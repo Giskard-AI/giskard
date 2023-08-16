@@ -49,6 +49,19 @@ class PerformanceIssue(Issue):
 
     def __repr__(self):
         return f"<PerformanceIssue slice='{self.info.slice_fn}', metric='{self.info.metric.name}', metric_delta={self.info.metric_rel_delta * 100:.2f}%>"
+    
+    @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": f"{self.info.metric.name} = {self.info.metric_value_slice:.3f}",
+            "submetric": f"Global = {self.info.metric_value_reference:.3f}",
+            "deviation": self.deviation,
+            "description_hidden": self.description,
+            "description": f"For records in your dataset where {self.domain}, the {self.info.metric.name.lower()} is {abs(self.info.metric_rel_delta * 100):.1f}%  {'lower' if self.info.metric_rel_delta < 0 else 'higher'} than the global {self.info.metric.name.lower()}.",
+            "examples": self.examples(3),
+            "p_value": f"{self.info.p_value:.3f}" if self.info.p_value is not None else None,
+        }
 
     @property
     def domain(self):
