@@ -675,8 +675,21 @@ class Dataset(ColumnMetadataMixin):
         """Log dataset to the WandB run in a table format."""
         from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
+        from ...utils.analytics_collector import analytics
+
         with wandb_run(**kwargs) as run:
             run.log({"Dataset/dataset": wandb.Table(dataframe=self.df)})
+
+            analytics.track(
+                "wandb_integration:dataset",
+                {
+                    "wandb_run_id": run.id,
+                    "dataset_size": len(self.df),
+                    "dataset_cat_col_cnt": len([c for c, t in self.column_types.items() if t == "category"]),
+                    "dataset_num_col_cnt": len([c for c, t in self.column_types.items() if t == "numeric"]),
+                    "dataset_text_col_cnt": len([c for c, t in self.column_types.items() if t == "text"]),
+                },
+            )
 
 
 def _cast_to_list_like(object):
