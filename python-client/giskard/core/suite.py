@@ -77,9 +77,8 @@ class TestSuiteResult:
 
     def to_wandb(self, **kwargs) -> None:
         """Log test suite results to the WandB run."""
-        import wandb
         from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
-
+        import wandb
         with wandb_run(**kwargs) as run:
             # Log just a test description and a metric.
             columns = ["Metric name", "Data slice", "Metric value", "Passed"]

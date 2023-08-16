@@ -4,7 +4,6 @@ import pandas as pd
 from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
-from giskard.integrations.wandb.wandb_utils import wandb_run
 
 
 class ScanResult:
@@ -124,9 +123,9 @@ class ScanResult:
 
     def to_wandb(self, **kwargs):
         """Log scan results to the WandB run in an HTML format."""
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+        import wandb  # noqa library import already checked in wandb_run
         with wandb_run(**kwargs) as run:
-            import wandb  # noqa library import already checked in wandb_run
-
             with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
                 self.to_html(filename=f.name)
                 wandb_artifact_name = f.name.split("/")[-1].split(".html")[0]

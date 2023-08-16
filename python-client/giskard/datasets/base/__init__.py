@@ -31,7 +31,6 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from giskard.integrations.wandb.wandb_utils import wandb_run
 from ..metadata.indexing import ColumnMetadataMixin
 from ...ml_worker.utils.file_utils import get_file_name
 
@@ -674,9 +673,9 @@ class Dataset(ColumnMetadataMixin):
 
     def to_wandb(self, **kwargs) -> None:
         """Log dataset to the WandB run in a table format."""
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+        import wandb  # noqa library import already checked in wandb_run
         with wandb_run(**kwargs) as run:
-            import wandb  # noqa library import already checked in wandb_run
-
             run.log({"dataset": wandb.Table(dataframe=self.df)})
 
 
