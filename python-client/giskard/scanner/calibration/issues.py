@@ -116,7 +116,7 @@ class OverconfidenceIssue(CalibrationIssue):
             "submetric": f"Global = {self.info.metric_value_reference:.3f}",
             "deviation": self.deviation,
             "description_hidden": self.description,
-            "description": f" For records in your dataset where {self.domain}, we found a significantly higher number of overconfident wrong predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the wrong predictions in the data slice).",
+            "description": f"For records in your dataset where {self.domain}, we found a significantly higher number of overconfident wrong predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the wrong predictions in the data slice).",
             "examples": self.examples(3),
         }
 
