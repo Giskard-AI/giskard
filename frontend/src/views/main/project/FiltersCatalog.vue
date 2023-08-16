@@ -37,7 +37,17 @@
                                         </v-list-item-content>
                                     </v-list-item>
                                 </template>
+                                <v-divider />
                             </v-list-item-group>
+                            <v-list-item @click="openSliceModal">
+                                <v-list-item-content>
+                                    <v-list-item-title class="create-slice-item">
+                                        <v-icon class="mb-1">add</v-icon>
+                                        CREATE NEW SLICING FUNCTION
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-divider />
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
@@ -167,6 +177,8 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import IEditorOptions = editor.IEditorOptions;
 import mixpanel from "mixpanel-browser";
 import { anonymize } from "@/utils";
+import { $vfm } from 'vue-final-modal';
+import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
 
 let props = defineProps<{
     projectId: number,
@@ -277,6 +289,20 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
+function openSliceModal() {
+    $vfm.show({
+        component: CreateSliceCatalogModal,
+        bind: {
+            projectId: props.projectId,
+        },
+        on: {
+            created: (uuid) => {
+                selected.value = slicingFunctions.value.find(t => t.uuid === uuid);
+            }
+        }
+    })
+}
+
 
 </script>
 
@@ -360,5 +386,11 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 .list-func-name {
     font-weight: 500;
+}
+
+.create-slice-item {
+    text-align: center;
+    font-size: 1.125rem;
+    white-space: break-spaces;
 }
 </style>
