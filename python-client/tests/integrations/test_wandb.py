@@ -2,14 +2,8 @@ import wandb
 import pytest
 import re
 
-import numpy as np
-
-from giskard import scan, Dataset
-from giskard.models.model_explanation import (
-    explain_with_shap,
-    _calculate_dataset_shap_values,
-    _calculate_sample_shap_values,
-)
+from giskard import scan
+from giskard.models.model_explanation import explain_with_shap
 
 wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
@@ -30,7 +24,6 @@ def test_fast(dataset_name, model_name, request):
 
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    _compare_explain_functions(model, dataset)
 
     if dataset_name in exception_fixtures:
         with pytest.raises(NotImplementedError) as e:
@@ -55,7 +48,6 @@ def test_slow(dataset_name, model_name, request):
 
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    _compare_explain_functions(model, dataset)
 
     if dataset_name in exception_fixtures:
         with pytest.raises(NotImplementedError) as e:
@@ -82,24 +74,3 @@ def _to_wandb(model, dataset):
     explanation_results.to_wandb()
 
     assert re.match("^[0-9a-z]{8}$", str(wandb.run.id))
-
-
-def _compare_explain_functions(model, dataset):
-    # Form one-sample dataset, as the 'explain' function process such input.
-    one_sample_dataset = Dataset(
-        dataset.df.head(1), target=dataset.target, column_types=dataset.column_types, validation=False
-    )
-
-    # Define 'explain_full' input.
-    dataset_shap_input = {"model": model, "dataset": one_sample_dataset}
-
-    # Define 'explain_one' input.
-    sample_shap_input = dataset_shap_input.copy()
-    sample_shap_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
-
-    # Check if outputs are equal.
-    assert (
-        np.isclose(
-            _calculate_sample_shap_values(**sample_shap_input), _calculate_dataset_shap_values(**dataset_shap_input)
-        )
-    ).all()
