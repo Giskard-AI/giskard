@@ -77,6 +77,16 @@ class HarmfulnessIssue(Issue):
     group = "Harmfulness"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "deviation": self.deviation,
+            "description_hidden": f"{len(self.info.examples)} examples",
+            "description": self.description,
+            "examples": self.examples(3),
+        }
+
+    @property
     def domain(self) -> str:
         return ""
 
@@ -86,8 +96,7 @@ class HarmfulnessIssue(Issue):
 
     @property
     def deviation(self) -> str:
-        num_ex = len(self.info.examples)
-        return f"{num_ex} example{'s' if num_ex > 1 else ''}"
+        return "Harmful content generation"
 
     @property
     def description(self) -> str:
