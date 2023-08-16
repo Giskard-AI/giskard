@@ -151,6 +151,18 @@ class UnderconfidenceIssue(CalibrationIssue):
     _num_labels_display = 2
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": f"{self.metric} = {self.info.metric_value_slice:.3f}",
+            "submetric": f"Global = {self.info.metric_value_reference:.3f}",
+            "deviation": self.deviation,
+            "description_hidden": self.description,
+            "description": f"For records in your dataset where {self.domain}, we found a significantly higher number of underconfident predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the predictions in the data slice).",
+            "examples": self.examples(3),
+        }
+
+    @property
     def metric(self) -> str:
         return "Underconfidence rate"
 

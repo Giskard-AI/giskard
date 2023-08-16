@@ -24,9 +24,9 @@
     <td class="p-3">
         <span class="text-gray-400">
             {% if issue.visualization_attributes.description_hidden %}
-            {{ issue.visualization_attributes.description_hidden | safe }}
+            {{ issue.visualization_attributes.description_hidden|safe }}
             {% else %}
-            {{ issue.visualization_attributes.description | safe }}
+            {{ issue.visualization_attributes.description|safe }}
             {% endif %}
         </span>
     </td>
@@ -38,12 +38,12 @@
 <tr class="gsk-issue-detail text-left hidden  peer-[.open]:table-row border-b border-zinc-500 bg-zinc-700">
     <td colspan="10" class="p-3">
         <h4 class="font-bold text-sm">Description</h4>
-        {{ issue.visualization_attributes.description | safe }}
+        {{ issue.visualization_attributes.description|safe }}
 
         {% if issue.visualization_attributes.examples|length %}
         <h4 class="font-bold text-sm mt-4">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.visualization_attributes.examples.to_html(notebook=True) | replace("\\n", "<br>") | safe }}
+            {{ issue.visualization_attributes.examples.to_html(notebook=True)|replace("\\n", "<br>")|safe }}
         </div>
         {% endif %}
 
