@@ -17,18 +17,10 @@ from shap import KernelExplainer, Explanation, Explainer  # noqa
 logger = logging.getLogger(__name__)
 
 
-def _get_cls_prediction_explanation(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
-    """Get SHAP of predictions with the highest probability."""
-    # Get raw indices of predictions with the highest probability.
+def _get_highest_prob_shap(model: BaseModel, dataset: Dataset, shap_values: list) -> list:
+    """Get SHAP explanations of classes with the highest predicted probability."""
     predictions = model.predict(dataset).raw_prediction
-
-    # Select SHAP values, which explain model's predictions with the highest probability.
-    filtered_shap_values = list()
-    for sample_idx, sample_prediction_idx in enumerate(predictions):
-        prediction_explanation = shap_values[sample_prediction_idx][sample_idx]
-        filtered_shap_values.append(prediction_explanation)
-
-    return filtered_shap_values
+    return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
 
 
 def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
@@ -87,7 +79,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
 
     # For classification, take SHAP of prediction with the highest probability.
     if model.is_classification:
-        shap_values = _get_cls_prediction_explanation(model, dataset, shap_values)
+        shap_values = _get_highest_prob_shap(model, dataset, shap_values)
 
     # Put shap and feature names to the Explanation object for a convenience.
     feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
