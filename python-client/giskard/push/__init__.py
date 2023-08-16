@@ -248,10 +248,10 @@ class ContributionPush(FeaturePush):
             ]
 
     def _slicing_function(self):
-        if isinstance(self.bounds, list):
+        if self.bounds is not None:
             clause = [GreaterThan(self.feature, self.bounds[0], True), LowerThan(self.feature, self.bounds[1], True)]
         else:
-            clause = [EqualTo(self.feature, self.bounds)]
+            clause = [EqualTo(self.feature, self.value)]
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
         self.test_params = {"slicing_function": slicing_func}

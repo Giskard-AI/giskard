@@ -10,9 +10,7 @@ class SupportedPerturbationType(Enum):
 
 
 def slice_bounds(feature, value, ds):
-    if ds.column_types[feature] == "category":
-        return value
-    elif ds.column_types[feature] == "numeric":
+    if ds.column_types[feature] == "numeric":
         # Find the quartile bounds for the value
         q1, q2, q3 = np.nanpercentile(ds.df[feature], [25, 50, 75])
         if value < q1:

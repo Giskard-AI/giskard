@@ -30,7 +30,7 @@ def create_contribution_push(model, ds, df):
 
             correct_prediction = abs(error - y) / y < 0.2
 
-        if shap_res is not None:
+        if shap_res is not None and ds.column_types[shap_res] != "text":
             bounds = slice_bounds(feature=shap_res, value=values[shap_res].values[0], ds=ds)
             return ContributionPush(
                 feature=shap_res,
