@@ -36,6 +36,8 @@ def test_fast(dataset_name, model_name, request):
         with pytest.raises(NotImplementedError) as e:
             _to_wandb(model, dataset)
         assert e.match(r"We do not support the SHAP logging of text*")
+    else:
+        _to_wandb(model, dataset)
 
 
 @pytest.mark.parametrize(
@@ -49,7 +51,7 @@ def test_fast(dataset_name, model_name, request):
 )
 @pytest.mark.slow
 def test_slow(dataset_name, model_name, request):
-    exception_fixtures = ("enrol_data_full", "medical_transcript_data", "amazon_review_data")
+    exception_fixtures = ("enron_data_full", "medical_transcript_data", "amazon_review_data")
 
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
@@ -59,6 +61,8 @@ def test_slow(dataset_name, model_name, request):
         with pytest.raises(NotImplementedError) as e:
             _to_wandb(model, dataset)
         assert e.match(r"We do not support the SHAP logging of text*")
+    else:
+        _to_wandb(model, dataset)
 
 
 def _to_wandb(model, dataset):
@@ -87,15 +91,15 @@ def _compare_explain_functions(model, dataset):
     )
 
     # Define 'explain_full' input.
-    explain_full_input = {"model": model, "dataset": one_sample_dataset}
+    dataset_shap_input = {"model": model, "dataset": one_sample_dataset}
 
     # Define 'explain_one' input.
-    explain_one_input = explain_full_input.copy()
-    explain_one_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
+    sample_shap_input = dataset_shap_input.copy()
+    sample_shap_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
 
     # Check if outputs are equal.
     assert (
         np.isclose(
-            _calculate_sample_shap_values(**explain_one_input), _calculate_dataset_shap_values(**explain_full_input)
+            _calculate_sample_shap_values(**sample_shap_input), _calculate_dataset_shap_values(**dataset_shap_input)
         )
     ).all()
