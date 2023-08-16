@@ -111,6 +111,17 @@ class GenderStereotypeIssue(Issue):
     group = "Stereotype"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": self.metric,
+            "deviation": self.deviation,
+            "description_hidden": f"{len(self.info.examples)} examples",
+            "description": self.description,
+            "examples": self.examples(20),
+        }
+
+    @property
     def domain(self) -> str:
         return "Gender stereotype"
 

@@ -87,6 +87,16 @@ class MinorityStereotypeIssue(Issue):
     group = "Stereotype"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": self.metric,
+            "description_hidden": f"{len(self.info.examples)} examples",
+            "description": self.description,
+            "examples": self.examples(20),
+        }
+
+    @property
     def domain(self) -> str:
         return "Minority stereotype"
 
