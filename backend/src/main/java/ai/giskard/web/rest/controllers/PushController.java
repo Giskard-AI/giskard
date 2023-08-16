@@ -10,8 +10,10 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.GRPCMapper;
 import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.ApplyPushDTO;
 import ai.giskard.web.dto.PredictionInputDTO;
+import ai.giskard.web.dto.PushActionDTO;
 import ai.giskard.web.dto.PushDTO;
 import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
@@ -93,7 +95,7 @@ public class PushController {
     }
 
     @PostMapping("/push/apply")
-    public String applyPushSuggestion(@RequestBody ApplyPushDTO applyPushDTO) {
+    public PushActionDTO applyPushSuggestion(@RequestBody ApplyPushDTO applyPushDTO) {
         ProjectModel model = modelRepository.getById(applyPushDTO.getModelId());
         Dataset dataset = datasetRepository.getMandatoryById(applyPushDTO.getDatasetId());
         Project project = dataset.getProject();
@@ -130,7 +132,15 @@ public class PushController {
             }
 
             SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(requestBuilder.build());
-            return resp.getObjectUuid();
+
+            PushActionDTO result = new PushActionDTO();
+            result.setObjectUuid(resp.getAction().getObjectUuid());
+
+            Map<String, String> params = new HashMap<>();
+            resp.getAction().getArgumentsList().forEach(arg -> params.put(arg.getName(), FunctionArguments.funcArgumentToJson(arg)));
+
+            result.setParameters(params);
+            return result;
         }
     }
 

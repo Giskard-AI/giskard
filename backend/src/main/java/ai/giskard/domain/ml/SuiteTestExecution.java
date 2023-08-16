@@ -1,12 +1,12 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
+import ai.giskard.utils.FunctionArguments;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import ai.giskard.worker.FuncArgument;
 import ai.giskard.worker.SingleTestResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -103,53 +103,6 @@ public class SuiteTestExecution extends BaseEntity {
         this.inputs = test.getFunctionInputs().stream()
             .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
         this.arguments = arguments.stream()
-            .collect(Collectors.toMap(FuncArgument::getName, this::getFuncArgValue));
-    }
-
-    private String getFuncArgValue(FuncArgument funcArgument) {
-        String result = "";
-        switch (funcArgument.getArgumentCase()) {
-            case MODEL:
-                result = funcArgument.getModel().getId();
-                break;
-            case DATASET:
-                result = funcArgument.getDataset().getId();
-                break;
-            case SLICINGFUNCTION:
-                result = funcArgument.getSlicingFunction().getId();
-                break;
-            case TRANSFORMATIONFUNCTION:
-                result = funcArgument.getTransformationFunction().getId();
-                break;
-            case KWARGS:
-                // Not sure how to handle this cleanly yet.
-                break;
-            case ARGUMENT_NOT_SET:
-                break;
-            case BOOL:
-                result = String.valueOf(funcArgument.getBool());
-                break;
-            case FLOAT:
-                result = String.valueOf(funcArgument.getFloat());
-                break;
-            case INT:
-                result = String.valueOf(funcArgument.getInt());
-                break;
-            case STR:
-                result = funcArgument.getStr();
-                break;
-        }
-
-
-        Map<String, String> args = funcArgument.getArgsList().stream()
-            .collect(Collectors.toMap(FuncArgument::getName, this::getFuncArgValue));
-
-        Map<String, Object> json = Map.of(
-            "value", result,
-            "args", args
-        );
-        
-        // return json as a json
-        return new ObjectMapper().valueToTree(json).toString();
+            .collect(Collectors.toMap(FuncArgument::getName, FunctionArguments::funcArgumentToJson));
     }
 }

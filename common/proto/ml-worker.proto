@@ -456,10 +456,20 @@ message PushDetails {
   CallToActionKind cta = 4;
 }
 
+message PushResponseAction {
+  string object_uuid = 1;
+  repeated FuncArgument arguments = 2;
+}
+
+message PushResponseArgument {
+  string name = 1;
+  string value = 2;
+}
+
 message SuggestFilterResponse {
   optional Push perturbation = 1;
   optional Push contribution = 2;
   optional Push overconfidence = 3;
   optional Push borderline = 4;
-  optional string object_uuid = 5;
+  optional PushResponseAction action = 5;
 }

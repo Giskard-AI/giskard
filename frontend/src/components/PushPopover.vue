@@ -57,7 +57,7 @@ import {$vfm} from "vue-final-modal";
 import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
 import {chain} from "lodash";
 import {TYPE} from "vue-toastification";
-import {RowFilterType} from "@/generated-sources";
+import {PushActionDTO, RowFilterType} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 
 const pushStore = usePushStore();
@@ -117,7 +117,7 @@ const icon = computed(() => {
 async function applyCta(kind: string) {
   mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
-  let uuid = await pushStore.applyPush(push.value!.kind, kind);
+  let action: PushActionDTO = await pushStore.applyPush(push.value!.kind, kind);
 
   switch (kind) {
     case "CreateSlice":
@@ -125,9 +125,9 @@ async function applyCta(kind: string) {
       break;
     case "CreateSliceOpenDebugger":
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
-      const slice = slicingFunctionsByUuid.value[uuid];
+      const slice = slicingFunctionsByUuid.value[action.objectUuid];
       if (slice !== undefined) {
-        debuggingStore.setCurrentSlicingFunctionUuid(uuid);
+        debuggingStore.setCurrentSlicingFunctionUuid(action.objectUuid);
         mainStore.addSimpleNotification("Slice applied");
       } else {
         mainStore.addNotification({content: 'Could not load slice', color: TYPE.ERROR});
@@ -136,9 +136,9 @@ async function applyCta(kind: string) {
     case "CreateTest":
     case "AddTestToCatalog":
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
-      const test = testFunctionsByUuid.value[uuid];
+      const test = testFunctionsByUuid.value[action.objectUuid];
       if (test !== undefined) {
-        addToTestSuite(test);
+        addToTestSuite(test, action.parameters);
       } else {
         mainStore.addNotification({content: 'Could not load test', color: TYPE.ERROR});
       }
@@ -161,7 +161,7 @@ async function applyCta(kind: string) {
   opened.value = false;
 }
 
-function addToTestSuite(test) {
+function addToTestSuite(test, parameters) {
   $vfm.show({
     component: AddTestToSuite,
     bind: {
@@ -170,12 +170,24 @@ function addToTestSuite(test) {
       suiteId: null,
       testArguments: chain(test.args)
           .keyBy('name')
-          .mapValues(arg => ({
-            name: arg.name,
-            isAlias: false,
-            type: arg.type,
-            value: arg.optional ? arg.defaultValue : null,
-          }))
+          .mapValues(arg => {
+            let json = parameters[arg.name];
+            let value = arg.optional ? arg.defaultValue : null;
+
+            if (json != undefined) {
+              let object = JSON.parse(json);
+              if (object.hasOwnProperty('value')) {
+                value = object.value;
+              }
+            }
+
+            return {
+              name: arg.name,
+              isAlias: false,
+              type: arg.type,
+              value: value,
+            };
+          })
           .value()
     }
   });
