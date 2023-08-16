@@ -40,25 +40,25 @@ def _prepare_for_explanation(input_df: pd.DataFrame, model: BaseModel, dataset: 
     return prepared_df
 
 
-def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.DataFrame:
-    """Create back-ground example for the SHAP explainer as a mode/median of features of the data to explain."""
+def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> pd.DataFrame:
+    """Create background example for the SHAP explainer as a mode/median of features."""
     median = df.median()
-    example = df.mode(dropna=False).head(1)
-    num_columns = [key for key in list(df.columns) if input_types.get(key) == "numeric"]
+    background_sample = df.mode(dropna=False).head(1)
 
-    # Replace a numerical features' mode on their median.
-    for column in num_columns:
-        example[column] = median[column]
+    # Use median of the numerical features.
+    numerical_features = [feature for feature in list(df.columns) if feature_types.get(feature) == "numeric"]
+    for feature in numerical_features:
+        background_sample[feature] = median[feature]
 
-    example = example.astype(df.dtypes)
-    return example
+    background_sample = background_sample.astype(df.dtypes)
+    return background_sample
 
 
 def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.ndarray:
     """Perform SHAP values calculation for samples of a given dataset."""
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
-    background_sample = background_example(background_df, dataset.column_types)
+    background_sample = _get_background_example(background_df, dataset.column_types)
 
     # Prepare input data for an explanation.
     data_to_explain = _prepare_for_explanation(dataset.df, model=model, dataset=dataset)
@@ -93,7 +93,7 @@ def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data
         arr_df = pd.DataFrame(array, columns=list(df.columns))
         return model.predict_df(_prepare_for_explanation(arr_df, model=model, dataset=dataset))
 
-    example = background_example(df, dataset.column_types)
+    example = _get_background_example(df, dataset.column_types)
     kernel = KernelExplainer(predict_array, example)
     shap_values = kernel.shap_values(data_to_explain, silent=True)
     return shap_values
