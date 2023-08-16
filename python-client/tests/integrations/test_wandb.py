@@ -7,6 +7,8 @@ from giskard.models.model_explanation import explain_with_shap
 
 wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
+NOT_SUPP_TEXT_ERROR_MSG = "We do not support the wandb logging of ShapResult for text features yet."
+
 
 @pytest.mark.parametrize(
     "dataset_name,model_name",
@@ -28,7 +30,7 @@ def test_fast(dataset_name, model_name, request):
     if dataset_name in exception_fixtures:
         with pytest.raises(NotImplementedError) as e:
             _to_wandb(model, dataset)
-        assert e.match(r"We do not support the SHAP logging of text*")
+        assert e.match(NOT_SUPP_TEXT_ERROR_MSG)
     else:
         _to_wandb(model, dataset)
 
@@ -52,7 +54,7 @@ def test_slow(dataset_name, model_name, request):
     if dataset_name in exception_fixtures:
         with pytest.raises(NotImplementedError) as e:
             _to_wandb(model, dataset)
-        assert e.match(r"We do not support the wandb logging of ShapResult for text features yet.")
+        assert e.match(NOT_SUPP_TEXT_ERROR_MSG)
     else:
         _to_wandb(model, dataset)
 
