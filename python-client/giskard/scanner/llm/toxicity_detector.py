@@ -115,6 +115,16 @@ class LLMToxicityIssue(Issue):
     group = "Toxicity"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "deviation": self.deviation,
+            "description_hidden": f"{len(self.info.examples)} examples",
+            "description": self.description,
+            "examples": self.examples(3),
+        }
+
+    @property
     def domain(self) -> str:
         return "Prompt level"
 
