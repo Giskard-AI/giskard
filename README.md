@@ -37,7 +37,7 @@ Simple installation from PyPI:
 pip install "giskard[server]>=2.0.0b" -U
 ```
 ______________________________________________________________________
-At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to **Scan your model to find dozens of hidden vulnerabilities**. The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
+At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to **Scan your model to find dozens of hidden vulnerabilities** and **Instantaneously generate domain-specific tests**. The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc. Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
 
 Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
@@ -57,9 +57,8 @@ Giskard works with any model, any environment and integrates seamlessly with you
 
 1. 🤸‍♀️ **[Quickstart](#getting-started)**
 2. ❓ **[FAQ](#getting-started)**
-3. 🚀 **[To go further](#like-what-were-doing)**
-4. 👋 **[How to contribute](#how-to-contribute)**
-5. 💖 **[Like what we're doing?](#like-what-were-doing)**
+3. ⭐️ **[Premium features](#like-what-were-doing)**
+4. 👋 **[Community](#how-to-contribute)**
 
 
 # 🤸‍♀️ Quickstart
@@ -98,7 +97,7 @@ giskard_model = giskard.Model(
 
 ```
 
-Then run the scan
+✨✨✨Then run the scan✨✨✨
 ```python
 results = giskard.scan(giskard_model, giskard_dataset)
 ```
@@ -119,22 +118,47 @@ You can run the test suite locally to verify that it reproduces the issues
 ```python
 test_suite.run()
 ```
+# ❓ FAQ
+<details>
+  <summary>About the ML worker</summary>
+  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
+  </details>
+  
+<details>
+  <summary>How to get the API key</summary>
+  
+  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
+</details>
 
+<details>
+  <summary>If Giskard server/ML worker is not installed</summary>
 
+  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+</details>
 
-# 🚀 To go further?
+<details>
+  <summary>If Giskard server is installed on an external server</summary>
 
-- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+  ```python
+    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+  ```
+</details>
 
-<p align="center">
-  <img src="readme/test_suite_example.png" alt="Scan Example" width="700px">
-</p>
+<details>
+  <summary>For more information on uploading to your local Giskard server</summary>
 
-- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to become the open-source hub of ML Quality Assurance.
+  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+</details>
+
+# ⭐️ Premium Features
+
+**Leverage the Quality Assurance best practices**: The Giskard catalog enables you to easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), generators (typos, paraphraser, etc.), or evaluators.
 
 <p align="center">
   <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
+
+## 🖥️ Start the Giskard server
 
 For full functionality start **Giskard server** with: 
 ```sh
@@ -143,7 +167,7 @@ giskard server start
 
 🚀 That's it! Access at http://localhost:19000
 
-## ⌛️ Upload your test suite to the Giskard server
+## 📤 Upload your test suite to the Giskard server
 
 You can then **upload the test suite** to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
@@ -180,51 +204,19 @@ You can then **upload the test suite** to the local Giskard server. This will en
     test_suite.upload(client, "my_project")
     
     ```
-# ❓ FAQ
-<details>
-  <summary>About the ML worker</summary>
-  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
-  </details>
-  
-<details>
-  <summary>How to get the API key</summary>
-  
-  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
-</details>
-
-<details>
-  <summary>If Giskard server/ML worker is not installed</summary>
-
-  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
-</details>
-
-<details>
-  <summary>If Giskard server is installed on an external server</summary>
-
-  ```python
-    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
-  ```
-</details>
-
-<details>
-  <summary>For more information on uploading to your local Giskard server</summary>
-
-  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
-</details>
 
 
-# 👋 How to contribute
+# 👋 Community
 We welcome contributions from the Machine Learning community!
 
 Read this [guide](CONTRIBUTING.md) to get started.
 
-<br />
-
-# 💖 Like what we're doing?
-
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
 ❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
+
+
+
 
 
 
