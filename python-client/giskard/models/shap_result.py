@@ -50,7 +50,9 @@ class ShapResult:
                     scatter_plot = _wandb_scatter_plot(self.explanations, feature_name)
                     charts.update({f"{PanelNames.NUMERICAL}/{feature_name}_shap_scatter_plot": scatter_plot})
                 else:
-                    raise NotImplementedError("We do not support the SHAP logging of text features yet.")
+                    raise NotImplementedError(
+                        "We do not support the wandb logging of ShapResult for text features yet."
+                    )
 
             # Log created plots.
             run.log(charts)
