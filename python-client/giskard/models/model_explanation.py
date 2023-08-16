@@ -4,6 +4,8 @@ from typing import Callable, Dict, List, Any
 
 import numpy as np
 import pandas as pd
+from shap.maskers import Text
+from shap import KernelExplainer, Explanation, Explainer
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
@@ -11,9 +13,6 @@ from giskard.models.shap_result import ShapResult
 from giskard.ml_worker.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
-from shap.maskers import Text  # noqa
-from shap import KernelExplainer, Explanation, Explainer  # noqa
-
 logger = logging.getLogger(__name__)
 
 
