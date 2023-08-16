@@ -22,14 +22,12 @@ def _get_highest_prob_shap(model: BaseModel, dataset: Dataset, shap_values: list
     return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
 
 
-def prepare_df(df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
+def _prepare_for_explanation(input_df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
     """Prepare dataframe for an inference step."""
-    df = model.prepare_dataframe(df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+    input_df = model.prepare_dataframe(input_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
-    if dataset.target in df.columns:
-        prepared_dataset = Dataset(df, column_types=dataset.column_types, target=dataset.target)
-    else:
-        prepared_dataset = Dataset(df, column_types=dataset.column_types)
+    target = dataset.target if dataset.target in input_df.columns else None
+    prepared_dataset = Dataset(input_df, column_types=dataset.column_types, target=target)
 
     # Make sure column order is the same as in the dataset.df.
     columns_original_order = (
@@ -62,12 +60,12 @@ def explain_full(model: BaseModel, dataset: Dataset) -> np.ndarray:
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
     background_sample = background_example(background_df, dataset.column_types)
 
-    # Prepare input data for explanation.
-    input_df = prepare_df(dataset.df, model=model, dataset=dataset)
+    # Prepare input data for an explanation.
+    data_to_explain = _prepare_for_explanation(dataset.df, model=model, dataset=dataset)
 
     # Obtain SHAP explanations.
-    explainer = KernelExplainer(model.predict_df, background_sample, feature_names=input_df.columns, keep_index=True)
-    shap_values = explainer.shap_values(input_df, silent=True)
+    explainer = KernelExplainer(model.predict_df, background_sample, data_to_explain.columns, keep_index=True)
+    shap_values = explainer.shap_values(data_to_explain, silent=True)
     return shap_values
 
 
@@ -89,15 +87,15 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
 
 def explain_one(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
     df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-    input_df = prepare_df(pd.DataFrame([input_data]), model=model, dataset=dataset)
+    data_to_explain = _prepare_for_explanation(pd.DataFrame([input_data]), model=model, dataset=dataset)
 
     def predict_array(array):
         arr_df = pd.DataFrame(array, columns=list(df.columns))
-        return model.predict_df(prepare_df(arr_df, model=model, dataset=dataset))
+        return model.predict_df(_prepare_for_explanation(arr_df, model=model, dataset=dataset))
 
     example = background_example(df, dataset.column_types)
     kernel = KernelExplainer(predict_array, example)
-    shap_values = kernel.shap_values(input_df, silent=True)
+    shap_values = kernel.shap_values(data_to_explain, silent=True)
     return shap_values
 
 
