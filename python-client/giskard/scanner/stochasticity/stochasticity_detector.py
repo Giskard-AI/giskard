@@ -45,6 +45,16 @@ class StochasticityIssue(Issue):
     group = "Stochasticity"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "deviation": self.deviation,
+            "description_hidden": f"{self.info.samples.shape[0]} examples",
+            "description": self.description,
+            "examples": self.examples(3),
+        }
+
+    @property
     def domain(self) -> str:
         return ""
 
@@ -54,7 +64,7 @@ class StochasticityIssue(Issue):
 
     @property
     def deviation(self) -> str:
-        return "Your model provides different results at each execution."
+        return "Your model provides different results at each execution"
 
     @property
     def description(self) -> str:
