@@ -107,6 +107,17 @@ class SpuriousCorrelationIssue(Issue):
     group = "Spurious correlation"
 
     @property
+    def visualization_attributes(self):
+        return {
+            "domain": self.domain,
+            "metric": f"{self.metric} = {self.info.metric_value:.3f}",
+            "deviation": self.deviation,
+            "description_hidden": " ",
+            "description": self.description,
+            "examples": self.examples(3),
+        }
+
+    @property
     def features(self):
         return [self.info.feature]
 
