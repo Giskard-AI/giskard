@@ -16,30 +16,6 @@ warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 logger = logging.getLogger(__name__)
 
 
-def _get_highest_prob_shap(shap_values: list, model: BaseModel, dataset: Dataset) -> list:
-    """Get SHAP explanations of classes with the highest predicted probability."""
-    predictions = model.predict(dataset).raw_prediction
-    return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
-
-
-def _prepare_for_explanation(input_df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-    """Prepare dataframe for an inference step."""
-    input_df = model.prepare_dataframe(input_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
-
-    target = dataset.target if dataset.target in input_df.columns else None
-    prepared_dataset = Dataset(input_df, column_types=dataset.column_types, target=target)
-
-    # Make sure column order is the same as in the dataset.df.
-    columns_original_order = (
-        model.meta.feature_names
-        if model.meta.feature_names
-        else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
-    )
-
-    prepared_df = prepared_dataset.df[columns_original_order]
-    return prepared_df
-
-
 def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> pd.DataFrame:
     """Create background example for the SHAP explainer as a mode/median of features."""
     median = df.median(numeric_only=True)
@@ -52,6 +28,22 @@ def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> 
 
     background_sample = background_sample.astype(df.dtypes)
     return background_sample
+
+
+def _get_columns_original_order(prepared_dataset: Dataset, model: BaseModel, dataset: Dataset) -> list:
+    """Get columns of the prepared_dataset in the original order."""
+    features_names = model.meta.feature_names
+    return features_names if features_names else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
+
+
+def _prepare_for_explanation(input_df: pd.DataFrame, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
+    """Prepare dataframe for an inference step."""
+    input_df = model.prepare_dataframe(input_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
+
+    target = dataset.target if dataset.target in input_df.columns else None
+    prepared_dataset = Dataset(input_df, column_types=dataset.column_types, target=target)
+    prepared_df = prepared_dataset.df[_get_columns_original_order(prepared_dataset, model, dataset)]
+    return prepared_df
 
 
 def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.ndarray:
@@ -67,6 +59,12 @@ def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.nda
     explainer = KernelExplainer(model.predict_df, background_sample, data_to_explain.columns, keep_index=True)
     shap_values = explainer.shap_values(data_to_explain, silent=True)
     return shap_values
+
+
+def _get_highest_prob_shap(shap_values: list, model: BaseModel, dataset: Dataset) -> list:
+    """Get SHAP explanations of classes with the highest predicted probability."""
+    predictions = model.predict(dataset).raw_prediction
+    return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
 
 
 def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_prob: bool = True) -> ShapResult:
