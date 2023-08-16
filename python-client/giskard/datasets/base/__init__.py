@@ -676,7 +676,7 @@ class Dataset(ColumnMetadataMixin):
         from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
         with wandb_run(**kwargs) as run:
-            run.log({"dataset": wandb.Table(dataframe=self.df)})
+            run.log({"Dataset/dataset": wandb.Table(dataframe=self.df)})
 
 
 def _cast_to_list_like(object):

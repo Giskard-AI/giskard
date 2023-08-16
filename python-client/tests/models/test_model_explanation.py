@@ -3,7 +3,12 @@ import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
-from giskard.models.model_explanation import explain, explain_text
+from giskard.models.model_explanation import (
+    explain,
+    explain_text,
+    _calculate_sample_shap_values,
+    _calculate_dataset_shap_values,
+)
 
 
 @pytest.mark.parametrize(
@@ -69,3 +74,56 @@ def test_explain_text_regression(hotel_text_data, hotel_text_model):
         model=hotel_text_model, input_df=sample, text_column="Full_Review", text_document=sample["Full_Review"].iloc[0]
     )
     assert result
+
+
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+        ("hotel_text_data", "hotel_text_model"),
+        ("german_credit_data", "german_credit_model"),
+        ("breast_cancer_data", "breast_cancer_model"),
+        ("drug_classification_data", "drug_classification_model"),
+        ("diabetes_dataset_with_target", "linear_regression_diabetes"),
+    ],
+)
+def test_equal_explain_functions_fast(dataset_name, model_name, request):
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+    _compare_explain_functions(model, dataset)
+
+
+@pytest.mark.parametrize(
+    "dataset_name,model_name",
+    [
+        ("enron_data_full", "enron_model"),
+        ("medical_transcript_data", "medical_transcript_model"),
+        ("fraud_detection_data", "fraud_detection_model"),
+        ("amazon_review_data", "amazon_review_model"),
+    ],
+)
+@pytest.mark.slow
+def test_equal_explain_functions_slow(dataset_name, model_name, request):
+    dataset = request.getfixturevalue(dataset_name)
+    model = request.getfixturevalue(model_name)
+    _compare_explain_functions(model, dataset)
+
+
+def _compare_explain_functions(model, dataset):
+    # Form one-sample dataset, as the 'explain' function process such input.
+    one_sample_dataset = Dataset(
+        dataset.df.head(1), target=dataset.target, column_types=dataset.column_types, validation=False
+    )
+
+    # Define 'explain_full' input.
+    dataset_shap_input = {"model": model, "dataset": one_sample_dataset}
+
+    # Define 'explain_one' input.
+    sample_shap_input = dataset_shap_input.copy()
+    sample_shap_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
+
+    # Check if outputs are equal.
+    assert (
+        np.isclose(
+            _calculate_sample_shap_values(**sample_shap_input), _calculate_dataset_shap_values(**dataset_shap_input)
+        )
+    ).all()
