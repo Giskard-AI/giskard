@@ -31,24 +31,23 @@
  </h3>
 <br />
 
+At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to **Scan your model to find dozens of hidden vulnerabilities**. The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
+
+Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
 <p align="center">
   <img width='600' src="readme/tools.png">
 </p>
 <br/>
 
-At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
-
-- **Scan your model to find dozens of hidden vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
-
 <p align="center">
   <img src="readme/scan_example.png" alt="Scan Example" width="700px">
 </p>
 
 
-And of course, Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
-# Table of contents
+
+# Contents
 
 1. 🤸‍♀️ **[Quickstart](#getting-started)**
 2. ❓ **[FAQ](#getting-started)**
@@ -75,16 +74,12 @@ import giskard
 # Replace this with your own data & model creation.
 df = giskard.demo.titanic_df()
 data_preprocessor, clf = giskard.demo.titanic_pipeline()
-
-# Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
-# you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
-# for classification, regression & text generation.
-def prediction_function(df):
+def demo_model(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     preprocessed_df = data_preprocessor(df)
     return clf.predict_proba(preprocessed_df)
 
-# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
+# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.).
 giskard_dataset = giskard.Dataset(
     df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
     target="Survived",  # Ground truth variable
@@ -92,8 +87,9 @@ giskard_dataset = giskard.Dataset(
     cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
 )
 
+# Wrap your model with Giskard.Model.
 giskard_model = giskard.Model(
-    model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
+    model=demo_model,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
     model_type="classification",  # Either regression, classification or text_generation.
     name="Titanic model",  # Optional
     classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
@@ -103,26 +99,19 @@ giskard_model = giskard.Model(
 
 ```
 
-Then apply the scan
+Then run the scan
 ```python
 results = giskard.scan(giskard_model, giskard_dataset)
 ```
-
-*(Check our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.)*
-
 Once the scan completes, you can display the results directly in your notebook:
 
 ```python
-display(scan_results)  # in your notebook
+display(scan_results)
 ```
-
+*Check our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
 ## 3. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite**.
-
-Generating a test suite from your scan results will enable you to:
-1. Turn the issues you found into actionable tests that you can directly integrate in your **CI/CD pipeline**
-2. Diagnose your vulnerabilities and **debug** the issues you found in the scan
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
