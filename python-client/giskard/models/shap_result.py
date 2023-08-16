@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from shap import Explanation
 
+from giskard.core.core import ModelType, SupportedModelTypes
+
 
 class PanelNames(str, Enum):
     CATEGORICAL = "Feature importance for categorical features"
@@ -84,10 +86,21 @@ class ShapResult:
     explanations: Explanation = None
     feature_types: dict = None
     feature_names: list = None
+    model_type: ModelType = None
+    only_highest_prob: bool = True
+
+    def _validate_config(self):
+        if not self.only_highest_prob and self.model_type == SupportedModelTypes.CLASSIFICATION:
+            raise ValueError(
+                "We currently support 'ShapResult.to_wandb()' only with 'only_highest_proba == True' for "
+                "classification models."
+            )
 
     def to_wandb(self, **kwargs) -> None:
         """Create and log to the WandB run SHAP charts."""
         from giskard.integrations.wandb.wandb_utils import wandb_run
+
+        self._validate_config()
 
         with wandb_run(**kwargs) as run:
             charts = dict()
