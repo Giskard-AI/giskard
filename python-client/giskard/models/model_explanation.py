@@ -54,7 +54,7 @@ def background_example(df: pd.DataFrame, input_types: Dict[str, str]) -> pd.Data
     return example
 
 
-def explain_full(model: BaseModel, dataset: Dataset) -> np.ndarray:
+def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.ndarray:
     """Perform SHAP values calculation for samples of a given dataset."""
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
@@ -72,7 +72,7 @@ def explain_full(model: BaseModel, dataset: Dataset) -> np.ndarray:
 def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
     """Get SHAP explanation result."""
     # Obtain SHAP explanations.
-    shap_values = explain_full(model, dataset)
+    shap_values = _calculate_dataset_shap_values(model, dataset)
 
     # For classification, take SHAP of prediction with the highest probability.
     if model.is_classification:
@@ -85,7 +85,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset) -> ShapResult:
     return ShapResult(shap_explanations, feature_types, feature_names)
 
 
-def explain_one(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
+def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
     df = model.prepare_dataframe(dataset.df, column_dtypes=dataset.column_dtypes, target=dataset.target)
     data_to_explain = _prepare_for_explanation(pd.DataFrame([input_data]), model=model, dataset=dataset)
 
@@ -101,7 +101,7 @@ def explain_one(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndar
 
 @timer()
 def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
-    shap_values = explain_one(model, dataset, input_data)
+    shap_values = _calculate_sample_shap_values(model, dataset, input_data)
     feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
 
     if model.is_regression:

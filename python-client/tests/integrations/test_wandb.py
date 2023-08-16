@@ -5,7 +5,11 @@ import re
 import numpy as np
 
 from giskard import scan, Dataset
-from giskard.models.model_explanation import explain_with_shap, explain_full, explain_one
+from giskard.models.model_explanation import (
+    explain_with_shap,
+    _calculate_dataset_shap_values,
+    _calculate_sample_shap_values,
+)
 
 wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
@@ -90,4 +94,8 @@ def _compare_explain_functions(model, dataset):
     explain_one_input["input_data"] = one_sample_dataset.df.iloc[0].to_dict()
 
     # Check if outputs are equal.
-    assert (np.isclose(explain_one(**explain_one_input), explain_full(**explain_full_input))).all()
+    assert (
+        np.isclose(
+            _calculate_sample_shap_values(**explain_one_input), _calculate_dataset_shap_values(**explain_full_input)
+        )
+    ).all()
