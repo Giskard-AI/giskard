@@ -143,7 +143,7 @@ class BorderlinePush(ExamplePush):
         self.training_label = training_label
         self.saved_example = dataset_row
 
-        self.tests = [one_sample_underconfidence_test(saved_example=dataset_row)]
+        self.tests = [one_sample_underconfidence_test]
         self.test_params = {"saved_example": dataset_row}
         # [
         #     if_underconfidence_rate_decrease(rate=rate),
