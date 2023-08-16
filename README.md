@@ -31,6 +31,12 @@
  </h3>
 <br />
 
+## Install Giskard
+Simple installation from PyPI:
+```sh
+pip install "giskard[server]>=2.0.0b" -U
+```
+______________________________________________________________________
 At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to **Scan your model to find dozens of hidden vulnerabilities**. The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 
 Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
@@ -58,14 +64,7 @@ Giskard works with any model, any environment and integrates seamlessly with you
 
 # 🤸‍♀️ Quickstart
 
-## 1. 📥 Installation
-Install **Giskard** via PyPI:
-```sh
-pip install "giskard[server]>=2.0.0b" -U
-```
-
-
-## 2. 🔎 Scan your model
+## 1. 🔎 Scan your model
 Here's an example of a *hello world* Giskard scan in code:
 
 ```python
@@ -109,7 +108,7 @@ Once the scan completes, you can display the results directly in your notebook:
 display(scan_results)
 ```
 *Check our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
-## 3. 🪄 Automatically generate a test suite
+## 2. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite**.
 
