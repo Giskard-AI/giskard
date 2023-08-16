@@ -233,7 +233,7 @@ def run_classification_mode(model, dataset, prediction_results):
     return results, calculated
 
 
-def run_other_model(model, dataset, prediction_results):
+def run_other_model(dataset, prediction_results):
     results = pd.Series(prediction_results.prediction)
     preds_serie = results
     if dataset.target and dataset.target in dataset.df.columns:
@@ -299,7 +299,7 @@ def run_model(ml_worker: MLWorker, params: websocket.RunModelParam, *args, **kwa
     if model.is_classification:
         results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results, calculated = run_other_model(model, dataset, prediction_results)
+        results, calculated = run_other_model(dataset, prediction_results)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
         tmp_dir = Path(f)
