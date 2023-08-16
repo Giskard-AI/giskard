@@ -78,7 +78,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bo
     shap_explanations = Explanation(shap_values, data=dataset.df[feature_names], feature_names=feature_names)
 
     feature_types = {key: dataset.column_types[key] for key in feature_names}
-    return ShapResult(shap_explanations, feature_types, feature_names, model.meta.model_type, only_highest_proba)
+    return ShapResult(shap_explanations, feature_types, model.meta.model_type, only_highest_proba)
 
 
 def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:

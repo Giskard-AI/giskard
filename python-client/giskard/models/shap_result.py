@@ -1,5 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
+from typing import Optional
 
 from shap import Explanation
 
@@ -15,13 +16,16 @@ class PanelNames(str, Enum):
 
 @dataclass
 class ShapResult:
-    explanations: Explanation = None
-    feature_types: dict = None
-    feature_names: list = None
-    model_type: ModelType = None
-    only_highest_proba: bool = True
+    explanations: Explanation
+    feature_types: Optional[dict] = None
+    model_type: Optional[ModelType] = None
+    only_highest_proba: Optional[bool] = True
 
     def _validate_wandb_config(self):
+        if self.feature_types is None:
+            raise ValueError("The attribute 'ShapResult.feature_types' is needed for 'ShapResult.to_wandb()'.")
+        if self.only_highest_proba and self.model_type is None:
+            raise ValueError("The attribute 'ShapResult.model_type' is needed for 'ShapResult.to_wandb()'.")
         if not self.only_highest_proba and self.model_type == SupportedModelTypes.CLASSIFICATION:
             raise ValueError(
                 "We currently support 'ShapResult.to_wandb()' only with 'only_highest_proba == True' for "
@@ -40,7 +44,7 @@ class ShapResult:
                 charts = dict()
 
                 # Create general SHAP feature importance plot.
-                general_bar_plot = _wandb_general_bar_plot(self.explanations, self.feature_names)
+                general_bar_plot = _wandb_general_bar_plot(self.explanations, list(self.feature_types.keys()))
                 charts.update({f"{PanelNames.GENERAL}/general_shap_bar_plot": general_bar_plot})
 
                 analytics.track(
