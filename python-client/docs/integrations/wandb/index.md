@@ -55,12 +55,6 @@ test_suite_results.to_wandb() # log test suite results as a table
 :link: wandb-tabular-example.ipynb
 :::
 :::::
-
-:::::{grid-item}
-:::{card} <br><h3><center>📝 Text</center></h3>
-:link: wandb-llm-example.ipynb
-:::
-:::::
 ::::::
 
 ```{toctree}
@@ -70,5 +64,4 @@ test_suite_results.to_wandb() # log test suite results as a table
 :hidden:
 
 wandb-tabular-example
-wandb-llm-example
 ```
