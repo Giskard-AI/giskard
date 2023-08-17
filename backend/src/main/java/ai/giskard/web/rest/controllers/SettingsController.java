@@ -4,12 +4,14 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.GeneralSettings;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
+import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseException;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.LicenseDTO;
+import ai.giskard.web.dto.config.MLWorkerConnectionInfoDTO;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.RoleDTO;
 import ai.giskard.web.rest.errors.ExpiredTokenException;
@@ -24,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -99,6 +102,20 @@ public class SettingsController {
                 .roles(roles)
                 .build())
             .user(userDTO)
+            .build();
+    }
+
+    @GetMapping("/ml-worker-connect")
+    public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() throws NoSuchAlgorithmException {
+        String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
+
+        return MLWorkerConnectionInfoDTO.builder()
+            .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
+            .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
+            .instanceId(settingsService.getSettings().getInstanceId())
+            .serverVersion(buildVersion)
+            .user(currentUser)
+            .instanceLicenseId(licenseService.getCurrentLicense().getId())
             .build();
     }
 
