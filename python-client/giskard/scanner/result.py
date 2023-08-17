@@ -154,4 +154,4 @@ class ScanResult:
                         "repository for further assistance: https://github.com/Giskard-AI/giskard."
                     ) from e
 
-            run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})
+                run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})
