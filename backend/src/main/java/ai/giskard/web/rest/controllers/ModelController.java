@@ -4,6 +4,9 @@ import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.ml.dto.MLWorkerWSExplainDTO;
+import ai.giskard.ml.dto.MLWorkerWSExplainTextDTO;
+import ai.giskard.ml.dto.MLWorkerWSRunModelForDataFrameDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
@@ -16,9 +19,6 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.ExplainResponse;
-import ai.giskard.worker.ExplainTextResponse;
-import ai.giskard.worker.RunModelForDataFrameResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,14 +61,16 @@ public class ModelController {
     }
 
     @PostMapping("models/{modelId}/explain/{datasetId}")
-    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainResponseDTO explain(@PathVariable @NotNull UUID modelId, @PathVariable @NotNull UUID datasetId, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        ExplainResponse explanations = modelService.explain(model, dataset, data.getFeatures());
+        MLWorkerWSExplainDTO explanations = modelService.explain(model, dataset, data.getFeatures());
         ExplainResponseDTO result = new ExplainResponseDTO();
-        explanations.getExplanationsMap().forEach((label, perFeatureExplanations) ->
-            result.getExplanations().put(label, perFeatureExplanations.getPerFeatureMap()));
+        if (explanations != null) {
+            explanations.getExplanations().forEach((label, perFeatureExplanations) ->
+                result.getExplanations().put(label, perFeatureExplanations.getPerFeature()));
+        }
         return result;
     }
 
@@ -96,16 +97,16 @@ public class ModelController {
 
 
     @PostMapping("models/explain-text/{featureName}")
-    public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) throws IOException {
+    public ExplainTextResponseDTO explainText(@RequestParam @NotNull UUID modelId, @RequestParam @NotNull UUID datasetId, @PathVariable @NotNull String featureName, @RequestBody @NotNull PredictionInputDTO data) {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
         ExplainTextResponseDTO explanationRes = new ExplainTextResponseDTO();
-        ExplainTextResponse textResponse = modelService.explainText(model, dataset, featureName, data.getFeatures());
-        textResponse.getWeightsMap().forEach((label, weightPerFeature) ->
-            explanationRes.getWeights().put(label, weightPerFeature.getWeightsList())
+        MLWorkerWSExplainTextDTO textResponse = modelService.explainText(model, dataset, featureName, data.getFeatures());
+        textResponse.getWeights().forEach((label, weightPerFeature) ->
+            explanationRes.getWeights().put(label, weightPerFeature.getWeights())
         );
-        explanationRes.setWords(textResponse.getWordsList());
+        explanationRes.setWords(textResponse.getWords());
         return explanationRes;
     }
 
@@ -121,14 +122,14 @@ public class ModelController {
         ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(data.getDatasetId());
         permissionEvaluator.validateCanReadProject(model.getProject().getId());
-        RunModelForDataFrameResponse result = modelService.predict(model, dataset, data.getFeatures());
+        MLWorkerWSRunModelForDataFrameDTO result = modelService.predict(model, dataset, data.getFeatures());
         Map<String, Float> allPredictions = new HashMap<>();
         if (model.getModelType() == ModelType.CLASSIFICATION) {
-            result.getAllPredictions().getRows(0).getColumnsMap().forEach((label, proba) ->
+            result.getAllPredictions().getRows().get(0).getColumns().forEach((label, proba) ->
                 allPredictions.put(label, Float.parseFloat(proba))
             );
         }
-        return new PredictionDTO(result.getPrediction(0), allPredictions);
+        return new PredictionDTO(result.getPrediction().get(0), allPredictions);
     }
 
     @GetMapping("models/prepare-delete/{modelId}")

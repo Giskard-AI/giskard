@@ -23,4 +23,4 @@ services:
       - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
-      - SPRING_JPA_DATABASE_PLATFORM=tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect

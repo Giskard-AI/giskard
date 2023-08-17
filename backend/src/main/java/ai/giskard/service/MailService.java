@@ -1,5 +1,6 @@
 package ai.giskard.service;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.Feedback;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.User;
@@ -13,7 +14,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
-import tech.jhipster.config.JHipsterProperties;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -37,7 +37,7 @@ public class MailService {
 
     private static final String BASE_URL = "baseUrl";
 
-    private final JHipsterProperties jHipsterProperties;
+    private final ApplicationProperties applicationProperties;
 
     private final JavaMailSender javaMailSender;
 
@@ -46,12 +46,12 @@ public class MailService {
     private final SpringTemplateEngine templateEngine;
 
     public MailService(
-        JHipsterProperties jHipsterProperties,
+        ApplicationProperties applicationProperties,
         JavaMailSender javaMailSender,
         MessageSource messageSource,
         SpringTemplateEngine templateEngine
     ) {
-        this.jHipsterProperties = jHipsterProperties;
+        this.applicationProperties = applicationProperties;
         this.javaMailSender = javaMailSender;
         this.messageSource = messageSource;
         this.templateEngine = templateEngine;
@@ -73,7 +73,7 @@ public class MailService {
         try {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, isMultipart, StandardCharsets.UTF_8.name());
             message.setTo(to);
-            message.setFrom(jHipsterProperties.getMail().getFrom());
+            message.setFrom(applicationProperties.getEmailFrom());
             message.setSubject(subject);
             message.setText(content, isHtml);
             javaMailSender.send(mimeMessage);
@@ -91,7 +91,7 @@ public class MailService {
         }
         Context context = new Context();
         context.setVariable(USER, user);
-        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(BASE_URL, applicationProperties.getMailBaseUrl());
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, Locale.ENGLISH);
         sendEmail(user.getEmail(), subject, content, false, true);
@@ -104,7 +104,7 @@ public class MailService {
         context.setVariable("email", email);
         context.setVariable("inviter", currentEmail);
         context.setVariable("inviteLink", inviteLink);
-        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(BASE_URL, applicationProperties.getMailBaseUrl());
 
         String content = templateEngine.process("mail/inviteUser", context);
         sendEmail(email, "Giskard invitation", content, false, true);
@@ -139,7 +139,7 @@ public class MailService {
         context.setVariable("projectId", feedback.getProject().getId());
         context.setVariable("feedbackId", feedback.getId());
         context.setVariable("message", message);
-        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(BASE_URL, applicationProperties.getMailBaseUrl());
 
         String content = templateEngine.process("mail/feedbackEmail", context);
 
