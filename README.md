@@ -165,7 +165,7 @@ test_suite.run()
   <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
 
-## 🖥️ Start the Giskard server
+## Start the Giskard server
 
 For full functionality start **Giskard server** with: 
 ```sh
@@ -174,7 +174,7 @@ giskard server start
 
 🚀 That's it! Access at http://localhost:19000
 
-## 📤 Upload your test suite to the Giskard server
+## Upload your test suite to the Giskard server
 
 You can then **upload the test suite** to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
