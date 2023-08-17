@@ -486,7 +486,7 @@ class BaseModel(ABC):
             from langchain.agents import create_pandas_dataframe_agent
             from langchain.tools import Tool
 
-            agent = create_pandas_dataframe_agent(llm, dataset.df, verbose=True)
+            agent = create_pandas_dataframe_agent(llm, dataset.df, verbose=False)
             data_source_tools.append(
                 Tool.from_function(
                     func=agent.run,

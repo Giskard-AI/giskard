@@ -45,9 +45,9 @@ import os
 
 os.environ['OPENAI_API_KEY'] = 'sk-...'
 
-from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 
-llm = ChatOpenAI(temperature=0.1)
+llm = OpenAI(temperature=0.1)
 agent = giskard_model.talk(llm, giskard_dataset, True)
 
 # Query your agent
