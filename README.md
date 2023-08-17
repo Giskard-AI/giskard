@@ -37,7 +37,20 @@ Simple installation from PyPI:
 pip install "giskard[server]>=2.0.0b" -U
 ```
 ______________________________________________________________________
-At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to **Scan your model to find dozens of hidden vulnerabilities** and **Instantaneously generate domain-specific tests**. The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc. Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+Giskard enables you to :
+- **Scan your model to find dozens of hidden vulnerabilities** and instantaneously generate domain-specific tests. Such as
+  - ✅ Performance bias
+  - ✅ Data leakage
+  - ✅ Unrobustness
+  - ✅ Spurious correlation
+  - ✅ Overconfidence
+  - ✅ Underconfidence
+  - ✅ Unethical issue, etc.
+- **Generates relevant tests based on the vulnerabilities detected by the scan.** You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+
+<p align="center">
+  <img src="readme/scan_example.gif" alt="Scan Example" width="1000px">
+</p>
 
 Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
@@ -45,12 +58,6 @@ Giskard works with any model, any environment and integrates seamlessly with you
   <img width='600' src="readme/tools.png">
 </p>
 <br/>
-
-<p align="center">
-  <img src="readme/scan_example.png" alt="Scan Example" width="700px">
-</p>
-
-
 
 
 # Contents
