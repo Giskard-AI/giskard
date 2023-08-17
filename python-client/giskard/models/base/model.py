@@ -467,13 +467,33 @@ class BaseModel(ABC):
     def to_mlflow(self):
         raise NotImplementedError
 
-    def talk(self, dataset=None):
+    def talk(self, llm, dataset=None, allow_dataset_queries: bool = False):
         """
         Create a langchain agent that allow to talk to the ml model
 
         Args:
-            dataset (Optional[Dataset]): The dataset that allow to explain the predictions and to be queried
+            llm: (BaseLanguageModel): The language model to be used for querying the ML model
+            dataset (Optional[Dataset]): The dataset that allow to explain the predictions
+            allow_dataset_queries (bool): When true the user have possibility to retrieve information for the dataset
         """
         from ...llm.talk import create_ml_llm
 
-        return create_ml_llm(self, dataset)
+        data_source_tools = []
+        if allow_dataset_queries:
+            if dataset is None:
+                raise ValueError("Please provide a dataset to allow_dataset_queries")
+            from langchain.agents import create_pandas_dataframe_agent
+            from langchain.tools import Tool
+
+            agent = create_pandas_dataframe_agent(llm, dataset.df, verbose=True)
+            data_source_tools.append(
+                Tool.from_function(
+                    func=agent.run,
+                    name=f"{self.meta.name if self.meta.name is not None else 'model'}_info",
+                    description="Useful for when you need to find information to predict the model. "
+                    + "The input is a natural language request. "
+                    + "Example: 'give me all info of the row about ...'",
+                )
+            )
+
+        return create_ml_llm(llm, self, dataset, data_source_tools)

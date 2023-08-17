@@ -5,10 +5,11 @@ from typing import Dict, Any
 from typing import Optional, Callable, List
 
 import pandas as pd
-from langchain import LLMChain, OpenAI
+from langchain import LLMChain
 from langchain.agents import AgentExecutor, ZeroShotAgent
 from langchain.agents.agent_toolkits.base import BaseToolkit
 from langchain.agents.mrkl.prompt import FORMAT_INSTRUCTIONS
+from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
 from langchain.tools import BaseTool
@@ -250,6 +251,7 @@ class ModelToolkit(BaseToolkit):
 
 
 def create_ml_llm(
+    llm: BaseLanguageModel,
     model: GiskardBaseModel,
     dataset: Optional[Dataset] = None,
     data_source_tools: Optional[List[BaseTool]] = None,
@@ -274,7 +276,7 @@ def create_ml_llm(
     )
 
     llm_chain = LLMChain(
-        llm=OpenAI(),
+        llm=llm,
         prompt=prompt,
         callback_manager=callback_manager,
     )
