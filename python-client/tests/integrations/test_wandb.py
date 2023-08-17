@@ -14,6 +14,10 @@ NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult 
     "dataset_name,model_name",
     [
         ("hotel_text_data", "hotel_text_model"),
+        ("german_credit_data", "german_credit_model"),
+        ("breast_cancer_data", "breast_cancer_model"),
+        ("drug_classification_data", "drug_classification_model"),
+        ("diabetes_dataset_with_target", "linear_regression_diabetes"),
     ],
 )
 def test_fast(dataset_name, model_name, request):
