@@ -12,6 +12,7 @@ from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryB
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.statistic import test_theil_u
+import numpy as np
 
 
 class Push:
@@ -267,11 +268,11 @@ class ContributionPush(FeaturePush):
 
 
 class PerturbationPush(FeaturePush):
-    text_perturbed: list = None
+    value_perturbed: list = None
     transformation_function: list = None
     details = [
         {
-            "action": "Generate a robustness test that slightly perturb this feature",
+            "action": "Generate a metamorphic invariance test that slightly perturbs this feature",
             "explanation": "This will enable you to make sure the model is robust against similar small changes",
             "button": "Create test",
             "cta": CallToActionKind.CreateTest,
@@ -282,8 +283,13 @@ class PerturbationPush(FeaturePush):
         self.pushkind = PushKind.Perturbation
         self.feature = feature
         self.value = value
-        self.text_perturbed = transformation_info.text_perturbed
+        self.value_perturbed = transformation_info.value_perturbed
         self.transformation_functions = transformation_info.transformation_functions
         self.tests = [test_metamorphic_invariance]
         self.test_params = {"transformation_function": self.transformation_functions}
-        self.push_title = f"A small variation of {str(feature)}=={str(value)} makes the prediction change"
+        print(type(self.value))
+
+        if np.issubdtype(self.value, np.number):
+            self.push_title = f"Increasing {self.feature} by {round(self.value_perturbed[0] - self.value,2)} makes the prediction change"
+        else:
+            self.push_title = f"Perturbing {self.feature} into {self.value_perturbed} makes the prediction change"

@@ -45,7 +45,7 @@ def compute_mad(x):
 
 @dataclass
 class TransformationInfo:
-    text_perturbed: list
+    value_perturbed: list
     transformation_functions: list
 
 

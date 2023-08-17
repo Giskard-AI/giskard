@@ -46,7 +46,7 @@ def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
 
 def apply_perturbation(model, ds, df, feature, coltype):
     transformation_function = list()
-    text_perturbed = list()
+    value_perturbed = list()
     passed = False
     # Create a slice of the dataset with only the row to perturb
     ds_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
@@ -58,17 +58,29 @@ def apply_perturbation(model, ds, df, feature, coltype):
     if coltype == SupportedPerturbationType.NUMERIC:
         # Compute the MAD of the column
         mad = compute_mad(ds.df[feature])
+        value_added = 2 * mad
+        reduce_value_added = True
+        passed_at_leat_once = False
+        while reduce_value_added:
+            if value_added <= ds.df[feature].max():
+                # Create the transformation
+                t = mad_transformation(column_name=feature, value_added=value_added)
 
-        # Create the transformation
-        t = mad_transformation(column_name=feature, value_added=2 * mad)
+                # Transform the slice
+                transformed = ds_slice_copy.transform(t)
 
-        # Transform the slice
-        transformed = ds_slice_copy.transform(t)
-
-        # Generate the perturbation
-        passed = check_after_perturbation(model, ds_slice, transformed)
-        if passed:
-            transformation_function.append(t)
+                # Generate the perturbation
+                passed = check_after_perturbation(model, ds_slice, transformed)
+                if passed:
+                    passed_at_leat_once = True
+                    value_perturbed.append(transformed.df[feature].values.item(0))
+                    transformation_function.append(t)
+                    value_added /= 1.5
+                elif (not passed) and passed_at_leat_once:
+                    reduce_value_added = False
+                    passed = True
+                else:
+                    reduce_value_added = False
 
     elif coltype == SupportedPerturbationType.TEXT:
         # Iterate over the possible text transformations
@@ -83,14 +95,16 @@ def apply_perturbation(model, ds, df, feature, coltype):
             passed = check_after_perturbation(model, ds_slice, transformed)
 
             if passed:
-                text_perturbed.append(transformed.df[feature])
+                value_perturbed.append(transformed.df[feature].values.item(0))
                 transformation_function.append(t)
 
-        if len(text_perturbed) > 0:
+        if len(value_perturbed) > 0:
             passed = True
 
+    value_perturbed.reverse()
+    transformation_function.reverse()
     return (
-        TransformationInfo(text_perturbed=text_perturbed, transformation_functions=transformation_function)
+        TransformationInfo(value_perturbed=value_perturbed, transformation_functions=transformation_function)
         if passed
         else None
     )
