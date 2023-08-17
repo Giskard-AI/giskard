@@ -36,6 +36,9 @@ Simple installation from PyPI:
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
+## Try in Colab
+[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
+
 ______________________________________________________________________
 Giskard enables you to :
 - **Scan your model to find dozens of hidden vulnerabilities** and instantaneously generate domain-specific tests. Such as
