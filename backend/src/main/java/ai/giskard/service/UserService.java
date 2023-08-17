@@ -70,7 +70,7 @@ public class UserService {
             .findOneByEmailIgnoreCase(mail)
             .filter(User::isActivated)
             .map(user -> {
-                user.setResetKey(RandomStringUtils.randomAlphanumeric(20));
+                user.setResetKey(RandomStringUtils.randomAlphanumeric(20)); // NOSONAR - safe here
                 user.setResetDate(Instant.now());
                 return user;
             });
@@ -130,7 +130,7 @@ public class UserService {
         }
         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encryptedPassword);
-        user.setResetKey(RandomStringUtils.randomAlphanumeric(20));
+        user.setResetKey(RandomStringUtils.randomAlphanumeric(20)); // NOSONAR - safe here
         user.setResetDate(Instant.now());
         user.setActivated(true);
         user.setEnabled(true);

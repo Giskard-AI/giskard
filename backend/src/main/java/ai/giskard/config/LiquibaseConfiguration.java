@@ -1,8 +1,6 @@
 package ai.giskard.config;
 
 import liquibase.integration.spring.SpringLiquibase;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.liquibase.DataSourceClosingSpringLiquibase;
@@ -19,8 +17,6 @@ import java.util.function.Supplier;
 
 @Configuration
 public class LiquibaseConfiguration {
-
-    private final Logger log = LoggerFactory.getLogger(LiquibaseConfiguration.class);
 
     private final Environment env;
 
