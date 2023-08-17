@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.security.Key;
 import java.util.Collection;
@@ -36,16 +35,15 @@ class TokenProviderSecurityMetersTests {
 
     @BeforeEach
     public void setup() {
-        JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
-        jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
+        applicationProperties.setBase64JWTsecretKey(base64Secret);
 
         meterRegistry = new SimpleMeterRegistry();
 
         SecurityMetersService securityMetersService = new SecurityMetersService(meterRegistry);
 
-        tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
+        tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
         Key key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
 
         ReflectionTestUtils.setField(tokenProvider, "key", key);

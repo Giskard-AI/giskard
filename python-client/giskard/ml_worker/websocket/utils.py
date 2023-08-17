@@ -1,21 +1,22 @@
+import logging
+import os
+import posixpath
+import shutil
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from pathlib import Path
 from typing import List, Dict, Any
-
-import logging
-
-import os
 
 from giskard.core.suite import ModelInput, DatasetInput, SuiteInput
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
+from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunction,
 )
 from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
-from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.websocket import (
     EchoMsg,
     ExplainParam,
@@ -31,12 +32,6 @@ from giskard.ml_worker.websocket import (
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.path_utils import projects_dir
-
-import posixpath
-import shutil
-
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
-
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +252,7 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
         test_result.output_df.name += debug_info["suffix"]
 
         test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
-        # for now, we won't return output_df from grpc, rather upload it
+        # We won't return output_df from WS, rather upload it
         test_result.output_df = None
     elif arguments["debug"]:
         raise ValueError(

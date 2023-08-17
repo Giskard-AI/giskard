@@ -15,7 +15,7 @@ public class MLWorkerWSGetInfoDTO implements MLWorkerWSBaseDTO {
 
     private HashMap<String, String> installedPackages;
 
-    private String internalGrpcAddress;
+    private String mlWorkerId;
 
     private Boolean isRemote;
 

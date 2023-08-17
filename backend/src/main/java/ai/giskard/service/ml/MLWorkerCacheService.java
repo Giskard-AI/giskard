@@ -3,7 +3,6 @@ package ai.giskard.service.ml;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSCatalogDTO;
-import ai.giskard.ml.tunnel.MLWorkerTunnelService;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
@@ -32,7 +31,6 @@ public class MLWorkerCacheService {
 
     private final MLWorkerWSService mlWorkerWSService;
     private final MLWorkerWSCommService mlWorkerWSCommService;
-    private final MLWorkerTunnelService mlWorkerTunnelService;
     private final TestFunctionService testFunctionService;
     private final TestFunctionRepository testFunctionRepository;
     private final SlicingFunctionService slicingFunctionService;
@@ -73,13 +71,10 @@ public class MLWorkerCacheService {
             return getTestFunctions(true);
         }
 
-        if (mlWorkerTunnelService.isClearCacheRequested()) {
-            catalogWithoutPickles = getTestFunctions(false);
-            testFunctionService.saveAll(catalogWithoutPickles.getTests());
-            slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
-            transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
-            mlWorkerTunnelService.setClearCacheRequested(false);
-        }
+        catalogWithoutPickles = getTestFunctions(false);
+        testFunctionService.saveAll(catalogWithoutPickles.getTests());
+        slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
+        transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
 
         return catalogWithoutPickles;
     }

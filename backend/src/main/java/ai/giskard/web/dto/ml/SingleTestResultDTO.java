@@ -1,7 +1,6 @@
 package ai.giskard.web.dto.ml;
 
 import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
-import ai.giskard.worker.SingleTestResult;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,23 +28,6 @@ public class SingleTestResultDTO {
     private float metric;
     private String outputDfUuid;
 
-    public SingleTestResultDTO(SingleTestResult message) {
-        this.missingCount = message.getMissingCount();
-        this.missingPercent = message.getMissingPercent();
-        this.unexpectedCount = message.getUnexpectedCount();
-        this.unexpectedPercent = message.getUnexpectedPercent();
-        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
-        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
-        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
-        this.unexpectedIndexList = message.getUnexpectedIndexListList();
-        this.passed = message.getPassed();
-        this.metric = message.getMetric();
-        this.actualSlicesSize = message.getActualSlicesSizeList();
-        this.referenceSlicesSize = message.getReferenceSlicesSizeList();
-        this.messages = message.getMessagesList().stream().map(
-            msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
-        this.outputDfUuid = message.getOutputDfId();
-    }
 
     public SingleTestResultDTO(MLWorkerWSSingleTestResultDTO message) {
         this.missingCount = message.getMissingCount();

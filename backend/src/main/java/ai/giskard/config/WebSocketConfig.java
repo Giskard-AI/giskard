@@ -10,7 +10,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.socket.config.annotation.*;
-import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -99,10 +98,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
 
-    private final JHipsterProperties jHipsterProperties;
-
-    public WebSocketConfig(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties) {
-        this.jHipsterProperties = jHipsterProperties;
+    public WebSocketConfig(ApplicationProperties applicationProperties) {
         this.applicationProperties = applicationProperties;
     }
 
@@ -122,7 +118,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        CorsConfiguration config = jHipsterProperties.getCors();
+        CorsConfiguration config = applicationProperties.getCors();
         List<String> allowedOrigins = config.getAllowedOrigins();
         StompWebSocketEndpointRegistration endpoint = registry.addEndpoint(WEBSOCKET_ENDPOINT);
         if (!CollectionUtils.isEmpty(allowedOrigins)) {

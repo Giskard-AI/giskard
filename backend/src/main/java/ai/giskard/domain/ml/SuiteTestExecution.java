@@ -5,8 +5,6 @@ import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
 import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
-import ai.giskard.worker.FuncArgument;
-import ai.giskard.worker.SingleTestResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -83,36 +81,6 @@ public class SuiteTestExecution extends BaseEntity {
 
     public SuiteTestExecution(SuiteTest test,
                               TestSuiteExecution execution,
-                              SingleTestResult message,
-                              List<FuncArgument> arguments) {
-        this.test = test;
-        this.execution = execution;
-        this.missingCount = message.getMissingCount();
-        this.missingPercent = message.getMissingPercent();
-        this.unexpectedCount = message.getUnexpectedCount();
-        this.unexpectedPercent = message.getUnexpectedPercent();
-        this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
-        this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
-        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
-        this.unexpectedIndexList = message.getUnexpectedIndexListList();
-        if (message.getIsError()) {
-            this.status = TestResult.ERROR;
-        } else {
-            this.status = message.getPassed() ? TestResult.PASSED : TestResult.FAILED;
-        }
-        this.metric = message.getMetric();
-        this.actualSlicesSize = message.getActualSlicesSizeList();
-        this.referenceSlicesSize = message.getReferenceSlicesSizeList();
-        this.messages = message.getMessagesList().stream().map(
-            msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
-        this.inputs = test.getFunctionInputs().stream()
-            .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
-        this.arguments = arguments.stream()
-            .collect(Collectors.toMap(FuncArgument::getName, this::getFuncArgValue));
-    }
-
-    public SuiteTestExecution(SuiteTest test,
-                              TestSuiteExecution execution,
                               MLWorkerWSSingleTestResultDTO message,
                               List<MLWorkerWSFuncArgumentDTO> arguments) {
         this.test = test;
@@ -139,53 +107,6 @@ public class SuiteTestExecution extends BaseEntity {
             .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
         this.arguments = arguments.stream()
             .collect(Collectors.toMap(MLWorkerWSFuncArgumentDTO::getName, this::getFuncArgValueWS));
-    }
-
-    private String getFuncArgValue(FuncArgument funcArgument) {
-        String result = "";
-        switch (funcArgument.getArgumentCase()) {
-            case MODEL:
-                result = funcArgument.getModel().getId();
-                break;
-            case DATASET:
-                result = funcArgument.getDataset().getId();
-                break;
-            case SLICINGFUNCTION:
-                result = funcArgument.getSlicingFunction().getId();
-                break;
-            case TRANSFORMATIONFUNCTION:
-                result = funcArgument.getTransformationFunction().getId();
-                break;
-            case KWARGS:
-                // Not sure how to handle this cleanly yet.
-                break;
-            case ARGUMENT_NOT_SET:
-                break;
-            case BOOL:
-                result = String.valueOf(funcArgument.getBool());
-                break;
-            case FLOAT:
-                result = String.valueOf(funcArgument.getFloat());
-                break;
-            case INT:
-                result = String.valueOf(funcArgument.getInt());
-                break;
-            case STR:
-                result = funcArgument.getStr();
-                break;
-        }
-
-
-        Map<String, String> args = funcArgument.getArgsList().stream()
-            .collect(Collectors.toMap(FuncArgument::getName, this::getFuncArgValue));
-
-        Map<String, Object> json = Map.of(
-            "value", result,
-            "args", args
-        );
-
-        // return json as a json
-        return new ObjectMapper().valueToTree(json).toString();
     }
 
     private String getFuncArgValueWS(MLWorkerWSFuncArgumentDTO funcArgument) {

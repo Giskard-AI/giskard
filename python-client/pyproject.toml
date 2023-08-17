@@ -10,6 +10,8 @@ exclude = ["docs*", "tests*"]
 giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
 
 
+
+
 [[tool.pdm.source]]
 type = "find_links"
 url = "https://download.pytorch.org/whl/cpu/torch_stable.html"

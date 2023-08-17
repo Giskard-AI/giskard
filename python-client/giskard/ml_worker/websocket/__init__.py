@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional
 from enum import Enum
-
 from pydantic import BaseModel, Field
+from typing import Dict, List, Optional
 
 
 class WorkerReply(BaseModel):
@@ -199,7 +198,7 @@ class GetInfo(WorkerReply):
     interpreter: str
     interpreterVersion: str
     installedPackages: Dict[str, str]
-    internalGrpcAddress: str
+    mlWorkerId: str
     isRemote: bool
     pid: int
     processStartTime: int

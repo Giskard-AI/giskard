@@ -1,32 +1,33 @@
+import json
+import logging
+import math
+import numpy as np
+import os
+import pandas as pd
+import pkg_resources
+import platform
+import psutil
+import stomp
+import sys
+import tempfile
+import traceback
 from pathlib import Path
 
-import logging
-
-import json
-import stomp
-
-
-import platform
-import pkg_resources
-import psutil
-import sys
-import traceback
-import os
 import giskard
-
 from giskard.core.suite import Suite
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunction,
 )
-from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import GetInfoParam
+from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_run_adhoc_test,
     extract_debug_info,
@@ -40,20 +41,12 @@ from giskard.ml_worker.websocket.utils import (
     parse_action_param,
     parse_function_arguments,
 )
-from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
 from giskard.utils import threaded
-
-import math
-import tempfile
-
-import numpy as np
-import pandas as pd
-
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +194,7 @@ def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kw
         interpreter=sys.executable,
         interpreterVersion=platform.python_version(),
         installedPackages=installed_packages,
-        internalGrpcAddress=ml_worker.ml_worker_id,
+        mlWorkerId=ml_worker.ml_worker_id,
         isRemote=ml_worker.is_remote_worker(),
     )
 

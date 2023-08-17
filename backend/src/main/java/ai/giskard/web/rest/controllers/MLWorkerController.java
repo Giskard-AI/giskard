@@ -75,9 +75,4 @@ public class MLWorkerController {
             mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.STOP_WORKER, null);
         }
     }
-
-    @GetMapping("/external/connected")
-    public boolean isExternalWorkerConnected() {
-        return mlWorkerService.isExternalWorkerConnected();
-    }
 }

@@ -9,13 +9,13 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import tech.jhipster.security.RandomUtil;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -70,7 +70,7 @@ public class UserService {
             .findOneByEmailIgnoreCase(mail)
             .filter(User::isActivated)
             .map(user -> {
-                user.setResetKey(RandomUtil.generateResetKey());
+                user.setResetKey(RandomStringUtils.randomAlphanumeric(20));
                 user.setResetDate(Instant.now());
                 return user;
             });
@@ -104,7 +104,6 @@ public class UserService {
         newUser.setActivated(true);
         newUser.setEnabled(true);
         // new user gets registration key
-        //newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
         roleRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRoles(authorities);
@@ -131,7 +130,7 @@ public class UserService {
         }
         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encryptedPassword);
-        user.setResetKey(RandomUtil.generateResetKey());
+        user.setResetKey(RandomStringUtils.randomAlphanumeric(20));
         user.setResetDate(Instant.now());
         user.setActivated(true);
         user.setEnabled(true);
