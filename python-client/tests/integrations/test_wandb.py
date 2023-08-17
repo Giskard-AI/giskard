@@ -7,7 +7,7 @@ from giskard.models.model_explanation import explain_with_shap
 
 wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
-NOT_SUPP_TEXT_ERROR_MSG = "We do not support the wandb logging of ShapResult for text features yet."
+NOT_SUPP_TEXT_ERROR_MSG = r"We do not support the wandb logging of ShapResult for text features yet.*"
 
 
 @pytest.mark.parametrize(

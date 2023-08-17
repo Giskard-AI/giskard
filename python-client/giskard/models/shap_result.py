@@ -1,3 +1,5 @@
+import logging
+
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
@@ -6,6 +8,8 @@ from shap import Explanation
 
 from giskard.core.core import ModelType, SupportedModelTypes
 from ..utils.analytics_collector import analytics
+
+logger = logging.getLogger(__name__)
 
 
 class PanelNames(str, Enum):
@@ -66,15 +70,18 @@ class ShapResult:
                         scatter_plot = _wandb_scatter_plot(self.explanations, feature_name)
                         charts.update({f"{PanelNames.NUMERICAL}/{feature_name}_shap_scatter_plot": scatter_plot})
                     else:
-                        e = "We do not support the wandb logging of ShapResult for text features yet."
+                        warning_msg = (
+                            f"We do not support the wandb logging of ShapResult for text features yet. The "
+                            f"SHAP plot for '{feature_name}' won't be logged into wandb."
+                        )
                         analytics.track(
-                            "wandb_integration:shap_result:error:text_not_supported",
+                            "wandb_integration:shap_result:warning:text_not_supported",
                             {
                                 "wandb_run_id": run.id,
-                                "error": str(e),
+                                "error": str(warning_msg),
                             },
                         )
-                        raise NotImplementedError(e)
+                        logger.warning(warning_msg)
             except Exception as e:
                 analytics.track(
                     "wandb_integration:shap_result:error:unknown",
