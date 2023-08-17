@@ -43,7 +43,7 @@ class ModelSpec(BaseModel):
     """Base class for model spec."""
 
     model: GiskardBaseModel
-    dataset: Dataset
+    dataset: Optional[Dataset]
     scan_result: Optional[ScanResult]
 
     def predict(self, text: str) -> str:
@@ -71,6 +71,9 @@ class ModelSpec(BaseModel):
         Args:
             text: JSON representation of the row as a dict.
         """
+        if self.dataset is None:
+            return "Explanation is not available since no dataset has been provided"
+
         try:
             features = json.loads(text)
             # Filter only available features
@@ -234,18 +237,22 @@ class ModelToolkit(BaseToolkit):
 
     def get_tools(self) -> List[BaseTool]:
         """Get the tools in the toolkit."""
-        return self.data_source_tools + [
+        tools = self.data_source_tools + [
             ModelDescriptionTool(spec=self.spec),
             ModelPredictTool(spec=self.spec),
-            ModelPredictExplainTool(spec=self.spec),
             ModelQualityTool(spec=self.spec),
         ]
+
+        if self.spec.dataset is not None:
+            tools.append(ModelPredictExplainTool(spec=self.spec))
+
+        return tools
 
 
 def create_ml_llm(
     model: GiskardBaseModel,
-    dataset: Dataset,
-    data_source_tools: List[BaseTool],
+    dataset: Optional[Dataset] = None,
+    data_source_tools: Optional[List[BaseTool]] = None,
     scan_result: Optional[ScanResult] = None,
     callback_manager: Optional[BaseCallbackManager] = None,
     verbose: bool = False,
@@ -254,8 +261,10 @@ def create_ml_llm(
 ) -> AgentExecutor:
     """Construct a json agent from an LLM and tools."""
     tools = ModelToolkit(
-        spec=ModelSpec(model=model, dataset=dataset, scan_result=scan_result), data_source_tools=data_source_tools
+        spec=ModelSpec(model=model, dataset=dataset, scan_result=scan_result),
+        data_source_tools=[] if data_source_tools is None else data_source_tools,
     ).get_tools()
+
     prompt = ZeroShotAgent.create_prompt(
         tools,
         prefix=MODEL_PREFIX,
@@ -263,11 +272,13 @@ def create_ml_llm(
         format_instructions=FORMAT_INSTRUCTIONS,
         input_variables=None,
     )
+
     llm_chain = LLMChain(
         llm=OpenAI(),
         prompt=prompt,
         callback_manager=callback_manager,
     )
+
     tool_names = [tool.name for tool in tools]
     agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, **kwargs)
     return AgentExecutor.from_agent_and_tools(

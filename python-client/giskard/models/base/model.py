@@ -15,6 +15,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .model_prediction import ModelPredictionResults
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -23,9 +26,6 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
-from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -75,14 +75,14 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -466,3 +466,14 @@ class BaseModel(ABC):
 
     def to_mlflow(self):
         raise NotImplementedError
+
+    def talk(self, dataset=None):
+        """
+        Create a langchain agent that allow to talk to the ml model
+
+        Args:
+            dataset (Optional[Dataset]): The dataset that allow to explain the predictions and to be queried
+        """
+        from ...llm.talk import create_ml_llm
+
+        return create_ml_llm(self, dataset)
