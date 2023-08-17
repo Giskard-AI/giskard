@@ -62,14 +62,14 @@ class ScanResultWidget(BaseWidget):
     def __init__(self, scan_result):
         self.scan_result = scan_result
 
-    def render_html(self, **kwargs) -> str:
-        tpl = get_template("scan_results.html")
+    def render_template(self, template_filename: str, **kwargs) -> str:
+        tpl = get_template(template_filename)
 
         issues_by_group = defaultdict(list)
         for issue in self.scan_result.issues:
             issues_by_group[issue.group].append(issue)
-
-        html = tpl.render(
+        
+        return tpl.render(
             issues=self.scan_result.issues,
             issues_by_group=issues_by_group,
             num_major_issues={
@@ -81,7 +81,13 @@ class ScanResultWidget(BaseWidget):
             num_info_issues={
                 group: len([i for i in issues if i.level == "info"]) for group, issues in issues_by_group.items()
             },
+            **kwargs
         )
+
+
+
+    def render_html(self, **kwargs) -> str:
+        html = self.render_template("scan_results.html", **kwargs)
 
         if kwargs.get("embed", False):
             # Put the HTML in an iframe
@@ -98,3 +104,7 @@ class ScanResultWidget(BaseWidget):
 </script>"""
 
         return html
+    
+    def render_markdown(self) -> str:
+        markdown = self.render_template("markdown/scan_results.md")
+        return markdown

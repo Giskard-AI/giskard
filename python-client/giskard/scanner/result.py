@@ -19,14 +19,21 @@ class ScanResult:
 
         return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
-    def _ipython_display_(self):
-        from IPython.core.display import display_html
-
-        html = self._repr_html_()
-        display_html(html, raw=True)
+    def _ipython_display_(self, as_html=False):
+        if as_html:
+            from IPython.core.display import display_html
+            html = self._repr_html_()
+            display_html(html, raw=True)
+        else:
+            from IPython.core.display import display_markdown
+            markdown = self._repr_markdown_()
+            display_markdown(markdown, raw=True)
 
     def _repr_html_(self):
         return self.to_html(embed=True)
+    
+    def _repr_markdown_(self):
+        return self.to_markdown()
 
     def to_html(self, filename=None, embed=False):
         from ..visualization.widget import ScanResultWidget
@@ -40,6 +47,14 @@ class ScanResult:
             return
 
         return html
+    
+    def to_markdown(self):
+        from ..visualization.widget import ScanResultWidget
+
+        widget = ScanResultWidget(self)
+        markdown = widget.render_markdown()
+
+        return markdown
 
     def to_dataframe(self):
         df = pd.DataFrame(
