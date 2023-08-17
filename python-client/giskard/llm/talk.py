@@ -241,11 +241,13 @@ class ModelToolkit(BaseToolkit):
         tools = self.data_source_tools + [
             ModelDescriptionTool(spec=self.spec),
             ModelPredictTool(spec=self.spec),
-            ModelQualityTool(spec=self.spec),
         ]
 
         if self.spec.dataset is not None:
             tools.append(ModelPredictExplainTool(spec=self.spec))
+
+        if self.spec.scan_result is not None:
+            tools.append(ModelQualityTool(spec=self.spec))
 
         return tools
 

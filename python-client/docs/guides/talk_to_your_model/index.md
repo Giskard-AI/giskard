@@ -53,4 +53,5 @@ agent = giskard_model.talk(llm, giskard_dataset, True)
 # Query your agent
 print(agent.run('Can you tell me if "Webber, Miss. Susan" survived the titanic crash?'))
 print(agent.run('Can you explain me why you predicted that "Webber, Miss. Susan" survived the titanic crash?'))
+print(agent.run('Is this model reliable?'))
 ```
