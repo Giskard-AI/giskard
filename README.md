@@ -62,10 +62,10 @@ Giskard works with any model, any environment and integrates seamlessly with you
 
 # Contents
 
-1. 🤸‍♀️ **[Quickstart](#getting-started)**
-2. ❓ **[FAQ](#getting-started)**
-3. ⭐️ **[Premium features](#like-what-were-doing)**
-4. 👋 **[Community](#how-to-contribute)**
+1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**  
+2. ❓ **[FAQ](#-faq)**
+3. ⭐️ **[Premium features](#%EF%B8%8F-premium-features)**
+4. 👋 **[Community](#-community)**
 
 
 # 🤸‍♀️ Quickstart
