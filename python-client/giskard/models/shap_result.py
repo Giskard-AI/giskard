@@ -1,5 +1,3 @@
-import logging
-
 from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
@@ -8,8 +6,7 @@ from shap import Explanation
 
 from giskard.core.core import ModelType, SupportedModelTypes
 from ..utils.analytics_collector import analytics
-
-logger = logging.getLogger(__name__)
+from giskard.client.python_utils import warning
 
 
 class PanelNames(str, Enum):
@@ -78,10 +75,10 @@ class ShapResult:
                             "wandb_integration:shap_result:warning:text_not_supported",
                             {
                                 "wandb_run_id": run.id,
-                                "error": str(warning_msg),
+                                "warning": str(warning_msg),
                             },
                         )
-                        logger.warning(warning_msg)
+                        warning(warning_msg)
             except Exception as e:
                 analytics.track(
                     "wandb_integration:shap_result:error:unknown",

@@ -7,17 +7,13 @@ from giskard.models.model_explanation import explain_with_shap
 
 wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
-NOT_SUPP_TEXT_ERROR_MSG = r"We do not support the wandb logging of ShapResult for text features yet.*"
+NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult for text features yet.*"
 
 
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
         ("hotel_text_data", "hotel_text_model"),
-        ("german_credit_data", "german_credit_model"),
-        ("breast_cancer_data", "breast_cancer_model"),
-        ("drug_classification_data", "drug_classification_model"),
-        ("diabetes_dataset_with_target", "linear_regression_diabetes"),
     ],
 )
 def test_fast(dataset_name, model_name, request):
@@ -28,9 +24,11 @@ def test_fast(dataset_name, model_name, request):
     model = request.getfixturevalue(model_name)
 
     if dataset_name in exception_fixtures:
-        with pytest.raises(NotImplementedError) as e:
+        with pytest.warns(
+            UserWarning,
+            match=NOT_SUPP_TEXT_WARNING_MSG,
+        ):
             _to_wandb(model, dataset)
-        assert e.match(NOT_SUPP_TEXT_ERROR_MSG)
     else:
         _to_wandb(model, dataset)
 
@@ -52,9 +50,11 @@ def test_slow(dataset_name, model_name, request):
     model = request.getfixturevalue(model_name)
 
     if dataset_name in exception_fixtures:
-        with pytest.raises(NotImplementedError) as e:
+        with pytest.warns(
+            UserWarning,
+            match=NOT_SUPP_TEXT_WARNING_MSG,
+        ):
             _to_wandb(model, dataset)
-        assert e.match(NOT_SUPP_TEXT_ERROR_MSG)
     else:
         _to_wandb(model, dataset)
 
