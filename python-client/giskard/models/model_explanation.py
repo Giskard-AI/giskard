@@ -41,7 +41,7 @@ def _prepare_for_explanation(input_df: pd.DataFrame, model: BaseModel, dataset: 
     input_df = model.prepare_dataframe(input_df, column_dtypes=dataset.column_dtypes, target=dataset.target)
 
     target = dataset.target if dataset.target in input_df.columns else None
-    prepared_dataset = Dataset(input_df, column_types=dataset.column_types, target=target)
+    prepared_dataset = Dataset(input_df, column_types=dataset.column_types, target=target, validation=False)
     prepared_df = prepared_dataset.df[_get_columns_original_order(prepared_dataset, model, dataset)]
     return prepared_df
 
