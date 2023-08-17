@@ -84,3 +84,4 @@ giskard:
   ml-worker-port: 50051
   home: ${user.home}/giskard-home
   auth: true
+  email-from: giskard@localhost
