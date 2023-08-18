@@ -55,8 +55,12 @@ def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.nda
     # Prepare input data for an explanation.
     data_to_explain = _prepare_for_explanation(dataset.df, model=model, dataset=dataset)
 
+    def prediction_function(_df):
+        """Rolls-back SHAP casting of all columns to the 'object' type."""
+        return model.predict_df(_df.astype(data_to_explain.dtypes))
+
     # Obtain SHAP explanations.
-    explainer = KernelExplainer(model.predict_df, background_sample, data_to_explain.columns, keep_index=True)
+    explainer = KernelExplainer(prediction_function, background_sample, data_to_explain.columns, keep_index=True)
     shap_values = explainer.shap_values(data_to_explain, silent=True)
     return shap_values
 
