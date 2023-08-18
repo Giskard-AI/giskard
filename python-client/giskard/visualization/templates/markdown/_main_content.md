@@ -1,6 +1,6 @@
 {% for group, issues in issues_by_group.items() %}
 
-## {{loop.index}}. {{ group }}
+## {{loop.index}}. {{ group }} ({{ issues|length }} issues found)
 
 {% for issue in issues %}
 
@@ -10,6 +10,6 @@
 
 {% endfor %}
 
----
+{{ "=" * 100}}
 
 {% endfor %}
