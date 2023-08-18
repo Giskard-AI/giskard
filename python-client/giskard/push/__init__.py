@@ -118,15 +118,15 @@ class OverconfidencePush(ExamplePush):
                 #  "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a one-sample test automatically to check if this example is correctly predicted",
+                    "action": "Generate a one-sample test to automatically check if this example is correctly predicted",
                     "explanation": "This enables you to make sure this specific example is correct for a new model",
                     "button": "Create one-sample test",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Filter this debugging session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
+                    "action": "See similar examples",
+                    "explanation": "It will filter this debugging session to show examples with overconfidence only",
+                    "button": "Get similar examples",
                     "cta": CallToActionKind.OpenDebuggerOverconfidence,
                 },
             ],
@@ -166,15 +166,15 @@ class BorderlinePush(ExamplePush):
                 # "cta": CallToActionKind.SaveExample,
                 # },
                 {
-                    "action": "Generate a one-sample test automatically the underconfidence",
+                    "action": "Generate a one-sample to automatically test the underconfidence",
                     "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
                     "button": "Create one-sample test",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Filter this debugging session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
+                    "action": "See similar examples",
+                    "explanation": "It will filter this debugging session to show examples with underconfidence only",
+                    "button": "Get similar examples",
                     "cta": CallToActionKind.OpenDebuggerBorderline,
                 },
             ],
@@ -207,43 +207,43 @@ class ContributionPush(FeaturePush):
             self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
-                    "action": "Save slice and continue debugging session",
+                    "action": f"Save the slice {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
                 },
                 {
-                    "action": "Generate a test to check if this correlation holds with the whole dataset",
-                    "explanation": "Correlations may be spurious, double check if it has a business sense",
-                    "button": "Create Test",
+                    "action": "Automatically generate a test ",
+                    "explanation": "Theil`s U test will help you check the correlation on the whole dataset, check our documentation for more info",
+                    "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Filter this debugging session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common patterns",
-                    "button": "Open debugger",
+                    "action": "See similar examples",
+                    "explanation": "It will filter this debugging session to show examples from this slice only",
+                    "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
             ]
         else:
-            self.push_title = f"{str(self.feature)}=={str(self.value)} is responsible for the incorrect prediction"
+            self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the incorrect prediction"
             self.details = [
                 {
-                    "action": "Save slice and continue debugging session",
+                    "action": f"Save the slice {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
                 },
                 {
-                    "action": "Generate a test to check if this correlation holds with the whole dataset",
-                    "explanation": "Correlations may be spurious, double check if it has a business sense",
-                    "button": "Create Test",
+                    "action": "Automatically generate a test",
+                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset, check our documentation for more info",
+                    "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "Filter this debugging session with similar examples",
-                    "explanation": "Debugging similar examples may help you find common spurious patterns",
-                    "button": "Open Debugger",
+                    "action": "See similar examples",
+                    "explanation": "It will filter this debugging session to show examples from this slice only",
+                    "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
                 },
             ]
@@ -274,7 +274,7 @@ class PerturbationPush(FeaturePush):
         {
             "action": "Generate a metamorphic invariance test that slightly perturbs this feature",
             "explanation": "This will enable you to make sure the model is robust against similar small changes",
-            "button": "Create test",
+            "button": "Add to test suite",
             "cta": CallToActionKind.CreateTest,
         },
     ]
@@ -290,6 +290,8 @@ class PerturbationPush(FeaturePush):
         print(type(self.value))
 
         if np.issubdtype(self.value, np.number):
-            self.push_title = f"Increasing {self.feature} by {round(self.value_perturbed[0] - self.value,2)} makes the prediction change"
+            self.push_title = (
+                f"Adding {round(self.value_perturbed[0] - self.value,2)} to {self.feature} makes the prediction change"
+            )
         else:
             self.push_title = f"Perturbing {self.feature} into {self.value_perturbed} makes the prediction change"

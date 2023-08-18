@@ -20,6 +20,7 @@ from giskard.scanner.robustness.text_transformations import (
 )
 
 from ..push import PerturbationPush
+import numpy as np
 
 text_transfo_list = [
     TextLowercase,
@@ -57,30 +58,36 @@ def apply_perturbation(model, ds, df, feature, coltype):
     # Apply the transformation
     if coltype == SupportedPerturbationType.NUMERIC:
         # Compute the MAD of the column
-        mad = compute_mad(ds.df[feature])
-        value_added = 2 * mad
-        reduce_value_added = True
-        passed_at_leat_once = False
-        while reduce_value_added:
-            if value_added <= ds.df[feature].max():
-                # Create the transformation
-                t = mad_transformation(column_name=feature, value_added=value_added)
+        mad = compute_mad(ds.df[feature])  # Small issue: distribution might not be normal
+        values_added_list = [np.linspace(-2 * mad, 0, num=10), np.linspace(2 * mad, 0, num=10)]
+        if ds.df.dtypes[feature] == "int64":
+            values_added_list = [
+                np.unique(np.linspace(-2 * mad, 0, num=10).round().astype(int)),
+                np.unique(np.linspace(2 * mad, 0, num=10).round().astype(int)),
+            ]
+        value_to_perturb = df[feature].iloc[0]
+        for values_added in values_added_list:
+            for value in values_added:
+                if (
+                    value + value_to_perturb <= ds.df[feature].max()
+                    and value + value_to_perturb >= ds.df[feature].min()
+                ):
+                    # Create the transformation
+                    t = mad_transformation(column_name=feature, value_added=value)
 
-                # Transform the slice
-                transformed = ds_slice_copy.transform(t)
+                    # Transform the slice
+                    transformed = ds_slice_copy.transform(t)
 
-                # Generate the perturbation
-                passed = check_after_perturbation(model, ds_slice, transformed)
-                if passed:
-                    passed_at_leat_once = True
-                    value_perturbed.append(transformed.df[feature].values.item(0))
-                    transformation_function.append(t)
-                    value_added /= 1.5
-                elif (not passed) and passed_at_leat_once:
-                    reduce_value_added = False
-                    passed = True
-                else:
-                    reduce_value_added = False
+                    # Generate the perturbation
+                    perturbed = check_after_perturbation(model, ds_slice, transformed)
+
+                    if perturbed:
+                        value_perturbed.append(transformed.df[feature].values.item(0))
+                        transformation_function.append(t)
+                    else:
+                        break
+        if len(transformation_function):
+            passed = True
 
     elif coltype == SupportedPerturbationType.TEXT:
         # Iterate over the possible text transformations
