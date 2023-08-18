@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,7 @@ public class FunctionInput implements Serializable {
     private String type;
 
     @Column(columnDefinition = "CLOB")
+    @Lob
     private String value;
 
     private boolean isAlias = false;

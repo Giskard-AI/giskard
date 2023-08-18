@@ -22,9 +22,9 @@ import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.spring.web.advice.security.SecurityAdviceTrait;
 import org.zalando.problem.violations.ConstraintViolationProblem;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -231,7 +231,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
     private boolean containsPackageName(String message) {
         // This list is for sure not complete
-        return StringUtils.containsAny(message, "org.", "java.", "net.", "javax.", "com.", "io.", "de.", "ai.giskard");
+        return StringUtils.containsAny(message, "org.", "java.", "net.", "jakarta.", "com.", "io.", "de.", "ai.giskard");
     }
 
     @ExceptionHandler

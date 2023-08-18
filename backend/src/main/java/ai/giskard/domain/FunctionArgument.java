@@ -2,7 +2,7 @@ package ai.giskard.domain;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @Entity(name = "test_function_arguments")
