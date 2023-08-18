@@ -104,7 +104,7 @@ class BaseModel(ABC):
                 - meta: a ModelMeta object containing metadata about the model.
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
-        if type(model_type) == str:
+        if isinstance(model_type, str):
             try:
                 model_type = SupportedModelTypes(model_type)
             except ValueError as e:

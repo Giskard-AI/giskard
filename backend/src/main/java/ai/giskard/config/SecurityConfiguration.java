@@ -23,14 +23,12 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
-import tech.jhipster.config.JHipsterProperties;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @Import(SecurityProblemSupport.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final JHipsterProperties jHipsterProperties;
 
     private final TokenProvider tokenProvider;
 
@@ -45,14 +43,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public SecurityConfiguration(
         TokenProvider tokenProvider,
         CorsFilter corsFilter,
-        JHipsterProperties jHipsterProperties,
         SecurityProblemSupport problemSupport,
         LicenseService licenseService
     ) {
         this.tokenProvider = tokenProvider;
         this.corsFilter = corsFilter;
         this.problemSupport = problemSupport;
-        this.jHipsterProperties = jHipsterProperties;
         this.licenseService = licenseService;
     }
 
@@ -82,8 +78,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .accessDeniedHandler(problemSupport)
             .and()
             .headers()
-            .contentSecurityPolicy(jHipsterProperties.getSecurity().getContentSecurityPolicy())
-            .and()
             .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
             .and()
             .permissionsPolicy().policy("camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()")

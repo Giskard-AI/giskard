@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Backend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <option name="ACTIVE_PROFILES" value="dev" />
+    <option name="ACTIVE_PROFILES" value="prod" />
     <envs>
       <env name="GISKARD_AUTH" value="true" />
     </envs>
