@@ -19,6 +19,7 @@ _default_detectors = [
     ".llm.harmfulness_detector",
     ".llm.gender_stereotype_detector",
     ".llm.minority_stereotype_detector",
+    ".llm.control_chars_injection_detector",
 ]
 
 
@@ -33,13 +34,13 @@ _register_default_detectors()
 
 
 def scan(
-        model: BaseModel,
-        dataset: Optional[Dataset] = None,
-        params=None,
-        only=None,
-        verbose=True,
-        raise_exceptions=False,
-        validation_flags: Optional[ValidationFlags] = ValidationFlags()
+    model: BaseModel,
+    dataset: Optional[Dataset] = None,
+    params=None,
+    only=None,
+    verbose=True,
+    raise_exceptions=False,
+    validation_flags: Optional[ValidationFlags] = ValidationFlags(),
 ):
     """
     Scan a model with a dataset.
@@ -61,10 +62,9 @@ def scan(
 
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(model, dataset,
-                           verbose=verbose,
-                           raise_exceptions=raise_exceptions,
-                           validation_flags=validation_flags)
+    return scanner.analyze(
+        model, dataset, verbose=verbose, raise_exceptions=raise_exceptions, validation_flags=validation_flags
+    )
 
 
 __all__ = ["scan", "Scanner", "logger"]
