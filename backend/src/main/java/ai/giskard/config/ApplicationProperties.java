@@ -3,6 +3,7 @@ package ai.giskard.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.nio.file.Path;
 
@@ -10,7 +11,6 @@ import java.nio.file.Path;
  * Properties specific to Giskard.
  * <p>
  * Properties are configured in the {@code application.yml} file.
- * See {@link tech.jhipster.config.JHipsterProperties} for a good example.
  */
 @Setter
 @Getter
@@ -30,4 +30,16 @@ public class ApplicationProperties {
     private int externalWorkerHeartbeatIntervalSeconds;
     private String auth;
     private String licensePublicKey;
+    private int maxStompMessageSize = 65535;
+    private int maxStompReplyMessagePayloadSize = 4096;
+
+    private String mailBaseUrl;
+    private String emailFrom;
+    private String base64JWTsecretKey;
+    private String jwtSecretKey;
+    private long tokenValidityInSeconds = 1800; // 30 minutes;
+    private long tokenValidityInSecondsForRememberMe = 2592000; // 30 days;
+    private CorsConfiguration cors = new CorsConfiguration();
 }
+
+

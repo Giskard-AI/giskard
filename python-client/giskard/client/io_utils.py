@@ -1,9 +1,8 @@
 """Various input/output utility functions"""
 
-from typing import Any, Optional
-
 import re
 from io import BytesIO
+from typing import Any, Optional
 
 import cloudpickle
 import pandas as pd
@@ -28,11 +27,15 @@ def load_decompress(serialized: bytes) -> Any:
 def save_df(df: pd.DataFrame, format: str = "csv") -> bytes:
     pandas_version: int = int(re.sub(r"\D", "", pd.__version__))
     if format == "csv":
+        import csv
+
         csv_buffer = BytesIO()
         if pandas_version >= 120:
-            df.to_csv(csv_buffer, index=False, na_rep="_GSK_NA_", escapechar="\\")
+            df.to_csv(csv_buffer, index=False, na_rep="_GSK_NA_", escapechar="\\", quoting=csv.QUOTE_NONNUMERIC)
         else:
-            csv_buffer.write(df.to_csv(index=False, na_rep="_GSK_NA_", escapechar="\\").encode("utf-8"))
+            csv_buffer.write(
+                df.to_csv(index=False, na_rep="_GSK_NA_", escapechar="\\", quoting=csv.QUOTE_NONNUMERIC).encode("utf-8")
+            )
             csv_buffer.seek(0)
         return csv_buffer.getvalue()
     else:

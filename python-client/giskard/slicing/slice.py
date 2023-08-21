@@ -16,7 +16,11 @@ from ..utils.display import format_number
 
 
 def escape(value) -> str:
-    return str(value) if type(value) is not str else "%s" % value
+    return str(value) if not isinstance(value, str) else "%s" % value
+
+
+def _decode(series: pd.Series) -> pd.Series:
+    return series.str.decode("utf-8").fillna(series)
 
 
 class Clause(ABC):
@@ -53,7 +57,7 @@ class ContainsWord(Clause):
         return f"`{self.column}` {'does not contain' if self.is_not else 'contains'} \"{self.value}\""
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
+        return _decode(df[self.column]).str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
 
     def to_clause(self):
         return {
@@ -94,7 +98,7 @@ class StartsWith(Clause):
         return f'`{self.column}` starts with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.lower().str.startswith(self.value.lower())
+        return _decode(df[self.column]).str.lower().str.startswith(self.value.lower())
 
     def init_code(self):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
@@ -112,7 +116,7 @@ class EndsWith(Clause):
         return f'`{self.column}` ends with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.lower().str.endswith(self.value.lower())
+        return _decode(df[self.column]).str.lower().str.endswith(self.value.lower())
 
     def init_code(self):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"

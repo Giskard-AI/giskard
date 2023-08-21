@@ -1,13 +1,12 @@
 package ai.giskard.web.rest.errors;
 
+import ai.giskard.config.GiskardConstants;
 import ai.giskard.exception.EntityAlreadyExistsException;
-import ai.giskard.exception.MLWorkerException;
-import io.grpc.StatusRuntimeException;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.WeakKeyException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessException;
@@ -22,8 +21,6 @@ import org.zalando.problem.*;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.spring.web.advice.security.SecurityAdviceTrait;
 import org.zalando.problem.violations.ConstraintViolationProblem;
-import tech.jhipster.config.JHipsterConstants;
-import tech.jhipster.web.util.HeaderUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,9 +47,6 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     private static final String MESSAGE_KEY = "message";
     private static final String PATH_KEY = "path";
     private static final String VIOLATIONS_KEY = "violations";
-
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
 
     private final Environment env;
 
@@ -122,36 +116,20 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         return create(ex, problem, request);
     }
 
-
     @ExceptionHandler
-    public ResponseEntity<Problem> handleGRPCError(
-        StatusRuntimeException ex,
+    public ResponseEntity<Problem> handleWebSocketMLWorkerError(
+        MLWorkerIllegalReplyException ex,
         NativeWebRequest request
     ) {
-        if (ex.getCause() instanceof MLWorkerException mlWorkerRE && !mlWorkerRE.getStatus().getCode().equals(io.grpc.Status.UNAVAILABLE.getCode())) {
-            return handleGRPCError(mlWorkerRE, request);
-        }
-
-        MLWorkerProblem problem = new MLWorkerProblem(DEFAULT_TYPE, ex.getStatus().getCode(), ex.getStatus().getDescription(), null);
-
         return create(
-            problem,
+            Problem.builder()
+                .withType(DEFAULT_TYPE)
+                .withTitle(ex.getErrorType())
+                .withStatus(INTERNAL_SERVER_ERROR)
+                .withDetail(ex.getErrorString())
+                .build(),
             request
         );
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<Problem> handleGRPCError(
-        MLWorkerException ex,
-        NativeWebRequest request
-    ) {
-        return create(Problem.builder()
-            .withType(DEFAULT_TYPE)
-            .withTitle(ex.getMessage())
-            .withStatus(INTERNAL_SERVER_ERROR)
-            .withDetail(ex.getErrorClass())
-            .with("stack", ex.getStack())
-            .build(), request);
     }
 
     @ExceptionHandler
@@ -160,11 +138,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         NativeWebRequest request
     ) {
         EmailAlreadyUsedException problem = new EmailAlreadyUsedException();
-        return create(
-            problem,
-            request,
-            HeaderUtil.createFailureAlert(applicationName, false, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
-        );
+        return create(problem, request);
     }
 
     @ExceptionHandler
@@ -173,11 +147,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         NativeWebRequest request
     ) {
         LoginAlreadyUsedException problem = new LoginAlreadyUsedException();
-        return create(
-            problem,
-            request,
-            HeaderUtil.createFailureAlert(applicationName, false, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
-        );
+        return create(problem, request);
     }
 
     @ExceptionHandler
@@ -199,11 +169,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
 
     @ExceptionHandler
     public ResponseEntity<Problem> handleBadRequestAlertException(BadRequestAlertException ex, NativeWebRequest request) {
-        return create(
-            ex,
-            request,
-            HeaderUtil.createFailureAlert(applicationName, false, ex.getEntityName(), ex.getErrorKey(), ex.getMessage())
-        );
+        return create(ex, request);
     }
 
     @ExceptionHandler
@@ -216,7 +182,7 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     public ProblemBuilder prepare(final @NonNull Throwable throwable, final @NonNull StatusType status, final @NonNull URI type) {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
 
-        if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
+        if (activeProfiles.contains(GiskardConstants.SPRING_PROFILE_PRODUCTION)) {
             if (throwable instanceof HttpMessageConversionException) {
                 return Problem
                     .builder()

@@ -19,6 +19,8 @@ def expand_env_var(env_var: Optional[str]) -> Optional[str]:
 class Settings(BaseSettings):
     home: str = "~/giskard-home"
     port: int = 50051
+    ws_port: int = 9000
+    ws_path: str = "/ml-worker"
     host: str = "localhost"
     max_workers: int = 10
     max_send_message_length_mb: int = 1024

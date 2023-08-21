@@ -129,7 +129,6 @@ import {useProjectArtifactsStore} from "@/stores/project-artifacts";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
 import {state} from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import {generateGiskardClientSnippet} from "@/snippets";
 
 
 const userStore = useUserStore();

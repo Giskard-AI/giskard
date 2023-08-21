@@ -3,8 +3,6 @@
 #
 # This configuration is used for unit/integration tests.
 #
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
 # ===================================================================
@@ -31,7 +29,7 @@ spring:
     serialization:
       write-durations-as-timestamps: false
   jpa:
-    database-platform: tech.jhipster.domain.util.FixedH2Dialect
+    database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
     hibernate:
       ddl-auto: validate
@@ -79,42 +77,6 @@ server:
   port: 10344
   address: localhost
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-jhipster:
-  clientApp:
-    name: 'giskardApp'
-  logging:
-    # To test json console appender
-    use-json-format: false
-    logstash:
-      enabled: false
-      host: localhost
-      port: 5000
-      queue-size: 512
-  mail:
-    from: welcome@giskard.ai
-    base-url: http://127.0.0.1:8080
-  security:
-    authentication:
-      jwt:
-        # This token must be encoded using Base64 (you can type `echo 'secret-key'|base64` on your command line)
-        base64-secret: NWFmMDg2ZjkxZjhjMGExOTU3MDFhN2M0MTg2MzMzNTNiN2ViNjVlZjM4ZDdjN2RlMzBhYmQ2M2VmM2RkMmRhM2QxNTE0YmYwY2UxNDQyM2ZjNzlhMmQzNTU0MTMyM2VhOTBiYTZlNmZjOTg4Mzc4YTU0ZjFjYzJhZTA4NzAyYjE=
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
 giskard:
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
@@ -122,3 +84,4 @@ giskard:
   ml-worker-port: 50051
   home: ${user.home}/giskard-home
   auth: true
+  email-from: giskard@localhost
