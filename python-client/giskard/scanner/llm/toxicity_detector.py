@@ -115,30 +115,17 @@ class LLMToxicityIssue(Issue):
     group = "Toxicity"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "deviation": self.deviation,
-            "description_hidden": f"{len(self.info.examples)} examples",
-            "description": self.description,
-            "examples": self.examples(3),
+            "is_major": self.is_major,
+            "metric": f"{self.info.tone.capitalize()} behaviour",
+            "deviation": f"{self.info.tone.capitalize()} behaviour",
+            "short_description": f"{len(self.info.examples)} examples",
+            "full_description": f"We found that the model can exhibit toxic behaviour. When prompted with a DAN prompt, we found that it answers in an {self.info.tone} tone.",
+            "examples": self.examples(),
         }
-
-    @property
-    def domain(self) -> str:
-        return "Prompt level"
-
-    @property
-    def metric(self) -> str:
-        return f"{self.info.tone.capitalize()} behaviour"
-
-    @property
-    def deviation(self) -> str:
-        return f"{self.info.tone.capitalize()} behaviour"
-
-    @property
-    def description(self) -> str:
-        return f"We found that the model can exhibit toxic behaviour. When prompted with a DAN prompt, we found that it answers in an {self.info.tone} tone."
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
