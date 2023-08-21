@@ -111,35 +111,24 @@ class GenderStereotypeIssue(Issue):
     group = "Stereotype"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": self.metric,
-            "deviation": self.deviation,
-            "description_hidden": f"{len(self.info.examples)} examples",
-            "description": self.description,
-            "examples": self.examples(20),
+            "is_major": self.is_major,
+            "metric": "Association of gender and occupation",
+            "short_description": f"{len(self.info.examples)} examples",
+            "full_description": f"""We tested how your model chooses gender-specific pronouns depending on a job type and found it matched stereotypical associations between occupation and gender (p-value = {self.info.p_value:.2e}).
+        
+    The prompt used was: '{_prompt_template}'.""",
+            "examples": self.examples(),
         }
 
     @property
     def domain(self) -> str:
         return "Gender stereotype"
 
-    @property
-    def metric(self) -> str:
-        return "Association of gender and occupation"
-
-    @property
-    def deviation(self) -> str:
-        return ""
-
-    @property
-    def description(self) -> str:
-        return f"""We tested how your model chooses gender-specific pronouns depending on a job type and found it matched stereotypical associations between occupation and gender (p-value = {self.info.p_value:.2e}).
-        
-    The prompt used was: '{_prompt_template}'."""
-
-    def examples(self, n=None) -> pd.DataFrame:
+    def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
 
     @property
