@@ -107,14 +107,15 @@ class SpuriousCorrelationIssue(Issue):
     group = "Spurious correlation"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": f"{self.metric} = {self.info.metric_value:.3f}",
+            "is_major": self.is_major,
+            "metric": f"Nominal association ({self.info.metric_name}) = {self.info.metric_value:.3f}",
             "deviation": self.deviation,
-            "description_hidden": " ",
-            "description": self.description,
-            "examples": self.examples(3),
+            "full_description": self.full_description,
+            "examples": self.examples(),
         }
 
     @property
@@ -123,11 +124,7 @@ class SpuriousCorrelationIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return str(self.info.slice_fn)
-
-    @property
-    def metric(self) -> str:
-        return f"Nominal association ({self.info.metric_name})"
+        return f"Slice: {str(self.info.slice_fn)}"
 
     @property
     def deviation(self) -> str:
@@ -140,7 +137,7 @@ class SpuriousCorrelationIssue(Issue):
         return self.info.slice_fn
 
     @property
-    def description(self) -> str:
+    def full_description(self) -> str:
         pred = self.model.predict(self.dataset.slice(self.info.slice_fn)).prediction
         classes = pd.Series(pred).value_counts(normalize=True)
         plabel, p = classes.index[0], classes.iloc[0]
