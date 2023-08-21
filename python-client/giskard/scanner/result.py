@@ -61,10 +61,10 @@ class ScanResult:
         df = pd.DataFrame(
             [
                 {
-                    "domain": issue.domain,
-                    "metric": issue.metric,
-                    "deviation": issue.deviation,
-                    "description": issue.description,
+                    "domain": issue.summary.get("domain"),
+                    "metric": issue.summary.get("metric"),
+                    "deviation": issue.summary.get("deviation"),
+                    "description": issue.summary.get("short_description"),
                 }
                 for issue in self.issues
             ]
