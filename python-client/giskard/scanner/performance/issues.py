@@ -51,33 +51,19 @@ class PerformanceIssue(Issue):
         return f"<PerformanceIssue slice='{self.info.slice_fn}', metric='{self.info.metric.name}', metric_delta={self.info.metric_rel_delta * 100:.2f}%>"
     
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
-            "domain": self.domain,
+            "group": self.group,
+            "domain": f"Slice: {str(self.info.slice_fn)}",
+            "is_major": self.is_major,
             "metric": f"{self.info.metric.name} = {self.info.metric_value_slice:.3f}",
             "submetric": f"Global = {self.info.metric_value_reference:.3f}",
-            "deviation": self.deviation,
-            "description_hidden": self.description,
+            "deviation": f"{self.info.metric_rel_delta * 100:+.2f}% than global",
+            "short_description": f"{self.info.slice_size} samples ({self.info.slice_size / len(self.dataset) * 100:.2f}%)",
             "description": f"For records in your dataset where {self.domain}, the {self.info.metric.name.lower()} is {abs(self.info.metric_rel_delta * 100):.1f}%  {'lower' if self.info.metric_rel_delta < 0 else 'higher'} than the global {self.info.metric.name.lower()}.",
-            "examples": self.examples(3),
+            "examples": self.examples(),
             "p_value": f"{self.info.p_value:.3f}" if self.info.p_value is not None else None,
         }
-
-    @property
-    def domain(self):
-        return str(self.info.slice_fn)
-
-    @property
-    def metric(self):
-        return f"{self.info.metric.name} = {self.info.metric_value_slice:.2f}"
-
-    @property
-    def deviation(self):
-        return f"{self.info.metric_rel_delta * 100:+.2f}% than global"
-
-    @property
-    def description(self):
-        return f"{self.info.slice_size} samples ({self.info.slice_size / len(self.dataset) * 100:.2f}%)"
 
     @property
     def features(self):
