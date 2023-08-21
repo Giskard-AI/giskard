@@ -124,7 +124,7 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._trans_table = str.maketrans(self._punctuation, " " * len(self._punctuation))
+        self._trans_table = str.maketrans("", "", self._punctuation)
         self._regex = re.compile(rf"\b[{re.escape(self._punctuation)}]+\b")
 
     def make_perturbation(self, text):

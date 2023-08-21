@@ -95,6 +95,7 @@ def test_punctuation_strip_transformation():
                 "Another @TEXT with → $UNICODE$ ← characters 😀",
                 "“And… PUNCTUATION! all SHOULD be fine — I HOPE!?”",
                 "This.., is my site.. http://www.example.com/, and ., it .,.,. http://stackoverflow.com rules!..",
+                "comma,separated,list",
             ]
         }
     )
@@ -111,6 +112,7 @@ def test_punctuation_strip_transformation():
     assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
     assert transformed_text[4] == "This is my site http://www.example.com/ and  it  http://stackoverflow.com rules"
+    assert transformed_text[5] == "comma separated list"
 
 
 def test_religion_based_transformation():
