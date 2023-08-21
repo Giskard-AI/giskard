@@ -87,33 +87,18 @@ class MinorityStereotypeIssue(Issue):
     group = "Stereotype"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": self.metric,
-            "description_hidden": f"{len(self.info.examples)} examples",
-            "description": self.description,
-            "examples": self.examples(20),
+            "is_major": self.is_major,
+            "metric": self.info.minority,
+            "deviation": "Minority stereotype",
+            "short_description": f"{len(self.info.examples)} examples",
+            "examples": self.examples(),
         }
 
-    @property
-    def domain(self) -> str:
-        return "Minority stereotype"
-
-    @property
-    def metric(self) -> str:
-        return self.info.minority
-
-    @property
-    def deviation(self) -> str:
-        num_ex = len(self.info.examples)
-        return f"{num_ex} example{'s' if num_ex > 1 else ''}"
-
-    @property
-    def description(self) -> str:
-        return ""
-
-    def examples(self, n=None) -> pd.DataFrame:
+    def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
 
     @property
