@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.SecurityUtils;
@@ -24,7 +25,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import tech.jhipster.config.JHipsterProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -56,15 +56,15 @@ public class AccountController {
 
     private final TokenProvider tokenProvider;
 
-    private final JHipsterProperties jHipsterProperties;
+    private final ApplicationProperties applicationProperties;
 
-    public AccountController(UserRepository userRepository, UserService userService, MailService mailService, TokenProvider tokenProvider, JHipsterProperties jHipsterProperties) {
+    public AccountController(UserRepository userRepository, UserService userService, MailService mailService, TokenProvider tokenProvider, ApplicationProperties applicationProperties) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
 
         this.tokenProvider = tokenProvider;
-        this.jHipsterProperties = jHipsterProperties;
+        this.applicationProperties = applicationProperties;
     }
 
 
@@ -73,7 +73,7 @@ public class AccountController {
     public String getSignupLink(@AuthenticationPrincipal UserDetails user) {
 
         String token = tokenProvider.createInvitationToken(userRepository.getOneByLogin(user.getUsername()).getEmail(), null);
-        return jHipsterProperties.getMail().getBaseUrl() + "/auth/signup?token=" + token;
+        return applicationProperties.getMailBaseUrl() + "/auth/signup?token=" + token;
     }
 
     /**

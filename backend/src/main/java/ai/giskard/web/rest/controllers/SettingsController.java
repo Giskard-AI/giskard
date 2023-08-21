@@ -9,8 +9,6 @@ import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.License;
 import ai.giskard.service.ee.LicenseException;
 import ai.giskard.service.ee.LicenseService;
-import ai.giskard.service.ml.MLWorkerSecretKey;
-import ai.giskard.service.ml.MLWorkerSecurityService;
 import ai.giskard.web.dto.config.AppConfigDTO;
 import ai.giskard.web.dto.config.LicenseDTO;
 import ai.giskard.web.dto.config.MLWorkerConnectionInfoDTO;
@@ -56,7 +54,6 @@ public class SettingsController {
     private final GeneralSettingsService settingsService;
     private final ApplicationProperties applicationProperties;
 
-    private final MLWorkerSecurityService mlWorkerSecurityService;
     private final LicenseService licenseService;
 
 
@@ -111,7 +108,6 @@ public class SettingsController {
     @GetMapping("/ml-worker-connect")
     public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() throws NoSuchAlgorithmException {
         String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
-        MLWorkerSecretKey key = mlWorkerSecurityService.registerVacantKey(currentUser);
 
         return MLWorkerConnectionInfoDTO.builder()
             .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
@@ -120,8 +116,6 @@ public class SettingsController {
             .serverVersion(buildVersion)
             .user(currentUser)
             .instanceLicenseId(licenseService.getCurrentLicense().getId())
-            .encryptionKey(key.toBase64())
-            .keyId(key.getKeyId())
             .build();
     }
 
