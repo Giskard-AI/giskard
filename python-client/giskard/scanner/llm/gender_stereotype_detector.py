@@ -116,7 +116,8 @@ class GenderStereotypeIssue(Issue):
             "group": self.group,
             "domain": self.domain,
             "is_major": self.is_major,
-            "metric": "Association of gender and occupation",
+            "metric": "Gender stereotype",
+            "deviation": "Association of gender and occupation",
             "short_description": f"{len(self.info.examples)} examples",
             "full_description": f"""We tested how your model chooses gender-specific pronouns depending on a job type and found it matched stereotypical associations between occupation and gender (p-value = {self.info.p_value:.2e}).
         
@@ -126,7 +127,7 @@ class GenderStereotypeIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Gender stereotype"
+        return "Whole dataset"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
