@@ -1,6 +1,9 @@
 # 🗣️Talk to your model
 
-To talk to your model, ou simply need [to wrap it into giskard](../wrap_model/index.md) and call the `talk` method:
+The **Talk to Your Model** feature allow you to engage in a *conversation* with your model in order to ask him to make
+predictions, explain those prediction and help understand those predictions.
+
+To talk to your model, you simply need [to wrap it into giskard](../wrap_model/index.md) and call the `talk` method:
 
 ```python
 import giskard
