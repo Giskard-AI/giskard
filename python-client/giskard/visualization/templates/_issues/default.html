@@ -1,35 +1,33 @@
 <tr class="gsk-issue text-sm group peer text-left cursor-pointer hover:bg-zinc-700">
     <td class="p-3">
         <code class="mono text-blue-300">
-        {{issue.visualization_attributes.domain|replace("&", "<br>")|safe}}
+        {{issue.summary.domain|replace("&", "<br>")|safe}}
     </code>
     </td>
-    {% if issue.visualization_attributes.metric %}
+    {% if issue.summary.metric %}
     <td class="p-3">
-        <span>{{ issue.visualization_attributes.metric }}</span>
-        {% if issue.visualization_attributes.submetric %}
+        <span>{{ issue.summary.metric }}</span>
+        {% if issue.summary.submetric %}
         <span class="text-gray-400">
-            ({{ issue.visualization_attributes.submetric }})
+            ({{ issue.summary.submetric }})
         </span>
         {% endif %}
     </td>
     {% endif %}
-    {% if issue.visualization_attributes.deviation %}
+    {% if issue.summary.deviation %}
     <td class="p-3">
-        <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
-            {{ issue.visualization_attributes.deviation }}
+        <span class="{{'text-red-400' if issue.summary.is_major else 'text-amber-200'}}">
+            {{ issue.summary.deviation }}
         </span>
     </td>
     {% endif %}
+    {% if issue.summary.short_description %}
     <td class="p-3">
         <span class="text-gray-400">
-            {% if issue.visualization_attributes.description_hidden %}
-            {{ issue.visualization_attributes.description_hidden|safe }}
-            {% else %}
-            {{ issue.visualization_attributes.description|safe }}
-            {% endif %}
+            {{ issue.summary.short_description|safe }}
         </span>
     </td>
+    {% endif %}
     <td class="p-3 text-xs text-right space-x-1">
         <a href="#" class="gsk-issue-detail-btn inline-block group-[.open]:hidden border border-zinc-100/50 text-zinc-100/90 hover:bg-zinc-500 hover:border-zinc-500 hover:text-white px-2 py-0.5 rounded-sm">Show details</a>
         <a href="#" class="hidden group-[.open]:inline-block gsk-issue-detail-btn border border-zinc-500 text-zinc-100/90 bg-zinc-500 hover:bg-zinc-400 hover:text-white px-2 py-0.5 rounded-sm">Hide details</a>
@@ -37,21 +35,23 @@
 </tr>
 <tr class="gsk-issue-detail text-left hidden  peer-[.open]:table-row border-b border-zinc-500 bg-zinc-700">
     <td colspan="10" class="p-3">
+        {% if issue.summary.full_description %}
         <h4 class="font-bold text-sm">Description</h4>
-        {{ issue.visualization_attributes.description|safe }}
+        {{ issue.summary.full_description|safe }}
+        {% endif %}
 
-        {% if issue.visualization_attributes.examples|length %}
+        {% if issue.summary.examples|length %}
         <h4 class="font-bold text-sm mt-4">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.visualization_attributes.examples.to_html(notebook=True)|replace("\\n", "<br>")|safe }}
+            {{ issue.summary.examples.to_html(notebook=True)|replace("\\n", "<br>")|safe }}
         </div>
         {% endif %}
 
-        {% if issue.visualization_attributes.p_value and issue.visualization_attributes.metric %}
+        {% if issue.summary.p_value and issue.summary.metric %}
         <h4 class="font-bold text-sm mt-4">Significance</h4>
         <p class="text-sm my-2">
-            The hypothesis that the <em>{{ issue.visualization_attributes.metric }}</em> on the data slice was different with respect
-            to the rest of the data was asserted with p-value = {{ issue.visualization_attributes.p_value }}.
+            The hypothesis that the <em>{{ issue.summary.metric }}</em> on the data slice was different with respect
+            to the rest of the data was asserted with p-value = {{ issue.summary.p_value }}.
         </p>
         {% endif %}
     </td>
