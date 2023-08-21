@@ -1,22 +1,6 @@
-### {{ issue.summary.domain }}
+#### {{ issue.summary.domain }} {% if issue.summary.short_description %}&nbsp;&nbsp;-&nbsp;&nbsp;{{issue.summary.short_description}}{% endif %}
 
-{% if issue.summary.short_description %}
-
-##### {{issue.summary.short_description}}
-
-{% endif %}
-
-{% if issue.summary.metric %}
-
-##### Metric: {{ issue.summary.metric }} {% if issue.summary.submetric %}({{ issue.summary.submetric }}){% endif %}
-
-{% endif %}
-
-{% if issue.summary.deviation %}
-
-##### Deviation: {{ issue.summary.deviation }}
-
-{% endif %}
+##### {% if issue.summary.metric %} METRIC: {{ issue.summary.metric }} {% if issue.summary.submetric %}({{ issue.summary.submetric }}){% endif %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% endif %}{% if issue.summary.deviation %}DEVIATION: {{ issue.summary.deviation }}{% endif %}
 
 {% if issue.summary.description %}
 {{ issue.summary.description }}
