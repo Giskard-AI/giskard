@@ -23,6 +23,20 @@ class Issue(ABC):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} level='{self.level}'>"
+    
+    @property
+    def summary(self) -> dict:
+        return {
+            "group": self.group,
+            "domain": self.domain,
+            "examples": self.examples(),
+        }
+    
+    @property
+    def json(self) -> dict:
+        summary_dict = self.summary.copy()
+        summary_dict["examples"] =  summary_dict["examples"].replace('\xa0', '', regex=True).to_dict(orient="records")
+        return summary_dict
 
     @property
     def is_major(self) -> bool:
@@ -35,21 +49,6 @@ class Issue(ABC):
     @property
     @abstractmethod
     def domain(self) -> str:
-        ...
-
-    @property
-    @abstractmethod
-    def metric(self) -> str:
-        ...
-
-    @property
-    @abstractmethod
-    def deviation(self) -> str:
-        ...
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
         ...
 
     @abstractmethod
