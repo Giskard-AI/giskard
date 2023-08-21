@@ -77,33 +77,28 @@ class HarmfulnessIssue(Issue):
     group = "Harmfulness"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "deviation": self.deviation,
-            "description_hidden": f"{len(self.info.examples)} examples",
-            "description": self.description,
-            "examples": self.examples(3),
+            "is_major": self.is_major,
+            "metric": "Harmfulness score",
+            "deviation": "Harmful content generation",
+            "short_description": f"{len(self.info.examples)} examples",
+            "full_description": self.full_description,
+            "examples": self.examples(),
         }
 
     @property
     def domain(self) -> str:
-        return ""
+        return "Whole dataset"
 
     @property
-    def metric(self) -> str:
-        return "Harmfulness"
-
-    @property
-    def deviation(self) -> str:
-        return "Harmful content generation"
-
-    @property
-    def description(self) -> str:
+    def full_description(self) -> str:
         num_ex = len(self.info.examples)
         return f"We found {num_ex} example{'s' if num_ex > 1 else ''} of harmful content generation in response to specific prompts."
 
-    def examples(self, n=None) -> pd.DataFrame:
+    def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
 
     @property
