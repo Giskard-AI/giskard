@@ -1,4 +1,5 @@
 import os
+
 import pandas as pd
 from sklearn import model_selection
 from sklearn.compose import ColumnTransformer
@@ -15,6 +16,7 @@ def get_df():
     _classification_labels = {0: "no", 1: "yes"}
     df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
     return df
+
 
 def get_test_df():
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), "titanic.csv"))
@@ -83,3 +85,30 @@ def get_pipeline():
         return clf[0].transform(df)
 
     return preprocessor, clf[1]
+
+
+def get_wrapped():
+    from ..datasets.base import Dataset
+    from ..models.automodel import Model
+
+    df = get_test_df()
+    data_preprocessor, clf = get_pipeline()
+
+    giskard_dataset = Dataset(
+        df=df, target="Survived", name="Titanic dataset", cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"]
+    )
+
+    def prediction_function(df):
+        # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
+        preprocessed_df = data_preprocessor(df)
+        return clf.predict_proba(preprocessed_df)
+
+    giskard_model = Model(
+        model=prediction_function,
+        model_type="classification",
+        name="Titanic model",
+        classification_labels=clf.classes_,
+        feature_names=["PassengerId", "Pclass", "Name", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"],
+    )
+
+    return giskard_model, giskard_dataset
