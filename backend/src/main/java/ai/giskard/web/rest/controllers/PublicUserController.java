@@ -1,5 +1,6 @@
 package ai.giskard.web.rest.controllers;
 
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.security.AuthoritiesConstants;
@@ -19,7 +20,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import tech.jhipster.config.JHipsterProperties;
 
 import javax.validation.constraints.Email;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class PublicUserController {
     private final UserRepository userRepository;
     private final MailService mailService;
     private final TokenProvider tokenProvider;
-    private final JHipsterProperties jHipsterProperties;
+    private final ApplicationProperties applicationProperties;
 
     private final GiskardMapper giskardMapper;
 
@@ -81,7 +81,7 @@ public class PublicUserController {
         }
 
         String token = tokenProvider.createInvitationToken(currentUser.getEmail(), email);
-        String inviteLink = jHipsterProperties.getMail().getBaseUrl() + "/auth/signup?token=" + token;
+        String inviteLink = applicationProperties.getMailBaseUrl() + "/auth/signup?token=" + token;
 
         mailService.sendUserSignupInvitationEmail(currentUser.getEmail(), email, inviteLink);
 

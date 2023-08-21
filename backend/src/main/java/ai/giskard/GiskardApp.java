@@ -1,6 +1,7 @@
 package ai.giskard;
 
 import ai.giskard.config.ApplicationProperties;
+import ai.giskard.config.GiskardConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +12,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import tech.jhipster.config.DefaultProfileUtil;
-import tech.jhipster.config.JHipsterConstants;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -39,22 +39,21 @@ public class GiskardApp {
      * <p>
      * Spring profiles can be configured with a program argument --spring.profiles.active=your-active-profile
      * <p>
-     * You can find more information on how profiles work with JHipster on <a href="https://www.jhipster.tech/profiles/">https://www.jhipster.tech/profiles/</a>.
      */
     @PostConstruct
     public void initApplication() {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
-                activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)
+            activeProfiles.contains(GiskardConstants.SPRING_PROFILE_DEVELOPMENT) &&
+                activeProfiles.contains(GiskardConstants.SPRING_PROFILE_PRODUCTION)
         ) {
             log.error(
                 "You have misconfigured your application! It should not run " + "with both the 'dev' and 'prod' profiles at the same time."
             );
         }
         if (
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
-                activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)
+            activeProfiles.contains(GiskardConstants.SPRING_PROFILE_DEVELOPMENT) &&
+                activeProfiles.contains(GiskardConstants.SPRING_PROFILE_CLOUD)
         ) {
             log.error(
                 "You have misconfigured your application! It should not " + "run with both the 'dev' and 'cloud' profiles at the same time."
@@ -69,7 +68,8 @@ public class GiskardApp {
      */
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GiskardApp.class);
-        DefaultProfileUtil.addDefaultProfile(app);
+        app.setDefaultProperties(Map.of("spring.profiles.default", GiskardConstants.SPRING_PROFILE_DEVELOPMENT));
+
         ConfigurableApplicationContext ctx = app.run(args);
         logApplicationStartup(ctx.getEnvironment());
     }

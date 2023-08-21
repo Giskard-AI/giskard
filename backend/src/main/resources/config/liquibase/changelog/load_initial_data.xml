@@ -3,15 +3,6 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
     <changeSet id="initial-data" author="andreyavtomonov">
-<!--        <loadData-->
-<!--            file="config/liquibase/data/user.csv"-->
-<!--            separator=";"-->
-<!--            tableName="jhi_user"-->
-<!--            usePreparedStatements="true">-->
-<!--            <column name="id" type="numeric"/>-->
-<!--            <column name="activated" type="boolean"/>-->
-<!--            <column name="created_date" type="timestamp"/>-->
-<!--        </loadData>-->
         <update tableName="giskard_users">
             <column name="role_id"/>
         </update>
@@ -24,14 +15,5 @@
             usePreparedStatements="true">
             <column name="name" type="string"/>
         </loadData>
-
-<!--        <loadData-->
-<!--            file="config/liquibase/data/user_role.csv"-->
-<!--            separator=";"-->
-<!--            tableName="jhi_user_role"-->
-<!--            usePreparedStatements="true">-->
-<!--            <column name="user_id" type="numeric"/>-->
-<!--        </loadData>-->
-
     </changeSet>
 </databaseChangeLog>

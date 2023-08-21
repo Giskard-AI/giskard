@@ -20,7 +20,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.util.Collections;
 
@@ -34,14 +33,13 @@ class JWTFilterTest {
 
     @BeforeEach
     public void setup() {
-        JHipsterProperties jHipsterProperties = new JHipsterProperties();
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
+        applicationProperties.setBase64JWTsecretKey(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
-        tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
+        tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
         ReflectionTestUtils.setField(tokenProvider, "key", Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret)));
 
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", 60000);
