@@ -25,12 +25,14 @@ def analytics_method(f):
 
     @wraps(f)
     def inner_function(*args, **kwargs):
+        if settings.disable_analytics:
+            return
+
         try:
-            if not settings.disable_analytics:
-                return f(*args, **kwargs)
+            return f(*args, **kwargs)
         except BaseException as e:  # NOSONAR
             try:
-                analytics.track("tracking error", {"error": str(e)})
+                _report_error(e, error_type="tracking error")
             except BaseException:  # NOSONAR
                 pass
 
@@ -52,14 +54,8 @@ def get_model_properties(model):
     if model is None:
         return {}
 
-    inner_model_class = (
-        fullname(model.model) if isinstance(model, WrapperModel) else None
-    )
-    feature_names = (
-        [anonymize(n) for n in model.meta.feature_names]
-        if model.meta.feature_names
-        else None
-    )
+    inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
+    feature_names = [anonymize(n) for n in model.meta.feature_names] if model.meta.feature_names else None
 
     return {
         "model_id": str(model.id),
@@ -74,11 +70,7 @@ def get_dataset_properties(dataset):
     if dataset is None:
         return {}
 
-    column_types = (
-        {anonymize(k): v for k, v in dataset.column_types.items()}
-        if dataset.column_types
-        else {}
-    )
+    column_types = {anonymize(k): v for k, v in dataset.column_types.items()} if dataset.column_types else {}
     column_dtypes = {anonymize(k): v for k, v in dataset.column_dtypes.items()}
 
     return {
@@ -90,17 +82,16 @@ def get_dataset_properties(dataset):
     }
 
 
-def _report_error(e):
+def _report_error(e, error_type = "python error"):
     exc = traceback.TracebackException.from_exception(e)
     is_giskard_error = False
-
     for frame in exc.stack:
         if not is_giskard_error and "giskard" in frame.filename:
             is_giskard_error = True
         frame.filename = os.path.relpath(frame.filename)
     if is_giskard_error:
         analytics.track(
-            "python error",
+            error_type,
             {
                 "exception": fullname(e),
                 "error message": str(e),
@@ -152,9 +143,12 @@ class GiskardAnalyticsCollector:
             "Giskard User": server_info.get("user"),
         }
 
-    @threaded
     @analytics_method
     def track(self, event_name, properties=None, meta=None, force=False):
+        return self._track(event_name, properties=properties, meta=meta, force=force)
+
+    @threaded
+    def _track(self, event_name, properties=None, meta=None, force=False):
         self.initialize_giskard_version()
         self.initialize_user_properties()
 
