@@ -467,17 +467,19 @@ class BaseModel(ABC):
     def to_mlflow(self):
         raise NotImplementedError
 
-    def talk(self, llm, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
+    def talk(self, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
         """
         Create a langchain agent that allow to talk to the ml model
 
         Args:
-            llm (BaseLanguageModel): The language model to be used for querying the ML model
             dataset (Optional[Dataset]): The dataset that allow to explain the predictions
             allow_dataset_queries (bool): When true the user have possibility to retrieve information for the dataset
             scan_result (Optional[ScanResult]): The result of the scan to allow give user more information about the model performances
         """
-        from ...llm.talk import create_ml_llm
+        from ...llm.talk.talk import create_ml_llm
+        from ...llm.config import get_default_llm
+
+        llm = get_default_llm()
 
         data_source_tools = []
         if allow_dataset_queries:
