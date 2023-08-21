@@ -31,17 +31,18 @@ class RobustnessIssue(Issue):
         super().__init__(model, dataset, level, info)
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": self.metric,
-            "deviation": self.deviation,
-            "description_hidden": " ",
-            "description": f"""When we perturb the content of feature "{ self.info.feature }” with the transformation
-                "{ self.info.transformation_fn.name }" (see examples below), your model changes its prediction in about
+            "is_major": self.is_major,
+            "metric": self.info.transformation_fn.name,
+            "deviation": f"{self.info.fail_ratio * 100:.2f}% of samples changed prediction after perturbation",
+            "full_description": f"""When we perturb the content of feature `{self.info.feature}` with the transformation
+                "{self.info.transformation_fn.name}", your model changes its prediction in about
                 {abs(self.info.fail_ratio * 100):.1f}% of the cases.
                 We expected the predictions not to be affected by this transformation.""",
-            "examples": self.examples(3),
+            "examples": self.examples(),
         }
 
     @property
@@ -51,18 +52,6 @@ class RobustnessIssue(Issue):
     @property
     def domain(self) -> str:
         return f"Feature `{self.info.feature}`"
-
-    @property
-    def metric(self) -> str:
-        return self.info.transformation_fn.name
-
-    @property
-    def deviation(self) -> str:
-        return f"{self.info.fail_ratio * 100:.2f}% of samples changed prediction after perturbation"
-
-    @property
-    def description(self) -> str:
-        return ""
 
     @lru_cache
     def examples(self, n=3) -> pd.DataFrame:
