@@ -58,30 +58,20 @@ class DataLeakageIssue(Issue):
     group = "Data Leakage"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "deviation": self.deviation,
-            "description_hidden": f"{self.info.samples.shape[0]} examples",
-            "description": self.description,
-            "examples": self.examples(3),
+            "is_major": self.is_major,
+            "deviation": "Model changes output when prediction is run on a single sample",
+            "short_description": f"{self.info.samples.shape[0]} examples",
+            "description": f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch.",
+            "examples": self.examples(),
         }
 
     @property
     def domain(self) -> str:
-        return "Whole dataset"
-
-    @property
-    def metric(self) -> str:
-        return "Prediction"
-
-    @property
-    def deviation(self) -> str:
-        return "Model changes output when prediction is run on a single sample"
-
-    @property
-    def description(self) -> str:
-        return f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch."
+        return "Whole dataset" 
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.samples.head(n)
