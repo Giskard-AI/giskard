@@ -1,23 +1,26 @@
-from __future__ import annotations
-
 import json
 from typing import Dict, Any
 from typing import Optional, Callable, List
 
 import pandas as pd
-from langchain import LLMChain
-from langchain.agents import AgentExecutor, ZeroShotAgent
-from langchain.agents.agent_toolkits.base import BaseToolkit
-from langchain.agents.mrkl.prompt import FORMAT_INSTRUCTIONS
-from langchain.base_language import BaseLanguageModel
-from langchain.callbacks.base import BaseCallbackManager
-from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
-from langchain.tools import BaseTool
+
+try:
+    from langchain import LLMChain
+    from langchain.agents import AgentExecutor, ZeroShotAgent
+    from langchain.agents.agent_toolkits.base import BaseToolkit
+    from langchain.agents.mrkl.prompt import FORMAT_INSTRUCTIONS
+    from langchain.base_language import BaseLanguageModel
+    from langchain.callbacks.base import BaseCallbackManager
+    from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
+    from langchain.tools import BaseTool
+except ImportError:
+    raise ImportError('To use "talk to my ML" feature, please install langchain using `pip install langchain`')
+
 from pydantic import BaseModel
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel as GiskardBaseModel
-from giskard.models.model_explanation import explain
+import giskard.models.model_explanation as model_explanation
 from giskard.scanner.result import ScanResult
 
 PredictionFunction = Callable[[pd.DataFrame], pd.Series]
@@ -47,44 +50,44 @@ class ModelSpec(BaseModel):
     dataset: Optional[Dataset]
     scan_result: Optional[ScanResult]
 
-    def predict(self, text: str) -> str:
+    def _parse_json_inputs(self, json_inputs: str) -> Dict[str, Any]:
+        features = json.loads(json_inputs)
+        # Filter only available features
+        required_features = set() if self.model.meta.feature_names is None else set(self.model.meta.feature_names)
+        features = {key: [features[key]] for key in features.keys() & required_features}
+        missing_features = required_features - features.keys()
+
+        if len(missing_features) > 0:
+            raise ValueError(f"Required features `{missing_features}` are not provided.")
+
+        return features
+
+    def predict(self, json_inputs: str) -> str:
         """Return the prediction of the model for a given row.
 
         Args:
-            text: JSON representation of the row as a dict.
+            json_inputs: JSON representation of the row as a dict.
         """
         try:
-            features = json.loads(text)
-            # Filter only available features
-            features = {key: [features[key]] for key in features.keys() & self.model.meta.feature_names}
-            missing_features = {feature for feature in self.model.meta.feature_names if feature not in features.keys()}
-
-            if len(missing_features) > 0:
-                raise ValueError(f"Required feature `{missing_features}` have not been provided.")
+            features = self._parse_json_inputs(json_inputs)
 
             return str(self.model.predict(Dataset(pd.DataFrame(features), validation=False)).prediction[0])
         except Exception as e:
             return repr(e)
 
-    def explain(self, text: str) -> str:
+    def explain(self, json_inputs: str) -> str:
         """Return an explanation of the prediction
 
         Args:
-            text: JSON representation of the row as a dict.
+            json_inputs: JSON representation of the row as a dict.
         """
         if self.dataset is None:
             return "Explanation is not available since no dataset has been provided"
 
         try:
-            features = json.loads(text)
-            # Filter only available features
-            features = {key: features[key] for key in features.keys() & self.model.meta.feature_names}
-            missing_features = {feature for feature in self.model.meta.feature_names if feature not in features.keys()}
+            features = self._parse_json_inputs(json_inputs)
 
-            if len(missing_features) > 0:
-                raise ValueError(f"Required feature `{missing_features}` have not been provided.")
-
-            return str(explain(self.model, self.dataset, features))
+            return str(model_explanation.explain(self.model, self.dataset, features))
         except Exception as e:
             return repr(e)
 
