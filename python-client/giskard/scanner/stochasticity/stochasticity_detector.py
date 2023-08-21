@@ -45,30 +45,21 @@ class StochasticityIssue(Issue):
     group = "Stochasticity"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "deviation": self.deviation,
-            "description_hidden": f"{self.info.samples.shape[0]} examples",
-            "description": self.description,
-            "examples": self.examples(3),
+            "is_major": self.is_major,
+            "metric": "Stochasticity",
+            "deviation": "Model provides different results at each execution",
+            "short_description": f"{self.info.samples.shape[0]} examples",
+            "full_description": f"We found {len(self.info.samples)} examples for which your model provides a different output at each execution.",
+            "examples": self.examples(),
         }
 
     @property
     def domain(self) -> str:
-        return ""
-
-    @property
-    def metric(self) -> str:
-        return "Stochasticity"
-
-    @property
-    def deviation(self) -> str:
-        return "Your model provides different results at each execution"
-
-    @property
-    def description(self) -> str:
-        return f"We found {len(self.info.samples)} examples for which your model provides a different output at each execution."
+        return "General"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.samples.head(n)
