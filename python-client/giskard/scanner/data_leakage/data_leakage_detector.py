@@ -65,7 +65,7 @@ class DataLeakageIssue(Issue):
             "is_major": self.is_major,
             "deviation": "Model changes output when prediction is run on a single sample",
             "short_description": f"{self.info.samples.shape[0]} examples",
-            "description": f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch.",
+            "full_description": f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch.",
             "examples": self.examples(),
         }
 
