@@ -1,5 +1,4 @@
 import pandas as pd
-from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -53,19 +52,18 @@ class CalibrationIssue(Issue):
 
     @property
     def domain(self):
-        return str(self.info.slice_fn)
-
-    @property
-    @abstractmethod
-    def metric(self):
-        ...
+        return f"Slice: {str(self.info.slice_fn)}"
 
     @property
     def deviation(self):
         return f"{self.info.metric_rel_delta * 100:.2f}% than global"
+    
+    @property
+    def submetric(self):
+        return f"Global = {self.info.metric_value_reference:.3f}"
 
     @property
-    def description(self):
+    def short_description(self):
         return f"{len(self.info.fail_idx)} out of {self.info.slice_size} samples"
 
     def _features(self):
@@ -109,20 +107,18 @@ class OverconfidenceIssue(CalibrationIssue):
     group = "Overconfidence"
 
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": f"{self.metric} = {self.info.metric_value_slice:.3f}",
-            "submetric": f"Global = {self.info.metric_value_reference:.3f}",
+            "is_major": self.is_major,
+            "metric": f"Overconfidence rate = {self.info.metric_value_slice:.3f}",
+            "submetric": self.submetric,
             "deviation": self.deviation,
-            "description_hidden": self.description,
-            "description": f"For records in your dataset where {self.domain}, we found a significantly higher number of overconfident wrong predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the wrong predictions in the data slice).",
-            "examples": self.examples(3),
+            "short_description": self.short_description,
+            "full_description": f"For records in your dataset where {self.domain}, we found a significantly higher number of overconfident wrong predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the wrong predictions in the data slice).",
+            "examples": self.examples(),
         }
-
-    @property
-    def metric(self) -> str:
-        return "Overconfidence rate"
 
     def generate_tests(self, with_names=False) -> list:
         abs_threshold = self.info.metric_value_reference * (1 + self.info.threshold)
@@ -148,27 +144,19 @@ class OverconfidenceIssue(CalibrationIssue):
 class UnderconfidenceIssue(CalibrationIssue):
     group = "Underconfidence"
 
-    _num_labels_display = 2
-
     @property
-    def visualization_attributes(self):
+    def summary(self):
         return {
+            "group": self.group,
             "domain": self.domain,
-            "metric": f"{self.metric} = {self.info.metric_value_slice:.3f}",
-            "submetric": f"Global = {self.info.metric_value_reference:.3f}",
+            "is_major": self.is_major,
+            "metric": f"Underconfidence rate = {self.info.metric_value_slice:.3f}",
+            "submetric": self.submetric,
             "deviation": self.deviation,
-            "description_hidden": self.description,
-            "description": f"For records in your dataset where {self.domain}, we found a significantly higher number of underconfident predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the predictions in the data slice).",
-            "examples": self.examples(3),
+            "short_description": self.description,
+            "full_description": f"For records in your dataset where {self.domain}, we found a significantly higher number of underconfident predictions ({len(self.info.fail_idx)} samples, corresponding to { abs(self.info.metric_value_slice * 100):.1f}% of the predictions in the data slice).",
+            "examples": self.examples(),
         }
-
-    @property
-    def metric(self) -> str:
-        return "Underconfidence rate"
-
-    @property
-    def deviation(self):
-        return f"{self.info.metric_rel_delta * 100:.2f}% than global"
 
     def generate_tests(self, with_names=False) -> list:
         abs_threshold = self.info.metric_value_reference * (1 + self.info.threshold)
