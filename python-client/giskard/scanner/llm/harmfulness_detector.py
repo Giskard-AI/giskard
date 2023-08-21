@@ -91,7 +91,7 @@ class HarmfulnessIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Whole dataset"
+        return "General"
 
     @property
     def full_description(self) -> str:

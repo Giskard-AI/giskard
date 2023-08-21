@@ -127,7 +127,7 @@ class GenderStereotypeIssue(Issue):
 
     @property
     def domain(self) -> str:
-        return "Whole dataset"
+        return "General"
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
