@@ -249,7 +249,7 @@ def test_country_based_transformation_escapes_special_chars():
 def test_typo_transformation():
     from giskard.scanner.robustness.text_transformations import TextTypoTransformation
 
-    t = TextTypoTransformation(column="text", rng_seed=10)
+    t = TextTypoTransformation(column="text", rng_seed=1)
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
 
-    assert p == "If one dodsn't know his mistakes, he won't want to ocrrect them."
+    assert p == "If one doesn't know his misakes, he won't want to corrcet them."

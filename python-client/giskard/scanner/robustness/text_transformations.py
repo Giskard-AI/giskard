@@ -92,13 +92,17 @@ class TextTypoTransformation(TextTransformation):
 
         # How many typos we generate and in which positions
         num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
-        pos = self.rng.choice(len(x), size=num_typos, replace=False)
 
         # Are they insertion, deletion, replacement, or transposition?
         pos_cat = self.rng.choice(4, size=num_typos, p=category_prob, replace=True)
-        for i, cat in zip(pos, pos_cat):
+
+        for cat in pos_cat:
+            # get a random position
+            i = self.rng.integers(0, len(x))
+
             if cat == 0:  # insertion
-                x = x[:i] + self._random_key_typo(x[i]) + x[i:]
+                t = self._random_key_typo(x[i])
+                x = x[:i] + t + x[i:]
             elif cat == 1:  # deletion
                 if x[i].isspace():  # don’t delete spaces
                     i = min(i + 1, len(x) - 1)
@@ -111,7 +115,7 @@ class TextTypoTransformation(TextTransformation):
         return x
 
     def _random_key_typo(self, char):
-        if char in self._key_typos:
+        if char.lower() in self._key_typos:
             typo = self.rng.choice(self._key_typos[char.lower()])
             return typo if char.islower() else typo.upper()
         return char
