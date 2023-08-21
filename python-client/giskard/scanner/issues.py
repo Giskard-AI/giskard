@@ -29,6 +29,7 @@ class Issue(ABC):
         return {
             "group": self.group,
             "domain": self.domain,
+            "is_major": self.is_major,
             "examples": self.examples(),
         }
     
