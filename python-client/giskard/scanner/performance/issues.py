@@ -54,7 +54,7 @@ class PerformanceIssue(Issue):
     def summary(self):
         return {
             "group": self.group,
-            "domain": f"Slice: {str(self.info.slice_fn)}",
+            "domain": self.domain,
             "is_major": self.is_major,
             "metric": f"{self.info.metric.name} = {self.info.metric_value_slice:.3f}",
             "submetric": f"Global = {self.info.metric_value_reference:.3f}",
@@ -64,6 +64,10 @@ class PerformanceIssue(Issue):
             "examples": self.examples(),
             "p_value": f"{self.info.p_value:.3f}" if self.info.p_value is not None else None,
         }
+    
+    @property
+    def domain(self):
+        return f"Slice: {str(self.info.slice_fn)}"
 
     @property
     def features(self):
