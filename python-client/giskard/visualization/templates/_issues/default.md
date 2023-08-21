@@ -1,33 +1,35 @@
-#### {{ issue.visualization_attributes.domain }}
+### {{ issue.summary.domain }}
 
-{% if issue.visualization_attributes.description_hidden %}
+{% if issue.summary.short_description %}
 
-##### {{issue.visualization_attributes.description_hidden}}
-
-{% endif %}
-
-{% if issue.visualization_attributes.metric %}
-
-##### Metric: {{ issue.visualization_attributes.metric }} {% if issue.visualization_attributes.submetric %}({{ issue.visualization_attributes.submetric }}){% endif %}
+##### {{issue.summary.short_description}}
 
 {% endif %}
 
-{% if issue.visualization_attributes.deviation %}
+{% if issue.summary.metric %}
 
-##### Deviation: {{ issue.visualization_attributes.deviation }}
+##### Metric: {{ issue.summary.metric }} {% if issue.summary.submetric %}({{ issue.summary.submetric }}){% endif %}
 
 {% endif %}
 
-{{ issue.visualization_attributes.description }}
+{% if issue.summary.deviation %}
 
-{% if issue.visualization_attributes.examples|length %}
+##### Deviation: {{ issue.summary.deviation }}
+
+{% endif %}
+
+{% if issue.summary.description %}
+{{ issue.summary.description }}
+{% endif %}
+
+{% if issue.summary.examples|length %}
 
 #### Examples
 
-{{issue.visualization_attributes.examples.to_markdown()}}
+{{issue.summary.examples.to_markdown()}}
 
 {% endif %}
 
-{% if issue.visualization_attributes.p_value and issue.visualization_attributes.metric %}
-The hypothesis that the {{ issue.visualization_attributes.metric }} on the data slice was different with respect to the rest of the data was asserted with p-value = {{ issue.visualization_attributes.p_value }}.
+{% if issue.summary.p_value and issue.summary.metric %}
+The hypothesis that the {{ issue.summary.metric }} on the data slice was different with respect to the rest of the data was asserted with p-value = {{ issue.summary.p_value }}.
 {% endif %}
