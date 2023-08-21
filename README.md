@@ -49,7 +49,7 @@ Giskard enables you to :
   - ✅ Overconfidence
   - ✅ Underconfidence
   - ✅ Unethical issue, etc.
-- **Generates relevant tests based on the vulnerabilities detected by the scan.** You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
+- **Generate relevant tests based on the vulnerabilities detected by the scan.** You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
 
 <p align="center">
   <img src="readme/scan_example.gif" alt="Scan Example" width="1000px">
