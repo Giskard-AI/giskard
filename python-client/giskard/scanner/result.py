@@ -7,8 +7,9 @@ from giskard.utils.analytics_collector import analytics, anonymize
 
 
 class ScanResult:
-    def __init__(self, issues):
+    def __init__(self, issues, as_html: bool = True):
         self.issues = issues
+        self.as_html = as_html
 
     def has_issues(self):
         return len(self.issues) > 0
@@ -19,8 +20,8 @@ class ScanResult:
 
         return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
-    def _ipython_display_(self, as_html=False):
-        if as_html:
+    def _ipython_display_(self):
+        if self.as_html:
             from IPython.core.display import display_html
             html = self._repr_html_()
             display_html(html, raw=True)
