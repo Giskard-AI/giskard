@@ -13,7 +13,7 @@ def test_diff_rmse_push(
     dataset: Dataset,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+    direction: Direction = Direction.Decreasing,
     debug: bool = False,
 ):
     if slicing_function:
@@ -39,8 +39,8 @@ def test_diff_f1_push(
     model: BaseModel,
     dataset: Dataset,
     slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.1,
-    direction: Direction = Direction.Invariant,
+    threshold: float = -0.1,
+    direction: Direction = Direction.Increasing,
     debug: bool = False,
 ):
     if slicing_function:
