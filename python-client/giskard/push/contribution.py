@@ -36,7 +36,7 @@ def create_contribution_push(model, ds, df):
                 feature=shap_res,
                 value=values[shap_res].values[0],
                 bounds=bounds,
-                model_type=SupportedModelTypes.REGRESSION,
+                model_type=model.meta.model_type,
                 correct_prediction=correct_prediction,
             )
 
