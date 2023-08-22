@@ -40,8 +40,8 @@ class MLWorker:
     ml_worker_id: str
     client: GiskardClient
 
-    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
-        client = None if is_server else GiskardClient(backend_url, api_key, hf_token)
+    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_token=None, hf_token=None) -> None:
+        client = None if is_server else GiskardClient(backend_url, api_token, hf_token)
         self.client = client
 
         ws_conn = self._create_websocket_client(backend_url, is_server, hf_token)
