@@ -65,11 +65,11 @@ def start_stop_options(func):
 @common_options
 @start_stop_options
 @click.option(
-    "--key",
-    "-k",
-    "api_key",
-    envvar="GSK_API_KEY",
-    help="Giskard server API key",
+    "--api-token",
+    "-t",
+    "api_token",
+    envvar="GSK_API_TOKEN",
+    help="Giskard server API token",
 )
 @click.option(
     "--daemon",
@@ -81,12 +81,11 @@ def start_stop_options(func):
 )
 @click.option(
     "--hf-token",
-    "-t",
     "hf_token",
     envvar="GSK_HF_TOKEN",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
 )
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token):
+def start_command(url: AnyHttpUrl, is_server, api_token, is_daemon, hf_token):
     """\b
     Start ML Worker.
 
@@ -101,20 +100,20 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token):
         "giskard-worker:start",
         {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
     )
-    api_key = initialize_api_key(api_key, is_server)
+    api_token = initialize_api_token(api_token, is_server)
     hf_token = initialize_hf_token(hf_token, is_server)
-    _start_command(is_server, url, api_key, is_daemon, hf_token)
+    _start_command(is_server, url, api_token, is_daemon, hf_token)
 
 
-def initialize_api_key(api_key, is_server):
+def initialize_api_token(api_token, is_server):
     if is_server:
         return None
-    if not api_key:
-        api_key = click.prompt("Enter Giskard server API key", type=str)
-    if "GSK_API_KEY" in os.environ:
-        # delete API key environment variable so that it doesn't get leaked when the test code is executed
-        del os.environ["GSK_API_KEY"]
-    return api_key
+    if not api_token:
+        api_token = click.prompt("Enter Giskard server API token", type=str)
+    if "GSK_API_TOKEN" in os.environ:
+        # delete API token environment variable so that it doesn't get leaked when the test code is executed
+        del os.environ["GSK_API_TOKEN"]
+    return api_token
 
 
 def initialize_hf_token(hf_token, is_server):
@@ -127,7 +126,7 @@ def initialize_hf_token(hf_token, is_server):
     return hf_token
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None):
+def _start_command(is_server, url: AnyHttpUrl, api_token, is_daemon, hf_token=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
     start_msg = "Starting ML Worker"
@@ -152,9 +151,9 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
                 logger.error("Daemon mode is not supported on Windows.")
                 return
 
-            run_daemon(is_server, url, api_key, hf_token)
+            run_daemon(is_server, url, api_token, hf_token)
         else:
-            ml_worker = MLWorker(is_server, url, api_key, hf_token)
+            ml_worker = MLWorker(is_server, url, api_token, hf_token)
             asyncio.get_event_loop().run_until_complete(ml_worker.start())
     except KeyboardInterrupt:
         logger.info("Exiting")
@@ -201,22 +200,27 @@ def stop_command(is_server, url, stop_all):
 @worker.command("restart", help="Restart ML Worker")
 @common_options
 @start_stop_options
-@click.option("--api-key", "-k", "api_key", help="Giskard server API key")
+@click.option(
+    "--api-token", 
+    "-t", 
+    "api_token", 
+    help="Giskard server API token"
+)
 @click.option(
     "--hf-token",
-    "-t",
+    "-h",
     "hf_token",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
 )
-def restart_command(is_server, url, api_key, hf_token):
+def restart_command(is_server, url, api_token, hf_token):
     analytics.track(
         "giskard-worker:restart",
         {"is_server": is_server, "url": anonymize(url)},
     )
-    api_key = initialize_api_key(api_key, is_server)
+    api_token = initialize_api_token(api_token, is_server)
 
     _find_and_stop(is_server, url)
-    _start_command(is_server, url, api_key, is_daemon=True, hf_token=hf_token)
+    _start_command(is_server, url, api_token, is_daemon=True, hf_token=hf_token)
 
 
 def _stop_pid_fname(pid_fname):
