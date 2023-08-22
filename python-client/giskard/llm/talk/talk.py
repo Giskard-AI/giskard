@@ -4,6 +4,8 @@ from typing import Optional, Callable, List
 
 import pandas as pd
 
+from ..config import llm_config
+
 try:
     from langchain import LLMChain
     from langchain.agents import AgentExecutor, ZeroShotAgent
@@ -101,9 +103,15 @@ class ModelSpec(BaseModel):
         if self.scan_result is None:
             return "The model should be scanned with Giskard first"
         majors = len([issue for issue in self.scan_result.issues if issue.is_major])
-        return (
-            "Not reliable" if majors > 5 else "Reliable" if len(self.scan_result.issues) < 5 else "Moderately reliable"
-        )
+
+        min_threshold, max_threshold = llm_config.talk.reliability_thresholds
+
+        if majors >= max_threshold:
+            return "Not reliable"
+        elif majors < min_threshold:
+            return "Reliable"
+        else:
+            return "Moderately reliable"
 
     class Config:
         arbitrary_types_allowed = True

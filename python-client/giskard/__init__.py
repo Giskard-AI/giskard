@@ -16,7 +16,7 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
 from . import demo
-from .llm.config import set_default_llm
+from .llm.config import llm_config
 from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
 from .utils.analytics_collector import analytics
@@ -55,5 +55,5 @@ __all__ = [
     "TestResult",
     "GiskardTest",
     "demo",
-    "set_default_llm",
+    "llm_config",
 ]

@@ -469,9 +469,7 @@ class BaseModel(ABC):
 
     def _llm_agent(self, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
         from ...llm.talk.talk import create_ml_llm
-        from ...llm.config import get_default_llm
-
-        llm = get_default_llm()
+        from ...llm.config import llm_config
 
         data_source_tools = []
         if allow_dataset_queries:
@@ -480,7 +478,7 @@ class BaseModel(ABC):
             from langchain.agents import create_pandas_dataframe_agent
             from langchain.tools import Tool
 
-            agent = create_pandas_dataframe_agent(llm, dataset.df, verbose=False)
+            agent = create_pandas_dataframe_agent(llm_config.default_llm, dataset.df, verbose=False)
             data_source_tools.append(
                 Tool.from_function(
                     func=agent.run,
@@ -491,7 +489,7 @@ class BaseModel(ABC):
                 )
             )
 
-        return create_ml_llm(llm, self, dataset, data_source_tools, scan_result)
+        return create_ml_llm(llm_config.default_llm, self, dataset, data_source_tools, scan_result)
 
     def talk(self, question: str, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
         return self._llm_agent(dataset, allow_dataset_queries, scan_result).run(question)

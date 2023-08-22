@@ -1,6 +1,5 @@
 import os
-
-DEFAULT_CONFIG = dict()
+from typing import Tuple
 
 
 def _get_openai():
@@ -18,21 +17,31 @@ def _get_openai():
     return OpenAI(temperature=0.1)
 
 
-def set_default_llm(default_llm=None):
-    if default_llm is None:
-        DEFAULT_CONFIG.pop("llm")
-        return
-
-    from langchain.base_language import BaseLanguageModel
-
-    if not isinstance(default_llm, BaseLanguageModel):
-        raise ValueError(
-            "Please make sure that the default llm provided is instance of `langchain.base_language.BaseLanguageModel`"
-        )
-
-    DEFAULT_CONFIG["llm"] = default_llm
+class _TalkConfig:
+    reliability_thresholds: Tuple[int, int] = 4, 6
 
 
-def get_default_llm():
-    # Lazily call _get_openai as fallback to avoid getting missing key or dependency errors when not required
-    return DEFAULT_CONFIG["llm"] if "llm" in DEFAULT_CONFIG else _get_openai()
+class _LlmConfig:
+    _default_llm = None
+    talk: _TalkConfig = _TalkConfig()
+
+    @property
+    def default_llm(self):
+        if self._default_llm is None:
+            # Lazily call _get_openai as fallback to avoid getting missing key or dependency errors when not required
+            self._default_llm = _get_openai()
+
+        return self._default_llm
+
+    def set_default_llm(self, default_llm=None):
+        from langchain.base_language import BaseLanguageModel
+
+        if default_llm is not None and not isinstance(default_llm, BaseLanguageModel):
+            raise ValueError(
+                "Please make sure that the default llm provided is instance of `langchain.base_language.BaseLanguageModel`"
+            )
+
+        self._default_llm = default_llm
+
+
+llm_config = _LlmConfig()
