@@ -3,7 +3,7 @@ import {defineStore} from "pinia";
 import {api} from "@/api";
 
 interface State {
-    pushes: { [modelId: string]: { [datasetId: string]: { [rowNb: number]: Pushes } } };
+    pushes: { [key: string]: Pushes };
     current: Pushes | undefined;
     identifier: PushIdentifier | undefined;
 }
@@ -27,16 +27,29 @@ export const usePushStore = defineStore('push', {
     state: (): State => ({
         pushes: {},
         current: undefined,
-        identifier: undefined
+        identifier: undefined,
     }),
     getters: {},
     actions: {
         async fetchPushSuggestions(modelId: string, datasetId: string, rowNb: number, inputData: any, modelFeatures: string[]) {
             this.identifier = {modelId, datasetId, rowNb, inputData, modelFeatures};
+            let identifierString = JSON.stringify({modelId, datasetId, rowNb, inputData, modelFeatures});
+            let previous = this.current;
             this.current = undefined;
 
-            // @ts-ignore
-            this.current = await api.getPushes(modelId, datasetId, rowNb, inputData);
+            let result = await api.getPushes(modelId, datasetId, rowNb, inputData);
+
+            if (previous == result) {
+                return;
+            }
+
+            let currentIdentifier = JSON.stringify(this.identifier);
+            if (currentIdentifier === identifierString) {
+                console.log("Setting pushes")
+                // @ts-ignore
+                this.current = result;
+            }
+
             return this.current;
         },
         async applyPush(pushKind: string, ctaKind: string): Promise<PushActionDTO> {
