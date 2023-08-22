@@ -11,6 +11,10 @@
               <v-simple-table>
                 <table class="w100">
                   <tr>
+                    <td>Giskard Instance URL</td>
+                    <td>{{ apiURL }}</td>
+                  </tr>
+                  <tr>
                     <td>Instance</td>
                     <td>{{ appSettings.generalSettings.instanceId }}</td>
                   </tr>
@@ -182,6 +186,7 @@ import {computed, onBeforeMount, ref, watch} from "vue";
 import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
+import { apiURL } from "@/env";
 import moment from "moment/moment";
 import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
