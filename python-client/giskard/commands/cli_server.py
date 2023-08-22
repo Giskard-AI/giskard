@@ -272,7 +272,7 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 
 %env GSK_EXTERNAL_ML_WORKER_HOST={tcp_addr.hostname}
 %env GSK_EXTERNAL_ML_WORKER_PORT={tcp_addr.port}
-%env GSK_API_KEY=...
+%env GSK_API_TOKEN=...
 !giskard worker start -d -u {http_tunnel.public_url}"""
     )
 
@@ -587,7 +587,7 @@ def clean(delete_data):
 
 @server.command("expose")
 @click.option(
-    "--token",
+    "--ngrok-token",
     "token",
     required=True,
     help="In case you have an ngrok account, you can use a token "
