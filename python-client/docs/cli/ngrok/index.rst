@@ -22,7 +22,7 @@ Copy the following key:
 
 3. Expose the giskard server
 ^^^^^^^^^^^^^^^^^^^^^^^
-Now you can run :code:`giskard server expose --token <ngrok_API_key>` which should prompt you with the following instructions:::
+Now you can run :code:`giskard server expose --ngrok-token <ngrok_API_key>` which should prompt you with the following instructions:::
 
     Exposing Giskard Server to the internet...
     Giskard Server is now exposed to the internet.
@@ -35,5 +35,5 @@ Now you can run :code:`giskard server expose --token <ngrok_API_key>` which shou
 
     %env GSK_EXTERNAL_ML_WORKER_HOST=<host>
     %env GSK_EXTERNAL_ML_WORKER_PORT=<port>
-    %env GSK_API_KEY=...
+    %env GSK_API_TOKEN=...
     !giskard worker start -d -u <ngrok_external_server_link>
