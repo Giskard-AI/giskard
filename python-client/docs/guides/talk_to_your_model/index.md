@@ -7,16 +7,18 @@ To talk to your model, you simply need [to wrap it into giskard](../wrap_model/i
 
 ```python
 import giskard
-
-giskard_model, giskard_dataset = giskard.demo.titanic_wrapped()
-
-# Create an agent capable of calling your model
 import os
+
+model, df = giskard.demo.titanic()
+giskard_dataset = giskard.Dataset(df=df, target="Survived", name="Titanic dataset")
+giskard_model = giskard.Model(model=model, model_type="classification",
+                              name="Titanic model that return yes if survived otherwise no",
+                              classification_labels=['no', 'yes'])
 
 # Set up your OpenAI API key, by default we are using GPT 3.5
 os.environ['OPENAI_API_KEY'] = 'sk-...'
 
-# Query your agent
+# Talk to your model
 print(giskard_model.talk('What is this model doing?'))
 print(giskard_model.talk('Can you tell me if "Webber, Miss. Susan" survived the titanic crash?', giskard_dataset, True))
 print(giskard_model.talk('Can you explain me why you predicted that "Webber, Miss. Susan" survived the titanic crash?',
