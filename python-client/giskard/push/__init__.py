@@ -297,7 +297,7 @@ class PerturbationPush(FeaturePush):
         self.value_perturbed = transformation_info.value_perturbed
         self.transformation_functions = transformation_info.transformation_functions
         self.transformation_functions_params = transformation_info.transformation_functions_params
-        if np.issubdtype(self.value, np.number):
+        if self.transformation_functions_params:
             self.tests = [test_metamorphic_invariance_with_mad]
             self.test_params = self.transformation_functions_params[0]
             self.push_title = (
