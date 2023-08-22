@@ -98,6 +98,10 @@ class MinorityStereotypeIssue(Issue):
             "examples": self.examples(),
         }
 
+    @property
+    def domain(self) -> str:
+        return "General"
+
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples.head(n)
 
