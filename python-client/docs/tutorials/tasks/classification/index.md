@@ -62,3 +62,9 @@
 :link: ../../../reference/notebooks/wage_classification.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center> 👍 Customer churn prediction</center></h3>
+:link: ../../../reference/notebooks/churn_prediction_lgbm.ipynb
+:::
+:::::

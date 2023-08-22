@@ -14,3 +14,9 @@
 :link: ../../../reference/notebooks/insurance_prediction_lgbm.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center> 👍 Customer churn prediction</center></h3>
+:link: ../../../reference/notebooks/churn_prediction_lgbm.ipynb
+:::
+:::::
