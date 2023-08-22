@@ -37,6 +37,6 @@ from langchain.llms import Cohere
 llm = Cohere()
 
 # Set your llm globally
-giskard.set_default_llm(llm)
+giskard.llm_config.set_default_llm(llm)
 ```
 
