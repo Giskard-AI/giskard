@@ -55,7 +55,7 @@ const needFetchWithHFAccessToken = ref<boolean | null>(null);
 const generateMLWorkerConnectionInstruction = (hfspaceToken=null) => {
     if (mainStore.appSettings!.isRunningOnHfSpaces && hfspaceToken) {
         try {
-            return `giskard worker start -u ${apiURL} -t ${hfspaceToken}`;
+            return `giskard worker start -u ${apiURL} --hf-token ${hfspaceToken}`;
         } catch (error) {
             console.error(error);
         }
