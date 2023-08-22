@@ -89,13 +89,13 @@ Giskard executes your model using an worker that runs directly the model in your
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN
+            !giskard worker start -d -t YOUR_API_TOKEN
 
       - If Giskard server is installed on an **external server** (for instance in AWS ec2 instance), run in your notebook:
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+            !giskard worker start -d -t YOUR_API_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -125,7 +125,7 @@ Giskard executes your model using an worker that runs directly the model in your
             %env GSK_EXTERNAL_ML_WORKER_HOST=4.tcp.ngrok.io
             %env GSK_EXTERNAL_ML_WORKER_PORT=10853
             %env GSK_API_TOKEN=YOUR_API_KEY
-            !giskard worker start -d -k YOUR_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
+            !giskard worker start -d -t YOUR_API_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
 
       - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance):
 
@@ -133,7 +133,7 @@ Giskard executes your model using an worker that runs directly the model in your
 
          .. code-block:: sh
 
-               !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+               !giskard worker start -d -t YOUR_API_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
 
       .. hint:: To see the available commands of the worker, you can execute:
 
