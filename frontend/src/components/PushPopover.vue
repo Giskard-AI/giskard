@@ -4,7 +4,7 @@
       <v-tooltip right>
         <template v-slot:activator='{ on: onTooltip }'>
           <v-btn small icon outlined color="warning" class="ml-1 ripple"
-                 v-on="{ ...onMenu, ...onTooltip }">
+                 v-on="{ ...onMenu, ...onTooltip }" v-if="show">
             <div class="rim1"></div>
             <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
           </v-btn>
@@ -69,7 +69,7 @@ const debuggingStore = useDebuggingSessionsStore();
 
 interface Props {
   type: string;
-  column: string;
+  column?: string;
 }
 
 const props = defineProps<Props>();
@@ -83,15 +83,19 @@ const value = computed(() => {
 const show = computed(() => {
   switch (props.type) {
     case "contribution":
+      if (value.value?.contribution.kind == 'Invalid') return false;
       return value.value?.contribution.key == props.column;
     case "perturbation":
+      if (value.value?.perturbation.kind == 'Invalid') return false;
       return value.value?.perturbation.key == props.column;
     case "overconfidence":
+      if (value.value?.overconfidence.kind == 'Invalid') return false;
       return value.value?.overconfidence.pushTitle && value.value?.overconfidence.pushTitle != "";
     case "borderline":
+      if (value.value?.borderline.kind == 'Invalid') return false;
       return value.value?.borderline.pushTitle && value.value?.borderline.pushTitle != "";
     default:
-      return undefined;
+      return false;
   }
 })
 
@@ -147,7 +151,7 @@ async function applyCta(kind: string) {
       mainStore.addSimpleNotification("Perturbation saved");
       break;
     case "OpenDebuggerBorderline":
-      debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: false});
+      debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: false});
       break;
     case "OpenDebuggerOverconfidence":
       // Programmatically apply Overconfidence filter

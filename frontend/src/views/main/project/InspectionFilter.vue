@@ -99,7 +99,7 @@ const filterTypes = computed(() => [
     label: isClassification(props.modelType) ? 'Incorrect Predictions' : 'Most distant predictions (top 15%)',
     disabled: !props.isTargetAvailable
   },
-  {value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: !props.isTargetAvailable},
+  {value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: !props.isTargetAvailable},
   {value: RowFilterType.CUSTOM, label: 'Custom'}
 ]);
 
