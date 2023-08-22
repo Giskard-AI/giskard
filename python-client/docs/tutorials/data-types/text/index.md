@@ -33,3 +33,8 @@
 :::
 :::::
 
+:::::{grid-item}
+:::{card} <h3><center> 🗞️ Newspaper classification</center></h3>
+:link: ../../../reference/notebooks/newspaper_classification_pytorch.ipynb
+:::
+:::::
