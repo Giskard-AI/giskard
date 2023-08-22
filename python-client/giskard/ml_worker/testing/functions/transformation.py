@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.push.utils import compute_mad
+from scipy.stats import median_abs_deviation
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],
@@ -140,6 +140,10 @@ def change_writing_style(
 
     x.at[index, column_name] = chain_rewrite.run({"text": x.at[index, column_name], "style": style})
     return x
+
+
+def compute_mad(x):
+    return median_abs_deviation(x, scale=1)
 
 
 @transformation_function(name="MAD Increment", tags=["num"], row_level=False)

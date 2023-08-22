@@ -11,6 +11,7 @@ from giskard.push.utils import TransformationInfo
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
+from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.testing.tests.statistic import test_theil_u
 import numpy as np
 
@@ -59,6 +60,15 @@ def one_sample_underconfidence_test(model: BaseModel, saved_example: Dataset):
     if model.is_classification:
         test_result = test_underconfidence_rate(model, saved_example).execute()
         return TestResult(passed=test_result.passed, metric=test_result.metric)
+
+
+@test(name="Numerical Invariance test", tags=["custom"])
+def test_metamorphic_invariance_with_mad(model: BaseModel, dataset: Dataset, column_name: str, value_added: float):
+    return test_metamorphic_invariance(
+        model=model,
+        dataset=dataset,
+        transformation_function=mad_transformation(column_name=column_name, value_added=value_added),
+    ).execute()
 
 
 class ExamplePush(Push):
@@ -269,7 +279,8 @@ class ContributionPush(FeaturePush):
 
 class PerturbationPush(FeaturePush):
     value_perturbed: list = None
-    transformation_function: list = None
+    transformation_functions: list = None
+    transformation_functions_params: list = None
     details = [
         {
             "action": "Generate a metamorphic invariance test that slightly perturbs this feature",
@@ -285,13 +296,14 @@ class PerturbationPush(FeaturePush):
         self.value = value
         self.value_perturbed = transformation_info.value_perturbed
         self.transformation_functions = transformation_info.transformation_functions
-        self.tests = [test_metamorphic_invariance]
-        self.test_params = {"transformation_function": self.transformation_functions}
-        print(type(self.value))
-
+        self.transformation_functions_params = transformation_info.transformation_functions_params
         if np.issubdtype(self.value, np.number):
+            self.tests = [test_metamorphic_invariance_with_mad]
+            self.test_params = self.transformation_functions_params[0]
             self.push_title = (
                 f"Adding {round(self.value_perturbed[0] - self.value,2)} to {self.feature} makes the prediction change"
             )
         else:
-            self.push_title = f"Perturbing {self.feature} into {self.value_perturbed} makes the prediction change"
+            self.tests = [test_metamorphic_invariance]
+            self.test_params = {"transformation_function": self.transformation_functions[0]}
+            self.push_title = f"Perturbing {self.feature} into {self.value_perturbed[0]} makes the prediction change"

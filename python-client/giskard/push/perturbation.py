@@ -2,14 +2,9 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions.transformation import mad_transformation
+from giskard.ml_worker.testing.functions.transformation import compute_mad, mad_transformation
 from giskard.models.base.model import BaseModel
-from giskard.push.utils import (
-    SupportedPerturbationType,
-    TransformationInfo,
-    coltype_to_supported_perturbation_type,
-    compute_mad,
-)
+from giskard.push.utils import SupportedPerturbationType, TransformationInfo, coltype_to_supported_perturbation_type
 from giskard.scanner.robustness.text_transformations import (
     TextGenderTransformation,
     TextLowercase,
@@ -48,9 +43,12 @@ def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
 def apply_perturbation(model, ds, df, feature, coltype):
     transformation_function = list()
     value_perturbed = list()
+    transformation_functions_params = list()
     passed = False
     # Create a slice of the dataset with only the row to perturb
-    ds_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
+    ds_slice = Dataset(
+        df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False
+    )  # name=One-Sample test (Overconfidence): sample of <dataset:1234> using <model:1234> One-Sample of <dataset:1234> for overconfidence test using <model:1234>
 
     # Create a copy of the slice to apply the transformation
     ds_slice_copy = ds_slice.copy()
@@ -84,6 +82,7 @@ def apply_perturbation(model, ds, df, feature, coltype):
                     if perturbed:
                         value_perturbed.append(transformed.df[feature].values.item(0))
                         transformation_function.append(t)
+                        transformation_functions_params.append(dict(column_name=feature, value_added=float(value)))
                     else:
                         break
         if len(transformation_function):
@@ -110,8 +109,13 @@ def apply_perturbation(model, ds, df, feature, coltype):
 
     value_perturbed.reverse()
     transformation_function.reverse()
+    transformation_functions_params.reverse()
     return (
-        TransformationInfo(value_perturbed=value_perturbed, transformation_functions=transformation_function)
+        TransformationInfo(
+            value_perturbed=value_perturbed,
+            transformation_functions=transformation_function,
+            transformation_functions_params=transformation_functions_params,
+        )
         if passed
         else None
     )

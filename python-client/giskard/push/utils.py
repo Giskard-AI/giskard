@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import numpy as np
-from scipy.stats import median_abs_deviation
 from enum import Enum
 
 
@@ -39,14 +38,11 @@ def bins_count(model, dataframe):  # done at the beggining
     return value_counts
 
 
-def compute_mad(x):
-    return median_abs_deviation(x, scale=1)
-
-
 @dataclass
 class TransformationInfo:
     value_perturbed: list
     transformation_functions: list
+    transformation_functions_params: list
 
 
 def coltype_to_supported_perturbation_type(coltype: str) -> SupportedPerturbationType:
