@@ -67,6 +67,8 @@ const apiAccessToken = ref<JWTToken | null>(null);
 async function generateToken() {
   const loadingNotification = { content: 'Generating...', showProgress: true };
   try {
+    apiAccessToken.value = null;  // Set token to null to force render of CodeSnippet
+
     mainStore.addNotification(loadingNotification);
     mainStore.removeNotification(loadingNotification);
 
