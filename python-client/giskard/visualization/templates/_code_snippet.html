@@ -1,6 +1,6 @@
 <div class="p-4">
     <h2 class="my-4 mr-2 font-medium">Debug your issues in the Giskard server</h2>
-    
+
     <p class="text-sm my-1">
         Install the Giskard server app to:
     </p>
@@ -19,7 +19,7 @@
 test_suite = results.generate_test_suite("My first test suite")
 
 # Upload your test suite to your Giskard server instance
-client = GiskardClient("http://localhost:19000", "GISKARD_API_KEY")
+client = GiskardClient("http://localhost:19000", "GISKARD_API_TOKEN")
 client.create_project("my_project_id", "my_project_name")
 test_suite.upload(client, "my_project_id"){% endraw %}
 </code></pre>
