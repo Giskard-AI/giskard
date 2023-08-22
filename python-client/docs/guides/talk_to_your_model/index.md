@@ -13,15 +13,30 @@ giskard_model, giskard_dataset = giskard.demo.titanic_wrapped()
 # Create an agent capable of calling your model
 import os
 
+# Set up your OpenAI API key, by default we are using GPT 3.5
 os.environ['OPENAI_API_KEY'] = 'sk-...'
 
-from langchain.llms import OpenAI
-
-llm = OpenAI(temperature=0.1)
-agent = giskard_model.talk(llm, giskard_dataset, True)
-
 # Query your agent
-print(agent.run('Can you tell me if "Webber, Miss. Susan" survived the titanic crash?'))
-print(agent.run('Can you explain me why you predicted that "Webber, Miss. Susan" survived the titanic crash?'))
-print(agent.run('Is this model reliable?'))
+print(giskard_model.talk('What is this model doing?'))
+print(giskard_model.talk('Can you tell me if "Webber, Miss. Susan" survived the titanic crash?', giskard_dataset, True))
+print(giskard_model.talk('Can you explain me why you predicted that "Webber, Miss. Susan" survived the titanic crash?',
+                         giskard_dataset, True))
 ```
+
+## Using a custom language model
+
+By default, GPT 3.5 will be used to generate response. You can use
+any [language model](https://python.langchain.com/docs/modules/model_io/models/) by setting the default llm globally
+using `giskard.set_default_llm`:
+
+```python
+import giskard
+from langchain.llms import Cohere
+
+# Create your llm
+llm = Cohere()
+
+# Set your llm globally
+giskard.set_default_llm(llm)
+```
+
