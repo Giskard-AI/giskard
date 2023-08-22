@@ -115,7 +115,7 @@ Giskard executes your model using an worker that runs directly the model in your
 
          .. code-block:: sh
 
-               giskard server expose --token <ngrok_API_token>
+               giskard server expose --ngrok-token <ngrok_API_token>
 
          Read the flowing `instructions <https://docs.giskard.ai/en/latest/cli/ngrok/index.html>`_ in order to get the
          :code:`ngrok_API_token`. Then run the below 4 lines of code in a **cell of your Colab notebook**:
