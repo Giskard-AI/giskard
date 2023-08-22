@@ -74,3 +74,9 @@
 :link: ../../../reference/notebooks/newspaper_classification_pytorch.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center> ✈️ Airline tweets sentiment analysis</center></h3>
+:link: ../../../reference/notebooks/twitter_sentiment_analysis_huggingface.ipynb
+:::
+:::::
