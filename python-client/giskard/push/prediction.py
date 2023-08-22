@@ -29,7 +29,13 @@ def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
 
 def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
     if model.is_classification:
-        row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
+        row_slice = Dataset(
+            df=df,
+            target=ds.target,
+            column_types=ds.column_types.copy(),
+            validation=False,
+            name=f"One-Sample of <dataset:{ds.id}> for underconfidence test using <model:{model.id}>",
+        )
         values = row_slice.df
         target_value = values[ds.target].values.item()
         prediction_results = model.predict(row_slice)
