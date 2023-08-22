@@ -51,7 +51,7 @@ public class TokenProvider {
 
     public TokenProvider(ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
-        String base64SecretProperty = applicationProperties.getBase64JWTsecretKey();
+        String base64SecretProperty = applicationProperties.getBase64JwtSecretKey();
         String secretProperty = applicationProperties.getJwtSecretKey();
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);

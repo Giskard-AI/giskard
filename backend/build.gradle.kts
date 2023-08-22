@@ -192,7 +192,6 @@ dependencies {
     implementation("org.springframework.security:spring-security-messaging")
     implementation("org.springframework.security:spring-security-web")
     implementation("org.testcontainers:postgresql:1.18.3")
-    implementation("org.zalando:problem-spring-web-starter:0.27.0")
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.1")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")

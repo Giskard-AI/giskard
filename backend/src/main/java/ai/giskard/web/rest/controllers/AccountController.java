@@ -16,6 +16,8 @@ import ai.giskard.web.rest.errors.InvalidPasswordException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
 import ai.giskard.web.rest.vm.ManagedUserVM;
 import ai.giskard.web.rest.vm.TokenAndPasswordVM;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +28,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import java.util.Optional;
 
 import static ai.giskard.security.AuthoritiesConstants.ADMIN;

@@ -143,19 +143,21 @@ spring:
     execution:
       thread-name-prefix: giskard-task-
       pool:
-        core-size: 2
-        max-size: 50
-        queue-capacity: 10000
+          core-size: 2
+          max-size: 50
+              queue-capacity: 10000
     scheduling:
-      thread-name-prefix: giskard-scheduling-
-      pool:
-        size: 2
+        thread-name-prefix: giskard-scheduling-
+        pool:
+            size: 2
   thymeleaf:
-    mode: HTML
+      mode: HTML
   output:
-    ansi:
-      console-available: true
-
+      ansi:
+          console-available: true
+  mvc:
+      problemdetails:
+          enabled: true
 server:
   servlet:
     session:

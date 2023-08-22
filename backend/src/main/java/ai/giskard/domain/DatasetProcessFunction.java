@@ -5,6 +5,7 @@ import ai.giskard.web.dto.DatasetProcessFunctionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ public abstract class DatasetProcessFunction extends Callable {
     @Column
     private String projectKey;
     @Column(nullable = false)
+    @ColumnDefault("false")
     private boolean cellLevel;
     @Column
     private String columnType;
@@ -25,3 +27,4 @@ public abstract class DatasetProcessFunction extends Callable {
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Map<String, Object>> clauses; // NOSONAR
 }
+
