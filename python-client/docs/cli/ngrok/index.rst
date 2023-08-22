@@ -12,7 +12,7 @@ You will be prompted by the following:
 
 You would need to have either :code:`Google Authenticator` or :code:`1Password` on your phone to generate codes.
 
-2. Generate an API key `here <https://dashboard.ngrok.com/get-started/your-authtoken>`_
+2. Generate a Ngrok API key `here <https://dashboard.ngrok.com/get-started/your-authtoken>`_
 ^^^^^^^^^^^^^^^^^^^^^^^
 Copy the following key:
 
