@@ -1,3 +1,15 @@
+"""
+perturbation.py
+
+Functions for perturbation analysis.
+
+Functions:
+
+- create_perturbation_push: Create perturbation push.
+- apply_perturbation: Apply perturbation to feature.
+- check_after_perturbation: Check if perturbation changed prediction.
+
+"""
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
@@ -28,6 +40,7 @@ text_transfo_list = [
 
 
 def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
+    """Create perturbation push by applying transformations."""
     for feat, coltype in ds.column_types.items():
         coltype = coltype_to_supported_perturbation_type(coltype)
         transformation_info = apply_perturbation(model, ds, df, feat, coltype)
@@ -41,6 +54,7 @@ def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
 
 
 def apply_perturbation(model, ds, df, feature, coltype):
+    """Apply perturbation to given feature and check prediction."""
     transformation_function = list()
     value_perturbed = list()
     transformation_functions_params = list()
@@ -122,6 +136,7 @@ def apply_perturbation(model, ds, df, feature, coltype):
 
 
 def check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset):
+    """Check if perturbation changed prediction."""
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         # Compute the probability of the reference row
         ref_pred = model.predict(ref_row).prediction[0]

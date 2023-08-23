@@ -1,3 +1,14 @@
+"""
+prediction.py
+
+Functions for model prediction.
+
+Functions:
+
+- create_overconfidence_push: Create overconfidence push from prediction.
+- create_borderline_push: Create borderline/underconfidence push.
+
+"""
 import pandas as pd
 
 from giskard.datasets.base import Dataset
@@ -11,6 +22,7 @@ from ..push import BorderlinePush, OverconfidencePush
 
 
 def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """Create overconfidence push from model prediction."""
     if model.is_classification:
         row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
 
@@ -28,6 +40,7 @@ def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
 
 
 def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """Create borderline/underconfidence push from prediction."""
     if model.is_classification:
         row_slice = Dataset(
             df=df,

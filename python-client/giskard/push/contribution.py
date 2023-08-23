@@ -1,3 +1,16 @@
+"""
+contribution.py
+
+Functions for contribution analysis.
+
+Functions:
+
+- create_contribution_push: Create contribution push.
+- detect_shap_outlier: Detect outlier SHAP value.
+- get_shap_values: Get SHAP values for example.
+- existing_shap_values: Check if SHAP values exist.
+
+"""
 import numpy as np
 import pandas as pd
 from scipy.stats import zscore
@@ -12,6 +25,7 @@ from .utils import slice_bounds
 
 
 def create_contribution_push(model, ds, df):
+    """Create contribution push from SHAP values."""
     if existing_shap_values(ds):
         shap_res = detect_shap_outlier(model, ds, df)
         slice_df = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
@@ -42,6 +56,7 @@ def create_contribution_push(model, ds, df):
 
 
 def detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """Detect outlier SHAP value."""
     feature_shap = get_shap_values(model, ds, df)
     keys = list(feature_shap.keys())
 
@@ -54,6 +69,7 @@ def detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
 
 
 def get_shap_values(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """Get SHAP values for example."""
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         return explain(model, ds, df.iloc[0])["explanations"][model.meta.classification_labels[0]]
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
@@ -61,6 +77,7 @@ def get_shap_values(model: BaseModel, ds: Dataset, df: pd.DataFrame):
 
 
 def existing_shap_values(ds: Dataset):
+    """Check if SHAP values exist for features."""
     feature_types = list(ds.column_types.values())
     if "text" in feature_types:
         feature_types.remove("text")
