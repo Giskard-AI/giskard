@@ -13,7 +13,6 @@ from giskard.testing.tests.calibration import test_overconfidence_rate, test_und
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.testing.tests.statistic import test_theil_u
-import numpy as np
 
 
 class Push:
