@@ -45,7 +45,7 @@ class FeedbackControllerIT {
         restFeedbackMockMvc
             .perform(delete("/api/v2/feedbacks/{feedbackId}", 1L)
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isForbidden());
     }
 
     @Test
@@ -75,8 +75,9 @@ class FeedbackControllerIT {
         restFeedbackMockMvc
             .perform(delete("/api/v2/feedbacks/{feedbackId}", feedback.getId())
                 .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.title").value("Unauthorized: Delete Feedback not possible for your role"));
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.title").value("Unauthorized"))
+            .andExpect(jsonPath("$.detail").value("Unauthorized to Delete Feedback"));
 
 
         Assertions.assertThat(feedbackRepository.findOneById(feedback.getId()))
