@@ -223,12 +223,12 @@ class ContributionPush(FeaturePush):
                 },
                 {
                     "action": "Automatically generate a test ",
-                    "explanation": "Theil`s U test will help you check the correlation on the whole dataset, check our documentation for more info",
+                    "explanation": f"Theil`s U test will help you check the nominal association between {self.slicing_function.query} and the predicted label on the whole dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "See similar examples",
+                    "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
@@ -245,12 +245,12 @@ class ContributionPush(FeaturePush):
                 },
                 {
                     "action": "Automatically generate a test",
-                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset, check our documentation for more info",
+                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "See similar examples",
+                    "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
