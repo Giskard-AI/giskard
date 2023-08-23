@@ -1,18 +1,20 @@
 """
-utils.py
+Utility functions for model debugging notifications.
 
-Utility functions for model debugging.
+Classes:
+- SupportedPerturbationType: Enumeration of supported perturbation types.
+- TransformationInfo: Dataclass to hold perturbation info.
 
 Functions:
 
-- slice_bounds: Get value bounds to slice dataset on a feature.
-- bins_count: Count bins for categorical features.  
-- TransformationInfo: Dataclass to hold perturbation info.
+- slice_bounds: Get quartile bounds values to slice Giskard dataset on a numerical feature.
 - coltype_to_supported_perturbation_type: Map column type to perturbation type enum.
 
 """
 
 from dataclasses import dataclass
+from typing import List, Union
+from giskard import Dataset
 import numpy as np
 from enum import Enum
 
@@ -24,16 +26,25 @@ class SupportedPerturbationType(Enum):
     TEXT = "text"
 
 
-def slice_bounds(feature, value, ds):
-    """Get bounds to slice dataset based on a feature value.
+@dataclass
+class TransformationInfo:
+    """Class to hold perturbation transformation information."""
+
+    value_perturbed: list
+    transformation_functions: list
+    transformation_functions_params: list
+
+
+def slice_bounds(feature: str, value: Union[int, float], ds: Dataset) -> List[Union[int, float]]:
+    """Get quartile bounds values to slice Giskard dataset on a numerical feature.
 
     Args:
         feature (str): Feature name
-        value (object): Feature value
+        value (float or int): Feature value
         ds (Dataset): Dataset
 
     Returns:
-        list: Lower and upper bounds for slice
+        list: Lower and upper bounds of the slice
     """
     if ds.column_types[feature] == "numeric":
         # Find the quartile bounds for the value
@@ -48,39 +59,6 @@ def slice_bounds(feature, value, ds):
             return [q3, ds.df[feature].max()]
     else:
         return None
-
-
-def bins_count(model, dataframe):  # done at the beggining
-    """Count unique values for categorical features.
-
-    Args:
-        model (BaseModel): Model
-        dataframe (DataFrame): Dataframe
-
-    Returns:
-        dict: Dictionary of value counts for categorical features
-    """
-
-    df = dataframe
-
-    columns_to_encode = [key for key in model.column_types.keys() if model.column_types[key] == "category"]
-    value_counts = {}
-    for column in columns_to_encode:
-        nunique = df[column].nunique()
-        ratio = len(df) / nunique
-        counts = df[column].value_counts().to_dict()
-        flag = {value: count < ratio for value, count in counts.items()}
-        value_counts[column] = {"value_counts": counts, "nunique": nunique, "ratio": ratio, "flag": flag}
-    return value_counts
-
-
-@dataclass
-class TransformationInfo:
-    """Class to hold perturbation transformation information."""
-
-    value_perturbed: list
-    transformation_functions: list
-    transformation_functions_params: list
 
 
 def coltype_to_supported_perturbation_type(coltype: str) -> SupportedPerturbationType:

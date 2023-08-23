@@ -1,7 +1,5 @@
 """
-contribution.py
-
-Functions for contribution analysis.
+Trigger functions for model debugging contribution notifications.
 
 Functions:
 
@@ -24,10 +22,25 @@ from ..push import ContributionPush
 from .utils import slice_bounds
 
 
-def create_contribution_push(model, ds, df):
-    """Create contribution push from SHAP values."""
-    if existing_shap_values(ds):
-        shap_res = detect_shap_outlier(model, ds, df)
+def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> ContributionPush:
+    """
+    Create contribution notification from SHAP values.
+
+    Analyzes SHAP values to find feature with outlier contribution.
+    Checks if contribution results in correct/incorrect prediction.
+
+    If outlier contribution found, creates ContributionPush.
+
+    Args:
+        model (BaseModel): ML model
+        ds (Dataset): Original dataset
+        df (pd.DataFrame): DataFrame with row to analyze
+
+    Returns:
+        ContributionPush if outlier contribution found, else None
+    """
+    if _existing_shap_values(ds):
+        shap_res = _detect_shap_outlier(model, ds, df)
         slice_df = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
         values = slice_df.df
 
@@ -55,9 +68,22 @@ def create_contribution_push(model, ds, df):
             )
 
 
-def detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
-    """Detect outlier SHAP value."""
-    feature_shap = get_shap_values(model, ds, df)
+def _detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """
+    Detect outlier SHAP value for a given prediction.
+
+    Computes SHAP values for all features. Calculates z-scores
+    to find any significant outliers.
+
+    Args:
+        model (BaseModel): ML model
+        ds (Dataset): Dataset
+        df (pd.DataFrame): DataFrame with row
+
+    Returns:
+        Feature name with outlier SHAP value, if any
+    """
+    feature_shap = _get_shap_values(model, ds, df)
     keys = list(feature_shap.keys())
 
     zscore_array = np.round(zscore(list(feature_shap.values())) * 2) / 2
@@ -68,16 +94,43 @@ def detect_shap_outlier(model: BaseModel, ds: Dataset, df: pd.DataFrame):
         return None
 
 
-def get_shap_values(model: BaseModel, ds: Dataset, df: pd.DataFrame):
-    """Get SHAP values for example."""
+def _get_shap_values(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+    """
+    Get SHAP values for a model prediction on an example.
+
+    Computes SHAP values that explain the model's output for a given
+    input example.
+
+    For classification, returns values for predicted class label.
+    For regression, returns values for default output.
+
+    Args:
+        model (BaseModel): ML model
+        ds (Dataset): Dataset
+        df (pd.DataFrame): DataFrame with example row
+
+    Returns:
+        Dictionary of SHAP values per feature
+    """
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         return explain(model, ds, df.iloc[0])["explanations"][model.meta.classification_labels[0]]
     elif model.meta.model_type == SupportedModelTypes.REGRESSION:
         return explain(model, ds, df.iloc[0])["explanations"]["default"]
 
 
-def existing_shap_values(ds: Dataset):
-    """Check if SHAP values exist for features."""
+def _existing_shap_values(ds: Dataset):
+    """
+    Check if SHAP values can be computed for dataset features.
+
+    SHAP values require at least 2 numerical features.
+    Text features are excluded since SHAP is not supported.
+
+    Args:
+        ds (Dataset): Dataset
+
+    Returns:
+        True if SHAP values can be computed, False otherwise.
+    """
     feature_types = list(ds.column_types.values())
     if "text" in feature_types:
         feature_types.remove("text")

@@ -3,7 +3,7 @@ This module defines various push classes used for model debugging.
 
 The main classes are:
 
-- Push: Base push class  
+- Push: Base push class
 - ExamplePush: Push based on example data
 - OverconfidencePush: Push for overconfidence cases
 - BorderlinePush: Push for borderline/underconfidence cases
