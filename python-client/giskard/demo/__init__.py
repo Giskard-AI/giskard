@@ -13,10 +13,6 @@ def titanic_pipeline():
     return titanic_classification.get_pipeline()
 
 
-def titanic_wrapped():
-    return titanic_classification.get_wrapped()
-
-
 def linear_df():
     return linear_regression.get_df()
 
