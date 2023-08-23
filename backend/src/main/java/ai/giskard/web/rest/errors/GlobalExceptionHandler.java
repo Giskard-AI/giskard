@@ -1,6 +1,7 @@
 package ai.giskard.web.rest.errors;
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @NotNull
     private static HttpStatus getHttpStatus(Throwable ex) {
+        if (ex instanceof ConcurrencyFailureException) return HttpStatus.CONFLICT;
         if (ex instanceof BadCredentialsException) return HttpStatus.UNAUTHORIZED;
         if (ex instanceof AccessDeniedException) return HttpStatus.FORBIDDEN;
         return HttpStatus.INTERNAL_SERVER_ERROR;

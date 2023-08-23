@@ -9,6 +9,10 @@ public class GiskardException extends ErrorResponseException {
         super(status, ProblemDetail.forStatusAndDetail(status, description), null);
     }
 
+    public GiskardException(HttpStatusCode status, Throwable th) {
+        super(status, ProblemDetail.forStatus(status), th);
+    }
+
     public GiskardException(HttpStatusCode status) {
         super(status);
     }

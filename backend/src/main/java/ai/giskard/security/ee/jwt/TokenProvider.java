@@ -170,18 +170,14 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) { // NOSONAR
             this.securityMetersService.trackTokenExpired();
             log.trace(INVALID_JWT_TOKEN, e);
-            throw e;
         } catch (UnsupportedJwtException e) {
             this.securityMetersService.trackTokenUnsupported();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (MalformedJwtException e) {
             this.securityMetersService.trackTokenMalformed();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (SignatureException e) {
             this.securityMetersService.trackTokenInvalidSignature();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (IllegalArgumentException e) {
             log.error("Token validation error {}", e.getMessage());

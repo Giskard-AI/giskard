@@ -1,8 +1,10 @@
 package ai.giskard.web.rest.errors;
 
-public class InvalidPasswordException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class InvalidPasswordException extends GiskardException {
 
     public InvalidPasswordException() {
-        super("Invalid password");
+        super(HttpStatus.BAD_REQUEST, "Invalid password");
     }
 }

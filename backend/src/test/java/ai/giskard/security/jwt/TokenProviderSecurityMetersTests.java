@@ -69,7 +69,7 @@ class TokenProviderSecurityMetersTests {
 
         String expiredToken = createExpiredToken();
 
-        Assertions.assertThrows(ExpiredJwtException.class, () -> tokenProvider.validateToken(expiredToken));
+        tokenProvider.validateToken(expiredToken);
 
         assertThat(meterRegistry.get(INVALID_TOKENS_METER_EXPECTED_NAME).tag("cause", "expired").counter().count()).isEqualTo(1);
     }

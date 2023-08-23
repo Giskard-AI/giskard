@@ -38,8 +38,7 @@
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
 
-    <root>
-        <level>WARN</level>
+    <root level="warn">
         <appender-ref ref="CONSOLE"/>
     </root>
 

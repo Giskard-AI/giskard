@@ -11,6 +11,7 @@ import ai.giskard.service.ee.LicenseService;
 import ai.giskard.utils.LicenseUtils;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
+import ai.giskard.web.rest.errors.BadRequestException;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
 import jakarta.validation.Valid;
@@ -102,7 +103,7 @@ public class UserAdminController {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
-            throw new RuntimeException("A new user cannot already have an ID");
+            throw new BadRequestException("A new user cannot already have an ID");
             // Lowercase the user login before comparing with database
         } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
             throw new LoginAlreadyUsedException();
