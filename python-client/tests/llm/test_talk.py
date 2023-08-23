@@ -75,8 +75,8 @@ def test_model_ask_description(german_credit_model):
         responses=[
             """
                       Action: model_description
-                                Action Input: None
-                                """,
+                      Action Input: None
+            """,
             """
                       Final Answer: The goal of this model is to predict if a potential debtor might default
                       """,
