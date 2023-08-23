@@ -14,12 +14,6 @@
             <column name="column_type" type="varchar(255)"/>
         </addColumn>
     </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1683098778368-4" failOnError="false">
-        <dropForeignKeyConstraint baseTableName="TEST_INPUT" constraintName="FK5IRXPPO64AWH117G7Y2KN9IYD"/>
-    </changeSet>
-    <changeSet author="kevinmessiaen (generated)" id="1683098778368-5" failOnError="false">
-        <dropForeignKeyConstraint baseTableName="SLICES" constraintName="FKOKT2OV2HCS1K02321MCXJFVHH"/>
-    </changeSet>
     <changeSet author="kevinmessiaen (generated)" id="1683098778368-6">
         <dropTable tableName="SLICES"/>
     </changeSet>
