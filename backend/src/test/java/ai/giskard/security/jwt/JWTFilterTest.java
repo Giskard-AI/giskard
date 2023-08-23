@@ -35,7 +35,7 @@ class JWTFilterTest {
     public void setup() {
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        applicationProperties.setBase64JWTsecretKey(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 

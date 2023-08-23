@@ -30,6 +30,10 @@ public interface MappableJpaRepository<T, I> extends JpaRepository<T, I> {
 
     @Override
     @Named("no_mapstruct")
+    T getReferenceById(I i);
+
+    @Override
+    @Named("no_mapstruct")
     @NonNull
     T getById(@NonNull I id);
 
