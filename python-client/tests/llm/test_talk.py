@@ -69,4 +69,22 @@ def test_model_create_llm_agent(german_credit_test_data, german_credit_model):
         "model_explain_prediction",
     ]
 
-    llm_config.set_default_llm(None)
+
+def test_model_ask_description(german_credit_model):
+    llm = FakeListLLM(
+        responses=[
+            """Action: model_description
+                      Action Input: None
+                      """,
+            """
+                      Final Answer: The goal of this model is to predict if a potential debtor might default
+                      """,
+        ]
+        * 100
+    )
+    llm_config.set_default_llm(llm)
+
+    assert (
+        german_credit_model.talk("What is the goal of this model?")
+        == "The goal of this model is to predict if a potential debtor might default"
+    )
