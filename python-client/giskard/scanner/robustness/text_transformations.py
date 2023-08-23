@@ -12,8 +12,6 @@ from ...ml_worker.testing.functions.transformation import gruber
 from ...ml_worker.testing.registry.registry import get_object_uuid
 from ...ml_worker.testing.registry.transformation_function import TransformationFunction
 
-random.seed(0)
-
 
 class TextTransformation(TransformationFunction):
     name: str
