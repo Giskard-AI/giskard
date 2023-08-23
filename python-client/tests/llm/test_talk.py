@@ -1,3 +1,7 @@
+from langchain.agents import AgentExecutor
+from langchain.llms import FakeListLLM
+
+from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec
 
 
@@ -49,3 +53,20 @@ def test_model_quality_missing_scan(german_credit_model):
     model_spec = ModelSpec(model=german_credit_model)
 
     assert model_spec.model_quality() == "The model should be scanned with Giskard first"
+
+
+def test_model_create_llm_agent(german_credit_test_data, german_credit_model):
+    llm = FakeListLLM(responses=[""] * 100)
+    llm_config.set_default_llm(llm)
+
+    agent = german_credit_model._llm_agent(german_credit_test_data, True)
+
+    assert isinstance(agent, AgentExecutor)
+    assert agent.agent.allowed_tools == [
+        "SKLearnModel_info",
+        "model_description",
+        "model_prediction",
+        "model_explain_prediction",
+    ]
+
+    llm_config.set_default_llm(None)
