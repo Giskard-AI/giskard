@@ -1,6 +1,6 @@
 import inspect
 import uuid
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 try:
     from types import NoneType
@@ -8,7 +8,7 @@ except ImportError:
     # types.NoneType is only available from python >=3.10
     NoneType = type(None)
 
-PRIMITIVES = bool | str | int | float | NoneType
+PRIMITIVES = Union[bool, str, int, float, NoneType]
 
 
 def _serialize_artifact(artifact, artifact_uuid: Optional[str | uuid.UUID]) -> str:
