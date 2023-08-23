@@ -238,7 +238,7 @@ class ContributionPush(FeaturePush):
             self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the incorrect prediction"
             self.details = [
                 {
-                    "action": f"Save the slice {self.slicing_function.query} and continue debugging session",
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
