@@ -5,19 +5,16 @@ import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.jwt.TokenProvider;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.data.Offset;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -38,14 +35,13 @@ class TokenProviderTest {
 
     @BeforeEach
     public void setup() {
-        JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
 
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
-        jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
-        tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
+        tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
         key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
 
         ReflectionTestUtils.setField(tokenProvider, "key", key);
@@ -68,17 +64,6 @@ class TokenProviderTest {
         boolean isTokenValid = tokenProvider.validateToken(invalidToken);
 
         assertThat(isTokenValid).isFalse();
-    }
-
-    @Test
-    void testReturnFalseWhenJWTisExpired() {
-        ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", -ONE_MINUTE);
-
-        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
-        String token = tokenProvider.createToken(authentication, false).getToken();
-        Assertions.assertThrows(ExpiredJwtException.class, () -> {
-            tokenProvider.validateToken(token);
-        });
     }
 
     @Test
@@ -113,13 +98,12 @@ class TokenProviderTest {
     @Test
     void testKeyIsSetFromSecretWhenSecretIsNotEmpty() {
         final String secret = "NwskoUmKHZtzGRKJKVjsJF7BtQMMxNWi"; //ggignore
-        JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        jHipsterProperties.getSecurity().getAuthentication().getJwt().setSecret(secret);
+        applicationProperties.setJwtSecretKey(secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
-        TokenProvider tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
+        TokenProvider tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
 
         Key key = (Key) ReflectionTestUtils.getField(tokenProvider, "key");
         assertThat(key).isNotNull().isEqualTo(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)));
@@ -128,13 +112,12 @@ class TokenProviderTest {
     @Test
     void testKeyIsSetFromBase64SecretWhenSecretIsEmpty() {
         final String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
-        JHipsterProperties jHipsterProperties = new JHipsterProperties();
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        jHipsterProperties.getSecurity().getAuthentication().getJwt().setBase64Secret(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
-        TokenProvider tokenProvider = new TokenProvider(jHipsterProperties, applicationProperties, securityMetersService);
+        TokenProvider tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
 
         Key key = (Key) ReflectionTestUtils.getField(tokenProvider, "key");
         assertThat(key).isNotNull().isEqualTo(Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret)));

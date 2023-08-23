@@ -10,10 +10,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import tech.jhipster.config.JHipsterProperties;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
@@ -25,11 +24,11 @@ public class WebConfigurer implements ServletContextInitializer {
 
     private final Environment env;
 
-    private final JHipsterProperties jHipsterProperties;
+    private final ApplicationProperties applicationProperties;
 
-    public WebConfigurer(Environment env, JHipsterProperties jHipsterProperties) {
+    public WebConfigurer(Environment env, ApplicationProperties applicationProperties) {
         this.env = env;
-        this.jHipsterProperties = jHipsterProperties;
+        this.applicationProperties = applicationProperties;
     }
 
     @Override
@@ -44,8 +43,8 @@ public class WebConfigurer implements ServletContextInitializer {
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = jHipsterProperties.getCors();
-        if (!CollectionUtils.isEmpty(config.getAllowedOrigins()) || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns())) {
+        CorsConfiguration config = applicationProperties.getCors();
+        if (config != null && (!CollectionUtils.isEmpty(config.getAllowedOrigins()) || !CollectionUtils.isEmpty(config.getAllowedOriginPatterns()))) {
             log.debug("Registering CORS filter");
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);

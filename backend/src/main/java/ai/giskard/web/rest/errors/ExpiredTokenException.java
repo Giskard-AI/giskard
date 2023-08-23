@@ -1,11 +1,10 @@
 package ai.giskard.web.rest.errors;
 
-import org.zalando.problem.AbstractThrowableProblem;
-import org.zalando.problem.Status;
+import org.springframework.http.HttpStatus;
 
-public class ExpiredTokenException extends AbstractThrowableProblem { // NOSONAR
+public class ExpiredTokenException extends GiskardException {
+
     public ExpiredTokenException() {
-        super(ErrorConstants.DEFAULT_TYPE, Status.UNAUTHORIZED.getReasonPhrase(), Status.UNAUTHORIZED,
-            "Access token is expired, create a new one or re-login");
+        super(HttpStatus.UNAUTHORIZED, "Expired token");
     }
 }

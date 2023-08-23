@@ -1,13 +1,10 @@
 package ai.giskard.web.rest.errors;
 
-import org.zalando.problem.AbstractThrowableProblem;
-import org.zalando.problem.Status;
+import org.springframework.http.HttpStatus;
 
-public class InvalidPasswordException extends AbstractThrowableProblem {
-
-    private static final long serialVersionUID = 1L;
+public class InvalidPasswordException extends GiskardException {
 
     public InvalidPasswordException() {
-        super(ErrorConstants.INVALID_PASSWORD_TYPE, "Incorrect password", Status.BAD_REQUEST);
+        super(HttpStatus.BAD_REQUEST, "Invalid password");
     }
 }
