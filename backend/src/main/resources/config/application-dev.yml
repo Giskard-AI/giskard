@@ -39,9 +39,6 @@ spring:
       minimum-idle: 10
       connection-timeout: 20000
       leak-detection-threshold: 10000
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    show-sql: false
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker

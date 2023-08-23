@@ -104,6 +104,7 @@ spring:
       repositories:
         bootstrap-mode: deferred
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     properties:
       hibernate.jdbc.time_zone: UTC
@@ -172,5 +173,4 @@ giskard:
   home: giskard-home
   regressionThreshold: 0.15
   licensePublicKey: c947f66224d465b50004c327fc831cff672fc07b540b0613d6f661d0e72d455d
-
 
