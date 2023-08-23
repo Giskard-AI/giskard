@@ -150,6 +150,7 @@ dependencies {
     compileOnly("org.mapstruct:mapstruct:${mapstructVersion}")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+    implementation("com.mixpanel:mixpanel-java:1.5.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5")
