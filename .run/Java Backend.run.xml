@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Java Backend" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="ai.giskard.GiskardApp" />
+    <option name="MAIN_CLASS_NAME" value="ai.giskard.ai.giskard.GiskardApp" />
     <module name="giskard.backend.main" />
     <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=dev" />
     <extension name="coverage">

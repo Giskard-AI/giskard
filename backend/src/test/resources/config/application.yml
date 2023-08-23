@@ -12,24 +12,13 @@
 # ===================================================================
 
 spring:
-#  profiles:
-  # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
-  #active: testcontainers
   application:
     name: giskard
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:mem:giskard;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    name:
-    username:
-    password:
-    hikari:
-      auto-commit: false
   jackson:
     serialization:
       write-durations-as-timestamps: false
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+#    database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
     hibernate:
       ddl-auto: validate
@@ -72,7 +61,6 @@ spring:
         size: 1
   thymeleaf:
     mode: HTML
-
 server:
   port: 10344
   address: localhost

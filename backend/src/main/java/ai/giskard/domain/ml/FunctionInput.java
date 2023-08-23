@@ -28,7 +28,6 @@ public class FunctionInput implements Serializable {
     private String type;
 
     @Column(columnDefinition = "CLOB", name = "input_value")
-    @Lob
     private String value;
 
     private boolean isAlias = false;
