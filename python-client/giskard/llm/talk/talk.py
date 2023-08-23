@@ -89,7 +89,7 @@ class ModelSpec(BaseModel):
         try:
             features = self._parse_json_inputs(json_inputs)
 
-            return str(model_explanation.explain(self.model, self.dataset, features))
+            return str(model_explanation.explain(self.model, self.dataset, pd.DataFrame(features).iloc[0].to_dict()))
         except Exception as e:
             return repr(e)
 
