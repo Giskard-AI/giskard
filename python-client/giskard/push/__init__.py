@@ -216,19 +216,19 @@ class ContributionPush(FeaturePush):
             self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
-                    "action": f"Save the slice {self.slicing_function.query} and continue debugging session",
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
                 },
                 {
                     "action": "Automatically generate a test ",
-                    "explanation": "Theil`s U test will help you check the correlation on the whole dataset, check our documentation for more info",
+                    "explanation": f"Theil`s U test will help you check the nominal association between {self.slicing_function.query} and the predicted label on the whole dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "See similar examples",
+                    "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
@@ -238,19 +238,19 @@ class ContributionPush(FeaturePush):
             self.push_title = f"{str(self.feature)}=={str(self.value)} contributes a lot to the incorrect prediction"
             self.details = [
                 {
-                    "action": f"Save the slice {self.slicing_function.query} and continue debugging session",
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
                     "cta": CallToActionKind.CreateSlice,
                 },
                 {
                     "action": "Automatically generate a test",
-                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset, check our documentation for more info",
+                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CreateTest,
                 },
                 {
-                    "action": "See similar examples",
+                    "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
                     "cta": CallToActionKind.CreateSliceOpenDebugger,
