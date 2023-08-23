@@ -14,7 +14,7 @@
     </template>
 
 
-    <v-card dark color="primary">
+    <v-card dark color="primary" class="push-card">
       <v-card-title>
         {{ push.pushTitle }}
       </v-card-title>
@@ -206,6 +206,11 @@ watch(() => opened, (newValue, oldValue) => {
 </script>
 
 <style scoped>
+.v-tooltip__content,
+.push-card {
+  width: 40vw;
+}
+
 .rim1 {
   position: absolute;
   top: 50%;
@@ -239,5 +244,15 @@ watch(() => opened, (newValue, oldValue) => {
     border: white .5em solid;
     opacity: 0;
   }
+}
+
+.v-card__title {
+  font-size: 1.125rem;
+  line-height: 1.25rem;
+}
+
+.v-list-item__title,
+.v-list-item__subtitle {
+  white-space: normal;
 }
 </style>
