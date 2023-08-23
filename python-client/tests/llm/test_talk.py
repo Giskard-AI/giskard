@@ -1,3 +1,6 @@
+import os
+
+import pytest
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
 
@@ -89,3 +92,17 @@ def test_model_ask_description(german_credit_model):
         german_credit_model.talk("What is the goal of this model?")
         == "The goal of this model is to predict if a potential debtor might default"
     )
+
+
+def test_model_talk_no_llm_nor_api_key(german_credit_model):
+    llm_config.set_default_llm(None)
+
+    previous_env = os.getenv("OPENAI_API_KEY")
+    if previous_env is not None:
+        del os.environ["OPENAI_API_KEY"]
+
+    with pytest.raises(OSError):
+        german_credit_model.talk("What is the goal of this model?")
+
+    if previous_env is not None:
+        os.environ["OPENAI_API_KEY"] = previous_env
