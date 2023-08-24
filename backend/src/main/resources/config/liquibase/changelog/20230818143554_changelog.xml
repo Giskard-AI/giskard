@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-5">
+        <createSequence incrementBy="50" sequenceName="feedback_replies_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-6">
+        <createSequence incrementBy="50" sequenceName="feedbacks_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-7">
+        <createSequence incrementBy="50" sequenceName="giskard_users_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-8">
+        <createSequence incrementBy="50" sequenceName="inspections_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-9">
+        <createSequence incrementBy="50" sequenceName="projects_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-10">
+        <createSequence incrementBy="50" sequenceName="role_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-11">
+        <createSequence incrementBy="50" sequenceName="suite_test_execution_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-12">
+        <createSequence incrementBy="50" sequenceName="suite_test_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-13">
+        <createSequence incrementBy="50" sequenceName="test_function_arguments_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-14">
+        <createSequence incrementBy="50" sequenceName="test_input_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-15">
+        <createSequence incrementBy="50" sequenceName="test_suite_execution_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-16">
+        <createSequence incrementBy="50" sequenceName="test_suite_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-1">
+        <dropDefaultValue columnDataType="boolean" columnName="cell_level" tableName="callable_functions"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-2">
+        <dropDefaultValue columnDataType="boolean" columnName="cell_level" tableName="callable_functions"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-3">
+        <dropDefaultValue columnDataType="boolean" columnName="sample" tableName="inspections"/>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692362160030-4">
+        <dropDefaultValue columnDataType="boolean" columnName="sample" tableName="inspections"/>
+    </changeSet>
+</databaseChangeLog>

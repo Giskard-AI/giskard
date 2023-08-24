@@ -7,18 +7,22 @@ import ai.giskard.domain.ml.FunctionInput;
 import ai.giskard.domain.ml.SuiteTest;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.domain.ml.TestSuiteExecution;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
 import ai.giskard.jobs.JobType;
-import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.TestSuiteExecutionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.repository.ml.TestSuiteRepository;
-import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.utils.TransactionUtils;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
-import ai.giskard.worker.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +45,8 @@ public class TestSuiteService {
     private final TestSuiteExecutionRepository testSuiteExecutionRepository;
     private final JobService jobService;
     private final ProjectRepository projectRepository;
-    private final MLWorkerService mlWorkerService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestFunctionRepository testFunctionRepository;
 
     @Transactional(readOnly = true)
@@ -180,47 +185,59 @@ public class TestSuiteService {
     public Long generateTestSuite(String projectKey, GenerateTestSuiteDTO dto) {
 
         Project project = projectRepository.getOneByKey(projectKey);
-        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            GenerateTestSuiteRequest.Builder request = GenerateTestSuiteRequest.newBuilder()
-                .setProjectKey(projectKey);
+        MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSGenerateTestSuiteParamDTO param = MLWorkerWSGenerateTestSuiteParamDTO.builder()
+                .projectKey(projectKey)
+                .build();
 
-            request.addAllInputs(dto.getInputs()
+            List<MLWorkerWSSuiteInputDTO> inputs = dto.getInputs()
                 .stream()
-                .map(TestSuiteService::generateSuiteInput)
-                .toList());
+                .map(TestSuiteService::generateSuiteInputWS)
+                .toList();
+            param.setInputs(inputs);
 
-            GenerateTestSuiteResponse response = client.getBlockingStub().generateTestSuite(request.build());
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.GENERATE_TEST_SUITE,
+                param
+            );
+            if (result instanceof MLWorkerWSGenerateTestSuiteDTO response) {
+                TestSuite suite = new TestSuite();
+                suite.setProject(project);
+                suite.setName(dto.getName());
+                suite.setFunctionInputs(dto.getSharedInputs().stream()
+                    .map(giskardMapper::fromDTO)
+                    .toList());
+                suite.getTests().addAll(response.getTests().stream()
+                    .map(test -> new SuiteTest(suite, test, testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
+                    .toList());
 
-            TestSuite suite = new TestSuite();
-            suite.setProject(project);
-            suite.setName(dto.getName());
-            suite.setFunctionInputs(dto.getSharedInputs().stream()
-                .map(giskardMapper::fromDTO)
-                .toList());
-            suite.getTests().addAll(response.getTestsList().stream()
-                .map(test -> new SuiteTest(suite, test, testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
-                .toList());
-
-            return testSuiteRepository.save(suite).getId();
+                return testSuiteRepository.save(suite).getId();
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot create test suite");
         }
+        throw new MLWorkerNotConnectedException(workerID);
     }
 
-    private static SuiteInput generateSuiteInput(GenerateTestSuiteInputDTO input) {
-        SuiteInput.Builder builder = SuiteInput.newBuilder()
-            .setName(input.getName())
-            .setType(input.getType());
+    private static MLWorkerWSSuiteInputDTO generateSuiteInputWS(GenerateTestSuiteInputDTO input) {
+        MLWorkerWSSuiteInputDTO suiteInput = new MLWorkerWSSuiteInputDTO();
+        suiteInput.setName(input.getName());
+        suiteInput.setType(input.getType());
 
         if (input instanceof GenerateTestModelInputDTO generateTestModelInputDTO) {
-            builder.setModelMeta(ModelMeta.newBuilder()
-                    .setModelType(generateTestModelInputDTO.getModelType())
-                    .build());
+            MLWorkerWSModelMetaDTO modelMeta = new MLWorkerWSModelMetaDTO();
+            modelMeta.setModelType(generateTestModelInputDTO.getModelType());
+            suiteInput.setModelMeta(modelMeta);
         } else if (input instanceof GenerateTestDatasetInputDTO generateTestDatasetInputDTO) {
-            builder.setDatasetMeta(DatasetMeta.newBuilder()
-                    .setTarget(generateTestDatasetInputDTO.getTarget())
-                    .build());
+            MLWorkerWSDatasetMetaDTO datasetMeta = new MLWorkerWSDatasetMetaDTO();
+            datasetMeta.setTarget(generateTestDatasetInputDTO.getTarget());
+            suiteInput.setDatasetMeta(datasetMeta);
         }
 
-        return builder.build();
+        return suiteInput;
     }
 
     public TestSuiteDTO removeSuiteTest(long suiteId, long suiteTestId) {
