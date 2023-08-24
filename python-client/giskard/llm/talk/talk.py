@@ -97,7 +97,7 @@ class ModelSpec(BaseModel):
         if self.scan_result is None:
             return "The model should be scanned with Giskard first"
 
-        return str({str(issue): str(issue.desciption()) for issue in self.scan_result.issues})
+        return str({str(issue): issue.description for issue in self.scan_result.issues})
 
     def model_quality(self):
         if self.scan_result is None:
