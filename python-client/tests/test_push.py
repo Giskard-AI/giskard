@@ -1,3 +1,5 @@
+import numpy as np
+import pytest
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
 
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -6,6 +8,12 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.utils import (
+    SupportedPerturbationType,
+    TransformationInfo,
+    coltype_to_supported_perturbation_type,
+    slice_bounds,
+)
 from giskard.slicing.slice import QueryBasedSliceFunction
 import pandas as pd
 
@@ -155,3 +163,55 @@ def test_mad_transformation_slicing(enron_data):
     data_s = data.slice(head_slice)
     output = data_s.transform(res)
     assert output
+
+
+# Created with Claude 2
+
+
+def test_supported_perturbation_type_enum():
+    assert SupportedPerturbationType.NUMERIC.value == "numeric"
+    assert SupportedPerturbationType.TEXT.value == "text"
+
+
+def test_transformation_info():
+    ti = TransformationInfo([1, 2], [np.log, np.sqrt], [{"base": 2}, {}])
+    assert ti.value_perturbed == [1, 2]
+    assert ti.transformation_functions == [np.log, np.sqrt]
+    assert ti.transformation_functions_params == [{"base": 2}, {}]
+
+
+def test_slice_bounds_valid_numeric(german_credit_data):
+    numeric_col = german_credit_data.df["credit_amount"]
+    # Get quartile bounds
+    q1, q2, q3 = np.percentile(numeric_col, [25, 50, 75])
+
+    # Test quartile values
+    bounds = slice_bounds("credit_amount", q2, german_credit_data)
+    assert bounds == [q2, q3]
+
+    # Test min/max
+    bounds = slice_bounds("credit_amount", numeric_col.min(), german_credit_data)
+    assert bounds == [numeric_col.min(), q1]
+
+    bounds = slice_bounds("credit_amount", numeric_col.max(), german_credit_data)
+    assert bounds == [q3, numeric_col.max()]
+
+    # Test valid values
+    bounds = slice_bounds("credit_amount", 1500, german_credit_data)
+    assert bounds == [1365.5, 2319.5]
+
+    bounds = slice_bounds("credit_amount", 2500, german_credit_data)
+    assert bounds == [2319.5, 3972.25]
+
+
+def test_slice_bounds_non_numeric(german_credit_data):
+    bounds = slice_bounds("account_check_status", "c", german_credit_data)
+    assert bounds is None
+
+
+def test_coltype_to_supported_perturbation_type():
+    perturbation_type = coltype_to_supported_perturbation_type("numeric")
+    assert perturbation_type == SupportedPerturbationType.NUMERIC
+
+    perturbation_type = coltype_to_supported_perturbation_type("text")
+    assert perturbation_type == SupportedPerturbationType.TEXT
