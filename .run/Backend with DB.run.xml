@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Backend" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="ai.giskard.GiskardApp" />
-    <module name="giskard.backend.main" />
+  <configuration default="false" name="Backend with DB" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ai.giskard.GiskardTestApp" />
+    <module name="giskard.backend.test" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="ai.giskard.*" />
