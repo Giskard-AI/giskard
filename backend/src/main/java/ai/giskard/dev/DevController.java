@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.crypto.SecretKey;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Date;
 
 import static ai.giskard.security.ee.jwt.TokenProvider.createToken;

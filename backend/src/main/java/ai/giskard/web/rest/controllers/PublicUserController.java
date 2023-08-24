@@ -10,7 +10,7 @@ import ai.giskard.service.UserService;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.RoleDTO;
 import ai.giskard.web.dto.user.UserDTO;
-import ai.giskard.web.rest.errors.BadRequestAlertException;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.Email;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -74,10 +73,10 @@ public class PublicUserController {
     public void inviteUserSignup(@AuthenticationPrincipal UserDetails currentUserDetails, @RequestParam @Email String email) {
         User currentUser = userService.getUserByLogin(currentUserDetails.getUsername());
         if (currentUser.getEmail().equals(email)) {
-            throw new BadRequestAlertException("Cannot invite yourself");
+            throw new RuntimeException("Cannot invite yourself");
         }
         if (userRepository.findOneByEmailIgnoreCase(email).isPresent()) {
-            throw new BadRequestAlertException("This email is already registered");
+            throw new RuntimeException("This email is already registered");
         }
 
         String token = tokenProvider.createInvitationToken(currentUser.getEmail(), email);
