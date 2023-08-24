@@ -12,7 +12,7 @@
 # ===================================================================
 
 spring:
-  profiles:
+#  profiles:
   # Uncomment the following line to enable tests against production database type rather than H2, using Testcontainers
   #active: testcontainers
   application:
@@ -34,7 +34,7 @@ spring:
     hibernate:
       ddl-auto: validate
       naming:
-        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     properties:
       hibernate.id.new_generator_mappings: true
