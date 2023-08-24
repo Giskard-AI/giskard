@@ -97,10 +97,12 @@
                         <PushPopover
                             type="contribution"
                             :column="c.name"
+                            key="a"
                         />
                         <PushPopover
                             type="perturbation"
                             :column="c.name"
+                            key="b"
                         />
                       </div>
                     </div>
