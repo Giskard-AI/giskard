@@ -27,35 +27,31 @@
     <br/>
     <v-card v-if="mainStore.appSettings?.isRunningOnHfSpaces" height="100%">
       <v-card-title class="font-weight-light secondary--text">Giskard Space Token</v-card-title>
-      <div v-if="!needFetchWithHFAccessToken">
-        <v-card-text>
-          <div class="mb-2">
-            <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateHFToken">Generate</v-btn>
-            <v-btn v-if="hfSpacesToken" small tile color="secondary" class="ml-2" @click="copyHFToken">
-              Copy
-              <v-icon right dark>mdi-content-copy</v-icon>
-            </v-btn>
-          </div>
-          <v-row>
-            <v-col>
-              <div class="token-area-wrapper" v-if="hfSpacesToken">
-                <CodeSnippet :code-content="hfSpacesToken"/>
-              </div>
-            </v-col>
-          </v-row>
-          <v-row v-if="hfSpacesToken">
-            <v-col class="text-right">
-              Expires on <span>{{ hfSpacesTokenExpiredDate.toLocaleString() }}</span>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </div>
-      <div v-else>
-        <HuggingFaceTokenCard v-if="state.workerStatus.connected" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
-        <v-card-text v-else>
-          Please enter your Hugging Face access token in Giskard Settings page to generate this token.
-        </v-card-text>
-      </div>
+      <v-card-text v-if="!needFetchWithHFAccessToken">
+        <div class="mb-2">
+          <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateHFToken">Generate</v-btn>
+          <v-btn v-if="hfSpacesToken" small tile color="secondary" class="ml-2" @click="copyHFToken">
+            Copy
+            <v-icon right dark>mdi-content-copy</v-icon>
+          </v-btn>
+        </div>
+        <v-row v-if="hfSpacesToken">
+          <v-col>
+            <div class="token-area-wrapper">
+              <CodeSnippet :code-content="hfSpacesToken"/>
+            </div>
+          </v-col>
+        </v-row>
+        <v-row v-if="hfSpacesToken">
+          <v-col class="text-right">
+            Expires on <span>{{ hfSpacesTokenExpiredDate.toLocaleString() }}</span>
+          </v-col>
+        </v-row>
+      </v-card-text>
+      <HuggingFaceTokenCard v-else-if="state.workerStatus.connected" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+      <v-card-text v-else>
+        Please enter your Hugging Face access token in Giskard Settings page to generate this token.
+      </v-card-text>
     </v-card>
   </div>
 </template>
