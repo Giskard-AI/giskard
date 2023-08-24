@@ -35,7 +35,7 @@ public class ApplicationProperties {
 
     private String mailBaseUrl;
     private String emailFrom;
-    private String base64JWTsecretKey;
+    private String base64JwtSecretKey;
     private String jwtSecretKey;
     private long tokenValidityInSeconds = 1800; // 30 minutes;
     private long tokenValidityInSecondsForRememberMe = 2592000; // 30 days;

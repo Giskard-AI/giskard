@@ -1,9 +1,11 @@
 
 package ai.giskard.web.rest.errors;
 
-public class UnauthorizedException extends BadRequestAlertException {
+import org.springframework.http.HttpStatus;
+
+public class UnauthorizedException extends GiskardException {
 
     public UnauthorizedException(String actionType, Entity entity) {
-        super(String.format("Unauthorized: %s %s not possible for your role", actionType, entity.getName()), entity.name().toLowerCase(), "accesscontrolerror");
+        super(HttpStatus.UNAUTHORIZED, String.format("Unauthorized to %s %s", actionType, entity.getName()));
     }
 }

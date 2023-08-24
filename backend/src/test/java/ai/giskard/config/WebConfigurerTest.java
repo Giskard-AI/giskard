@@ -8,7 +8,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import javax.servlet.*;
+import jakarta.servlet.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
