@@ -165,51 +165,58 @@
                     </div>
                 </div>
             </div>
-            <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
-                <div>
-                    <p class="text-center">To upload a <span class="font-weight-bold">test suite from your own model</span>, follow these steps:</p>
-                    <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
-                        <v-card-title class="font-weight-medium">
-                            <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
-                            <span>Wrap your dataset</span>
-                            <v-spacer></v-spacer>
-                            <v-icon right>mdi-arrow-right</v-icon>
-                        </v-card-title>
-                        <v-card-text>
-                            To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your training, testing, golden, or production dataset.
-                        </v-card-text>
-                    </v-card>
-                    <div class="d-flex justify-center">
-                        <div class="dashed-vertical-line"></div>
-                    </div>
+            <div v-else-if="toggleSnippetType === 'custom'">
+                <div class="mt-12 mb-6 d-flex justify-center">
+                    <div>
+                        <p class="text-center">To upload a <span class="font-weight-bold">test suite from your own model</span>, follow these steps:</p>
+                        <v-card max-width="500" class="mt-6 mb-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html" target="_blank">
+                            <v-card-title class="font-weight-medium">
+                                <v-icon class="mr-2" color="primary">mdi-numeric-1-circle-outline</v-icon>
+                                <span>Wrap your dataset</span>
+                                <v-spacer></v-spacer>
+                                <v-icon right>mdi-arrow-right</v-icon>
+                            </v-card-title>
+                            <v-card-text>
+                                To scan, test and debug your model, you need to provide a dataset that can be executed by your model. This dataset can be your training, testing, golden, or production dataset.
+                            </v-card-text>
+                        </v-card>
+                        <div class="d-flex justify-center">
+                            <div class="dashed-vertical-line"></div>
+                        </div>
 
-                    <v-card max-width="500" class="my-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
-                        <v-card-title class="font-weight-medium">
-                            <v-icon class="mr-2" color="primary">mdi-numeric-2-circle-outline</v-icon>
-                            <span>Wrap your model</span>
-                            <v-spacer></v-spacer>
-                            <v-icon right>mdi-arrow-right</v-icon>
-                        </v-card-title>
-                        <v-card-text>
-                            To scan, test and debug your model, you need to wrap it into a Giskard Model.
-                            Your model can use any ML library and can be any Python function that respects the right signature.
-                        </v-card-text>
-                    </v-card>
-                    <div class="d-flex justify-center">
-                        <div class="dashed-vertical-line"></div>
+                        <v-card max-width="500" class="my-4 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/wrap_model/index.html" target="_blank">
+                            <v-card-title class="font-weight-medium">
+                                <v-icon class="mr-2" color="primary">mdi-numeric-2-circle-outline</v-icon>
+                                <span>Wrap your model</span>
+                                <v-spacer></v-spacer>
+                                <v-icon right>mdi-arrow-right</v-icon>
+                            </v-card-title>
+                            <v-card-text>
+                                To scan, test and debug your model, you need to wrap it into a Giskard Model.
+                                Your model can use any ML library and can be any Python function that respects the right signature.
+                            </v-card-text>
+                        </v-card>
+                        <div class="d-flex justify-center">
+                            <div class="dashed-vertical-line"></div>
+                        </div>
+                        <v-card max-width="500" class="mt-4 mb-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
+                            <v-card-title class="font-weight-medium">
+                                <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
+                                <span>Upload suite from scan</span>
+                                <v-spacer></v-spacer>
+                                <v-icon right>mdi-arrow-right</v-icon>
+                            </v-card-title>
+                            <v-card-text>
+                                The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model.
+                            </v-card-text>
+                        </v-card>
                     </div>
-                    <v-card max-width="500" class="mt-4 mb-6 card-step" outlined href="https://docs.giskard.ai/en/latest/guides/scan/index.html" target="_blank">
-                        <v-card-title class="font-weight-medium">
-                            <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
-                            <span>Upload suite from scan</span>
-                            <v-spacer></v-spacer>
-                            <v-icon right>mdi-arrow-right</v-icon>
-                        </v-card-title>
-                        <v-card-text>
-                            The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model.
-                        </v-card-text>
-                    </v-card>
                 </div>
+                <v-row>
+                    <v-col>
+                    <ClientInstructionCard />
+                    </v-col>
+                </v-row>
             </div>
             <div v-else class="d-flex justify-center my-6">
                 <img src="@/assets/logo_test_suite.png" class="test-suite-logo" title="Test suite tab logo" alt="A turtle checking a to-do list">
@@ -243,6 +250,7 @@ import {generateGiskardClientSnippet} from "@/snippets";
 import {saveLocalHFToken, getLocalHFToken} from "@/utils";
 import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
 import {attemptFetchHFSpacesToken} from "@/hf-utils";
+import ClientInstructionCard from '@/components/ClientInstructionCard.vue';
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();

@@ -80,6 +80,11 @@
       </v-row>
       <v-row>
         <v-col>
+          <ClientInstructionCard />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
           <v-card>
             <v-card-title class="font-weight-light secondary--text d-flex">
               <span>ML Worker</span>
@@ -193,6 +198,7 @@ import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import ClientInstructionCard from "@/components/ClientInstructionCard.vue";
 
 const mainStore = useMainStore();
 
