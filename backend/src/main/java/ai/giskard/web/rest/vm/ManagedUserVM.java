@@ -5,7 +5,7 @@ import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 /**
  * View Model extending the AdminUserDTO, which is meant to be used in the user management UI.

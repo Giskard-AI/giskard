@@ -1,8 +1,10 @@
 package ai.giskard.web.rest.errors;
 
-public class NotInDatabaseException extends BadRequestAlertException {
+import org.springframework.http.HttpStatus;
+
+public class NotInDatabaseException extends GiskardException {
 
     public NotInDatabaseException(Entity entity, String key) {
-        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not in database: %s", entity.getName(), key), entity.name().toLowerCase(), "accesscontrolerror");
+        super(HttpStatus.BAD_REQUEST, String.format("%s not in database: %s", entity.getName(), key));
     }
 }

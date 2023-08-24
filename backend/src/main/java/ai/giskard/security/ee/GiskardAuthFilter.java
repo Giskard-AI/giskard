@@ -6,11 +6,11 @@ import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.web.filter.GenericFilterBean;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 import static ai.giskard.security.ee.jwt.JWTFilter.AUTHORIZATION_HEADER;
