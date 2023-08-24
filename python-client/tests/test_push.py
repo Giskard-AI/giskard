@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
 
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -163,9 +162,6 @@ def test_mad_transformation_slicing(enron_data):
     data_s = data.slice(head_slice)
     output = data_s.transform(res)
     assert output
-
-
-# Created with Claude 2
 
 
 def test_supported_perturbation_type_enum():
