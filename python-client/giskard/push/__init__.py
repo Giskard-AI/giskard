@@ -58,6 +58,8 @@ class ExamplePush(Push):
         saved_example: Example dataset row
         training_label: Ground truth label
         training_label_proba: Probability of ground truth label
+
+    Can convert to gRPC protobuf format.
     """
 
     saved_example = None
@@ -65,6 +67,9 @@ class ExamplePush(Push):
     training_label_proba = None
 
     def to_grpc(self):
+        """
+        Convert to gRPC protobuf format.
+        """
         return ml_worker_pb2.Push(
             kind=self.pushkind,
             push_title=self.push_title,
@@ -73,6 +78,16 @@ class ExamplePush(Push):
 
 
 class FeaturePush(Push):
+    """
+    Push related to a specific feature.
+
+    Adds attributes:
+        feature: Feature name
+        value: Feature value
+
+    Can convert to gRPC protobuf format.
+    """
+
     feature = None
     value = None
 
@@ -91,16 +106,27 @@ class FeaturePush(Push):
 
 class OverconfidencePush(ExamplePush):
     """
-    Push for overconfidence cases.
+    Recommand actions for overconfidence cases.
 
-    Attributes:
-        training_label: Ground truth label
-        training_label_proba: Probability of ground truth label
-        saved_example: Example dataset row
-        predicted_label: Model predicted label
-        rate: Overconfidence rate
+    Description:
+        Tag examples that are incorrect but that were classified with a high probability as the wrong label.
+        This may indicate that the model is overconfident on this example.
+        This may be due to spurious correlation or a data leak
 
-    Generates title, details, tests for overconfidence push.
+    Triggering event:
+        When we switch examples, the example is incorrect and the example is classified as overconfident.
+        We quantify this as the difference between the largest probability assigned to a label and the
+        probability assigned to the correct label (this will be 0 if the model made the correct prediction).
+        If this is larger than a threshold (typically determined automatically depending on
+        the number of classes), then the prediction is considered overconfident.
+
+    Call to action description:
+        Create one-sample test : This adds a test that checks if the model is overconfident on this example to a test suite.
+        Get similar examples : This filters the debugging session to show examples with overconfidence only.
+
+    Requirements:
+        Ground truth label
+        Classification models only
     """
 
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
@@ -154,15 +180,25 @@ class OverconfidencePush(ExamplePush):
 
 class BorderlinePush(ExamplePush):
     """
-    Push for borderline/underconfidence cases.
+    Recommend actions for borderline/underconfidence cases.
 
-    Attributes:
-        training_label: Ground truth label
-        training_label_proba: Probability of ground truth label
-        saved_example: Example dataset row
-        rate: Underconfidence rate
+    Description:
+        Tag examples that are classified with very low confidence,
+        indicating the model is unsure about the prediction.
+        This may be due to inconsistent patterns or insufficient data.
 
-    Generates title, details, tests for borderline push.
+    Triggering event:
+        When we switch examples, the example is classified as underconfident.
+        By default, we mark a prediction as underconfident when the second most
+        probable prediction has a probability which is only less than 10%
+        smaller than the predicted label
+
+    Call to action description:
+        Create one-sample test: This adds a test that checks if the model is underconfident on this example to a test suite.
+        Get similar examples: This filters the debugging session to show examples with underconfidence only.
+
+    Requirements:
+        Classification models only
     """
 
     def __init__(self, training_label, training_label_proba, dataset_row, rate):
@@ -217,16 +253,28 @@ class BorderlinePush(ExamplePush):
 
 class ContributionPush(FeaturePush):
     """
-    Push for high contribution features.
+    Recommend actions for feature that have high SHAP values.
 
-    Attributes:
-        feature: Feature name
-        value: Feature value
-        bounds: Value bounds if feature is numerical
-        model_type: Model type (classification/regression)
-        correct_prediction: If contribution causes correct/incorrect prediction
+    Description:
+        Tag features that have a high SHAP value for this example.
+        This may indicate that the model is relying heavily on this feature to make the prediction.
 
-    Generates title, details, tests, slicing function based on attributes.
+    Triggering event:
+        When we switch examples and the most contributing shapley’s value
+        is really high compared to the rest of the features.
+        We mark a feature as high contributing by computing SHAP values
+        for all features. Then we calculates z-scores to find any significant outliers.
+        If the z-score is above a threshold (typically determined automatically
+        depending on the number of features), then the feature is considered high contributing.
+
+
+    Call to action description:
+        Save Slice : This will save the slice in the catalog and enable you to create tests more efficiently.
+        Add Test to a test suite : This will add a test to a test suite to check if this slice performs better or worse than the rest of the dataset.
+        Get similar examples : This will filter this debugging session to show examples from this slice only.
+
+    Requirements:
+        Numerical and Categorical features only
     """
 
     slicing_function = None
@@ -323,17 +371,25 @@ class ContributionPush(FeaturePush):
 
 class PerturbationPush(FeaturePush):
     """
-    Push for perturbation analysis.
+    Recommend actions for feature that perturb the prediction.
 
-    Attributes:
-        feature: Feature name
-        value: Original feature value
-        value_perturbed: Perturbed feature values
-        transformation_functions: Perturbation functions
-        transformation_functions_params: Function parameters
-        details: Default details
+    Description:
+        Tag features that when perturbed, change the prediction.
+        This may indicate that the model is sensitive to this feature.
 
-    Generates title, tests based on perturbation.
+    Triggering event:
+        When we switch examples and the prediction changes when we perturb a feature.
+        We mark a feature as sensitive by applying supported perturbations to each feature in the dataset.
+        For numerical columns, we add/subtract values based on mean absolute deviation.
+        For text columns, we apply predefined text transformations.
+
+    Call to action description:
+        Add to test suite : This will add a test to a test suite to check if a
+        perturbation on this feature changes the prediction above a threshold.
+
+    Requirements:
+        Need Ground truth label
+        Numerical and Text features only
     """
 
     value_perturbed: list = None
