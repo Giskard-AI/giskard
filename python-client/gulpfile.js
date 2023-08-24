@@ -8,7 +8,7 @@ const minify = require('gulp-minify');
 function widget_css(cb) {
     gulp.src('./src/scan-widget/style.css')
         .pipe(postcss())
-        .pipe(gulp.dest('./giskard/scanner/templates/static/'));
+        .pipe(gulp.dest('./giskard/visualization/templates/static/'));
     cb();
 }
 
@@ -18,7 +18,7 @@ function widget_js_external(cb) {
             presets: ["@babel/preset-env"]
         }))
         .pipe(concat('external.js'))
-        .pipe(gulp.dest('./giskard/scanner/templates/static/'));
+        .pipe(gulp.dest('./giskard/visualization/templates/static/'));
     cb();
 }
 
@@ -34,7 +34,7 @@ function widget_js_internal(cb) {
         }))
         .pipe(concat('internal.js'))
         .pipe(minify({ noSource: true, ext: { min: '.js' } }))
-        .pipe(gulp.dest('./giskard/scanner/templates/static/'));
+        .pipe(gulp.dest('./giskard/visualization/templates/static/'));
 
     cb();
 }
@@ -43,7 +43,7 @@ const widget = gulp.parallel(widget_css, widget_js_external, widget_js_internal)
 
 exports.widget = widget;
 exports.default = function () {
-    gulp.watch('./giskard/scanner/templates/*.html', widget);
+    gulp.watch('./giskard/visualization/templates/*.html', widget);
     gulp.watch('./src/scan-widget/*.html', widget);
     gulp.watch('./src/scan-widget/*.js', widget);
 }
