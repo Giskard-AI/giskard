@@ -23,12 +23,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.Sets;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -38,7 +39,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -146,8 +146,9 @@ public class InitService {
     /**
      * Initializing first authorities, mock users, and mock projects
      */
-    @EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationStartedEvent.class)
     public void init() {
+        logger.info("Initializing Giskard");
         projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());
         initAuthorities();
@@ -156,6 +157,7 @@ public class InitService {
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
+        logger.info("DONE Initializing Giskard");
     }
 
     /**

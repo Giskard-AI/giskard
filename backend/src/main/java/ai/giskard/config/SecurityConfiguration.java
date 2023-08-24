@@ -47,6 +47,11 @@ public class SecurityConfiguration {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
             ).sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(antMatcher(WEBSOCKET_ENDPOINT)).permitAll()
+                .requestMatchers(antMatcher(MLWORKER_WEBSOCKET_ENDPOINT)).permitAll()
+                .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**")).permitAll()
+                .requestMatchers(antMatcher("/swagger-ui/**")).permitAll()
+                .requestMatchers(antMatcher("/test/**")).permitAll()
                 .requestMatchers(antMatcher("/api/v2/dev/**")).permitAll()
                 .requestMatchers(antMatcher("/api/v2/settings/license")).permitAll()
                 .requestMatchers(antMatcher("/api/v2/settings/ml-worker-connect")).hasAuthority(AuthoritiesConstants.API)
@@ -72,15 +77,6 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-            .requestMatchers(antMatcher(WEBSOCKET_ENDPOINT))
-            .requestMatchers(antMatcher(MLWORKER_WEBSOCKET_ENDPOINT))
-            .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**"))
-            .requestMatchers(antMatcher("/swagger-ui/**"))
-            .requestMatchers(antMatcher("/test/**"));
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
