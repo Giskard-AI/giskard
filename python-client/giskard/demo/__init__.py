@@ -29,7 +29,6 @@ __all__ = [
     "titanic_df",
     "titanic",
     "titanic_pipeline",
-    "titanic_wrapped",
     "linear_df",
     "linear",
     "linear_pipeline",
