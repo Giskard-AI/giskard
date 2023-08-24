@@ -65,7 +65,7 @@ def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
             )
 
 
-def _apply_perturbation(model: BaseModel, ds: Dataset, df: pd.Dataset, feature: str, coltype) -> TransformationInfo:
+def _apply_perturbation(model: BaseModel, ds: Dataset, df: pd.DataFrame, feature: str, coltype) -> TransformationInfo:
     """
     Apply perturbation to a feature and check if prediction changes.
 
