@@ -65,16 +65,16 @@ Giskard works with any model, any environment and integrates seamlessly with you
 
 # Contents
 
-1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**  
-2. ❓ **[FAQ](#-faq)**
-3. ⭐️ **[Premium features](#%EF%B8%8F-premium-features)**
+1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
+2. ⭐️ **[Premium features](#%EF%B8%8F-premium-features)**
+3. ❓ **[FAQ](#-faq)**
 4. 👋 **[Community](#-community)**
 
 
 # 🤸‍♀️ Quickstart
 
 ## 1. 🔎 Scan your model
-Here's an example of a *hello world* Giskard scan in code:
+Here's an example of Giskard scan on the famous titanic survival prediction dataset:
 
 ```python
 import giskard
@@ -102,7 +102,6 @@ giskard_model = giskard.Model(
     name="Titanic model",  # Optional
     classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
-    # classification_threshold=0.5,  # Default: 0.5
 )
 
 ```
@@ -116,7 +115,7 @@ Once the scan completes, you can display the results directly in your notebook:
 ```python
 display(scan_results)
 ```
-*Check our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
+*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
 ## 2. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite**.
@@ -128,37 +127,6 @@ You can run the test suite locally to verify that it reproduces the issues
 ```python
 test_suite.run()
 ```
-# ❓ FAQ
-<details>
-  <summary>About the ML worker</summary>
-  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
-  </details>
-  
-<details>
-  <summary>How to get the API key</summary>
-  
-  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
-</details>
-
-<details>
-  <summary>If Giskard server/ML worker is not installed</summary>
-
-  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
-</details>
-
-<details>
-  <summary>If Giskard server is installed on an external server</summary>
-
-  ```python
-    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
-  ```
-</details>
-
-<details>
-  <summary>For more information on uploading to your local Giskard server</summary>
-
-  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
-</details>
 
 # ⭐️ Premium Features
 
@@ -215,11 +183,46 @@ You can then **upload the test suite** to the local Giskard server. This will en
     
     ```
 
+# ❓ Where can I get more help?
+
+
+<details>
+  <summary>What is a ML worker?</summary>
+  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
+  </details>
+  
+<details>
+  <summary>How to get the API key</summary>
+  
+  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
+</details>
+
+<details>
+  <summary>If Giskard server/ML worker is not installed</summary>
+
+  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+</details>
+
+<details>
+  <summary>If Giskard server is installed on an external server</summary>
+
+  ```python
+    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+  ```
+</details>
+
+<details>
+  <summary>For more information on uploading to your local Giskard server</summary>
+
+  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+</details>
+
+Go to our [Discord](https://gisk.ar/discord) to get more help.
 
 # 👋 Community
-We welcome contributions from the Machine Learning community!
+We welcome contributions from the Machine Learning community! Read this [guide](CONTRIBUTING.md) to get started.
 
-Read this [guide](CONTRIBUTING.md) to get started.
+Join our thriving community on our Discord server : [join Discord server](https://gisk.ar/discord)
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
