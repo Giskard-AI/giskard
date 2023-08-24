@@ -46,11 +46,6 @@ public class SecurityConfiguration {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
             ).sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(antMatcher(WEBSOCKET_ENDPOINT)).permitAll()
-                .requestMatchers(antMatcher(MLWORKER_WEBSOCKET_ENDPOINT)).permitAll()
-                .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**")).permitAll()
-                .requestMatchers(antMatcher("/swagger-ui/**")).permitAll()
-                .requestMatchers(antMatcher("/test/**")).permitAll()
                 .requestMatchers(
                     antMatcher(WEBSOCKET_ENDPOINT),
                     antMatcher(MLWORKER_WEBSOCKET_ENDPOINT),
