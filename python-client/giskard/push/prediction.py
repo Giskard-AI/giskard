@@ -1,3 +1,12 @@
+"""
+Trigger functions for model debugging prediction notifications.
+
+Functions:
+
+- create_overconfidence_push: Create overconfidence notification from model prediction.
+- create_borderline_push: Create borderline/underconfidence notification from prediction.
+
+"""
 import pandas as pd
 
 from giskard.datasets.base import Dataset
@@ -10,7 +19,25 @@ from giskard.testing.tests.calibration import (
 from ..push import BorderlinePush, OverconfidencePush
 
 
-def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> OverconfidencePush:
+    """
+    Create overconfidence notification from model prediction.
+
+    Checks if model is overconfident on a given row based on
+    overconfidence rate test.
+
+    If overconfidence detected and predicted class is incorrect,
+    creates and returns OverconfidencePush.
+
+    Args:
+        model (BaseModel): Giskard model
+        ds (Dataset): Original dataset
+        df (pd.DataFrame): DataFrame with row to analyze
+
+    Returns:
+        OverconfidencePush if overconfidence and misprediction
+        None otherwise
+    """
     if model.is_classification:
         row_slice = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
 
@@ -27,7 +54,23 @@ def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
             )
 
 
-def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame):
+def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> BorderlinePush:
+    """
+    Create borderline/underconfidence notification from prediction.
+
+    Checks if model is underconfident on a given row based on
+    underconfidence rate test.
+
+    If underconfidence detected, creates and returns BorderlinePush.
+
+    Args:
+        model (BaseModel): ML model
+        ds (Dataset): Original dataset
+        df (pd.DataFrame): DataFrame with row to analyze
+
+    Returns:
+        BorderlinePush if underconfident, None otherwise.
+    """
     if model.is_classification:
         row_slice = Dataset(
             df=df,
