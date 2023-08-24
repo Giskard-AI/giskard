@@ -1,81 +1,75 @@
-from typing import Any
+"""
+This module defines various push classes used for model debugging.
 
-from giskard import TestResult, test
+The main classes are:
+
+- Push: Base push class
+- ExamplePush: Push based on example data
+- OverconfidencePush: Push for overconfidence cases
+- BorderlinePush: Push for borderline/underconfidence cases
+- ContributionPush: Push for high contribution features
+- PerturbationPush: Push for perturbation analysis
+
+ExamplePush and its subclasses allow saving examples and generating
+one-sample tests. ContributionPush and PerturbationPush allow generating
+statistical tests and slicing functions.
+
+The push classes allow converting to gRPC protobuf format via the to_grpc() method.
+"""
+
 from giskard.core.core import SupportedModelTypes
-from giskard.datasets.base import Dataset
 from giskard.ml_worker.generated import ml_worker_pb2
 from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
-from giskard.models.base import BaseModel
-from giskard.push.push_test_catalog.catalog import test_diff_f1_push, test_diff_rmse_push
+from giskard.push.push_test_catalog.catalog import (
+    one_sample_overconfidence_test,
+    one_sample_underconfidence_test,
+    test_diff_f1_push,
+    test_diff_rmse_push,
+    test_metamorphic_invariance_with_mad,
+)
 from giskard.push.utils import TransformationInfo
 from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
-from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
-from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.testing.tests.statistic import test_theil_u
 
 
 class Push:
-    # list of numerical value or category
+    """
+    Base push class.
+
+    Attributes:
+        push_title: Title of the push
+        details: List of details/actions for the push
+        tests: List of tests to generate
+        pushkind: Enum of push kind
+    """
+
     push_title = None
     details = None
     tests = None
     pushkind = None
 
 
-@test(name="If Underconfidence Decreases", tags=["custom"])
-def if_underconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float):
-    new_rate = test_underconfidence_rate(model, dataset).metric
-    return TestResult(passed=new_rate < rate, metric=new_rate - rate)
-
-
-@test(name="If Overconfidence Decreases", tags=["custom"])
-def if_overconfidence_rate_decrease(model: BaseModel, dataset: Dataset, rate: float):
-    new_rate = test_overconfidence_rate(model, dataset).metric
-    return TestResult(passed=new_rate < rate, metric=new_rate - rate)
-
-
-@test(name="Example Correctness", tags=["unit test", "custom"])
-def correct_example(model: BaseModel, saved_example: Dataset, training_label: Any):
-    prediction = model.predict(saved_example).prediction.values[0]
-    return TestResult(passed=prediction == training_label, metric=prediction == training_label)
-
-
-@test(name="Increase Probability", tags=["unit test", "custom"])
-def increase_probability(model: BaseModel, saved_example: Dataset, training_label: Any, training_label_proba: Any):
-    proba = model.predict(saved_example).all_predictions[training_label].values[0]
-    return TestResult(passed=proba > training_label_proba, metric=proba - training_label_proba)
-
-
-@test(name="One-Sample Overconfidence test", tags=["one-sample test", "custom"])
-def one_sample_overconfidence_test(model: BaseModel, saved_example: Dataset):
-    if model.is_classification:
-        test_result = test_overconfidence_rate(model, saved_example).execute()
-        return TestResult(passed=test_result.passed, metric=test_result.metric)
-
-
-@test(name="One-Sample Underconfidence test", tags=["one-sample test", "custom"])
-def one_sample_underconfidence_test(model: BaseModel, saved_example: Dataset):
-    if model.is_classification:
-        test_result = test_underconfidence_rate(model, saved_example).execute()
-        return TestResult(passed=test_result.passed, metric=test_result.metric)
-
-
-@test(name="Numerical Invariance test", tags=["custom"])
-def test_metamorphic_invariance_with_mad(model: BaseModel, dataset: Dataset, column_name: str, value_added: float):
-    return test_metamorphic_invariance(
-        model=model,
-        dataset=dataset,
-        transformation_function=mad_transformation(column_name=column_name, value_added=value_added),
-    ).execute()
-
-
 class ExamplePush(Push):
+    """
+    Push class based on example data.
+
+    Adds attributes:
+        saved_example: Example dataset row
+        training_label: Ground truth label
+        training_label_proba: Probability of ground truth label
+
+    Can convert to gRPC protobuf format.
+    """
+
     saved_example = None
     training_label = None
     training_label_proba = None
 
     def to_grpc(self):
+        """
+        Convert to gRPC protobuf format.
+        """
         return ml_worker_pb2.Push(
             kind=self.pushkind,
             push_title=self.push_title,
@@ -84,10 +78,23 @@ class ExamplePush(Push):
 
 
 class FeaturePush(Push):
+    """
+    Push related to a specific feature.
+
+    Adds attributes:
+        feature: Feature name
+        value: Feature value
+
+    Can convert to gRPC protobuf format.
+    """
+
     feature = None
     value = None
 
     def to_grpc(self):
+        """
+        Convert to gRPC protobuf format.
+        """
         return ml_worker_pb2.Push(
             kind=self.pushkind,
             key=self.feature,
@@ -98,6 +105,30 @@ class FeaturePush(Push):
 
 
 class OverconfidencePush(ExamplePush):
+    """
+    Recommand actions for overconfidence cases.
+
+    Description:
+        Tag examples that are incorrect but that were classified with a high probability as the wrong label.
+        This may indicate that the model is overconfident on this example.
+        This may be due to spurious correlation or a data leak
+
+    Triggering event:
+        When we switch examples, the example is incorrect and the example is classified as overconfident.
+        We quantify this as the difference between the largest probability assigned to a label and the
+        probability assigned to the correct label (this will be 0 if the model made the correct prediction).
+        If this is larger than a threshold (typically determined automatically depending on
+        the number of classes), then the prediction is considered overconfident.
+
+    Call to action description:
+        Create one-sample test : This adds a test that checks if the model is overconfident on this example to a test suite.
+        Get similar examples : This filters the debugging session to show examples with overconfidence only.
+
+    Requirements:
+        Ground truth label
+        Classification models only
+    """
+
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
         self._overconfidence()
         self.pushkind = PushKind.Overconfidence
@@ -116,6 +147,9 @@ class OverconfidencePush(ExamplePush):
         self.predicted_label = predicted_label
 
     def _overconfidence(self):
+        """
+        Generate overconfidence push title and details.
+        """
         res = {
             "push_title": "This example is incorrect while having a high confidence.",
             "details": [
@@ -145,6 +179,28 @@ class OverconfidencePush(ExamplePush):
 
 
 class BorderlinePush(ExamplePush):
+    """
+    Recommend actions for borderline/underconfidence cases.
+
+    Description:
+        Tag examples that are classified with very low confidence,
+        indicating the model is unsure about the prediction.
+        This may be due to inconsistent patterns or insufficient data.
+
+    Triggering event:
+        When we switch examples, the example is classified as underconfident.
+        By default, we mark a prediction as underconfident when the second most
+        probable prediction has a probability which is only less than 10%
+        smaller than the predicted label
+
+    Call to action description:
+        Create one-sample test: This adds a test that checks if the model is underconfident on this example to a test suite.
+        Get similar examples: This filters the debugging session to show examples with underconfidence only.
+
+    Requirements:
+        Classification models only
+    """
+
     def __init__(self, training_label, training_label_proba, dataset_row, rate):
         self._borderline()
         self.pushkind = PushKind.Borderline
@@ -164,6 +220,9 @@ class BorderlinePush(ExamplePush):
         # ]
 
     def _borderline(self):
+        """
+        Generate borderline push title and details.
+        """
         res = {
             "push_title": "This example was predicted with very low confidence",
             "details": [
@@ -193,6 +252,31 @@ class BorderlinePush(ExamplePush):
 
 
 class ContributionPush(FeaturePush):
+    """
+    Recommend actions for feature that have high SHAP values.
+
+    Description:
+        Tag features that have a high SHAP value for this example.
+        This may indicate that the model is relying heavily on this feature to make the prediction.
+
+    Triggering event:
+        When we switch examples and the most contributing shapley’s value
+        is really high compared to the rest of the features.
+        We mark a feature as high contributing by computing SHAP values
+        for all features. Then we calculates z-scores to find any significant outliers.
+        If the z-score is above a threshold (typically determined automatically
+        depending on the number of features), then the feature is considered high contributing.
+
+
+    Call to action description:
+        Save Slice : This will save the slice in the catalog and enable you to create tests more efficiently.
+        Add Test to a test suite : This will add a test to a test suite to check if this slice performs better or worse than the rest of the dataset.
+        Get similar examples : This will filter this debugging session to show examples from this slice only.
+
+    Requirements:
+        Numerical and Categorical features only
+    """
+
     slicing_function = None
     bounds = None
     model_type = None
@@ -212,6 +296,9 @@ class ContributionPush(FeaturePush):
         self._test_selection()
 
     def _set_title_and_details(self):
+        """
+        Generate title and details based on prediction.
+        """
         if self.correct_prediction:
             self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
@@ -258,6 +345,9 @@ class ContributionPush(FeaturePush):
             ]
 
     def _slicing_function(self):
+        """
+        Generate slicing function based on feature/value.
+        """
         if self.bounds is not None:
             clause = [GreaterThan(self.feature, self.bounds[0], True), LowerThan(self.feature, self.bounds[1], True)]
         else:
@@ -267,6 +357,9 @@ class ContributionPush(FeaturePush):
         self.test_params = {"slicing_function": slicing_func}
 
     def _test_selection(self):
+        """
+        Select statistical test based on prediction type.
+        """
         if not self.correct_prediction:
             if self.model_type == SupportedModelTypes.REGRESSION:
                 self.tests = [test_diff_rmse_push]
@@ -277,6 +370,28 @@ class ContributionPush(FeaturePush):
 
 
 class PerturbationPush(FeaturePush):
+    """
+    Recommend actions for feature that perturb the prediction.
+
+    Description:
+        Tag features that when perturbed, change the prediction.
+        This may indicate that the model is sensitive to this feature.
+
+    Triggering event:
+        When we switch examples and the prediction changes when we perturb a feature.
+        We mark a feature as sensitive by applying supported perturbations to each feature in the dataset.
+        For numerical columns, we add/subtract values based on mean absolute deviation.
+        For text columns, we apply predefined text transformations.
+
+    Call to action description:
+        Add to test suite : This will add a test to a test suite to check if a
+        perturbation on this feature changes the prediction above a threshold.
+
+    Requirements:
+        Need Ground truth label
+        Numerical and Text features only
+    """
+
     value_perturbed: list = None
     transformation_functions: list = None
     transformation_functions_params: list = None

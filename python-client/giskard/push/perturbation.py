@@ -1,3 +1,13 @@
+"""
+Trigger functions for model debugging prediction notifications.
+
+Functions:
+
+- create_perturbation_push: Create a perturbation notification by applying transformations.
+- _apply_perturbation: Apply perturbation to a feature and check if prediction changes.
+- _check_after_perturbation: Check if perturbation changed the model's prediction.
+
+"""
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
@@ -27,10 +37,25 @@ text_transfo_list = [
 ]
 
 
-def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
+def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> PerturbationPush:
+    """Create a perturbation notification by applying transformations.
+
+    Applies supported perturbations to each feature in the dataset
+    based on column type. If the prediction changes after perturbation,
+    creates and returns a PerturbationPush.
+
+    Args:
+        model: Model used for prediction
+        ds: Dataset
+        df: DataFrame containing row to analyze
+
+    Returns:
+        PerturbationPush if perturbation changed prediction, else None
+    """
+
     for feat, coltype in ds.column_types.items():
         coltype = coltype_to_supported_perturbation_type(coltype)
-        transformation_info = apply_perturbation(model, ds, df, feat, coltype)
+        transformation_info = _apply_perturbation(model, ds, df, feat, coltype)
         value = df.iloc[0][feat]
         if transformation_info is not None:
             return PerturbationPush(
@@ -40,7 +65,30 @@ def create_perturbation_push(model, ds: Dataset, df: pd.DataFrame):
             )
 
 
-def apply_perturbation(model, ds, df, feature, coltype):
+def _apply_perturbation(model: BaseModel, ds: Dataset, df: pd.DataFrame, feature: str, coltype) -> TransformationInfo:
+    """
+    Apply perturbation to a feature and check if prediction changes.
+
+    Creates a slice of the input dataframe with only the row to perturb.
+    Applies supported perturbations based on column type.
+
+    For numeric columns, adds/subtracts values based on mean absolute deviation.
+    For text columns, applies predefined text transformations.
+
+    After each perturbation, checks if the model's prediction changes
+    compared to the original unperturbed input.
+
+    Args:
+        model (BaseModel): ML model to make predictions
+        ds (Dataset): Original dataset
+        df (pd.Dataframe): DataFrame containing row to perturb
+        feature (str): Name of feature column to perturb
+        coltype: Data type of feature column
+
+    Returns:
+        TransformationInfo if perturbation changed prediction, else None.
+        Includes details like perturbed values, functions.
+    """
     transformation_function = list()
     value_perturbed = list()
     transformation_functions_params = list()
@@ -77,7 +125,7 @@ def apply_perturbation(model, ds, df, feature, coltype):
                     transformed = ds_slice_copy.transform(t)
 
                     # Generate the perturbation
-                    perturbed = check_after_perturbation(model, ds_slice, transformed)
+                    perturbed = _check_after_perturbation(model, ds_slice, transformed)
 
                     if perturbed:
                         value_perturbed.append(transformed.df[feature].values.item(0))
@@ -98,7 +146,7 @@ def apply_perturbation(model, ds, df, feature, coltype):
             transformed = ds_slice_copy.transform(t)
 
             # Generate the perturbation
-            passed = check_after_perturbation(model, ds_slice, transformed)
+            passed = _check_after_perturbation(model, ds_slice, transformed)
 
             if passed:
                 value_perturbed.append(transformed.df[feature].values.item(0))
@@ -121,7 +169,24 @@ def apply_perturbation(model, ds, df, feature, coltype):
     )
 
 
-def check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset):
+def _check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset) -> bool:
+    """
+    Check if perturbation changed the model's prediction.
+
+    Compares the model's prediction on the original unperturbed
+    row versus the perturbed row.
+
+    For classification, checks if predicted class changes.
+    For regression, checks if prediction value changes significantly.
+
+    Args:
+        model (BaseModel): ML model
+        ref_row (Dataset): Row before perturbation
+        row_perturbed (Dataset): Row after perturbation
+
+    Returns:
+        bool indicating if prediction changed
+    """
     if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
         # Compute the probability of the reference row
         ref_pred = model.predict(ref_row).prediction[0]
