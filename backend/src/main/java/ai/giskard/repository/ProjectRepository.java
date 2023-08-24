@@ -41,6 +41,10 @@ public interface ProjectRepository extends MappableJpaRepository<Project, Long> 
         return findOneByName(name).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.NAME, name));
     }
 
+    @Override
+    @Named("no_mapstruct")
+    Project getReferenceById(Long aLong);
+
     Optional<Project> findOneByKey(String key);
 
     default Project getOneByKey(String key) {
