@@ -49,9 +49,14 @@ Giskard is a Python library that uses a variety of techniques to **detect vulner
  It is a powerful tool that can help you to **save time and effort**, and it can help you to produce more **reliable and trustworthy models**.
  
 <p align="center">
-  <img src="readme/scan_example.gif" alt="Scan Example" width="1000px">
+  <img src="readme/scan_example.gif" alt="Scan Example" width="800">
 </p>
 
+Instantaneously generate test suites for your models ⤵️
+
+<p align="center">
+  <img src="readme/suite_example.png" alt="Test Suite Example" width="800">
+</p>
 Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
 <p align="center">
