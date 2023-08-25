@@ -185,7 +185,7 @@ const project = computed(() => {
 
 const selectedTestUsage = computed(() => {
   let isCustom = selected.value!.tags.includes('custom');
-  let customParams = {};
+  let customParams: { [name: string]: string } = {};
 
   if (selected.value === null) {
     return '';
@@ -213,14 +213,13 @@ const selectedTestUsage = computed(() => {
   }
 
   if (isCustom) {
-
     content += `${giskardClientSnippet.value}\n`;
 
-    const customSliceFunctions = selected.value.args.filter(arg => {
+    const customSlicingFunctions = selected.value.args.filter(arg => {
       return arg.type === "SlicingFunction" && arg.defaultValue !== null;
     });
 
-    customSliceFunctions.forEach((arg, index) => {
+    customSlicingFunctions.forEach((arg, index) => {
       const sfName = `sf_${index + 1}`;
       customParams[arg.name] = `${arg.name}=${sfName}`;
       content += `${sfName} = giskard.SlicingFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
