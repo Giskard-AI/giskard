@@ -43,15 +43,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserAdminControllerIT {
 
     private static final String DEFAULT_LOGIN = "johndoe";
-    private static final String UPDATED_LOGIN = "jhipster";
+    private static final String UPDATED_LOGIN = "giskard";
 
     private static final Long DEFAULT_ID = 1L;
 
     private static final String DEFAULT_PASSWORD = "passjohndoe";
-    private static final String UPDATED_PASSWORD = "passjhipster";
+    private static final String UPDATED_PASSWORD = "passgiskard";
 
     private static final String DEFAULT_EMAIL = "johndoe@localhost";
-    private static final String UPDATED_EMAIL = "jhipster@localhost";
+    private static final String UPDATED_EMAIL = "giskard@localhost";
 
     private static final String DEFAULT_DISPLAY_NAME = "Full Name";
     private static final String UPDATED_DISPLAY_NAME = "Updated Full Name";
@@ -338,10 +338,10 @@ class UserAdminControllerIT {
         userRepository.saveAndFlush(user);
 
         User anotherUser = new User();
-        anotherUser.setLogin("jhipster");
+        anotherUser.setLogin("giskard");
         anotherUser.setPassword(RandomStringUtils.random(60));
         anotherUser.setActivated(true);
-        anotherUser.setEmail("jhipster@localhost");
+        anotherUser.setEmail("giskard@localhost");
         userRepository.saveAndFlush(anotherUser);
 
         // Update the user
@@ -351,7 +351,7 @@ class UserAdminControllerIT {
         managedUserVM.setId(updatedUser.getId());
         managedUserVM.setLogin(updatedUser.getLogin());
         managedUserVM.setPassword(updatedUser.getPassword());
-        managedUserVM.setEmail("jhipster@localhost"); // this email should already be used by anotherUser
+        managedUserVM.setEmail("giskard@localhost"); // this email should already be used by anotherUser
         managedUserVM.setActivated(updatedUser.isActivated());
         managedUserVM.setCreatedBy(updatedUser.getCreatedBy());
         managedUserVM.setCreatedDate(updatedUser.getCreatedDate());
@@ -373,10 +373,10 @@ class UserAdminControllerIT {
         userRepository.saveAndFlush(user);
 
         User anotherUser = new User();
-        anotherUser.setLogin("jhipster");
+        anotherUser.setLogin("giskard");
         anotherUser.setPassword(RandomStringUtils.random(60));
         anotherUser.setActivated(true);
-        anotherUser.setEmail("jhipster@localhost");
+        anotherUser.setEmail("giskard@localhost");
         userRepository.saveAndFlush(anotherUser);
 
         // Update the user
@@ -384,7 +384,7 @@ class UserAdminControllerIT {
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getId());
-        managedUserVM.setLogin("jhipster"); // this login should already be used by anotherUser
+        managedUserVM.setLogin("giskard"); // this login should already be used by anotherUser
         managedUserVM.setPassword(updatedUser.getPassword());
         managedUserVM.setEmail(updatedUser.getEmail());
         managedUserVM.setActivated(updatedUser.isActivated());

@@ -16,7 +16,7 @@ from ..utils.display import format_number
 
 
 def escape(value) -> str:
-    return str(value) if type(value) is not str else "%s" % value
+    return str(value) if not isinstance(value, str) else "%s" % value
 
 
 def _decode(series: pd.Series) -> pd.Series:
