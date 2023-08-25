@@ -41,7 +41,7 @@ We officially support Python 3.9 and 3.10.
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
 
 ______________________________________________________________________
-Giskard uses a variety of techniques to **detect vulnerabilities**, including:
+Giskard is a python library that uses a variety of techniques to **detect vulnerabilities**, including:
 
 - **Data slicing and transformation**: Giskard can automatically generate different data slices and transformations to test the robustness of your model.
 - **Statistical analysis**: Giskard can use statistical analysis to identify patterns and relationships in your data that could indicate a vulnerability.
