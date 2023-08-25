@@ -57,6 +57,8 @@ Instantaneously generate test suites for your models ⤵️
 <p align="center">
   <img src="readme/suite_example.png" alt="Test Suite Example" width="800">
 </p>
+
+
 Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
 <p align="center">
