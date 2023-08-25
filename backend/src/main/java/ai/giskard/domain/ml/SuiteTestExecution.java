@@ -1,17 +1,18 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.BaseEntity;
+import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
+import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
 import ai.giskard.utils.FunctionArguments;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
-import ai.giskard.worker.FuncArgument;
-import ai.giskard.worker.SingleTestResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,8 +81,8 @@ public class SuiteTestExecution extends BaseEntity {
 
     public SuiteTestExecution(SuiteTest test,
                               TestSuiteExecution execution,
-                              SingleTestResult message,
-                              List<FuncArgument> arguments) {
+                              MLWorkerWSSingleTestResultDTO message,
+                              List<MLWorkerWSFuncArgumentDTO> arguments) {
         this.test = test;
         this.execution = execution;
         this.missingCount = message.getMissingCount();
@@ -90,19 +91,21 @@ public class SuiteTestExecution extends BaseEntity {
         this.unexpectedPercent = message.getUnexpectedPercent();
         this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
         this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
-        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
-        this.unexpectedIndexList = message.getUnexpectedIndexListList();
-        this.status = message.getIsError()
-            ? TestResult.ERROR : message.getPassed()
-            ? TestResult.PASSED : TestResult.FAILED;
+        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexList();
+        this.unexpectedIndexList = message.getUnexpectedIndexList();
+        if (Boolean.TRUE.equals(message.getIsError())) {
+            this.status = TestResult.ERROR;
+        } else {
+            this.status = Boolean.TRUE.equals(message.getPassed()) ? TestResult.PASSED : TestResult.FAILED;
+        }
         this.metric = message.getMetric();
-        this.actualSlicesSize = message.getActualSlicesSizeList();
-        this.referenceSlicesSize = message.getReferenceSlicesSizeList();
-        this.messages = message.getMessagesList().stream().map(
+        this.actualSlicesSize = message.getActualSlicesSize();
+        this.referenceSlicesSize = message.getReferenceSlicesSize();
+        this.messages = message.getMessages().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
         this.inputs = test.getFunctionInputs().stream()
             .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
         this.arguments = arguments.stream()
-            .collect(Collectors.toMap(FuncArgument::getName, FunctionArguments::funcArgumentToJson));
+            .collect(Collectors.toMap(MLWorkerWSFuncArgumentDTO::getName, FunctionArguments::funcArgumentToJson));
     }
 }
