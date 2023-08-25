@@ -28,13 +28,15 @@ project_name = "enron"
 client = GiskardClient(url, token)
 ```
 
-:::{warning}
-You may also need an extra token (SPACE_TOKEN) to upload your test suite to a private Space on Hugging Face Spaces. To create your Giskard client, please use the following code instead:
+You can find the URL and the tokens in the Settings tab of the Giskard application.
+
+:::{hint}
+You may also need an extra token (Giskard Space Token) to upload your test suite to a private Space on Hugging Face Spaces. To create your Giskard client, please use the following code instead:
 
 ```python
 url = "https://huggingface.co/spaces/<user-id>/<space-id>"
-token = "API_TOKEN"  # Find it in Settings in the Giskard server
-hf_token = "SPACE_TOKEN"  # Find it in Upload instructions in the Giskard server hosted on Hugging Face Spaces
+token = "API_TOKEN"                 # you can generate your API token in the Settings tab of the Giskard application
+hf_token = "<Giskard Space Token>"  # Find it in Settings in the Giskard server
 client = GiskardClient(
     url=url,
     token=token,
