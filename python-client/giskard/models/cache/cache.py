@@ -35,25 +35,31 @@ class ModelCache:
         self.cache_dir = cache_dir or Path(
             settings.home_dir / settings.cache_dir / "global" / "prediction_cache" / self.id
         )
+        self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
+        self.model_type = model_type
+        self._warmed_up = False
 
+    def warm_up_from_disk(self):
         if id is not None:
             if (self.cache_dir / CACHE_CSV_FILENAME).exists():
                 with open(self.cache_dir / CACHE_CSV_FILENAME, "r") as pred_f:
                     reader = csv.reader(pred_f)
                     for row in reader:
-                        if model_type == SupportedModelTypes.TEXT_GENERATION:
+                        if self.model_type == SupportedModelTypes.TEXT_GENERATION:
                             self.prediction_cache[row[0]] = row[1:]
-                        elif model_type == SupportedModelTypes.REGRESSION:
+                        elif self.model_type == SupportedModelTypes.REGRESSION:
                             self.prediction_cache[row[0]] = float(row[1])
                         else:
                             self.prediction_cache[row[0]] = [float(i) for i in row[1:]]
-
-        self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
 
     def get_cache_or_na(self, key: str):
         return self.prediction_cache.get(key, NaN)
 
     def read_from_cache(self, keys: pd.Series):
+        if self.id and not self._warmed_up:
+            self.warm_up_from_disk()
+            self._warmed_up = True
+
         return pd.Series(self.vectorized_get_cache_or_na(keys), index=keys.index)
 
     def set_cache(self, keys: pd.Series, values: List[Any]):
