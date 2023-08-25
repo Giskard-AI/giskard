@@ -1,7 +1,7 @@
 <template>
   <v-menu v-model="menu" :close-on-content-click="false" disable-keys offset-x right :nudge-left="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" :nudge-bottom="28" :max-width="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" min-width="300">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn outlined tile small v-bind="attrs" v-on="on">
+      <v-btn outlined tile small v-bind="attrs" v-on="on" :style="{ 'background-color': backgroundColors[filter.type] }">
         <v-icon left>
           {{ filter.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter' }}
         </v-icon>
@@ -66,6 +66,14 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   isTargetAvailable: false,
 })
+
+const backgroundColors = {
+  [RowFilterType.ALL]: '#ffffff00',
+  [RowFilterType.CORRECT]: '#4CAF5095',
+  [RowFilterType.WRONG]: '#B0002090',
+  [RowFilterType.BORDERLINE]: '#FB9C0095',
+  [RowFilterType.CUSTOM]: '#2196F395',
+}
 
 const menu = ref(false);
 const filter = ref<Filter>(initFilter());
