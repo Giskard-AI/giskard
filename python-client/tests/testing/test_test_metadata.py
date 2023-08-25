@@ -1,9 +1,12 @@
-import pytest
 from typing import Optional, Union
+
 import numpy as np
 import pandas as pd
-from giskard import test
+import pytest
+
+from giskard import test, slicing_function, transformation_function
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
 from giskard.models.base import BaseModel
 
@@ -91,3 +94,22 @@ def test_can_define_test_without_type_hints_with_custom_data(german_credit_model
 
     my_test = my_custom_test(german_credit_model, pd.DataFrame(), 14773)
     my_test.execute()
+
+
+def test_can_have_default_values_for_giskard_objects():
+    @slicing_function()
+    def my_slicing_function(df):
+        return df
+
+    @transformation_function()
+    def my_transformation_function(df):
+        return df
+
+    @test()
+    def test_with_default(
+        sf: SlicingFunction = my_slicing_function, tf: TransformationFunction = my_transformation_function
+    ):
+        return True
+
+    assert test_with_default.meta.args["tf"].default == my_transformation_function.meta.uuid
+    assert test_with_default.meta.args["sf"].default == my_slicing_function.meta.uuid
