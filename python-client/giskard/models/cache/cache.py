@@ -1,6 +1,7 @@
 import csv
 import os
 import uuid
+from logging import warning
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -29,28 +30,36 @@ class ModelCache:
 
     vectorized_get_cache_or_na = None
 
-    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Path = None):
+    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
         self.id = id or str(uuid.uuid4())
         self.prediction_cache = dict()
         self.cache_dir = cache_dir or Path(
             settings.home_dir / settings.cache_dir / "global" / "prediction_cache" / self.id
         )
+        self.cache_file = self.cache_dir / CACHE_CSV_FILENAME
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
         self.model_type = model_type
         self._warmed_up = False
 
     def warm_up_from_disk(self):
-        if id is not None:
-            if (self.cache_dir / CACHE_CSV_FILENAME).exists():
-                with open(self.cache_dir / CACHE_CSV_FILENAME, "r") as pred_f:
-                    reader = csv.reader(pred_f)
-                    for row in reader:
-                        if self.model_type == SupportedModelTypes.TEXT_GENERATION:
-                            self.prediction_cache[row[0]] = row[1:]
-                        elif self.model_type == SupportedModelTypes.REGRESSION:
-                            self.prediction_cache[row[0]] = float(row[1])
-                        else:
-                            self.prediction_cache[row[0]] = [float(i) for i in row[1:]]
+        if id is None or not self.cache_file.exists():
+            return
+
+        try:
+            with self.cache_file.open("r", newline="") as pred_f:
+                reader = csv.reader(pred_f)
+                for row in reader:
+                    if self.model_type == SupportedModelTypes.TEXT_GENERATION:
+                        # Text generation models output should be a single string
+                        self.prediction_cache[row[0]] = row[1]
+                    elif self.model_type == SupportedModelTypes.REGRESSION:
+                        # Regression models output is always casted to float
+                        self.prediction_cache[row[0]] = float(row[1])
+                    else:
+                        # Classification models return list of probabilities
+                        self.prediction_cache[row[0]] = [float(i) for i in row[1:]]
+        except Exception as e:
+            warning(f"Failed to load cache from disk for model {self.id}: {e}")
 
     def get_cache_or_na(self, key: str):
         return self.prediction_cache.get(key, NaN)
@@ -68,7 +77,7 @@ class ModelCache:
 
         if self.id:
             os.makedirs(self.cache_dir, exist_ok=True)
-            with open(self.cache_dir / CACHE_CSV_FILENAME, "a") as pred_f:
+            with self.cache_file.open("a", newline="") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
                     writer.writerow(flatten([keys.iloc[i], values[i]]))
