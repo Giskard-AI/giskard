@@ -1,6 +1,5 @@
 import csv
 import os
-import uuid
 from logging import warning
 from pathlib import Path
 from typing import Any, Iterable, List, Optional
@@ -26,7 +25,7 @@ def flatten(xs):
 
 class ModelCache:
     def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
-        self.id = id or str(uuid.uuid4())
+        self.id = id
         self.prediction_cache = dict()
         self.cache_dir = cache_dir or Path(
             settings.home_dir / settings.cache_dir / "global" / "prediction_cache" / self.id
