@@ -142,7 +142,7 @@
 </template>
 
 <script lang='ts' setup>
-import { chain, uniq } from 'lodash';
+import { chain } from 'lodash';
 import { api } from '@/api';
 import { computed, onActivated, onMounted, ref, watch } from 'vue';
 import { anonymize, pasterColor } from '@/utils';
