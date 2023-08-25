@@ -125,9 +125,11 @@ You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()
 ```
 
+To get even more out of Giskard's library, head over to the Giskard server ⤵️
+
 # ⭐️ Premium Features
 
-The Giskard server feature is closed-source and is only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including:
+The Giskard server feature is closed-source and is only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including
 
 - **Advanced test generation**: This includes the ability to debug your mdoels to diagnose issues and create more domain-specific tests.
 - **Model comparator**: This includes the ability to compare models to decide which one to promote,
