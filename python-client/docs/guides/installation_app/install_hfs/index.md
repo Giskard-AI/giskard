@@ -50,7 +50,9 @@ On a free hardware without persistent storage, after 48 hours of inactivity the 
 :::
 
 Make sure that you are all set up, and clicked on `Duplicate Space`.
-The public Giskard instance hosted on Hugging Face Spaces can be used by following [Upload an object to the Giskard server](../../../guides/upload/index.md).
+The build will last for several minutes.
+
+After the building, the public Giskard instance hosted on Hugging Face Spaces can be used by following the [Upload an object to the Giskard server](../../../guides/upload/index.md) guide.
 
 However, to use a private Space, there are some extra steps for your security and privacy.
 
