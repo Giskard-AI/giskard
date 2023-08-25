@@ -50,7 +50,14 @@
       </v-card-text>
       <HuggingFaceTokenCard v-else-if="state.workerStatus.connected" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
       <v-card-text v-else>
-        Please enter your Hugging Face access token in Giskard Settings page to generate this token.
+        <div class="mb-2">
+          <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateHFToken">Generate</v-btn>
+        </div>
+        <v-row>
+          <v-col>
+            Please enter your Hugging Face access token in Giskard Settings page to generate this token.
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </div>
