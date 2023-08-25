@@ -3,7 +3,7 @@ import os
 import uuid
 from logging import warning
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -25,11 +25,6 @@ def flatten(xs):
 
 
 class ModelCache:
-    id: Optional[str] = None
-    prediction_cache: Dict[str, Any] = None
-
-    vectorized_get_cache_or_na = None
-
     def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
         self.id = id or str(uuid.uuid4())
         self.prediction_cache = dict()
