@@ -10,6 +10,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 from giskard.ml_worker.testing.test_result import TestResult
@@ -50,6 +51,7 @@ __all__ = [
     "transformation_function",
     "SuiteInput",
     "SlicingFunction",
+    "TransformationFunction",
     "scan",
     "TestResult",
     "GiskardTest",
