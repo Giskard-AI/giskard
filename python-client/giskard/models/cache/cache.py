@@ -2,7 +2,7 @@ import csv
 import os
 import uuid
 from pathlib import Path
-from typing import Dict, List, Any, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,9 @@ class ModelCache:
     def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Path = None):
         self.id = id or str(uuid.uuid4())
         self.prediction_cache = dict()
-        self.cache_dir = cache_dir or Path(settings.home_dir / settings.cache_dir / "global/prediction_cache" / self.id)
+        self.cache_dir = cache_dir or Path(
+            settings.home_dir / settings.cache_dir / "global" / "prediction_cache" / self.id
+        )
 
         if id is not None:
             if (self.cache_dir / CACHE_CSV_FILENAME).exists():
