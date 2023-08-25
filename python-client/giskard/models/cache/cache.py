@@ -1,14 +1,13 @@
 import csv
-import os
-from logging import warning
 from pathlib import Path
 from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
 
-from giskard.core.core import SupportedModelTypes
-from giskard.settings import settings
+from ...client.python_utils import warning
+from ...core.core import SupportedModelTypes
+from ...settings import settings
 
 NaN = float("NaN")
 
@@ -24,19 +23,23 @@ def flatten(xs):
 
 
 class ModelCache:
+    _default_cache_dir_prefix = Path(settings.home_dir / settings.cache_dir / "global" / "prediction_cache")
+
     def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
         self.id = id
         self.prediction_cache = dict()
-        self.cache_dir = cache_dir or Path(
-            settings.home_dir / settings.cache_dir / "global" / "prediction_cache" / self.id
-        )
-        self.cache_file = self.cache_dir / CACHE_CSV_FILENAME
+
+        if cache_dir is None and self.id:
+            cache_dir = self._default_cache_dir_prefix.joinpath(self.id)
+
+        self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
+
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
         self.model_type = model_type
         self._warmed_up = False
 
     def warm_up_from_disk(self):
-        if id is None or not self.cache_file.exists():
+        if self.cache_file is None or not self.cache_file.exists():
             return
 
         try:
@@ -69,8 +72,8 @@ class ModelCache:
         for i in range(len(keys)):
             self.prediction_cache[keys.iloc[i]] = values[i]
 
-        if self.id:
-            os.makedirs(self.cache_dir, exist_ok=True)
+        if self.cache_file is not None:
+            self.cache_file.parent.mkdir(parents=True, exist_ok=True)
             with self.cache_file.open("a", newline="") as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
