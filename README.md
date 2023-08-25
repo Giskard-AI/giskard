@@ -129,10 +129,10 @@ test_suite.run()
 
 The Giskard server feature is closed-source and is only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including:
 
-- Advanced test generation: This includes the ability to debug your mdoels to diagnose issues and create more domain-specific tests.
-- Model comparator: This includes the ability to compare models to decide which one to promote,
-- Test hub: This includes a place to gather all your internal tests of your team at the same place to work more efficiently.
-- Business friendly features: This includes the ability to share your results and collect business feedback from your team.
+- **Advanced test generation**: This includes the ability to debug your mdoels to diagnose issues and create more domain-specific tests.
+- **Model comparator**: This includes the ability to compare models to decide which one to promote,
+- **Test hub**: This includes a place to gather all your internal tests of your team at the same place to work more efficiently.
+- **Business feedback**: This includes the ability to share your results and collect business feedback from your team.
 
 If you are interested in learning more about Giskard's closed-source test and catalog features, please contact us.
 
