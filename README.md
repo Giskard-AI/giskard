@@ -41,17 +41,7 @@ We officially support Python 3.9 and 3.10.
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
 
 ______________________________________________________________________
-Giskard is an open-source testing framework dedicated to ML models, covering any Python model, from tabular to LLMs. Giskard uses a variety of techniques to detect vulnerabilities, including:
-
-- Data slicing and transformation: Giskard can automatically generate different data slices and transformations to test the robustness of your model.
-- Statistical analysis: Giskard can use statistical analysis to identify patterns and relationships in your data that could indicate a vulnerability.
-- Machine learning: Giskard can use machine learning to learn from your data and identify patterns that are indicative of vulnerabilities.
-
-Giskard is a powerful tool that can help you to improve the quality and robustness of your ML models. It is easy to use and can be integrated with any Python ML framework.
-
-It can help you to find vulnerabilities in your models that you might not otherwise be aware of, to understand the root cause of the vulnerabilities, to take steps to mitigate the vulnerabilities, to produce more reliable and trustworthy models.
-
-If you are an ML engineer who is looking for a way to improve the quality and robustness of your models, then Giskard's vulnerabilities detection feature is a great option. It is a powerful tool that can help you to save time and effort, and it can help you to produce more reliable and trustworthy models.
+Giskard uses a variety of techniques to detect vulnerabilities, including data slicing and statistical analysis. Giskard can automatically generate different data slices and transformations to test the robustness of your model. Giskard can use statistical analysis to identify patterns and relationships in your data that could indicate a vulnerability. It is a powerful tool that can help you to save time and effort, and it can help you to produce more reliable and trustworthy models.
 
 <p align="center">
   <img src="readme/scan_example.gif" alt="Scan Example" width="1000px">
