@@ -185,6 +185,7 @@ const project = computed(() => {
 
 const selectedTestUsage = computed(() => {
   let isCustom = selected.value!.tags.includes('custom');
+  let customParams = {};
 
   if (selected.value === null) {
     return '';
@@ -204,14 +205,38 @@ const selectedTestUsage = computed(() => {
   if (isCustom) {
     content += 'import giskard\n';
   } else {
-    uniqueImports.push(selected.value.name);
+    content += `from giskard.testing import ${selected.value.name}\n`;
   }
 
-  content += `from giskard import ${uniqueImports.join(', ')}\n\n`;
+  if (uniqueImports.length > 0) {
+    content += `from giskard import ${uniqueImports.join(', ')}\n\n`;
+  }
 
   if (isCustom) {
+
     content += `${giskardClientSnippet.value}\n`;
-    content += `${selected.value.name} = giskard.GiskardTest.download("${selected.value.uuid}", client, "${project.value!.key}")\n`;
+
+    const customSliceFunctions = selected.value.args.filter(arg => {
+      return arg.type === "SlicingFunction" && arg.defaultValue !== null;
+    });
+
+    customSliceFunctions.forEach((arg, index) => {
+      const sfName = `sf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${sfName}`;
+      content += `${sfName} = giskard.SlicingFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    const customTransformationFunctions = selected.value.args.filter(arg => {
+      return arg.type === "TransformationFunction" && arg.defaultValue !== null;
+    });
+
+    customTransformationFunctions.forEach((arg, index) => {
+      const tfName = `tf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${tfName}`;
+      content += `${tfName} = giskard.TransformationFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    content += `${selected.value.name} = giskard.GiskardTest.download("${selected.value.uuid}", client, "${project.value!.key}")\n\n`;
   }
 
   requiredArgs.forEach(arg => {
@@ -221,14 +246,14 @@ const selectedTestUsage = computed(() => {
   content += '\n';
 
   const parametersWithDefaults = selected.value.args.map(arg => {
+    if (arg.name in customParams) return customParams[arg.name];
     if (arg.name === 'kwargs') return '**kwargs';
+    if (arg.defaultValue === "true") return `${arg.name}=True`;
+    if (arg.defaultValue === "false") return `${arg.name}=False`;
     if (arg.optional) return `${arg.name}=${arg.defaultValue ?? 'None'}`;
     return arg.name;
   });
-  content += `test_result, passed = ${selected.value.name}(${parametersWithDefaults.join(', ')})`;
-  content += '\n\n';
-
-  content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
+  content += `${selected.value.name}(${parametersWithDefaults.join(', ')}).execute()`;
 
   return content;
 });
