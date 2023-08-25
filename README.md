@@ -127,25 +127,12 @@ test_suite.run()
 
 # ⭐️ Premium Features
 
-The Giskard test and catalog features are closed-source and are only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including:
+The Giskard server feature is closed-source and is only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including:
 
-- Advanced test generation: This includes the ability to debug your tests (debug + push) to diagnose issues and create more domain-specific tests.
-- Customizable data slicing and transformation: This includes the ability to compare models to decide which one to promote, and to gather all your internal tests of your team at the same place to work more efficiently.
-- Catalog of AI-based detectors: This includes the ability to share your results and collect business feedback from your team.
-- HuggingFace Space: This makes it easy to collaborate with other users and to share your results.
-
-These features can help you to save time and effort, and they can help you to produce more reliable and trustworthy models.
-
-Here are some of the benefits of using Giskard's closed-source test and catalog features:
-
-- You can find more vulnerabilities in your models with the advanced test generation feature.
-- You can make your tests more relevant to your specific application with the customizable data slicing and transformation feature.
-- You can identify vulnerabilities that might not be detected by the open-source version of Giskard with the catalog of AI-based detectors.
-- You can collaborate with other users and share your results with the HuggingFace Space feature.
-- You can diagnose issues and create more domain-specific tests with the debug + push feature.
-- You can decide which model to promote with the model comparison feature.
-- You can work more efficiently by gathering all your internal tests at the same place.
-- You can collect business feedback from your team with the sharing feature.
+- Advanced test generation: This includes the ability to debug your mdoels to diagnose issues and create more domain-specific tests.
+- Model comparator: This includes the ability to compare models to decide which one to promote,
+- Test hub: This includes a place to gather all your internal tests of your team at the same place to work more efficiently.
+- Business friendly features: This includes the ability to share your results and collect business feedback from your team.
 
 If you are interested in learning more about Giskard's closed-source test and catalog features, please contact us.
 
