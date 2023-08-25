@@ -31,13 +31,13 @@
  </h3>
 <br />
 
-## Install Giskard
+## Install Giskard 🐢
 You can install the latest version of Giskard from PyPi using pip :
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
 We officially support Python 3.9 and 3.10.
-## Try in Colab
+## Try in Colab 📙
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
 
 ______________________________________________________________________
