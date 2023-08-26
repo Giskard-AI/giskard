@@ -214,7 +214,7 @@
                 </div>
                 <v-row>
                     <v-col>
-                    <ClientInstructionCard />
+                    <ClientInstructionCard :internalHFAccessToken="true"/>
                     </v-col>
                 </v-row>
             </div>
