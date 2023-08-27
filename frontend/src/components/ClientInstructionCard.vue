@@ -32,7 +32,7 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import LoadingFullscreen from "./LoadingFullscreen.vue";
 import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
 
-import { saveLocalHFToken } from "@/utils";
+import { saveLocalHFToken, getLocalHFToken } from "@/utils";
 import { attemptFetchHFSpacesToken } from "@/hf-utils";
 
 import { apiURL } from "@/env";
@@ -101,6 +101,7 @@ async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
 async function generateHFToken() {
   if (mainStore.appSettings?.isRunningOnHfSpaces) {
     attemptFetchHFSpacesToken((token) => {
+      if (getLocalHFToken() === null) token = null; // For public space, not necessary
       giskardClientTemplate.value = generateGiskardClientInstruction(token);
       needFetchWithHFAccessToken.value = false;
     }, () => {
