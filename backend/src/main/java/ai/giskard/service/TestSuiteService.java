@@ -49,6 +49,19 @@ public class TestSuiteService {
     private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestFunctionRepository testFunctionRepository;
 
+    public Long saveTestSuite(String projectKey, TestSuiteDTO dto) {
+        if (dto.getName() == null || dto.getName().isEmpty()) {
+            throw new IllegalArgumentException("Test suite name cannot be empty");
+        }
+
+        if (dto.getProjectKey() == null) {
+            dto.setProjectKey(projectKey);
+        }
+
+        TestSuite savedSuite = testSuiteRepository.save(giskardMapper.fromDTO(dto));
+        return savedSuite.getId();
+    }
+
     @Transactional(readOnly = true)
     public Map<String, RequiredInputDTO> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
