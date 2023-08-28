@@ -2,6 +2,9 @@ package ai.giskard;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.config.GiskardConstants;
+import ai.giskard.config.SpringContext;
+import ai.giskard.service.AnalyticsCollectorService;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +16,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import jakarta.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -72,6 +74,10 @@ public class GiskardApp {
 
         ConfigurableApplicationContext ctx = app.run(args);
         logApplicationStartup(ctx.getEnvironment());
+
+        // Configure analytics collector service
+        AnalyticsCollectorService analyticsCollectorService = SpringContext.getBean(AnalyticsCollectorService.class);
+        analyticsCollectorService.configure(ctx.getEnvironment());
     }
 
     private static void logApplicationStartup(Environment env) {
