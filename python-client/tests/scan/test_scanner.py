@@ -11,7 +11,7 @@ from langchain.llms.fake import FakeListLLM
 from giskard import Dataset, GiskardClient, Model
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
-from giskard.scanner.result import ScanResult
+from giskard.scanner.report import ScanReport
 
 
 @pytest.mark.parametrize(
@@ -52,7 +52,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 
     result = scanner.analyze(model, dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.to_html()
 
     # Do not do below tests for the diabetes regression model.
@@ -68,7 +68,7 @@ def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, 
     german_credit_model.meta.feature_names = None
     result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.has_issues()
 
 
@@ -84,7 +84,7 @@ def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
     result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.has_issues()
     assert result.to_html()
 

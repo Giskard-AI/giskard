@@ -1,7 +1,7 @@
 from giskard.core.suite import Suite
-from giskard.scanner.performance.metrics import Accuracy
 from giskard.scanner.performance.issues import PerformanceIssue, PerformanceIssueInfo
-from giskard.scanner.result import ScanResult
+from giskard.scanner.performance.metrics import Accuracy
+from giskard.scanner.report import ScanReport
 
 
 def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_model):
@@ -20,7 +20,7 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
             ),
         )
     ]
-    result = ScanResult(issues)
+    result = ScanReport(issues)
     test_suite = result.generate_test_suite("Custom name")
 
     assert isinstance(test_suite, Suite)

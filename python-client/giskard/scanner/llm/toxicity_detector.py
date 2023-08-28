@@ -129,7 +129,3 @@ class LLMToxicityIssue(Issue):
 
     def examples(self, n=3) -> pd.DataFrame:
         return self.info.examples
-
-    @property
-    def importance(self) -> float:
-        return 1

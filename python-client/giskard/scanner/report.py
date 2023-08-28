@@ -1,4 +1,5 @@
 import tempfile
+
 import mlflow
 import pandas as pd
 from mlflow import MlflowClient
@@ -6,7 +7,7 @@ from mlflow import MlflowClient
 from giskard.utils.analytics_collector import analytics, anonymize
 
 
-class ScanResult:
+class ScanReport:
     def __init__(self, issues, as_html: bool = True):
         self.issues = issues
         self.as_html = as_html
@@ -16,30 +17,32 @@ class ScanResult:
 
     def __repr__(self):
         if not self.has_issues():
-            return "<PerformanceScanResult (no issues)>"
+            return "<ScanReport (no issues)>"
 
-        return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
+        return f"<ScanReport ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
     def _ipython_display_(self):
         if self.as_html:
             from IPython.core.display import display_html
+
             html = self._repr_html_()
             display_html(html, raw=True)
         else:
             from IPython.core.display import display_markdown
+
             markdown = self._repr_markdown_()
             display_markdown(markdown, raw=True)
 
     def _repr_html_(self):
         return self.to_html(embed=True)
-    
+
     def _repr_markdown_(self):
         return self.to_markdown()
 
     def to_html(self, filename=None, embed=False):
-        from ..visualization.widget import ScanResultWidget
+        from ..visualization.widget import ScanReportWidget
 
-        widget = ScanResultWidget(self)
+        widget = ScanReportWidget(self)
         html = widget.render_html(embed=embed)
 
         if filename is not None:
@@ -48,11 +51,11 @@ class ScanResult:
             return
 
         return html
-    
-    def to_markdown(self):
-        from ..visualization.widget import ScanResultWidget
 
-        widget = ScanResultWidget(self)
+    def to_markdown(self):
+        from ..visualization.widget import ScanReportWidget
+
+        widget = ScanReportWidget(self)
         markdown = widget.render_markdown()
 
         return markdown
@@ -108,14 +111,20 @@ class ScanResult:
         results_df.metric = results_df.metric.replace("=.*", "", regex=True)
         return results_df
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None, summary: bool = True,
-                  model_artifact_path: str = ""):
+    def to_mlflow(
+        self,
+        mlflow_client: MlflowClient = None,
+        mlflow_run_id: str = None,
+        summary: bool = True,
+        model_artifact_path: str = "",
+    ):
         results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
 
-        with tempfile.NamedTemporaryFile(prefix="giskard-scan-results" + model_artifact_path + "-",
-                                         suffix=".html") as f:
+        with tempfile.NamedTemporaryFile(
+            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html"
+        ) as f:
             scan_results_local_path = f.name
             scan_results_artifact_name = scan_results_local_path.split("/")[-1]
             scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
@@ -128,6 +137,5 @@ class ScanResult:
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
-                    mlflow_client.log_table(mlflow_run_id, results_df,
-                                            artifact_file=scan_summary_artifact_name)
+                    mlflow_client.log_table(mlflow_run_id, results_df, artifact_file=scan_summary_artifact_name)
         return scan_results_artifact_name, scan_summary_artifact_name

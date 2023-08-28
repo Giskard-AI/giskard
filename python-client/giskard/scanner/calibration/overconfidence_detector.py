@@ -1,16 +1,15 @@
 from typing import Sequence
+
 import pandas as pd
 
-from ...testing.tests.calibration import _default_overconfidence_threshold
-
-from ...testing.tests.calibration import _calculate_overconfidence_score
-
+from ...datasets import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
-from ...datasets import Dataset
-from ..decorators import detector
+from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
+from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
-from .issues import CalibrationIssue, CalibrationIssueInfo, OverconfidenceIssue
+from ..decorators import detector
+from ..issues import Issue, IssueLevel, Overconfidence
 from ..logger import logger
 
 
@@ -41,7 +40,7 @@ class OverconfidenceDetector(LossBasedDetector):
         model: BaseModel,
         dataset: Dataset,
         meta: pd.DataFrame,
-    ) -> Sequence[CalibrationIssue]:
+    ) -> Sequence[Issue]:
         # Add the loss column to the dataset
         dataset_with_meta = Dataset(
             dataset.df.join(meta, how="left"),
@@ -64,24 +63,72 @@ class OverconfidenceDetector(LossBasedDetector):
             fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)].index
             relative_delta = (slice_rate - reference_rate) / reference_rate
 
+            # Skip non representative slices
+            # @TODO: do this with a statistical test instead of filtering by count only (GSK-1279)
+            if len(fail_idx) < 20:
+                continue
+
             if relative_delta > self.threshold:
-                level = "major" if relative_delta > 2 * self.threshold else "medium"
-                issues.append(
-                    OverconfidenceIssue(
-                        model,
-                        dataset,
-                        level,
-                        CalibrationIssueInfo(
-                            slice_fn=slice_fn,
-                            slice_size=len(sliced_dataset),
-                            metric_value_slice=slice_rate,
-                            metric_value_reference=reference_rate,
-                            loss_values=meta[self.LOSS_COLUMN_NAME],
-                            fail_idx=fail_idx,
-                            threshold=self.threshold,
-                            p_threshold=p_threshold,
-                        ),
-                    )
+                level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM
+                description = (
+                    "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
+                    "overconfident wrong predictions ({num_overconfident_samples} samples, corresponding to "
+                    "{metric_value_perc}% of the wrong predictions in the data slice)."
+                )
+                issue = Issue(
+                    model,
+                    dataset,
+                    group=Overconfidence,
+                    level=level,
+                    description=description,
+                    slicing_fn=slice_fn,
+                    meta={
+                        "metric": "Overconfidence rate",
+                        "metric_value": slice_rate,
+                        "metric_value_perc": slice_rate * 100,
+                        "metric_reference_value": reference_rate,
+                        "num_overconfident_samples": len(fail_idx),
+                        "deviation": f"{relative_delta*100:+.2f}% than global",
+                        "slice_size": len(sliced_dataset),
+                        "threshold": self.threshold,
+                        "p_threshold": p_threshold,
+                    },
+                    tests=_generate_overconfidence_tests,
+                    importance=relative_delta,
                 )
 
+                # Add examples
+                def filter_examples(issue, dataset):
+                    bad_pred_mask = dataset.df.index.isin(fail_idx)
+
+                    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
+
+                def sort_examples(issue, examples):
+                    idx = meta[self.LOSS_COLUMN_NAME].loc[examples.index].sort_values(ascending=False).index
+                    return examples.loc[idx]
+
+                extractor = ExampleExtractor(issue, filter_examples, sort_examples)
+                examples = extractor.get_examples_dataframe(20, with_prediction=2)
+                issue.add_examples(examples)
+
+                issues.append(issue)
+
         return issues
+
+
+def _generate_overconfidence_tests(issue):
+    from ...testing.tests.calibration import test_overconfidence_rate
+
+    abs_threshold = issue.meta["metric_reference_value"] * (1 + issue.meta["threshold"])
+
+    tests = {
+        f"Overconfidence on data slice “{issue.slicing_fn}”": test_overconfidence_rate(
+            model=issue.model,
+            dataset=issue.dataset,
+            slicing_function=issue.slicing_fn,
+            threshold=abs_threshold,
+            p_threshold=issue.meta["p_threshold"],
+        )
+    }
+
+    return tests

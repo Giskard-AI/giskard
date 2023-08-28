@@ -1,14 +1,15 @@
 from typing import Sequence
+
 import pandas as pd
 
-from ...testing.tests.calibration import _calculate_underconfidence_score
-
+from ...datasets import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
-from ...datasets import Dataset
-from ..decorators import detector
+from ...testing.tests.calibration import _calculate_underconfidence_score
+from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
-from .issues import CalibrationIssue, CalibrationIssueInfo, UnderconfidenceIssue
+from ..decorators import detector
+from ..issues import Issue, IssueLevel, Underconfidence
 from ..logger import logger
 
 
@@ -40,7 +41,7 @@ class UnderconfidenceDetector(LossBasedDetector):
         model: BaseModel,
         dataset: Dataset,
         meta: pd.DataFrame,
-    ) -> Sequence[CalibrationIssue]:
+    ) -> Sequence[Issue]:
         # Add the loss column to the dataset
         dataset_with_meta = Dataset(
             dataset.df.join(meta, how="left"),
@@ -71,23 +72,66 @@ class UnderconfidenceDetector(LossBasedDetector):
             )
 
             if relative_delta > self.threshold:
-                level = "major" if relative_delta > 2 * self.threshold else "medium"
-                issues.append(
-                    UnderconfidenceIssue(
-                        model,
-                        dataset,
-                        level,
-                        CalibrationIssueInfo(
-                            slice_fn=slice_fn,
-                            slice_size=len(sliced_dataset),
-                            metric_value_slice=slice_rate,
-                            metric_value_reference=reference_rate,
-                            loss_values=meta[self.LOSS_COLUMN_NAME],
-                            fail_idx=fail_idx,
-                            threshold=self.threshold,
-                            p_threshold=self.p_threshold,
-                        ),
-                    )
+                level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM
+                description = (
+                    "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
+                    "underconfident predictions ({num_underconfident_samples} samples, corresponding to "
+                    "{metric_value_perc:.1f}% of the predictions in the data slice)."
+                )
+                issue = Issue(
+                    model,
+                    dataset,
+                    group=Underconfidence,
+                    level=level,
+                    description=description,
+                    slicing_fn=slice_fn,
+                    meta={
+                        "metric": "Overconfidence rate",
+                        "metric_value": slice_rate,
+                        "metric_value_perc": slice_rate * 100,
+                        "metric_reference_value": reference_rate,
+                        "num_underconfident_samples": len(fail_idx),
+                        "deviation": f"{relative_delta*100:+.2f}% than global",
+                        "slice_size": len(sliced_dataset),
+                        "threshold": self.threshold,
+                        "p_threshold": self.p_threshold,
+                    },
+                    importance=relative_delta,
+                    tests=_generate_underconfidence_tests,
                 )
 
+                # Add examples
+                def filter_examples(issue, dataset):
+                    bad_pred_mask = dataset.df.index.isin(fail_idx)
+
+                    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
+
+                def sort_examples(issue, examples):
+                    idx = meta[self.LOSS_COLUMN_NAME].loc[examples.index].sort_values(ascending=False).index
+                    return examples.loc[idx]
+
+                extractor = ExampleExtractor(issue, filter_examples, sort_examples)
+                examples = extractor.get_examples_dataframe(20, with_prediction=2)
+                issue.add_examples(examples)
+
+                issues.append(issue)
+
         return issues
+
+
+def _generate_underconfidence_tests(issue):
+    from ...testing.tests.calibration import test_underconfidence_rate
+
+    abs_threshold = issue.meta["metric_reference_value"] * (1 + issue.meta["threshold"])
+
+    tests = {
+        f"Underconfidence on data slice “{issue.slicing_fn}”": test_underconfidence_rate(
+            model=issue.model,
+            dataset=issue.dataset,
+            slicing_function=issue.slicing_fn,
+            threshold=abs_threshold,
+            p_threshold=issue.meta["p_threshold"],
+        )
+    }
+
+    return tests

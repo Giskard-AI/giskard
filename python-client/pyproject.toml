@@ -152,7 +152,8 @@ dependencies = [
     "xxhash>=3.2.0",
     "langdetect>=1.0.9",
     "chardet", # text metadata
-    "jinja2>=3", # scan template (temporary)
+    "jinja2>=3", # scan template
+    "markdown",
     "requests-toolbelt>=0.9.1",
     "stomp-py>=8.1.0",
 ]
