@@ -83,7 +83,8 @@ class TestSuiteResult:
         Parameters
         ----------
         **kwargs :
-            Additional keyword arguments to the active WandB run.
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
         import wandb

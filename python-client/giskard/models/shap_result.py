@@ -19,10 +19,10 @@ class PanelNames(str, Enum):
 
 @dataclass
 class ShapResult:
-    """Class to log SHAP explanation result.
+    """Dataclass to log the SHAP explanation result.
 
-    Stores SHAP explanation result with related model's and features' metadata
-    and provides the logic to log SHAP charts to the WandB run.
+    Stores the SHAP explanation results and provides the logic to log SHAP
+    charts to the WandB run.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ class ShapResult:
     only_highest_proba: Optional[bool] = True
 
     def _validate_wandb_config(self) -> None:
-        """Check if the object was initialized correctly to log SHAP charts."""
+        """Check if the object was initialized correctly to log the SHAP charts."""
         if self.feature_types is None:
             raise ValueError("The attribute 'ShapResult.feature_types' is needed for 'ShapResult.to_wandb()'.")
         if self.only_highest_proba and self.model_type is None:
@@ -58,7 +58,7 @@ class ShapResult:
             )
 
     def to_wandb(self, **kwargs) -> None:
-        """Create and log SHAP charts to the WandB run.
+        """Create and log the SHAP charts to the WandB run.
 
         For the active WandB run, logs SHAP charts, which include:
 
@@ -69,7 +69,8 @@ class ShapResult:
         Parameters
         ----------
         **kwargs :
-            Additional keyword arguments to the active WandB run.
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run
         from giskard.integrations.wandb.wandb_utils import _wandb_bar_plot, _wandb_general_bar_plot, _wandb_scatter_plot

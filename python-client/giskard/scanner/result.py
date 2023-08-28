@@ -124,12 +124,13 @@ class ScanResult:
     def to_wandb(self, **kwargs):
         """Log scan results to the WandB run.
 
-        Log current scan results in an HTML format to the active WandB run.
+        Log the current scan results in an HTML format to the active WandB run.
 
         Parameters
         ----------
         **kwargs :
-            Additional keyword arguments to the active WandB run.
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
