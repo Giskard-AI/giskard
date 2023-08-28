@@ -1,5 +1,4 @@
 from collections import defaultdict
-from imghdr import tests
 from typing import Callable, Optional, Sequence, Union
 
 import numpy as np
@@ -277,24 +276,21 @@ def _metric_to_test_object(metric: PerformanceMetric):
 
 
 def _generate_performance_tests(issue: Issue):
-    test_fn = _metric_to_test_object(issue.meta["metric"])
+    metric = issue.meta["slice_metric"].metric
+    test_fn = _metric_to_test_object(metric)
 
     if test_fn is None:
         return dict()
 
     # Convert the relative threshold to an absolute one.
-    delta = (
-        (issue.meta["slice_metric"].greater_is_better * 2 - 1)
-        * issue.meta["threshold"]
-        * issue.meta["reference_metric"].value
-    )
+    delta = (metric.greater_is_better * 2 - 1) * issue.meta["threshold"] * issue.meta["reference_metric"].value
     abs_threshold = issue.meta["reference_metric"].value - delta
 
-    tests[f"{issue.meta['metric']} on data slice “{issue.slicing_fn}”"] = test_fn(
-        model=issue.model, dataset=issue.dataset, slicing_function=issue.slicing_fn, threshold=abs_threshold
-    )
-
-    return tests
+    return {
+        f"{metric.name} on data slice “{issue.slicing_fn}”": test_fn(
+            model=issue.model, dataset=issue.dataset, slicing_function=issue.slicing_fn, threshold=abs_threshold
+        )
+    }
 
 
 def _is_unbalanced_target(classes: pd.Series):
