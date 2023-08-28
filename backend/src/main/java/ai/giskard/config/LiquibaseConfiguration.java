@@ -1,6 +1,9 @@
 package ai.giskard.config;
 
+import ai.giskard.service.GiskardRuntimeException;
 import liquibase.integration.spring.SpringLiquibase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.liquibase.DataSourceClosingSpringLiquibase;
@@ -12,11 +15,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 @Configuration
 public class LiquibaseConfiguration {
+    private static final Logger log = LoggerFactory.getLogger(LiquibaseConfiguration.class);
 
     private final Environment env;
 
@@ -59,6 +64,11 @@ public class LiquibaseConfiguration {
         if (ds != null) {
             liquibase = new SpringLiquibase();
             liquibase.setDataSource(ds);
+            try (var conn = ds.getConnection()) {
+                log.info("Liquibase connection: {}", conn.getMetaData().getURL());
+            } catch (SQLException e) {
+                throw new GiskardRuntimeException("Failed to get connection from liquibase datasource");
+            }
         } else {
             liquibase = new DataSourceClosingSpringLiquibase();
             liquibase.setDataSource(createNewDataSource(liquibaseProperties, dataSourceProperties));

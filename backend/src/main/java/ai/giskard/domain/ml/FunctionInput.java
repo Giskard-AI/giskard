@@ -27,7 +27,7 @@ public class FunctionInput implements Serializable {
 
     private String type;
 
-    @Column(name = "input_value")
+    @Column(columnDefinition = "text", name = "input_value")
     @Lob
     private String value;
 
