@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -35,6 +36,8 @@ public class AnalyticsCollectorService {
     @Value("${build.version:-}")
     private String buildVersion;
 
+    private final Runtime.Version javaVersion = Runtime.version();
+
     public void configure(Environment env) {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
 
@@ -54,5 +57,40 @@ public class AnalyticsCollectorService {
             this.activeProfile = GiskardConstants.SPRING_PROFILE_PRODUCTION;
             messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
         }
+    }
+
+    public void track(String eventName, JSONObject props) {
+        if (!settingsService.getSettings().isAnalyticsEnabled()) return;
+        doTrack(eventName, props);
+    }
+
+    public void track(String eventName, JSONObject props, boolean force) {
+        if (force) {
+            doTrack(eventName, props);
+        } else {
+            track(eventName, props);
+        }
+    }
+
+    public void doTrack(String eventName, JSONObject props) {
+        // Start a new thread
+        new Thread(() -> {
+            // Merge with server info
+            props.put("Java version", javaVersion.toString());
+            props.put("Giskard version", buildVersion);
+
+            JSONObject message;
+            if (GiskardConstants.SPRING_PROFILE_DEVELOPMENT.equals(activeProfile)) {
+                message = messageBuilderDev.event(settingsService.getSettings().getInstanceId(), eventName, props);
+            } else {
+                message = messageBuilder.event(settingsService.getSettings().getInstanceId(), eventName, props);
+            }
+
+            try {
+                mixpanel.sendMessage(message);
+            } catch (IOException e) {
+                log.warn("MixPanel tracking failed {0}", e);
+            }
+        }).start();
     }
 }

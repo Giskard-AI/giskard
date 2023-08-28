@@ -6,6 +6,7 @@ import ai.giskard.config.SpringContext;
 import ai.giskard.service.AnalyticsCollectorService;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -78,6 +79,7 @@ public class GiskardApp {
         // Configure analytics collector service
         AnalyticsCollectorService analyticsCollectorService = SpringContext.getBean(AnalyticsCollectorService.class);
         analyticsCollectorService.configure(ctx.getEnvironment());
+        analyticsCollectorService.track("Server startup", new JSONObject(), true);
     }
 
     private static void logApplicationStartup(Environment env) {
