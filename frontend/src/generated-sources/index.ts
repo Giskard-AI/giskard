@@ -1,9 +1,11 @@
 export const GENERATED_MAPPING = {
     'ai.giskard.domain.ColumnType' : 'ColumnType',
     'ai.giskard.domain.GeneralSettings' : 'GeneralSettings',
+    'ai.giskard.domain.ml.CallToActionKind' : 'CallToActionKind',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.domain.ml.ModelLanguage' : 'ModelLanguage',
     'ai.giskard.domain.ml.ModelType' : 'ModelType',
+    'ai.giskard.domain.ml.PushKind' : 'PushKind',
     'ai.giskard.domain.ml.table.Filter' : 'Filter',
     'ai.giskard.domain.ml.table.RegressionUnit' : 'RegressionUnit',
     'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
@@ -11,9 +13,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
     'ai.giskard.jobs.JobState' : 'JobState',
     'ai.giskard.jobs.JobType' : 'JobType',
+    'ai.giskard.ml.dto.MLWorkerWSTestMessageType' : 'MLWorkerWSTestMessageType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
     'ai.giskard.web.dto.ApplyPushDTO' : 'ApplyPushDTO',
-    'ai.giskard.web.dto.ArtifactRefDTO' : 'ArtifactRefDTO',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
@@ -101,9 +103,11 @@ export const GENERATED_MAPPING = {
 };
 export * from './ai/giskard/domain/column-type';
 export * from './ai/giskard/domain/general-settings';
+export * from './ai/giskard/domain/ml/call-to-action-kind';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/domain/ml/model-language';
 export * from './ai/giskard/domain/ml/model-type';
+export * from './ai/giskard/domain/ml/push-kind';
 export * from './ai/giskard/domain/ml/table/filter';
 export * from './ai/giskard/domain/ml/table/regression-unit';
 export * from './ai/giskard/domain/ml/table/row-filter-type';
@@ -111,9 +115,9 @@ export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/jobs/job-state';
 export * from './ai/giskard/jobs/job-type';
+export * from './ai/giskard/ml/dto/mlworker-wstest-message-type';
 export * from './ai/giskard/service/ee/feature-flag';
 export * from './ai/giskard/web/dto/apply-push-dto';
-export * from './ai/giskard/web/dto/artifact-ref-dto';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/comparison-clause-dto';

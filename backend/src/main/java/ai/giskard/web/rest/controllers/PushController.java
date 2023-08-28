@@ -1,28 +1,27 @@
 package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.ColumnType;
-import ai.giskard.domain.Project;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.service.GRPCMapper;
-import ai.giskard.service.ml.MLWorkerService;
-import ai.giskard.utils.FunctionArguments;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.ApplyPushDTO;
 import ai.giskard.web.dto.PredictionInputDTO;
-import ai.giskard.web.dto.PushActionDTO;
-import ai.giskard.web.dto.PushDTO;
-import ai.giskard.worker.*;
 import com.google.common.collect.Maps;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -36,112 +35,136 @@ public class PushController {
     private final PermissionEvaluator permissionEvaluator;
     private final DatasetRepository datasetRepository;
 
-    private final MLWorkerService mlWorkerService;
-    private final GRPCMapper grpcMapper;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
+    private final MLWorkerWSService mlWorkerWSService;
 
 
     @PostMapping("/pushes/{modelId}/{datasetId}/{idx}")
-    public Map<String, PushDTO> getPushes(@PathVariable @NotNull UUID modelId,
-                                          @PathVariable @NotNull UUID datasetId,
-                                          @PathVariable @NotNull int idx,
-                                          @RequestBody @NotNull PredictionInputDTO data) {
-        ProjectModel model = modelRepository.getById(modelId);
+    public MLWorkerWSGetPushResultDTO getPushes(@PathVariable @NotNull UUID modelId,
+                                                @PathVariable @NotNull UUID datasetId,
+                                                @PathVariable @NotNull int idx,
+                                                @RequestBody @NotNull PredictionInputDTO data) {
+        ProjectModel model = modelRepository.getMandatoryById(modelId);
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
-        Project project = dataset.getProject();
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
         Map<String, String> features = data.getFeatures();
 
-        ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
-        ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
+        MLWorkerWSArtifactRefDTO datasetRef = MLWorkerWSArtifactRefDTO.fromDataset(dataset);
+        MLWorkerWSArtifactRefDTO modelRef = MLWorkerWSArtifactRefDTO.fromModel(model);
 
-        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            SuggestFilterRequest.Builder requestBuilder = SuggestFilterRequest.newBuilder()
-                .setDataset(datasetRef)
-                .setModel(modelRef)
-                .setRowidx(idx);
+        MLWorkerWSGetPushDTO.MLWorkerWSGetPushDTOBuilder paramBuilder = MLWorkerWSGetPushDTO.builder()
+            .dataset(datasetRef)
+            .model(modelRef)
+            .rowIdx(idx);
 
-            if (features != null) {
-                requestBuilder.setDataframe(
-                    DataFrame.newBuilder()
-                        .addRows(DataRow.newBuilder().putAllColumns(
+        if (features != null) {
+            MLWorkerWSDataFrameDTO dataframe = MLWorkerWSDataFrameDTO.builder()
+                .rows(
+                    List.of(
+                        MLWorkerWSDataRowDTO.builder().columns(
                             features.entrySet().stream()
-                                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                        ))
-                        .build()
-                );
-            }
+                                .filter(entry -> !shouldDrop(
+                                    dataset.getColumnDtypes().get(entry.getKey()),
+                                    entry.getValue()
+                                )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                        ).build()
+                    )
+                ).build();
 
-            if (dataset.getTarget() != null) {
-                requestBuilder.setTarget(dataset.getTarget());
-            }
-            if (dataset.getColumnTypes() != null) {
-                requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
-            }
-            if (dataset.getColumnDtypes() != null) {
-                requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
-            }
-
-            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(requestBuilder.build());
-
-            Map<String, PushDTO> dtos = new HashMap<>();
-
-            dtos.put("perturbation", PushDTO.fromGrpc(resp.getPerturbation()));
-            dtos.put("contribution", PushDTO.fromGrpc(resp.getContribution()));
-            dtos.put("borderline", PushDTO.fromGrpc(resp.getBorderline()));
-            dtos.put("overconfidence", PushDTO.fromGrpc(resp.getOverconfidence()));
-
-            return dtos;
+            paramBuilder.dataframe(dataframe);
         }
+
+        if (dataset.getTarget() != null) {
+            paramBuilder.target(dataset.getTarget());
+        }
+        if (dataset.getColumnTypes() != null) {
+            paramBuilder.columnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+        }
+        if (dataset.getColumnDtypes() != null) {
+            paramBuilder.columnDtypes(dataset.getColumnDtypes());
+        }
+
+        if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.GET_PUSH,
+                paramBuilder.build()
+            );
+
+            if (result instanceof MLWorkerWSGetPushResultDTO response) {
+                return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot get ML Worker GetPushResult reply");
+        }
+
+        throw new MLWorkerNotConnectedException(MLWorkerID.EXTERNAL);
     }
 
     @PostMapping("/push/apply")
-    public PushActionDTO applyPushSuggestion(@RequestBody ApplyPushDTO applyPushDTO) {
-        ProjectModel model = modelRepository.getById(applyPushDTO.getModelId());
+    public MLWorkerWSGetPushResultDTO applyPushSuggestion(@RequestBody ApplyPushDTO applyPushDTO) {
+        ProjectModel model = modelRepository.getMandatoryById(applyPushDTO.getModelId());
         Dataset dataset = datasetRepository.getMandatoryById(applyPushDTO.getDatasetId());
-        Project project = dataset.getProject();
+        permissionEvaluator.validateCanReadProject(model.getProject().getId());
+        Map<String, String> features = applyPushDTO.getFeatures();
 
-        ArtifactRef datasetRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(dataset.getId().toString()).build();
-        ArtifactRef modelRef = ArtifactRef.newBuilder().setProjectKey(project.getKey()).setId(model.getId().toString()).build();
+        MLWorkerWSArtifactRefDTO datasetRef = MLWorkerWSArtifactRefDTO.fromDataset(dataset);
+        MLWorkerWSArtifactRefDTO modelRef = MLWorkerWSArtifactRefDTO.fromModel(model);
 
-        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            SuggestFilterRequest.Builder requestBuilder = SuggestFilterRequest.newBuilder()
-                .setDataset(datasetRef)
-                .setModel(modelRef)
-                .setRowidx(applyPushDTO.getRowIdx())
-                .setCtaKind(applyPushDTO.getCtaKind())
-                .setPushKind(applyPushDTO.getPushKind())
-                .setProjectKey(project.getKey())
-                .setDataframe(
-                    DataFrame.newBuilder()
-                        .addRows(DataRow.newBuilder().putAllColumns(
-                            applyPushDTO.getFeatures().entrySet().stream()
-                                .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                        ))
-                        .build()
-                );
+        MLWorkerWSGetPushDTO.MLWorkerWSGetPushDTOBuilder paramBuilder = MLWorkerWSGetPushDTO.builder()
+            .dataset(datasetRef)
+            .model(modelRef)
+            .rowIdx(applyPushDTO.getRowIdx())
+            .pushKind(applyPushDTO.getPushKind())
+            .ctaKind(applyPushDTO.getCtaKind());
 
-            if (dataset.getTarget() != null) {
-                requestBuilder.setTarget(dataset.getTarget());
-            }
-            if (dataset.getColumnTypes() != null) {
-                requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
-            }
-            if (dataset.getColumnDtypes() != null) {
-                requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
-            }
+        if (features != null) {
+            MLWorkerWSDataFrameDTO dataframe = MLWorkerWSDataFrameDTO.builder()
+                .rows(
+                    List.of(
+                        MLWorkerWSDataRowDTO.builder().columns(
+                            features.entrySet().stream()
+                                .filter(entry -> !shouldDrop(
+                                    dataset.getColumnDtypes().get(entry.getKey()),
+                                    entry.getValue()
+                                )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                        ).build()
+                    )
+                ).build();
 
-            SuggestFilterResponse resp = client.getBlockingStub().suggestFilter(requestBuilder.build());
-
-            PushActionDTO result = new PushActionDTO();
-            result.setObjectUuid(resp.getAction().getObjectUuid());
-
-            Map<String, String> params = new HashMap<>();
-            resp.getAction().getArgumentsList().forEach(arg -> params.put(arg.getName(), FunctionArguments.funcArgumentToJson(arg)));
-
-            result.setParameters(params);
-            return result;
+            paramBuilder.dataframe(dataframe);
         }
+
+        if (dataset.getTarget() != null) {
+            paramBuilder.target(dataset.getTarget());
+        }
+        if (dataset.getColumnTypes() != null) {
+            paramBuilder.columnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+        }
+        if (dataset.getColumnDtypes() != null) {
+            paramBuilder.columnDtypes(dataset.getColumnDtypes());
+        }
+
+        paramBuilder.pushKind(applyPushDTO.getPushKind());
+        paramBuilder.ctaKind(applyPushDTO.getCtaKind());
+
+        if (mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL)) {
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.GET_PUSH,
+                paramBuilder.build()
+            );
+
+            if (result instanceof MLWorkerWSGetPushResultDTO response) {
+                return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot get ML Worker GetPushResult reply");
+        }
+
+        throw new MLWorkerNotConnectedException(MLWorkerID.EXTERNAL);
     }
 
     // Probably move this to a util class.

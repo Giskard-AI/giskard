@@ -3,16 +3,14 @@ package ai.giskard.domain.ml;
 import ai.giskard.domain.BaseEntity;
 import ai.giskard.ml.dto.MLWorkerWSFuncArgumentDTO;
 import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
-import ai.giskard.utils.FunctionArguments;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.ml.TestResultMessageDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -105,7 +103,7 @@ public class SuiteTestExecution extends BaseEntity {
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
         this.inputs = test.getFunctionInputs().stream()
             .collect(Collectors.toMap(FunctionInput::getName, FunctionInput::getValue));
-        this.arguments = arguments.stream()
-            .collect(Collectors.toMap(MLWorkerWSFuncArgumentDTO::getName, FunctionArguments::funcArgumentToJson));
+        //this.arguments = arguments.stream()
+        //    .collect(Collectors.toMap(MLWorkerWSFuncArgumentDTO::getName, FunctionArguments::funcArgumentToJson));
     }
 }
