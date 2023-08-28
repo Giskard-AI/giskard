@@ -60,7 +60,7 @@ class ShapResult:
     def to_wandb(self, **kwargs) -> None:
         """Create and log SHAP charts to the WandB run.
 
-        For the current active WandB run, logs SHAP charts, which include:
+        For the active WandB run, logs SHAP charts, which include:
 
         - Scatter plot for each numerical feature.
         - Bar plot for each categorical feature.
@@ -69,7 +69,7 @@ class ShapResult:
         Parameters
         ----------
         **kwargs :
-            Additional keyword arguments to the current active WandB run.
+            Additional keyword arguments to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run
         from giskard.integrations.wandb.wandb_utils import _wandb_bar_plot, _wandb_general_bar_plot, _wandb_scatter_plot
