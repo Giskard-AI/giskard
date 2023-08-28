@@ -169,8 +169,8 @@ class Scanner:
         return issues, errors
 
     def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
-        # If we detected a StochasticityIssue, we will have a possibly false
-        # positive DataLeakageIssue. We remove it here.
+        # If we detected a Stochasticity issue, we will have a possibly false
+        # positive DataLeakage issue. We remove it here.
         if any(issue.group == Stochasticity for issue in issues):
             issues = [issue for issue in issues if issue.group != DataLeakage]
 

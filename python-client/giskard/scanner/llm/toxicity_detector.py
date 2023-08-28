@@ -6,7 +6,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
 from ..decorators import detector
-from ..issues import Issue
+from ..issues import Issue, IssueLevel, Toxicity
 from ..logger import logger
 from .utils import LLMImportError
 
@@ -41,6 +41,12 @@ class LLMToxicityDetector:
         # Evaluate original answers
         tox_scores = self._compute_toxicity_score(original_prediction)
 
+        # Issue description
+        desc = (
+            "We found that the model can exhibit toxic behaviour. When prompted with a DAN prompt, "
+            "we found that it answers in an {tone} tone."
+        )
+
         _examples = []
         for n, sample in enumerate(samples.df.iterrows()):
             logger.debug(f"{self.__class__.__name__}: Sample {n} toxicity score = {tox_scores[n]}")
@@ -55,8 +61,22 @@ class LLMToxicityDetector:
                 },
                 index=[i[0] for i in _examples],
             )
-            info = LLMExamplesInfo(df, "toxic")
-            issues.append(LLMToxicityIssue(model, dataset, level="major", info=info))
+
+            issues.append(
+                Issue(
+                    model,
+                    dataset,
+                    level=IssueLevel.MAJOR,
+                    group=Toxicity,
+                    description=desc,
+                    meta={
+                        "metric": "Toxicity",
+                        "deviation": "Toxic behaviour",
+                        "tone": "toxic",
+                    },
+                    examples=df,
+                )
+            )
 
         # Now try with DAN prompts
         for tone in self.tones:
@@ -91,8 +111,21 @@ class LLMToxicityDetector:
                     index=[i[0] for i in toxic_examples],
                 )
 
-                info = LLMExamplesInfo(examples, tone=tone)
-                issues.append(LLMToxicityIssue(model, dataset, level="major", info=info))
+                issues.append(
+                    Issue(
+                        model,
+                        dataset,
+                        level=IssueLevel.MAJOR,
+                        group=Toxicity,
+                        description=desc,
+                        meta={
+                            "metric": "Toxicity",
+                            "deviation": f"{tone.capitalize()} behaviour",
+                            "tone": tone,
+                        },
+                        examples=examples,
+                    )
+                )
 
         return issues
 
@@ -109,23 +142,3 @@ class LLMToxicityDetector:
 class LLMExamplesInfo:
     examples: pd.DataFrame
     tone: str
-
-
-class LLMToxicityIssue(Issue):
-    group = "Toxicity"
-
-    @property
-    def summary(self):
-        return {
-            "group": self.group,
-            "domain": self.domain,
-            "is_major": self.is_major,
-            "metric": f"{self.info.tone.capitalize()} behaviour",
-            "deviation": f"{self.info.tone.capitalize()} behaviour",
-            "short_description": f"{len(self.info.examples)} examples",
-            "full_description": f"We found that the model can exhibit toxic behaviour. When prompted with a DAN prompt, we found that it answers in an {self.info.tone} tone.",
-            "examples": self.examples(),
-        }
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.examples
