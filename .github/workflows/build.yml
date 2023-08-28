@@ -85,7 +85,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: python-client/.venv
-          key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
           restore-keys: ${{ runner.os }}-client
 
       - uses: actions/setup-node@v3
