@@ -7,6 +7,7 @@
 :hidden:
 
 test-catalog/index
+push-test-catalog/index
 slicing-function-catalog/index
 transformation-function-catalog/index
 ```
@@ -17,6 +18,12 @@ transformation-function-catalog/index
 :::::{grid-item}
 :::{card} <h3><center>📖 Test catalog</center></h3>
 :link: test-catalog/index.html
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center>📖 Pust tests catalog</center></h3>
+:link: push-test-catalog/index.html
 :::
 :::::
 
