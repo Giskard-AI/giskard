@@ -4,6 +4,7 @@ import random
 import re
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from ...core.core import DatasetProcessFunctionMeta
@@ -69,66 +70,81 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column):
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=None):
         super().__init__(column)
         from .entity_swap import typos
 
-        self._typos = typos
+        self.rate = rate
+        self.min_length = min_length
+        self._key_typos = typos
+        self.rng = np.random.default_rng(seed=rng_seed)
 
     def make_perturbation(self, x):
-        split_text = x.split(" ")
-        new_text = []
-        for token in split_text:
-            new_text.append(self._add_typos(token))
-        return " ".join(new_text)
+        # Skip if the text is too short
+        if len(x) < self.min_length:
+            return x
 
-    def _add_typos(self, word):
-        # Get the token's word and apply a perturbation with probability 0.1
-        if random.random() < 0.2 and len(word) > 1:
-            # Choose a perturbation type randomly
-            perturbation_type = random.choice(["insert", "delete", "replace"])
-            # Apply the perturbation
-            if perturbation_type == "insert":
-                idx = random.randint(0, len(word))
-                new_char = chr(random.randint(33, 126))
-                word = word[:idx] + new_char + word[idx:]
-                return word
-            elif perturbation_type == "delete":
-                idx = random.randint(0, len(word) - 1)
-                word = word[:idx] + word[idx + 1 :]
-                return word
-            elif perturbation_type == "replace":
-                j = random.randint(0, len(word) - 1)
-                c = word[j]
-                if c in self._typos:
-                    replacement = random.choice(self._typos[c])
-                    text_modified = word[:j] + replacement + word[j + 1 :]
-                    return text_modified
-        return word
+        # We consider four types of typos:
+        # - Insertion
+        # - Deletion
+        # - Replacement
+        # - Transposition
+
+        # Empirical probabilities for each category
+        category_prob = [0.2, 0.2, 0.5, 0.1]
+
+        # How many typos we generate and in which positions
+        num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
+
+        # Are they insertion, deletion, replacement, or transposition?
+        pos_cat = self.rng.choice(4, size=num_typos, p=category_prob, replace=True)
+
+        for cat in pos_cat:
+            # get a random position
+            i = self.rng.integers(0, len(x))
+
+            if cat == 0:  # insertion
+                t = self._random_key_typo(x[i])
+                x = x[:i] + t + x[i:]
+            elif cat == 1:  # deletion
+                if x[i].isspace():  # don’t delete spaces
+                    i = min(i + 1, len(x) - 1)
+                x = x[:i] + x[i + 1 :]
+            elif cat == 2:  # replacement
+                x = x[:i] + self._random_key_typo(x[i]) + x[i + 1 :]
+            else:  # transposition
+                if i < len(x) - 1:
+                    x = x[:i] + x[i + 1] + x[i] + x[i + 2 :]
+        return x
+
+    def _random_key_typo(self, char):
+        if char.lower() in self._key_typos:
+            typo = self.rng.choice(self._key_typos[char.lower()])
+            return typo if char.islower() else typo.upper()
+        return char
 
 
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
-    _punctuation = """'・﹝꛳※；〈๚“𑙢⁑៚︵｠؉︿﹜᯿｢〈＆⸲᳀࠽＿།၍𑑛［᪨𑇝።᭞፧᪩︲⸦〜᚜᳄❳࿑⁜?፣𒑱՞⸧꘍﹏᪦❭𐽗༈৽⹍𖺚﹄︑܌⸄಄࠳⦊⸑𑪞_࠲⳺⧘꛵𑗈⸳⧼‷᛭᨟܁﹃᠁﹁𑅴＠،′֊‱፡–⦃⸸﹆༄࿚𐽘܉꧟𖬷⸛❬⹋፠﹅𑈽𐩓﹎჻⦘︘𑙦*𑗕꣸％@‼᜶⁾;〟༑〕𝪉⁗︰⦋𐡗𑻷𑁊𐬺𑻸⟨⸰·︴𐮜⟬𖬹〙⁂—⸴܊𑗎𖬻࿓⸱&꧍׃〗𑗖‶𑙧？⸕𐫲𑑏༅𑱱૰࠴﹖‗𑁍𑩁܀⸷＇𑈻𑇆𖿢‸꙳⸼־؍⁘⟧₎߷𑱂⸔﹨︶࠵﹈｡𑙂꩝⳹᥅•𐫱⁔⸀«゠𑙁𛲟⟩𐮛៘⁖⸜᱿⹈𑗓࠰⵰﹐⁕﹊⸪﹟𐩕༻𑱁៙¿។࠼⸐／𑗊〉⸻﹔𐩿꓾𑩄᙮⧚𐩗᪥⸒】＊᠃𑪜𖭄❫𑑋𑪟܍٬⁀⸙〞⸌᰼𑙃𑩅⦉꛲꧉𐩔𑙩〖"౷‖﹍⁇꧞]𑇞᚛𝪋᯼⦖𑩆፥𑅵𑁇𑜾؊!⁁﹚𞥟᪫٭᜵⁆𑇟᠉。𐫶⸫؛꣼࠸𑁌‚𑱄𑥆､〽᳓﹡꓿⸞࠺𐕯”᭛″׳᰾⹁⸶𑩃꧃︳𖩯〉𑊩𑅂﹇‘＂⸺⸉෴༏᛫︓𐽖᰻⟯᳁𑂿᳇࠶₍፦𑈹，𑗌⁉𑪢！%॰𒑰⦌𑧢⸖᭜⹒༊𑑎⳼⸟⹌.𝪇︱𑑚⁋⟅၊᪭︹꡴』𑙣⸂﹫『𑗃᳆⌈՛𑗋‒𑅁：𐬻⁎𑜽︽𑙡𑁋᪤⦕𐄀⁈⸭𑁈𖬸︻༼𐄁⸬⹄﹪⌋］࿒❰𝪊๏/⹎᐀⦔„⁛﴿𑈺〛︸﹕⟪꧋﹀﹑𑗔⸘︾⸋︼⸝՝៕)࠾་𑑝‰⦍【⁚꩞⸅꫰꫱𑿿׀－𑇅꯫᪬𖺗𑈸𐩘꥟𑙬-༎𖬺𑑌‾߸⦗⁓᥄‿⦐𒑴𑃀＃𑪛៖𑂼‑꧇𑙤〰⁌︐⦅︺»‧⟮𑅀𐄂〚᳅⦄၎𐩑𑨿𑱅︒﹉᠈𑗑꤯﹂᱾⦎𑙫❪＼༆࡞༒‛𑇈᪪᪡꫟𑠻\'·𑥄𑪡܈⟦༽⸵𐤟𐮚⳾՟⸓﹗⦑؟𖺙﹋⸎#״࠷︕︙𑂻⦏⧛⦆⳻︷၌𑗂︗꧁⸠⸈᭠𞥞꧄（{𑗗⸩⦓߹⹅𑂾⁽⸡𒑳}⹃𐎟܂｣𑇍𑇇᪠𐩖੶᨞．𐫰॥﹘꧂｛𑥅⁏꧌᠄༔⸏࿔𑗍᰽⦇܆࠻؞𑗏𖩮⸇𑱃𑪠¡﴾࿐(‴、꣏⸥᯽꙾𐽕𑜼¶᯾꛴𝪈,❩꧅⁞⸢⸾⹇𐬿𑗉⸣꛷﹣⳿⸿〝܅᛬𐩒⸍;꩟𐬼§⁐⁅﹠❵᠊꣹⁙𑩀︔𐫵𖫵։⌊⟆‵܋❴‥𑪚𐬽٫⧙﹛𐽙𑈼﹌‹❱၏꩜՚፤٪꘏࿙⟭྅）〔》𑗅⹏〃𐩐⦈܄⹂𑑍𑓆𑗐❲။᭟―᭝｝𑗒᠅𑩂᳂᠀‣⟫꧈’𑙠𑱰⸤𑗁༉❯⸨۔༇⸽⹊𐏐꛶𖺘𑁉‡:፨꡷﹙᭚｟❨꫞᪣︖꣺𐫳𐫴܇꘎𒑲᠇՜﹞𐺭《𑗇꧊›।⸗⸃⸚꣎⧽꧆𑙥᪢⁊…‽᰿꤮𐬾𑙪[࠹﹒･𑗆․𐤿⹉⸹❮༐༌‟⁃⌉⸮𐮙𑙨𑃁⸁𐬹⹀\\᳃⹆׆܃༺「𑗄࠱๛⁝⸆꡵𑇛⁍᠂᠆⦒」〘𑅃⸊꡶‐†'"""
+    _punctuation = "¡!¿?⸘‽“”‘’‛‟.,‚„'\"′″´˝`…:;­–‑—§¶†‡/-‒‼︎⁇⁈⁉︎❛❜❝❞"
 
-    def make_perturbation(self, x):
-        split_text = x.split(" ")
-        new_text = []
-        for token in split_text:
-            new_text.append(self._remove_punc(token))
-        return " ".join(new_text)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._trans_table = str.maketrans("", "", self._punctuation)
+        self._regex = re.compile(rf"\b[{re.escape(self._punctuation)}]+\b")
 
-    def _remove_punc(self, text):
-        split_urls_from_text = gruber.split(text)
+    def make_perturbation(self, text):
+        # Split URLs so that they are not affected by the transformation
+        pieces = gruber.split(text)
 
-        # The non-URLs are always even-numbered entries in the list and the URLs are odd-numbered.
-        for i in range(0, len(split_urls_from_text), 2):
-            split_urls_from_text[i] = split_urls_from_text[i].translate(str.maketrans("", "", self._punctuation))
+        # Non-URLs are even-numbered entries
+        for i in range(0, len(pieces), 2):
+            # Replace punctuation at boundaries with a space, so that we don't
+            # accidentally join words together. Then strip the rest.
+            pieces[i] = self._regex.sub(" ", pieces[i]).translate(self._trans_table)
 
-        stripped_text = "".join(split_urls_from_text)
-
-        return stripped_text
+        return "".join(pieces)
 
 
 class TextLanguageBasedTransformation(TextTransformation):
