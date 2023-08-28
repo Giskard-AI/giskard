@@ -51,15 +51,8 @@ spring:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
     cache: false
-  sleuth:
-    sampler:
-      probability: 1 # report 100% of traces
-  zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
-    base-url: http://localhost:9411
-    enabled: false
-    locator:
-      discovery:
-        enabled: true
+  jpa:
+    show-sql: true
 
 server:
   port: 9000
@@ -74,4 +67,3 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
-

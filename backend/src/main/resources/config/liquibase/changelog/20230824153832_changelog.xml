@@ -1,0 +1,24 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1692884331976-13">
+        <createTable tableName="api_keys">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="api_keysPK"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP(6)"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP(6)"/>
+            <column name="key" type="VARCHAR(32)"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="user_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692884331976-14">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="api_keys" constraintName="FKcjj2mgt3p3awjpow8pam2sj7j" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="giskard_users" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
