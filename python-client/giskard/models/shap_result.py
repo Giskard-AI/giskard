@@ -10,6 +10,8 @@ from giskard.client.python_utils import warning
 
 
 class PanelNames(str, Enum):
+    """Enumeration to store WandB UI panel names for different charts."""
+
     CATEGORICAL = "Feature importance for categorical features"
     NUMERICAL = "Feature importance for numerical features"
     GENERAL = "Global feature importance"
@@ -17,12 +19,34 @@ class PanelNames(str, Enum):
 
 @dataclass
 class ShapResult:
+    """Class to log SHAP explanation result.
+
+    Stores SHAP explanation result with related model's and features' metadata
+    and provides the logic to log SHAP charts to the WandB run.
+
+    Parameters
+    ----------
+    explanations : shap.Explanation
+        Object, which stores SHAP explanations.
+
+    feature_types : dict (optional, default=None)
+        Dictionary with features' names and types.
+
+    model_type : ModelType (optional, default=None)
+        Type of the model, which outputs were explained using SHAP.
+
+    only_highest_proba: bool (optional, default=None)
+        Flag, whether SHAP explanations are of classes with the highest
+        predicted probability.
+    """
+
     explanations: Explanation
     feature_types: Optional[dict] = None
     model_type: Optional[ModelType] = None
     only_highest_proba: Optional[bool] = True
 
-    def _validate_wandb_config(self):
+    def _validate_wandb_config(self) -> None:
+        """Check if the object was initialized correctly to log SHAP charts."""
         if self.feature_types is None:
             raise ValueError("The attribute 'ShapResult.feature_types' is needed for 'ShapResult.to_wandb()'.")
         if self.only_highest_proba and self.model_type is None:
@@ -34,7 +58,19 @@ class ShapResult:
             )
 
     def to_wandb(self, **kwargs) -> None:
-        """Create and log to the WandB run SHAP charts."""
+        """Create and log SHAP charts to the WandB run.
+
+        For the current active WandB run, logs SHAP charts, which include:
+
+        - Scatter plot for each numerical feature.
+        - Bar plot for each categorical feature.
+        - Single Bar plot for the general feature importance.
+
+        Parameters
+        ----------
+        **kwargs :
+            Additional keyword arguments to the current active WandB run.
+        """
         from giskard.integrations.wandb.wandb_utils import wandb_run
         from giskard.integrations.wandb.wandb_utils import _wandb_bar_plot, _wandb_general_bar_plot, _wandb_scatter_plot
 
