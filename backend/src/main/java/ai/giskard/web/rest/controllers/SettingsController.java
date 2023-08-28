@@ -23,10 +23,12 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +38,6 @@ import static ai.giskard.security.AuthoritiesConstants.ADMIN;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/settings")
 @PropertySource(value = "${spring.info.build.location:classpath:META-INF/build-info.properties}", ignoreResourceNotFound = true)
 @PropertySource(value = "${spring.info.build.location:classpath:git.properties}", ignoreResourceNotFound = true)
 public class SettingsController {
@@ -57,13 +58,13 @@ public class SettingsController {
     private final LicenseService licenseService;
 
 
-    @PostMapping("")
+    @PostMapping("/api/v2/settings")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public GeneralSettings saveGeneralSettings(@RequestBody GeneralSettings settings) {
         return settingsService.save(settings);
     }
 
-    @GetMapping("")
+    @GetMapping("/api/v2/settings")
     public AppConfigDTO getApplicationSettings(@AuthenticationPrincipal final UserDetails user) {
         if (user == null) {
             throw new ExpiredTokenException();
@@ -105,8 +106,8 @@ public class SettingsController {
             .build();
     }
 
-    @GetMapping("/ml-worker-connect")
-    public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() throws NoSuchAlgorithmException {
+    @GetMapping("/public-api/ml-worker-connect")
+    public MLWorkerConnectionInfoDTO getMLWorkerConnectionInfo() {
         String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
 
         return MLWorkerConnectionInfoDTO.builder()
@@ -119,7 +120,7 @@ public class SettingsController {
             .build();
     }
 
-    @GetMapping("/license")
+    @GetMapping("/api/v2/settings/license")
     public LicenseDTO getLicense() throws IOException {
         LicenseDTO.LicenseDTOBuilder dtoBuilder = LicenseDTO.builder();
         License currentLicense = licenseService.getCurrentLicense();

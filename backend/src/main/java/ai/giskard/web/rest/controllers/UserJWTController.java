@@ -4,18 +4,18 @@ import ai.giskard.security.ee.jwt.JWTFilter;
 import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.web.dto.JWTToken;
 import ai.giskard.web.rest.vm.LoginVM;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller to authenticate users.
@@ -46,12 +46,5 @@ public class UserJWTController {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt.getToken());
         return new ResponseEntity<>(jwt, httpHeaders, HttpStatus.OK);
-    }
-
-    @GetMapping(path = "/api-access-token")
-    public ResponseEntity<JWTToken> getAPIaccessToken(@AuthenticationPrincipal final UserDetails user) {
-
-        JWTToken token = tokenProvider.createAPIaccessToken(SecurityContextHolder.getContext().getAuthentication());
-        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }
