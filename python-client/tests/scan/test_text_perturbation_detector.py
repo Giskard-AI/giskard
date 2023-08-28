@@ -1,15 +1,16 @@
-import giskard
 import numpy as np
 import pandas as pd
-from giskard import Model, Dataset
 from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
+
+import giskard
+from giskard import Dataset, Model
 from giskard.scanner.robustness.text_perturbation_detector import TextPerturbationDetector
 
 
-def test_perturbation_classification(enron_model, enron_data):
+def test_perturbation_classification(titanic_model, titanic_dataset):
     analyzer = TextPerturbationDetector(threshold=0.01)
-    res = analyzer.run(enron_model, enron_data)
+    res = analyzer.run(titanic_model, titanic_dataset)
     assert res
 
 
