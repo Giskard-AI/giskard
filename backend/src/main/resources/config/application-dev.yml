@@ -77,4 +77,6 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
-
+springdoc:
+  api-docs:
+    enabled: true
