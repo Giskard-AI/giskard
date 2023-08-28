@@ -29,23 +29,23 @@ public class ApiKeyService {
     public List<ApiKey> create(User user) {
         ApiKey key = apiKeyRepository.save(new ApiKey(user));
         apiKeysCache.put(key.getKey(), key);
-        return getKeys(user.getId());
+        return getKeys(user.getLogin());
     }
 
     public Optional<ApiKey> getKey(@NotNull String key) {
         return Optional.ofNullable(apiKeysCache.get(key));
     }
 
-    public List<ApiKey> getKeys(Long userId) {
-        return apiKeysCache.values().stream().filter(k -> k.getUser().getId().equals(userId)).toList();
+    public List<ApiKey> getKeys(String username) {
+        return apiKeysCache.values().stream().filter(k -> k.getUser().getLogin().equals(username)).toList();
     }
 
     @Transactional
-    public List<ApiKey> deleteKey(Long userId, UUID key) {
-        apiKeyRepository.deleteApiKeyByIdAndUserId(key, userId);
+    public List<ApiKey> deleteKey(String username, UUID key) {
+        apiKeyRepository.deleteApiKeyByIdAndUserLogin(key, username);
         apiKeysCache.values().stream()
             .filter(k -> k.getId().equals(key)).findFirst()
             .ifPresent(k -> apiKeysCache.remove(k.getKey()));
-        return getKeys(userId);
+        return getKeys(username);
     }
 }

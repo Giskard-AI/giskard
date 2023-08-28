@@ -2,8 +2,8 @@ package ai.giskard.web.rest;
 
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.User;
+import ai.giskard.repository.ApiKeyRepository;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.utils.TestUtil;
 import ai.giskard.web.rest.controllers.UserJWTController;
 import ai.giskard.web.rest.vm.LoginVM;
@@ -14,8 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,6 +38,9 @@ class UserJWTControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApiKeyRepository apiKeyRepository;
 
     @Test
     @Transactional
@@ -88,13 +93,26 @@ class UserJWTControllerIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
-    void testApiAccessToken() throws Exception {
+    @WithMockUser(username = "admin")
+    void testGetApiKeys() throws Exception {
         mockMvc
-            .perform(get("/api/v2/api-access-token").contentType(MediaType.APPLICATION_JSON))
+            .perform(get("/api/v2/apikey").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id_token").exists())
-            .andExpect(jsonPath("$.id_token").isNotEmpty());
+            .andExpect(MockMvcResultMatchers.content().json("[]"));
+
+        assertThat(apiKeyRepository.findAll()).isEmpty();
+
+        int numberOfCreatedKeys = 2;
+        for (int i = 0; i < numberOfCreatedKeys; i++) {
+            mockMvc
+                .perform(post("/api/v2/apikey").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(i + 1)))
+                .andExpect(jsonPath("$.[*].id").exists())
+                .andExpect(jsonPath("$.[*].key").exists());
+        }
+
+        assertThat(apiKeyRepository.findAll().size()).isEqualTo(numberOfCreatedKeys);
     }
 
     @Test
