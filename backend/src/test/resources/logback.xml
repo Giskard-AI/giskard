@@ -6,11 +6,9 @@
 
     <logger name="ai.giskard" level="DEBUG"/>
 
-    <logger name="tech.jhipster" level="WARN"/>
-
-    <logger name="javax.activation" level="WARN"/>
-    <logger name="javax.mail" level="WARN"/>
-    <logger name="javax.xml.bind" level="WARN"/>
+    <logger name="jakarta.activation" level="WARN"/>
+    <logger name="jakarta.mail" level="WARN"/>
+    <logger name="jakarta.xml.bind" level="WARN"/>
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="com.jayway.jsonpath" level="WARN"/>
     <logger name="com.ryantenney" level="WARN"/>
@@ -39,10 +37,8 @@
     <logger name="LiquibaseSchemaResolver" level="INFO"/>
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
-    <logger name="io.grpc.netty" level="DEBUG"/>
 
-    <root>
-        <level>WARN</level>
+    <root level="warn">
         <appender-ref ref="CONSOLE"/>
     </root>
 

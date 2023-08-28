@@ -6,7 +6,7 @@
       uuid: null,
       args: []
     }, ...slicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-      <template v-slot:append-item v-if='allowNoCodeSlicing'>
+      <template v-slot:prepend-item v-if='allowNoCodeSlicing'>
         <v-list-item @click='createSlice'>
           <v-list-item-content>
             <v-list-item-title>

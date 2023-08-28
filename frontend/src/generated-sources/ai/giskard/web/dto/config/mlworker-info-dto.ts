@@ -4,7 +4,7 @@
 export interface MLWorkerInfoDTO {
     giskardClientVersion: string;
     installedPackages: {[key: string]: string};
-    internalGrpcAddress: string;
+    mlWorkerId: string;
     interpreter: string;
     interpreterVersion: string;
     isRemote: boolean;
