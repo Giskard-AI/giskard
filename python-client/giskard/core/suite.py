@@ -76,7 +76,15 @@ class TestSuiteResult:
         return metrics
 
     def to_wandb(self, **kwargs) -> None:
-        """Log test suite results to the WandB run."""
+        """Log test-suite result to the WandB run.
+
+        Log current test-suite result in a table format to the active WandB run.
+
+        Parameters
+        ----------
+        **kwargs :
+            Additional keyword arguments to the active WandB run.
+        """
         from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
         import wandb
         from ..utils.analytics_collector import analytics
