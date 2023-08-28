@@ -168,6 +168,8 @@ const props = defineProps<{
   suiteId?: number
 }>();
 
+const pythonPrimitiveTypes = ['int', 'str', 'float', 'bool'];
+
 const searchFilter = ref<string>('');
 const { testFunctions } = storeToRefs(useCatalogStore());
 const selected = ref<TestFunctionDTO | null>(null);
@@ -199,7 +201,7 @@ const selectedTestUsage = computed(() => {
       .map('type')
       .uniq()
       .value()
-      .filter(i => i !== 'str')
+      .filter(i => !pythonPrimitiveTypes.includes(i))
   ];
 
   if (isCustom) {
