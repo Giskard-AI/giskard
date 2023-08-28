@@ -4,13 +4,10 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.jwt.TokenProvider;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -18,8 +15,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
 
 import static ai.giskard.security.jwt.JWTFilterTest.createAuthentication;
@@ -80,19 +75,6 @@ class TokenProviderTest {
         boolean isTokenValid = tokenProvider.validateToken("");
 
         assertThat(isTokenValid).isFalse();
-    }
-
-    @Test
-    void testAPIauthToken() {
-        Instant tokenAcquiryDate = (new Date()).toInstant();
-        String token = tokenProvider.createAPIaccessToken(createAuthentication(AuthoritiesConstants.AITESTER)).getToken();
-
-        JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        assertThat(claims.getSubject()).isEqualTo("test-user");
-        long tokenValidityDays = Duration.between(tokenAcquiryDate, claims.getExpiration().toInstant()).toMillis();
-
-        assertThat(tokenValidityDays).isCloseTo(DAYS_90, Offset.offset((long) 1000));
     }
 
     @Test

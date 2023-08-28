@@ -2,6 +2,7 @@
   <configuration default="false" name="Backend with DB" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="ai.giskard.GiskardTestApp" />
     <module name="giskard.backend.test" />
+    <option name="PROGRAM_PARAMETERS" value="-Dspring.profiles.active=&quot;dev,api-docs&quot;" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="ai.giskard.*" />

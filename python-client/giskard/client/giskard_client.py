@@ -2,17 +2,16 @@
 import logging
 import os
 import posixpath
-from pathlib import Path
-from typing import List
-from urllib.parse import urljoin
-from uuid import UUID
-
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
+from pathlib import Path
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
+from typing import List
+from urllib.parse import urljoin
+from uuid import UUID
 
 import giskard
 from giskard.client.dtos import TestSuiteDTO
@@ -83,7 +82,7 @@ class GiskardClient:
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
-        server_settings = self._session.get("settings/ml-worker-connect").json()
+        server_settings = self.get_server_info()
         analytics.init_server_info(server_settings)
 
         analytics.track("Init GiskardClient", {"client version": giskard.__version__})
@@ -316,7 +315,7 @@ class GiskardClient:
         return meta_class.from_json(self._session.get(endpoint).json())
 
     def get_server_info(self):
-        return self._session.get("settings/ml-worker-connect").json()
+        return self._session.get("/public-api/ml-worker-connect").json()
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(

@@ -1,16 +1,19 @@
 package ai.giskard.security.ee;
 
+import ai.giskard.domain.ApiKey;
 import ai.giskard.security.ee.jwt.JWTFilter;
 import ai.giskard.security.ee.jwt.TokenProvider;
+import ai.giskard.service.ApiKeyService;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
-import org.springframework.web.filter.GenericFilterBean;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.filter.GenericFilterBean;
+
 import java.io.IOException;
 
 import static ai.giskard.security.ee.jwt.JWTFilter.AUTHORIZATION_HEADER;
@@ -25,14 +28,16 @@ public class GiskardAuthFilter extends GenericFilterBean {
 
     private final JWTFilter jwtFilter;
     private final NoAuthFilter noAuthFilter;
+    private final ApiKeyAuthFilter apiKeyAuthFilter;
     private final NoLicenseAuthFilter noLicenseAuthFilter;
 
-    public GiskardAuthFilter(LicenseService licenseService, TokenProvider tokenProvider) {
+    public GiskardAuthFilter(LicenseService licenseService, ApiKeyService apiKeyService, TokenProvider tokenProvider) {
         this.licenseService = licenseService;
 
         this.jwtFilter = new JWTFilter(tokenProvider);
         this.noAuthFilter = new NoAuthFilter();
         this.noLicenseAuthFilter = new NoLicenseAuthFilter();
+        this.apiKeyAuthFilter = new ApiKeyAuthFilter(apiKeyService);
     }
 
     @Override
@@ -41,8 +46,17 @@ public class GiskardAuthFilter extends GenericFilterBean {
         if (!this.licenseService.getCurrentLicense().isActive()) {
             this.noLicenseAuthFilter.doFilter(request, response, chain);
         } else if (this.licenseService.hasFeature(FeatureFlag.AUTH) || httpServletRequest.getHeader(AUTHORIZATION_HEADER) != null) {
+            String authHeader = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authHeader != null) {
+                // remove the "Bearer " prefix
+                authHeader = authHeader.substring(7);
+            }
             // even if AUTH isn't enabled (no multi-user support), check the token for python client/ML Worker requests
-            this.jwtFilter.doFilter(request, response, chain);
+            if (ApiKey.doesStringLookLikeApiKey(authHeader)) {
+                this.apiKeyAuthFilter.doFilter(request, response, chain);
+            } else {
+                this.jwtFilter.doFilter(request, response, chain);
+            }
         } else {
             this.noAuthFilter.doFilter(request, response, chain);
         }
