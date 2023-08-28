@@ -20,7 +20,7 @@ class ShapResult:
     explanations: Explanation
     feature_types: Optional[dict] = None
     model_type: Optional[ModelType] = None
-    only_highest_proba: Optional[bool] = True
+    only_highest_proba: bool = True
 
     def _validate_wandb_config(self):
         if self.feature_types is None:
@@ -48,13 +48,17 @@ class ShapResult:
                 general_bar_plot = _wandb_general_bar_plot(self.explanations, list(self.feature_types.keys()))
                 charts.update({f"{PanelNames.GENERAL}/general_shap_bar_plot": general_bar_plot})
 
+                counter = {"category": 0, "numeric": 0, "text": 0}
+                for t in self.feature_types.values():
+                    counter[t] += 1
+
                 analytics.track(
                     "wandb_integration:shap_result:shap_result",
                     {
                         "wandb_run_id": run.id,
-                        "cat_feat_cnt": len([c for c, t in self.feature_types.items() if t == "category"]),
-                        "num_feat_cnt": len([c for c, t in self.feature_types.items() if t == "numeric"]),
-                        "text_feat_cnt": len([c for c, t in self.feature_types.items() if t == "text"]),
+                        "cat_feat_cnt": counter["category"],
+                        "num_feat_cnt": counter["numeric"],
+                        "text_feat_cnt": counter["text"],
                     },
                 )
 

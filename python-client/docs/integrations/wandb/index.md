@@ -1,6 +1,6 @@
 # Weights and Biases
 
-Logging SHAP plots, scan reports and test suites into Weights & Biases is now possible with Giskard that enables you to:
+Giskard can log SHAP plots, scan reports and test suites into Weights & Biases:
 - **Understand feature importance**: Giskard generates plots to highlight feature importance using the SHAP library.
 - **Scan your model to find dozens of hidden vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
 - **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining domain-specific data slicers and transformers as fixtures of your test suites.
