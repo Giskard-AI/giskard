@@ -93,4 +93,12 @@ public class AnalyticsCollectorService {
             }
         }).start();
     }
+
+    public class MLWorkerWebSocketTracking {
+        private MLWorkerWebSocketTracking() {}
+        public static final String ACTION_TIME_FILED = "action_time";
+        public static final String TYPE_FILED = "type";
+        public static final String ERROR_FIELD = "error";
+        public static final String ERROR_TYPE_FIELD = "error_type";
+    }
 }
