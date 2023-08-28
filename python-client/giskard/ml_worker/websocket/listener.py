@@ -4,6 +4,7 @@ import os
 import platform
 import sys
 import tempfile
+import time
 import traceback
 from pathlib import Path
 
@@ -49,6 +50,9 @@ from giskard.models.model_explanation import (
 )
 from giskard.utils import threaded
 
+from giskard.utils.analytics_collector import analytics
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -70,6 +74,17 @@ def dispatch_action(callback, ml_worker, action, req):
     rep_id = req["id"] if "id" in req.keys() else None
     # Parse the param
     params = req["param"] if "param" in req.keys() else {}
+
+    # Track usage frequency to optimize action param parsing
+    analytics.track(
+        "mlworker:websocket:action:type",
+        {
+            "name": action.name,
+            "worker": ml_worker.ml_worker_id,
+            "language": "PYTHON",
+        },
+    )
+    start = time.process_time()
     try:
         params = parse_action_param(action, params)
         # Call the function and get the response
@@ -79,6 +94,19 @@ def dispatch_action(callback, ml_worker, action, req):
             error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
         )
         logger.warning(e)
+    finally:
+        analytics.track(
+            "mlworker:websocket:action",
+            {
+                "name": action.name,
+                "worker": ml_worker.ml_worker_id,
+                "language": "PYTHON",
+                "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
+                "action_time": time.process_time() - start,
+                "error": info.error_str if isinstance(info, websocket.ErrorReply) else "",
+                "error_type": info.error_type if isinstance(info, websocket.ErrorReply) else "",
+            },
+        )
 
     if rep_id:
         # Reply if there is an ID
@@ -102,6 +130,20 @@ def dispatch_action(callback, ml_worker, action, req):
                     }
                 ),
             )
+
+        analytics.track(
+            "mlworker:websocket:action:reply",
+            {
+                "name": action.name,
+                "worker": ml_worker.ml_worker_id,
+                "language": "PYTHON",
+                "action_time": time.process_time() - start,
+                "is_error": isinstance(info, websocket.ErrorReply),
+                "frag_len": FRAG_LEN,
+                "frag_count": frag_count,
+                "reply_len": len(payload),
+            },
+        )
 
     # Post-processing of stopWorker
     if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:

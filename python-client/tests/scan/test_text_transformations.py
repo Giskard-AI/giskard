@@ -95,6 +95,7 @@ def test_punctuation_strip_transformation():
                 "Another @TEXT with → $UNICODE$ ← characters 😀",
                 "“And… PUNCTUATION! all SHOULD be fine — I HOPE!?”",
                 "This.., is my site.. http://www.example.com/, and ., it .,.,. http://stackoverflow.com rules!..",
+                "comma,separated,list",
             ]
         }
     )
@@ -108,9 +109,10 @@ def test_punctuation_strip_transformation():
 
     assert transformed_text[0] == "My UPPERCASE text"
     assert transformed_text[1] == "My UPPERCASE TEXT with greek letters α β γ Γ"
-    assert transformed_text[2] == "Another TEXT with → $UNICODE$ ← characters 😀"
+    assert transformed_text[2] == "Another @TEXT with → $UNICODE$ ← characters 😀"
     assert transformed_text[3] == "And PUNCTUATION all SHOULD be fine  I HOPE"
     assert transformed_text[4] == "This is my site http://www.example.com/ and  it  http://stackoverflow.com rules"
+    assert transformed_text[5] == "comma separated list"
 
 
 def test_religion_based_transformation():
@@ -242,3 +244,12 @@ def test_country_based_transformation_escapes_special_chars():
     assert t.make_perturbation(df.iloc[1]) == "Same for U0KX!"
     assert t.make_perturbation(df.iloc[2]) != "But U.S. should be replaced"
     assert t.make_perturbation(df.iloc[3]) != "And also U.K., that must be replaced"
+
+
+def test_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+
+    t = TextTypoTransformation(column="text", rng_seed=1)
+    p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+
+    assert p == "If one doesn't know his misakes, he won't want to corrcet them."

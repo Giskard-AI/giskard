@@ -79,6 +79,7 @@ public class SecurityConfiguration {
             .requestMatchers(antMatcher(MLWORKER_WEBSOCKET_ENDPOINT))
             .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**"))
             .requestMatchers(antMatcher("/swagger-ui/**"))
+            .requestMatchers(antMatcher("/v3/api-docs/**"))
             .requestMatchers(antMatcher("/test/**"));
     }
 
