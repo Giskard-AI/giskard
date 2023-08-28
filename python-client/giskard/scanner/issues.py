@@ -134,7 +134,7 @@ class Issue:
 
         if with_names:
             return list(zip(tests.values(), tests.keys()))
-        return tests.values()
+        return list(tests.values())
 
 
 Robustness = IssueGroup(
