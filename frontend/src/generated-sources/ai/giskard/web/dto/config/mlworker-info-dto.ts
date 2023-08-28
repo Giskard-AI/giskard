@@ -4,10 +4,10 @@
 export interface MLWorkerInfoDTO {
     giskardClientVersion: string;
     installedPackages: {[key: string]: string};
-    internalGrpcAddress: string;
     interpreter: string;
     interpreterVersion: string;
     isRemote: boolean;
+    mlWorkerId: string;
     pid: number;
     platform: MLWorkerInfoDTO.PlatformInfoDTO;
     processStartTime: number;

@@ -9,18 +9,18 @@
             <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
           </v-btn>
         </template>
-        <span>{{ push.pushTitle }}. Click for more details.</span>
+        <span>{{ push.push_title }}. Click for more details.</span>
       </v-tooltip>
     </template>
 
 
     <v-card dark color="primary" class="push-card">
       <v-card-title>
-        {{ push.pushTitle }}
+        {{ push.push_title }}
       </v-card-title>
       <v-card-text>
         <v-list light two-line>
-          <template v-for="detail in push.details">
+          <template v-for="detail in push.push_details">
             <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>
@@ -31,7 +31,7 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn small text color="primary" :loading="detail.kind === loading" @click="applyCta(detail.kind)">
+                <v-btn small text color="primary" :loading="detail.kind === loading" @click="applyCta(detail.cta)">
                   {{ detail.button }}
                 </v-btn>
               </v-list-item-action>
@@ -57,7 +57,7 @@ import {$vfm} from "vue-final-modal";
 import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
 import {chain} from "lodash";
 import {TYPE} from "vue-toastification";
-import {PushActionDTO, RowFilterType} from "@/generated-sources";
+import {CallToActionKind, PushActionDTO, RowFilterType} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 
 const pushStore = usePushStore();
@@ -81,19 +81,21 @@ const value = computed(() => {
 });
 
 const show = computed(() => {
+  if (value.value == undefined) return false;
+
   switch (props.type) {
     case "contribution":
-      if (value.value?.contribution.kind == 'Invalid') return false;
+      if (!value.value?.contribution || value.value?.contribution.kind == 'Invalid') return false;
       return value.value?.contribution.key == props.column;
     case "perturbation":
-      if (value.value?.perturbation.kind == 'Invalid') return false;
+      if (!value.value?.perturbation || value.value?.perturbation.kind == 'Invalid') return false;
       return value.value?.perturbation.key == props.column;
     case "overconfidence":
-      if (value.value?.overconfidence.kind == 'Invalid') return false;
-      return value.value?.overconfidence.pushTitle && value.value?.overconfidence.pushTitle != "";
+      if (!value.value?.overconfidence || value.value?.overconfidence?.kind == 'Invalid') return false;
+      return value.value?.overconfidence.push_title && value.value.overconfidence.push_title != "";
     case "borderline":
-      if (value.value?.borderline.kind == 'Invalid') return false;
-      return value.value?.borderline.pushTitle && value.value?.borderline.pushTitle != "";
+      if (!value.value?.borderline || value.value?.borderline.kind == 'Invalid') return false;
+      return value.value?.borderline.push_title && value.value?.borderline.push_title != "";
     default:
       return false;
   }
@@ -121,13 +123,12 @@ const icon = computed(() => {
 async function applyCta(kind: string) {
   mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
-  let action: PushActionDTO = await pushStore.applyPush(push.value!.kind, kind);
-
+  let action: PushActionDTO = (await pushStore.applyPush(push.value!.kind, kind)).action;
   switch (kind) {
-    case "CreateSlice":
+    case CallToActionKind.CreateSlice:
       mainStore.addSimpleNotification("Successfully saved");
       break;
-    case "CreateSliceOpenDebugger":
+    case CallToActionKind.CreateSliceOpenDebugger:
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
       const slice = slicingFunctionsByUuid.value[action.objectUuid];
       if (slice !== undefined) {
@@ -137,8 +138,8 @@ async function applyCta(kind: string) {
         mainStore.addNotification({content: 'Could not load slice', color: TYPE.ERROR});
       }
       break;
-    case "CreateTest":
-    case "AddTestToCatalog":
+    case CallToActionKind.CreateTest:
+    case CallToActionKind.AddTestToCatalog:
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
       const test = testFunctionsByUuid.value[action.objectUuid];
       if (test !== undefined) {
@@ -147,16 +148,16 @@ async function applyCta(kind: string) {
         mainStore.addNotification({content: 'Could not load test', color: TYPE.ERROR});
       }
       break;
-    case "SavePerturbation":
+    case CallToActionKind.SavePerturbation:
       mainStore.addSimpleNotification("Perturbation saved");
       break;
-    case "OpenDebuggerBorderline":
+    case CallToActionKind.OpenDebuggerBorderline:
       debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: false});
       break;
-    case "OpenDebuggerOverconfidence":
+    case CallToActionKind.OpenDebuggerOverconfidence:
       // Programmatically apply Overconfidence filter
       break;
-    case "SaveExample":
+    case CallToActionKind.SaveExample:
       mainStore.addSimpleNotification("This feature is not yet implemented.");
     default:
       break;

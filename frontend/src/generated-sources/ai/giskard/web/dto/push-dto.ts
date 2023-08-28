@@ -6,7 +6,6 @@ import type {PushDetailsDTO} from './push-details-dto';
 export interface PushDTO {
     details: PushDetailsDTO[];
     key: string;
-    kind: any /* TODO: Missing translation of ai.giskard.worker.PushKind */;
     perturbationValue: string;
     pushTitle: string;
     value: string;

@@ -1,4 +1,10 @@
-from grpc import StatusCode
+from enum import Enum
+
+
+class StatusCode(Enum):
+    NO_ERROR = 0
+    INTERNAL = 1
+    INVALID_ARGUMENT = 2
 
 
 class CodedError(Exception):

@@ -12,7 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.transaction.annotation.Transactional;
-import tech.jhipster.security.RandomUtil;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -91,7 +90,7 @@ class UserServiceIT {
     @Transactional
     void assertThatResetKeyMustNotBeOlderThan24Hours() {
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
-        String resetKey = RandomUtil.generateResetKey();
+        String resetKey = RandomStringUtils.randomAlphanumeric(20);
         user.setActivated(true);
         user.setResetDate(daysAgo);
         user.setResetKey(resetKey);
@@ -122,7 +121,7 @@ class UserServiceIT {
     void assertThatUserCanResetPassword() {
         String oldPassword = user.getPassword();
         Instant daysAgo = Instant.now().minus(2, ChronoUnit.HOURS);
-        String resetKey = RandomUtil.generateResetKey();
+        String resetKey = RandomStringUtils.randomAlphanumeric(20);
         user.setActivated(true);
         user.setResetDate(daysAgo);
         user.setResetKey(resetKey);

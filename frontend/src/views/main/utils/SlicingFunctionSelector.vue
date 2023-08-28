@@ -6,9 +6,8 @@
       displayName: 'None',
       uuid: null,
       args: []
-    }, ...slicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput'
-                    :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-      <template v-slot:append-item v-if='allowNoCodeSlicing'>
+    }, ...slicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
+      <template v-slot:prepend-item v-if='allowNoCodeSlicing'>
         <v-list-item @click='createSlice'>
           <v-list-item-content>
             <v-list-item-title>
@@ -26,13 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
-import {storeToRefs} from 'pinia';
-import {useCatalogStore} from '@/stores/catalog';
-import {computed} from 'vue';
-import {$vfm} from 'vue-final-modal';
+import { DatasetDTO, FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
+import { storeToRefs } from 'pinia';
+import { useCatalogStore } from '@/stores/catalog';
+import { computed } from 'vue';
+import { $vfm } from 'vue-final-modal';
 import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal.vue';
-import {chain} from 'lodash';
+import { chain } from 'lodash';
 import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
 
 interface Props {
@@ -54,7 +53,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const {slicingFunctions, slicingFunctionsByUuid} = storeToRefs(useCatalogStore())
+const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore())
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
   return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
