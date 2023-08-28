@@ -56,7 +56,7 @@ const highlightedCode = computed(() => {
 
     <div class="controls">
       <span class="copied-message" v-show="copied">Copied</span>
-      <v-icon v-if="props.masked" class="copy-button copy-btn pr-3" size="20px" @click="showCode">
+      <v-icon v-if="props.masked" class="copy-button copy-btn mr-3" size="20px" @click="showCode">
         {{ isShown ? 'mdi-eye-off' : 'mdi-eye' }}
       </v-icon>
       <v-icon class="copy-button copy-btn" size="20px" @click="copyCode">mdi-content-copy</v-icon>
