@@ -84,7 +84,7 @@
 </template>
 
 <script lang='ts' setup>
-import { computed, onActivated, ref, watch } from 'vue';
+import { computed, onActivated, ref, watch, watchEffect } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import { api } from '@/api';
 import { useRoute, useRouter } from 'vue-router/composables';
@@ -97,7 +97,7 @@ import ConfirmModal from './modals/ConfirmModal.vue';
 import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import { copyText } from '@/utils';
 import { TYPE } from 'vue-toastification';
-import { state } from "@/socket";
+import { state, client } from "@/socket";
 
 const router = useRouter();
 const route = useRoute();
@@ -231,6 +231,12 @@ watch(() => route.name, async (name) => {
     debuggingSessionsStore.setCurrentDebuggingSessionId(null);
   }
 });
+
+watchEffect(() => {
+  if (state.workerStatus.connected === undefined || !client.active) {
+    client.activate();
+  }
+})
 
 onActivated(async () => {
   await debuggingSessionsStore.loadDebuggingSessions(props.projectId);
