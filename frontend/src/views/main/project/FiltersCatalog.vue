@@ -51,8 +51,9 @@
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="py-2">
+                        <div class="py-2 d-flex flex-column">
                             <span class="selected-func-name">{{ selected.displayName ?? selected.name }}</span>
+                            <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
                         </div>
 
                         <div class="vc overflow-x-hidden pr-5">
@@ -179,11 +180,16 @@ import mixpanel from "mixpanel-browser";
 import { anonymize } from "@/utils";
 import { $vfm } from 'vue-final-modal';
 import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 
 let props = defineProps<{
     projectId: number,
     suiteId?: number
 }>();
+
+const mainStore = useMainStore();
 
 const editor = ref(null)
 
@@ -200,6 +206,10 @@ const panel = ref<number[]>([0]);
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
+
+const hasCustomTag = computed(() => {
+    return selected.value?.tags?.includes('custom') ?? false;
+});
 
 function resizeEditor() {
     setTimeout(() => {
@@ -303,7 +313,10 @@ function openSliceModal() {
     })
 }
 
-
+async function copyFunctionId() {
+    await copyToClipboard(selected.value!.uuid);
+    mainStore.addNotification({ content: "Copied Slicing Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style scoped lang="scss">
@@ -392,5 +405,16 @@ function openSliceModal() {
     text-align: center;
     font-size: 1.125rem;
     white-space: break-spaces;
+}
+
+#function-id {
+    font-size: 0.675rem !important;
+    line-height: 0.675rem !important;
+    cursor: pointer;
+}
+
+#function-id span {
+    text-decoration: underline;
+    margin-right: 0.2rem;
 }
 </style>
