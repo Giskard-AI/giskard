@@ -31,7 +31,7 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-btn small text color="primary" :loading="detail.kind === loading" @click="applyCta(detail.cta)">
+                <v-btn small text color="primary" :loading="detail.cta === loading" @click="applyCta(detail.cta)">
                   {{ detail.button }}
                 </v-btn>
               </v-list-item-action>
@@ -57,7 +57,7 @@ import {$vfm} from "vue-final-modal";
 import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
 import {chain} from "lodash";
 import {TYPE} from "vue-toastification";
-import {CallToActionKind, PushActionDTO, RowFilterType} from "@/generated-sources";
+import {CallToActionKind, PushActionDTO, PushKind, RowFilterType} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 
 const pushStore = usePushStore();
@@ -75,7 +75,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const opened = ref<boolean>(false);
-const loading = ref<string>("");
+const loading = ref<number>(0);
 const value = computed(() => {
   return pushStore.current;
 });
@@ -85,16 +85,16 @@ const show = computed(() => {
 
   switch (props.type) {
     case "contribution":
-      if (!value.value?.contribution || value.value?.contribution.kind == 'Invalid') return false;
+      if (!value.value?.contribution || value.value?.contribution.kind == PushKind.Invalid) return false;
       return value.value?.contribution.key == props.column;
     case "perturbation":
-      if (!value.value?.perturbation || value.value?.perturbation.kind == 'Invalid') return false;
+      if (!value.value?.perturbation || value.value?.perturbation.kind == PushKind.Invalid) return false;
       return value.value?.perturbation.key == props.column;
     case "overconfidence":
-      if (!value.value?.overconfidence || value.value?.overconfidence?.kind == 'Invalid') return false;
+      if (!value.value?.overconfidence || value.value?.overconfidence?.kind == PushKind.Invalid) return false;
       return value.value?.overconfidence.push_title && value.value.overconfidence.push_title != "";
     case "borderline":
-      if (!value.value?.borderline || value.value?.borderline.kind == 'Invalid') return false;
+      if (!value.value?.borderline || value.value?.borderline.kind == PushKind.Invalid) return false;
       return value.value?.borderline.push_title && value.value?.borderline.push_title != "";
     default:
       return false;
@@ -120,7 +120,8 @@ const icon = computed(() => {
   }
 });
 
-async function applyCta(kind: string) {
+async function applyCta(kind: number) {
+  console.log("Cta kind: " + kind);
   mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
   let action: PushActionDTO = (await pushStore.applyPush(push.value!.kind, kind)).action;
@@ -162,7 +163,7 @@ async function applyCta(kind: string) {
     default:
       break;
   }
-  loading.value = "";
+  loading.value = 0;
   opened.value = false;
 }
 

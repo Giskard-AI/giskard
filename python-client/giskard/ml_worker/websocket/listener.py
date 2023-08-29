@@ -20,6 +20,7 @@ from giskard.core.suite import Suite
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
+from giskard.ml_worker.core.savable import RegistryArtifact
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -682,7 +683,7 @@ def get_push(
             # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
             for test_param_name in push.test_params:
                 test_param = push.test_params[test_param_name]
-                if isinstance(test_param, Artifact):
+                if isinstance(test_param, RegistryArtifact):
                     object_params[test_param_name] = test_param.upload(ml_worker.client)
                 elif isinstance(test_param, Dataset):
                     object_params[test_param_name] = test_param.upload(ml_worker.client, project_key)

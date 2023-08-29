@@ -7,6 +7,7 @@ import {
     AdminUserDTO,
     AppConfigDTO,
     ApplyPushDTO,
+    CallToActionKind,
     CatalogDTO,
     ComparisonClauseDTO,
     CreateFeedbackDTO,
@@ -39,6 +40,7 @@ import {
     PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
+    PushKind,
     RoleDTO,
     RowFilterDTO,
     SetupDTO,
@@ -204,7 +206,7 @@ function downloadURL(urlString) {
 
 export const api = {
     async getHuggingFaceSpacesToken(spaceId: string) {
-      return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
+        return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
@@ -259,7 +261,7 @@ export const api = {
         return apiV2.delete<unknown, void>(`/admin/users/${login}`);
     },
     async disableUser(login: string) {
-      return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
+        return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
     },
     async enableUser(login: string) {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
@@ -481,7 +483,7 @@ export const api = {
             projectId,
             testUuid,
             inputs,
-      debug
+            debug
         });
     },
     async getCatalog(projectId: number) {
@@ -518,7 +520,7 @@ export const api = {
             features: features
         });
     },
-    async applyPush(modelId: string, datasetId: string, idx: number, pushKind: string, ctaKind: string, features: any) {
+    async applyPush(modelId: string, datasetId: string, idx: number, pushKind: PushKind, ctaKind: CallToActionKind, features: any) {
         return apiV2.post<ApplyPushDTO, void>(`/push/apply`, {
             modelId,
             datasetId,

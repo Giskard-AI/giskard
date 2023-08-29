@@ -1,4 +1,4 @@
-import {PushActionDTO, PushDTO} from "@/generated-sources";
+import {CallToActionKind, PushDTO, PushKind} from "@/generated-sources";
 import {defineStore} from "pinia";
 import {api} from "@/api";
 
@@ -52,7 +52,7 @@ export const usePushStore = defineStore('push', {
 
             return this.current;
         },
-        async applyPush(pushKind: string, ctaKind: string): Promise<PushActionDTO> {
+        async applyPush(pushKind: PushKind, ctaKind: CallToActionKind): Promise<any> {
             let result = await api.applyPush(this.identifier!.modelId, this.identifier!.datasetId, this.identifier!.rowNb, pushKind, ctaKind, this.identifier!.inputData);
             // @ts-ignore
             return result;
