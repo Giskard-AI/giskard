@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -47,41 +46,41 @@ public class SecurityConfiguration {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
             ).sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(antMatcher("/api/v2/dev/**")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/settings/license")).permitAll()
+                .requestMatchers(
+                    antMatcher(WEBSOCKET_ENDPOINT),
+                    antMatcher(MLWORKER_WEBSOCKET_ENDPOINT),
+                    antMatcher(HttpMethod.OPTIONS, "/**"),
+                    antMatcher("/swagger-ui/**"),
+                    antMatcher("/v3/api-docs/**"),
+                    antMatcher("/test/**"),
+                    antMatcher("/api/v2/dev/**"),
+                    antMatcher("/api/v2/settings/license"),
+                    antMatcher("/api/v2/settings"),
+                    antMatcher("/api/v2/setup"),
+                    antMatcher("/api/v2/ee/license"),
+                    antMatcher("/api/v2/authenticate"),
+                    antMatcher("/api/v2/register"),
+                    antMatcher("/api/v2/register"),
+                    antMatcher("/api/v2/activate"),
+                    antMatcher("/api/v2/account/password-recovery"),
+                    antMatcher("/api/v2/account/reset-password"),
+                    antMatcher("/management/health"),
+                    antMatcher("/management/health/**"),
+                    antMatcher("/management/info"),
+                    antMatcher("/management/prometheus")
+                ).permitAll()
+                .requestMatchers(
+                    antMatcher("/api/admin/**"),
+                    antMatcher("/management/**")
+                ).hasAuthority(AuthoritiesConstants.ADMIN)
                 .requestMatchers(antMatcher("/api/v2/settings/ml-worker-connect")).hasAuthority(AuthoritiesConstants.API)
-                .requestMatchers(antMatcher("/api/v2/settings")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/setup")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/ee/license")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/authenticate")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/register")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/register")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/activate")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/account/password-recovery")).permitAll()
-                .requestMatchers(antMatcher("/api/v2/account/reset-password")).permitAll()
-                .requestMatchers(antMatcher("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
                 .requestMatchers(antMatcher("/api/**")).authenticated()
-                .requestMatchers(antMatcher("/management/health")).permitAll()
-                .requestMatchers(antMatcher("/management/health/**")).permitAll()
-                .requestMatchers(antMatcher("/management/info")).permitAll()
-                .requestMatchers(antMatcher("/management/prometheus")).permitAll()
-                .requestMatchers(antMatcher("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .apply(securityConfigurerAdapter());
         return http.build();
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-            .requestMatchers(antMatcher(WEBSOCKET_ENDPOINT))
-            .requestMatchers(antMatcher(MLWORKER_WEBSOCKET_ENDPOINT))
-            .requestMatchers(antMatcher(HttpMethod.OPTIONS, "/**"))
-            .requestMatchers(antMatcher("/swagger-ui/**"))
-            .requestMatchers(antMatcher("/v3/api-docs/**"))
-            .requestMatchers(antMatcher("/test/**"));
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
