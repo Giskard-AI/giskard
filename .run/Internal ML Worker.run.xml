@@ -7,8 +7,8 @@
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="GSK_CACHE_DIR" value="projects" />
     </envs>
-    <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python3.9" />
-    <option name="SDK_NAME" value="Python 3.9 (giskard)" />
+    <option name="SDK_HOME" value="$PROJECT_DIR$/python-client/.venv/bin/python3" />
+    <option name="SDK_NAME" value="Giskard Python" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/python-client/giskard" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

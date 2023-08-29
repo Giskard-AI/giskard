@@ -88,7 +88,7 @@ pip install "giskard[server, llm]>=2.0.0b" -U
 
 ## Requirements
 
-`giskard[server]` works with Python `3.8`, `3.9` and `3.10`.
+`giskard[server]` works with Python `3.10` and up.
 
 Below is the list of dependencies needed to make `giskard[server]` work:
 

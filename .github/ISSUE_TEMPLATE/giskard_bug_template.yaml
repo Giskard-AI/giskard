@@ -57,7 +57,7 @@ body:
     attributes:
       label: Python version
       description:
-      placeholder: e.g., 3.9
+      placeholder: e.g., 3.10
     validations:
       required: false
   - type: textarea

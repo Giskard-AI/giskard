@@ -12,7 +12,7 @@ tasks {
     val virtualEnvDirectory = ".venv"
     python {
         envPath = virtualEnvDirectory
-        minPythonVersion = "3.8"
+        minPythonVersion = "3.10"
         scope = VIRTUALENV
         installVirtualenv = true
         pip(listOf("pdm:2.8.2", "urllib3:1.26.15", "certifi:2023.7.22"))

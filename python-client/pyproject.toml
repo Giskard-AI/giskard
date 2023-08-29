@@ -130,12 +130,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 
-requires-python = ">=3.8.1, <3.12"
+requires-python = ">=3.10, <3.12"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
@@ -222,7 +221,7 @@ color_output = true
 
 [tool.mypy]
 # https://mypy.readthedocs.io/en/latest/config_file.html#using-a-pyproject-toml-file
-python_version = 3.8
+python_version = 3.10
 pretty = true
 show_traceback = true
 color_output = true
