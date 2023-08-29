@@ -94,7 +94,7 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
                     log.warn("Invalid API key");
                     throw new AccessDeniedException("Invalid API key");
                 }
-                Authentication authentication = ApiKeyAuthFilter.getAuthentication(apiKeyService.getKey(apiKey).get());
+                Authentication authentication = ApiKeyAuthFilter.getAuthentication(apiKeyService.getKey(apiKey).orElseThrow());
                 accessor.setUser(authentication);
             }
         } else {

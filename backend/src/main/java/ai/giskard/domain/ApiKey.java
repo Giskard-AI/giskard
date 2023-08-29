@@ -29,7 +29,7 @@ public class ApiKey extends AbstractAuditingEntity {
     public ApiKey(User user) {
         this.user = user;
         id = UUID.randomUUID();
-        key = PREFIX + RandomStringUtils.randomAlphanumeric(KEY_LENGTH - PREFIX.length());
+        key = PREFIX + RandomStringUtils.randomAlphanumeric(KEY_LENGTH - PREFIX.length()); //NOSONAR
     }
 
     public static boolean doesStringLookLikeApiKey(String str) {
