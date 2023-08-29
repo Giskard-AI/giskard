@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 import torch
 from torch import nn
 from torchtext.data.functional import to_map_style_dataset
@@ -89,7 +90,7 @@ class TextClassificationModel(nn.Module):
         return self.fc(embedded)
 
 
-# @pytest.mark.skip(reason="WIP")
+@pytest.mark.slow
 def test_newspaper_classification_pytorch_custom_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
