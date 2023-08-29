@@ -103,8 +103,9 @@ jobs:
         run: ./gradlew build test-all integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       # Integration Test using postgresql using test-container
+      - uses: docker-practice/actions-setup-docker@master
+
       - name: Integration test under emulated production env
-        uses: docker-practice/actions-setup-docker@master
         env:
           GSK_DISABLE_ANALYTICS: True
         run: ./gradlew integrationTest -Ptestcontainers
