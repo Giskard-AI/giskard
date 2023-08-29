@@ -30,8 +30,7 @@
                         </div>
                       </v-list-item-title>
                       <v-list-item-subtitle v-if='test.tags'>
-                        <v-chip v-for='tag in alphabeticallySorted(test.tags)' :color='pasterColor(tag)' class='mr-2'
-                                x-small>
+                        <v-chip v-for='tag in alphabeticallySorted(test.tags)' :color='pasterColor(tag)' class='mr-2' x-small>
                           {{ tag }}
                         </v-chip>
                       </v-list-item-subtitle>
@@ -45,7 +44,10 @@
 
           <v-col v-if='selected' class='vc fill-height' cols='8'>
             <div class='d-flex justify-space-between py-2'>
-              <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+              <div class="d-flex flex-column">
+                <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+                <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+              </div>
               <v-btn class='primaryLightBtn' color='primaryLight' @click='addToTestSuite'>
                 <v-icon left>mdi-plus</v-icon>
                 Add to test suite
@@ -53,9 +55,7 @@
             </div>
 
             <div class='vc overflow-x-hidden pr-5'>
-              <v-alert v-if='selected.potentiallyUnavailable' border='left' color='warning' colored-border
-                       icon='warning'
-                       outlined>
+              <v-alert v-if='selected.potentiallyUnavailable' border='left' color='warning' colored-border icon='warning' outlined>
                 <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
                 <pre></pre>
                 <StartWorkerInstructions />
@@ -88,14 +88,12 @@
                   <span class='group-title'>Inputs</span>
                   <v-spacer></v-spacer>
                 </div>
-                <SuiteInputListSelector :doc='doc' :editing='true' :inputs='inputType'
-                                        :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
+                <SuiteInputListSelector :doc='doc' :editing='true' :inputs='inputType' :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
                 <div class='d-flex'>
                   <v-spacer></v-spacer>
                   <v-menu offset-y>
                     <template v-slot:activator='{ on, attrs }'>
-                      <v-btn class='primaryLightBtn' v-bind='attrs' color='primaryLight' small width='100'
-                             :loading='testRunning' @click='() => runTest(true)'>
+                      <v-btn class='primaryLightBtn' v-bind='attrs' color='primaryLight' small width='100' :loading='testRunning' @click='() => runTest(true)'>
                         <v-icon>arrow_right</v-icon>
                         <span class='pe-2'>Run</span>
                         <v-icon class='ps-2 primary-left-border' v-on='on' @click.stop>mdi-menu-down</v-icon>
@@ -105,9 +103,7 @@
                       <v-list-item>
                         <v-tooltip bottom>
                           <template v-slot:activator='{ on, attrs }'>
-                            <v-btn color='secondary' text v-bind='attrs'
-                                   @click='() => runTest(false)'
-                                   v-on='on' :loading='testRunning'>
+                            <v-btn color='secondary' text v-bind='attrs' @click='() => runTest(false)' v-on='on' :loading='testRunning'>
                               <v-icon>science</v-icon>
                               Run on whole dataset
                             </v-btn>
@@ -126,8 +122,7 @@
                   <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
                   <span class='group-title'>How to use with code</span>
                 </div>
-                <CodeSnippet :key="selected.name + '_usage'" :codeContent='selectedTestUsage' :language="'python'"
-                             class='mt-2'></CodeSnippet>
+                <CodeSnippet :key="selected.name + '_usage'" :codeContent='selectedTestUsage' :language="'python'" class='mt-2'></CodeSnippet>
               </div>
 
               <div id='code-group' class='py-4'>
@@ -135,8 +130,7 @@
                   <v-icon class='group-icon pb-1 mr-1' left>mdi-code-braces-box</v-icon>
                   <span class='group-title'>Source code</span>
                 </div>
-                <CodeSnippet :key="selected.name + '_source_code'" :codeContent='selected.code'
-                             class='mt-2'></CodeSnippet>
+                <CodeSnippet :key="selected.name + '_source_code'" :codeContent='selected.code' class='mt-2'></CodeSnippet>
               </div>
             </div>
           </v-col>
@@ -167,12 +161,16 @@ import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import { alphabeticallySorted } from '@/utils/comparators';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 
 const props = defineProps<{
   projectId: number,
   suiteId?: number
 }>();
 
+const mainStore = useMainStore();
 
 const searchFilter = ref<string>('');
 const { testFunctions } = storeToRefs(useCatalogStore());
@@ -307,6 +305,14 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
   .value()
 );
 
+const hasCustomTag = computed(() => {
+  return selected.value?.tags?.includes('custom') ?? false;
+});
+
+async function copyFunctionId() {
+  await copyToClipboard(selected.value!.uuid);
+  mainStore.addNotification({ content: "Copied Testing Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style lang='scss' scoped>
@@ -360,5 +366,16 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .primary-left-border {
   border-left: 1px solid #087038;
+}
+
+#function-id {
+  font-size: 0.675rem !important;
+  line-height: 0.675rem !important;
+  cursor: pointer;
+}
+
+#function-id span {
+  text-decoration: underline;
+  margin-right: 0.2rem;
 }
 </style>
