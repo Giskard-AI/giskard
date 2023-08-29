@@ -43,14 +43,22 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // Deny requests other than GET for Giskard gallery repo on Hugging Face Spaces
         if (GeneralSettingsService.hfSpaceId.equals(GISKARD_HF_GALLERY_SPACE_ID)) {
-            // For any allowed requests, put them here
-            http.authorizeHttpRequests(authorizeHttpRequests ->
-                authorizeHttpRequests
-                    .requestMatchers(
-                        antMatcher(HttpMethod.POST, GISKARD_API_ENDPOINTS),
-                        antMatcher(HttpMethod.PUT, GISKARD_API_ENDPOINTS),
-                        antMatcher(HttpMethod.DELETE, GISKARD_API_ENDPOINTS)
-                    ).hasAuthority(AuthoritiesConstants.HF_SUPERUSER)
+            http.authorizeHttpRequests(registry ->
+                // For any allowed requests with authorization, put them here
+                registry.requestMatchers(
+                    antMatcher("/api/v2/dataset/**/rows"),                  // Permit shuffle dataset
+                    antMatcher("/api/v2/project/**/datasets/**/process"),   // Permit dataset processing
+                    antMatcher("/api/v2/models/**/predict"),                // Permit model run
+                    antMatcher("/api/v2/models/**/explain/**"),             // Permit model explain
+                    antMatcher("/api/v2/models/models/explain-text/**")     // Permit model explain text
+                ).authenticated()
+            ).authorizeHttpRequests(authorizeHttpRequests ->
+                // Deny all other APIs
+                authorizeHttpRequests.requestMatchers(
+                    antMatcher(HttpMethod.POST, GISKARD_API_ENDPOINTS),
+                    antMatcher(HttpMethod.PUT, GISKARD_API_ENDPOINTS),
+                    antMatcher(HttpMethod.DELETE, GISKARD_API_ENDPOINTS)
+                ).hasAuthority(AuthoritiesConstants.HF_SUPERUSER)
             );  // Needs HF Superuser permission, but no one has it
         }
 
