@@ -46,38 +46,36 @@ public class SecurityConfiguration {
                 .referrerPolicy(referrerPolicyConfig -> referrerPolicyConfig.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
             ).sessionManagement(conf -> conf.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> {
-                    authorize
-                        .requestMatchers(
-                            antMatcher(WEBSOCKET_ENDPOINT),
-                            antMatcher(MLWORKER_WEBSOCKET_ENDPOINT),
-                            antMatcher(HttpMethod.OPTIONS, "/**"),
-                            antMatcher("/swagger-ui/**"),
-                            antMatcher("/v3/api-docs/**"),
-                            antMatcher("/test/**"),
-                            antMatcher("/api/v2/dev/**"),
-                            antMatcher("/api/v2/settings/license"),
-                            antMatcher("/api/v2/settings"),
-                            antMatcher("/api/v2/setup"),
-                            antMatcher("/api/v2/ee/license"),
-                            antMatcher("/api/v2/authenticate"),
-                            antMatcher("/api/v2/register"),
-                            antMatcher("/api/v2/register"),
-                            antMatcher("/api/v2/activate"),
-                            antMatcher("/api/v2/account/password-recovery"),
-                            antMatcher("/api/v2/account/reset-password"),
-                            antMatcher("/management/health"),
-                            antMatcher("/management/health/**"),
-                            antMatcher("/management/info"),
-                            antMatcher("/management/prometheus")
-                        ).permitAll()
-                        .requestMatchers(
-                            antMatcher("/api/admin/**"),
-                            antMatcher("/management/**")
-                        ).hasAuthority(AuthoritiesConstants.ADMIN)
-                        .requestMatchers(antMatcher("/public-api/**")).hasAuthority(AuthoritiesConstants.API)
-                        .requestMatchers(antMatcher("/api/**")).authenticated();
-                }
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(
+                    antMatcher(WEBSOCKET_ENDPOINT),
+                    antMatcher(MLWORKER_WEBSOCKET_ENDPOINT),
+                    antMatcher(HttpMethod.OPTIONS, "/**"),
+                    antMatcher("/swagger-ui/**"),
+                    antMatcher("/v3/api-docs/**"),
+                    antMatcher("/test/**"),
+                    antMatcher("/api/v2/dev/**"),
+                    antMatcher("/api/v2/settings/license"),
+                    antMatcher("/api/v2/settings"),
+                    antMatcher("/api/v2/setup"),
+                    antMatcher("/api/v2/ee/license"),
+                    antMatcher("/api/v2/authenticate"),
+                    antMatcher("/api/v2/register"),
+                    antMatcher("/api/v2/register"),
+                    antMatcher("/api/v2/activate"),
+                    antMatcher("/api/v2/account/password-recovery"),
+                    antMatcher("/api/v2/account/reset-password"),
+                    antMatcher("/management/health"),
+                    antMatcher("/management/health/**"),
+                    antMatcher("/management/info"),
+                    antMatcher("/management/prometheus")
+                ).permitAll()
+                .requestMatchers(
+                    antMatcher("/api/admin/**"),
+                    antMatcher("/management/**")
+                ).hasAuthority(AuthoritiesConstants.ADMIN)
+                .requestMatchers(antMatcher("/public-api/**")).hasAuthority(AuthoritiesConstants.API)
+                .requestMatchers(antMatcher("/api/**")).authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .apply(securityConfigurerAdapter());

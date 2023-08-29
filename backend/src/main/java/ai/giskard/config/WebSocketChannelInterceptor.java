@@ -74,34 +74,42 @@ public class WebSocketChannelInterceptor implements ChannelInterceptor {
             List<String> jwtHeaders = accessor.getNativeHeader("jwt");
             if (jwtHeaders != null) {
                 // Websocket connection is coming from the UI
-                if (jwtHeaders.isEmpty() || !StringUtils.hasText(jwtHeaders.get(0))) {
-                    log.warn("Missing JWT token");
-                    throw new AccessDeniedException("Missing JWT token");
-                } else if (!tokenProvider.validateToken(jwtHeaders.get(0))) {
-                    log.warn("Invalid JWT token");
-                    throw new AccessDeniedException("Invalid JWT token");
-                }
-                Authentication authentication = tokenProvider.getAuthentication(jwtHeaders.get(0));
-                accessor.setUser(authentication);
+                extractUserFromJWTtoken(accessor, jwtHeaders);
             } else if (apiKeyHeaders != null) {
                 // Websocket connection is coming from the ML Worker
-                if (apiKeyHeaders.isEmpty() || !StringUtils.hasText(apiKeyHeaders.get(0))) {
-                    log.warn("Missing API key header");
-                    throw new AccessDeniedException("Missing API key");
-                }
-                String apiKey = apiKeyHeaders.get(0);
-                if (!ApiKey.doesStringLookLikeApiKey(apiKey) || apiKeyService.getKey(apiKey).isEmpty()) {
-                    log.warn("Invalid API key");
-                    throw new AccessDeniedException("Invalid API key");
-                }
-                Authentication authentication = ApiKeyAuthFilter.getAuthentication(apiKeyService.getKey(apiKey).orElseThrow());
-                accessor.setUser(authentication);
+                extractUserFromAPIkey(accessor, apiKeyHeaders);
             }
         } else {
             accessor.setUser(getDummyAuthentication());
         }
 
         return message;
+    }
+
+    private void extractUserFromAPIkey(StompHeaderAccessor accessor, List<String> apiKeyHeaders) {
+        if (apiKeyHeaders.isEmpty() || !StringUtils.hasText(apiKeyHeaders.get(0))) {
+            log.warn("Missing API key header");
+            throw new AccessDeniedException("Missing API key");
+        }
+        String apiKey = apiKeyHeaders.get(0);
+        if (!ApiKey.doesStringLookLikeApiKey(apiKey) || apiKeyService.getKey(apiKey).isEmpty()) {
+            log.warn("Invalid API key");
+            throw new AccessDeniedException("Invalid API key");
+        }
+        Authentication authentication = ApiKeyAuthFilter.getAuthentication(apiKeyService.getKey(apiKey).orElseThrow());
+        accessor.setUser(authentication);
+    }
+
+    private void extractUserFromJWTtoken(StompHeaderAccessor accessor, List<String> jwtHeaders) {
+        if (jwtHeaders.isEmpty() || !StringUtils.hasText(jwtHeaders.get(0))) {
+            log.warn("Missing JWT token");
+            throw new AccessDeniedException("Missing JWT token");
+        } else if (!tokenProvider.validateToken(jwtHeaders.get(0))) {
+            log.warn("Invalid JWT token");
+            throw new AccessDeniedException("Invalid JWT token");
+        }
+        Authentication authentication = tokenProvider.getAuthentication(jwtHeaders.get(0));
+        accessor.setUser(authentication);
     }
 
     @Override

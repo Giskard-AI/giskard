@@ -49,6 +49,6 @@ class UserApiKeyControllerIT {
                     .andExpect(jsonPath("$.[*].key").exists());
         }
 
-        assertThat(apiKeyRepository.findAll().size()).isEqualTo(numberOfCreatedKeys);
+        assertThat(apiKeyRepository.findAll()).hasSize(numberOfCreatedKeys);
     }
 }

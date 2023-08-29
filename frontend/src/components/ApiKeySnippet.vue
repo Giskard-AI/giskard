@@ -4,10 +4,6 @@ import {copyToClipboard} from "@/global-keys";
 
 import "highlight.js/styles/stackoverflow-light.css";
 
-import python from 'highlight.js/lib/languages/python';
-import json from 'highlight.js/lib/languages/json';
-import bash from 'highlight.js/lib/languages/bash';
-import plaintext from 'highlight.js/lib/languages/plaintext';
 import hljs from "highlight.js";
 
 

@@ -2,7 +2,6 @@ package ai.giskard.web.rest.controllers;
 
 
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.GiskardUser;
 import ai.giskard.service.ApiKeyService;
 import ai.giskard.web.dto.ApiKeyDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
