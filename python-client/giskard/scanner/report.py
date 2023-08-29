@@ -56,7 +56,7 @@ class ScanReport:
         from ..visualization.widget import ScanReportWidget
 
         widget = ScanReportWidget(self)
-        markdown = widget.render_markdown()
+        markdown = widget.render_markdown(template="summary")
 
         return markdown
 

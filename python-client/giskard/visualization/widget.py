@@ -50,7 +50,7 @@ class TestSuiteResultWidget(BaseWidget):
         self.test_suite_result = test_suite_result
 
     def render_html(self) -> str:
-        tpl = get_template("suite_results.html")
+        tpl = get_template("suite_results/suite_results.html")
 
         return tpl.render(
             passed=self.test_suite_result.passed,
@@ -65,7 +65,7 @@ class ScanReportWidget(BaseWidget):
         self.scan_result = scan_result
 
     def render_template(self, template_filename: str, **kwargs) -> str:
-        tpl = get_template(template_filename)
+        tpl = get_template("scan_report/" + template_filename)
 
         issues_by_group = defaultdict(list)
         for issue in self.scan_result.issues:
@@ -89,15 +89,17 @@ class ScanReportWidget(BaseWidget):
             **kwargs,
         )
 
-    def render_html(self, **kwargs) -> str:
-        html = self.render_template("scan_results.html", **kwargs)
+    def render_html(self, template="full", embed=False) -> str:
+        html = self.render_template(f"html/{template}.html")
 
-        if kwargs.get("embed", False):
+        if embed:
             # Put the HTML in an iframe
             escaped = escape(html)
             uid = id(self)
 
-            with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
+            with Path(__file__).parent.joinpath("templates", "scan_report", "html", "static", "external.js").open(
+                "r"
+            ) as f:
                 js_lib = f.read()
 
             html = f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
@@ -108,6 +110,5 @@ class ScanReportWidget(BaseWidget):
 
         return html
 
-    def render_markdown(self) -> str:
-        markdown = self.render_template("markdown/scan_results.md")
-        return markdown
+    def render_markdown(self, template="full") -> str:
+        return self.render_template(f"markdown/{template}.md")
