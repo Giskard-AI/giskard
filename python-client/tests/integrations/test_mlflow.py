@@ -29,7 +29,6 @@ def _evaluate(dataset, model, evaluator_config, request):
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-        ("german_credit_data", "german_credit_model"),
         ("breast_cancer_data", "breast_cancer_model"),
         ("drug_classification_data", "drug_classification_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
@@ -37,15 +36,13 @@ def _evaluate(dataset, model, evaluator_config, request):
     ],
 )
 def test_fast(dataset_name, model_name, request):
-    dataset = request.getfixturevalue(dataset_name)
-    model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
-    _evaluate(dataset, model, evaluator_config, request)
+    _run_test(dataset_name, model_name, request)
 
 
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
+        ("german_credit_data", "german_credit_model"),
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
         ("fraud_detection_data", "fraud_detection_model"),
@@ -54,6 +51,10 @@ def test_fast(dataset_name, model_name, request):
 )
 @pytest.mark.slow
 def test_slow(dataset_name, model_name, request):
+    _run_test(dataset_name, model_name, request)
+
+
+def _run_test(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
     evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}

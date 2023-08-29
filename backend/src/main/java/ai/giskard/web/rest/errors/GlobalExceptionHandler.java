@@ -34,6 +34,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (ex instanceof ConcurrencyFailureException) return HttpStatus.CONFLICT;
         if (ex instanceof BadCredentialsException) return HttpStatus.UNAUTHORIZED;
         if (ex instanceof AccessDeniedException) return HttpStatus.FORBIDDEN;
+        if (ex instanceof IllegalArgumentException) return HttpStatus.BAD_REQUEST;
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 }
