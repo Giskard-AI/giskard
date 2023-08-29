@@ -104,6 +104,7 @@ jobs:
 
       # Integration Test using postgresql using test-container
       - name: Integration test under emulated production env
+        uses: docker-practice/actions-setup-docker@master
         env:
           GSK_DISABLE_ANALYTICS: True
         run: ./gradlew integrationTest -Ptestcontainers
