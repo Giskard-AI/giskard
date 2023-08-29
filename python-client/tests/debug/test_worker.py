@@ -1,12 +1,13 @@
+import pytest
 from typing import Any
 
-from tests.utils import MockedClient, match_model_id
-import pytest
-from giskard.testing import test_f1
 from giskard.ml_worker.websocket import listener
+from giskard.testing import test_f1
+from tests.utils import MockedClient, match_model_id
 
 
 @pytest.mark.parametrize("data,model,", [("german_credit_data", "german_credit_model")])
+@pytest.mark.slow
 def test_service(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
