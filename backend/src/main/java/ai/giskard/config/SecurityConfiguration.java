@@ -3,6 +3,7 @@ package ai.giskard.config;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.GiskardAuthConfigurer;
 import ai.giskard.security.ee.jwt.TokenProvider;
+import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ee.LicenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -36,8 +37,23 @@ public class SecurityConfiguration {
     private LicenseService licenseService;
 
 
+    public static final String GISKARD_API_ENDPOINTS = "/api/**";
+    public static final String GISKARD_HF_GALLERY_SPACE_ID = "giskardai/giskard";
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // Deny requests other than GET for Giskard gallery repo on Hugging Face Spaces
+        if (GeneralSettingsService.hfSpaceId.equals(GISKARD_HF_GALLERY_SPACE_ID)) {
+            // For any allowed requests, put them here
+            http.authorizeHttpRequests(authorizeHttpRequests ->
+                authorizeHttpRequests
+                    .requestMatchers(
+                        antMatcher(HttpMethod.POST, GISKARD_API_ENDPOINTS),
+                        antMatcher(HttpMethod.PUT, GISKARD_API_ENDPOINTS),
+                        antMatcher(HttpMethod.DELETE, GISKARD_API_ENDPOINTS)
+                    ).hasAuthority(AuthoritiesConstants.HF_SUPERUSER)
+            );  // Needs HF Superuser permission, but no one has it
+        }
+
         http
             .cors(withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
@@ -74,7 +90,7 @@ public class SecurityConfiguration {
                     antMatcher("/management/**")
                 ).hasAuthority(AuthoritiesConstants.ADMIN)
                 .requestMatchers(antMatcher("/api/v2/settings/ml-worker-connect")).hasAuthority(AuthoritiesConstants.API)
-                .requestMatchers(antMatcher("/api/**")).authenticated()
+                .requestMatchers(antMatcher(GISKARD_API_ENDPOINTS)).authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .apply(securityConfigurerAdapter());

@@ -75,7 +75,7 @@ public class InitService {
     private final FileLocationService fileLocationService;
     private final LicenseService licenseService;
     private Map<String, ProjectConfig> projects;
-    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITY_NAMES.keySet().toArray(new String[0])).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
@@ -183,7 +183,7 @@ public class InitService {
      * Initiating authorities with AuthoritiesConstants values
      */
     public void initAuthorities() {
-        stream(AuthoritiesConstants.AUTHORITIES).forEach(authName -> {
+        stream(AuthoritiesConstants.AUTHORITY_NAMES.keySet().toArray(new String[0])).forEach(authName -> {
             if (roleRepository.findByName(authName).isPresent()) {
                 logger.info("Authority {} already exists", authName);
                 return;
