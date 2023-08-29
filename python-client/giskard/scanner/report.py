@@ -64,10 +64,12 @@ class ScanReport:
         df = pd.DataFrame(
             [
                 {
-                    "domain": issue.summary.get("domain"),
-                    "metric": issue.summary.get("metric"),
-                    "deviation": issue.summary.get("deviation"),
-                    "description": issue.summary.get("short_description"),
+                    "domain": issue.meta.get("domain"),
+                    "slicing_fn": str(issue.slicing_fn) if issue.slicing_fn else None,
+                    "transformation_fn": str(issue.transformation_fn) if issue.transformation_fn else None,
+                    "metric": issue.meta.get("metric"),
+                    "deviation": issue.meta.get("deviation"),
+                    "description": issue.description,
                 }
                 for issue in self.issues
             ]
