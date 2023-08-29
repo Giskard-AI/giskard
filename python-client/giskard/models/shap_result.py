@@ -21,23 +21,22 @@ class PanelNames(str, Enum):
 class ShapResult:
     """Dataclass to log the SHAP explanation result.
 
-    Stores the SHAP explanation results and provides the logic to log SHAP
+    Stores the SHAP explanation results and provides the logic to log the SHAP
     charts to the WandB run.
 
     Parameters
     ----------
     explanations : shap.Explanation
-        Object, which stores SHAP explanations.
+        The SHAP explanations.
 
     feature_types : dict (optional, default=None)
-        Dictionary with features' names and types.
+        Mapping between the features' names and their types.
 
     model_type : ModelType (optional, default=None)
-        Type of the model, which outputs were explained using SHAP.
+        Type of the model: classification, regression or text.
 
-    only_highest_proba: bool (optional, default=None)
-        Flag, whether SHAP explanations are of classes with the highest
-        predicted probability.
+    only_highest_proba: bool (default=True)
+        A flag indicating whether to provide SHAP explanations only for the predictions with the highest probability or not.
     """
 
     explanations: Explanation

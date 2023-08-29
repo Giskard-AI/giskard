@@ -76,15 +76,15 @@ class TestSuiteResult:
         return metrics
 
     def to_wandb(self, **kwargs) -> None:
-        """Log test-suite result to the WandB run.
+        """Log the test-suite result to the WandB run.
 
-        Log current test-suite result in a table format to the active WandB run.
+        Log the current test-suite result in a table format to the active WandB run.
 
         Parameters
         ----------
         **kwargs :
             Additional keyword arguments
-            (see https://docs.wandb.ai/ref/python/init) to the active WandB run.
+            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
         import wandb

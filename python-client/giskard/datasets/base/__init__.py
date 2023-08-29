@@ -672,14 +672,15 @@ class Dataset(ColumnMetadataMixin):
         return artifact_name
 
     def to_wandb(self, **kwargs) -> None:
-        """Log dataset to the WandB run.
+        """Log the dataset to the WandB run.
 
-        Log current dataset in a table format to the active WandB run.
+        Log the current dataset in a table format to the active WandB run.
 
         Parameters
         ----------
         **kwargs :
-            Additional keyword arguments to the active WandB run.
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
         """
         from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run

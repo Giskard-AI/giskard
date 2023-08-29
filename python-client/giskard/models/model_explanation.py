@@ -19,16 +19,16 @@ logger = logging.getLogger(__name__)
 def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> pd.DataFrame:
     """Create a background example for the SHAP Kernel explainer.
 
-    For numerical features a median is taken. For categorical features a mode
-    is taken.
+    For numerical features a median is used. For categorical features a mode
+    is used.
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataset, which is used to calculate background feature values.
+        The dataset used to calculate background feature values.
 
     feature_types : dict of str
-        Dictionary with feature names and types (numeric, category or text)
+        Mapping between the feature names and their types (numeric, category or text)
 
     Returns
     -------
@@ -48,7 +48,7 @@ def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> 
 
 
 def _get_columns_original_order(prepared_dataset: Dataset, model: BaseModel, dataset: Dataset) -> list:
-    """Return columns of the `prepared_dataset` in the original order.
+    """Return the columns of the `prepared_dataset` in the original order.
 
     Use `model` or `dataset` to deduce the original sequence of columns that
     the model was initially trained with.
@@ -113,15 +113,15 @@ def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.nda
     Parameters
     ----------
     model : giskard.Model
-        Model, which output need to be explained using SHAP.
+        The model used for the SHAP explanation.
 
     dataset : giskard.Dataset
-        Dataset, which entries need to be explained using SHAP.
+        The dataset used for the SHAP explanation.
 
     Returns
     -------
     shap_values : np.ndarray
-        Raw SHAP contributions of the given features to the `model` predictions.
+        The model's SHAP values as a numpy array
     """
     # Prepare background sample to be used in the KernelSHAP.
     background_df = model.prepare_dataframe(dataset.df, dataset.column_dtypes, dataset.target)
@@ -140,13 +140,13 @@ def _calculate_dataset_shap_values(model: BaseModel, dataset: Dataset) -> np.nda
     return shap_values
 
 
-def _get_highest_proba_shap(shap_values: list, model: BaseModel, dataset: Dataset) -> list:
+def _get_highest_proba_shap(shap_values: np.ndarray, model: BaseModel, dataset: Dataset) -> list:
     """Get the SHAP values of the prediction with the highest probability.
 
     Parameters
     ----------
-    shap_values : list (n_classes x n_samples)
-        Raw SHAP contributions of the features.
+    shap_values : np.ndarray (n_classes x n_samples)
+        The model's SHAP values as a numpy array
 
     model : giskard.Model
         The model used for the SHAP explanation
@@ -164,9 +164,7 @@ def _get_highest_proba_shap(shap_values: list, model: BaseModel, dataset: Datase
 
 
 def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bool = True) -> ShapResult:
-    """Get SHAP explanation result.
-
-    Explain the model with SHAP and return the results as a `ShapResult` object.
+    """Explain the model with SHAP and return the results as a `ShapResult` object.
 
     Parameters
     ----------
