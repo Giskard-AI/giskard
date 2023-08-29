@@ -2,7 +2,9 @@ package ai.giskard.web.rest;
 
 import ai.giskard.IntegrationTest;
 import ai.giskard.repository.ApiKeyRepository;
+import ai.giskard.service.ApiKeyService;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,22 +25,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @IntegrationTest
 class UserApiKeyControllerIT {
 
+    public static final String USERNAME = "admin";
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ApiKeyRepository apiKeyRepository;
+    private ApiKeyRepository repo;
+    @Autowired
+    private ApiKeyService service;
+
+    @AfterEach
+    public void cleanup() {
+        service.getKeys(USERNAME).forEach(key -> service.deleteKey(USERNAME, key.getId()));
+    }
 
     @Test
     @Transactional
-    @WithMockUser(username = "admin")
+    @WithMockUser(username = USERNAME)
     void testGetApiKeys() throws Exception {
         mockMvc
-                .perform(get("/api/v2/apikey").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json("[]"));
+            .perform(get("/api/v2/apikey").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(MockMvcResultMatchers.content().json("[]"));
 
-        assertThat(apiKeyRepository.findAll()).isEmpty();
+        assertThat(repo.findAll()).isEmpty();
 
         int numberOfCreatedKeys = 2;
         for (int i = 0; i < numberOfCreatedKeys; i++) {
@@ -50,12 +60,12 @@ class UserApiKeyControllerIT {
                 .andExpect(jsonPath("$.[*].key").exists());
         }
 
-        assertThat(apiKeyRepository.findAll()).hasSize(numberOfCreatedKeys);
+        assertThat(repo.findAll()).hasSize(numberOfCreatedKeys);
     }
 
     @Test
     @Transactional
-    @WithMockUser(username = "admin")
+    @WithMockUser(username = USERNAME)
     void testDeleteApiKey() throws Exception {
         MvcResult response = mockMvc
             .perform(post("/api/v2/apikey").contentType(MediaType.APPLICATION_JSON))
@@ -70,7 +80,7 @@ class UserApiKeyControllerIT {
             .perform(delete("/api/v2/apikey/" + keyId).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(0)));
-        assertThat(apiKeyRepository.findAll()).isEmpty();
+        assertThat(repo.findAll()).isEmpty();
 
     }
 }
