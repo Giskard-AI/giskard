@@ -1,16 +1,17 @@
+import re
+import warnings
+from unittest import mock
+
 import numpy as np
 import pandas as pd
 import pytest
-import re
-import warnings
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
-from unittest import mock
 
 from giskard import Dataset, GiskardClient, Model
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
-from giskard.scanner.result import ScanResult
-from langchain import LLMChain, PromptTemplate
+from giskard.scanner.report import ScanReport
 
 
 @pytest.mark.parametrize(
