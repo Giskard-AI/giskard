@@ -1,7 +1,7 @@
-import pytest
 import logging
 import numpy as np
 import pandas as pd
+import pytest
 from unittest import mock
 
 from giskard import Dataset
@@ -68,6 +68,7 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     assert all([isinstance(issue, Issue) for issue in issues])
 
 
+@pytest.mark.slow
 def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     # By default, it does not use the statistical significance
     detector = PerformanceBiasDetector()

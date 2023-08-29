@@ -1,12 +1,12 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.ml.dto.MLWorkerWSGeneratedTestInputDTO;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class FunctionInput implements Serializable {
 
     private String type;
 
-    @Column(columnDefinition = "CLOB", name = "input_value")
+    @Column(columnDefinition = "text", name = "input_value")
     @Lob
     private String value;
 
