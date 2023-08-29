@@ -4,11 +4,40 @@ import math
 import numpy as np
 import pandas as pd
 import xxhash
+from langchain import LLMChain, PromptTemplate
+from langchain.llms.fake import FakeListLLM
 
 import giskard
-from giskard import Model, Dataset
+from giskard import Dataset, Model
 from giskard.core.core import SupportedModelTypes
 from giskard.models.cache import ModelCache
+
+
+def test_model_prediction_is_cached_on_text_generation_model():
+    llm = FakeListLLM(responses=['This is my text with special chars" → ,.!? # and \n\nnewlines', "This is my text"])
+
+    prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
+    chain = LLMChain(llm=llm, prompt=prompt)
+    model = Model(chain, model_type="text_generation")
+    dataset = Dataset(
+        pd.DataFrame({"instruct": ["Test 1", "Test 2"]}),
+        column_types={
+            "instruct": "text",
+        },
+    )
+    model.predict(dataset)
+
+    # Should load from cache
+    assert model.predict(dataset).raw_prediction.tolist() == llm.responses
+    assert model.predict(dataset).raw_prediction.tolist() == llm.responses
+
+    # Test cache persistence
+    model_id = model.id
+
+    del model
+    model = Model(chain, model_type="text_generation", id=model_id.hex)
+
+    assert model.predict(dataset).raw_prediction.tolist() == llm.responses
 
 
 def test_model_prediction_is_cached_on_regression_model():

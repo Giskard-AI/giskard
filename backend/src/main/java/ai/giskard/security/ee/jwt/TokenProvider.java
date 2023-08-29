@@ -17,7 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -50,17 +49,17 @@ public class TokenProvider {
 
     private final SecurityMetersService securityMetersService;
 
-    public TokenProvider(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
+    public TokenProvider(ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
-        String base64SecretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
-        String secretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
+        String base64SecretProperty = applicationProperties.getBase64JwtSecretKey();
+        String secretProperty = applicationProperties.getJwtSecretKey();
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);
             log.info("Using a provided Base64-encoded JWT secret key of {} bytes", keyBytes.length);
         } else if (secretProperty != null) {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
-                    "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
+                    "We recommend using the `giskard.base64-jwt-secret-key` key for optimum security."
             );
             base64SecretProperty = secretProperty;
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
@@ -72,11 +71,10 @@ public class TokenProvider {
         }
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        this.tokenValidityInMilliseconds = 1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds();
+        this.tokenValidityInMilliseconds = 1000 * applicationProperties.getTokenValidityInSeconds();
         this.apiTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getApiTokenValidityInDays();
         this.invitationTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getInvitationTokenValidityInDays();
-        this.tokenValidityInMillisecondsForRememberMe =
-            1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe();
+        this.tokenValidityInMillisecondsForRememberMe = 1000 * applicationProperties.getTokenValidityInSecondsForRememberMe();
 
         this.securityMetersService = securityMetersService;
     }
@@ -172,18 +170,14 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) { // NOSONAR
             this.securityMetersService.trackTokenExpired();
             log.trace(INVALID_JWT_TOKEN, e);
-            throw e;
         } catch (UnsupportedJwtException e) {
             this.securityMetersService.trackTokenUnsupported();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (MalformedJwtException e) {
             this.securityMetersService.trackTokenMalformed();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (SignatureException e) {
             this.securityMetersService.trackTokenInvalidSignature();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (IllegalArgumentException e) {
             log.error("Token validation error {}", e.getMessage());

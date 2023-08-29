@@ -2,34 +2,35 @@ package ai.giskard.web.rest.controllers;
 
 import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
-import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.service.*;
-import ai.giskard.service.ml.MLWorkerService;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
-import ai.giskard.worker.ArtifactRef;
-import ai.giskard.worker.DatasetProcessingFunction;
-import ai.giskard.worker.DatasetProcessingRequest;
-import ai.giskard.worker.DatasetProcessingResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
+import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +46,8 @@ public class DatasetsController {
     private final UsageService usageService;
     private final SlicingFunctionService slicingFunctionService;
     private final TransformationFunctionService transformationFunctionService;
-    private final MLWorkerService mlWorkerService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestArgumentService testArgumentService;
 
     /**
@@ -136,16 +138,15 @@ public class DatasetsController {
             })
             .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
-        try (MLWorkerClient client = mlWorkerService.createClient(project.isUsingInternalWorker())) {
-            DatasetProcessingRequest.Builder builder = DatasetProcessingRequest.newBuilder()
-                .setDataset(ArtifactRef.newBuilder()
-                    .setId(dataset.getId().toString())
-                    .setProjectKey(dataset.getProject().getKey())
-                    .setSample(sample)
-                    .build());
+        MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (!mlWorkerWSService.isWorkerConnected(workerID)) {
+            throw new MLWorkerNotConnectedException(workerID, log);
+        }
 
-            processingFunctions.forEach(processingFunction -> {
-                DatasetProcessingFunction.Builder functionBuilder = DatasetProcessingFunction.newBuilder();
+        List<MLWorkerWSDatasetProcessingFunctionDTO> functions =
+            processingFunctions.stream().map(processingFunction -> {
+                MLWorkerWSDatasetProcessingFunctionDTO.MLWorkerWSDatasetProcessingFunctionDTOBuilder functionBuilder =
+                    MLWorkerWSDatasetProcessingFunctionDTO.builder();
 
                 DatasetProcessFunction callable = callables.get(processingFunction.getUuid());
                 Map<String, FunctionArgument> arguments = callable.getArgs().stream()
@@ -155,31 +156,52 @@ public class DatasetsController {
                     arguments.put("column_name", FunctionArguments.COLUMN_NAME);
                 }
 
-                ArtifactRef.Builder artefactRefBuilder = ArtifactRef.newBuilder().setId(callable.getUuid().toString());
-
+                MLWorkerWSArtifactRefDTO artifactRef = MLWorkerWSArtifactRefDTO.builder()
+                    .id(callable.getUuid().toString())
+                    .build();
                 if (callable.getProjectKey() != null) {
-                    artefactRefBuilder.setProjectKey(callable.getProjectKey());
+                    artifactRef.setProjectKey(callable.getProjectKey());
                 }
-                ArtifactRef artifactRef = artefactRefBuilder.build();
 
                 if (callable instanceof SlicingFunction) {
-                    functionBuilder.setSlicingFunction(artifactRef);
+                    functionBuilder.slicingFunction(artifactRef);
                 } else {
-                    functionBuilder.setTransformationFunction(artifactRef);
+                    functionBuilder.transformationFunction(artifactRef);
                 }
 
+                List<MLWorkerWSFuncArgumentDTO> argumentList = new ArrayList<>(processingFunction.getParams().size());
                 for (FunctionInputDTO input : processingFunction.getParams()) {
-                    functionBuilder.addArguments(testArgumentService
-                        .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(), Collections.emptyList(), sample));
+                        argumentList.add(testArgumentService
+                            .buildTestArgumentWS(
+                                arguments,
+                                input.getName(),
+                                input.getValue(),
+                                project.getKey(),
+                                Collections.emptyList(),
+                                sample
+                            )
+                        );
                 }
+                functionBuilder.arguments(argumentList);
 
-                builder.addFunctions(functionBuilder.build());
-            });
+                return functionBuilder.build();
+            }).toList();
 
+        MLWorkerWSDatasetProcessingParamDTO param = MLWorkerWSDatasetProcessingParamDTO.builder()
+            .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
+            .functions(functions)
+            .build();
 
-            DatasetProcessingResultMessage datasetProcessingResultMessage = client.getBlockingStub().datasetProcessing(builder.build());
-
-            return convertGRPCObject(datasetProcessingResultMessage, DatasetProcessingResultDTO.class);
+        MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+            workerID,
+            MLWorkerWSAction.DATASET_PROCESSING,
+            param
+        );
+        if (result instanceof MLWorkerWSDatasetProcessingDTO response) {
+            return convertMLWorkerWSObject(response, DatasetProcessingResultDTO.class);
+        } else if (result instanceof MLWorkerWSErrorDTO error) {
+            throw new MLWorkerIllegalReplyException(error);
         }
+        throw new MLWorkerIllegalReplyException("Dataset processing failed");
     }
 }

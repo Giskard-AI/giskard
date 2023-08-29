@@ -75,14 +75,14 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -104,7 +104,7 @@ class BaseModel(ABC):
                 - meta: a ModelMeta object containing metadata about the model.
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
-        if type(model_type) == str:
+        if isinstance(model_type, str):
             try:
                 model_type = SupportedModelTypes(model_type)
             except ValueError as e:

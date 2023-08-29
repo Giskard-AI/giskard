@@ -3,8 +3,6 @@
 #
 # This configuration overrides the application.yml file.
 #
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
 # ===================================================================
@@ -16,7 +14,6 @@
 logging:
   level:
     ROOT: INFO
-    tech.jhipster: INFO
     org.hibernate.SQL: INFO
     ai.giskard: INFO
     com.zaxxer.hikari.HikariConfig: DEBUG
@@ -43,7 +40,7 @@ spring:
       connection-timeout: 20000
       leak-detection-threshold: 10000
   jpa:
-    database-platform: tech.jhipster.domain.util.FixedH2Dialect
+    database-platform: org.hibernate.dialect.H2Dialect
     show-sql: false
   liquibase:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
@@ -70,47 +67,16 @@ spring:
 server:
   port: 9000
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-jhipster:
-  # CORS is only enabled by default with the "dev" profile
+giskard:
+  home: ${user.home}/giskard-home
+  # Generate a random key using the following command: openssl rand -base64 64
+  base64-jwt-secret-key: 2ik6cM0kPIe/sbCnTqFB+6WIuPb7Ts87VhBugex2AjA=
   cors:
-    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
     allowed-origins: '*'
     allowed-methods: '*'
     allowed-headers: '*'
-    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
     allow-credentials: false
     max-age: 1800
-  security:
-    authentication:
-      jwt:
-        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        base64-secret: NWFmMDg2ZjkxZjhjMGExOTU3MDFhN2M0MTg2MzMzNTNiN2ViNjVlZjM4ZDdjN2RlMzBhYmQ2M2VmM2RkMmRhM2QxNTE0YmYwY2UxNDQyM2ZjNzlhMmQzNTU0MTMyM2VhOTBiYTZlNmZjOTg4Mzc4YTU0ZjFjYzJhZTA4NzAyYjE=
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-        token-validity-in-seconds-for-remember-me: 2592000
-  mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://localhost:8080
-  logging:
-    use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
-      queue-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-giskard:
-  home: ${user.home}/giskard-home
+springdoc:
+  api-docs:
+    enabled: true
