@@ -88,6 +88,7 @@ class SpuriousCorrelationDetector(Detector):
                             "plabel": plabel,
                             "p": p,
                             "p_perc": p * 100,
+                            "threshold": self.threshold,
                         },
                         description=description,
                         importance=metric_value,
