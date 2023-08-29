@@ -195,12 +195,6 @@ const panel = ref<number[]>([0]);
 
 monacoOptions.readOnly = true;
 
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
-
 const hasCustomTag = computed(() => {
     return selected.value?.tags?.includes('custom') ?? false;
 })

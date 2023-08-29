@@ -211,15 +211,9 @@ const hasCustomTag = computed(() => {
     return selected.value?.tags?.includes('custom') ?? false;
 });
 
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
-
 const hasGiskardFilters = computed(() => {
     return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
-})
+});
 
 const filteredTestFunctions = computed(() => {
     return chain(slicingFunctions.value)
