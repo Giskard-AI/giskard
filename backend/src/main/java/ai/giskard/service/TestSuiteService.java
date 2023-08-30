@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import static ai.giskard.web.rest.errors.Entity.TEST_SUITE;
 
-
 @Service
 @RequiredArgsConstructor
 public class TestSuiteService {
@@ -69,29 +68,32 @@ public class TestSuiteService {
         Map<String, RequiredInputDTO> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
-            ImmutableMap<String, FunctionInput> providedInputs = Maps.uniqueIndex(test.getFunctionInputs(), FunctionInput::getName);
+            ImmutableMap<String, FunctionInput> providedInputs = Maps.uniqueIndex(test.getFunctionInputs(),
+                    FunctionInput::getName);
 
             test.getTestFunction().getArgs().stream()
-                .filter(a -> !a.isOptional())
-                .forEach(a -> {
-                    String name = null;
-                    boolean isShared = false;
-                    if (!providedInputs.containsKey(a.getName())) {
-                        name = a.getName();
-                    } else if (providedInputs.get(a.getName()).isAlias()) {
-                        name = providedInputs.get(a.getName()).getValue();
-                        isShared = true;
-                    }
-                    if (name != null) {
-                        if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
-                            throw new IllegalArgumentException("Variable with name %s is declared as %s and %s at the same time".formatted(a.getName(), res.get(a.getName()), a.getType()));
-                        } else if (res.containsKey(name)) {
-                            res.get(name).setSharedInput(isShared || res.get(name).isSharedInput());
-                        } else {
-                            res.put(name, new RequiredInputDTO(a.getType(), isShared));
+                    .filter(a -> !a.isOptional())
+                    .forEach(a -> {
+                        String name = null;
+                        boolean isShared = false;
+                        if (!providedInputs.containsKey(a.getName())) {
+                            name = a.getName();
+                        } else if (providedInputs.get(a.getName()).isAlias()) {
+                            name = providedInputs.get(a.getName()).getValue();
+                            isShared = true;
                         }
-                    }
-                });
+                        if (name != null) {
+                            if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
+                                throw new IllegalArgumentException(
+                                        "Variable with name %s is declared as %s and %s at the same time"
+                                                .formatted(a.getName(), res.get(a.getName()), a.getType()));
+                            } else if (res.containsKey(name)) {
+                                res.get(name).setSharedInput(isShared || res.get(name).isSharedInput());
+                            } else {
+                                res.put(name, new RequiredInputDTO(a.getType(), isShared));
+                            }
+                        }
+                    });
         });
 
         return res;
@@ -106,7 +108,7 @@ public class TestSuiteService {
         execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
 
         Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId).entrySet().stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
@@ -118,8 +120,8 @@ public class TestSuiteService {
     }
 
     public TestSuiteExecution tryTestSuiteExecution(TestSuite testSuite,
-                                                    Map<String, String> suiteInputs,
-                                                    List<FunctionInputDTO> inputs) {
+            Map<String, String> suiteInputs,
+            List<FunctionInputDTO> inputs) {
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
 
@@ -131,16 +133,16 @@ public class TestSuiteService {
     }
 
     public static void verifyAllInputProvided(List<FunctionInputDTO> providedInputs,
-                                              TestSuite testSuite,
-                                              Map<String, String> requiredInputs) {
+            TestSuite testSuite,
+            Map<String, String> requiredInputs) {
         Set<String> names = providedInputs.stream().map(FunctionInputDTO::getName).collect(Collectors.toSet());
 
         List<String> missingInputs = requiredInputs.keySet().stream()
-            .filter(requiredInput -> !names.contains(requiredInput))
-            .toList();
+                .filter(requiredInput -> !names.contains(requiredInput))
+                .toList();
         if (!missingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' required to execute test suite %s"
-                .formatted(String.join(", ", missingInputs), testSuite.getName()));
+                    .formatted(String.join(", ", missingInputs), testSuite.getName()));
         }
     }
 
@@ -148,35 +150,36 @@ public class TestSuiteService {
         TestSuite testSuite = testSuiteRepository.getMandatoryById(suiteId);
 
         SuiteTest test = testSuite.getTests().stream()
-            .filter(t -> testId == t.getId())
-            .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
+                .filter(t -> testId == t.getId())
+                .findFirst().orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, testId));
 
         verifyAllInputExists(inputs, test);
 
         test.getFunctionInputs().clear();
         test.getFunctionInputs().addAll(inputs.stream()
-            .filter(i -> i.getValue() != null)
-            .map(giskardMapper::fromDTO)
-            .toList());
+                .filter(i -> i.getValue() != null)
+                .map(giskardMapper::fromDTO)
+                .toList());
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
 
     private void verifyAllInputExists(List<FunctionInputDTO> providedInputs,
-                                      SuiteTest test) {
+            SuiteTest test) {
         Set<String> requiredInputs = test.getTestFunction().getArgs().stream()
-            .map(FunctionArgument::getName)
-            .collect(Collectors.toSet());
+                .map(FunctionArgument::getName)
+                .collect(Collectors.toSet());
 
         List<String> nonExistingInputs = providedInputs.stream()
-            .map(FunctionInputDTO::getName)
-            .filter(providedInput -> !requiredInputs.contains(providedInput))
-            .toList();
+                .map(FunctionInputDTO::getName)
+                .filter(providedInput -> !requiredInputs.contains(providedInput))
+                .toList();
 
         if (!nonExistingInputs.isEmpty()) {
             throw new IllegalArgumentException("Inputs '%s' does not exists for test %s"
-                .formatted(String.join(", ", nonExistingInputs),
-                    Objects.requireNonNullElse(test.getTestFunction().getDisplayName(), test.getTestFunction().getName())));
+                    .formatted(String.join(", ", nonExistingInputs),
+                            Objects.requireNonNullElse(test.getTestFunction().getDisplayName(),
+                                    test.getTestFunction().getName())));
         }
     }
 
@@ -186,7 +189,7 @@ public class TestSuiteService {
 
     public TestSuite addTestToSuite(long suiteId, SuiteTestDTO suiteTestDTO) {
         TestSuite suite = testSuiteRepository.findById(suiteId)
-            .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
+                .orElseThrow(() -> new EntityNotFoundException(TEST_SUITE, suiteId));
 
         SuiteTest suiteTest = giskardMapper.fromDTO(suiteTestDTO);
         suiteTest.setSuite(suite);
@@ -201,30 +204,30 @@ public class TestSuiteService {
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSGenerateTestSuiteParamDTO param = MLWorkerWSGenerateTestSuiteParamDTO.builder()
-                .projectKey(projectKey)
-                .build();
+                    .projectKey(projectKey)
+                    .build();
 
             List<MLWorkerWSSuiteInputDTO> inputs = dto.getInputs()
-                .stream()
-                .map(TestSuiteService::generateSuiteInputWS)
-                .toList();
+                    .stream()
+                    .map(TestSuiteService::generateSuiteInputWS)
+                    .toList();
             param.setInputs(inputs);
 
             MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-                workerID,
-                MLWorkerWSAction.GENERATE_TEST_SUITE,
-                param
-            );
+                    workerID,
+                    MLWorkerWSAction.GENERATE_TEST_SUITE,
+                    param);
             if (result instanceof MLWorkerWSGenerateTestSuiteDTO response) {
                 TestSuite suite = new TestSuite();
                 suite.setProject(project);
                 suite.setName(dto.getName());
                 suite.setFunctionInputs(dto.getSharedInputs().stream()
-                    .map(giskardMapper::fromDTO)
-                    .toList());
+                        .map(giskardMapper::fromDTO)
+                        .toList());
                 suite.getTests().addAll(response.getTests().stream()
-                    .map(test -> new SuiteTest(suite, test, testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
-                    .toList());
+                        .map(test -> new SuiteTest(suite, test,
+                                testFunctionRepository.getMandatoryById(UUID.fromString(test.getTestUuid()))))
+                        .toList());
 
                 return testSuiteRepository.save(suite).getId();
             } else if (result instanceof MLWorkerWSErrorDTO error) {
@@ -267,12 +270,11 @@ public class TestSuiteService {
         testSuite.setName(testSuiteDTO.getName());
         testSuite.getFunctionInputs().clear();
         testSuite.getFunctionInputs().addAll(testSuiteDTO.getFunctionInputs().stream()
-            .map(giskardMapper::fromDTO)
-            .toList());
+                .map(giskardMapper::fromDTO)
+                .toList());
 
         return giskardMapper.toDTO(testSuiteRepository.save(testSuite));
     }
-
 
     public void deleteTestSuite(long suiteId) {
         testSuiteRepository.deleteById(suiteId);
