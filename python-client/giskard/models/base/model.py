@@ -15,6 +15,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .model_prediction import ModelPredictionResults
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -23,9 +26,6 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
-from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -78,6 +78,7 @@ class BaseModel(ABC):
         self,
         model_type: ModelType,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
@@ -126,6 +127,7 @@ class BaseModel(ABC):
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
+            description=description if description is not None else "No description",
             model_type=model_type,
             feature_names=list(feature_names) if feature_names else None,
             classification_labels=np_types_to_native(classification_labels),
@@ -188,6 +190,7 @@ class BaseModel(ABC):
                     "loader_class": self.meta.loader_class,
                     "id": str(self.id),
                     "name": self.meta.name,
+                    "description": self.meta.description,
                     "size": get_size(local_path),
                 },
                 f,
@@ -397,6 +400,7 @@ class BaseModel(ABC):
                 classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
                     name=meta_response["name"],
+                    description=meta_response["description"],
                     model_type=SupportedModelTypes[meta_response["modelType"]],
                     feature_names=meta_response["featureNames"],
                     classification_labels=classification_labels,
@@ -422,6 +426,7 @@ class BaseModel(ABC):
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
                 name=file_meta["name"],
+                description=file_meta["description"],
                 model_type=SupportedModelTypes[file_meta["model_type"]],
                 feature_names=file_meta["feature_names"],
                 classification_labels=file_meta["classification_labels"],

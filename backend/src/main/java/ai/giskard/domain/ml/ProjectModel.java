@@ -4,12 +4,13 @@ import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
-import jakarta.persistence.*;
 import java.io.Serial;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +29,8 @@ public class ProjectModel extends AbstractAuditingEntity {
     private UUID id;
     private String name;
 
+    @ColumnDefault("No description")
+    private String description;
 
     @ManyToOne
     @JsonBackReference

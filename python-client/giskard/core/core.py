@@ -89,6 +89,7 @@ class SavableMeta:
 @dataclass
 class ModelMeta:
     name: Optional[str]
+    description: Optional[str]
     model_type: SupportedModelTypes
     feature_names: List[str]
     classification_labels: List[str]
