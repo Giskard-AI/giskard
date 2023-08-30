@@ -22,6 +22,8 @@
                 {% include "_issues/llm_harmfulness.html" %}
             {% elif issue.__class__.__name__.endswith('StereotypeIssue') %}
                 {% include "_issues/llm_stereotype.html" %}
+            {% elif issue.__class__.__name__ == 'LLMBusinessIssue' %}
+            {% include "_issues/business.html" %}
             {% else %}
                 {% include "_issues/default.html" %}
             {% endif %}

@@ -6,17 +6,16 @@ from time import perf_counter
 from typing import Optional, Sequence
 
 from giskard.client.python_utils import warning
-
-from ..core.model_validation import validate_model
-from ..datasets.base import Dataset
-from ..models.base import BaseModel
-from ..utils import fullname
-from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
 from giskard.core.model_validation import ValidationFlags
 from .issues import Issue
 from .logger import logger
 from .registry import DetectorRegistry
 from .result import ScanResult
+from ..core.model_validation import validate_model
+from ..datasets.base import Dataset
+from ..models.base import BaseModel
+from ..utils import fullname
+from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -31,8 +30,12 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-            self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False,
-            validation_flags: Optional[ValidationFlags] = ValidationFlags()
+        self,
+        model: BaseModel,
+        dataset: Optional[Dataset] = None,
+        verbose=True,
+        raise_exceptions=False,
+        validation_flags: Optional[ValidationFlags] = ValidationFlags(),
     ) -> ScanResult:
         """Runs the analysis of a model and dataset, detecting issues."""
 
@@ -177,14 +180,16 @@ class Scanner:
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
-            logger.warning(
-                "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
-            )
-            from .llm.utils import load_default_dataset
+            logger.warning("No dataset provided. Inferring dataset")
+            from .llm.utils import infer_dataset
 
-            dataset = load_default_dataset()
-            model = model.rewrite_prompt(
-                template="{question}", input_variables=["question"], feature_names=["question"]
+            dataset = infer_dataset(
+                f"""
+            Name: {model.meta.name}
+            
+            Description: {model.meta.description}
+            """,
+                model.meta.feature_names,
             )
 
             return model, dataset
