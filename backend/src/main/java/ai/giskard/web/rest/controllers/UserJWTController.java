@@ -1,6 +1,5 @@
 package ai.giskard.web.rest.controllers;
 
-import ai.giskard.security.ee.jwt.JWTFilter;
 import ai.giskard.security.ee.jwt.TokenProvider;
 import ai.giskard.web.dto.JWTToken;
 import ai.giskard.web.rest.vm.LoginVM;
@@ -44,7 +43,7 @@ public class UserJWTController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         JWTToken jwt = tokenProvider.createToken(authentication, loginVM.isRememberMe());
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt.getToken());
+        httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getToken());
         return new ResponseEntity<>(jwt, httpHeaders, HttpStatus.OK);
     }
 }

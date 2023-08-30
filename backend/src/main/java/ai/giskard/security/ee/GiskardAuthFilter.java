@@ -16,7 +16,6 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-import static ai.giskard.security.ee.jwt.JWTFilter.AUTHORIZATION_HEADER;
 
 /**
  * This filter is applied for every request and will check for authentication.
@@ -45,7 +44,7 @@ public class GiskardAuthFilter extends GenericFilterBean {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         if (!this.licenseService.getCurrentLicense().isActive()) {
             this.noLicenseAuthFilter.doFilter(request, response, chain);
-        } else if (this.licenseService.hasFeature(FeatureFlag.AUTH) || httpServletRequest.getHeader(AUTHORIZATION_HEADER) != null) {
+        } else if (this.licenseService.hasFeature(FeatureFlag.AUTH) || httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION) != null) {
             String authHeader = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             if (authHeader != null) {
                 // remove the "Bearer " prefix
