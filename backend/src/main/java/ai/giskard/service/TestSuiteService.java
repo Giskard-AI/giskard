@@ -50,8 +50,8 @@ public class TestSuiteService {
     private final TestFunctionRepository testFunctionRepository;
 
     public Long saveTestSuite(String projectKey, TestSuiteDTO dto) {
-        if (dto.getName() == null || dto.getName().isEmpty()) {
-            throw new IllegalArgumentException("Test suite name cannot be empty");
+        if (Strings.isBlank()) {
+            throw new IllegalArgumentException("Test suite name cannot be blank");
         }
 
         if (dto.getProjectKey() == null) {
