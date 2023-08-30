@@ -57,6 +57,7 @@ import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
 import { useMainStore } from './stores/main';
+import { HF_DEMO_SPACE_ID  } from '@/enums';
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -132,8 +133,8 @@ async function errorInterceptor(error) {
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
-        } else if (error.response.status === 403 && "giskardai/giskard" === useMainStore().appSettings?.hfSpaceId) {
-            console.warn("403 received with demo space giskardai/giskard");
+        } else if (error.response.status === 403 && HF_DEMO_SPACE_ID === useMainStore().appSettings?.hfSpaceId) {
+            console.warn(`HTTP403 received from demo space ${HF_DEMO_SPACE_ID}`);
             Vue.$toast(
                 {
                     component: ErrorToast,
