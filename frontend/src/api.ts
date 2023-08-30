@@ -56,6 +56,7 @@ import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
+import { useMainStore } from './stores/main';
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -131,6 +132,23 @@ async function errorInterceptor(error) {
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
+        } else if (error.response.status === 403 && "giskardai/giskard" === useMainStore().appSettings?.hfSpaceId) {
+            console.warn("403 received with demo space giskardai/giskard");
+            Vue.$toast(
+                {
+                    component: ErrorToast,
+                    props: {
+                        title: 'Warning',
+                        detail: `You cannot modify Giskard Hugging Face demo space.
+Please create your own space and get a license from Giskard.`,
+                        stack: null,
+                    },
+                },
+                {
+                    toastClassName: 'error-toast',
+                    type: TYPE.WARNING,
+                }
+            );
         } else {
             let title: string;
             let detail: string;
