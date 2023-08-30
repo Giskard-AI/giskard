@@ -38,8 +38,7 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suites")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteDTO dto) {
-        TestSuite savedSuite = testSuiteRepository.save(giskardMapper.fromDTO(dto));
-        return savedSuite.getId();
+        return testSuiteService.saveTestSuite(projectKey, dto);
     }
 
     @PostMapping("project/{projectKey}/suites/generate")
