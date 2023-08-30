@@ -53,7 +53,7 @@
                     <v-col cols="8" v-if="selected" class="vc fill-height">
                         <div class="py-2 d-flex flex-column">
                             <span class="selected-func-name">{{ selected.displayName ?? selected.name }}</span>
-                            <span id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+                            <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
                         </div>
 
                         <div class="vc overflow-x-hidden pr-5">
@@ -132,7 +132,7 @@
                                 </v-row>
                             </div>
 
-                            <div id='usage-group' class='py-4 mb-4'>
+                            <div v-if="hasCustomTag" id='usage-group' class='py-4 mb-4'>
                                 <div class='d-flex'>
                                     <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
                                     <span class='group-title'>How to use with code</span>
@@ -224,6 +224,10 @@ monacoOptions.readOnly = true;
 const project = computed(() => {
     return projectStore.project(props.projectId)
 });
+
+const hasCustomTag = computed(() => {
+    return selected.value?.tags.includes('custom') ?? false;
+})
 
 const hasGiskardFilters = computed(() => {
     return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
