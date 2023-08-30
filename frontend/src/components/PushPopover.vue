@@ -121,7 +121,6 @@ const icon = computed(() => {
 });
 
 async function applyCta(kind: number) {
-  console.log("Cta kind: " + kind);
   mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
   let action: PushActionDTO = (await pushStore.applyPush(push.value!.kind, kind)).action;
@@ -131,9 +130,9 @@ async function applyCta(kind: number) {
       break;
     case CallToActionKind.CreateSliceOpenDebugger:
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
-      const slice = slicingFunctionsByUuid.value[action.objectUuid];
+      const slice = slicingFunctionsByUuid.value[action.object_uuid];
       if (slice !== undefined) {
-        debuggingStore.setCurrentSlicingFunctionUuid(action.objectUuid);
+        debuggingStore.setCurrentSlicingFunctionUuid(action.object_uuid);
         mainStore.addSimpleNotification("Slice applied");
       } else {
         mainStore.addNotification({content: 'Could not load slice', color: TYPE.ERROR});
@@ -142,9 +141,9 @@ async function applyCta(kind: number) {
     case CallToActionKind.CreateTest:
     case CallToActionKind.AddTestToCatalog:
       await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
-      const test = testFunctionsByUuid.value[action.objectUuid];
+      const test = testFunctionsByUuid.value[action.object_uuid];
       if (test !== undefined) {
-        addToTestSuite(test, action.parameters);
+        addToTestSuite(test, action.arguments);
       } else {
         mainStore.addNotification({content: 'Could not load test', color: TYPE.ERROR});
       }
@@ -174,6 +173,7 @@ function addToTestSuite(test, parameters) {
       projectId: projectStore.currentProjectId ?? 0,
       test: test,
       suiteId: null,
+      hideFixedInputs: true,
       testArguments: chain(test.args)
           .keyBy('name')
           .mapValues(arg => {

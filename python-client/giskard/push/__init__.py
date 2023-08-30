@@ -19,7 +19,7 @@ The push classes allow converting to gRPC protobuf format via the to_grpc() meth
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket
-from giskard.ml_worker.generated.ml_worker_pb2 import CallToActionKind, PushKind
+from giskard.ml_worker.websocket import PushKind, CallToActionKind
 from giskard.push.push_test_catalog.catalog import (
     one_sample_overconfidence_test,
     one_sample_underconfidence_test,
@@ -420,7 +420,9 @@ class PerturbationPush(FeaturePush):
         if self.transformation_functions_params:
             self.tests = [test_metamorphic_invariance_with_mad]
             self.test_params = self.transformation_functions_params[0]
-            self.push_title = f"Adding {round(self.value_perturbed[0] - self.value,2)} to `{self.feature}` makes the prediction change"
+            self.push_title = (
+                f"Adding {round(self.value_perturbed[0] - self.value, 2)} to `{self.feature}` makes the prediction change"
+            )
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}

@@ -2,6 +2,6 @@
  * Generated from ai.giskard.web.dto.PushActionDTO
  */
 export interface PushActionDTO {
-    objectUuid: string;
-    parameters: {[key: string]: string};
+    object_uuid: string;
+    arguments: { [key: string]: string };
 }

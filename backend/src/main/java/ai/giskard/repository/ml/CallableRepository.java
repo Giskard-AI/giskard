@@ -9,6 +9,6 @@ import java.util.UUID;
 @NoRepositoryBean
 public interface CallableRepository<E extends Callable> extends MappableJpaRepository<E, UUID> {
 
-    int countByNameAndModule(String name, String module);
+    int countByDisplayName(String displayName);
 
 }
