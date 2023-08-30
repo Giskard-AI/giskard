@@ -52,11 +52,16 @@ class ScanReport:
 
         return html
 
-    def to_markdown(self):
+    def to_markdown(self, filename=None):
         from ..visualization.widget import ScanReportWidget
 
         widget = ScanReportWidget(self)
         markdown = widget.render_markdown(template="summary")
+
+        if filename is not None:
+            with open(filename, "w") as f:
+                f.write(markdown)
+            return
 
         return markdown
 
