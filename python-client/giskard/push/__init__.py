@@ -131,7 +131,7 @@ class OverconfidencePush(ExamplePush):
 
     def __init__(self, training_label, training_label_proba, dataset_row, predicted_label, rate):
         self._overconfidence()
-        self.pushkind = PushKind.Overconfidence
+        self.pushkind = PushKind.OVERCONFIDENCE
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
@@ -164,13 +164,13 @@ class OverconfidencePush(ExamplePush):
                     "action": "Generate a one-sample test to automatically check if this example is correctly predicted",
                     "explanation": "This enables you to make sure this specific example is correct for a new model",
                     "button": "Create one-sample test",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
                     "action": "See similar examples",
                     "explanation": "It will filter this debugging session to show examples with overconfidence only",
                     "button": "Get similar examples",
-                    "cta": CallToActionKind.OpenDebuggerOverconfidence,
+                    "cta": CallToActionKind.OPEN_DEBUGGER_OVERCONFIDENCE,
                 },
             ],
         }
@@ -203,7 +203,7 @@ class BorderlinePush(ExamplePush):
 
     def __init__(self, training_label, training_label_proba, dataset_row, rate):
         self._borderline()
-        self.pushkind = PushKind.Borderline
+        self.pushkind = PushKind.BORDERLINE
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
@@ -237,13 +237,13 @@ class BorderlinePush(ExamplePush):
                     "action": "Generate a one-sample to automatically test the underconfidence",
                     "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
                     "button": "Create one-sample test",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
                     "action": "See similar examples",
                     "explanation": "It will filter this debugging session to show examples with underconfidence only",
                     "button": "Get similar examples",
-                    "cta": CallToActionKind.OpenDebuggerBorderline,
+                    "cta": CallToActionKind.OPEN_DEBUGGER_BORDERLINE,
                 },
             ],
         }
@@ -285,7 +285,7 @@ class ContributionPush(FeaturePush):
     def __init__(
         self, value=None, feature=None, feature_type=None, bounds=None, model_type=None, correct_prediction=None
     ):
-        self.pushkind = PushKind.Contribution
+        self.pushkind = PushKind.CONTRIBUTION
 
         self.value = value
         self.bounds = bounds
@@ -312,19 +312,19 @@ class ContributionPush(FeaturePush):
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
+                    "cta": CallToActionKind.CREATE_SLICE,
                 },
                 {
                     "action": "Automatically generate a test ",
                     "explanation": f"Theil`s U test will help you check the nominal association between {self.slicing_function.query} and the predicted label on the whole dataset",
                     "button": "Add Test to a test suite",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
                     "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
+                    "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
                 },
             ]
         else:
@@ -334,19 +334,19 @@ class ContributionPush(FeaturePush):
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
                     "explanation": "Saving the slice will enable you to create tests more efficiently",
                     "button": "Save Slice",
-                    "cta": CallToActionKind.CreateSlice,
+                    "cta": CallToActionKind.CREATE_SLICE,
                 },
                 {
                     "action": "Automatically generate a test",
                     "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
                     "button": "Add Test to a test suite",
-                    "cta": CallToActionKind.CreateTest,
+                    "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
                     "action": "Get similar examples",
                     "explanation": "It will filter this debugging session to show examples from this slice only",
                     "button": "Get similar examples",
-                    "cta": CallToActionKind.CreateSliceOpenDebugger,
+                    "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
                 },
             ]
 
@@ -406,12 +406,12 @@ class PerturbationPush(FeaturePush):
             "action": "Generate a metamorphic invariance test that slightly perturbs this feature",
             "explanation": "This will enable you to make sure the model is robust against similar small changes",
             "button": "Add to test suite",
-            "cta": CallToActionKind.CreateTest,
+            "cta": CallToActionKind.CREATE_TEST,
         },
     ]
 
     def __init__(self, value, feature, transformation_info: TransformationInfo):
-        self.pushkind = PushKind.Perturbation
+        self.pushkind = PushKind.PERTURBATION
         self.feature = feature
         self.value = value
         self.value_perturbed = transformation_info.value_perturbed
