@@ -3,8 +3,9 @@ package ai.giskard.config;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.GiskardAuthConfigurer;
 import ai.giskard.security.ee.jwt.TokenProvider;
+import ai.giskard.service.ApiKeyService;
 import ai.giskard.service.ee.LicenseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,11 +30,11 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfiguration {
-    @Autowired
-    private TokenProvider tokenProvider;
-    @Autowired
-    private LicenseService licenseService;
+    private final TokenProvider tokenProvider;
+    private final LicenseService licenseService;
+    private final ApiKeyService apiKeyService;
 
 
     @Bean
@@ -73,7 +74,7 @@ public class SecurityConfiguration {
                     antMatcher("/api/admin/**"),
                     antMatcher("/management/**")
                 ).hasAuthority(AuthoritiesConstants.ADMIN)
-                .requestMatchers(antMatcher("/api/v2/settings/ml-worker-connect")).hasAuthority(AuthoritiesConstants.API)
+                .requestMatchers(antMatcher("/public-api/**")).hasAuthority(AuthoritiesConstants.API)
                 .requestMatchers(antMatcher("/api/**")).authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -88,6 +89,6 @@ public class SecurityConfiguration {
     }
 
     private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> securityConfigurerAdapter() {
-        return new GiskardAuthConfigurer(licenseService, tokenProvider);
+        return new GiskardAuthConfigurer(licenseService, apiKeyService, tokenProvider);
     }
 }

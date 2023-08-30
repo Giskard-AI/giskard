@@ -5,6 +5,7 @@ import Vue from 'vue';
 
 import {
     AdminUserDTO,
+    ApiKeyDTO,
     AppConfigDTO,
     CatalogDTO,
     ComparisonClauseDTO,
@@ -283,8 +284,14 @@ export const api = {
     async getCoworkersMinimal() {
         return apiV2.get<unknown, UserDTO[]>(`/users/coworkers`);
     },
-    async getApiAccessToken() {
-        return apiV2.get<unknown, JWTToken>(`/api-access-token`);
+    async createApiKey() {
+        return apiV2.post<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async getApiKeys() {
+        return apiV2.get<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async deleteApiKey(id) {
+        return apiV2.delete<unknown, ApiKeyDTO[]>(`/apikey/${id}`);
     },
 
     // Projects

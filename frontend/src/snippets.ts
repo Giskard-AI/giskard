@@ -1,18 +1,23 @@
 import {useMainStore} from "@/stores/main";
-import {api} from "@/api";
 import {apiURL} from "@/env";
+import {useApiKeyStore} from "@/stores/api-key-store";
 
 const mainStore = useMainStore();
-
+const apiKeyStore = useApiKeyStore();
 export async function generateGiskardClientSnippet(hfToken=null) {
-    const giskardToken = await api.getApiAccessToken();
+    let apiKey: string;
+    if (apiKeyStore.getFirstApiKey) {
+        apiKey = apiKeyStore.getFirstApiKey;
+    } else {
+        apiKey = '<Generate your API Key first>';
+    }
     const isRunningOnHF = mainStore.appSettings!.isRunningOnHfSpaces;
 
     let snippet = `
 # Create a Giskard client
 client = giskard.GiskardClient(
     url="${apiURL}",  # URL of your Giskard instance
-    token="${giskardToken?.id_token}"`;
+    token="${apiKey}"`;
 
     if (isRunningOnHF && hfToken) {
         snippet += `,
