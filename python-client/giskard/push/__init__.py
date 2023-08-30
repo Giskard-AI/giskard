@@ -282,12 +282,15 @@ class ContributionPush(FeaturePush):
     model_type = None
     correct_prediction = None
 
-    def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
+    def __init__(
+        self, value=None, feature=None, feature_type=None, bounds=None, model_type=None, correct_prediction=None
+    ):
         self.pushkind = PushKind.Contribution
 
         self.value = value
         self.bounds = bounds
         self.feature = feature
+        self.feature_type = feature_type
         self.model_type = model_type
         self.correct_prediction = correct_prediction
 
@@ -300,7 +303,10 @@ class ContributionPush(FeaturePush):
         Generate title and details based on prediction.
         """
         if self.correct_prediction:
-            self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
+            if self.feature_type == "text":
+                self.push_title = f'"{str(self.value)}" in `{str(self.feature)}` contributes a lot to the prediction'
+            else:
+                self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
@@ -414,10 +420,10 @@ class PerturbationPush(FeaturePush):
         if self.transformation_functions_params:
             self.tests = [test_metamorphic_invariance_with_mad]
             self.test_params = self.transformation_functions_params[0]
-            self.push_title = (
-                f"Adding {round(self.value_perturbed[0] - self.value,2)} to `{self.feature}` makes the prediction change"
-            )
+            self.push_title = f"Adding {round(self.value_perturbed[0] - self.value,2)} to `{self.feature}` makes the prediction change"
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}
-            self.push_title = f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
+            self.push_title = (
+                f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
+            )
