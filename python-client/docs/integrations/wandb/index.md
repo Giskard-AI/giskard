@@ -33,12 +33,13 @@ import giskard, wandb
 # [...] wrap model and dataset with giskard
 scan_results = giskard.scan(giskard_model, giskard_dataset)
 test_suite_results = scan_results.generate_test_suite().run()
+shap_results = giskard.explain_with_shap(giskard_model, giskard_dataset)
 
 wandb.login()
 giskard_dataset.to_wandb() # log your dataset as a table
 scan_results.to_wandb() # log scan results as an HTML report
 test_suite_results.to_wandb() # log test suite results as a table
-# TODO: log SHAP plots
+shap_results.to_wandb() # log shap results as plots 
 ```
 
 ```{eval-rst}
