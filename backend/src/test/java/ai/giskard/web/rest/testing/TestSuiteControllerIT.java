@@ -64,7 +64,7 @@ class TestSuiteControllerIT {
         restUserMockMvc.perform(post("/api/v2/testing/project/" + project.getKey() + "/suites")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(testSuiteDTO)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isBadRequest());
 
     }
 }
