@@ -16,7 +16,7 @@ logging:
     ROOT: INFO
     org.hibernate.SQL: INFO
     ai.giskard: INFO
-    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari.HikariConfig: INFO
     com.zaxxer.hikari: INFO
 
 spring:
@@ -77,4 +77,6 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
-
+springdoc:
+  api-docs:
+    enabled: true
