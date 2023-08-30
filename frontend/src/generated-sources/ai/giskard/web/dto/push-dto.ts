@@ -1,14 +1,12 @@
 import type {PushDetailsDTO} from './push-details-dto';
-import {PushKind} from "@/generated-sources";
 
 /**
  * Generated from ai.giskard.web.dto.PushDTO
  */
 export interface PushDTO {
-    push_details: PushDetailsDTO[];
+    details: PushDetailsDTO[];
     key: string;
-    //perturbationValue: string;
-    push_title: string;
+    perturbationValue: string;
+    pushTitle: string;
     value: string;
-    kind: PushKind;
 }
