@@ -147,7 +147,7 @@
 <script lang='ts' setup>
 import { chain } from 'lodash';
 import { api } from '@/api';
-import { computed, onActivated, ref, watch } from 'vue';
+import { computed, onActivated, onMounted, ref, watch } from 'vue';
 import { anonymize, pasterColor } from '@/utils';
 import TestExecutionResultBadge from '@/views/main/project/TestExecutionResultBadge.vue';
 import { FunctionInputDTO, TestFunctionDTO, TestTemplateExecutionResultDTO } from '@/generated-sources';
@@ -156,6 +156,7 @@ import { $vfm } from 'vue-final-modal';
 import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import { storeToRefs } from 'pinia';
 import { useCatalogStore } from '@/stores/catalog';
+import { useProjectStore } from "@/stores/project";
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import { alphabeticallySorted } from '@/utils/comparators';
@@ -164,6 +165,9 @@ import mixpanel from 'mixpanel-browser';
 import { copyToClipboard } from "@/global-keys";
 import { TYPE } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
+import { generateGiskardClientSnippet } from "@/snippets";
+
+const projectStore = useProjectStore();
 
 const props = defineProps<{
   projectId: number,
@@ -171,6 +175,7 @@ const props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
+const pythonPrimitiveTypes = ['int', 'str', 'float', 'bool'];
 
 const searchFilter = ref<string>('');
 const { testFunctions } = storeToRefs(useCatalogStore());
@@ -180,8 +185,16 @@ const testRunning = ref<boolean>(false);
 const testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
+const giskardClientSnippet = ref<string | null>(null);
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
 
 const selectedTestUsage = computed(() => {
+  let isCustom = selected.value!.tags.includes('custom');
+  let customParams: { [name: string]: string } = {};
 
   if (selected.value === null) {
     return '';
@@ -195,12 +208,44 @@ const selectedTestUsage = computed(() => {
       .map('type')
       .uniq()
       .value()
-      .filter(i => i !== 'str'),
-    selected.value.name
+      .filter(i => !pythonPrimitiveTypes.includes(i))
   ];
 
-  content += `from giskard import ${uniqueImports.join(', ')}`;
-  content += '\n\n';
+  if (isCustom) {
+    content += 'import giskard\n';
+  } else {
+    content += `from giskard.testing import ${selected.value.name}\n`;
+  }
+
+  if (uniqueImports.length > 0) {
+    content += `from giskard import ${uniqueImports.join(', ')}\n\n`;
+  }
+
+  if (isCustom) {
+    content += `${giskardClientSnippet.value}\n`;
+
+    const customSlicingFunctions = selected.value.args.filter(arg => {
+      return arg.type === "SlicingFunction" && arg.defaultValue !== null;
+    });
+
+    customSlicingFunctions.forEach((arg, index) => {
+      const sfName = `sf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${sfName}`;
+      content += `${sfName} = giskard.SlicingFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    const customTransformationFunctions = selected.value.args.filter(arg => {
+      return arg.type === "TransformationFunction" && arg.defaultValue !== null;
+    });
+
+    customTransformationFunctions.forEach((arg, index) => {
+      const tfName = `tf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${tfName}`;
+      content += `${tfName} = giskard.TransformationFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    content += `${selected.value.name} = giskard.GiskardTest.download("${selected.value.uuid}", client, "${project.value!.key}")\n\n`;
+  }
 
   requiredArgs.forEach(arg => {
     content += `${arg.name} = ${arg.type}(...)`;
@@ -209,14 +254,14 @@ const selectedTestUsage = computed(() => {
   content += '\n';
 
   const parametersWithDefaults = selected.value.args.map(arg => {
+    if (arg.name in customParams) return customParams[arg.name];
     if (arg.name === 'kwargs') return '**kwargs';
-    if (arg.optional) return `${arg.name}=${arg.defaultValue}`;
+    if (arg.defaultValue === "true") return `${arg.name}=True`;
+    if (arg.defaultValue === "false") return `${arg.name}=False`;
+    if (arg.optional) return `${arg.name}=${arg.defaultValue ?? 'None'}`;
     return arg.name;
   });
-  content += `test_result, passed = ${selected.value.name}(${parametersWithDefaults.join(', ')})`;
-  content += '\n\n';
-
-  content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
+  content += `${selected.value.name}(${parametersWithDefaults.join(', ')}).execute()`;
 
   return content;
 });
@@ -280,6 +325,10 @@ const filteredTestFunctions = computed(() => {
     .sortBy(t => t.displayName ?? t.name)
     .value();
 });
+
+onMounted(async () => {
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
+})
 
 onActivated(async () => {
   if (testFunctions.value.length > 0) {
