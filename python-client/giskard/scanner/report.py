@@ -52,11 +52,11 @@ class ScanReport:
 
         return html
 
-    def to_markdown(self, filename=None):
+    def to_markdown(self, filename=None, template="summary"):
         from ..visualization.widget import ScanReportWidget
 
         widget = ScanReportWidget(self)
-        markdown = widget.render_markdown(template="summary")
+        markdown = widget.render_markdown(template=template)
 
         if filename is not None:
             with open(filename, "w") as f:
@@ -158,8 +158,10 @@ class ScanReport:
             Additional keyword arguments
             (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
         """
-        from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
+
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+
         from ..utils.analytics_collector import analytics
 
         with wandb_run(**kwargs) as run:
