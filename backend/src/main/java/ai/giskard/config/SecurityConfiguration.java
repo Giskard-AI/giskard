@@ -57,6 +57,10 @@ public class SecurityConfiguration {
                     // Permit test suite running, the following GET APIs will be permitted later
                     antMatcher("/api/v2/testing/project/**/suite/**/schedule-execution"),
 
+                    // Permit to submit feedbacks and reply to feedback
+                    antMatcher(HttpMethod.POST, "/api/v2/feedbacks/**"),
+                    antMatcher("/api/v2/feedbacks/**/reply"),
+
                     antMatcher("/api/v2/dataset/**/rows"),                  // Permit shuffle dataset
                     antMatcher("/api/v2/project/**/datasets/**/process"),   // Permit dataset processing
                     antMatcher("/api/v2/models/**/predict"),                // Permit model run

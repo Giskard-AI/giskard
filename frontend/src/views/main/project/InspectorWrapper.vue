@@ -254,6 +254,7 @@ async function submitGeneralFeedback() {
     feedbackPopupToggle.value = false;
   } catch (err) {
     feedbackError.value = err.response.data.detail;
+    feedbackSubmitted.value = false;
   }
 }
 
