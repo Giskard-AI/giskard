@@ -46,6 +46,14 @@ public class SecurityConfiguration {
             http.authorizeHttpRequests(registry ->
                 // For any allowed requests with authorization, put them here
                 registry.requestMatchers(
+                    antMatcher("/api/v2/testing/tests/run-test"),           // Permit run test for debugging
+                    antMatcher("/api/v2/inspection"),                       // Permit create inspection
+
+                    // Permit MLWorker to create inspections
+                    antMatcher("/api/v2/artifacts/**/models/inspections/**"),
+                    antMatcher("/api/v2/artifacts/**/datasets/**"),
+                    antMatcher("/api/v2/project/**/datasets/**"),
+
                     antMatcher("/api/v2/dataset/**/rows"),                  // Permit shuffle dataset
                     antMatcher("/api/v2/project/**/datasets/**/process"),   // Permit dataset processing
                     antMatcher("/api/v2/models/**/predict"),                // Permit model run
