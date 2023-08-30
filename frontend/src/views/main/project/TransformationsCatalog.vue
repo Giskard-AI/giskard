@@ -129,6 +129,14 @@
                                 </v-row>
                             </div>
 
+                            <div id='usage-group' class='py-4 mb-4'>
+                                <div class='d-flex'>
+                                    <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
+                                    <span class='group-title'>How to use with code</span>
+                                </div>
+                                <CodeSnippet :key="selected.name + '_usage'" :codeContent='"from giskard import transformation_function"' :language="'python'" class='mt-2'></CodeSnippet>
+                            </div>
+
                             <div id="code-group" class="py-4">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
