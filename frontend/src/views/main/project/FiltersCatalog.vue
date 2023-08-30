@@ -168,7 +168,7 @@
 
 <script setup lang="ts">
 import { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
+import { computed, inject, onActivated, onMounted, ref, watch } from "vue";
 import { pasterColor } from "@/utils";
 import { editor } from "monaco-editor";
 import { DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO } from "@/generated-sources";
@@ -191,6 +191,8 @@ import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
 import { copyToClipboard } from "@/global-keys";
 import { TYPE } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
+import { useProjectStore } from "@/stores/project";
+import { generateGiskardClientSnippet } from "@/snippets";
 
 let props = defineProps<{
     projectId: number,
@@ -198,6 +200,8 @@ let props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
+const projectStore = useProjectStore();
+
 
 const editor = ref(null)
 
@@ -211,12 +215,14 @@ let slicingArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 const isSlicingFunctionRunning = ref<boolean>(false);
 
 const panel = ref<number[]>([0]);
+const giskardClientSnippet = ref<string | null>(null);
+
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 monacoOptions.readOnly = true;
 
-const hasCustomTag = computed(() => {
-    return selected.value?.tags?.includes('custom') ?? false;
+const project = computed(() => {
+    return projectStore.project(props.projectId)
 });
 
 const hasGiskardFilters = computed(() => {
@@ -245,7 +251,16 @@ const howToUseCode = computed(() => {
         return '';
     }
 
-    return `from giskard import slicing_function`
+    let content = 'import giskard\n\n';
+
+    content += `${giskardClientSnippet.value}\n`;
+
+
+    content += `# Download slicing function\n`
+    content += `sf = giskard.SlicingFunction.download("${selected.value!.uuid}", client, "${project.value!.key}")\n\n`
+
+    content += `# Now you can use it as a parameter in your test\n`
+    return content;
 })
 
 onActivated(async () => {
@@ -253,6 +268,10 @@ onActivated(async () => {
         selected.value = slicingFunctions.value[0];
     }
 });
+
+onMounted(async () => {
+    giskardClientSnippet.value = await generateGiskardClientSnippet();
+})
 
 async function runSlicingFunction() {
     isSlicingFunctionRunning.value = true;
