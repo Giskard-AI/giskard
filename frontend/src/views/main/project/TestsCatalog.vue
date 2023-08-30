@@ -44,7 +44,10 @@
 
           <v-col v-if='selected' class='vc fill-height' cols='8'>
             <div class='d-flex justify-space-between py-2'>
-              <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+              <div class="d-flex flex-column">
+                <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+                <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+              </div>
               <v-btn class='primaryLightBtn' color='primaryLight' @click='addToTestSuite'>
                 <v-icon left>mdi-plus</v-icon>
                 Add to test suite
@@ -159,6 +162,9 @@ import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import { alphabeticallySorted } from '@/utils/comparators';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 import { generateGiskardClientSnippet } from "@/snippets";
 
 const projectStore = useProjectStore();
@@ -168,6 +174,7 @@ const props = defineProps<{
   suiteId?: number
 }>();
 
+const mainStore = useMainStore();
 const pythonPrimitiveTypes = ['int', 'str', 'float', 'bool'];
 
 const searchFilter = ref<string>('');
@@ -347,6 +354,14 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
   .value()
 );
 
+const hasCustomTag = computed(() => {
+  return selected.value?.tags?.includes('custom') ?? false;
+});
+
+async function copyFunctionId() {
+  await copyToClipboard(selected.value!.uuid);
+  mainStore.addNotification({ content: "Copied Testing Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style lang='scss' scoped>
@@ -400,5 +415,16 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .primary-left-border {
   border-left: 1px solid #087038;
+}
+
+#function-id {
+  font-size: 0.675rem !important;
+  line-height: 0.675rem !important;
+  cursor: pointer;
+}
+
+#function-id span {
+  text-decoration: underline;
+  margin-right: 0.2rem;
 }
 </style>
