@@ -11,7 +11,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.domain.MLWorkerType' : 'MLWorkerType',
     'ai.giskard.jobs.JobState' : 'JobState',
     'ai.giskard.jobs.JobType' : 'JobType',
+    'ai.giskard.ml.dto.MLWorkerWSTestMessageType' : 'MLWorkerWSTestMessageType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
+    'ai.giskard.web.dto.ApiKeyDTO' : 'ApiKeyDTO',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
@@ -106,7 +108,9 @@ export * from './ai/giskard/domain/ml/test-result';
 export * from './ai/giskard/domain/mlworker-type';
 export * from './ai/giskard/jobs/job-state';
 export * from './ai/giskard/jobs/job-type';
+export * from './ai/giskard/ml/dto/mlworker-wstest-message-type';
 export * from './ai/giskard/service/ee/feature-flag';
+export * from './ai/giskard/web/dto/api-key-dto';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/comparison-clause-dto';

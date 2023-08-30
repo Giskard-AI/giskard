@@ -71,7 +71,8 @@ test = [
     "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
     "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
-    "mlflow>2"
+    "mlflow>2",
+    "wandb"
 ]
 doc = [
     "furo>=2023.5.20",
