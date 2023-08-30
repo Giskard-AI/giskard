@@ -1,12 +1,14 @@
 import pandas as pd
-import tensorflow as tf
+import pytest
 from tensorflow.keras import layers
 
+import tensorflow as tf
 import tests.utils
 from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
 
 
+@pytest.mark.slow
 def test_text_classification_1d_output(imdb_data):
     raw_train_ds, raw_test_ds = imdb_data
 
@@ -71,6 +73,7 @@ def test_text_classification_1d_output(imdb_data):
     tests.utils.verify_model_upload(my_model, my_test_dataset)
 
 
+@pytest.mark.slow
 def test_text_classification_2d_output(imdb_data):
     raw_train_ds, raw_test_ds = imdb_data
 

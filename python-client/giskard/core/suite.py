@@ -28,6 +28,7 @@ from giskard.ml_worker.testing.test_result import (
 )
 from giskard.models.base import BaseModel
 
+
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -73,6 +74,48 @@ class TestSuiteResult:
             metrics[test_name] = test_result[1].metric
 
         return metrics
+
+    def to_wandb(self, **kwargs) -> None:
+        """Log the test-suite result to the WandB run.
+
+        Log the current test-suite result in a table format to the active WandB run.
+
+        Parameters
+        ----------
+        **kwargs :
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        """
+        from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
+        import wandb
+        from ..utils.analytics_collector import analytics
+
+        with wandb_run(**kwargs) as run:
+            # Log just a test description and a metric.
+            columns = ["Metric name", "Data slice", "Metric value", "Passed"]
+            try:
+                data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+                analytics.track(
+                    "wandb_integration:test_suite",
+                    {
+                        "wandb_run_id": run.id,
+                        "tests_cnt": len(data),
+                    },
+                )
+            except Exception as e:
+                analytics.track(
+                    "wandb_integration:test_suite:error:unknown",
+                    {
+                        "wandb_run_id": wandb.run.id,
+                        "error": str(e),
+                    },
+                )
+                raise ValueError(
+                    "An error occurred while logging the test suite into wandb. "
+                    "Please submit the traceback as a GitHub issue in the following "
+                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                ) from e
+            run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
