@@ -304,7 +304,7 @@ class ContributionPush(FeaturePush):
         """
         if self.correct_prediction:
             if self.feature_type == "text":
-                self.push_title = f'"{str(self.value)}" in `{str(self.feature)}` contributes a lot to the prediction'
+                self.push_title = f'The word "{str(self.value)}" contributes a lot to the prediction'
             else:
                 self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
