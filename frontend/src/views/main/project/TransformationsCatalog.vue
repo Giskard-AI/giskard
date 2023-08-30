@@ -129,12 +129,12 @@
                                 </v-row>
                             </div>
 
-                            <div id='usage-group' class='py-4 mb-4'>
+                            <div v-if="hasCustomTag" id='usage-group' class='py-4 mb-4'>
                                 <div class='d-flex'>
                                     <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
                                     <span class='group-title'>How to use with code</span>
                                 </div>
-                                <CodeSnippet :key="selected.name + '_usage'" :codeContent='"from giskard import transformation_function"' :language="'python'" class='mt-2'></CodeSnippet>
+                                <CodeSnippet :key="selected.name + '_usage'" :codeContent="howToUseCode" :language="'python'" class='mt-2'></CodeSnippet>
                             </div>
 
                             <div id="code-group" class="py-4">
@@ -158,7 +158,7 @@
 
 <script setup lang="ts">
 import _, { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
+import { computed, inject, onActivated, onMounted, ref, watch } from "vue";
 import { pasterColor } from "@/utils";
 import { editor } from "monaco-editor";
 import { FunctionInputDTO, TransformationFunctionDTO } from "@/generated-sources";
@@ -179,6 +179,8 @@ import { anonymize } from "@/utils";
 import { copyToClipboard } from "@/global-keys";
 import { TYPE } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
+import { useProjectStore } from "@/stores/project";
+import { generateGiskardClientSnippet } from "@/snippets";
 
 let props = defineProps<{
     projectId: number,
@@ -186,6 +188,7 @@ let props = defineProps<{
 }>();
 
 const mainStore = useMainStore();
+const projectStore = useProjectStore();
 
 const editor = ref(null)
 
@@ -200,11 +203,16 @@ const isTransformationFunctionRunning = ref<boolean>(false);
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 const panel = ref<number[]>([0]);
+const giskardClientSnippet = ref<string | null>(null);
 
 monacoOptions.readOnly = true;
 
+const project = computed(() => {
+    return projectStore.project(props.projectId)
+});
+
 const hasCustomTag = computed(() => {
-    return selected.value?.tags?.includes('custom') ?? false;
+    return selected.value?.tags.includes('custom') ?? false;
 })
 
 const hasGiskardFilters = computed(() => {
@@ -226,6 +234,23 @@ const filteredTestFunctions = computed(() => {
         })
         .sortBy(t => t.displayName ?? t.name)
         .value();
+})
+
+const howToUseCode = computed(() => {
+    if (!selected.value) {
+        return '';
+    }
+
+    let content = 'import giskard\n\n';
+
+    content += `${giskardClientSnippet.value}\n`;
+
+
+    content += `# Download transformation function\n`
+    content += `tf = giskard.TransformationFunction.download("${selected.value!.uuid}", client, "${project.value!.key}")\n\n`
+
+    content += `# Now you can use it as a parameter in your test\n`
+    return content;
 })
 
 onActivated(async () => {
@@ -294,6 +319,10 @@ async function copyFunctionId() {
     await copyToClipboard(selected.value!.uuid);
     mainStore.addNotification({ content: "Copied Transformation Function ID to clipboard", color: TYPE.SUCCESS });
 }
+
+onMounted(async () => {
+    giskardClientSnippet.value = await generateGiskardClientSnippet();
+});
 </script>
 
 <style scoped lang="scss">
