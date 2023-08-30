@@ -65,7 +65,7 @@ public class SecurityConfiguration {
                     antMatcher("/api/v2/project/**/datasets/**/process"),   // Permit dataset processing
                     antMatcher("/api/v2/models/**/predict"),                // Permit model run
                     antMatcher("/api/v2/models/**/explain/**"),             // Permit model explain
-                    antMatcher("/api/v2/models/models/explain-text/**")     // Permit model explain text
+                    antMatcher("/api/v2/models/explain-text/Name")          // Permit model explain text
                 ).authenticated()
             ).authorizeHttpRequests(authorizeHttpRequests ->
                 // Deny all other APIs
