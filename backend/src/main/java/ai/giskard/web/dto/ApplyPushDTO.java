@@ -1,8 +1,5 @@
 package ai.giskard.web.dto;
 
-//import ai.giskard.worker.CallToActionKind;
-//import ai.giskard.worker.PushKind;
-
 import ai.giskard.domain.ml.CallToActionKind;
 import ai.giskard.domain.ml.PushKind;
 import com.dataiku.j2ts.annotations.UIModel;
