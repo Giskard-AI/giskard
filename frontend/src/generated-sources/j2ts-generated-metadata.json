@@ -71,6 +71,7 @@
     "ai.giskard.web.dto.PrepareDeleteDTO": "PrepareDeleteDTO",
     "ai.giskard.web.dto.ml.ProjectDTO": "ProjectDTO",
     "ai.giskard.web.dto.CreateFeedbackReplyDTO": "CreateFeedbackReplyDTO",
+    "ai.giskard.web.dto.ApiKeyDTO": "ApiKeyDTO",
     "ai.giskard.web.dto.user.UpdateMeDTO": "UpdateMeDTO",
     "ai.giskard.web.dto.config.MLWorkerInfoDTO": "MLWorkerInfoDTO",
     "ai.giskard.web.dto.PostImportProjectDTO": "PostImportProjectDTO",

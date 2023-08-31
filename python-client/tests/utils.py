@@ -2,11 +2,10 @@ import glob
 import logging
 import os
 import re
-import tarfile
-from pathlib import Path
-
 import requests
 import requests_mock
+import tarfile
+from pathlib import Path
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
@@ -37,7 +36,7 @@ class MockedClient:
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings/ml-worker-connect")
+    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/public-api/ml-worker-connect")
 
     mocked_requests: requests_mock.Mocker = None
     client: GiskardClient = None
@@ -87,7 +86,7 @@ def verify_model_upload(my_model, my_data):
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
-    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings/ml-worker-connect")
+    ml_worker_connect_url_pattern = re.compile("http://giskard-host:12345/public-api/ml-worker-connect")
 
     with requests_mock.Mocker() as m:
         m.register_uri(requests_mock.POST, artifact_url_pattern)
