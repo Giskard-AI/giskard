@@ -75,7 +75,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const opened = ref<boolean>(false);
-const loading = ref<number>(0);
+const loading = ref<CallToActionKind>(CallToActionKind.None);
 const value = computed(() => {
   return pushStore.current;
 });
@@ -120,7 +120,7 @@ const icon = computed(() => {
   }
 });
 
-async function applyCta(kind: number) {
+async function applyCta(kind: CallToActionKind) {
   mixpanel.track("push:call_to_action", {kind: kind});
   loading.value = kind;
   let action: PushActionDTO = (await pushStore.applyPush(push.value!.kind, kind)).action;
@@ -159,10 +159,11 @@ async function applyCta(kind: number) {
       break;
     case CallToActionKind.SaveExample:
       mainStore.addSimpleNotification("This feature is not yet implemented.");
+      break;
     default:
       break;
   }
-  loading.value = 0;
+  loading.value = CallToActionKind.None;
   opened.value = false;
 }
 
