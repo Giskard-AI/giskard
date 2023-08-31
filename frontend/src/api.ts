@@ -209,9 +209,6 @@ export const api = {
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
     },
-    async getLicense() {
-        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
-    },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
