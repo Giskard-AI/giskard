@@ -34,6 +34,11 @@
                 Import
               </v-list-item-content>
             </v-list-item>
+            <v-list-item @click="openGiskardHFGallery">
+              <v-list-item-content>
+                Examples
+              </v-list-item-content>
+            </v-list-item>
           </v-list-item-group>
         </v-list>
       </v-menu>
@@ -342,6 +347,10 @@ async function updateCurrentProject(projectId: number) {
   await testSuitesStore.loadTestSuites(projectId);
   await debuggingSessionsStore.loadDebuggingSessions(projectId);
   await router.push({ name: 'project-home', params: { id: projectId.toString() } });
+}
+
+function openGiskardHFGallery() {
+  window.open("https://huggingface.co/spaces/giskardai/giskard", '_blank');
 }
 
 // watchers
