@@ -138,7 +138,7 @@ gitProperties {
 }
 
 openApi {
-    apiDocsUrl.set("http://localhost:11223/v3/api-docs")
+    apiDocsUrl.set("http://localhost:11337/v3/api-docs")
     outputDir.set(file("$buildDir/docs"))
     outputFileName.set("openapi.json")
     waitTimeInSeconds.set(10)
@@ -146,7 +146,7 @@ openApi {
         args.set(
             listOf(
                 "--spring.profiles.active=dev",
-                "--server.port=11223",
+                "--server.port=11337",
             )
         )
     }
