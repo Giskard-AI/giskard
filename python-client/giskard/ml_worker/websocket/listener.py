@@ -50,9 +50,7 @@ from giskard.models.model_explanation import (
     explain_text,
 )
 from giskard.utils import threaded
-
 from giskard.utils.analytics_collector import analytics
-
 
 logger = logging.getLogger(__name__)
 
@@ -663,7 +661,6 @@ def get_push(
         logger.info("Handling push kind: " + str(params.push_kind) + " with cta kind: " + str(params.cta_kind))
 
         # Upload related object depending on CTA type
-        # if cta kind is CreateSlice or CreateSliceOpenDebugger
         if (
                 params.cta_kind == CallToActionKind.CREATE_SLICE
                 or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
@@ -692,14 +689,6 @@ def get_push(
 
         if object_uuid != "":
             logger.info(f"Uploaded object for CTA with uuid: {object_uuid}")
-
-    # return ml_worker_pb2.SuggestFilterResponse(
-    #     contribution=contrib_grpc,
-    #     perturbation=perturb_grpc,
-    #     overconfidence=overconf_grpc,
-    #     borderline=borderl_grpc,
-    #     action=ml_worker_pb2.PushResponseAction(object_uuid=uuid, arguments=function_argument_to_proto(object_params)),
-    # )
 
     if object_uuid != '':
         return websocket.GetPushResponse(

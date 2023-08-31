@@ -1,6 +1,7 @@
 package ai.giskard.config;
 
 import ai.giskard.security.ee.jwt.TokenProvider;
+import ai.giskard.service.ApiKeyService;
 import ai.giskard.service.FileLocationService;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.service.ml.MLWorkerWSService;
@@ -17,6 +18,7 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     private final LicenseService licenseService;
     private final MLWorkerWSService mlWorkerWSService;
     private final FileLocationService fileLocationService;
+    private final ApiKeyService apiKeyService;
 
     @Override
     protected boolean sameOriginDisabled() {
@@ -26,7 +28,7 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
     @Override
     protected void customizeClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(
-            new WebSocketChannelInterceptor(tokenProvider, licenseService, mlWorkerWSService, fileLocationService)
+            new WebSocketChannelInterceptor(tokenProvider, licenseService, mlWorkerWSService, fileLocationService, apiKeyService)
         );
     }
 

@@ -5,18 +5,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 @UIModel
 public enum CallToActionKind {
-    None,
-    CreateSlice,
-    CreateTest,
-    CreatePerturbation,
-    SavePerturbation,
-    CreateRobustnessTest,
-    CreateSliceOpenDebugger,
-    OpenDebuggerBorderline,
-    AddTestToCatalog,
-    SaveExample,
-    OpenDebuggerOverconfidence,
-    CreateUnitTest;
+    NONE,
+    CREATE_SLICE,
+    CREATE_TEST,
+    CREATE_PERTURBATION,
+    SAVE_PERTURBATION,
+    CREATE_ROBUSTNESS_TEST,
+    CREATE_SLICE_OPEN_DEBUGGER,
+    OPEN_DEBUGGER_BORDERLINE,
+    ADD_TEST_TO_CATALOG,
+    SAVE_EXAMPLE,
+    OPEN_DEBUGGER_OVERCONFIDENCE,
+    CREATE_UNIT_TEST;
 
     @JsonValue
     public int toValue() {

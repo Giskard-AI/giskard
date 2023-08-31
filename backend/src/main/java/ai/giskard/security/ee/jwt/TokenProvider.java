@@ -2,7 +2,6 @@ package ai.giskard.security.ee.jwt;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.GiskardUser;
 import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.*;
@@ -105,21 +104,6 @@ public class TokenProvider {
             .compact(), validity.toInstant());
     }
 
-    public JWTToken createAPIaccessToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-
-        long now = (new Date()).getTime();
-        Date expiration = new Date(now + this.apiTokenValidityInMilliseconds);
-        return new JWTToken(Jwts
-            .builder()
-            .setSubject(authentication.getName())
-            .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
-            .claim(AUTHORITIES_KEY, authorities)
-            .signWith(key, SIGNATURE_ALGORITHM)
-            .setExpiration(expiration)
-            .compact(), expiration.toInstant());
-    }
-
     public String createInvitationToken(String invitorEmail, String invitedEmail) {
         long now = (new Date()).getTime();
         return Jwts
@@ -142,9 +126,6 @@ public class TokenProvider {
                 .stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                 .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new).forEach(authorities::add);
-        }
-        if (JWTTokenType.API.name().equals(claims.get(TOKEN_TYPE_KEY))) {
-            authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.API));
         }
 
         GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);

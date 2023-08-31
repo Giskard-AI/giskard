@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 @UIModel
 public enum PushKind {
-    Invalid,
-    Perturbation,
-    Contribution,
-    Overconfidence,
-    Borderline;
+    INVALID,
+    PERTURBATION,
+    CONTRIBUTION,
+    OVERCONFIDENCE,
+    BORDERLINE;
 
     @JsonValue
     public int toValue() {

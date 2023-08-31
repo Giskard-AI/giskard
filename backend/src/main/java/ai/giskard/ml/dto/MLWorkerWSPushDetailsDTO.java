@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MLWorkerWSPushDetailsDTO implements MLWorkerWSBaseDTO {
-    public String action;
-    public String explanation;
-    public String button;
-    public CallToActionKind cta;
+    private String action;
+    private String explanation;
+    private String button;
+    private CallToActionKind cta;
 }
