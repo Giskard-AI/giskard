@@ -103,9 +103,7 @@ def _detect_shap_outlier(global_feature_shap):
     to find any significant outliers.
 
     Args:
-        model (BaseModel): ML model
-        ds (Dataset): Dataset
-        df (pd.DataFrame): DataFrame with row
+        global_feature_shap (np.ndarray): Output of the explain() function: a summary of the shap explanation
 
     Returns:
         Feature name with outlier SHAP value, if any
@@ -128,9 +126,7 @@ def _detect_text_shap_outlier(global_feature_shap):
     to find any significant outliers.
 
     Args:
-        model (BaseModel): ML model
-        ds (Dataset): Dataset
-        df (pd.DataFrame): DataFrame with row
+        global_feature_shap (np.ndarray): Output of the explain_text() function: a summary of the shap explanation
 
     Returns:
         Feature name with outlier SHAP value, if any
