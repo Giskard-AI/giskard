@@ -156,7 +156,7 @@ const configuration = new Configuration({
     accessToken: (_name?: string) => getLocalToken() || '',
     middleware: [new APIMiddleware()],
 });
-export const api = {
+export const openapi = {
     settings: new SettingsControllerApi(configuration),
     projects: new ProjectControllerApi(configuration),
     account: new AccountControllerApi(configuration),

@@ -241,6 +241,10 @@ tasks {
         finalizedBy(jacocoTestReport)
     }
 
+    build {
+        finalizedBy("generateOpenApiClient")
+    }
+
     jacocoTestReport {
         dependsOn(test)
     }
@@ -351,6 +355,10 @@ tasks {
         inputSpec.set(file("$buildDir/docs/openapi.json").toString())
         outputDir.set("$buildDir/../../frontend/src/generated/client")
     }
+    register("generateOpenApiClient") {
+        dependsOn("generateOpenApiDocs", "generateWebClient")
+    }
+
 }
 
 defaultTasks("bootRun")

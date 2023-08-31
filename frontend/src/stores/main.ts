@@ -1,5 +1,4 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
@@ -8,7 +7,8 @@ import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
 import {TYPE} from "vue-toastification";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import {openapi} from "@/api-v2";
+import {AppInfoDTO, LicenseDTO} from "@/generated/client";
 
 export interface AppNotification {
     content: string;
@@ -34,19 +34,19 @@ export const useMainStore = defineStore('main', {
     }),
     getters: {
         authAvailable(state: State) {
-            return state.license?.features.AUTH;
+            return state.license?.features?.AUTH;
         }
     },
     actions: {
         setAppSettings(payload: AppInfoDTO) {
             const userStore = useUserStore();
             this.appSettings = payload;
-            if (this.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_in_tracking()) {
+            if (this.appSettings.generalSettings?.isAnalyticsEnabled && !mixpanel.has_opted_in_tracking()) {
                 mixpanel.opt_in_tracking();
-            } else if (!this.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_out_tracking()) {
+            } else if (!this.appSettings.generalSettings?.isAnalyticsEnabled && !mixpanel.has_opted_out_tracking()) {
                 mixpanel.opt_out_tracking();
             }
-            let instanceId = this.appSettings.generalSettings.instanceId;
+            let instanceId = this.appSettings.generalSettings?.instanceId;
             if (userStore.userProfile) {
                 mixpanel.alias(`${instanceId}-${anonymize(userStore.userProfile?.user_id)}`);
             }
@@ -64,7 +64,7 @@ export const useMainStore = defineStore('main', {
             const self = this;
             Vue.filter('roleName', function (value) {
                 if (self.appSettings) {
-                    let roles = Object.assign({}, ...self.appSettings.roles.map((x) => ({[x.id]: x.name})));
+                    let roles = Object.assign({}, ...self.appSettings.roles!.map((x) => ({[x.id!]: x.name})));
                     if (value in roles) {
                         return roles[value];
                     } else {
@@ -92,7 +92,7 @@ export const useMainStore = defineStore('main', {
         },
         async fetchLicense() {
             try {
-                this.license = await api.getLicense();
+                this.license = await openapi.settings.getLicense();
                 this.backendReady = true;
             } catch (e) {
                 this.backendReady = false

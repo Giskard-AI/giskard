@@ -25,6 +25,7 @@ tasks {
 
     build {
         dependsOn("npm_run_build")
+        finalizedBy(":backend:generateOpenApiClient")
     }
 
     create<Delete>("distClean") {
