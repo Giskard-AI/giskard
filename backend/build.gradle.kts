@@ -241,7 +241,7 @@ tasks {
     }
 
     build {
-        finalizedBy("generateOpenApiClient")
+        finalizedBy("generateWebClient")
     }
 
     jacocoTestReport {
@@ -350,14 +350,12 @@ tasks {
     }
 
     create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        dependsOn("generateOpenApiDocs")
+
         generatorName.set("typescript-fetch")
         inputSpec.set(file("$buildDir/docs/openapi.json").toString())
         outputDir.set("$buildDir/../../frontend/src/generated/client")
     }
-    register("generateOpenApiClient") {
-        dependsOn("generateOpenApiDocs", "generateWebClient")
-    }
-
 }
 
 defaultTasks("bootRun")

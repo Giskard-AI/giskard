@@ -16,6 +16,8 @@ tasks {
     val distDir = "dist"
 
     "npm_run_build" {
+        dependsOn(":backend:generateWebClient")
+
         inputs.dir("$projectDir/src")
         inputs.dir("$projectDir/public")
         inputs.file("$projectDir/package.json")
@@ -25,7 +27,6 @@ tasks {
 
     build {
         dependsOn("npm_run_build")
-        dependsOn(":backend:generateOpenApiClient")
     }
 
     create<Delete>("distClean") {
@@ -34,7 +35,7 @@ tasks {
 
     clean {
         doFirst {
-            delete(buildDir, "node_modules", distDir)
+            delete(buildDir, "node_modules", distDir, "src/generated")
         }
     }
 
