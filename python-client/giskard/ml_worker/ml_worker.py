@@ -1,19 +1,15 @@
 import logging
-
 import random
 import secrets
 import stomp
 import time
-
 from pydantic import AnyHttpUrl
+from websocket._exceptions import WebSocketException, WebSocketBadStatusException
 
+import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.settings import settings
-import giskard
-
-from websocket._exceptions import WebSocketException, WebSocketBadStatusException
-
 
 logger = logging.getLogger(__name__)
 
@@ -107,13 +103,12 @@ class MLWorker:
 
         try:
             if not is_server:
-                # External ML Worker: use jwt token
-                # raise ConnectFailedException
+                # External ML Worker: use API key
                 self.ws_conn.connect(
                     with_connect_command=True,
                     wait=False,
                     headers={
-                        "jwt": self.client.session.auth.token,
+                        "api-key": self.client.session.auth.token,
                     },
                 )
             else:
