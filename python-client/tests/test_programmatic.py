@@ -237,12 +237,11 @@ def test_remove_by_reference():
 def test_update_params():
     suite = Suite().add_test(_test_a_greater_b(1, 2))
 
-    passed, _ = suite.run()
-    assert not passed
+    assert not suite.run().passed
 
     suite.update_test_params(0, a=3)
-    passed, _ = suite.run()
-    assert passed
+
+    assert suite.run().passed
 
 
 @pytest.mark.skip(reason="For active testing")
