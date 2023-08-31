@@ -4,15 +4,15 @@
 1. An open-source Python library containing a **vulnerability scan**, **testing** and **CI/CD** framework for ML models
 2. The **Giskard hub**, a server app, containing a collaborative ML Testing dashboard for model **debugging** (root-cause analysis), model **comparison** & human **feedback** collection for ML.
 
-Visit the [Giskard documentation](https://docs.giskard.ai) to learn about its features.
+The Giskard hub is a **self-contained application completely hosted on the Hub using Docker**. Visit the [Giskard documentation](https://docs.giskard.ai) to learn about its features.
 
-The Giskard hub can be easily deployed using the HF Docker Spaces. In the next sections, you'll learn to deploy your own Giskard hub and use it for testing and debugging ML models. This Giskard hub is a **self-contained application completely hosted on the Hub using Docker**. The diagram below illustrates the complete process.
+On this page, you'll learn to deploy your own Giskard hub and use it for testing and debugging your ML models. 
 
 <div class="flex justify-center">
 
 </div>
 
-## Try the Giskard Hub on demo models with the HF public space
+## Try the Giskard Hub on demo models in 1 click
 
 If you want to try Giskard on some demo ML projects (and not on your own ML models), go to the Giskard Demo Hub in the **HF public space**.
 
@@ -24,9 +24,9 @@ If you want to try Giskard on some demo ML projects (and not on your own ML mode
 You cannot upload your private models, datasets, and projects in the demo Giskard Space. To debug & test your own model, duplicate the Space (see below).
 :::
 
-## Upload your own ML model to the Giskard Hub in HF space
+## Test & debug your own ML model in the Giskard Hub using HF space
 
-To upload your own ML models, you need to deploy Giskard on Spaces. To do so, follow these steps:
+With the HF Space, you can easily test & debug your own ML models that you trained in your Python environment. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
 
 ### 1. Duplicate the demo Space from Giskard
 Go to Giskard HF space on https://huggingface.co/spaces/giskardai/giskard and duplicate the space (see the screenshot below).
@@ -52,11 +52,26 @@ After clicking on `Duplicate Space` the build can take several minutes. You are 
 
 ### 3. Put your HF Access token
 
-On your first access, Giskard needs an HF access token to generate the Giskard Access Key. To do so, complete the pop up that displays when you create your first project.
+On your first access, Giskard needs an HF access token to generate the Giskard Access Key. To do so, complete the pop-up that displays when you create your first project.
 [PUT THE SCREENSHOT]
 
 Otherwise, you can also put your HF access token by going to the Giskard Settings.
 
+### 4. Wrap your model and scan it in your Python environment
+
+To do so follow the doc page here: https://docs.giskard.ai/en/latest/guides/scan/index.html
+
+### 5. Upload your test suite by creating a Giskard Client for your HF Space
+
+You can then upload the test suite resulting from your scan from your Python notebook to your HF Space. To do so you need to create a Giskard Client by copy-pasting the "Giskard client" code snippet from the Settings of the Giskard Hub to your Python notebook.
+
+You are now ready to debug the test you just uploaded in the test tab of the Giskard Hub.
+
+Here is the full example of the upload of a test suite to the Giskard Hub in HF Space:
+
+.. code-block:: sh
+            INSERT CODE
+
 ## Feedback and support
 
-If you have suggestions or need specific support, please join [Argilla Slack community](https://join.slack.com/t/rubrixworkspace/shared_invite/zt-whigkyjn-a3IUJLD7gDbTZ0rKlvcJ5g) or reach out on [Argilla's GitHub repository](https://github.com/argilla-io/argilla).
+If you have suggestions or need specific support, please join [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).
