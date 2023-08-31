@@ -4,17 +4,22 @@ import ai.giskard.domain.FunctionArgument;
 import ai.giskard.domain.Project;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.domain.ml.TestResult;
-import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
+import ai.giskard.ml.dto.MLWorkerWSErrorDTO;
+import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestDTO;
+import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestParamDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
 import ai.giskard.service.TestArgumentService;
-import ai.giskard.service.ml.MLWorkerService;
-import ai.giskard.web.dto.FunctionInputDTO;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import ai.giskard.web.dto.RunAdhocTestRequest;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.TestTemplateExecutionResultDTO;
-import ai.giskard.worker.RunAdHocTestRequest;
-import ai.giskard.worker.TestResultMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +33,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v2/testing/tests")
 @RequiredArgsConstructor
 public class TestController {
-    private final MLWorkerService mlWorkerService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
     private final ProjectRepository projectRepository;
     private final TestArgumentService testArgumentService;
     private final GiskardMapper giskardMapper;
@@ -44,29 +50,38 @@ public class TestController {
         Project project = projectRepository.getMandatoryById(request.getProjectId());
 
         boolean usingInternalWorker = project.isUsingInternalWorker();
-        try (MLWorkerClient client = mlWorkerService.createClient(usingInternalWorker)) {
+        MLWorkerID workerID = usingInternalWorker ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSRunAdHocTestParamDTO.MLWorkerWSRunAdHocTestParamDTOBuilder builder =
+                MLWorkerWSRunAdHocTestParamDTO.builder()
+                    .testUuid(request.getTestUuid())
+                    .arguments(request.getInputs().stream().map
+                        (input -> testArgumentService
+                            .buildTestArgumentWS(arguments, input.getName(), input.getValue(), project.getKey(),
+                                giskardMapper.fromDTO(input).getParams(), sample)
+                        ).toList()
+                    );
+            builder.debug(request.isDebug());
 
-            RunAdHocTestRequest.Builder builder = RunAdHocTestRequest.newBuilder()
-                .setTestUuid(request.getTestUuid());
-
-            for (FunctionInputDTO input : request.getInputs()) {
-
-                builder.addArguments(testArgumentService
-                    .buildTestArgument(arguments, input.getName(), input.getValue(), project.getKey(),
-                        giskardMapper.fromDTO(input).getParams(), sample));
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.RUN_AD_HOC_TEST,
+                builder.build()
+            );
+            if (result instanceof MLWorkerWSRunAdHocTestDTO response) {
+                TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
+                res.setResult(response);
+                if (response.getResults().stream().anyMatch(r -> !r.getResult().getPassed())) {
+                    res.setStatus(TestResult.FAILED);
+                } else {
+                    res.setStatus(TestResult.PASSED);
+                }
+                return res;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
             }
-
-            builder.setDebug(request.isDebug());
-
-            TestResultMessage testResultMessage = client.getBlockingStub().runAdHocTest(builder.build());
-            TestTemplateExecutionResultDTO res = new TestTemplateExecutionResultDTO(testFunction.getUuid());
-            res.setResult(testResultMessage);
-            if (testResultMessage.getResultsList().stream().anyMatch(r -> !r.getResult().getPassed())) {
-                res.setStatus(TestResult.FAILED);
-            } else {
-                res.setStatus(TestResult.PASSED);
-            }
-            return res;
+            throw new MLWorkerIllegalReplyException("Unable to get results of AdHoc test");
         }
+        throw new MLWorkerNotConnectedException(workerID);
     }
 }

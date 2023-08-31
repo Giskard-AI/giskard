@@ -1,67 +1,77 @@
-import axios, { AxiosError } from 'axios';
-import { apiURL } from '@/env';
-import { getLocalToken, removeLocalToken } from '@/utils';
+import axios, {AxiosError} from 'axios';
+import {apiURL} from '@/env';
+import {getLocalHFToken, getLocalToken, removeLocalToken} from '@/utils';
 import Vue from 'vue';
 
 import {
-  AdminUserDTO,
-  AppConfigDTO,
-  CatalogDTO,
-  ComparisonClauseDTO,
-  CreateFeedbackDTO,
-  CreateFeedbackReplyDTO,
-  DatasetDTO,
-  DatasetPageDTO,
-  DatasetProcessingResultDTO,
-  ExplainResponseDTO,
-  ExplainTextResponseDTO,
-  FeedbackDTO,
-  FeedbackMinimalDTO,
-  FunctionInputDTO,
-  GeneralSettings,
-  GenerateTestSuiteDTO,
-  InspectionCreateDTO,
-  InspectionDTO,
-  JobDTO,
-  JWTToken,
-  LicenseDTO,
-  ManagedUserVM,
-  MessageDTO,
-  MLWorkerInfoDTO,
-  ModelDTO,
-  ParameterizedCallableDTO,
-  PasswordResetRequest,
-  PostImportProjectDTO,
-  PredictionDTO,
-  PredictionInputDTO,
-  PrepareDeleteDTO,
-  PrepareImportProjectDTO,
-  ProjectDTO,
-  ProjectPostDTO,
-  RoleDTO,
-  RowFilterDTO,
-  SetupDTO,
-  SlicingFunctionDTO,
-  SuiteTestDTO,
-  TestSuiteCompleteDTO,
-  TestSuiteDTO,
-  TestSuiteExecutionDTO,
-  TestTemplateExecutionResultDTO,
-  TokenAndPasswordVM,
-  UpdateMeDTO,
-  UserDTO
+    AdminUserDTO,
+    ApiKeyDTO,
+    AppConfigDTO,
+    CatalogDTO,
+    ComparisonClauseDTO,
+    CreateFeedbackDTO,
+    CreateFeedbackReplyDTO,
+    DatasetDTO,
+    DatasetPageDTO,
+    DatasetProcessingResultDTO,
+    ExplainResponseDTO,
+    ExplainTextResponseDTO,
+    FeedbackDTO,
+    FeedbackMinimalDTO,
+    FunctionInputDTO,
+    GeneralSettings,
+    GenerateTestSuiteDTO,
+    InspectionCreateDTO,
+    InspectionDTO,
+    JobDTO,
+    JWTToken,
+    LicenseDTO,
+    ManagedUserVM,
+    MessageDTO,
+    MLWorkerInfoDTO,
+    ModelDTO,
+    ParameterizedCallableDTO,
+    PasswordResetRequest,
+    PostImportProjectDTO,
+    PredictionDTO,
+    PredictionInputDTO,
+    PrepareDeleteDTO,
+    PrepareImportProjectDTO,
+    ProjectDTO,
+    ProjectPostDTO,
+    RoleDTO,
+    RowFilterDTO,
+    SetupDTO,
+    SlicingFunctionDTO,
+    SuiteTestDTO,
+    TestSuiteCompleteDTO,
+    TestSuiteDTO,
+    TestSuiteExecutionDTO,
+    TestTemplateExecutionResultDTO,
+    TokenAndPasswordVM,
+    UpdateMeDTO,
+    UserDTO
 } from './generated-sources';
-import { TYPE } from 'vue-toastification';
+import {TYPE} from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
-import { useUserStore } from '@/stores/user';
+import {useUserStore} from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
     let jwtToken = getLocalToken();
     if (jwtToken && config && config.headers) {
         config.headers.Authorization = `Bearer ${jwtToken}`;
+    }
+    return config;
+}
+
+function hfRequestInterceptor(config) {
+    // Do something before request is sent
+    let hfToken = getLocalHFToken();
+    if (hfToken && config && config.headers) {
+        config.headers.Authorization = `Bearer ${hfToken}`;
     }
     return config;
 }
@@ -82,6 +92,7 @@ const axiosProject = axios.create({
 const apiV2 = axios.create({
     baseURL: API_V2_ROOT,
 });
+const huggingface = axios.create();
 
 function unpackInterceptor(response) {
     return response.data;
@@ -158,6 +169,8 @@ async function errorInterceptor(error) {
 apiV2.interceptors.response.use(unpackInterceptor, errorInterceptor);
 apiV2.interceptors.request.use(jwtRequestInterceptor);
 
+huggingface.interceptors.request.use(hfRequestInterceptor);
+
 axios.interceptors.request.use(jwtRequestInterceptor);
 
 // this is to automatically parse responses from the projects API, be it array or single objects
@@ -190,8 +203,8 @@ function downloadURL(urlString) {
 }
 
 export const api = {
-    async getHuggingFaceToken(spaceId: string) {
-      return await axios.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
+    async getHuggingFaceSpacesToken(spaceId: string) {
+      return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
     async logInGetToken(username: string, password: string) {
         return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
@@ -271,8 +284,14 @@ export const api = {
     async getCoworkersMinimal() {
         return apiV2.get<unknown, UserDTO[]>(`/users/coworkers`);
     },
-    async getApiAccessToken() {
-        return apiV2.get<unknown, JWTToken>(`/api-access-token`);
+    async createApiKey() {
+        return apiV2.post<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async getApiKeys() {
+        return apiV2.get<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async deleteApiKey(id) {
+        return apiV2.delete<unknown, ApiKeyDTO[]>(`/apikey/${id}`);
     },
 
     // Projects
@@ -280,10 +299,10 @@ export const api = {
         return apiV2.get<unknown, ProjectDTO[]>(`projects`);
     },
     async getProject(id: number) {
-        return axiosProject.get<unknown, ProjectDTO>(`/`, {params: {id}});
+        return axiosProject.get<unknown, ProjectDTO>(``, {params: {id}});
     },
     async createProject(data: ProjectPostDTO) {
-        return axiosProject.post<unknown, ProjectDTO>(`/`, data);
+        return axiosProject.post<unknown, ProjectDTO>(``, data);
     },
     async deleteProject(id: number) {
         return axiosProject.delete<unknown, ProjectDTO>(`/${id}`);

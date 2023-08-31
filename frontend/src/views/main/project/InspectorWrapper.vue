@@ -197,7 +197,7 @@ const rowIdxInPage = ref(0);
 const regressionThreshold = ref(0.1);
 const percentRegressionUnit = ref(true);
 
-const canPrevious = computed(() => !shuffleMode.value && rowNb.value > 0);
+const canPrevious = computed(() => rowNb.value > 0);
 const canNext = computed(() => rowNb.value < totalRows.value - 1);
 const { transformationFunctions } = storeToRefs(useInspectionStore());
 

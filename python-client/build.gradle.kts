@@ -8,7 +8,6 @@ plugins {
     id("ru.vyarus.use-python") version "3.0.0"
 }
 
-val protoGeneratedPath = "giskard/ml_worker/generated"
 tasks {
     val virtualEnvDirectory = ".venv"
     python {
@@ -16,8 +15,7 @@ tasks {
         minPythonVersion = "3.8"
         scope = VIRTUALENV
         installVirtualenv = true
-        pip(listOf("pdm:2.7.2", "urllib3:1.26.15", "certifi:2023.5.7"))
-        environment = mapOf("PYTHONPATH" to file(protoGeneratedPath).absolutePath)
+        pip(listOf("pdm:2.8.2", "urllib3:1.26.15", "certifi:2023.7.22"))
     }
 
     create<PythonTask>("install") {
@@ -34,38 +32,12 @@ tasks {
     }
 
     clean {
-        delete(protoGeneratedPath, virtualEnvDirectory, "coverage.xml", ".coverage")
-    }
-
-    create<PythonTask>("fixGeneratedFiles") {
-        val script_path = file("scripts/fix_grpc_generated_imports.py")
-        val fout = file(protoGeneratedPath)
-        command = "$script_path $fout giskard.ml_worker.generated"
+        delete(virtualEnvDirectory, "coverage.xml", ".coverage")
     }
 
     create<PythonTask>("sphinx-autobuild") {
         module = "sphinx_autobuild"
         command = "--watch giskard docs docs/_build/html"
-    }
-
-    create<PythonTask>("generateProto") {
-        dependsOn("install")
-        environment("PATH", file(virtualEnvDirectory).resolve("bin"))
-
-        val fout = file(protoGeneratedPath)
-        val pdir = file("../common/proto")
-
-        doFirst {
-            mkdir(fout)
-        }
-
-        finalizedBy("fixGeneratedFiles")
-
-        module = "grpc_tools.protoc"
-
-        command =
-                "-I$pdir --python_out=$fout --grpc_python_out=$fout --mypy_out=$fout --mypy_grpc_out=$fout $pdir/ml-worker.proto"
-
     }
 
     create<PythonTask>("lint") {
@@ -93,9 +65,11 @@ tasks {
 
             // "generated" directory should be marked as both source and generatedSource,
             // otherwise intellij doesn"t recognize it as a generated source 🤷‍
-            sourceDirs.add(file(protoGeneratedPath))
-            generatedSourceDirs.add(file(protoGeneratedPath))
             testSources.from(file("tests"))
+            inheritOutputDirs = false
+            outputDir = file("dist")
+            testOutputDir = file("dist")
+
         }
     }
     build {

@@ -15,9 +15,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,8 +38,7 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suites")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteDTO dto) {
-        TestSuite savedSuite = testSuiteRepository.save(giskardMapper.fromDTO(dto));
-        return savedSuite.getId();
+        return testSuiteService.saveTestSuite(projectKey, dto);
     }
 
     @PostMapping("project/{projectKey}/suites/generate")
