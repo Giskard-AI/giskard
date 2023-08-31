@@ -30,7 +30,6 @@ from giskard.ml_worker.testing.test_result import (
 )
 from giskard.models.base import BaseModel
 
-
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -355,7 +354,8 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, suite_run_args)
 
-            try:                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+            try:
+                result = test_partial.giskard_test.get_builder()(**test_params).execute()
 
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
