@@ -29,6 +29,9 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
+    id("org.openapi.generator") version "7.0.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
+
 }
 
 
@@ -132,6 +135,21 @@ gitProperties {
     dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
     failOnNoGitDirectory = false
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
+}
+
+openApi {
+    apiDocsUrl.set("http://localhost:11223/v3/api-docs")
+    outputDir.set(file("$buildDir/docs"))
+    outputFileName.set("openapi.json")
+    waitTimeInSeconds.set(10)
+    customBootRun {
+        args.set(
+            listOf(
+                "--spring.profiles.active=dev",
+                "--server.port=11223",
+            )
+        )
+    }
 }
 
 val liquibaseHibernate6Version: String by project.extra.properties
@@ -326,6 +344,12 @@ tasks {
     }
     register("package") {
         dependsOn("bootJar")
+    }
+
+    create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        generatorName.set("typescript-fetch")
+        inputSpec.set(file("$buildDir/docs/openapi.json").toString())
+        outputDir.set("$buildDir/../../frontend/src/generated/client")
     }
 }
 
