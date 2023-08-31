@@ -139,6 +139,9 @@ public class DatasetsController {
             .collect(Collectors.toMap(Callable::getUuid, Function.identity(), (l, r) -> l));
 
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (!mlWorkerWSService.isWorkerConnected(workerID)) {
             throw new MLWorkerNotConnectedException(workerID, log);
         }
