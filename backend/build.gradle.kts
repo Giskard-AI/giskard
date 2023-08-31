@@ -31,7 +31,6 @@ plugins {
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
     id("org.openapi.generator") version "7.0.0"
     id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
-
 }
 
 
