@@ -100,7 +100,7 @@ jobs:
         env:
           GSK_DISABLE_ANALYTICS: True
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
-        run: ./gradlew build test-all integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel --scan
+        run: ./gradlew build test-all integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
 
       # Integration Test using postgresql using test-container
       - uses: docker-practice/actions-setup-docker@master
@@ -108,6 +108,6 @@ jobs:
       - name: Integration test under emulated production env
         env:
           GSK_DISABLE_ANALYTICS: True
-        run: ./gradlew integrationTest -Ptestcontainers --scan
+        run: ./gradlew integrationTest -Ptestcontainers
 
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
