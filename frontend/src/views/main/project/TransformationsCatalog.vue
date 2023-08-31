@@ -43,8 +43,9 @@
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="py-2">
+                        <div class="py-2 d-flex flex-column">
                             <span class="selected-func-name">{{ selected.displayName ?? selected.name }}</span>
+                            <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
                         </div>
 
                         <div class="vc overflow-x-hidden pr-5">
@@ -108,7 +109,7 @@
 
                                 <div class="d-flex">
                                     <v-spacer></v-spacer>
-                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTransformationFunction">
+                                    <v-btn width="100" small class="primaryLightBtn" color="primaryLight" @click="runTransformationFunction" :loading="isTransformationFunctionRunning">
                                         Run
                                     </v-btn>
                                 </div>
@@ -167,11 +168,16 @@ import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import mixpanel from "mixpanel-browser";
 import { anonymize } from "@/utils";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 
 let props = defineProps<{
     projectId: number,
     suiteId?: number
 }>();
+
+const mainStore = useMainStore();
 
 const editor = ref(null)
 
@@ -182,17 +188,16 @@ const transformationResult = ref<FunctionInputDTO | null>(null);
 const selectedDataset = ref<string | null>(null);
 const selectedColumn = ref<string | null>(null);
 let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
+const isTransformationFunctionRunning = ref<boolean>(false);
 
 const monacoOptions: IEditorOptions = inject('monacoOptions');
 const panel = ref<number[]>([0]);
 
 monacoOptions.readOnly = true;
 
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
+const hasCustomTag = computed(() => {
+    return selected.value?.tags?.includes('custom') ?? false;
+})
 
 const hasGiskardFilters = computed(() => {
     return transformationFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
@@ -222,27 +227,33 @@ onActivated(async () => {
 });
 
 async function runTransformationFunction() {
-    const params = Object.values(transformationArguments.value);
-    if (selected.value!.cellLevel) {
-        params.push({
-            isAlias: false,
-            name: 'column_name',
-            params: [],
-            type: 'str',
-            value: selectedColumn.value
-        })
+    isTransformationFunctionRunning.value = true;
+    try {
+        const params = Object.values(transformationArguments.value);
+        if (selected.value!.cellLevel) {
+            params.push({
+                isAlias: false,
+                name: 'column_name',
+                params: [],
+                type: 'str',
+                value: selectedColumn.value
+            })
+        }
+
+        mixpanel.track("Run transformation function from Catalog", {
+            transformationFunctionName: selected.value!.name,
+            inputs: anonymize(params),
+        });
+
+        transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
+            uuid: selected.value!.uuid,
+            params,
+            type: 'TRANSFORMATION'
+        }]);
     }
-
-    mixpanel.track("Run transformation function from Catalog", {
-        transformationFunctionName: selected.value!.name,
-        inputs: anonymize(params),
-    });
-
-    transformationResult.value = await api.datasetProcessing(props.projectId, selectedDataset.value!, [{
-        uuid: selected.value!.uuid,
-        params,
-        type: 'TRANSFORMATION'
-    }]);
+    finally {
+        isTransformationFunctionRunning.value = false;
+    }
 }
 
 watch(() => selected.value, () => {
@@ -271,6 +282,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
+async function copyFunctionId() {
+    await copyToClipboard(selected.value!.uuid);
+    mainStore.addNotification({ content: "Copied Transformation Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style scoped lang="scss">
@@ -357,5 +372,17 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 .suite-input-list-selector {
     padding-top: 0;
+}
+
+
+#function-id {
+    font-size: 0.675rem !important;
+    line-height: 0.675rem !important;
+    cursor: pointer;
+}
+
+#function-id span {
+    text-decoration: underline;
+    margin-right: 0.2rem;
 }
 </style>

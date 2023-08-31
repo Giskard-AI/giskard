@@ -5,32 +5,30 @@ import ai.giskard.domain.User;
 import ai.giskard.repository.UserRepository;
 import ai.giskard.service.GiskardRuntimeException;
 import ai.giskard.service.MailService;
+import ai.giskard.service.UserDeletionService;
 import ai.giskard.service.UserService;
 import ai.giskard.service.ee.LicenseService;
 import ai.giskard.utils.LicenseUtils;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
-import ai.giskard.web.rest.errors.BadRequestAlertException;
+import ai.giskard.web.rest.errors.BadRequestException;
 import ai.giskard.web.rest.errors.EmailAlreadyUsedException;
 import ai.giskard.web.rest.errors.LoginAlreadyUsedException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import tech.jhipster.web.util.PaginationUtil;
-import tech.jhipster.web.util.ResponseUtil;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,10 +77,9 @@ public class UserAdminController {
 
     private final Logger log = LoggerFactory.getLogger(UserAdminController.class);
 
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
-
     private final UserService userService;
+
+    private final UserDeletionService userDeletionService;
 
     private final UserRepository userRepository;
 
@@ -107,7 +104,7 @@ public class UserAdminController {
         log.debug("REST request to save User : {}", userDTO);
 
         if (userDTO.getId() != null) {
-            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
+            throw new BadRequestException("A new user cannot already have an ID");
             // Lowercase the user login before comparing with database
         } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
             throw new LoginAlreadyUsedException();
@@ -137,8 +134,9 @@ public class UserAdminController {
         if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
         }
-
-        return ResponseUtil.wrapOrNotFound(userService.updateUser(userDTO));
+        return userService.updateUser(userDTO)
+            .map(response -> ResponseEntity.ok().body(response))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -149,15 +147,14 @@ public class UserAdminController {
      */
     @GetMapping("")
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
-    public ResponseEntity<List<AdminUserDTO>> getAllUsers(@org.springdoc.api.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<AdminUserDTO>> getAllUsers(@ParameterObject Pageable pageable) {
         log.debug("REST request to get all User for an admin");
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
 
         final Page<AdminUserDTO> page = userService.getAllManagedUsers(pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+        return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
     }
 
     private boolean onlyContainsAllowedProperties(Pageable pageable) {
@@ -174,7 +171,9 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<AdminUserDTO> getUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to get User : {}", login);
-        return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
+        return userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new)
+            .map(response -> ResponseEntity.ok().body(response))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -186,7 +185,20 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> deleteUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to delete User: {}", login);
-        userService.deleteUser(login);
+        userDeletionService.deleteUser(login);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * {@code PATCH /admin/users/:login/disable} : disable the "login" User.
+     *
+     * @param login the login of the user to disable.
+     */
+    @PatchMapping("/{login}/disable")
+    @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
+    public ResponseEntity<Void> disableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+        log.debug("REST request to disable User: {}", login);
+        userDeletionService.disableUser(login);
         return ResponseEntity.noContent().build();
     }
 
@@ -199,7 +211,7 @@ public class UserAdminController {
     @PreAuthorize("hasAuthority(\"" + ADMIN + "\")")
     public ResponseEntity<Void> enableUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         log.debug("REST request to restore User: {}", login);
-        userService.enableUser(login);
+        userDeletionService.enableUser(login);
         return ResponseEntity.noContent().build();
     }
 }

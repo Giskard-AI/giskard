@@ -1,6 +1,6 @@
 package ai.giskard.web.dto.ml;
 
-import ai.giskard.worker.SingleTestResult;
+import ai.giskard.ml.dto.MLWorkerWSSingleTestResultDTO;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,21 +26,24 @@ public class SingleTestResultDTO {
     private Double unexpectedPercentTotal;
     private Double unexpectedPercentNonmissing;
     private float metric;
+    private String outputDfUuid;
 
-    public SingleTestResultDTO(SingleTestResult message) {
+
+    public SingleTestResultDTO(MLWorkerWSSingleTestResultDTO message) {
         this.missingCount = message.getMissingCount();
         this.missingPercent = message.getMissingPercent();
         this.unexpectedCount = message.getUnexpectedCount();
         this.unexpectedPercent = message.getUnexpectedPercent();
         this.unexpectedPercentTotal = message.getUnexpectedPercentTotal();
         this.unexpectedPercentNonmissing = message.getUnexpectedPercentNonmissing();
-        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexListList();
-        this.unexpectedIndexList = message.getUnexpectedIndexListList();
+        this.partialUnexpectedIndexList = message.getPartialUnexpectedIndexList();
+        this.unexpectedIndexList = message.getUnexpectedIndexList();
         this.passed = message.getPassed();
         this.metric = message.getMetric();
-        this.actualSlicesSize = message.getActualSlicesSizeList();
-        this.referenceSlicesSize = message.getReferenceSlicesSizeList();
-        this.messages = message.getMessagesList().stream().map(
+        this.actualSlicesSize = message.getActualSlicesSize();
+        this.referenceSlicesSize = message.getReferenceSlicesSize();
+        this.messages = message.getMessages().stream().map(
             msg -> new TestResultMessageDTO(msg.getType(), msg.getText())).toList();
+        this.outputDfUuid = message.getOutputDfId();
     }
 }

@@ -8,6 +8,9 @@ jobs:
   full-test:
     name: Full test
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10" ]
     steps:
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
 
@@ -52,7 +55,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: python-client/.venv
-          key: ${{ runner.os }}-client-${{ hashFiles('python-client/pdm.lock')}}
+          key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
           restore-keys: ${{ runner.os }}-client
 
       - name: Set up JDK 17
@@ -74,7 +77,7 @@ jobs:
         if: ${{ steps.runner_info.outputs.platform_arch == 'amd64' || steps.runner_info.outputs.platform_arch == 'x86_64' }}
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Python and pip through apt
         if: ${{ steps.runner_info.outputs.platform_arch != 'amd64' && steps.runner_info.outputs.platform_arch != 'x86_64' }}
@@ -101,5 +104,13 @@ jobs:
           GSK_DISABLE_ANALYTICS: True
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
         run: ./gradlew build test-all integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
+
+      # Integration Test using postgresql using test-container
+      - uses: docker-practice/actions-setup-docker@master
+
+      - name: Integration test under emulated production env
+        env:
+          GSK_DISABLE_ANALYTICS: True
+        run: ./gradlew integrationTest -Ptestcontainers
 
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"

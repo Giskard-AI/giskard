@@ -1,11 +1,9 @@
+import tempfile
+import mlflow
 import pandas as pd
-from html import escape
-from pathlib import Path
-from collections import defaultdict
-from jinja2 import Environment, PackageLoader, select_autoescape
+from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
-from .visualization.custom_jinja import pluralize, format_metric
 
 
 class ScanResult:
@@ -31,46 +29,10 @@ class ScanResult:
         return self.to_html(embed=True)
 
     def to_html(self, filename=None, embed=False):
-        env = Environment(
-            loader=PackageLoader("giskard.scanner", "templates"),
-            autoescape=select_autoescape(),
-        )
-        env.filters["pluralize"] = pluralize
-        env.filters["format_metric"] = format_metric
+        from ..visualization.widget import ScanResultWidget
 
-        tpl = env.get_template("scan_results.html")
-
-        issues_by_group = defaultdict(list)
-        for issue in self.issues:
-            issues_by_group[issue.group].append(issue)
-
-        html = tpl.render(
-            issues=self.issues,
-            issues_by_group=issues_by_group,
-            num_major_issues={
-                group: len([i for i in issues if i.level == "major"]) for group, issues in issues_by_group.items()
-            },
-            num_medium_issues={
-                group: len([i for i in issues if i.level == "medium"]) for group, issues in issues_by_group.items()
-            },
-            num_info_issues={
-                group: len([i for i in issues if i.level == "info"]) for group, issues in issues_by_group.items()
-            },
-        )
-
-        if embed:
-            # Put the HTML in an iframe
-            escaped = escape(html)
-            uid = id(self)
-
-            with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
-                js_lib = f.read()
-
-            html = f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
-<script>
-{js_lib}
-(function(){{iFrameResize({{ checkOrigin: false }}, '#scan-{uid}');}})();
-</script>"""
+        widget = ScanResultWidget(self)
+        html = widget.render_html(embed=embed)
 
         if filename is not None:
             with open(filename, "w") as f:
@@ -123,3 +85,82 @@ class ScanResult:
             "scan:generate_test_suite",
             {"suite_name": anonymize(name), "tests_cnt": len(suite.tests), **tests_cnt},
         )
+
+    @staticmethod
+    def get_scan_summary_for_mlflow(scan_results):
+        results_df = scan_results.to_dataframe()
+        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        return results_df
+
+    def to_mlflow(
+        self,
+        mlflow_client: MlflowClient = None,
+        mlflow_run_id: str = None,
+        summary: bool = True,
+        model_artifact_path: str = "",
+    ):
+        results_df = self.get_scan_summary_for_mlflow(self)
+        if model_artifact_path != "":
+            model_artifact_path = "-for-" + model_artifact_path
+
+        with tempfile.NamedTemporaryFile(
+            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html"
+        ) as f:
+            scan_results_local_path = f.name
+            scan_results_artifact_name = scan_results_local_path.split("/")[-1]
+            scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
+            self.to_html(scan_results_local_path)
+
+            if mlflow_client is None and mlflow_run_id is None:
+                mlflow.log_artifact(scan_results_local_path)
+                if summary:
+                    mlflow.log_table(results_df, artifact_file=scan_summary_artifact_name)
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
+                if summary:
+                    mlflow_client.log_table(mlflow_run_id, results_df, artifact_file=scan_summary_artifact_name)
+        return scan_results_artifact_name, scan_summary_artifact_name
+
+    def to_wandb(self, **kwargs):
+        """Log the scan results to the WandB run.
+
+        Log the current scan results in an HTML format to the active WandB run.
+
+        Parameters
+        ----------
+        **kwargs :
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        """
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+        import wandb  # noqa library import already checked in wandb_run
+        from ..utils.analytics_collector import analytics
+
+        with wandb_run(**kwargs) as run:
+            with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
+                try:
+                    self.to_html(filename=f.name)
+                    wandb_artifact_name = "Vulnerability scan results/" + f.name.split("/")[-1].split(".html")[0]
+                    analytics.track(
+                        "wandb_integration:scan_result",
+                        {
+                            "wandb_run_id": run.id,
+                            "has_issues": self.has_issues(),
+                            "issues_cnt": len(self.issues),
+                        },
+                    )
+                except Exception as e:
+                    analytics.track(
+                        "wandb_integration:scan_result:error:unknown",
+                        {
+                            "wandb_run_id": run.id,
+                            "error": str(e),
+                        },
+                    )
+                    raise ValueError(
+                        "An error occurred while logging the scan results into wandb. "
+                        "Please submit the traceback as a GitHub issue in the following "
+                        "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                    ) from e
+
+                run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})

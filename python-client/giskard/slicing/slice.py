@@ -2,6 +2,7 @@
 import itertools
 import operator
 import re
+import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Callable, Sequence, List, Dict
@@ -9,14 +10,17 @@ from typing import Callable, Sequence, List, Dict
 import numpy as np
 import pandas as pd
 
-from ..utils.display import format_number
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
-from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..utils.display import format_number
 
 
 def escape(value) -> str:
-    return str(value) if type(value) is not str else "%s" % value
+    return str(value) if not isinstance(value, str) else "%s" % value
+
+
+def _decode(series: pd.Series) -> pd.Series:
+    return series.str.decode("utf-8").fillna(series)
 
 
 class Clause(ABC):
@@ -53,7 +57,7 @@ class ContainsWord(Clause):
         return f"`{self.column}` {'does not contain' if self.is_not else 'contains'} \"{self.value}\""
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
+        return _decode(df[self.column]).str.contains(rf"\b{re.escape(self.value)}\b", case=False).ne(self.is_not)
 
     def to_clause(self):
         return {
@@ -94,7 +98,7 @@ class StartsWith(Clause):
         return f'`{self.column}` starts with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.lower().str.startswith(self.value.lower())
+        return _decode(df[self.column]).str.lower().str.startswith(self.value.lower())
 
     def init_code(self):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
@@ -112,7 +116,7 @@ class EndsWith(Clause):
         return f'`{self.column}` ends with "{self.value}"'
 
     def mask(self, df: pd.DataFrame) -> pd.Series:
-        return df[self.column].str.lower().str.endswith(self.value.lower())
+        return _decode(df[self.column]).str.lower().str.endswith(self.value.lower())
 
     def init_code(self):
         return f"{self.__class__.__module__}.{self.__class__.__name__}({repr(self.column)}, {repr(self.value)})"
@@ -292,13 +296,13 @@ class QueryBasedSliceFunction(SlicingFunction):
         super().__init__(None, row_level=False, cell_level=False)
         self.query = query
         self.meta = DatasetProcessFunctionMeta(type="SLICE", process_type=DatasetProcessFunctionType.CLAUSES)
-        self.meta.uuid = get_object_uuid(query)
         self.meta.clauses = self.query.to_clauses()
         self.meta.code = ""
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
         self.meta.doc = "Automatically generated slicing function"
+        self.meta.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, self.meta.name))
 
     def execute(self, data: pd.DataFrame):
         return self.query.run(data)

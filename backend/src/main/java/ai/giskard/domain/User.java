@@ -9,11 +9,11 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.io.Serial;
 import java.time.Instant;
 import java.util.HashSet;
@@ -118,7 +118,7 @@ public class User extends AbstractAuditingEntity {
     }
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "guests", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "guests", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     private Set<Project> projects = new HashSet<>();
 
     public String getDisplayNameOrLogin() {

@@ -2,7 +2,6 @@ package ai.giskard.security.ee.jwt;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.GiskardUser;
 import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.*;
@@ -17,15 +16,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -53,32 +48,32 @@ public class TokenProvider {
 
     private final SecurityMetersService securityMetersService;
 
-    public TokenProvider(JHipsterProperties jHipsterProperties, ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
+    public TokenProvider(ApplicationProperties applicationProperties, SecurityMetersService securityMetersService) {
         byte[] keyBytes;
-        String base64SecretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getBase64Secret();
-        String secretProperty = jHipsterProperties.getSecurity().getAuthentication().getJwt().getSecret();
+        String base64SecretProperty = applicationProperties.getBase64JwtSecretKey();
+        String secretProperty = applicationProperties.getJwtSecretKey();
         if (!ObjectUtils.isEmpty(base64SecretProperty)) {
             keyBytes = Decoders.BASE64.decode(base64SecretProperty);
             log.info("Using a provided Base64-encoded JWT secret key of {} bytes", keyBytes.length);
         } else if (secretProperty != null) {
             log.warn(
                 "Warning: the JWT key used is not Base64-encoded. " +
-                    "We recommend using the `jhipster.security.authentication.jwt.base64-secret` key for optimum security."
+                    "We recommend using the `giskard.base64-jwt-secret-key` key for optimum security."
             );
             base64SecretProperty = secretProperty;
             keyBytes = base64SecretProperty.getBytes(StandardCharsets.UTF_8);
         } else {
-            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits", GENERATED_KEY_BITS);
             keyBytes = new byte[GENERATED_KEY_BITS / 8];
             new SecureRandom().nextBytes(keyBytes);
+            String base64Key = Base64.getEncoder().encodeToString(keyBytes);
+            log.info("No JWT secret key was specified in the configuration, generating a new one of {} bits: {}", GENERATED_KEY_BITS, base64Key);
         }
         key = Keys.hmacShaKeyFor(keyBytes);
         jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        this.tokenValidityInMilliseconds = 1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds();
+        this.tokenValidityInMilliseconds = 1000 * applicationProperties.getTokenValidityInSeconds();
         this.apiTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getApiTokenValidityInDays();
         this.invitationTokenValidityInMilliseconds = (long) 24 * 60 * 60 * 1000 * applicationProperties.getInvitationTokenValidityInDays();
-        this.tokenValidityInMillisecondsForRememberMe =
-            1000 * jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe();
+        this.tokenValidityInMillisecondsForRememberMe = 1000 * applicationProperties.getTokenValidityInSecondsForRememberMe();
 
         this.securityMetersService = securityMetersService;
     }
@@ -94,30 +89,19 @@ public class TokenProvider {
             validity = new Date(now + this.tokenValidityInMilliseconds);
         }
 
-        return new JWTToken(Jwts
-            .builder()
-            .setSubject(authentication.getName())
-            .claim(AUTHORITIES_KEY, authorities)
-            .claim(ID, ((GiskardUser) authentication.getPrincipal()).getId())
-            .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
-            .signWith(key, SIGNATURE_ALGORITHM)
-            .setExpiration(validity)
-            .compact(), validity.toInstant());
+        return createToken(authentication.getName(), ((GiskardUser) authentication.getPrincipal()).getId(), authorities, validity, key);
     }
 
-    public JWTToken createAPIaccessToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(","));
-
-        long now = (new Date()).getTime();
-        Date expiration = new Date(now + this.apiTokenValidityInMilliseconds);
+    public static JWTToken createToken(String name, Long id, String authorities, Date validity, Key secretKey) {
         return new JWTToken(Jwts
             .builder()
-            .setSubject(authentication.getName())
-            .claim(TOKEN_TYPE_KEY, JWTTokenType.API)
+            .setSubject(name)
             .claim(AUTHORITIES_KEY, authorities)
-            .signWith(key, SIGNATURE_ALGORITHM)
-            .setExpiration(expiration)
-            .compact(), expiration.toInstant());
+            .claim(ID, id)
+            .claim(TOKEN_TYPE_KEY, JWTTokenType.UI)
+            .signWith(secretKey, SIGNATURE_ALGORITHM)
+            .setExpiration(validity)
+            .compact(), validity.toInstant());
     }
 
     public String createInvitationToken(String invitorEmail, String invitedEmail) {
@@ -143,9 +127,6 @@ public class TokenProvider {
                 .filter(auth -> !auth.trim().isEmpty())
                 .map(SimpleGrantedAuthority::new).forEach(authorities::add);
         }
-        if (JWTTokenType.API.name().equals(claims.get(TOKEN_TYPE_KEY))) {
-            authorities.add(new SimpleGrantedAuthority(AuthoritiesConstants.API));
-        }
 
         GiskardUser principal = new GiskardUser(claims.get(ID, Long.class), claims.getSubject(), "", authorities);
 
@@ -170,18 +151,14 @@ public class TokenProvider {
         } catch (ExpiredJwtException e) { // NOSONAR
             this.securityMetersService.trackTokenExpired();
             log.trace(INVALID_JWT_TOKEN, e);
-            throw e;
         } catch (UnsupportedJwtException e) {
             this.securityMetersService.trackTokenUnsupported();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (MalformedJwtException e) {
             this.securityMetersService.trackTokenMalformed();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (SignatureException e) {
             this.securityMetersService.trackTokenInvalidSignature();
-
             log.trace(INVALID_JWT_TOKEN, e);
         } catch (IllegalArgumentException e) {
             log.error("Token validation error {}", e.getMessage());

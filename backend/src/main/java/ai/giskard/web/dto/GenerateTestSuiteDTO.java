@@ -3,7 +3,7 @@ package ai.giskard.web.dto;
 import com.dataiku.j2ts.annotations.UIModel;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Data

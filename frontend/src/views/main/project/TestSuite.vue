@@ -3,7 +3,7 @@
     <div class="vc">
       <v-container class="main-container vc pt-0">
         <div class="d-flex flex-wrap pl-3 pr-3">
-          <h1 class="test-suite-name">{{ suite.name }}</h1>
+          <h1 class="test-suite-name">{{ suiteName }}</h1>
           <div class="flex-grow-1"></div>
           <v-btn text @click.stop="redirectToTesting">
             <v-icon class="mr-2">mdi-arrow-left</v-icon>
@@ -15,11 +15,22 @@
           </v-btn>
         </div>
         <v-tabs class="pl-3 pr-3 mt-2">
-          <v-tab :to="{ name: 'project-testing-test-suite-overview' }">
+          <v-tab :to="{
+            name: 'project-testing-test-suite-overview', params: {
+              id: projectId,
+              suiteId: suiteId,
+            }
+          }">
             <v-icon class="mr-2">mdi-chart-bar</v-icon>
             <span class="tab-item-text">Report</span>
           </v-tab>
-          <v-tab :to="{ name: 'project-testing-test-suite-executions' }">
+          <v-tab :to="{
+            name: 'project-testing-test-suite-executions',
+            params: {
+              id: projectId,
+              suiteId: suiteId,
+            },
+          }">
             <v-icon class="mr-2">history</v-icon>
             <span class="tab-item-text">Past executions</span>
           </v-tab>
@@ -102,6 +113,10 @@ const { suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter
 
 const openWorkerInstructions = ref(false);
 
+const suiteName = computed(() => {
+  return suite.value?.name ?? 'Unnamed test suite';
+});
+
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;
 });
@@ -124,7 +139,10 @@ async function openRunTestSuite(compareMode: boolean) {
         suiteId: props.suiteId,
         inputs: inputs.value,
         compareMode,
-        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs,
+        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs.reduce((acc, curr) => {
+          acc[curr.name] = curr.value;
+          return acc;
+        }, {}),
       },
     });
   } else {

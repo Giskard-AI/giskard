@@ -12,7 +12,7 @@
                   <v-row>
                     <v-col>
                       <div class="caption font-weight-light">Originator</div>
-                      <div class="subtitle-2">{{ data.user.displayName || data.user.user_id }}</div>
+                      <div class='subtitle-2'>{{ userDisplayName }}</div>
                       <div class="caption font-weight-light">Sent On</div>
                       <div class="subtitle-2">{{ data.createdOn | date }}</div>
                       <div class="caption font-weight-light">Model</div>
@@ -41,7 +41,7 @@
                   <MessageReply :replyId="data.id" :author="data.user" :created-on="data.createdOn" :content="data.feedbackMessage" :repliable="true" :replies=firstLevelReplies :type="'feedback'" :hideableBox="false" @reply="doSendReply($event)" @delete="deleteFeedback" />
                   <div v-for="(r, idx) in firstLevelReplies" :key="r.id">
                     <v-divider class="my-1" v-show="idx < firstLevelReplies.length"></v-divider>
-                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" />
+                    <MessageReply :replyId="r.id" :author="r.user" :created-on="r.createdOn" :content="r.content" :repliable="true" :replies="secondLevelReplies(r.id)" :type="'reply'" @reply="doSendReply($event, r.id)" @delete="deleteReply" :hideableBox="false" />
                   </div>
                 </v-card-text>
               </v-card>
@@ -60,16 +60,16 @@
 </template>
 
 <script setup lang="ts">
-import { api } from "@/api";
-import Inspector from "./Inspector.vue";
-import MessageReply from "@/components/MessageReply.vue";
-import { FeedbackDTO, FeedbackReplyDTO } from "@/generated-sources";
-import mixpanel from "mixpanel-browser";
+import { api } from '@/api';
+import Inspector from './Inspector.vue';
+import MessageReply from '@/components/MessageReply.vue';
+import { FeedbackDTO, FeedbackReplyDTO } from '@/generated-sources';
+import mixpanel from 'mixpanel-browser';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router/composables';
 import { $vfm } from 'vue-final-modal';
-import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
-import { useMainStore } from "@/stores/main";
+import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
+import { useMainStore } from '@/stores/main';
 
 const mainStore = useMainStore();
 
@@ -159,6 +159,10 @@ const firstLevelReplies = computed<FeedbackReplyDTO[]>(() => {
 function secondLevelReplies(replyId: number) {
   return !data.value ? [] : data.value.feedbackReplies.filter(r => r.replyToReply === replyId);
 }
+
+const userDisplayName = computed(() => data.value?.user
+  ? data.value.user.displayName ?? data.value.user.user_id
+  : 'Deleted user');
 
 </script>
 

@@ -16,7 +16,7 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -79,6 +79,12 @@ public class InspectionService {
         if (inspection.getDataset().getTarget() != null) {
             DoubleColumn absDiffPercentColumn = calculatedTable.doubleColumn("absDiffPercent");
             DoubleColumn diffPercent = calculatedTable.doubleColumn("diffPercent");
+
+            // diff percent values can be missing when target is 0
+            // (to avoid division by 0 on the ML Worker side and saving "inf" values)
+            absDiffPercentColumn = absDiffPercentColumn.where(absDiffPercentColumn.isNotMissing());
+            diffPercent = diffPercent.where(diffPercent.isNotMissing());
+
             switch (filter.getType()) {
                 case CORRECT -> {
                     threshold = getThresholdForRegression(absDiffPercentColumn, true);

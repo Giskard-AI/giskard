@@ -1,6 +1,16 @@
 [build-system]
-requires = ["setuptools>=61", "wheel", "grpcio-tools", "protobuf<=3.20.3"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["giskard*"]
+exclude = ["docs*", "tests*"]
+
+[tool.setuptools.package-data]
+giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
+
+
+
 
 [[tool.pdm.source]]
 type = "find_links"
@@ -10,20 +20,18 @@ name = "torch"
 
 
 [tool.pdm.scripts]
-proto = "setup.py grpc"
 # add "-n auto" to the pytest command to parallelize the execution
-test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
+test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 test.env = { GSK_DISABLE_ANALYTICS = "True" }
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
-test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings"
+test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 test-fast.env = { GSK_DISABLE_ANALYTICS = "True" }
 lint = "ruff giskard tests"
-doc = "python -m sphinx_autobuild docs docs/_build/html"
+doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
 
 [tool.pdm.dev-dependencies]
 dev = [
     "typing-extensions>=4.5.0",
-    "black[d]>=23.3.0",
     "bandit>=1.7.4",
     "darglint>=1.8.1",
     "jupyter>=1.0.0",
@@ -45,11 +53,8 @@ dev = [
     "imbalanced-learn>=0.10.1",
     "pytest-xdist>=3.3.1",
     "ruff>=0.0.271",
-]
-proto = [
-    "grpcio-tools>=1.46.3",
-    "mypy-protobuf>=3.2.0",
-    "mypy-extensions>=0.4.3",
+    "mlflow>2",
+    "black[d]>=22.12.0",
 ]
 test = [
     "pytest-cov>=4.0.0",
@@ -66,6 +71,8 @@ test = [
     "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
     "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
+    "mlflow>2",
+    "wandb"
 ]
 doc = [
     "furo>=2023.5.20",
@@ -83,15 +90,11 @@ doc = [
     "ipython==8.12.0"
 ]
 
-[tool.setuptools.packages.find]
-include = ["giskard*"]
-exclude = ["docs*", "tests*"]
-
-[tool.setuptools.package-data]
-giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv"]
-
 [project.scripts]
 giskard = "giskard.cli:cli"
+
+[project.entry-points."mlflow.model_evaluator"]
+giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 
 [project.urls]
 "Homepage" = "https://giskard.ai"
@@ -108,7 +111,7 @@ giskard = "giskard.cli:cli"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b11"
+version = "2.0.0b14"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
@@ -133,7 +136,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1,<3.11"
+requires-python = ">=3.8.1, <3.12"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0 ",
@@ -152,6 +155,7 @@ dependencies = [
     "chardet", # text metadata
     "jinja2>=3", # scan template (temporary)
     "requests-toolbelt>=0.9.1",
+    "stomp-py>=8.1.0",
 ]
 
 [project.optional-dependencies]
@@ -160,7 +164,8 @@ llm = [
     "torch",
     "langchain",
     "evaluate",
-    #    pdm lock -G:all doesn't work without fixing these two versions
+    "detoxify>=0.5.0",
+    # pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
 ]
@@ -170,10 +175,7 @@ server = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "grpcio>=1.39.0,<=1.51.1",
-    "grpcio-status>=1.16.0,<=1.51.1",
     "lockfile>=0.12.2",
-    "protobuf<=3.20.3",
     "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
     "pyngrok>=6.0.0",
@@ -251,7 +253,7 @@ warn_unused_ignores = false
 # https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
 # Directories that are not visited by pytest collector:
 norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
-doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+doctest_optionflags = ["ELLIPSIS", "NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]

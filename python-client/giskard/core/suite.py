@@ -3,7 +3,9 @@ import logging
 import traceback
 from dataclasses import dataclass
 from functools import singledispatchmethod
-from typing import List, Any, Union, Dict, Optional
+from typing import List, Any, Union, Dict, Optional, Tuple
+
+from mlflow import MlflowClient
 
 from giskard.client.dtos import TestSuiteDTO, TestInputDTO, SuiteTestDTO
 from giskard.client.giskard_client import GiskardClient
@@ -27,6 +29,7 @@ from giskard.ml_worker.testing.test_result import (
     TestMessageLevel,
 )
 from giskard.models.base import BaseModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -77,26 +80,79 @@ def parse_function_arguments(client, project_key, function_inputs):
     return arguments
 
 
-class TestSuiteResult(tuple):
+class TestSuiteResult:
     """Represents the result of a test suite."""
 
+    def __init__(self, passed: bool, results: List[Tuple[str, TestResult, Dict[str, Any]]]):
+        self.passed = passed
+        self.results = results
+
+    def __repr__(self):
+        return f"<TestSuiteResult ({'passed' if self.passed else 'failed'})>"
+
     def _repr_html_(self):
-        passed = self[0]
-        tests_results = "".join(
-            [
-                f"<h3>Test: {key}</h3>{(TestResult(passed=value) if type(value) == bool else value)._repr_html_()}"
-                for key, value in self[1]
-            ]
-        )
-        return """
-               <h2><span style="color:{0};">{1}</span> Test suite {2}</h2>
-               {3}
-               """.format(
-            "green" if passed else "red",
-            "\u2713" if passed else "\u00D7",
-            "succeed" if passed else "failed",
-            tests_results,
-        )
+        from ..visualization.widget import TestSuiteResultWidget
+
+        widget = TestSuiteResultWidget(self)
+        return widget.render_html()
+
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+        import mlflow
+        from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
+
+        metrics = dict()
+        for test_result in self.results:
+            test_name = test_result[0]
+            test_name = process_text(test_name)
+            if mlflow_client is None and mlflow_run_id is None:
+                mlflow.log_metric(test_name, test_result[1].metric)
+            elif mlflow_client and mlflow_run_id:
+                mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
+            metrics[test_name] = test_result[1].metric
+
+        return metrics
+
+    def to_wandb(self, **kwargs) -> None:
+        """Log the test-suite result to the WandB run.
+
+        Log the current test-suite result in a table format to the active WandB run.
+
+        Parameters
+        ----------
+        **kwargs :
+            Additional keyword arguments
+            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        """
+        from giskard.integrations.wandb.wandb_utils import wandb_run, _parse_test_name
+        import wandb
+        from ..utils.analytics_collector import analytics
+
+        with wandb_run(**kwargs) as run:
+            # Log just a test description and a metric.
+            columns = ["Metric name", "Data slice", "Metric value", "Passed"]
+            try:
+                data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+                analytics.track(
+                    "wandb_integration:test_suite",
+                    {
+                        "wandb_run_id": run.id,
+                        "tests_cnt": len(data),
+                    },
+                )
+            except Exception as e:
+                analytics.track(
+                    "wandb_integration:test_suite:error:unknown",
+                    {
+                        "wandb_run_id": wandb.run.id,
+                        "error": str(e),
+                    },
+                )
+                raise ValueError(
+                    "An error occurred while logging the test suite into wandb. "
+                    "Please submit the traceback as a GitHub issue in the following "
+                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                ) from e
+            run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
@@ -122,7 +178,7 @@ class SuiteInput:
     name: str
 
     def __init__(self, name: str, ptype: Any) -> None:
-        assert ptype in suite_input_types, f"Type should be one of those: {suite_input_types}"
+        assert ptype in suite_input_types, f"Type should be one of these: {suite_input_types}"
         self.name = name
         self.type = ptype
 
@@ -187,16 +243,7 @@ class TestPartial:
 
 
 def single_binary_result(test_results: List):
-    passed = True
-    for r in test_results:
-        if type(r) == bool:
-            passed = passed and r
-        elif hasattr(r, "passed"):
-            passed = passed and r.passed
-        else:
-            logger.error(f"Invalid test result: {r.__class__.__name__}")
-            passed = False
-    return passed
+    return all(res.passed for res in test_results)
 
 
 def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
@@ -296,31 +343,32 @@ class Suite:
 
         Returns
         -------
-        (passed, test_results) : tuple
-            A tuple with the following values:
-            - A boolean value representing whether all the tests in the suite passed or not.
-            - A list containing tuples of test name (`str`) and test result (`bool` or `TestResult`), it keeps the
-            order of the `add_test` sequence.
+        TestSuiteResult
+            containing test execution information
         """
-        res: List[(str, Union[bool, TestResult])] = list()
+        results: List[(str, TestResult, Dict[str, Any])] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
         if len(undefined_params):
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
-            try:
-                test_params = self.create_test_params(test_partial, suite_run_args)
-                result = test_partial.giskard_test.get_builder()(**test_params).execute()
-                res.append((test_partial.test_name, result))
+            test_params = self.create_test_params(test_partial, suite_run_args)
+
+            try:                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+
+                if isinstance(result, bool):
+                    result = TestResult(passed=result)
+
+                results.append((test_partial.test_name, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception("An error happened during test execution")
-                res.append(
+                logging.exception(f"An error happened during test execution for test: {test_partial.test_name}")
+                results.append(
                     (
                         test_partial.test_name,
                         TestResult(
@@ -328,16 +376,18 @@ class Suite:
                             is_error=True,
                             messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
+                        test_params,
                     )
                 )
 
-        result = single_binary_result([result for name, result in res])
+        passed = single_binary_result([result for name, result, params in results])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
-        logger.info(f"result: {'success' if result else 'failed'}")
-        for test_name, r in res:
-            logger.info(f"{test_name}: {format_test_result(r)}")
-        return TestSuiteResult((result, res))
+        logger.info(f"result: {'success' if passed else 'failed'}")
+        for test_name, r, params in results:
+            logger.info(f"{test_name} ({params}): {format_test_result(r)}")
+
+        return TestSuiteResult(passed, results)
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -365,6 +415,8 @@ class Suite:
         :param project_key: The key of the project that the test suite belongs to.
         :return: The current instance of the test Suite to allow chained call.
         """
+        if self.name is None:
+            self.name = "Unnamed test suite"
         self.id = client.save_test_suite(self.to_dto(client, project_key))
         project_id = client.get_project(project_key).project_id
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")

@@ -1,56 +1,48 @@
 <template>
-  <div>
-    <v-select
-      attach
-      clearable
-      outlined
-      class='slice-function-selector'
-      :label='label'
-      :value='value'
-      :items='projectDatasets'
-      :item-text='extractDatasetName'
-      item-value='id'
-      :return-object='returnObject'
-      @input='onInput'
-      dense
-      hide-details
-    ></v-select>
-  </div>
-
+  <v-select attach clearable outlined class='dataset-selector' :label='label' v-model='value' :items='projectDatasets'
+            :item-text='extractDatasetName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense
+            hide-details></v-select>
 </template>
 
 <script setup lang="ts">
-
-
 import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { apiURL } from '@/env';
 import { DatasetDTO } from '@/generated-sources';
 
-const props = defineProps<{
-  projectId: number,
-  label: string,
-  returnObject: boolean,
-  value?: string
-}>();
+interface Props {
+  projectId: number;
+  label?: string;
+  returnObject?: boolean;
+  value?: string | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  returnObject: true,
+  label: 'Dataset',
+  value: undefined,
+});
+
+const projectDatasets = ref<Array<DatasetDTO>>([]);
+
 
 const emit = defineEmits(['update:value']);
 
-const projectDatasets = ref<Array<DatasetDTO>>([])
-
-onMounted(async () => projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data)
+onMounted(async () => {
+  projectDatasets.value = (await axios.get<Array<DatasetDTO>>(`${apiURL}/api/v2/project/${props.projectId}/datasets`)).data
+});
 
 function extractDatasetName(dataset: DatasetDTO) {
-    return dataset.name || dataset.id;
+  return dataset.name || dataset.id;
 }
 
 function onInput(value) {
-    emit('update:value', value);
+  emit('update:value', value);
 }
 </script>
 
 <style scoped>
-.slice-function-selector {
-    min-width: 200px
+.dataset-selector {
+  min-width: 200px
 }
 </style>

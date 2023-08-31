@@ -7,14 +7,14 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.util.HashSet;
 import java.util.Objects;
@@ -37,7 +37,7 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @NotNull
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "project_key")
     private String key;
 
     @Getter

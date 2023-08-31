@@ -29,7 +29,6 @@ To build the project use
 This command will build all modules, including:
 - creation of virtual environment inside ml-worker/.venv
 - installing node inside .gradle
-- generating gRPC stubs for backend and ml-worker
 
 
 ## Dockerized Giskard execution

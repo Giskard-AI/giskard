@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,8 +40,8 @@ public class SlicingFunctionController {
         return slicingFunctionService.save(slicingFunction);
     }
 
-    @PostMapping("project/{projectKey}/slices/no-code")
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable("projectKey") @NotNull String projectKey,
+    @PostMapping({"project/{projectKey}/slices/no-code", "slices/no-code"})
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) @NotNull String projectKey,
                                                     @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
         // TODO GSK-1280: add projectKey to slicing function
         return slicingFunctionService.generate(comparisonClauses);

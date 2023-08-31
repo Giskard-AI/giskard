@@ -5,8 +5,8 @@ def titanic_df():
     return titanic_classification.get_test_df()
 
 
-def titanic():
-    return titanic_classification.get_model_and_df()
+def titanic(model="LogisticRegression", max_iter=100):
+    return titanic_classification.get_model_and_df(model=model, max_iter=max_iter)
 
 
 def titanic_pipeline():

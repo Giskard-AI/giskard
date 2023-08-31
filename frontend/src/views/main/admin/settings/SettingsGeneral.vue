@@ -132,7 +132,7 @@
                   </tr>
                   <tr>
                     <td>Internal ML Worker address</td>
-                    <td>{{ currentWorker.internalGrpcAddress }}</td>
+                    <td>{{ currentWorker.mlWorkerId }}</td>
                   </tr>
                   <tr>
                     <td>Architecture</td>
@@ -178,12 +178,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, watch } from "vue";
-import { GeneralSettings, MLWorkerInfoDTO } from "@/generated-sources";
+import {computed, onBeforeMount, ref, watch} from "vue";
+import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
-import { api } from "@/api";
+import {api} from "@/api";
 import moment from "moment/moment";
-import { useMainStore } from "@/stores/main";
+import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";

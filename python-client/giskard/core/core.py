@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from ..utils.artifacts import serialize_parameter
+
 try:
     from types import NoneType
 except ImportError:
@@ -171,7 +173,7 @@ class CallableMeta(SavableMeta, ABC):
                     name=parameter.name,
                     type=extract_optional(parameter.annotation).__qualname__,
                     optional=parameter.default != inspect.Parameter.empty,
-                    default=None if parameter.default == inspect.Parameter.empty else parameter.default,
+                    default=serialize_parameter(parameter.default),
                     argOrder=idx,
                 )
                 for idx, parameter in enumerate(parameters.values())
@@ -192,7 +194,7 @@ class CallableMeta(SavableMeta, ABC):
 
     def populate_tags(self, tags=None):
         tags = [] if not tags else tags.copy()
-        tags.append("pickle")
+
         if self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         else:

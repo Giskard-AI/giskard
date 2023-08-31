@@ -128,7 +128,7 @@
                 </v-btn>
             </div>
         </v-container>
-        <v-container v-else-if="apiAccessToken && apiAccessToken.id_token">
+        <v-container v-else-if="giskardClientSnippet">
             <div class="mt-2">
                 <v-alert class='text-center mt-6' v-if="toggleSnippetType === undefined">
                     <p class='headline font-weight-medium grey--text text--darken-2'>There are no artifacts (datasets and models) in this project yet. <br>Choose an option below to upload them and create a test suite.</p>
@@ -157,9 +157,12 @@
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-12 mb-6">
-                <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
-                <div class="mt-6 mb-6">
-                    <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                <HuggingFaceTokenCard v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+                <div v-else>
+                    <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
+                    <div class="mt-6 mb-6">
+                        <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                    </div>
                 </div>
             </div>
             <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
@@ -222,21 +225,24 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from '@/api';
-import { apiURL } from '@/env';
-import { computed, onActivated, ref } from 'vue';
+import {api} from '@/api';
+import {computed, onActivated, ref} from 'vue';
 import router from '@/router';
-import { useMainStore } from '@/stores/main';
-import { useTestSuitesStore } from '@/stores/test-suites';
-import { TYPE } from 'vue-toastification';
+import {useMainStore} from '@/stores/main';
+import {useTestSuitesStore} from '@/stores/test-suites';
+import {TYPE} from 'vue-toastification';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { $vfm } from 'vue-final-modal';
+import {$vfm} from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import mixpanel from 'mixpanel-browser';
 import CodeSnippet from '@/components/CodeSnippet.vue';
-import { JWTToken, TestResult } from '@/generated-sources';
-import { useProjectStore } from '@/stores/project';
-import { useProjectArtifactsStore } from '@/stores/project-artifacts';
+import {TestResult} from '@/generated-sources';
+import {useProjectStore} from '@/stores/project';
+import {useProjectArtifactsStore} from '@/stores/project-artifacts';
+import {generateGiskardClientSnippet} from "@/snippets";
+import {saveLocalHFToken, getLocalHFToken} from "@/utils";
+import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
+import {attemptFetchHFSpacesToken} from "@/hf-utils";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -248,9 +254,10 @@ const props = defineProps<{
 
 const searchSession = ref("");
 const toggleSnippetType = ref<string | undefined>(undefined);
-const apiAccessToken = ref<JWTToken | null>(null);
+const giskardClientSnippet = ref<string | null>(null);
 
-const codeContent = computed(() => {
+const codeContent = ref<string | null>(null);
+const generateCodeContent = () => {
     return `import giskard
 
 # Replace this with your own data & model creation.
@@ -277,15 +284,12 @@ giskard_model = giskard.Model(model=prediction_function,
 # Then apply the scan
 results = giskard.scan(giskard_model, giskard_dataset)
 
-# Create a Giskard client
-token = "${apiAccessToken.value?.id_token}" # API Access Token
-client = giskard.GiskardClient(url="${apiURL}",  # URL of your Giskard instance
-                               token=token)
+${giskardClientSnippet.value}
 
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-});
+};
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -386,14 +390,6 @@ function deleteTestSuite(suite: any) {
     });
 }
 
-const generateApiAccessToken = async () => {
-    try {
-        apiAccessToken.value = await api.getApiAccessToken();
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 async function refresh() {
     await testSuitesStore.reloadComplete();
     await projectArtifactsStore.loadProjectArtifacts(false);
@@ -417,6 +413,21 @@ function openCustomInstructions() {
     });
 }
 
+const needFetchWithHFAccessToken = ref<boolean>(false);
+async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        saveLocalHFToken(accessToken);
+        await attemptFetchHFSpacesToken(async (token) => {
+            giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+            codeContent.value = generateCodeContent();
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            needFetchWithHFAccessToken.value = true;
+            useMainStore().addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+        });
+    }
+}
+
 onActivated(async () => {
     searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
@@ -426,7 +437,20 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
-    await generateApiAccessToken();
+    giskardClientSnippet.value = await generateGiskardClientSnippet();
+    codeContent.value = generateCodeContent();
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        await attemptFetchHFSpacesToken(async (token) => {
+            if (getLocalHFToken()) {
+                giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+                codeContent.value = generateCodeContent();
+            }
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            // Access Token seems invalidated or private
+            needFetchWithHFAccessToken.value = true;
+        });
+    }
 })
 </script>
 
