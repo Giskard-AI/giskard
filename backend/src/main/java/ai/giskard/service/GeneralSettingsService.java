@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -24,6 +25,10 @@ public class GeneralSettingsService {
     public static final boolean isRunningInHFSpaces = Stream.of("SPACE_REPO_NAME", "SPACE_ID", "SPACE_HOST").allMatch(System.getenv()::containsKey);
 
     public static final String hfSpaceId = System.getenv().get("SPACE_ID");
+
+    public static final boolean IS_RUNNING_IN_DEMO_HF_SPACES = Objects.equals(System.getenv().get("SPACE_ID"),
+            System.getenv().get("DEMO_SPACE_ID") == null ? "giskardai/giskard" : System.getenv().get("DEMO_SPACE_ID")
+    );
 
     public GeneralSettings getSettings() {
         return deserializeSettings(settingsRepository.getMandatoryById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());

@@ -39,11 +39,11 @@ public class SecurityConfiguration {
 
 
     public static final String GISKARD_API_ENDPOINTS = "/api/**";
-    public static final String GISKARD_HF_GALLERY_SPACE_ID = "giskardai/giskard";
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // Deny requests other than GET for Giskard gallery repo on Hugging Face Spaces
-        if (GeneralSettingsService.hfSpaceId.equals(GISKARD_HF_GALLERY_SPACE_ID)) {
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
             http.authorizeHttpRequests(registry ->
                 // For any allowed requests with authorization, put them here
                 registry.requestMatchers(
