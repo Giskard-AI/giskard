@@ -328,7 +328,12 @@ class ContributionPush(FeaturePush):
                 },
             ]
         else:
-            self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the incorrect prediction"
+            if self.feature_type == "text":
+                self.push_title = f'The word "{str(self.value)}" contributes a lot to the incorrect prediction'
+            else:
+                self.push_title = (
+                    f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the incorrect prediction"
+                )
             self.details = [
                 {
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
