@@ -25,7 +25,6 @@ import {
     InspectionDTO,
     JobDTO,
     JWTToken,
-    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
     MLWorkerInfoDTO,
@@ -74,14 +73,6 @@ function hfRequestInterceptor(config) {
         config.headers.Authorization = `Bearer ${hfToken}`;
     }
     return config;
-}
-
-function authHeaders(token: string | null) {
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    };
 }
 
 const API_V2_ROOT = `${apiURL}/api/v2`;
@@ -221,9 +212,6 @@ export const api = {
                 internal,
             },
         });
-    },
-    async isExternalMLWorkerConnected() {
-        return apiV2.get<unknown, boolean>(`/ml-workers/external/connected`);
     },
     async getRunningWorkerJobs() {
         return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
@@ -414,9 +402,6 @@ export const api = {
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
         return apiV2.delete<unknown, void>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/suite-test/${suiteTestId}`);
-    },
-    async getInspections() {
-        return apiV2.get<unknown, InspectionDTO[]>(`/inspections`);
     },
     async getProjectInspections(projectId: number) {
         return axiosProject.get<unknown, InspectionDTO[]>(`/${projectId}/inspections`);
