@@ -49,6 +49,7 @@ from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
+from giskard.push import Push
 from giskard.utils import threaded
 from giskard.utils.analytics_collector import analytics
 
@@ -626,25 +627,10 @@ def get_push(
     overconf = create_overconfidence_push(model, dataset, df)
     borderl = create_borderline_push(model, dataset, df)
 
-    if contribs is not None:
-        contrib_ws = contribs.to_ws()
-    else:
-        contrib_ws = None
-
-    if perturbs is not None:
-        perturb_ws = perturbs.to_ws()
-    else:
-        perturb_ws = None
-
-    if overconf is not None:
-        overconf_ws = overconf.to_ws()
-    else:
-        overconf_ws = None
-
-    if borderl is not None:
-        borderl_ws = borderl.to_ws()
-    else:
-        borderl_ws = None
+    contrib_ws = push_to_ws(contribs)
+    perturb_ws = push_to_ws(perturbs)
+    overconf_ws = push_to_ws(overconf)
+    borderl_ws = push_to_ws(borderl)
 
     if params.cta_kind is not None and params.push_kind is not None:
         if params.push_kind == PushKind.PERTURBATION:
@@ -705,3 +691,7 @@ def get_push(
         overconfidence=overconf_ws,
         borderline=borderl_ws,
     )
+
+
+def push_to_ws(push: Push):
+    return push.to_ws() if push is not None else None

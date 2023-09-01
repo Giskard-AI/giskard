@@ -1,11 +1,12 @@
+from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass
+from typing import Optional
+
 import numpy as np
 import sklearn.metrics
-from typing import Optional
-from abc import ABC, ABCMeta, abstractmethod
 
-from ...models.base import BaseModel
 from ...datasets.base import Dataset
+from ...models.base import BaseModel
 
 
 @dataclass
@@ -14,6 +15,13 @@ class MetricResult:
     value: float
     affected_samples: int
     raw_values: Optional[np.ndarray] = None
+
+    @property
+    def name(self):
+        return self.metric.name
+
+    def __str__(self):
+        return f"{self.name} = {self.value:.3f}"
 
 
 class PerformanceMetric(ABC):

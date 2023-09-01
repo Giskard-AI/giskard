@@ -1,18 +1,17 @@
 <template>
   <v-container fluid v-if="model && dataset" class="vc overflow-x-hidden">
-    <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
+    <ValidationObserver ref="dataFormObserver" v-slot="{ changed }">
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
           <v-card outlined>
-            <OverlayLoader :show="loadingData"/>
+            <OverlayLoader :show="loadingData" />
             <v-card-title>
               Input Data
               <v-spacer></v-spacer>
-              <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
+              <v-chip v-show="isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'"
-                     :disabled="!(dirty || isInputNotOriginal)">reset
+              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'" :disabled="!(changed || isInputNotOriginal)">reset
               </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
@@ -22,17 +21,12 @@
                 </template>
                 <v-list dense tile>
                   <v-list-item>
-                    <v-btn tile small text color="primary"
-                           @click="featuresToView = inputMetaData.map(e => e.name)">All
+                    <v-btn tile small text color="primary" @click="featuresToView = inputMetaData.map(e => e.name)">All
                     </v-btn>
                     <v-btn tile small text color="secondary" @click="featuresToView = []">None</v-btn>
                   </v-list-item>
                   <v-list-item v-for="f in inputMetaData" :key="f.name">
-                    <v-checkbox
-                        :label="f.name" :value="f.name"
-                        v-model="featuresToView"
-                        hide-details class="mt-1"
-                    ></v-checkbox>
+                    <v-checkbox :label="f.name" :value="f.name" v-model="featuresToView" hide-details class="mt-1"></v-checkbox>
                   </v-list-item>
                 </v-list>
               </v-menu>
@@ -41,59 +35,27 @@
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
-                <div v-for="c in datasetNonTargetColumns" :key="c.name"
-                     v-show="featuresToView.includes(c.name)">
-                  <ValidationProvider
-                      :name="c.name"
-                      v-slot="{ dirty }"
-                  >
+                <div v-for="c in datasetNonTargetColumns" :key="c.name" v-show="featuresToView.includes(c.name)">
+                  <ValidationProvider :name="c.name" v-slot="{ changed }">
                     <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
                       <label class="info--text">{{ c.name }}</label>
-                      <input type="number" v-if="c.type === 'numeric'"
-                             v-model="inputData[c.name]"
-                             class="common-style-input"
-                             :class="{
-                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
-
-                            }" @change="onValuePerturbation(c)"
-                             required
-                      />
-                      <textarea v-if="c.type === 'text'"
-                                v-model="inputData[c.name]"
-                                :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)"
-                                class="common-style-input"
-                                :class="{
-                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
-
-                               }" @change="onValuePerturbation(c)"
-                                required
-                      ></textarea>
-                      <select v-if="c.type === 'category'"
-                              v-model="inputData[c.name]"
-                              class="common-style-input"
-                              :class="{
-                                 'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                                 'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
-
-                             }" @change="onValuePerturbation(c)"
-                              required
-                      >
+                      <input type="number" v-if="c.type === 'numeric'" v-model="inputData[c.name]" class="common-style-input" :class="{
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || Number(inputData[c.name]) !== originalData[c.name]
+                      }" @change="onValuePerturbation(c)" required />
+                      <textarea v-if="c.type === 'text'" v-model="inputData[c.name]" :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)" class="common-style-input" :class="{
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || inputData[c.name] !== originalData[c.name]
+                      }" @change="onValuePerturbation(c)" required></textarea>
+                      <select v-if="c.type === 'category'" v-model="inputData[c.name]" class="common-style-input" :class="{
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || inputData[c.name] !== originalData[c.name]
+                      }" @change="onValuePerturbation(c)" required>
                         <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
                       </select>
                       <div class="d-flex flex-column">
-                        <FeedbackPopover
-                            v-if="!isMiniMode"
-                            :inputLabel="c.name"
-                            :inputValue="inputData[c.name]"
-                            :originalValue="originalData[c.name]"
-                            :inputType="c.type"
-                            @submit="emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', $event)"
-                        />
-                        <TransformationPopover
-                            v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)"
-                            :column="c.name" :column-type="c.type"/>
+                        <FeedbackPopover v-if="!isMiniMode" :inputLabel="c.name" :inputValue="inputData[c.name]" :originalValue="originalData[c.name]" :inputType="c.type" @submit="emit(changed ? 'submitValueVariationFeedback' : 'submitValueFeedback', $event)" />
+                        <TransformationPopover v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)" :column="c.name" :column-type="c.type" />
                         <PushPopover
                             type="contribution"
                             :column="c.name"
@@ -123,11 +85,7 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target"
-                             :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels"
-                             :predictionTask="model.modelType" :inputData="inputData"
-                             :modified="dirty || isInputNotOriginal" :debouncingTimeout="debouncingTimeout"
-                             @result="setResult"/>
+          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target" :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modified="changed || isInputNotOriginal" :debouncingTimeout="debouncingTimeout" @result="setResult" />
           <v-card class="mb-4" outlined>
             <v-card-title>
               Explanation
@@ -154,18 +112,11 @@
 
                 <v-tab-item v-if='modelFeatures.length > 1'>
 
-                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target"
-                                          :classificationLabels="model.classificationLabels"
-                                          :predictionTask="model.modelType" :inputData="inputData"
-                                          :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout"/>
+                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout" />
                 </v-tab-item>
                 <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id'
-                                   :datasetId='dataset.id' :textFeatureNames='textFeatureNames'
-                                   :classificationLabels='model.classificationLabels'
-                                   :classificationResult='classificationResult' :inputData='inputData'/>
-                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id'
-                                             :textFeatureNames='textFeatureNames' :inputData='inputData'/>
+                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :classificationLabels='model.classificationLabels' :classificationResult='classificationResult' :inputData='inputData' />
+                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :inputData='inputData' />
                 </v-tab-item>
               </v-tabs>
             </v-card-text>
@@ -185,6 +136,8 @@ import RegressionTextExplanation from '@/views/main/project/RegressionTextExplan
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
 import {DatasetDTO, ModelDTO, ModelType} from '@/generated-sources';
 import {isClassification} from '@/ml-utils';
+import mixpanel from 'mixpanel-browser';
+import { anonymize } from '@/utils';
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
 import {useCatalogStore} from "@/stores/catalog";
@@ -221,16 +174,45 @@ const inputMetaData = computed(() => {
   }
 
   return Object.entries(props.dataset.columnTypes)
-      .map(([name, type]) => ({
-        name,
-        type,
-        values: props.dataset.categoryFeatures[name] ?? []
-        // Provide an empty list in case of null due to DB migration
-      }))
+    .map(([name, type]) => ({
+      name,
+      type,
+      values: props.dataset.categoryFeatures[name] ?? []
+      // Provide an empty list in case of null due to DB migration
+    }))
+})
+
+const parseIfNumber = (value: any, giskardType: string) => {
+  if (giskardType === 'numeric') {
+    return Number(value);
+  }
+  return value;
+}
+
+const inputDataFormatted = computed(() => {
+  let result = {};
+  for (const [name, value] of Object.entries(props.inputData)) {
+    result[name] = parseIfNumber(value, props.dataset.columnTypes[name]);
+  }
+  return result;
+})
+
+const originalDataFormatted = computed(() => {
+  let result = {};
+  for (const [name, value] of Object.entries(props.originalData)) {
+    result[name] = parseIfNumber(value, props.dataset.columnDtypes[name]);
+  }
+  return result;
 })
 
 const isInputNotOriginal = computed(() => {
-  return JSON.stringify(props.inputData) !== JSON.stringify({...props.originalData, ...props.transformationModifications})
+  const result = JSON.stringify(originalDataFormatted.value) !== JSON.stringify({ ...inputDataFormatted.value, ...props.transformationModifications })
+
+  if (!result) {
+    dataFormObserver.value && (dataFormObserver.value as HTMLFormElement).reset();
+  }
+
+  return result;
 })
 
 const textFeatureNames = computed(() => {
@@ -239,14 +221,14 @@ const textFeatureNames = computed(() => {
 
 const modelFeatures = computed(() => {
   return inputMetaData.value
-      .filter(x => (x.name !== props.dataset.target) && (!props.model.featureNames || props.model.featureNames.includes(x.name)))
-      .map(x => x.name);
+    .filter(x => (x.name !== props.dataset.target) && (!props.model.featureNames || props.model.featureNames.includes(x.name)))
+    .map(x => x.name);
 })
 
 const datasetNonTargetColumns = computed(() => {
   return _.sortBy(inputMetaData.value.filter(x => x.name !== props.dataset.target),
-      e => !props.model.featureNames?.includes(e.name),
-      'name'
+    e => !props.model.featureNames?.includes(e.name),
+    'name'
   )
 })
 
@@ -267,6 +249,16 @@ function isFeatureEditable(featureName: string) {
     return true;
   }
   return props.model.featureNames.includes(featureName)
+}
+
+async function onValuePerturbation(featureMeta) {
+  mixpanel.track("Feature perturbation", {
+    columnType: featureMeta.type,
+    featureName: anonymize(featureMeta.name),
+    modelId: props.model.id,
+    datasetId: props.dataset.id
+  })
+  emit('update:inputData', props.inputData)
 }
 
 async function loadMetaData() {
@@ -318,7 +310,7 @@ select.common-style-input {
   background-size: .65em auto, 100%;
 }
 
-.common-style-input.is-dirty {
+.common-style-input.is-changed {
   background-color: #AD14572B;
   /* accent color but with opacity */
 }
@@ -333,7 +325,7 @@ select.common-style-input {
   padding-bottom: 8px;
 }
 
-> > > .v-tabs.no-tab-header > .v-tabs-bar {
+>>>.v-tabs.no-tab-header>.v-tabs-bar {
   display: none;
 }
 </style>
