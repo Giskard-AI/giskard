@@ -33,3 +33,8 @@
 :::
 :::::
 
+:::::{grid-item}
+:::{card} <h3><center>Pandas documentation assistant</center></h3>
+:link: ../../../reference/notebooks/llm_documentation_querying.ipynb
+:::
+:::::
