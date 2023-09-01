@@ -9,6 +9,7 @@ Functions:
 
 """
 import pandas as pd
+from xxhash import xxh3_128_hexdigest
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -35,6 +36,8 @@ text_transfo_list = [
     TextPunctuationRemovalTransformation,
     TextGenderTransformation,
 ]
+
+hashed_typo_transformations = dict()
 
 
 def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> PerturbationPush:
@@ -92,6 +95,7 @@ def _apply_perturbation(model: BaseModel, ds: Dataset, df: pd.DataFrame, feature
     transformation_function = list()
     value_perturbed = list()
     transformation_functions_params = list()
+
     passed = False
     # Create a slice of the dataset with only the row to perturb
     ds_slice = Dataset(
@@ -140,10 +144,24 @@ def _apply_perturbation(model: BaseModel, ds: Dataset, df: pd.DataFrame, feature
         # Iterate over the possible text transformations
         for text_transformation in text_transfo_list:
             # Create the transformation
-            t = text_transformation(column=feature)
+
+            _is_typo_transformation = issubclass(text_transformation, TextTypoTransformation)
+            kwargs = {}
+            if _is_typo_transformation:
+                kwargs = {"rng_seed": 1241}
+
+            t = text_transformation(column=feature, **kwargs)
 
             # Transform the slice
-            transformed = ds_slice_copy.transform(t)
+            if _is_typo_transformation:
+                _hash = xxh3_128_hexdigest(
+                    f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8")
+                )
+                if _hash not in hashed_typo_transformations.keys():
+                    hashed_typo_transformations.update({_hash: ds_slice_copy.transform(t)})
+                transformed = hashed_typo_transformations.get(_hash)
+            else:
+                transformed = ds_slice_copy.transform(t)
 
             # Generate the perturbation
             passed = _check_after_perturbation(model, ds_slice, transformed)
