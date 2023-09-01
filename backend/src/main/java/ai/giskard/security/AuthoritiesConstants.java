@@ -17,13 +17,10 @@ public final class AuthoritiesConstants {
 
     public static final String AITESTER = "ROLE_AITESTER";
 
-    public static final String HF_SUPERUSER = "ROLE_HFSU";
-
     public static final Map<String, String> AUTHORITY_NAMES = Map.of(
         AICREATOR, "AI Creator",
         AITESTER, "AI Tester",
-        ADMIN, "Admin",
-        HF_SUPERUSER, "HF Superuser"
+        ADMIN, "Admin"
     );
 
     private AuthoritiesConstants() {
