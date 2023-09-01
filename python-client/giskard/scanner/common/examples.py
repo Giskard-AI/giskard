@@ -1,8 +1,9 @@
-from typing import Optional, Callable, Union
+from typing import Callable, Optional, Union
+
 import numpy as np
 
-from ..issues import Issue
 from ...slicing.text_slicer import MetadataSliceFunction
+from ..issues import Issue
 
 
 class ExampleExtractor:
@@ -66,6 +67,6 @@ class ExampleExtractor:
             if self.sorting_fn:
                 return self.sorting_fn(issue, examples).head(n)
 
-            return examples.sample(n, random_state=142)
+            return examples.head(n)
 
         return examples
