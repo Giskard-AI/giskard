@@ -116,7 +116,7 @@ class Scanner:
         issues = self._postprocess(issues)
         self._collect_analytics(model, dataset, issues, elapsed, model_validation_time)
 
-        return ScanResult(issues)
+        return ScanResult(issues, dataset)
 
     def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
         if not detectors:
