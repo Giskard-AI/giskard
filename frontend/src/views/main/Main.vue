@@ -8,14 +8,15 @@
           }'>
             <v-list-item-content>
               <div class='align-center text-center'>
-                <img src='@/assets/logo_v2.png' alt='Giskard icon' width='45px' />
+                <img src='@/assets/logo_v2.png' alt='Giskard icon' width='45px'/>
                 <span class='caption'>Projects</span>
               </div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider />
+          <v-divider/>
 
-          <v-tooltip v-if="projectStore.currentProjectId === null" :disabled="projectStore.currentProjectId !== null" right>
+          <v-tooltip v-if="projectStore.currentProjectId === null" :disabled="projectStore.currentProjectId !== null"
+                     right>
             <template v-slot:activator="{ on, attrs }">
               <div v-on="on">
                 <v-list-item :disabled="true">
@@ -24,28 +25,28 @@
                     <div class="caption">Testing</div>
                   </v-list-item-content>
                 </v-list-item>
-                <v-divider />
+                <v-divider/>
                 <v-list-item :disabled="true">
                   <v-list-item-content>
                     <v-icon>mdi-book-open-page-variant-outline</v-icon>
                     <div class="caption">Catalog</div>
                   </v-list-item-content>
                 </v-list-item>
-                <v-divider />
+                <v-divider/>
                 <v-list-item :disabled="true">
                   <v-list-item-content>
                     <v-icon>mdi-shield-search</v-icon>
                     <div class="caption">Debugger</div>
                   </v-list-item-content>
                 </v-list-item>
-                <v-divider />
+                <v-divider/>
                 <v-list-item :disabled="true">
                   <v-list-item-content>
                     <v-icon>mdi-comment-multiple-outline</v-icon>
                     <div class="caption">Feedback</div>
                   </v-list-item-content>
                 </v-list-item>
-                <v-divider />
+                <v-divider/>
               </div>
             </template>
             <span>You have to select a project to interact with this menu.</span>
@@ -58,28 +59,28 @@
                 <div class="caption">Testing</div>
               </v-list-item-content>
             </v-list-item>
-            <v-divider />
+            <v-divider/>
             <v-list-item :to="{ name: 'project-catalog', params: { id: currentProjectId } }" value="catalog">
               <v-list-item-content>
                 <v-icon>mdi-book-open-page-variant-outline</v-icon>
                 <div class="caption">Catalog</div>
               </v-list-item-content>
             </v-list-item>
-            <v-divider />
+            <v-divider/>
             <v-list-item :to="{ name: 'project-debugger', params: { id: currentProjectId } }" value="debugger">
               <v-list-item-content>
                 <v-icon>mdi-shield-search</v-icon>
                 <div class="caption">Debugger</div>
               </v-list-item-content>
             </v-list-item>
-            <v-divider />
+            <v-divider/>
             <v-list-item :to="{ name: 'project-feedback', params: { id: currentProjectId } }" value="feedbacks">
               <v-list-item-content>
                 <v-icon>mdi-comment-multiple-outline</v-icon>
                 <div class="caption">Feedback</div>
               </v-list-item-content>
             </v-list-item>
-            <v-divider />
+            <v-divider/>
           </div>
         </v-list>
         <v-spacer></v-spacer>
@@ -94,21 +95,21 @@
               </v-tooltip>
             </v-list-item-content>
           </v-list-item>
-          <v-divider />
+          <v-divider/>
           <v-list-item v-show="hasAdminAccess" to="/main/admin/">
             <v-list-item-content>
               <v-icon>mdi-cog</v-icon>
               <div class="caption">Settings</div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider />
+          <v-divider/>
           <v-list-item to="/main/profile/view" v-if="authAvailable">
             <v-list-item-content>
               <v-icon>person</v-icon>
               <div class="caption">{{ userId }}</div>
             </v-list-item-content>
           </v-list-item>
-          <v-divider v-if="authAvailable" />
+          <v-divider v-if="authAvailable"/>
           <v-list-item @click="logout" v-if="authAvailable">
             <v-list-item-content>
               <v-icon>logout</v-icon>
@@ -126,15 +127,15 @@
 </template>
 
 <script lang="ts" setup>
-import { useUserStore } from '@/stores/user';
-import { useMainStore } from '@/stores/main';
-import { useProjectStore } from '@/stores/project';
-import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
-import { useTestSuitesStore } from '@/stores/test-suites';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router/composables';
+import {useUserStore} from '@/stores/user';
+import {useMainStore} from '@/stores/main';
+import {useProjectStore} from '@/stores/project';
+import {useDebuggingSessionsStore} from '@/stores/debugging-sessions';
+import {useTestSuitesStore} from '@/stores/test-suites';
+import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from 'vue';
+import {useRoute} from 'vue-router/composables';
 import moment from 'moment/moment';
-import { state, client } from '@/socket';
+import {client, state} from '@/socket';
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -193,7 +194,14 @@ watch(() => route.name, async (name) => {
   }
 })
 
-watch(() => state, () => { })
+watch(() => state, () => {
+})
+
+watchEffect(() => {
+  if (state.workerStatus.connected === undefined || !client.active) {
+    client.activate();
+  }
+});
 
 onMounted(() => {
   client.activate();
