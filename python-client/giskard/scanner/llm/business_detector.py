@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from .utils import LLMImportError
 from ..decorators import detector
 from ..issues import Issue
-from ..llm.prompts import GENERATE_TEST_PROMPT, VALIDATE_TEST_CASE
+from ..llm.prompts import GENERATE_TEST_PROMPT
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
@@ -88,27 +88,7 @@ def _generate_test_cases(model):
 
 
 def validate_prediction(model, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float):
-    try:
-        from langchain import PromptTemplate, LLMChain, OpenAI
-        from langchain.output_parsers import PydanticOutputParser
-        from langchain.output_parsers import RetryWithErrorOutputParser
-    except ImportError as err:
-        raise LLMImportError() from err
-
-    class TestResult(BaseModel):
-        result: bool = Field(description="true if the test passed, false if the test failed")
-
-    parser = PydanticOutputParser(pydantic_object=TestResult)
-
-    prompt = PromptTemplate(
-        template=VALIDATE_TEST_CASE,
-        input_variables=["prompt", "test_case", "response"],
-        partial_variables={"format_instructions": parser.get_format_instructions()},
-    )
-
-    chain = LLMChain(llm=OpenAI(temperature=0.2), prompt=prompt)
-
-    retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=OpenAI(temperature=0.2))
+    from ...llm.utils.validate_test_case import validate_test_case
 
     issues = list()
 
@@ -117,19 +97,7 @@ def validate_prediction(model, test_cases: List[str], dataset: Dataset, predicti
 
     for test_case in test_cases:
         print(f"Validating test: {test_case}")
-        inputs = [
-            {
-                "prompt": f"{model.meta.name} - {model.meta.description}",
-                "test_case": test_case,
-                "response": predictions[i],
-            }
-            for i in range(len(predictions))
-        ]
-
-        failed = [
-            not retry_parser.parse_with_prompt(chain.run(**input), prompt.format_prompt(**input)).result
-            for input in inputs
-        ]
+        failed = [not passed for passed in validate_test_case(model, test_case, predictions)]
         failed_count = len([result for result in failed if result])
         metric = failed_count / len(predictions)
         print(f"Results: {metric} ({failed_count})")
