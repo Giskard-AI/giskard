@@ -2,7 +2,7 @@
 module.exports = {
     darkMode: "class",
     content: [
-        "./giskard/scanner/templates/**/*.{html,js}"
+        "./giskard/visualization/templates/**/*.{html,js}"
     ],
     theme: {
         extend: {},

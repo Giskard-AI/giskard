@@ -1,4 +1,5 @@
 import tempfile
+
 import mlflow
 import pandas as pd
 from mlflow import MlflowClient
@@ -6,32 +7,42 @@ from mlflow import MlflowClient
 from giskard.utils.analytics_collector import analytics, anonymize
 
 
-class ScanResult:
-    def __init__(self, issues):
+class ScanReport:
+    def __init__(self, issues, as_html: bool = True):
         self.issues = issues
+        self.as_html = as_html
 
     def has_issues(self):
         return len(self.issues) > 0
 
     def __repr__(self):
         if not self.has_issues():
-            return "<PerformanceScanResult (no issues)>"
+            return "<ScanReport (no issues)>"
 
-        return f"<PerformanceScanResult ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
+        return f"<ScanReport ({len(self.issues)} issue{'s' if len(self.issues) > 1 else ''})>"
 
     def _ipython_display_(self):
-        from IPython.core.display import display_html
+        if self.as_html:
+            from IPython.core.display import display_html
 
-        html = self._repr_html_()
-        display_html(html, raw=True)
+            html = self._repr_html_()
+            display_html(html, raw=True)
+        else:
+            from IPython.core.display import display_markdown
+
+            markdown = self._repr_markdown_()
+            display_markdown(markdown, raw=True)
 
     def _repr_html_(self):
         return self.to_html(embed=True)
 
-    def to_html(self, filename=None, embed=False):
-        from ..visualization.widget import ScanResultWidget
+    def _repr_markdown_(self):
+        return self.to_markdown()
 
-        widget = ScanResultWidget(self)
+    def to_html(self, filename=None, embed=False):
+        from ..visualization.widget import ScanReportWidget
+
+        widget = ScanReportWidget(self)
         html = widget.render_html(embed=embed)
 
         if filename is not None:
@@ -41,13 +52,28 @@ class ScanResult:
 
         return html
 
+    def to_markdown(self, filename=None, template="summary"):
+        from ..visualization.widget import ScanReportWidget
+
+        widget = ScanReportWidget(self)
+        markdown = widget.render_markdown(template=template)
+
+        if filename is not None:
+            with open(filename, "w") as f:
+                f.write(markdown)
+            return
+
+        return markdown
+
     def to_dataframe(self):
         df = pd.DataFrame(
             [
                 {
-                    "domain": issue.domain,
-                    "metric": issue.metric,
-                    "deviation": issue.deviation,
+                    "domain": issue.meta.get("domain"),
+                    "slicing_fn": str(issue.slicing_fn) if issue.slicing_fn else None,
+                    "transformation_fn": str(issue.transformation_fn) if issue.transformation_fn else None,
+                    "metric": issue.meta.get("metric"),
+                    "deviation": issue.meta.get("deviation"),
                     "description": issue.description,
                 }
                 for issue in self.issues
@@ -132,8 +158,10 @@ class ScanResult:
             Additional keyword arguments
             (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
         """
-        from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
+
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+
         from ..utils.analytics_collector import analytics
 
         with wandb_run(**kwargs) as run:

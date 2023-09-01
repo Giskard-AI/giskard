@@ -1,16 +1,14 @@
-from dataclasses import dataclass
 import pandas as pd
 
-from ..common.examples import ExampleExtractor
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..issues import Issue
-from ...slicing.slice_finder import SliceFinder
-from ..logger import logger
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from ..registry import Detector
-from ..decorators import detector
+from ...slicing.slice_finder import SliceFinder
 from ...testing.tests.statistic import _cramer_v, _mutual_information, _theil_u
+from ..common.examples import ExampleExtractor
+from ..decorators import detector
+from ..issues import Issue, IssueLevel, SpuriousCorrelation
+from ..logger import logger
+from ..registry import Detector
 
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
@@ -71,15 +69,37 @@ class SpuriousCorrelationDetector(Detector):
 
                 if metric_value > self.threshold:
                     predictions = dx[dx.feature > 0].prediction.value_counts(normalize=True)
-                    info = SpuriousCorrelationInfo(
-                        feature=col,
-                        slice_fn=slice_fn,
-                        metric_value=metric_value,
-                        metric_name=measure_name,
-                        threshold=self.threshold,
-                        predictions=predictions,
+                    plabel, p = predictions.index[0], predictions.iloc[0]
+
+                    description = "Data slice {slicing_fn} seems to be highly associated to prediction {target} = `{plabel}` ({p_perc:.2f}% of predictions in the data slice)."
+
+                    issue = Issue(
+                        model,
+                        dataset,
+                        group=SpuriousCorrelation,
+                        level=IssueLevel.MINOR,
+                        slicing_fn=slice_fn,
+                        meta={
+                            "metric": f"Nominal association ({measure_name})",
+                            "metric_value": metric_value,
+                            "method": self.method,
+                            "deviation": f"Prediction {dataset.target} = `{plabel}` for {p * 100:.2f}% of samples in the slice",
+                            "target": dataset.target,
+                            "plabel": plabel,
+                            "p": p,
+                            "p_perc": p * 100,
+                            "threshold": self.threshold,
+                        },
+                        description=description,
+                        importance=metric_value,
+                        tests=_generate_spurious_corr_tests,
                     )
-                    issues.append(SpuriousCorrelationIssue(model, dataset, "info", info))
+
+                    extractor = ExampleExtractor(issue)
+                    examples = extractor.get_examples_dataframe(20, with_prediction=1)
+                    issue.add_examples(examples)
+
+                    issues.append(issue)
 
         return issues
 
@@ -93,83 +113,11 @@ class SpuriousCorrelationDetector(Detector):
         raise ValueError(f"Unknown method `{self.method}`")
 
 
-@dataclass
-class SpuriousCorrelationInfo:
-    feature: str
-    slice_fn: SlicingFunction
-    metric_value: float
-    metric_name: str
-    threshold: float
-    predictions: pd.DataFrame
-
-
-class SpuriousCorrelationIssue(Issue):
-    group = "Spurious correlation"
-
-    @property
-    def features(self):
-        return [self.info.feature]
-
-    @property
-    def domain(self) -> str:
-        return str(self.info.slice_fn)
-
-    @property
-    def metric(self) -> str:
-        return f"Nominal association ({self.info.metric_name})"
-
-    @property
-    def deviation(self) -> str:
-        plabel, p = self.info.predictions.index[0], self.info.predictions.iloc[0]
-
-        return f"Prediction {self.dataset.target} = `{plabel}` for {p * 100:.2f}% of samples in the slice"
-
-    @property
-    def slicing_fn(self):
-        return self.info.slice_fn
-
-    @property
-    def description(self) -> str:
-        pred = self.model.predict(self.dataset.slice(self.info.slice_fn)).prediction
-        classes = pd.Series(pred).value_counts(normalize=True)
-        plabel, p = classes.index[0], classes.iloc[0]
-        return f"Data slice {self.info.slice_fn} seems to be highly associated to prediction {self.dataset.target} = `{plabel}` ({p * 100:.2f}% of predictions in the data slice)."
-
-    # @lru_cache
-    def examples(self, n=3):
-        extractor = ExampleExtractor(self)
-        return extractor.get_examples_dataframe(n, with_prediction=1)
-
-    @property
-    def importance(self) -> float:
-        return self.info.metric_value
-
-    def generate_tests(self, with_names=False) -> list:
-        test_fn = _metric_to_test_object(self.info.metric_name)
-
-        if test_fn is None:
-            return []
-
-        tests = [
-            test_fn(
-                model=self.model,
-                dataset=self.dataset,
-                slicing_function=self.info.slice_fn,
-                threshold=self.info.threshold,
-            )
-        ]
-
-        if with_names:
-            names = [f"{self.info.metric_name} on data slice “{self.info.slice_fn}”"]
-            return list(zip(tests, names))
-
-        return tests
-
-
 _metric_test_mapping = {
-    "Cramer's V": "test_cramer_v",
-    "Mutual information": "test_mutual_information",
-    "Theil's U": "test_theil_u",
+    "cramer": "test_cramer_v",
+    "mutual_information": "test_mutual_information",
+    "mi": "test_mutual_information",
+    "theil": "test_theil_u",
 }
 
 
@@ -181,3 +129,19 @@ def _metric_to_test_object(metric_name):
         return getattr(statistic, test_name)
     except (KeyError, AttributeError):
         return None
+
+
+def _generate_spurious_corr_tests(issue):
+    test_fn = _metric_to_test_object(issue.meta["method"])
+
+    if test_fn is None:
+        return []
+
+    return {
+        f"{issue.meta['metric']} on data slice “{issue.slicing_fn}”": test_fn(
+            model=issue.model,
+            dataset=issue.dataset,
+            slicing_function=issue.slicing_fn,
+            threshold=issue.meta["threshold"],
+        )
+    }
