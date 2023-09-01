@@ -3,7 +3,6 @@ package ai.giskard.config;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.GiskardAuthConfigurer;
 import ai.giskard.security.ee.jwt.TokenProvider;
-import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ApiKeyService;
 import ai.giskard.service.ee.LicenseService;
 import lombok.RequiredArgsConstructor;
@@ -42,42 +41,6 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Deny requests other than GET for Giskard gallery repo on Hugging Face Spaces
-        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
-            http.authorizeHttpRequests(registry ->
-                // For any allowed requests with authorization, put them here
-                registry.requestMatchers(
-                    antMatcher("/api/v2/testing/tests/run-test"),           // Permit run test for debugging
-                    antMatcher("/api/v2/inspection"),                       // Permit create inspection
-
-                    // Permit MLWorker to create inspections
-                    antMatcher("/api/v2/artifacts/**/models/inspections/**"),
-                    antMatcher("/api/v2/artifacts/**/datasets/**"),
-                    antMatcher("/api/v2/project/**/datasets/**"),
-
-                    // Permit test suite running, the following GET APIs will be permitted later
-                    antMatcher("/api/v2/testing/project/**/suite/**/schedule-execution"),
-
-                    // Permit to submit feedbacks and reply to feedback
-                    antMatcher(HttpMethod.POST, "/api/v2/feedbacks/**"),
-                    antMatcher("/api/v2/feedbacks/**/reply"),
-
-                    antMatcher("/api/v2/dataset/**/rows"),                  // Permit shuffle dataset
-                    antMatcher("/api/v2/project/**/datasets/**/process"),   // Permit dataset processing
-                    antMatcher("/api/v2/models/**/predict"),                // Permit model run
-                    antMatcher("/api/v2/models/**/explain/**"),             // Permit model explain
-                    antMatcher("/api/v2/models/explain-text/Name")          // Permit model explain text
-                ).authenticated()
-            ).authorizeHttpRequests(authorizeHttpRequests ->
-                // Deny all other APIs
-                authorizeHttpRequests.requestMatchers(
-                    antMatcher(HttpMethod.POST, GISKARD_API_ENDPOINTS),
-                    antMatcher(HttpMethod.PUT, GISKARD_API_ENDPOINTS),
-                    antMatcher(HttpMethod.DELETE, GISKARD_API_ENDPOINTS)
-                ).hasAuthority(AuthoritiesConstants.HF_SUPERUSER)
-            );  // Needs HF Superuser permission, but no one has it
-        }
-
         http
             .cors(withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
