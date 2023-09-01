@@ -1,5 +1,6 @@
 package ai.giskard.domain;
 
+import ai.giskard.security.GalleryDatabaseOperationListener;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Entity(name = "api_keys")
 @Getter
 @NoArgsConstructor
+@EntityListeners(GalleryDatabaseOperationListener.class)
 public class ApiKey extends AbstractAuditingEntity {
 
     public static final String PREFIX = "gsk-";

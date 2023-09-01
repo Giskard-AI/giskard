@@ -30,6 +30,11 @@ public class GeneralSettingsService {
             System.getenv().get("DEMO_SPACE_ID") == null ? "giskardai/giskard" : System.getenv().get("DEMO_SPACE_ID")
     );
 
+    public static boolean isGiskardGalleryInstance() {
+        // Gallery instance allows to run some demo operations, not exactly read-only
+        return IS_RUNNING_IN_DEMO_HF_SPACES;
+    }
+
     public GeneralSettings getSettings() {
         return deserializeSettings(settingsRepository.getMandatoryById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());
     }
