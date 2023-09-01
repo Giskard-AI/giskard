@@ -16,6 +16,8 @@ statistical tests and slicing functions.
 
 The push classes allow converting to gRPC protobuf format via the to_grpc() method.
 """
+from abc import abstractmethod
+from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket
@@ -48,6 +50,13 @@ class Push:
     details = None
     tests = None
     pushkind = None
+
+    @abstractmethod
+    def to_ws(self):
+        """
+        Convert to gRPC protobuf format.
+        """
+        pass
 
 
 class ExamplePush(Push):
@@ -409,9 +418,9 @@ class PerturbationPush(FeaturePush):
         Numerical and Text features only
     """
 
-    value_perturbed: list = None
-    transformation_functions: list = None
-    transformation_functions_params: list = None
+    value_perturbed: Optional[list] = None
+    transformation_functions: Optional[list] = None
+    transformation_functions_params: Optional[list] = None
     details = [
         {
             "action": "Generate a metamorphic invariance test that slightly perturbs this feature",

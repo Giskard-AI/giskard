@@ -9,30 +9,21 @@
                     clip-rule="evenodd" />
             </svg>
         </div>
-        <span class="uppercase text-sm ml-2 py-2 leading-4 w-min">{{ issues | length }}&nbsp;issue{{ issues | pluralize }}
-            detected</span>
+        <span class="uppercase text-sm ml-2 py-2 leading-4 w-min">{{ issues | length }}&nbsp;issue{{ issues | pluralize }} detected</span>
     </div>
 
     {# Tabs headers #}
-    {% for group, issues in issues_by_group.items() %}
-    <div data-tab-target="{{ group | replace(' ', '_') }}"
+    {% for view in groups %}
+    <div data-tab-target="{{ view.group.name | replace(' ', '_') }}"
         class="tab-header cursor-pointer group{% if loop.index == 1 %} active{% endif %}">
         <div
             class="overflow-hidden text-ellipsis group-[.active]:bg-zinc-800 group-[.active]:border-b-zinc-800 group-[.active]:border-gray-500 border-l px-3 py-2 border-r border-t border-b border-gray-600 border-b-gray-500 h-11 whitespace-nowrap">
-            {{ group}}
-            {% if issues | length > 0 %}
-            {% if num_major_issues[group] > 0 %}
-            <span class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-red-400">
-                {% elif num_medium_issues[group] > 0 %}
-                <span
-                    class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-amber-200 text-amber-900">
-                    {% else %}
-                    <span
-                        class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center bg-blue-300 text-blue-900">
-                        {% endif %}
-                        {{ issues | length }}
-                    </span>
-                    {% endif %}
+            {{ view.group.name }}
+
+            <span
+                class="ml-1 rounded-full text-xs min-w-4 min-h-4 px-1 py-0.5 inline-block text-center {% if view.num_major_issues > 0 %}bg-red-400{% elif view.num_medium_issues > 0 %}bg-amber-200 text-amber-900{% else %}bg-blue-300 text-blue-900{% endif %}">
+                {{ view.issues | length }}
+            </span>
         </div>
     </div>
     {% endfor %}
