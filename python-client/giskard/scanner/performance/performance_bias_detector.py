@@ -239,19 +239,20 @@ class IssueFinder:
                 )
 
                 # Add failure examples
-                def filter_examples(issue, dataset):
-                    pred = issue.model.predict(dataset)
-                    bad_pred_mask = dataset.df[dataset.target] != pred.prediction
-
-                    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
-
-                extractor = ExampleExtractor(issue, filter_examples)
+                extractor = ExampleExtractor(issue, _filter_examples)
                 examples = extractor.get_examples_dataframe(n=20, with_prediction=True)
                 issue.add_examples(examples)
 
                 issues.append(issue)
 
         return issues, p_values
+
+
+def _filter_examples(issue, dataset):
+    pred = issue.model.predict(dataset)
+    bad_pred_mask = dataset.df[dataset.target] != pred.prediction
+
+    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
 
 
 _metric_test_mapping = {

@@ -60,7 +60,11 @@ class OverconfidenceDetector(LossBasedDetector):
             sliced_dataset = dataset_with_meta.slice(slice_fn)
 
             slice_rate = (sliced_dataset.df[self.LOSS_COLUMN_NAME].dropna() > p_threshold).mean()
-            fail_idx = sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)].index
+            fail_idx = (
+                sliced_dataset.df[(sliced_dataset.df[self.LOSS_COLUMN_NAME] > p_threshold)]
+                .sort_values(self.LOSS_COLUMN_NAME, ascending=False)
+                .index
+            )
             relative_delta = (slice_rate - reference_rate) / reference_rate
 
             # Skip non representative slices
@@ -92,28 +96,26 @@ class OverconfidenceDetector(LossBasedDetector):
                         "slice_size": len(sliced_dataset),
                         "threshold": self.threshold,
                         "p_threshold": p_threshold,
+                        "fail_idx": fail_idx,
                     },
                     tests=_generate_overconfidence_tests,
                     importance=relative_delta,
                 )
 
                 # Add examples
-                def filter_examples(issue, dataset):
-                    bad_pred_mask = dataset.df.index.isin(fail_idx)
-
-                    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
-
-                def sort_examples(issue, examples):
-                    idx = meta[self.LOSS_COLUMN_NAME].loc[examples.index].sort_values(ascending=False).index
-                    return examples.loc[idx]
-
-                extractor = ExampleExtractor(issue, filter_examples, sort_examples)
+                extractor = ExampleExtractor(issue, _filter_examples)
                 examples = extractor.get_examples_dataframe(20, with_prediction=2)
                 issue.add_examples(examples)
 
                 issues.append(issue)
 
         return issues
+
+
+def _filter_examples(issue, dataset):
+    fail_idx = issue.meta["fail_idx"]
+
+    return dataset.slice(lambda df: df.loc[fail_idx], row_level=False)
 
 
 def _generate_overconfidence_tests(issue):
