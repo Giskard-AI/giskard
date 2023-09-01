@@ -7,6 +7,7 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 4px;
+        margin-bottom: 16px;
     }
 
     .test-result {
@@ -21,7 +22,6 @@
         color: rgb(255, 82, 82);
         background: rgb(243, 226, 226);
         fill: currentcolor;
-
     }
 
     .test-card-error .test-result {
@@ -96,8 +96,8 @@
 {% block content %}
 <div class='dark'>
     <div id='gsk-suite'>
-        {% include "_suite_results_header.html" %}
-        {% include "_suite_results_cards.html" %}
+        {% include "suite_results/_suite_results_header.html" %}
+        {% include "suite_results/_suite_results_cards.html" %}
     </div>
 </div>
 {% endblock %}
