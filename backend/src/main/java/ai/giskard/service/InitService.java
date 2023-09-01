@@ -143,6 +143,8 @@ public class InitService {
         return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
+    public static boolean isInitialized = false;
+
     /**
      * Initializing first authorities, mock users, and mock projects
      */
@@ -150,12 +152,14 @@ public class InitService {
     public void init() {
         projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());
+        // change readonly
         initAuthorities();
         initUsers();
         List<String> profiles = Arrays.asList(env.getActiveProfiles());
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
+        isInitialized = true;
     }
 
     /**
