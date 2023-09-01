@@ -350,7 +350,7 @@ async function updateCurrentProject(projectId: number) {
 }
 
 function openGiskardHFGallery() {
-  window.open("https://huggingface.co/spaces/giskardai/giskard", '_blank');
+  window.open("https://huggingface.co/spaces/giskardai/giskard", '_blank', "noopener noreferrer");
 }
 
 // watchers
