@@ -25,7 +25,7 @@ public class TestFunctionController {
     @Transactional(readOnly = true)
     public TestFunctionDTO getTestFunction(
         @PathVariable("testUuid") @NotNull UUID testUuid,
-        @PathVariable("projectKey") @NotNull String projectKey
+        @PathVariable(value = "projectKey", required = false) @NotNull String projectKey
     ) {
         return giskardMapper.toDTO(testFunctionRepository.getMandatoryById(testUuid));
     }
@@ -34,7 +34,7 @@ public class TestFunctionController {
     @Transactional
     public TestFunctionDTO updateTestFunction(
         @PathVariable("testUuid") @NotNull UUID testUuid,
-        @PathVariable("projectKey") @NotNull String projectKey,
+        @PathVariable(value = "projectKey", required = false) @NotNull String projectKey,
         @Valid @RequestBody TestFunctionDTO testFunction) {
         return testFunctionService.save(testFunction);
     }

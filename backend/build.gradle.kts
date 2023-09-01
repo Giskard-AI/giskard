@@ -305,6 +305,9 @@ tasks {
     create<Delete>("distClean") {
         delete(buildDir)
     }
+    create<Delete>("cleanOpenApiDocs") {
+        delete(file("$buildDir/docs/openapi.json"))
+    }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
     }
@@ -350,7 +353,7 @@ tasks {
     }
 
     create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
-        dependsOn("generateOpenApiDocs")
+        dependsOn("compileJava", "cleanOpenApiDocs", "generateOpenApiDocs")
 
         generatorName.set("typescript-fetch")
         inputSpec.set(file("$buildDir/docs/openapi.json").toString())
