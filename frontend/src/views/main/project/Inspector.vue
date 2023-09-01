@@ -56,6 +56,16 @@
                       <div class="d-flex flex-column">
                         <FeedbackPopover v-if="!isMiniMode" :inputLabel="c.name" :inputValue="inputData[c.name]" :originalValue="originalData[c.name]" :inputType="c.type" @submit="emit(changed ? 'submitValueVariationFeedback' : 'submitValueFeedback', $event)" />
                         <TransformationPopover v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)" :column="c.name" :column-type="c.type" />
+                        <PushPopover
+                            type="contribution"
+                            :column="c.name"
+                            key="a"
+                        />
+                        <PushPopover
+                            type="perturbation"
+                            :column="c.name"
+                            key="b"
+                        />
                       </div>
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -124,14 +134,15 @@ import PredictionExplanations from './PredictionExplanations.vue';
 import TextExplanation from './TextExplanation.vue';
 import RegressionTextExplanation from '@/views/main/project/RegressionTextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import { DatasetDTO, ModelDTO, ModelType } from '@/generated-sources';
-import { isClassification } from '@/ml-utils';
+import {DatasetDTO, ModelDTO, ModelType} from '@/generated-sources';
+import {isClassification} from '@/ml-utils';
 import mixpanel from 'mixpanel-browser';
 import { anonymize } from '@/utils';
 import _ from 'lodash';
 import TransformationPopover from "@/components/TransformationPopover.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { onMounted, ref, computed, watch } from 'vue';
+import {useCatalogStore} from "@/stores/catalog";
+import {computed, onMounted, ref, watch} from 'vue';
+import PushPopover from "@/components/PushPopover.vue";
 
 const catalogStore = useCatalogStore();
 
