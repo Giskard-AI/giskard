@@ -2,7 +2,9 @@ import numpy as np
 import pytest
 
 from giskard import Model
-from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
+from giskard.scanner.correlation.spurious_correlation_detector import (
+    SpuriousCorrelationDetector,
+)
 
 
 def _make_titanic_biased_model(minimal=False):
@@ -12,7 +14,10 @@ def _make_titanic_biased_model(minimal=False):
 
     feature_names = ["Sex"] if minimal else None
     model = Model(
-        biased_classifier, model_type="classification", classification_labels=["no", "yes"], feature_names=feature_names
+        biased_classifier,
+        model_type="classification",
+        classification_labels=["no", "yes"],
+        feature_names=feature_names,
     )
     return model
 
@@ -31,7 +36,11 @@ def test_spurious_correlation_is_detected(titanic_dataset):
         p = rng.uniform(size=len(df))
         return np.stack([p, 1 - p], axis=1)
 
-    random_model = Model(random_classifier, model_type="classification", classification_labels=["no", "yes"])
+    random_model = Model(
+        random_classifier,
+        model_type="classification",
+        classification_labels=["no", "yes"],
+    )
     issues = detector.run(random_model, titanic_dataset)
 
     assert not issues
@@ -63,14 +72,14 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
     detector = SpuriousCorrelationDetector(method=method)
     issues = detector.run(biased_model, titanic_dataset)
     assert len(issues) > 0
-    assert issues[0].info.metric_value == pytest.approx(1)
-    assert expected_name in issues[0].info.metric_name
+    assert issues[0].meta["metric_value"] == pytest.approx(1)
+    assert expected_name in issues[0].meta["metric"]
 
     detector = SpuriousCorrelationDetector(method=method)
     issues = detector.run(titanic_model, titanic_dataset)
     assert len(issues) > 0
-    assert issues[0].info.metric_value == pytest.approx(expected_value, abs=0.01)
-    assert expected_name in issues[0].info.metric_name
+    assert issues[0].meta["metric_value"] == pytest.approx(expected_value, abs=0.01)
+    assert expected_name in issues[0].meta["metric"]
 
 
 def test_raises_error_for_invalid_measure_method(titanic_model, titanic_dataset):
