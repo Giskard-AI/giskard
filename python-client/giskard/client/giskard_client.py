@@ -150,6 +150,10 @@ class GiskardClient:
             print(f"Project created with a key : {actual_project_key}")
         return Project(self._session, actual_project_key, actual_project_id)
 
+    def get_suite(self, project_id: int, suite_id: int):
+        analytics.track("Get suite", {"suite_id": suite_id})
+        return self._session.get(f"testing/project/{project_id}/suite/{suite_id}").json()
+
     def load_model_meta(self, project_key: str, uuid: str):
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
         return res
