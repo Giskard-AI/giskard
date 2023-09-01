@@ -19,15 +19,12 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     FunctionInputDTO,
-    GeneralSettings,
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
     JobDTO,
-    JWTToken,
     ManagedUserVM,
     MessageDTO,
-    MLWorkerInfoDTO,
     ModelDTO,
     ParameterizedCallableDTO,
     PasswordResetRequest,
@@ -200,24 +197,11 @@ export const api = {
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
-    async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/ml-workers`);
-    },
-    async stopMLWorker(internal: boolean) {
-        return apiV2.post<unknown, MLWorkerInfoDTO[]>(`/ml-workers/stop`, null, {
-            params: {
-                internal,
-            },
-        });
-    },
     async getRunningWorkerJobs() {
         return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
     },
     async trackJob(jobUuid: string) {
         return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
-    },
-    async saveGeneralSettings(settings: GeneralSettings) {
-        return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
