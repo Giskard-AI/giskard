@@ -2,7 +2,6 @@ package ai.giskard.web.socket;
 
 import ai.giskard.event.UpdateWorkerStatusEvent;
 import ai.giskard.ml.MLWorkerID;
-import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ml.MLWorkerWSService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -34,8 +33,7 @@ public class WorkerStatusSocketService {
 
 
     public void sendCurrentStatus() {
-        MLWorkerID workerID = GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES ?
-            MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        MLWorkerID workerID = MLWorkerID.EXTERNAL;
         Map<String, Boolean> data = new HashMap<>();
         data.put("connected", mlWorkerWSService.isWorkerConnected(workerID));
         sendData(data);
