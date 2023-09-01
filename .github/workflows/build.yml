@@ -51,7 +51,7 @@ jobs:
         id: extract_branch
 
       - name: Checkout code
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.6.0
         with:
           fetch-depth: 0
 
