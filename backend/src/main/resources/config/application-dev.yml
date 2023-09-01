@@ -77,6 +77,8 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
+  defaultApiKey: gsk-1234567890123456789012345678
+
 springdoc:
   api-docs:
     enabled: true
