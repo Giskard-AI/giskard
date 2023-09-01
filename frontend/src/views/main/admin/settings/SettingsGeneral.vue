@@ -12,7 +12,7 @@
                 <table class="w100">
                   <tr>
                     <td>Instance</td>
-                    <td>{{ appSettings.generalSettings.instanceId }}</td>
+                    <td>{{ appSettings.generalSettings?.instanceId }}</td>
                   </tr>
                   <tr>
                     <td>Version</td>
@@ -28,7 +28,10 @@
                   </tr>
                   <tr>
                     <td>License expiration date</td>
-                    <td v-if="mainStore.license && mainStore.license.expiresOn">{{ mainStore.license.expiresOn | date }}</td>
+                    <td v-if="mainStore.license && mainStore.license.expiresOn">{{
+                        mainStore.license?.expiresOn | date
+                      }}
+                    </td>
                   </tr>
                   <tr>
                     <td colspan="2">
@@ -52,12 +55,14 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col>
+        <v-col v-if="appSettings.generalSettings">
           <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               <span>Usage reporting</span>
-              <v-spacer />
-              <v-switch v-model="appSettings.generalSettings.isAnalyticsEnabled" @change="saveGeneralSettings(appSettings.generalSettings)"></v-switch>
+              <v-spacer/>
+              <v-switch
+                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
+                  @change="saveGeneralSettings(appSettings.generalSettings)"></v-switch>
             </v-card-title>
             <v-card-text>
               <div class="mb-2">
@@ -114,10 +119,11 @@
                   <tr>
                     <td>Python path</td>
                     <td>{{ currentWorker.interpreter }}</td>
-                  <tr>
+                  </tr>
                   <tr>
                     <td>Giskard client version</td>
                     <td>{{ currentWorker.giskardClientVersion }}</td>
+                  </tr>
                   <tr>
                     <td>Host</td>
                     <td>{{ currentWorker.platform.node }}</td>
@@ -179,7 +185,7 @@
 
 <script setup lang="ts">
 import {computed, onBeforeMount, ref, watch} from "vue";
-import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
+import {MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
 import {api} from "@/api";
 import moment from "moment/moment";
@@ -188,6 +194,8 @@ import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import {openapi} from "@/api-v2";
+import {GeneralSettings} from "@/generated/client";
 
 const mainStore = useMainStore();
 
@@ -235,7 +243,7 @@ async function saveGeneralSettings(settings: GeneralSettings) {
   } else {
     mixpanel.opt_in_tracking();
   }
-  appSettings.value!.generalSettings = await api.saveGeneralSettings(settings);
+  appSettings.value!.generalSettings = await openapi.settings.saveGeneralSettings({generalSettings: settings});
 }
 
 async function initMLWorkerInfo() {

@@ -17,7 +17,7 @@ export interface AppNotification {
 }
 
 interface State {
-    appSettings: AppInfoDTO | null;
+    appSettings?: AppInfoDTO;
     license: LicenseDTO | null;
     coworkers: IUserProfileMinimal[];
     notifications: AppNotification[];
@@ -26,7 +26,7 @@ interface State {
 
 export const useMainStore = defineStore('main', {
     state: (): State => ({
-        appSettings: null,
+        appSettings: undefined,
         license: null,
         coworkers: [],
         notifications: [],
