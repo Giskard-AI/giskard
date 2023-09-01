@@ -1,18 +1,19 @@
-import pandas as pd
 import logging
+
+import pandas as pd
 from mlflow import MlflowClient
-from mlflow.models.evaluation import ModelEvaluator, EvaluationResult
+from mlflow.models.evaluation import EvaluationResult, ModelEvaluator
 from mlflow.tracking.artifact_utils import get_artifact_uri
 
+from ...scanner.report import ScanReport
+from ...utils import fullname
+from ...utils.analytics_collector import analytics
 from .evaluation_artifacts import (
     GiskardDatasetEvaluationArtifact,
     GiskardScanResultEvaluationArtifact,
     GiskardScanSummaryEvaluationArtifact,
 )
 from .giskard_evaluator_utils import setup_dataset, setup_model, setup_scan
-from ...scanner.result import ScanResult
-from ...utils.analytics_collector import analytics
-from ...utils import fullname
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,7 @@ class GiskardEvaluator(ModelEvaluator):
         # Perform scan
         scan_results, scan_artifact_names = self._perform_scan(giskard_model, giskard_dataset)
         scan_results_artifact_name, scan_summary_artifact_name = scan_artifact_names[0], scan_artifact_names[1]
-        scan_summary = ScanResult.get_scan_summary_for_mlflow(scan_results)
+        scan_summary = ScanReport.get_scan_summary_for_mlflow(scan_results)
         artifacts["giskard_scan_results"] = GiskardScanResultEvaluationArtifact(
             uri=get_artifact_uri(self.run_id, scan_results_artifact_name), content=scan_results
         )

@@ -85,17 +85,13 @@ const show = computed(() => {
 
   switch (props.type) {
     case "contribution":
-      if (!value.value?.contribution || value.value?.contribution.kind == PushKind.Invalid) return false;
-      return value.value?.contribution.key == props.column;
+      return value.value.contribution?.kind !== PushKind.Invalid && value.value.contribution?.key == props.column;
     case "perturbation":
-      if (!value.value?.perturbation || value.value?.perturbation.kind == PushKind.Invalid) return false;
-      return value.value?.perturbation.key == props.column;
+      return value.value.perturbation?.kind !== PushKind.Invalid && value.value.perturbation?.key == props.column;
     case "overconfidence":
-      if (!value.value?.overconfidence || value.value?.overconfidence?.kind == PushKind.Invalid) return false;
-      return value.value?.overconfidence.push_title && value.value.overconfidence.push_title != "";
+      return value.value.overconfidence?.kind !== PushKind.Invalid && value.value.overconfidence.push_title !== "";
     case "borderline":
-      if (!value.value?.borderline || value.value?.borderline.kind == PushKind.Invalid) return false;
-      return value.value?.borderline.push_title && value.value?.borderline.push_title != "";
+      return value.value.borderline?.kind !== PushKind.Invalid && value.value.borderline.push_title !== "";
     default:
       return false;
   }
@@ -224,9 +220,6 @@ watch(() => opened, (newValue, oldValue) => {
   border: white .5em solid;
   background: orange;
   z-index: 0;
-}
-
-.rim1 {
   animation: expand 2s ease-out infinite;
 }
 
