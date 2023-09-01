@@ -2,9 +2,10 @@ import logging
 import os
 import posixpath
 import shutil
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from pathlib import Path
 from typing import List, Dict, Any
+
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.core.suite import ModelInput, DatasetInput, SuiteInput
 from giskard.datasets.base import Dataset
@@ -27,7 +28,7 @@ from giskard.ml_worker.websocket import (
     RunAdHocTestParam,
     DatasetProcessingParam,
     GenerateTestSuiteParam,
-    RunModelForDataFrameParam,
+    RunModelForDataFrameParam, GetPushParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -58,11 +59,13 @@ def parse_action_param(action, params):
         return EchoMsg.parse_obj(params)
     elif action == MLWorkerAction.generateTestSuite:
         return GenerateTestSuiteParam.parse_obj(params)
+    elif action == MLWorkerAction.getPush:
+        return GetPushParam.parse_obj(params)
     return params
 
 
 def fragment_message(payload: str, frag_i: int, frag_length: int):
-    return payload[frag_i * frag_length : min((frag_i + 1) * frag_length, len(payload))]
+    return payload[frag_i * frag_length: min((frag_i + 1) * frag_length, len(payload))]
 
 
 def extract_debug_info(request_arguments):
@@ -238,7 +241,6 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
 
 
 def do_run_adhoc_test(client, arguments, test, debug_info=None):
-
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
     test_result = test.get_builder()(**arguments).execute()
     if test_result.output_df is not None:  # i.e. if debug is True and test has failed

@@ -83,6 +83,7 @@ public class MLWorkerWSCommService {
                 case ECHO -> parseReplyDTO(result, MLWorkerWSEchoMsgDTO.class);
                 case GENERATE_TEST_SUITE -> parseReplyDTO(result, MLWorkerWSGenerateTestSuiteDTO.class);
                 case GET_CATALOG -> parseReplyDTO(result, MLWorkerWSCatalogDTO.class);
+                case GET_PUSH -> parseReplyDTO(result, MLWorkerWSGetPushResultDTO.class);
             };
         } catch (JsonProcessingException e) {
             return parseReplyErrorDTO(result);

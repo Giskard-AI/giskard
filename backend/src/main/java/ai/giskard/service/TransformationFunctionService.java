@@ -4,6 +4,7 @@ import ai.giskard.domain.TransformationFunction;
 import ai.giskard.repository.ml.TransformationFunctionRepository;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,7 +30,13 @@ public class TransformationFunctionService extends DatasetProcessFunctionService
         if (function.getArgs() != null) {
             function.getArgs().forEach(arg -> arg.setFunction(function));
         }
-        function.setVersion(transformationFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
+
+        if (Strings.isBlank(function.getDisplayName())) {
+            function.setDisplayName(function.getModule() + "." + function.getName());
+        }
+
+        function.setVersion(transformationFunctionRepository.countByDisplayName(function.getDisplayName()) + 1);
+
         return function;
     }
 

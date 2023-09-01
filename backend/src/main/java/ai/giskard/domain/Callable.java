@@ -1,10 +1,10 @@
 package ai.giskard.domain;
 
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
@@ -13,9 +13,6 @@ import java.util.UUID;
 @Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Entity(name = "callable_functions")
-@Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"name", "module", "version"})
-})
 @DiscriminatorColumn(name = "callable_type", discriminatorType = DiscriminatorType.STRING)
 public class Callable implements Serializable {
     @Id
