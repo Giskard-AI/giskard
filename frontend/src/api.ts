@@ -22,7 +22,6 @@ import {
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
-    JobDTO,
     ManagedUserVM,
     MessageDTO,
     ModelDTO,
@@ -35,7 +34,6 @@ import {
     PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
-    RoleDTO,
     RowFilterDTO,
     SetupDTO,
     SlicingFunctionDTO,
@@ -197,20 +195,11 @@ export const api = {
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
-    async getRunningWorkerJobs() {
-        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
-    },
-    async trackJob(jobUuid: string) {
-        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
-    },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
     },
     async getUsers() {
         return apiV2.get<unknown, AdminUserDTO[]>(`/admin/users`);
-    },
-    async getRoles() {
-        return apiV2.get<unknown, RoleDTO[]>(`/roles`);
     },
     async updateUser(data: Partial<AdminUserDTO.AdminUserDTOWithPassword>) {
         return apiV2.put<unknown, AdminUserDTO.AdminUserDTOWithPassword>(`/admin/users`, data);
