@@ -104,8 +104,8 @@ def _generate_inputs(model_description, feature_names, categories, failed=False)
                 for key, value in retry_parser.parse_with_prompt(
                     output,
                     prompt.format_prompt(prompt_template=model_description, category=category, variables=feature_names),
-                ).input.item()
-                if key in categories
+                ).input.items()
+                if key in feature_names
             }
         ]
 
