@@ -197,9 +197,6 @@ export const api = {
     async getHuggingFaceSpacesToken(spaceId: string) {
       return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
-    async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
-    },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
     },
