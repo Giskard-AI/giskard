@@ -197,11 +197,13 @@ def test_slice_bounds_valid_numeric(german_credit_data):
     assert bounds == [1365.5, 2319.5]
 
     bounds = slice_bounds_quartile("credit_amount", 2500, german_credit_data)
+
     assert bounds == [2319.5, 3972.25]
 
 
 def test_slice_bounds_non_numeric(german_credit_data):
     bounds = slice_bounds_quartile("account_check_status", "c", german_credit_data)
+
     assert bounds is None
 
 
