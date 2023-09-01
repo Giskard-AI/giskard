@@ -6,3 +6,7 @@ package-lock.json
 .mvn
 gradle
 .gradle
+
+frontend/src/styles/font-awesome
+frontend/src/generated
+frontend/src/generated-sources

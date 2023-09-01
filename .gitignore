@@ -154,3 +154,4 @@ backend/demo-notebook/notebook/.*
 classes/
 out/
 enron_with_categories
+node_modules

@@ -1,8 +1,10 @@
+plugins:
+  - prettier-plugin-java
 # Prettier configuration
 
-printWidth: 140
+printWidth: 120
 singleQuote: true
-tabWidth: 2
+tabWidth: 4
 useTabs: false
 
 # js and ts rules:
