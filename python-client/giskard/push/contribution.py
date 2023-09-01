@@ -19,7 +19,7 @@ from giskard.models.base.model import BaseModel
 
 from ..models.model_explanation import explain
 from ..push import ContributionPush
-from .utils import slice_bounds
+from .utils import slice_bounds_relative
 
 
 def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> ContributionPush:
@@ -58,7 +58,7 @@ def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
             correct_prediction = abs(error - y) / y < 0.2
 
         if shap_res is not None and ds.column_types[shap_res] != "text":
-            bounds = slice_bounds(feature=shap_res, value=values[shap_res].values[0], ds=ds)
+            bounds = slice_bounds_relative(feature=shap_res, value=values[shap_res].values[0], ds=ds)
             return ContributionPush(
                 feature=shap_res,
                 value=values[shap_res].values[0],

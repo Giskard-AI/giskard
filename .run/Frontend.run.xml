@@ -5,7 +5,7 @@
     <scripts>
       <script value="serve" />
     </scripts>
-    <node-interpreter value="$PROJECT_DIR$/frontend/.gradle/nodejs/node-v16.14.0-darwin-arm64/bin/node" />
+    <node-interpreter value="/usr/local/bin/node" />
     <envs>
       <env name="VUE_APP_DOMAIN_DEV" value="localhost:8000" />
     </envs>
