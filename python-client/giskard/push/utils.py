@@ -13,7 +13,7 @@ Functions:
 """
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Union, Optional
 from giskard import Dataset
 import numpy as np
 from enum import Enum
@@ -35,7 +35,7 @@ class TransformationInfo:
     transformation_functions_params: list
 
 
-def slice_bounds(feature: str, value: Union[int, float], ds: Dataset) -> List[Union[int, float]]:
+def slice_bounds(feature: str, value: Union[int, float], ds: Dataset) -> Optional[List[Union[int, float]]]:
     """Get quartile bounds values to slice Giskard dataset on a numerical feature.
 
     Args:
