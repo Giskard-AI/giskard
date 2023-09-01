@@ -198,7 +198,7 @@ dependencies {
     implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
     implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
     implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
-    liquibaseRuntime("info.picocli:picocli:4.7.0")
+    liquibaseRuntime("info.picocli:picocli:4.7.5")
     liquibaseRuntime("org.liquibase.ext:liquibase-hibernate6:${liquibaseHibernate6Version}")
     liquibaseRuntime("org.liquibase:liquibase-core")
     liquibaseRuntime("org.postgresql:postgresql:42.5.2")
