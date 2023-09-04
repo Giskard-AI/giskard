@@ -29,6 +29,8 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
+    id("org.openapi.generator") version "7.0.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
 
@@ -134,6 +136,21 @@ gitProperties {
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
 }
 
+openApi {
+    apiDocsUrl.set("http://localhost:11337/v3/api-docs")
+    outputDir.set(file("$buildDir/docs"))
+    outputFileName.set("openapi.json")
+    waitTimeInSeconds.set(60)
+    customBootRun {
+        args.set(
+            listOf(
+                "--spring.profiles.active=dev",
+                "--server.port=11337",
+            )
+        )
+    }
+}
+
 val liquibaseHibernate6Version: String by project.extra.properties
 val jaxbRuntimeVersion: String by project.extra.properties
 val archunitJunit5Version: String by project.extra.properties
@@ -223,6 +240,10 @@ tasks {
         finalizedBy(jacocoTestReport)
     }
 
+    build {
+        finalizedBy("generateWebClient")
+    }
+
     jacocoTestReport {
         dependsOn(test)
     }
@@ -284,6 +305,9 @@ tasks {
     create<Delete>("distClean") {
         delete(buildDir)
     }
+    create<Delete>("cleanOpenApiDocs") {
+        delete(file("$buildDir/docs/openapi.json"))
+    }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
     }
@@ -326,6 +350,14 @@ tasks {
     }
     register("package") {
         dependsOn("bootJar")
+    }
+
+    create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        dependsOn("compileJava", "cleanOpenApiDocs", "generateOpenApiDocs")
+
+        generatorName.set("typescript-fetch")
+        inputSpec.set(file("$buildDir/docs/openapi.json").toString())
+        outputDir.set("$buildDir/../../frontend/src/generated/client")
     }
 }
 
