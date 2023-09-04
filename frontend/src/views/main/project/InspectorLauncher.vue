@@ -33,7 +33,7 @@ import { onMounted, ref, computed } from "vue";
 import { api } from "@/api";
 import { TYPE } from "vue-toastification";
 import mixpanel from "mixpanel-browser";
-import { useRouter } from "vue-router/composables";
+import { useRouter } from "vue-router";
 import OverlayLoader from "@/components/OverlayLoader.vue";
 import { useMainStore } from "@/stores/main";
 import { useDebuggingSessionsStore } from "@/stores/debugging-sessions";

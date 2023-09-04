@@ -67,7 +67,7 @@
 import { api } from "@/api";
 import { FeedbackMinimalDTO } from "@/generated-sources";
 import { computed, onActivated, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router/composables';
+import { useRoute, useRouter } from 'vue-router';
 import { $vfm } from 'vue-final-modal';
 import AddDebuggingSessionModal from '@/components/AddDebuggingSessionModal.vue';
 import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";

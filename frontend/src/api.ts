@@ -1,7 +1,7 @@
 import axios, {AxiosError} from 'axios';
 import {apiURL} from '@/env';
 import {getLocalHFToken, getLocalToken, removeLocalToken} from '@/utils';
-import Vue from 'vue';
+// import Vue from 'vue';
 
 import {
     AdminUserDTO,
@@ -132,7 +132,7 @@ async function errorInterceptor(error) {
             removeLocalToken();
             userStore.token = '';
             userStore.isLoggedIn = false;
-            if (router.currentRoute.path !== '/auth/login') {
+            if (router.currentRoute.value.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
         } else {

@@ -15,11 +15,9 @@ export interface AdminUserDTO {
     user_id: string;
 }
 
-export namespace AdminUserDTO {
-    /**
-     * Generated from ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword
-     */
-    export interface AdminUserDTOWithPassword extends AdminUserDTO {
-        password: string;
-    }
+/**
+ * Generated from ai.giskard.web.dto.user.AdminUserDTO$AdminUserDTOWithPassword
+ */
+export interface AdminUserDTOWithPassword extends AdminUserDTO {
+    password: string;
 }

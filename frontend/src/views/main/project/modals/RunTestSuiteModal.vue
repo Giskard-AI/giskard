@@ -88,7 +88,7 @@ import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { useMainStore } from "@/stores/main";
 import { useTestSuiteStore } from '@/stores/test-suite';
 import { FunctionInputDTO, RequiredInputDTO } from '@/generated-sources';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 import { chain } from 'lodash';
 import { TYPE } from "vue-toastification";
 import { state } from "@/socket";

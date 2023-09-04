@@ -40,7 +40,7 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {FunctionInputDTO, TestSuiteDTO} from '@/generated-sources';
-import {useRouter} from 'vue-router/composables';
+import {useRouter} from 'vue-router';
 import {useTestSuiteStore} from '@/stores/test-suite';
 import TestInputListSelector from "@/components/TestInputListSelector.vue";
 import {chain} from "lodash";

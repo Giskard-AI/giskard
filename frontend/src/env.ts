@@ -1,4 +1,6 @@
-const env = process.env.VUE_APP_ENV;
+const env = import.meta.env.VITE_APP_ENV;
 
-export const apiURL = `${process.env.VUE_APP_DOMAIN}` || window.location.origin;
-export const appName = process.env.VUE_APP_NAME;
+export const apiURL = `${import.meta.env.VITE_APP_DOMAIN}` || window.location.origin;
+console.log('VITE_APP_DOMAIN: ', import.meta.env.VITE_APP_DOMAIN);
+export const appName = import.meta.env.VITE_APP_NAME;
+

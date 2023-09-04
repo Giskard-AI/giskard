@@ -9,17 +9,17 @@
                 label="Importance"
             ></v-slider>
         </div>
-        <VirtualCollection
-            :cellSizeAndPositionGetter="cellSizeAndPositionGetter"
-            :collection="items"
-            :height="200"
-            :width="widthParagraph"
-            class="overflow-x-hidden"
-        >
-        <template v-slot:cell="item">
-            <span  :style="{ backgroundColor: item.data.color }">{{item.data.text}}</span>
-        </template>
-        </VirtualCollection>
+<!--        <VirtualCollection-->
+<!--            :cellSizeAndPositionGetter="cellSizeAndPositionGetter"-->
+<!--            :collection="items"-->
+<!--            :height="200"-->
+<!--            :width="widthParagraph"-->
+<!--            class="overflow-x-hidden"-->
+<!--        >-->
+<!--        <template v-slot:cell="item">-->
+<!--            <span  :style="{ backgroundColor: item.data.color }">{{item.data.text}}</span>-->
+<!--        </template>-->
+<!--        </VirtualCollection>-->
     </div>
 </template>
 
@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, getCurrentInstance, watch, onMounted } from 'vue';
-import VirtualCollection from "vue-virtual-collection/src/VirtualCollection.vue";
+// import VirtualCollection from "vue-virtual-collection/src/VirtualCollection.vue";
 
 const props = defineProps<{
     weights: number[]

@@ -1,9 +1,9 @@
 <template>
   <v-main>
-    <v-container fluid fill-height class="pa-0">
+    <v-container fluid class="fill-height pa-0">
       <v-row class="fill-height">
         <v-col cols="12" md="6">
-          <v-container fluid fill-height class="pa-0">
+          <v-container fluid class="fill-height pa-0">
             <v-row align-content="center" justify="center">
               <div>
                 <div class="d-flex justify-center mb-6">
@@ -14,7 +14,7 @@
             </v-row>
           </v-container>
         </v-col>
-        <v-col v-show="$vuetify.breakpoint.mdAndUp" cols="12" md="6" class="background">
+        <v-col v-show="mdAndUp" cols="12" md="6" class="background">
         </v-col>
       </v-row>
     </v-container>
@@ -22,11 +22,14 @@
 </template>
 
 <script setup lang="ts">
+import {useDisplay} from 'vuetify';
+
+const {mdAndUp} = useDisplay()
 </script>
 
 <style>
 .background {
-  background-image: url("~@/assets/wallpaper.jpg");
+  background-image: url("../../assets/wallpaper.jpg");
   background-position: 95% 20%;
   background-size: auto 100%;
 }

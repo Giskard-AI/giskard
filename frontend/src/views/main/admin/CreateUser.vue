@@ -68,9 +68,7 @@
 import {Role} from "@/enums";
 import mixpanel from "mixpanel-browser";
 import {computed, onMounted, ref} from "vue";
-import {useRouter} from "vue-router/composables";
-import {AdminUserDTO} from "@/generated-sources";
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
+import {useRouter} from "vue-router";
 import {useMainStore} from "@/stores/main";
 import {useAdminStore} from "@/stores/admin";
 

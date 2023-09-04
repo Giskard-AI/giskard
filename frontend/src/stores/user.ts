@@ -98,14 +98,14 @@ export const useUserStore = defineStore('user', {
     async routeLogout() {
       // @ts-ignore
       const router = this.$router;
-      if (router.currentRoute.path !== '/auth/login') {
+      if (router.currentRoute.value.path !== '/auth/login') {
         await router.push('/auth/login');
       }
     },
     async routeLoggedIn() {
       // @ts-ignore
       const router = this.$router;
-      if (router.currentRoute.path === '/auth/login' || router.currentRoute.path === '/') {
+      if (router.currentRoute.value.path === '/auth/login' || router.currentRoute.value.path === '/') {
         await router.push('/main');
       }
     },

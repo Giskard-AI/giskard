@@ -98,7 +98,7 @@
 import {computed, onActivated, ref, watch} from 'vue';
 import {$vfm} from 'vue-final-modal';
 import {api} from '@/api';
-import {useRoute, useRouter} from 'vue-router/composables';
+import {useRoute, useRouter} from 'vue-router';
 import {useMainStore} from '@/stores/main';
 import {useDebuggingSessionsStore} from '@/stores/debugging-sessions';
 import {InspectionDTO} from '@/generated-sources';

@@ -1,20 +1,21 @@
 import {defineStore} from "pinia";
-import {AppConfigDTO, LicenseDTO} from "@/generated-sources";
+import {AppInfoDTO, LicenseDTO} from "@/generated-sources";
 import {IUserProfileMinimal} from "@/interfaces";
 import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
-import Vue from "vue";
+// import Vue from "vue";
 import {api} from "@/api";
 import {AxiosError} from "axios";
 import {useUserStore} from "@/stores/user";
-import {TYPE} from "vue-toastification";
-import AppInfoDTO = AppConfigDTO.AppInfoDTO;
+import {TYPE, useToast} from "vue-toastification";
 
 export interface AppNotification {
     content: string;
     color?: TYPE
     showProgress?: boolean;
 }
+
+const toast = useToast();
 
 interface State {
     appSettings: AppInfoDTO | null;
@@ -38,6 +39,16 @@ export const useMainStore = defineStore('main', {
         }
     },
     actions: {
+        roleName(value: string) {
+            if (this.appSettings) {
+                const roles = Object.assign({}, ...this.appSettings.roles.map((x) => ({[x.id]: x.name})));
+                if (value in roles) {
+                    return roles[value];
+                } else {
+                    return value;
+                }
+            }
+        },
         setAppSettings(payload: AppInfoDTO) {
             const userStore = useUserStore();
             this.appSettings = payload;
@@ -46,7 +57,7 @@ export const useMainStore = defineStore('main', {
             } else if (!this.appSettings.generalSettings.isAnalyticsEnabled && !mixpanel.has_opted_out_tracking()) {
                 mixpanel.opt_out_tracking();
             }
-            let instanceId = this.appSettings.generalSettings.instanceId;
+            const instanceId = this.appSettings.generalSettings.instanceId;
             if (userStore.userProfile) {
                 mixpanel.alias(`${instanceId}-${anonymize(userStore.userProfile?.user_id)}`);
             }
@@ -61,30 +72,19 @@ export const useMainStore = defineStore('main', {
                 }
             );
             mixpanel.track("Read App Settings")
-            const self = this;
-            Vue.filter('roleName', function (value) {
-                if (self.appSettings) {
-                    let roles = Object.assign({}, ...self.appSettings.roles.map((x) => ({[x.id]: x.name})));
-                    if (value in roles) {
-                        return roles[value];
-                    } else {
-                        return value;
-                    }
-                }
-            });
         },
         addSimpleNotification(text: string) {
             this.addNotification({content: text, color: TYPE.SUCCESS})
         },
         addNotification(payload: AppNotification) {
-            Vue.$toast(payload.content, {
+            toast(payload.content, {
                 closeButton: false,
                 icon: payload.showProgress ? 'notification-spinner fas fa-spinner fa-spin' : true,
                 type: payload.color
             });
         },
         removeNotification(payload: AppNotification) {
-            Vue.$toast.clear();
+            toast.clear();
         },
         async fetchAppSettings() {
             const response = await api.getUserAndAppSettings();
@@ -113,7 +113,7 @@ export const useMainStore = defineStore('main', {
                 if (response) {
                     this.coworkers = response;
                 }
-            } catch (error) {
+            } catch (error: any) {
                 await this.checkApiError(error);
             }
         },
@@ -125,3 +125,4 @@ export const useMainStore = defineStore('main', {
         }
     }
 })
+

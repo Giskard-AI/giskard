@@ -130,7 +130,7 @@ import { onMounted, ref } from 'vue';
 import mixpanel from 'mixpanel-browser';
 import { api } from '@/api';
 import { FunctionInputDTO, GenerateTestSuiteDTO, GenerateTestSuiteInputDTO, TestSuiteDTO } from '@/generated-sources';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 import { $vfm } from 'vue-final-modal';
 import InputSettingsModal from '@/views/main/project/modals/ModelInputSettingsModal.vue';
 import { useTestSuiteStore } from '@/stores/test-suite';

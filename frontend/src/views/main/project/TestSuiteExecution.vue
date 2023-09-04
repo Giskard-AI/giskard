@@ -7,7 +7,7 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {useRoute} from 'vue-router/composables';
+import {useRoute} from 'vue-router';
 import {computed} from 'vue';
 import TestSuiteExecutionOverview from '@/views/main/project/TestSuiteExecutionOverview.vue';
 

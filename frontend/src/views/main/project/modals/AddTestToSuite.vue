@@ -69,7 +69,7 @@ import {TYPE} from 'vue-toastification';
 import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
 import mixpanel from 'mixpanel-browser';
 import {anonymize} from "@/utils";
-import {useRouter} from 'vue-router/composables';
+import {useRouter} from 'vue-router';
 
 const router = useRouter();
 

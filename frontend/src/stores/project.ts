@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { useMainStore } from '@/stores/main';
 import { api } from '@/api';
 import { TYPE } from 'vue-toastification';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 
 interface State {
   projects: ProjectDTO[];

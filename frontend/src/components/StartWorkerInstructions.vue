@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
 import {useMainStore} from "@/stores/main";
-import {useRoute} from "vue-router/composables";
+import {useRoute} from "vue-router";
 import {apiURL} from "@/env";
 import CodeSnippet from "./CodeSnippet.vue";
 import {getLocalHFToken, saveLocalHFToken} from "@/utils";

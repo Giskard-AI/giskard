@@ -74,15 +74,13 @@
 </template>
 
 <script setup lang="ts">
-import { Role } from '@/enums';
+import {Role} from '@/enums';
 import mixpanel from 'mixpanel-browser';
-import { api } from '@/api';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { useAdminStore } from '@/stores/admin';
-import { computed, onMounted, ref, watch } from 'vue';
-import { AdminUserDTO } from '@/generated-sources';
+import {api} from '@/api';
+import {useRoute, useRouter} from 'vue-router';
+import {useAdminStore} from '@/stores/admin';
+import {computed, onMounted, ref, watch} from 'vue';
 import ButtonModalConfirmation from '@/components/ButtonModalConfirmation.vue';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 const router = useRouter();
 const route = useRoute();

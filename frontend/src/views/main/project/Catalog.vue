@@ -31,7 +31,7 @@
 import { onActivated, onDeactivated, ref, watch } from "vue";
 import { useCatalogStore } from "@/stores/catalog";
 import { storeToRefs } from "pinia";
-import { useRouter, useRoute } from "vue-router/composables";
+import { useRouter, useRoute } from "vue-router";
 import { schedulePeriodicJob } from "@/utils/job-utils";
 import mixpanel from "mixpanel-browser";
 import LoadingFullscreen from "@/components/LoadingFullscreen.vue";

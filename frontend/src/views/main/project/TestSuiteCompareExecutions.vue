@@ -25,7 +25,7 @@ import { SuiteTestDTO, SuiteTestExecutionDTO, TestFunctionDTO, TestSuiteExecutio
 import { computed, ComputedRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useTestSuiteStore } from '@/stores/test-suite';
-import { useRoute } from 'vue-router/composables';
+import { useRoute } from 'vue-router';
 import SuiteTestExecutionList from '@/views/main/project/SuiteTestExecutionList.vue';
 import TestSuiteExecutionHeader from '@/views/main/project/TestSuiteExecutionHeader.vue';
 import { useCatalogStore } from '@/stores/catalog';

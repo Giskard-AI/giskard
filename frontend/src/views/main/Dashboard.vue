@@ -46,7 +46,7 @@ import {useUserStore} from "@/stores/user";
 import {useAdminStore} from "@/stores/admin";
 import {Role} from "@/enums";
 import {useMainStore} from "@/stores/main";
-import {useRouter} from "vue-router/composables";
+import {useRouter} from "vue-router";
 
 const router = useRouter();
 const projectStore = useProjectStore();

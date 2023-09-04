@@ -84,7 +84,7 @@
 import { computed, onActivated, ref, watch } from 'vue';
 import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router/composables';
+import { useRoute, useRouter } from 'vue-router';
 import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
 import { useCatalogStore } from '@/stores/catalog';

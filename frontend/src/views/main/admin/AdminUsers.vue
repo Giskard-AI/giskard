@@ -77,8 +77,6 @@
 import { computed, onMounted, ref } from 'vue';
 import { useAdminStore } from '@/stores/admin';
 import { useMainStore } from '@/stores/main';
-import { AdminUserDTO } from '@/generated-sources';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 const adminStore = useAdminStore();
 const mainStore = useMainStore();

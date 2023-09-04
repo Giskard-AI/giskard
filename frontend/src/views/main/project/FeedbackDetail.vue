@@ -66,7 +66,7 @@ import MessageReply from '@/components/MessageReply.vue';
 import { FeedbackDTO, FeedbackReplyDTO } from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import { useMainStore } from '@/stores/main';

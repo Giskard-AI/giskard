@@ -124,7 +124,7 @@ import { ref } from "vue";
 import axios, { AxiosError } from "axios";
 import { useMainStore } from "@/stores/main";
 import { api } from "@/api";
-import { useRouter } from "vue-router/composables";
+import { useRouter } from "vue-router";
 import mixpanel from "mixpanel-browser";
 import { TYPE } from "vue-toastification";
 

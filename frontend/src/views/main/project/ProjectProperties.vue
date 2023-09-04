@@ -111,7 +111,7 @@ import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import { ProjectPostDTO } from '@/generated-sources';
-import { useRouter } from 'vue-router/composables';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 

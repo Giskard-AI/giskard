@@ -6,14 +6,14 @@
 
 <script setup lang="ts">
 
-import MonacoEditor from 'vue-monaco';
+// import MonacoEditor from 'vue-monaco';
 import { computed, inject, nextTick, onMounted, ref } from "vue";
 import { editor } from "monaco-editor";
 import IEditorOptions = editor.IEditorOptions;
 
-const l = MonacoEditor;
-const monacoOptions: IEditorOptions = inject('monacoOptions');
-monacoOptions.readOnly = false;
+// const l = MonacoEditor;
+// const monacoOptions: IEditorOptions = inject('monacoOptions');
+// monacoOptions.readOnly = false;
 
 interface Props {
     value?: string | null;

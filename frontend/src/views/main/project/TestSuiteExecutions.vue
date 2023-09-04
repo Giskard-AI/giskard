@@ -81,7 +81,7 @@ import { Colors } from '@/utils/colors';
 import { Comparators } from '@/utils/comparators';
 import { storeToRefs } from 'pinia';
 import { useTestSuiteStore } from '@/stores/test-suite';
-import { useRoute, useRouter } from 'vue-router/composables';
+import { useRoute, useRouter } from 'vue-router';
 import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
 import { $vfm } from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';

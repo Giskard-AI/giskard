@@ -114,10 +114,11 @@
                   <tr>
                     <td>Python path</td>
                     <td>{{ currentWorker.interpreter }}</td>
-                  <tr>
+                  </tr>
                   <tr>
                     <td>Giskard client version</td>
                     <td>{{ currentWorker.giskardClientVersion }}</td>
+                  </tr>
                   <tr>
                     <td>Host</td>
                     <td>{{ currentWorker.platform.node }}</td>

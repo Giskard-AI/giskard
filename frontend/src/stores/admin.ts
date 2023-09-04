@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia';
-import { AdminUserDTO, RoleDTO } from '@/generated-sources';
+import {AdminUserDTO, AdminUserDTOWithPassword, RoleDTO} from '@/generated-sources';
 import { api } from '@/api';
 import { useMainStore } from '@/stores/main';
 import { useUserStore } from '@/stores/user';
 import { TYPE } from 'vue-toastification';
-import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 
 interface AdminState {

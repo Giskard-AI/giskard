@@ -1,6 +1,6 @@
 <template>
   <v-main>
-    <v-container fluid fill-height>
+    <v-container fluid class="fill-height">
       <v-layout align-center justify-center>
         <v-flex xs12 sm8 md4>
           <v-card class="elevation-12">
@@ -37,7 +37,7 @@
 import {appName as appname} from '@/env';
 import mixpanel from "mixpanel-browser";
 import {onMounted, ref} from "vue";
-import {useRouter} from "vue-router/composables";
+import {useRouter} from "vue-router";
 import {useMainStore} from "@/stores/main";
 import {useUserStore} from "@/stores/user";
 import {TYPE} from "vue-toastification";
@@ -67,7 +67,7 @@ function cancel() {
 }
 
 function checkToken() {
-  const token = (router.currentRoute.query.token as string);
+  const token = (router.currentRoute.value.query.token as string);
   if (!token) {
     mainStore.addNotification({
         content: 'No token provided in the URL, start a new password recovery',
