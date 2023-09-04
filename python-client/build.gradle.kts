@@ -32,7 +32,7 @@ tasks {
     }
 
     clean {
-        delete(virtualEnvDirectory, "coverage.xml", ".coverage")
+        delete(virtualEnvDirectory, "coverage.xml", ".coverage", "dist")
     }
 
     create<PythonTask>("sphinx-autobuild") {
