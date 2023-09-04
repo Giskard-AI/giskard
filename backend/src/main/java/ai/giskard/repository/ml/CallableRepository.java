@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @NoRepositoryBean
 public interface CallableRepository<E extends Callable> extends MappableJpaRepository<E, UUID> {
 
-    int countByNameAndModule(String name, String module);
+    int countByDisplayName(String displayName);
 
     default List<E> saveAllIfNotExists(Collection<E> entities) {
         List<E> existing = findAllById(entities.stream().map(E::getUuid).collect(Collectors.toSet()));

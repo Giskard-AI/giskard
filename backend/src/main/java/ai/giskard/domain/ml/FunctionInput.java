@@ -1,12 +1,12 @@
 package ai.giskard.domain.ml;
 
-import ai.giskard.worker.GeneratedTestInput;
+import ai.giskard.ml.dto.MLWorkerWSGeneratedTestInputDTO;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,8 @@ public class FunctionInput implements Serializable {
 
     private String type;
 
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "text", name = "input_value")
+    @Lob
     private String value;
 
     private boolean isAlias = false;
@@ -36,7 +37,7 @@ public class FunctionInput implements Serializable {
     @JoinColumn(name = "function_input_id")
     private List<FunctionInput> params = new ArrayList<>();
 
-    public FunctionInput(GeneratedTestInput testInput) {
+    public FunctionInput(MLWorkerWSGeneratedTestInputDTO testInput) {
         this.name = testInput.getName();
         this.value = testInput.getValue();
         this.isAlias = testInput.getIsAlias();

@@ -15,3 +15,8 @@
 :::
 :::::
 
+:::::{grid-item}
+:::{card} <h3><center> 🤥 Fake/Real news classification</center></h3>
+:link: ../../../reference/notebooks/fake_real_news_classification.ipynb
+:::
+:::::

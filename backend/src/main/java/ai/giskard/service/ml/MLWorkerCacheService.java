@@ -1,7 +1,8 @@
 package ai.giskard.service.ml;
 
-import ai.giskard.ml.MLWorkerClient;
-import ai.giskard.ml.tunnel.MLWorkerTunnelService;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.MLWorkerWSCatalogDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
@@ -14,24 +15,22 @@ import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.TestFunctionDTO;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
-import ai.giskard.worker.CatalogResponse;
-import ai.giskard.worker.MLWorkerGrpc;
-import com.google.protobuf.Empty;
-import io.grpc.StatusRuntimeException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
-import static ai.giskard.utils.GRPCUtils.convertGRPCObject;
+import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
 
 @Service
 @RequiredArgsConstructor
 public class MLWorkerCacheService {
 
-    private final MLWorkerService mlWorkerService;
-    private final MLWorkerTunnelService mlWorkerTunnelService;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
     private final TestFunctionService testFunctionService;
     private final TestFunctionRepository testFunctionRepository;
     private final SlicingFunctionService slicingFunctionService;
@@ -72,46 +71,49 @@ public class MLWorkerCacheService {
             return getTestFunctions(true);
         }
 
-        if (mlWorkerTunnelService.isClearCacheRequested()) {
-            catalogWithoutPickles = getTestFunctions(false);
-            testFunctionService.saveAll(catalogWithoutPickles.getTests());
-            slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
-            transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
-            mlWorkerTunnelService.setClearCacheRequested(false);
-        }
+        catalogWithoutPickles = getTestFunctions(false);
+        testFunctionService.saveAll(catalogWithoutPickles.getTests());
+        slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
+        transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
 
         return catalogWithoutPickles;
     }
 
     private CatalogDTO getTestFunctions(boolean isInternal) {
-        try (MLWorkerClient client = mlWorkerService.createClientNoError(isInternal)) {
-            if (!isInternal && client == null) {
-                // Fallback to internal ML worker to not display empty catalog
-                CatalogDTO catalog = getTestFunctions(true);
-                catalog.getTests().forEach(fn -> fn.setPotentiallyUnavailable(true));
-                catalog.getSlices().forEach(fn -> fn.setPotentiallyUnavailable(true));
-                catalog.getTransformations().forEach(fn -> fn.setPotentiallyUnavailable(true));
-                return catalog;
-            } else if (client == null) {
-                return new CatalogDTO();
+        if (mlWorkerWSService.isWorkerConnected(isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL)) {
+            MLWorkerWSCatalogDTO response;
+            UUID replyUuid = mlWorkerWSCommService.performActionAsync(
+                isInternal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+                MLWorkerWSAction.GET_CATALOG, null
+            );
+            String reply = mlWorkerWSCommService.blockAwaitReply(replyUuid);
+            if (reply != null) {
+                try {
+                    response = mlWorkerWSCommService.parseReplyDTO(reply, MLWorkerWSCatalogDTO.class);
+                    return CatalogDTO.builder()
+                        .tests(response.getTests().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, TestFunctionDTO.class))
+                            .toList())
+                        .slices(response.getSlices().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, SlicingFunctionDTO.class))
+                            .toList())
+                        .transformations(response.getTransformations().values().stream()
+                            .map(test -> convertMLWorkerWSObject(test, TransformationFunctionDTO.class))
+                            .toList())
+                        .build();
+                } catch (JsonProcessingException e) {
+                    mlWorkerWSCommService.parseReplyErrorDTO(reply);
+                }
             }
-
-            MLWorkerGrpc.MLWorkerBlockingStub blockingStub = client.getBlockingStub();
-            CatalogResponse response = blockingStub.getCatalog(Empty.newBuilder().build());
-            return CatalogDTO.builder()
-                .tests(response.getTestsMap().values().stream()
-                    .map(test -> convertGRPCObject(test, TestFunctionDTO.class))
-                    .toList())
-                .slices(response.getSlicesMap().values().stream()
-                    .map(test -> convertGRPCObject(test, SlicingFunctionDTO.class))
-                    .toList())
-                .transformations(response.getTransformationsMap().values().stream()
-                    .map(test -> convertGRPCObject(test, TransformationFunctionDTO.class))
-                    .toList())
-                .build();
-        } catch (StatusRuntimeException e) {
-            return new CatalogDTO();
+        } else if (!isInternal) {
+            // Fallback to internal ML worker to not display empty catalog
+            CatalogDTO catalog = getTestFunctions(true);
+            catalog.getTests().forEach(fn -> fn.setPotentiallyUnavailable(true));
+            catalog.getSlices().forEach(fn -> fn.setPotentiallyUnavailable(true));
+            catalog.getTransformations().forEach(fn -> fn.setPotentiallyUnavailable(true));
+            return catalog;
         }
+        return new CatalogDTO();
     }
 
 }

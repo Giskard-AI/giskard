@@ -98,7 +98,7 @@ class AccountControllerIT {
         AdminUserDTO.AdminUserDTOWithPassword user = new AdminUserDTO.AdminUserDTOWithPassword();
         user.setLogin(TEST_USER_LOGIN);
         user.setPassword("secret");
-        user.setEmail("john.doe@jhipster.com");
+        user.setEmail("john.doe@giskard.ai");
         user.setRoles(authorities);
         userService.createUser(user);
 
@@ -107,7 +107,7 @@ class AccountControllerIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.user.user_id").value(TEST_USER_LOGIN))
-            .andExpect(jsonPath("$.user.email").value("john.doe@jhipster.com"))
+            .andExpect(jsonPath("$.user.email").value("john.doe@giskard.ai"))
             .andExpect(jsonPath("$.user.roles").value(AuthoritiesConstants.ADMIN));
     }
 
