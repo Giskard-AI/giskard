@@ -3,15 +3,14 @@ package ai.giskard.dev;
 import ai.giskard.web.dto.JWTToken;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
-import javax.validation.Valid;
+import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 
 import static ai.giskard.security.ee.jwt.TokenProvider.createToken;
 
@@ -27,5 +26,13 @@ public class DevController {
         Date expiration = new Date(now + 1000 * 60 * 60); // 1 hour
         return createToken(dto.getLogin(), dto.getId(), dto.getAuthorities(),
             expiration, sc);
+    }
+
+    @GetMapping("/ping")
+    public Map<String, String> ping() {
+        return Map.of(
+            "response", "pong",
+            "time", Instant.now().toString()
+        );
     }
 }

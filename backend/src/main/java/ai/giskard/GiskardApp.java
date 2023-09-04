@@ -2,6 +2,8 @@ package ai.giskard;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.config.GiskardConstants;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -24,15 +25,12 @@ import java.util.Optional;
 @SpringBootApplication
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
 @EnableJpaAuditing
+@RequiredArgsConstructor
 public class GiskardApp {
 
     private static final Logger log = LoggerFactory.getLogger(GiskardApp.class);
 
     private final Environment env;
-
-    public GiskardApp(Environment env) {
-        this.env = env;
-    }
 
     /**
      * Initializes giskard.
@@ -99,13 +97,15 @@ public class GiskardApp {
             \tMax: %s MB
             \tFree: %s MB""", totalMemory, maxMemory, freeMemory);
         String swaggerURL = hasApiDocsProfile ? String.format("Swagger UI: %s://localhost:%s%sswagger-ui/index.html\t%n\t", protocol, serverPort, contextPath) : "";
+
         log.info(
             "\n----------------------------------------------------------\n\t" +
                 memoryStatusLine +
                 "\n----------------------------------------------------------\n\t" +
-                "Application '{}' is running! Access URLs:\n\t" +
+                "Application '{}' is running!\n\t" +
                 "Local: \t\t{}://localhost:{}{}\n\t" +
                 "External: \t{}://{}:{}{}\n\t" +
+                "DB URL: \t"+env.getProperty("spring.datasource.url")+"\n\t" +
                 swaggerURL +
                 "Giskard Home: " + giskardHome + "\n\t" +
                 "Profile(s): \t{}\n----------------------------------------------------------",

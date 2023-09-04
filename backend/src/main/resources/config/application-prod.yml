@@ -15,7 +15,7 @@ logging:
   level:
     ROOT: INFO
     ai.giskard: INFO
-    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari.HikariConfig: INFO
 
 management:
   metrics:
@@ -32,7 +32,7 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
+    username: giskard
     password: y1QYbF2BtFUC
     hikari:
       poolName: Hikari
@@ -95,3 +95,10 @@ giskard:
   token-validity-in-seconds: 86400
   token-validity-in-seconds-for-remember-me: 2592000
   mail-base-url: http://my-server-url-to-change # Modify according to your server's URL
+  cors:
+    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+    allowed-origins: '*'
+    allowed-methods: '*'
+    allowed-headers: '*'
+    allow-credentials: false
+    max-age: 1800

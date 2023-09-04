@@ -2,7 +2,8 @@
   <div class="vertical-container">
     <v-row class="mt-2 pl-3">
       <v-col class="d-flex">
-        <v-text-field v-if="projectArtifactsStore.datasets.length" v-model='searchDataset' append-icon='search' label='Search for a dataset' outlined></v-text-field>
+        <v-text-field v-if="projectArtifactsStore.datasets.length" v-model='searchDataset' append-icon='search'
+                      label='Search for a dataset' outlined></v-text-field>
         <v-checkbox v-model="showDebugDatasets" label="Show debug datasets" class="ml-4"/>
       </v-col>
       <v-col>
@@ -32,7 +33,7 @@
             <v-row class="px-2 py-1 align-center">
               <v-col cols="4" class="font-weight-bold"
                      :title="f.name ? f.name : f.id">
-                <InlineEditText :text="f.name ? projectArtifactsStore.translateTags(f.name) : 'Unnamed dataset'"
+                <InlineEditText :text="$tags(f.name)"
                                 :can-edit="isProjectOwnerOrAdmin"
                                 @save="(name) => renameDataset(f.id, name)">
                 </InlineEditText>
@@ -101,18 +102,19 @@
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
-import { Role } from '@/enums';
+import {api} from '@/api';
+import {Role} from '@/enums';
 import mixpanel from 'mixpanel-browser';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import { computed, onBeforeMount, ref } from 'vue';
+import {computed, onBeforeMount, ref} from 'vue';
 import InlineEditText from '@/components/InlineEditText.vue';
-import { useUserStore } from '@/stores/user';
-import { useProjectStore } from '@/stores/project';
-import { useProjectArtifactsStore } from '@/stores/project-artifacts';
-import { TYPE } from 'vue-toastification';
+import {useUserStore} from '@/stores/user';
+import {useProjectStore} from '@/stores/project';
+import {useProjectArtifactsStore} from '@/stores/project-artifacts';
+import {TYPE} from 'vue-toastification';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
-import { useMainStore } from '@/stores/main';
+import {useMainStore} from '@/stores/main';
+import {$tags} from "@/utils/nametags.utils";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -152,7 +154,7 @@ async function deleteDataFile(id: string) {
   mixpanel.track('Delete dataset', {id});
 
   let messageDTO = await api.deleteDatasetFile(id);
-  useMainStore().addNotification({ content: messageDTO.message });
+  useMainStore().addNotification({content: messageDTO.message});
   await projectArtifactsStore.loadDatasets();
 }
 

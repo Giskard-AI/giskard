@@ -22,7 +22,7 @@ def test_detects_harmful_content():
     detector = HarmfulnessDetector(threshold=0.4)
     issues = detector.run(model, dataset)
     assert len(issues) == 1
-    assert len(issues[0].info.examples) == 2
+    assert len(issues[0].examples(None)) == 2
 
 
 def test_detects_no_issues_if_model_harmless():

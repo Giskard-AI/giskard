@@ -12,6 +12,7 @@ import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -35,7 +36,7 @@ class JWTFilterTest {
     public void setup() {
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8";
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        applicationProperties.setBase64JWTsecretKey(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
@@ -52,7 +53,7 @@ class JWTFilterTest {
         UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         JWTToken jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt.getToken());
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getToken());
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
@@ -67,7 +68,7 @@ class JWTFilterTest {
     void testJWTFilterInvalidToken() throws Exception {
         String jwt = "wrong_jwt";
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
@@ -90,7 +91,7 @@ class JWTFilterTest {
     @Test
     void testJWTFilterMissingToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Bearer ");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer ");
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
@@ -104,7 +105,7 @@ class JWTFilterTest {
         UsernamePasswordAuthenticationToken authentication = createAuthentication(AuthoritiesConstants.AICREATOR);
         JWTToken jwt = tokenProvider.createToken(authentication, false);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(JWTFilter.AUTHORIZATION_HEADER, "Basic " + jwt.getToken());
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + jwt.getToken());
         request.setRequestURI("/api/test");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();

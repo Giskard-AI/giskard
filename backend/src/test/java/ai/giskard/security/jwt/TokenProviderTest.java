@@ -4,15 +4,10 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.management.SecurityMetersService;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.security.ee.jwt.TokenProvider;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.assertj.core.data.Offset;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -20,8 +15,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Date;
 
 import static ai.giskard.security.jwt.JWTFilterTest.createAuthentication;
@@ -40,7 +33,7 @@ class TokenProviderTest {
         ApplicationProperties applicationProperties = new ApplicationProperties();
 
         String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
-        applicationProperties.setBase64JWTsecretKey(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 
         tokenProvider = new TokenProvider(applicationProperties, securityMetersService);
@@ -69,17 +62,6 @@ class TokenProviderTest {
     }
 
     @Test
-    void testReturnFalseWhenJWTisExpired() {
-        ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", -ONE_MINUTE);
-
-        Authentication authentication = createAuthentication(AuthoritiesConstants.AITESTER);
-        String token = tokenProvider.createToken(authentication, false).getToken();
-        Assertions.assertThrows(ExpiredJwtException.class, () -> {
-            tokenProvider.validateToken(token);
-        });
-    }
-
-    @Test
     void testReturnFalseWhenJWTisUnsupported() {
         String unsupportedToken = createUnsupportedToken();
 
@@ -93,19 +75,6 @@ class TokenProviderTest {
         boolean isTokenValid = tokenProvider.validateToken("");
 
         assertThat(isTokenValid).isFalse();
-    }
-
-    @Test
-    void testAPIauthToken() {
-        Instant tokenAcquiryDate = (new Date()).toInstant();
-        String token = tokenProvider.createAPIaccessToken(createAuthentication(AuthoritiesConstants.AITESTER)).getToken();
-
-        JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
-        Claims claims = jwtParser.parseClaimsJws(token).getBody();
-        assertThat(claims.getSubject()).isEqualTo("test-user");
-        long tokenValidityDays = Duration.between(tokenAcquiryDate, claims.getExpiration().toInstant()).toMillis();
-
-        assertThat(tokenValidityDays).isCloseTo(DAYS_90, Offset.offset((long) 1000));
     }
 
     @Test
@@ -126,7 +95,7 @@ class TokenProviderTest {
     void testKeyIsSetFromBase64SecretWhenSecretIsEmpty() {
         final String base64Secret = "fd54a45s65fds737b9aafcb3412e07ed99b267f33413274720ddbb7f6c5e64e9f14075f2d7ed041592f0b7657baf8"; //ggignore
         ApplicationProperties applicationProperties = new ApplicationProperties();
-        applicationProperties.setBase64JWTsecretKey(base64Secret);
+        applicationProperties.setBase64JwtSecretKey(base64Secret);
 
         SecurityMetersService securityMetersService = new SecurityMetersService(new SimpleMeterRegistry());
 

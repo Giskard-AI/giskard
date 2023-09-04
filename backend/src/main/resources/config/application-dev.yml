@@ -16,7 +16,7 @@ logging:
     ROOT: INFO
     org.hibernate.SQL: INFO
     ai.giskard: INFO
-    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari.HikariConfig: INFO
     com.zaxxer.hikari: INFO
 
 spring:
@@ -69,11 +69,14 @@ server:
 
 giskard:
   home: ${user.home}/giskard-home
+  # Generate a random key using the following command: openssl rand -base64 64
+  base64-jwt-secret-key: 2ik6cM0kPIe/sbCnTqFB+6WIuPb7Ts87VhBugex2AjA=
   cors:
-    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
     allowed-origins: '*'
     allowed-methods: '*'
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
-
+springdoc:
+  api-docs:
+    enabled: true

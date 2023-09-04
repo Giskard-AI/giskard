@@ -222,6 +222,9 @@ class Query:
     def __init__(self, clauses, optimize=False):
         self.clauses = defaultdict(list)
         for clause in clauses:
+            # if clause.value is an int64, convert it to an int
+            if isinstance(clause.value, np.int64):
+                clause.value = int(clause.value)
             self.clauses[clause.column].append(clause)
 
         if optimize:

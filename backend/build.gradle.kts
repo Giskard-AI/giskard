@@ -23,7 +23,7 @@ plugins {
     id("idea")
     id("jacoco")
     id("org.sonarqube")
-    id("org.springframework.boot") version "2.6.6"
+    id("org.springframework.boot")
     id("io.spring.dependency-management") version "1.1.2"
     id("com.gorylenko.gradle-git-properties") version "2.4.0"
     id("io.freefair.lombok") version "6.5.0.3"
@@ -120,7 +120,7 @@ liquibase {
     activities.register("diffLog") {
         this.arguments = mapOf(
             "url" to "jdbc:h2:$liquibaseH2db/db",
-            "referenceUrl" to "hibernate:spring:ai.giskard.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy",
+            "referenceUrl" to "hibernate:spring:ai.giskard.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy",
             "classpath" to "$buildDir/classes/java/main",
             "changeLogFile" to changeLogFile,
             "logLevel" to "info",
@@ -134,7 +134,7 @@ gitProperties {
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
 }
 
-val liquibaseHibernate5Version: String by project.extra.properties
+val liquibaseHibernate6Version: String by project.extra.properties
 val jaxbRuntimeVersion: String by project.extra.properties
 val archunitJunit5Version: String by project.extra.properties
 val springBootVersion: String by project.extra.properties
@@ -152,7 +152,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
     implementation("com.fasterxml.jackson.core:jackson-annotations")
     implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hppc")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
@@ -165,18 +165,18 @@ dependencies {
     implementation("io.dropwizard.metrics:metrics-core")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("javax.annotation:javax.annotation-api")
-    implementation("javax.transaction:javax.transaction-api")
+//    implementation("javax.annotation:javax.annotation-api")
+//    implementation("javax.transaction:javax.transaction-api")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("org.apache.commons:commons-lang3")
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("org.hibernate.validator:hibernate-validator")
-    implementation("org.hibernate:hibernate-core")
-    implementation("org.hibernate:hibernate-entitymanager")
+//    implementation("org.hibernate:hibernate-core")
+//    implementation("org.hibernate:hibernate-entitymanager")
     implementation("org.liquibase:liquibase-core")
     implementation("org.postgresql:postgresql")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
     implementation("org.springframework.boot:spring-boot-loader-tools")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -191,17 +191,15 @@ dependencies {
     implementation("org.springframework.security:spring-security-data")
     implementation("org.springframework.security:spring-security-messaging")
     implementation("org.springframework.security:spring-security-web")
-    implementation("org.testcontainers:postgresql:1.18.3")
-    implementation("org.zalando:problem-spring-web-starter:0.27.0")
+    implementation("org.testcontainers:postgresql")
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.1")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
     implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
-    implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.11")
     implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
     implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
     liquibaseRuntime("info.picocli:picocli:4.7.0")
-    liquibaseRuntime("org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}")
+    liquibaseRuntime("org.liquibase.ext:liquibase-hibernate6:${liquibaseHibernate6Version}")
     liquibaseRuntime("org.liquibase:liquibase-core")
     liquibaseRuntime("org.postgresql:postgresql:42.5.2")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
@@ -212,7 +210,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}")
-//    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
+////    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
 }
 
 tasks {

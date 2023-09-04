@@ -9,6 +9,7 @@ import ai.giskard.web.dto.DatasetProcessFunctionType;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,10 +43,16 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
     protected SlicingFunction create(SlicingFunctionDTO dto) {
         SlicingFunction function = giskardMapper.fromDTO(dto);
         function.setProjectKey(dto.getProjectKey());
+
         if (function.getArgs() != null) {
             function.getArgs().forEach(arg -> arg.setFunction(function));
         }
-        function.setVersion(slicingFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
+
+        if (Strings.isBlank(function.getDisplayName())) {
+            function.setDisplayName(function.getModule() + "." + function.getName());
+        }
+
+        function.setVersion(slicingFunctionRepository.countByDisplayName(function.getDisplayName()) + 1);
         return function;
     }
 
@@ -82,7 +89,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         slicingFunction.setModuleDoc("");
         slicingFunction.setName(name);
         slicingFunction.setTags(List.of("pickle", "ui"));
-        slicingFunction.setVersion(slicingFunctionRepository.countByNameAndModule(slicingFunction.getName(), slicingFunction.getModule()) + 1);
+        slicingFunction.setVersion(slicingFunctionRepository.countByDisplayName(name) + 1);
         slicingFunction.setCellLevel(false);
         slicingFunction.setColumnType("");
         slicingFunction.setProcessType(DatasetProcessFunctionType.CLAUSES);
