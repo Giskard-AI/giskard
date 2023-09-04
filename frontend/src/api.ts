@@ -52,6 +52,7 @@ import {
 } from './generated-sources';
 import {TYPE} from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
+import TipWithLinkToast from '@/views/main/utils/TipWithLinkToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
@@ -124,16 +125,16 @@ async function errorInterceptor(error) {
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
-        } else if (error.response.status === 403 && HF_DEMO_SPACE_ID === useMainStore().appSettings?.hfSpaceId) {
-            console.warn(`HTTP403 received from demo space ${HF_DEMO_SPACE_ID}`);
+        } else if (error.response.status === 503 && HF_DEMO_SPACE_ID === useMainStore().appSettings?.hfSpaceId) {
+            console.warn(`HTTP503 received from demo space ${HF_DEMO_SPACE_ID}`);
             Vue.$toast(
                 {
-                    component: ErrorToast,
+                    component: TipWithLinkToast,
                     props: {
                         title: 'Warning',
                         detail: `You cannot modify Giskard Hugging Face demo space.
 Please create your own space and get a license from Giskard.`,
-                        stack: null,
+                        link: "/hugging-face-spaces/tip",
                     },
                 },
                 {
