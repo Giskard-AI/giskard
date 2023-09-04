@@ -1,5 +1,7 @@
 <template>
-  <v-menu v-model="menu" :close-on-content-click="false" disable-keys offset-x right :nudge-left="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" :nudge-bottom="28" :max-width="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" min-width="300">
+  <v-menu v-model="menu" :close-on-content-click="false" disable-keys offset-x right
+          :nudge-left="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" :nudge-bottom="28"
+          :max-width="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" min-width="300">
     <template v-slot:activator="{ on, attrs }">
       <v-btn outlined tile small v-bind="attrs" v-on="on" :style="{ 'background-color': backgroundColors[filter.type] }">
         <v-icon left>
@@ -12,12 +14,16 @@
     <v-form @submit.p.prevent="save">
       <v-card>
         <v-row no-gutters>
-          <v-col v-if="dirtyFilterValue.type === RowFilterType.CUSTOM" class="left-column d-flex" @keydown.tab="e => e.stopPropagation()">
-            <CustomInspectionFilter :is-target-available="isTargetAvailable" :labels="labels" :model-type="modelType" v-model="dirtyFilterValue" />
+          <v-col v-if="dirtyFilterValue.type === RowFilterType.CUSTOM" class="left-column d-flex"
+                 @keydown.tab="e => e.stopPropagation()">
+            <CustomInspectionFilter :is-target-available="isTargetAvailable" :labels="labels" :model-type="modelType"
+                                    v-model="dirtyFilterValue"/>
           </v-col>
           <v-col class="right-column">
             <v-list dense class="pa-0">
-              <v-list-item @click="selectFilter(item)" class="tile" :class="{ 'selected': dirtyFilterValue.type === item.value }" v-for="item in filterTypes" :key="item.value" :disabled="item.disabled" link>
+              <v-list-item @click="selectFilter(item)" class="tile"
+                           :class="{ 'selected': dirtyFilterValue.type === item.value }" v-for="item in filterTypes"
+                           :key="item.value" :disabled="item.disabled" link>
                 <v-list-item-title>{{ item.label }}</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -40,13 +46,16 @@
 </template>
 
 <script setup lang="ts">
-import { isClassification } from "@/ml-utils";
-import { Filter, ModelType, RowFilterType } from "@/generated-sources";
+import {isClassification} from "@/ml-utils";
+import {Filter, ModelType, RowFilterType} from "@/generated-sources";
 import CustomInspectionFilter from "./CustomInspectionFilter.vue";
 import _ from "lodash";
 import mixpanel from "mixpanel-browser";
-import { anonymize } from "@/utils";
-import { onMounted, ref, watch, computed } from "vue";
+import {anonymize} from "@/utils";
+import {computed, onMounted, ref, watch} from "vue";
+import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+
+const debuggingSessionStore = useDebuggingSessionsStore();
 
 interface FilterType {
   label: string;
@@ -79,23 +88,27 @@ const menu = ref(false);
 const filter = ref<Filter>(initFilter());
 const dirtyFilterValue = ref<Filter>(initFilter());
 
+watch(() => debuggingSessionStore.selectedFilter, (value) => {
+  selectFilter(<FilterType>value);
+})
+
 const filterTypes = computed(() => [
-  { value: RowFilterType.ALL, label: 'All', description: 'Entire dataset' },
+  {value: RowFilterType.ALL, label: 'All', description: 'Entire dataset'},
   {
     value: RowFilterType.CORRECT,
     label: isClassification(props.modelType) ? 'Correct Predictions' : 'Closest predictions (top 15%)',
     disabled: !props.isTargetAvailable,
     description: isClassification(props.modelType) ?
-      'Predicted value is equal to actual value in dataset target column' :
-      'Top 15% of most accurate predictions'
+        'Predicted value is equal to actual value in dataset target column' :
+        'Top 15% of most accurate predictions'
   },
   {
     value: RowFilterType.WRONG,
     label: isClassification(props.modelType) ? 'Incorrect Predictions' : 'Most distant predictions (top 15%)',
     disabled: !props.isTargetAvailable
   },
-  { value: RowFilterType.BORDERLINE, label: 'Borderline', disabled: !props.isTargetAvailable },
-  { value: RowFilterType.CUSTOM, label: 'Custom' }
+  {value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: !props.isTargetAvailable},
+  {value: RowFilterType.CUSTOM, label: 'Custom'}
 ]);
 
 const filterTypesByKey = computed(() => {

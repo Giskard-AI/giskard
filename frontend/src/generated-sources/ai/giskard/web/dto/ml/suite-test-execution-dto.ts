@@ -7,6 +7,7 @@ import type {TestResult} from './../../../domain/ml/test-result';
  */
 export interface SuiteTestExecutionDTO {
     actualSlicesSize: number[];
+    arguments: {[key: string]: string};
     inputs: {[key: string]: string};
     messages: TestResultMessageDTO[];
     metric: number;
