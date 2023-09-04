@@ -183,21 +183,21 @@ def test_slice_bounds_valid_numeric(german_credit_data):
 
     # Test quartile values
     bounds = slice_bounds("credit_amount", q2, german_credit_data)
-    assert bounds == [q2, q3]
+    assert bounds == (q2, q3)
 
     # Test min/max
     bounds = slice_bounds("credit_amount", numeric_col.min(), german_credit_data)
-    assert bounds == [numeric_col.min(), q1]
+    assert bounds == (numeric_col.min(), q1)
 
     bounds = slice_bounds("credit_amount", numeric_col.max(), german_credit_data)
-    assert bounds == [q3, numeric_col.max()]
+    assert bounds == (q3, numeric_col.max())
 
     # Test valid values
     bounds = slice_bounds("credit_amount", 1500, german_credit_data)
-    assert bounds == [1365.5, 2319.5]
+    assert bounds == (1365.5, 2319.5)
 
     bounds = slice_bounds("credit_amount", 2500, german_credit_data)
-    assert bounds == [2319.5, 3972.25]
+    assert bounds == (2319.5, 3972.25)
 
 
 def test_slice_bounds_non_numeric(german_credit_data):
