@@ -186,7 +186,7 @@ def _text(
                 f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8")
             )
             if _hash not in hashed_typo_transformations.keys():
-                hashed_typo_transformations.update({_hash: ds_slice_copy.transform(t)})
+                hashed_typo_transformations[_hash] = ds_slice_copy.transform(t)
             transformed = hashed_typo_transformations.get(_hash)
         else:
             transformed = ds_slice_copy.transform(t)
