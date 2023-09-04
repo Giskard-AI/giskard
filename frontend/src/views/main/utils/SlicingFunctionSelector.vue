@@ -1,29 +1,27 @@
 <template>
-    <div class="d-flex" :class="{ w100: fullWidth }">
-      <v-select attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label' v-model='value'
-                :items="[{
-            name: 'None',
-            displayName: 'None',
-            uuid: null,
-            args: []
-        }, ...availableSlicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false'
-                @input='onInput'
-                :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-        <template v-slot:append-item v-if='allowNoCodeSlicing'>
-          <v-list-item @click='createSlice'>
-            <v-list-item-content>
-              <v-list-item-title>
-                <v-icon>add</v-icon>
-                Create new slice
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-      </v-select>
-        <v-btn icon v-if="hasArguments" @click="updateArgs">
-            <v-icon>settings</v-icon>
-        </v-btn>
-    </div>
+  <div class="d-flex" :class="{ w100: fullWidth }">
+    <v-autocomplete attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label'
+                    v-model='value' :items="[{
+      name: 'None',
+      displayName: 'None',
+      uuid: null,
+      args: []
+    }, ...availableSlicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
+      <template v-slot:append-item v-if='allowNoCodeSlicing'>
+        <v-list-item @click='createSlice'>
+          <v-list-item-content>
+            <v-list-item-title>
+              <v-icon>add</v-icon>
+              Create new slice
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+    </v-autocomplete>
+    <v-btn icon v-if="hasArguments" @click="updateArgs">
+      <v-icon>settings</v-icon>
+    </v-btn>
+  </div>
 </template>
 
 <script setup lang="ts">

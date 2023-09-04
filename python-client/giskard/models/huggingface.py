@@ -248,12 +248,19 @@ class HuggingFaceModel(WrapperModel):
         return predictions
 
     def _get_predictions(self, data):
+        if isinstance(self.model, pipelines.Pipeline):
+            if isinstance(data, pd.DataFrame):
+                data = data.to_dict(orient="records")
+            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(data, top_k=None)]
+            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
+
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():
                 return self.model(**data)
 
-        if isinstance(self.model, pipelines.Pipeline):
-            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(list(data), top_k=None)]
-            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
-
         return self.model(**data)
+
+    def to_mlflow(self, artifact_path: str = "transformers-model-from-giskard", **kwargs):
+        import mlflow
+
+        return mlflow.transformers.log_model(self.model, artifact_path, **kwargs)

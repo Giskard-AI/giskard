@@ -9,13 +9,13 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.user.AdminUserDTO;
 import ai.giskard.web.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import tech.jhipster.security.RandomUtil;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -70,7 +70,7 @@ public class UserService {
             .findOneByEmailIgnoreCase(mail)
             .filter(User::isActivated)
             .map(user -> {
-                user.setResetKey(RandomUtil.generateResetKey());
+                user.setResetKey(RandomStringUtils.randomAlphanumeric(20)); // NOSONAR - safe here
                 user.setResetDate(Instant.now());
                 return user;
             });
@@ -104,7 +104,6 @@ public class UserService {
         newUser.setActivated(true);
         newUser.setEnabled(true);
         // new user gets registration key
-        //newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Role> authorities = new HashSet<>();
         roleRepository.findByName(AuthoritiesConstants.AICREATOR).ifPresent(authorities::add);
         newUser.setRoles(authorities);
@@ -131,7 +130,7 @@ public class UserService {
         }
         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
         user.setPassword(encryptedPassword);
-        user.setResetKey(RandomUtil.generateResetKey());
+        user.setResetKey(RandomStringUtils.randomAlphanumeric(20)); // NOSONAR - safe here
         user.setResetDate(Instant.now());
         user.setActivated(true);
         user.setEnabled(true);
@@ -185,35 +184,6 @@ public class UserService {
             })
             .map(AdminUserDTO::new);
     }
-
-    /***
-     * Tries to delete a user.
-     * User cannot be the only admin (ie there must be one admin left after deletion)
-     * @param login
-     */
-    public void deleteUser(String login) {
-        userRepository.findOneWithRolesByLogin(login).ifPresent(user -> {
-            roleRepository.findByName(AuthoritiesConstants.ADMIN).ifPresent(adminRole -> {
-                if (user.getRoles().contains(adminRole) && userRepository.findByRolesNameIn(Collections.singletonList(adminRole.getName())).size() < 2) {
-                    throw new GiskardRuntimeException("You must have at least one other admin user before deleting an admin user.");
-                }
-            });
-
-            user.setEnabled(false);
-            userRepository.save(user);
-        });
-    }
-
-    public void enableUser(String login) {
-        userRepository
-            .findOneByLogin(login)
-            .ifPresentOrElse(user -> {
-                    user.setEnabled(true);
-                    log.info("Enable user : {}", user);
-                },
-                () -> log.warn("Cannot enable user because its login wasn't found : {}", login));
-    }
-
 
     /**
      * Update basic information (first name, last name, email, language) for the current user.

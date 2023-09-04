@@ -1,5 +1,7 @@
 from typing import Optional
 
+from giskard.core.model_validation import ValidationFlags
+
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from .logger import logger
@@ -32,7 +34,13 @@ _register_default_detectors()
 
 
 def scan(
-    model: BaseModel, dataset: Optional[Dataset] = None, params=None, only=None, verbose=True, raise_exceptions=False
+    model: BaseModel,
+    dataset: Optional[Dataset] = None,
+    params=None,
+    only=None,
+    verbose=True,
+    raise_exceptions=False,
+    validation_flags: Optional[ValidationFlags] = ValidationFlags(),
 ):
     """
     Scan a model with a dataset.
@@ -49,10 +57,14 @@ def scan(
         raise_exceptions (bool):
             Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
+        validation_flags (ValidationFlags):
+            Collection of flags to activate/deactivate model_validation flags
 
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(model, dataset, verbose=verbose, raise_exceptions=raise_exceptions)
+    return scanner.analyze(
+        model, dataset, verbose=verbose, raise_exceptions=raise_exceptions, validation_flags=validation_flags
+    )
 
 
 __all__ = ["scan", "Scanner", "logger"]

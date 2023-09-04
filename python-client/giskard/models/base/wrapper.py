@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Union
 
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
 import yaml
@@ -129,7 +130,12 @@ class WrapperModel(BaseModel, ABC):
             output = self._postprocess(output)
             outputs.append(output)
 
-        return np.concatenate(outputs)
+        raw_prediction = np.concatenate(outputs)
+
+        if self.is_regression:
+            return raw_prediction.astype(float)
+
+        return raw_prediction
 
     def _possibly_fix_predictions_shape(self, raw_predictions: np.ndarray):
         if not self.is_classification:
@@ -288,6 +294,16 @@ class WrapperModel(BaseModel, ABC):
                 wrapper_meta["batch_size"] = int(wrapper_meta["batch_size"]) if wrapper_meta["batch_size"] else None
                 return wrapper_meta
         else:
-            raise ValueError(
-                f"Cannot load model ({cls.__module__}.{cls.__name__}), " f"{wrapper_meta_file} file not found"
-            )
+            # ensuring backward compatibility
+            return {"batch_size": None}
+
+    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", **kwargs):
+        def _giskard_predict(df):
+            return self.predict(df)
+
+        class MLflowModel(mlflow.pyfunc.PythonModel):
+            def predict(self, df):
+                return _giskard_predict(df)
+
+        mlflow_model = MLflowModel()
+        return mlflow.pyfunc.log_model(artifact_path=artifact_path, python_model=mlflow_model)

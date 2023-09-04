@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from giskard.slicing.slice import ContainsWord, Query, QueryBasedSliceFunction, GreaterThan, LowerThan, EqualTo
 
@@ -27,6 +28,24 @@ def test_equality_comparison_query():
     )
 
     q = QueryBasedSliceFunction(Query([EqualTo("feature with special @chars`'\"£££££", "b@'\"£££££")]))
+
+    res = q.execute(df)
+    assert len(res) == 1
+
+
+@pytest.mark.parametrize(
+    "series",
+    [
+        (["This is a test", "tests are important"]),
+        (["This is a test", "tests are important".encode("utf-8")]),
+        (["This is a test".encode("utf-8"), "tests are important"]),
+        (["This is a test".encode("utf-8"), "tests are important".encode("utf-8")]),
+    ],
+)
+def test_contains(series):
+    df = pd.DataFrame({"feat": series})
+
+    q = QueryBasedSliceFunction(Query([ContainsWord("feat", "test")]))
 
     res = q.execute(df)
     assert len(res) == 1

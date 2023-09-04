@@ -54,6 +54,10 @@ http {
         location /websocket {
             proxy_pass http://localhost:9000;
         }
+
+        location /ml-worker {
+            proxy_pass http://localhost:9000;
+        }
         
         location /management {
                     client_max_body_size   16G;

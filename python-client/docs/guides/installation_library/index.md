@@ -105,8 +105,6 @@ dependencies = [
     "ipython", # eli5.show_prediction doesn't work without ipython
     "requests-toolbelt>=0.9.1",
     "mixpanel>=4.4.0",
-    "grpcio>=1.39.0,<=1.51.1",
-    "grpcio-status>=1.16.0,<=1.51.1",
     "requests>=2.19",
     "protobuf<=3.20.3",
     "pydantic>=1.7",

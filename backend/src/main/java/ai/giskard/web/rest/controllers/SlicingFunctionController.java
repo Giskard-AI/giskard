@@ -10,8 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -34,8 +34,9 @@ public class SlicingFunctionController {
         return giskardMapper.toDTO(slicingFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping("project/{projectKey}/slices/{uuid}")
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey") String projectKey,
+    @PutMapping({"project/{projectKey}/slices/{uuid}", "slices/{uuid}"})
+    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
+                                                    @PathVariable("uuid") @NotNull UUID uuid,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
         slicingFunction.setProjectKeys(Set.of(projectKey));
         return slicingFunctionService.save(slicingFunction);

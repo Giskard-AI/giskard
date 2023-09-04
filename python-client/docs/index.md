@@ -49,6 +49,15 @@ reference/index
 catalogs/index
 ```
 
+```{toctree}
+:caption: Integrations
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+integrations/index
+```
+
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
 <p align="center"> 
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
@@ -74,6 +83,12 @@ catalogs/index
 :::{card} <h2><center> API Reference </center></h2>
 :link: reference/index.html
 <img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
+:::
+
+:::{card} <h2><center> Contribute </center></h2>
+:link: contribute/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
+:::
 ::::
 
 :::::
@@ -91,7 +106,8 @@ catalogs/index
 
 :::{card} <h2><center> Tutorials </center></h2>
 :link: tutorials/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="95%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="94%">
+:::
 ::::
 
 :::::
@@ -104,13 +120,15 @@ catalogs/index
 :::{card} <h2><center> Catalogs </center></h2>
 :link: catalogs/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.5%">
 :::
 
-:::{card} <h2><center> Contribute </center></h2>
-:link: contribute/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
-::::
+:::{card} <h2><center> Integrations </center></h2>
+:link: integrations/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="100%">
+:::
 
+::::
 :::::
-::::::
+
+    

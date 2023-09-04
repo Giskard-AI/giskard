@@ -102,6 +102,10 @@ public interface GiskardMapper {
 
     AdminUserDTO userToAdminUserDTO(User user);
 
+    ApiKeyDTO toDTO(ApiKey obj);
+
+    List<ApiKeyDTO> apiKeysToApiKeysDTO(List<ApiKey> obj);
+
     @Mapping(target = "activationKey", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "projects", ignore = true)

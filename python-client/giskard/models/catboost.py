@@ -14,3 +14,6 @@ class CatboostModel(SKLearnModel):
     @classmethod
     def load_model(cls, local_dir):
         return mlflow.catboost.load_model(local_dir)
+
+    def to_mlflow(self, artifact_path: str = "catboost-model-from-giskard", **kwargs):
+        return mlflow.catboost.log_model(self.model, artifact_path, **kwargs)

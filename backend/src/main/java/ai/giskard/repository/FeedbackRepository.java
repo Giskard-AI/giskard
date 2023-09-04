@@ -1,6 +1,7 @@
 package ai.giskard.repository;
 
 import ai.giskard.domain.Feedback;
+import ai.giskard.domain.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface FeedbackRepository extends MappableJpaRepository<Feedback, Long
     List<Feedback> findAllByModelId(UUID modelId);
 
     List<Feedback> findAllByProjectIdAndUserId(Long projectId, Long userId);
+
+    List<Feedback> findAllByUser(User user);
 
     Feedback findOneById(Long feedbackId);
 

@@ -18,8 +18,8 @@ interface State {
 
 function latestVersions<E extends CallableDTO>(data?: Array<E>): Array<E> {
     return chain(data ?? [])
-      .groupBy(func => `${func.module}.${func.name}`)
-      .mapValues(functions => chain(functions)
+      .groupBy(func => func.module ?? `${func.module}.${func.name}`)
+        .mapValues(functions => chain(functions)
             .maxBy(func => func.version ?? 1)
             .value())
         .values()

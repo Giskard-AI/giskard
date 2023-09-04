@@ -30,6 +30,24 @@ def tensorflow_model():
     )
 
 
+def pyfunc_model():
+    import tensorflow as tf
+    from tensorflow import keras
+
+    tf_model = tf.keras.Sequential(
+        [
+            keras.layers.Dense(512, activation="relu", input_shape=(784,)),
+            keras.layers.Dropout(0.2),
+            keras.layers.Dense(10, activation="softmax"),
+        ]
+    )
+
+    import mlflow
+
+    model_uri = mlflow.tensorflow.log_model(tf_model, "tensorflow_model").model_uri
+    return mlflow.pyfunc.load_model(model_uri)
+
+
 def huggingface_model():
     from transformers import AutoModelForSequenceClassification
 

@@ -2,8 +2,10 @@ package ai.giskard.domain;
 
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import ai.giskard.web.dto.DatasetProcessFunctionType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.List;
@@ -24,11 +26,14 @@ public abstract class DatasetProcessFunction extends Callable {
     private Set<Project> projects;
 
     @Column(nullable = false)
+    @ColumnDefault("false")
     private boolean cellLevel;
     @Column
     private String columnType;
-    @Column()
+    @Column
+    @Enumerated(EnumType.STRING)
     private DatasetProcessFunctionType processType;
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private List<Map<String, Object>> clauses; // NOSONAR
 }
+

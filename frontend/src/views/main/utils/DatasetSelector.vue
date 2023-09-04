@@ -1,5 +1,7 @@
 <template>
-  <v-select attach clearable outlined class='dataset-selector' :label='label' :model-value='value' :items='filteredDatasets' :item-text='extractDatasetName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense hide-details></v-select>
+  <v-select attach clearable outlined class='dataset-selector' :label='label' v-model='value' :items='filteredDatasets'
+            :item-text='extractDatasetName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense
+            hide-details></v-select>
 </template>
 
 <script setup lang="ts">

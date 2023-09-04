@@ -37,12 +37,23 @@
                                         </v-list-item-content>
                                     </v-list-item>
                                 </template>
+                                <v-divider />
                             </v-list-item-group>
+                            <v-list-item @click="openSliceModal">
+                                <v-list-item-content>
+                                    <v-list-item-title class="create-slice-item">
+                                        <v-icon class="mb-1">add</v-icon>
+                                        CREATE NEW SLICING FUNCTION
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-divider />
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="py-2">
+                        <div class="py-2 d-flex flex-column">
                             <span class="selected-func-name">{{ selected.displayName ?? selected.name }}</span>
+                            <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
                         </div>
 
                         <div class="vc overflow-x-hidden pr-5">
@@ -151,6 +162,30 @@
 </template>
 
 <script setup lang="ts">
+import { chain } from "lodash";
+import { computed, inject, onActivated, ref, watch } from "vue";
+import { pasterColor } from "@/utils";
+import { editor } from "monaco-editor";
+import { DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO } from "@/generated-sources";
+import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
+import { storeToRefs } from "pinia";
+import { useCatalogStore } from "@/stores/catalog";
+import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
+import { api } from "@/api";
+import DatasetTable from "@/components/DatasetTable.vue";
+import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
+import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
+import { alphabeticallySorted } from "@/utils/comparators";
+import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
+import CodeSnippet from "@/components/CodeSnippet.vue";
+import IEditorOptions = editor.IEditorOptions;
+import mixpanel from "mixpanel-browser";
+import { anonymize } from "@/utils";
+import { $vfm } from 'vue-final-modal';
+import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 import { chain } from 'lodash';
 import { computed, onActivated, ref, watch } from 'vue';
 import { anonymize, pasterColor } from '@/utils';
@@ -179,6 +214,8 @@ let props = defineProps<{
   suiteId?: number
 }>();
 
+const mainStore = useMainStore();
+
 const editor = ref(null);
 
 const searchFilter = ref<string>('');
@@ -192,8 +229,15 @@ const isSlicingFunctionRunning = ref<boolean>(false);
 
 const panel = ref<number[]>([0]);
 
+const monacoOptions: IEditorOptions = inject('monacoOptions');
+monacoOptions.readOnly = true;
+
+const hasCustomTag = computed(() => {
+    return selected.value?.tags?.includes('custom') ?? false;
+});
+
 const hasGiskardFilters = computed(() => {
-  return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined;
+    return slicingFunctions.value.find(t => t.tags.includes('giskard')) !== undefined;
 });
 
 const datasetFilter = computed(() =>
@@ -277,7 +321,24 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
+function openSliceModal() {
+    $vfm.show({
+        component: CreateSliceCatalogModal,
+        bind: {
+            projectId: props.projectId,
+        },
+        on: {
+            created: (uuid) => {
+                selected.value = slicingFunctions.value.find(t => t.uuid === uuid);
+            }
+        }
+    })
+}
 
+async function copyFunctionId() {
+    await copyToClipboard(selected.value!.uuid);
+    mainStore.addNotification({ content: "Copied Slicing Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style scoped lang="scss">
@@ -360,5 +421,22 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 .list-func-name {
     font-weight: 500;
+}
+
+.create-slice-item {
+    text-align: center;
+    font-size: 1.125rem;
+    white-space: break-spaces;
+}
+
+#function-id {
+    font-size: 0.675rem !important;
+    line-height: 0.675rem !important;
+    cursor: pointer;
+}
+
+#function-id span {
+    text-decoration: underline;
+    margin-right: 0.2rem;
 }
 </style>

@@ -17,7 +17,7 @@
           </div>
       -->
       <div class='flex-grow-1'/>
-      <div v-if='result' :class='`d-flex flex-row align-center gap-8 test-${result.status.toLowerCase()}`'>
+      <div v-if='result' :class='`d-flex flex-row flex-wrap align-center gap-8 test-${result.status.toLowerCase()}`'>
                 <span v-if='result.metric' class='metric'>Measured <strong>Metric = {{
                     result.metric
                   }}</strong></span>
@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status].capitalized }}
         </v-chip>
-        <v-btn color="primary" @click="debugTest" outlined small :disabled="!canBeDebugged" :loading="loading">
+        <v-btn color='primary' @click='debugTest' outlined small :disabled='!canBeDebugged' :loading='loading'>
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -91,14 +91,15 @@ import {useCatalogStore} from '@/stores/catalog';
 import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import {useDebuggingSessionsStore} from '@/stores/debugging-sessions';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import mixpanel from 'mixpanel-browser';
 import {TEST_RESULT_DATA} from '@/utils/tests.utils';
-import {api} from "@/api";
-import router from "@/router";
-import ModelSelector from "@/views/main/utils/ModelSelector.vue";
-import {chain} from "lodash";
+import {api} from '@/api';
+import router from '@/router';
+import ModelSelector from '@/views/main/utils/ModelSelector.vue';
+import {chain} from 'lodash';
+import {$tags} from "@/utils/nametags.utils";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -135,7 +136,7 @@ function mapValue(value: string, type: string): string {
     return model.name ?? value;
   } else if (type === 'Dataset') {
     const dataset = datasets.value[value];
-    return dataset.name ?? value;
+    return $tags(dataset.name) ?? value;
   }
   return value;
 }

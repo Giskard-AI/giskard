@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class ProjectController {
      * @param id         id of the existing project
      * @return updated project
      */
-    @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId( #id)")
     @PutMapping(value = "/project/{id}")
     public ProjectDTO updateProject(@RequestBody ProjectPostDTO projectDTO, @PathVariable("id") Long id) {
         Project updatedProject = this.projectService.update(id, projectDTO);
@@ -102,7 +102,7 @@ public class ProjectController {
      * @return msg Deleted if deleted
      */
     @DeleteMapping(value = "/project/{id}")
-    @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId( #id)")
     public void delete(@PathVariable("id") Long id) {
         this.projectService.delete(id);
     }
@@ -115,7 +115,7 @@ public class ProjectController {
      * @return updated project
      */
     @DeleteMapping(value = "/project/{id}/guests/{userId}")
-    @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId( #id)")
     public ProjectDTO uninvite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         Project project = this.projectService.uninvite(id, userId);
         return giskardMapper.projectToProjectDTO(project);
@@ -128,7 +128,7 @@ public class ProjectController {
      * @param userId user's id
      * @return project updated
      */
-    @PreAuthorize("@permissionEvaluator.canWriteProject( #id)")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectId( #id)")
     @PutMapping(value = "/project/{id}/guests/{userId}")
     @Transactional
     public ProjectDTO invite(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
