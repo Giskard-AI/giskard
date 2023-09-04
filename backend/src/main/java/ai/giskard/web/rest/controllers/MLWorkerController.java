@@ -5,7 +5,6 @@ import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSBaseDTO;
 import ai.giskard.ml.dto.MLWorkerWSGetInfoDTO;
 import ai.giskard.ml.dto.MLWorkerWSGetInfoParamDTO;
-import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.ml.MLWorkerService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
@@ -72,9 +71,6 @@ public class MLWorkerController {
     @PostMapping("/stop")
     public void stopWorker(boolean internal) {
         MLWorkerID workerID = internal ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
-        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
-            workerID = MLWorkerID.INTERNAL;
-        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.STOP_WORKER, null);
         }

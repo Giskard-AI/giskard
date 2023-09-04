@@ -202,9 +202,6 @@ public class TestSuiteService {
 
         Project project = projectRepository.getOneByKey(projectKey);
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
-        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
-            workerID = MLWorkerID.INTERNAL;
-        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSGenerateTestSuiteParamDTO param = MLWorkerWSGenerateTestSuiteParamDTO.builder()
                     .projectKey(projectKey)
