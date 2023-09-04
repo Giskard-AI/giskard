@@ -22,6 +22,70 @@ from ..push import ContributionPush
 from .utils import slice_bounds
 
 
+def _get_model_predictions(model: BaseModel, ds: Dataset, sliced_ds: Dataset):
+
+    raw_prediction, correct_prediction = None, None
+
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        training_label = sliced_ds.df[ds.target].values[0] if ds.target is not None else None
+        predictions = model.predict(sliced_ds)
+        prediction = predictions.prediction[0]
+
+        raw_prediction = predictions.raw_prediction[0]
+        correct_prediction = training_label == prediction if training_label is not None else None
+
+    elif model.meta.model_type == SupportedModelTypes.REGRESSION:
+        y = sliced_ds.df[ds.target].values[0]
+        y_hat = model.predict(sliced_ds).prediction[0]
+        error = abs(y_hat - y)
+
+        correct_prediction = abs(error - y) / y < 0.2
+
+    return raw_prediction, correct_prediction
+
+
+def _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, correct_prediction):
+    bounds = slice_bounds(feature=shap_feature, value=sliced_ds.df[shap_feature].values[0], ds=ds)
+    return ContributionPush(
+        feature=shap_feature,
+        value=sliced_ds.df[shap_feature].values[0],
+        bounds=bounds,
+        model_type=model.meta.model_type,
+        correct_prediction=correct_prediction,
+    )
+
+
+def _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, correct_prediction):
+    bounds = slice_bounds(feature=shap_feature, value=sliced_ds.df[shap_feature].values[0], ds=ds)
+    return ContributionPush(
+        feature=shap_feature,
+        value=sliced_ds.df[shap_feature].values[0],
+        bounds=bounds,
+        model_type=model.meta.model_type,
+        correct_prediction=correct_prediction,
+    )
+
+
+def _create_text_contribution_push(shap_feature, sliced_ds, model, raw_prediction, correct_prediction):
+    text_explanation = explain_text(
+        model=model, input_df=sliced_ds.df, text_column=shap_feature, text_document=sliced_ds.df[shap_feature].iloc[0]
+    )
+    if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
+        text_explanation_map = dict(zip(text_explanation[0], text_explanation[1][raw_prediction]))
+    else:
+        text_explanation_map = dict(zip(text_explanation[0], text_explanation[1]))
+
+    most_important_word = _detect_text_shap_outlier(text_explanation_map)
+
+    return ContributionPush(
+        feature=shap_feature,
+        feature_type="text",
+        value=most_important_word,
+        model_type=model.meta.model_type,
+        correct_prediction=correct_prediction,
+    )
+
+
 def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> ContributionPush:
     """
     Create contribution notification from SHAP values.
@@ -41,58 +105,22 @@ def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
     """
     _text_is_the_only_feature = len(ds.column_types.values()) == 1 and list(ds.column_types.values())[0] == "text"
     global_feature_shap = _get_shap_values(model, ds, df)
-    shap_res = _detect_shap_outlier(global_feature_shap) if _existing_shap_values(ds) else None
-    _shap_outlier_detected = shap_res is not None
-    shap_res = shap_res if not _text_is_the_only_feature else list(ds.column_types.keys())[0]
-    _most_important_feature_is_not_text = _shap_outlier_detected and ds.column_types[shap_res] != "text"
-    _most_important_feature_is_text = _shap_outlier_detected and ds.column_types[shap_res] == "text"
-    _compute_predictions = _shap_outlier_detected or _text_is_the_only_feature
+    shap_feature = _detect_shap_outlier(global_feature_shap) if _existing_shap_values(ds) else None
+    _shap_outlier_detected = shap_feature is not None
+    _model_predictions_needed = _shap_outlier_detected or _text_is_the_only_feature
 
-    if _compute_predictions:
-        slice_df = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
-        values = slice_df.df
+    if _model_predictions_needed:
+        shap_feature = shap_feature if not _text_is_the_only_feature else list(ds.column_types.keys())[0]
+        _shap_feature_is_not_text = _shap_outlier_detected and ds.column_types[shap_feature] != "text"
+        _shap_feature_is_text = _shap_outlier_detected and ds.column_types[shap_feature] == "text"
 
-        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-            training_label = values[ds.target].values[0] if ds.target is not None else None
-            predictions = model.predict(slice_df)
-            prediction = predictions.prediction[0]
-            raw_prediction = predictions.raw_prediction[0]
+        sliced_ds = Dataset(df=df, target=ds.target, column_types=ds.column_types.copy(), validation=False)
+        raw_prediction, correct_prediction = _get_model_predictions(model, ds, sliced_ds)
 
-            correct_prediction = training_label == prediction if training_label is not None else None
-        elif model.meta.model_type == SupportedModelTypes.REGRESSION:
-            y = values[ds.target].values[0]
-            y_hat = model.predict(slice_df).prediction[0]
-            error = abs(y_hat - y)
-
-            correct_prediction = abs(error - y) / y < 0.2
-
-        if _most_important_feature_is_not_text:
-            bounds = slice_bounds(feature=shap_res, value=values[shap_res].values[0], ds=ds)
-            return ContributionPush(
-                feature=shap_res,
-                value=values[shap_res].values[0],
-                bounds=bounds,
-                model_type=model.meta.model_type,
-                correct_prediction=correct_prediction,
-            )
-        elif _most_important_feature_is_text or _text_is_the_only_feature:
-            text_explanation = explain_text(
-                model=model, input_df=df, text_column=shap_res, text_document=df[shap_res].iloc[0]
-            )
-            if model.meta.model_type == SupportedModelTypes.CLASSIFICATION:
-                text_explanation_map = dict(zip(text_explanation[0], text_explanation[1][raw_prediction]))
-            else:
-                text_explanation_map = dict(zip(text_explanation[0], text_explanation[1]))
-
-            most_important_word = _detect_text_shap_outlier(text_explanation_map)
-
-            return ContributionPush(
-                feature=shap_res,
-                feature_type="text",
-                value=most_important_word,
-                model_type=model.meta.model_type,
-                correct_prediction=correct_prediction,
-            )
+        if _shap_feature_is_not_text:
+            _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, correct_prediction)
+        elif _shap_feature_is_text or _text_is_the_only_feature:
+            _create_text_contribution_push(shap_feature, sliced_ds, model, raw_prediction, correct_prediction)
 
 
 def _detect_shap_outlier(global_feature_shap):
