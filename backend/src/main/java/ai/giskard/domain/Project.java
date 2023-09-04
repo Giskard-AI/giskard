@@ -57,7 +57,7 @@ public class Project extends AbstractAuditingEntity {
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<ProjectModel> models = new HashSet<>();
 

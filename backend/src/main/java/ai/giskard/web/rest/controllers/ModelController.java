@@ -14,6 +14,8 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
+import ai.giskard.service.ee.LicenseException;
+import ai.giskard.service.ee.LicenseService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
@@ -46,6 +48,7 @@ public class ModelController {
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
     private final ProjectFileDeletionService deletionService;
+    private final LicenseService licenseService;
 
 
     /**
@@ -90,6 +93,17 @@ public class ModelController {
             return;
         }
         Project project = projectRepository.getOneByKey(projectKey);
+        if (
+            licenseService.getCurrentLicense().getModelPerProjectLimit() != null &&
+            project.getModels().size() >= licenseService.getCurrentLicense().getModelPerProjectLimit()
+        ) {
+            log.info("Exceed model numbers in project '{}'", project.getName());
+            // Improve the statement
+            throw new LicenseException(
+                "You are uploading a new model to a project with model number limits. " +
+                "Please upgrade your license to keep more versions."
+            );
+        }
         ProjectModel model = giskardMapper.fromDTO(dto);
         model.setProject(project);
         modelRepository.save(model);
