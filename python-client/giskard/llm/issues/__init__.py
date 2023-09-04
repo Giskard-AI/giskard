@@ -62,7 +62,7 @@ class _LlmIssueCategory:
                 "issue_name": self.name,
                 "issue_description": self.description,
                 "issue_examples": self.issue_examples,
-                "input_example": self.prompt_causing_issue_examples,
+                "input_examples": self.prompt_causing_issue_examples,
             },
         )
 
