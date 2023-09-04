@@ -56,7 +56,7 @@ def _find_categories(model_description, failed=False):
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.build_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     output = chain.run(prompt_template=model_description)
 
