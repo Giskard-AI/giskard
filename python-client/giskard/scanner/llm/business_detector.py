@@ -9,12 +9,13 @@ from ..issues import Issue, IssueLevel, IssueGroup
 from ..llm.prompts import GENERATE_TEST_PROMPT
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
+from ...llm.config import llm_config
 from ...models.langchain import LangchainModel
 
 
 def _generate_test_cases(model):
     try:
-        from langchain import PromptTemplate, LLMChain, OpenAI
+        from langchain import PromptTemplate, LLMChain
         from langchain.output_parsers import PydanticOutputParser
         from langchain.output_parsers import OutputFixingParser
     except ImportError as err:
@@ -31,13 +32,11 @@ def _generate_test_cases(model):
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     output = chain.run(prompt_template=f"{model.meta.name} - {model.meta.description}")
 
-    fix_parser = OutputFixingParser.from_llm(
-        parser=parser, llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.6)
-    )
+    fix_parser = OutputFixingParser.from_llm(parser=parser, llm=llm_config.default_llm(max_tokens=512, temperature=0.6))
 
     return fix_parser.parse(output).assertions
 

@@ -3,12 +3,13 @@ from typing import List
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
+from ..config import llm_config
 from ..prompts.prompts import VALIDATE_TEST_CASE
 from ...models.base.model import BaseModel
 from ...scanner.llm.utils import LLMImportError
 
 try:
-    from langchain import PromptTemplate, LLMChain, OpenAI
+    from langchain import PromptTemplate, LLMChain
     from langchain.output_parsers import PydanticOutputParser
     from langchain.output_parsers import RetryWithErrorOutputParser
 except ImportError as err:
@@ -28,9 +29,9 @@ prompt = PromptTemplate(
 )
 
 # TODO: allow custom llm
-chain = LLMChain(llm=OpenAI(temperature=0.2), prompt=prompt)
+chain = LLMChain(llm=llm_config.default_llm(temperature=0.2), prompt=prompt)
 
-retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=OpenAI(temperature=0.2))
+retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=llm_config.default_llm(temperature=0.2))
 
 
 def validate_test_case(model: BaseModel, test_case: str, predictions: List[str]) -> List[bool]:

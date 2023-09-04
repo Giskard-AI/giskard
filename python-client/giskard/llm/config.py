@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Tuple
 
@@ -32,6 +33,24 @@ class _LlmConfig:
             self._default_llm = _get_openai()
 
         return self._default_llm
+
+    def build_llm(self, **kwargs):
+        """
+        Get the default llm with parameterized values
+        If the parameter isn't supported for the llm, the parameter is ignored
+
+        :param kwargs: list of parameters to set for the llm
+        :return: default llm with parameterized values
+        """
+        default_llm = self.default_llm()
+
+        for key, arg in kwargs.items():
+            if hasattr(default_llm, key):
+                setattr(default_llm, key, arg)
+            else:
+                logging.debug(f"Skipping parameter {key} for LLM since {type(default_llm)} doesn't ' support it")
+
+        return default_llm
 
     def set_default_llm(self, default_llm=None):
         from langchain.base_language import BaseLanguageModel

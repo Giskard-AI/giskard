@@ -11,6 +11,7 @@ from .prompts import (
 )
 from ...core.errors import GiskardInstallationError
 from ...datasets.base import Dataset
+from ...llm.config import llm_config
 
 
 class LLMImportError(GiskardInstallationError):
@@ -38,7 +39,7 @@ def load_default_dataset():
 
 def _find_categories(model_description, failed=False):
     try:
-        from langchain import PromptTemplate, LLMChain, OpenAI
+        from langchain import PromptTemplate, LLMChain
         from langchain.output_parsers import PydanticOutputParser
         from langchain.output_parsers import RetryWithErrorOutputParser
     except ImportError as err:
@@ -55,12 +56,12 @@ def _find_categories(model_description, failed=False):
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     output = chain.run(prompt_template=model_description)
 
     retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser, llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.6)
+        parser=parser, llm=llm_config.default_llm(max_tokens=512, temperature=0.6)
     )
 
     return retry_parser.parse_with_prompt(output, prompt.format_prompt(prompt_template=model_description)).objectives
@@ -68,7 +69,7 @@ def _find_categories(model_description, failed=False):
 
 def _generate_inputs(model_description, feature_names, categories, failed=False):
     try:
-        from langchain import PromptTemplate, LLMChain, OpenAI
+        from langchain import PromptTemplate, LLMChain
         from langchain.output_parsers import PydanticOutputParser
         from langchain.output_parsers import RetryWithErrorOutputParser
     except ImportError as err:
@@ -87,10 +88,10 @@ def _generate_inputs(model_description, feature_names, categories, failed=False)
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser, llm=OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0.6)
+        parser=parser, llm=llm_config.default_llm(max_tokens=512, temperature=0.6)
     )
 
     results = dict()
