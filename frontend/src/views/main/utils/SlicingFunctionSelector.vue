@@ -1,6 +1,7 @@
 <template>
   <div class="d-flex" :class="{ w100: fullWidth }">
-    <v-select attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label' v-model='value' :items="[{
+    <v-autocomplete attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label'
+                    v-model='value' :items="[{
       name: 'None',
       displayName: 'None',
       uuid: null,
@@ -16,7 +17,7 @@
           </v-list-item-content>
         </v-list-item>
       </template>
-    </v-select>
+    </v-autocomplete>
     <v-btn icon v-if="hasArguments" @click="updateArgs">
       <v-icon>settings</v-icon>
     </v-btn>

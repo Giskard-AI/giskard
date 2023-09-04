@@ -1,13 +1,13 @@
-import pandas as pd
 import numpy as np
-from dataclasses import dataclass
+import pandas as pd
 
 from giskard import Dataset
 from giskard.models import cache as models_cache
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
-from giskard.scanner.issues import Issue
+from giskard.scanner.issues import DataLeakage, Issue, IssueLevel
 from giskard.scanner.logger import logger
+
 from ..registry import Detector
 
 
@@ -42,43 +42,16 @@ class DataLeakageDetector(Detector):
                 break
 
         if not fail_samples.empty:
-            return [DataLeakageIssue(model, dataset, level="major", info=DataLeakageInfo(samples=fail_samples))]
+            return [
+                Issue(
+                    model,
+                    dataset,
+                    group=DataLeakage,
+                    level=IssueLevel.MAJOR,
+                    description=f"We found {len(fail_samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch.",
+                    examples=fail_samples,
+                    meta={"domain": "Whole dataset"},
+                )
+            ]
 
-        return []
-
-
-@dataclass
-class DataLeakageInfo:
-    samples: pd.DataFrame
-
-
-class DataLeakageIssue(Issue):
-    """DataLeakage Issue"""
-
-    group = "Data Leakage"
-
-    @property
-    def domain(self) -> str:
-        return "Whole dataset"
-
-    @property
-    def metric(self) -> str:
-        return "Prediction"
-
-    @property
-    def deviation(self) -> str:
-        return "Model changes output when prediction is run on a single sample"
-
-    @property
-    def description(self) -> str:
-        return f"We found {len(self.info.samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch."
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.samples.head(n)
-
-    @property
-    def importance(self) -> float:
-        return 1
-
-    def generate_tests(self, with_names=False) -> list:
         return []

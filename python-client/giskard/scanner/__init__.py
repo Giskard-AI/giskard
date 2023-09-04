@@ -1,10 +1,11 @@
 from typing import Optional
 
 from giskard.core.model_validation import ValidationFlags
-from .logger import logger
-from .scanner import Scanner
+
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
+from .logger import logger
+from .scanner import Scanner
 
 _default_detectors = [
     ".performance.performance_bias_detector",

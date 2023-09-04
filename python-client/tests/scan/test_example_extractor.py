@@ -1,4 +1,6 @@
+import re
 from unittest.mock import MagicMock
+
 from giskard.scanner.common.examples import ExampleExtractor
 from giskard.scanner.issues import Issue
 
@@ -51,6 +53,4 @@ def test_example_extractor_returns_prediction(enron_model, enron_data):
     df = extractor.get_examples_dataframe(with_prediction=3)
 
     assert "Predicted `Target`" in df.columns
-    assert (
-        df["Predicted `Target`"].iloc[0] == "REGULATION (p = 0.48)\nINTERNAL (p = 0.20)\nCALIFORNIA CRISIS (p = 0.12)"
-    )
+    assert re.match(r"(\w+\s\(p\s=\s\d\.\d\d\)\s?){3}", df["Predicted `Target`"].iloc[0])

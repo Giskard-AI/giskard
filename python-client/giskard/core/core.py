@@ -149,6 +149,7 @@ class CallableMeta(SavableMeta, ABC):
         self.module_doc = None
         self.full_name = None
         self.args = None
+
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
