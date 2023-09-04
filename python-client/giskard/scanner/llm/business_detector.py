@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List, Sequence
 
 import pandas as pd
@@ -6,55 +5,11 @@ from pydantic import BaseModel, Field
 
 from .utils import LLMImportError
 from ..decorators import detector
-from ..issues import Issue
+from ..issues import Issue, IssueLevel, IssueGroup
 from ..llm.prompts import GENERATE_TEST_PROMPT
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
-from ...testing.tests.llm import test_test_case
-
-
-@dataclass
-class LLMExamplesInfo:
-    examples: pd.DataFrame
-    test_case: str
-    metric: float
-
-
-class LLMBusinessIssue(Issue):
-    group = "Use cases"
-
-    @property
-    def domain(self) -> str:
-        return f"Test: '{self.info.test_case.capitalize()}'"
-
-    @property
-    def metric(self) -> str:
-        return f"{self.info.metric * 100:.2f}% of the generated answer failed to respect the test"
-
-    @property
-    def deviation(self) -> str:
-        return ""
-
-    @property
-    def description(self) -> str:
-        return f"For the test '{self.info.test_case}', we found that {self.info.metric * 100:.2f} of the generated answers does not respect it."
-
-    def examples(self, n=3) -> pd.DataFrame:
-        return self.info.examples.style.set_tooltips(self.info.examples)
-
-    @property
-    def importance(self) -> float:
-        return 1
-
-    def generate_tests(self, with_names=False) -> list:
-        tests = [test_test_case(test_case=self.info.test_case, threshold=1 - self.info.metric + 0.1)]
-
-        if with_names:
-            names = [f"Test: '{self.info.test_case}'"]
-            return list(zip(tests, names))
-
-        return tests
 
 
 def _generate_test_cases(model):
@@ -104,8 +59,22 @@ def validate_prediction(model, test_cases: List[str], dataset: Dataset, predicti
 
         if failed_count > 0:
             print("Test failed")
-            info = LLMExamplesInfo(df_with_pred[failed], test_case=test_case, metric=metric)
-            issues.append(LLMBusinessIssue(model, dataset, level="major" if metric < threshold else "minor", info=info))
+
+            issues.append(
+                Issue(
+                    model,
+                    dataset,
+                    level=IssueLevel.MAJOR if metric < threshold else IssueLevel.MINOR,
+                    # TODO: Use the LlmIssueCategory name and description
+                    group=IssueGroup(name="Use case", description="TODO"),
+                    description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
+                    # Todo: add more meta
+                    meta={
+                        "metric": "Use case",
+                    },
+                    examples=df_with_pred[failed],
+                )
+            )
 
     return issues
 
