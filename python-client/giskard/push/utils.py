@@ -14,7 +14,7 @@ Functions:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Union, Optional
+from typing import Union, Optional, Tuple
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class TransformationInfo:
     transformation_functions_params: list
 
 
-def slice_bounds_quartile(feature: str, value: Union[int, float], ds: Dataset) -> Optional[List[Union[int, float]]]:
+def slice_bounds_quartile(feature: str, value: Union[int, float], ds: Dataset) -> Optional[Tuple[Union[int, float]]]:
     """Get quartile bounds values to slice Giskard dataset on a numerical feature.
 
     Args:
@@ -52,18 +52,18 @@ def slice_bounds_quartile(feature: str, value: Union[int, float], ds: Dataset) -
         # Find the quartile bounds for the value
         q1, q2, q3 = np.nanpercentile(ds.df[feature], [25, 50, 75])
         if value < q1:
-            return [ds.df[feature].min(), q1]
+            return (ds.df[feature].min(), q1)
         elif q1 <= value < q2:
-            return [q1, q2]
+            return (q1, q2)
         elif q2 <= value < q3:
-            return [q2, q3]
-        return [q3, ds.df[feature].max()]
+            return (q2, q3)
+        return (q3, ds.df[feature].max())
     return None
 
 
 def slice_bounds_relative(
     feature: str, value: Union[int, float], ds: Dataset, window_size: float = 0.1
-) -> Optional[List[Union[int, float]]]:
+) -> Optional[Tuple[Union[int, float]]]:
     """Get fixed bounds values to slice Giskard dataset on a numerical feature.
 
     Args:
@@ -73,7 +73,7 @@ def slice_bounds_relative(
         window_size (float): interval in percentage around the value
 
     Returns:
-        list: Lower and upper bounds of the slice
+        tuple: Lower and upper bounds of the slice
     """
     if ds.column_types[feature] == "numeric":
         add_value = value * window_size / 2.0
@@ -86,7 +86,7 @@ def slice_bounds_relative(
         up = up if up <= _max else _max
         low = low if low >= _min else _min
 
-        return [low, up]
+        return (low, up)
     return None
 
 
