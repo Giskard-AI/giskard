@@ -19,6 +19,7 @@ from giskard.models.automodel import Model
 from giskard.models.model_explanation import explain_with_shap
 from giskard import push
 from . import demo
+from .llm.config import llm_config
 from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
 from .utils.analytics_collector import analytics
@@ -60,4 +61,5 @@ __all__ = [
     "TestResult",
     "GiskardTest",
     "demo",
+    "llm_config",
 ]
