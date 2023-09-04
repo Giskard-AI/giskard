@@ -1,44 +1,13 @@
 from typing import List, Sequence
 
 import pandas as pd
-from pydantic import BaseModel, Field
 
-from .utils import LLMImportError
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
-from ..llm.prompts import GENERATE_TEST_PROMPT
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
-from ...llm.config import llm_config
+from ...llm.issues import OUTPUT_FORMATTING_ISSUE
 from ...models.langchain import LangchainModel
-
-
-def _generate_test_cases(model):
-    try:
-        from langchain import PromptTemplate, LLMChain
-        from langchain.output_parsers import PydanticOutputParser
-        from langchain.output_parsers import OutputFixingParser
-    except ImportError as err:
-        raise LLMImportError() from err
-
-    class TestCases(BaseModel):
-        assertions: List[str] = Field(description="list of assertions that the answer must pass")
-
-    parser = PydanticOutputParser(pydantic_object=TestCases)
-
-    prompt = PromptTemplate(
-        template=GENERATE_TEST_PROMPT,
-        input_variables=["prompt_template"],
-        partial_variables={"format_instructions": parser.get_format_instructions()},
-    )
-
-    chain = LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt)
-
-    output = chain.run(prompt_template=f"{model.meta.name} - {model.meta.description}")
-
-    fix_parser = OutputFixingParser.from_llm(parser=parser, llm=llm_config.default_llm(max_tokens=512, temperature=0.6))
-
-    return fix_parser.parse(output).assertions
 
 
 def validate_prediction(model, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float):
@@ -86,7 +55,9 @@ class LLMBusinessDetector:
         self.num_tests = num_tests
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        test_cases = _generate_test_cases(model)[: self.num_tests]
+        test_cases = OUTPUT_FORMATTING_ISSUE.issue_generator.run_and_parse(
+            model_name=model.meta.name, model_description=model.meta.description
+        ).assertions
         print(f"Generated tests: {test_cases}")
 
         potentially_failing_dataset = dataset = infer_dataset(
