@@ -28,7 +28,6 @@ prompt = PromptTemplate(
     partial_variables={"format_instructions": parser.get_format_instructions()},
 )
 
-# TODO: allow custom llm
 chain = LLMChain(llm=llm_config.default_llm(temperature=0.2), prompt=prompt)
 
 retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=llm_config.default_llm(temperature=0.2))
