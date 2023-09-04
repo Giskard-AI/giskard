@@ -6,10 +6,10 @@ import {
     DatasetDTO,
     DatasetProcessFunctionDTO
 } from '@/generated-sources';
-import {defineStore} from 'pinia';
-import {api} from '@/api';
-import {chain} from "lodash";
-import {getColumnType} from "@/utils/column-type-utils";
+import { defineStore } from 'pinia';
+import { api } from '@/api';
+import { chain } from 'lodash';
+import { getColumnType } from '@/utils/column-type-utils';
 
 interface State {
     catalog: CatalogDTO | null
@@ -18,7 +18,7 @@ interface State {
 
 function latestVersions<E extends CallableDTO>(data?: Array<E>): Array<E> {
     return chain(data ?? [])
-        .groupBy(func => `${func.module}.${func.name}`)
+      .groupBy(func => func.module ?? `${func.module}.${func.name}`)
         .mapValues(functions => chain(functions)
             .maxBy(func => func.version ?? 1)
             .value())

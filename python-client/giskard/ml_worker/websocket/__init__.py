@@ -1,6 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class WorkerReply(BaseModel):
@@ -305,3 +306,65 @@ class TestSuite(WorkerReply):
 class TestSuiteParam(BaseModel):
     tests: Optional[List[SuiteTestArgument]] = None
     globalArguments: Optional[List[FuncArgument]] = None
+
+
+class PushKind(Enum):
+    INVALID = 0
+    PERTURBATION = 1
+    CONTRIBUTION = 2
+    OVERCONFIDENCE = 3
+    BORDERLINE = 4
+
+
+class CallToActionKind(Enum):
+    NONE = 0
+    CREATE_SLICE = 1
+    CREATE_TEST = 2
+    CREATE_PERTURBATION = 3
+    SAVE_PERTURBATION = 4
+    CREATE_ROBUSTNESS_TEST = 5
+    CREATE_SLICE_OPEN_DEBUGGER = 6
+    OPEN_DEBUGGER_BORDERLINE = 7
+    ADD_TEST_TO_CATALOG = 8
+    SAVE_EXAMPLE = 9
+    OPEN_DEBUGGER_OVERCONFIDENCE = 10
+    CREATE_UNIT_TEST = 11
+
+
+class GetPushParam(BaseModel):
+    model: ArtifactRef
+    dataset: ArtifactRef
+    dataframe: Optional[DataFrame]
+    target: str
+    column_types: Dict[str, str]
+    column_dtypes: Dict[str, str]
+    push_kind: Optional[PushKind]
+    cta_kind: Optional[CallToActionKind]
+
+
+class PushDetails(BaseModel):
+    action: str
+    explanation: str
+    button: str
+    cta: CallToActionKind
+
+
+class Push(BaseModel):
+    kind: PushKind
+    key: Optional[str]
+    value: Optional[str]
+    push_title: str
+    push_details: List[PushDetails]
+
+
+class PushAction(BaseModel):
+    object_uuid: str
+    arguments: Optional[List[FuncArgument]]
+
+
+class GetPushResponse(BaseModel):
+    contribution: Optional[Push]
+    perturbation: Optional[Push]
+    overconfidence: Optional[Push]
+    borderline: Optional[Push]
+    action: Optional[PushAction]

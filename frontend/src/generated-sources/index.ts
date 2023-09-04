@@ -1,9 +1,11 @@
 export const GENERATED_MAPPING = {
     'ai.giskard.domain.ColumnType' : 'ColumnType',
     'ai.giskard.domain.GeneralSettings' : 'GeneralSettings',
+    'ai.giskard.domain.ml.CallToActionKind' : 'CallToActionKind',
     'ai.giskard.domain.ml.CodeLanguage' : 'CodeLanguage',
     'ai.giskard.domain.ml.ModelLanguage' : 'ModelLanguage',
     'ai.giskard.domain.ml.ModelType' : 'ModelType',
+    'ai.giskard.domain.ml.PushKind' : 'PushKind',
     'ai.giskard.domain.ml.table.Filter' : 'Filter',
     'ai.giskard.domain.ml.table.RegressionUnit' : 'RegressionUnit',
     'ai.giskard.domain.ml.table.RowFilterType' : 'RowFilterType',
@@ -14,6 +16,7 @@ export const GENERATED_MAPPING = {
     'ai.giskard.ml.dto.MLWorkerWSTestMessageType' : 'MLWorkerWSTestMessageType',
     'ai.giskard.service.ee.FeatureFlag' : 'FeatureFlag',
     'ai.giskard.web.dto.ApiKeyDTO' : 'ApiKeyDTO',
+    'ai.giskard.web.dto.ApplyPushDTO' : 'ApplyPushDTO',
     'ai.giskard.web.dto.CallableDTO' : 'CallableDTO',
     'ai.giskard.web.dto.CatalogDTO' : 'CatalogDTO',
     'ai.giskard.web.dto.ComparisonClauseDTO' : 'ComparisonClauseDTO',
@@ -73,6 +76,9 @@ export const GENERATED_MAPPING = {
     'ai.giskard.web.dto.PrepareDeleteDTO$LightFeedback' : 'PrepareDeleteDTO.LightFeedback',
     'ai.giskard.web.dto.PrepareDeleteDTO' : 'PrepareDeleteDTO',
     'ai.giskard.web.dto.PrepareImportProjectDTO' : 'PrepareImportProjectDTO',
+    'ai.giskard.web.dto.PushActionDTO' : 'PushActionDTO',
+    'ai.giskard.web.dto.PushDetailsDTO' : 'PushDetailsDTO',
+    'ai.giskard.web.dto.PushDTO' : 'PushDTO',
     'ai.giskard.web.dto.RequiredInputDTO' : 'RequiredInputDTO',
     'ai.giskard.web.dto.RowFilterDTO' : 'RowFilterDTO',
     'ai.giskard.web.dto.RunAdhocTestRequest' : 'RunAdhocTestRequest',
@@ -98,9 +104,11 @@ export const GENERATED_MAPPING = {
 };
 export * from './ai/giskard/domain/column-type';
 export * from './ai/giskard/domain/general-settings';
+export * from './ai/giskard/domain/ml/call-to-action-kind';
 export * from './ai/giskard/domain/ml/code-language';
 export * from './ai/giskard/domain/ml/model-language';
 export * from './ai/giskard/domain/ml/model-type';
+export * from './ai/giskard/domain/ml/push-kind';
 export * from './ai/giskard/domain/ml/table/filter';
 export * from './ai/giskard/domain/ml/table/regression-unit';
 export * from './ai/giskard/domain/ml/table/row-filter-type';
@@ -111,6 +119,7 @@ export * from './ai/giskard/jobs/job-type';
 export * from './ai/giskard/ml/dto/mlworker-wstest-message-type';
 export * from './ai/giskard/service/ee/feature-flag';
 export * from './ai/giskard/web/dto/api-key-dto';
+export * from './ai/giskard/web/dto/apply-push-dto';
 export * from './ai/giskard/web/dto/callable-dto';
 export * from './ai/giskard/web/dto/catalog-dto';
 export * from './ai/giskard/web/dto/comparison-clause-dto';
@@ -166,6 +175,9 @@ export * from './ai/giskard/web/dto/prediction-dto';
 export * from './ai/giskard/web/dto/prediction-input-dto';
 export * from './ai/giskard/web/dto/prepare-delete-dto';
 export * from './ai/giskard/web/dto/prepare-import-project-dto';
+export * from './ai/giskard/web/dto/push-action-dto';
+export * from './ai/giskard/web/dto/push-details-dto';
+export * from './ai/giskard/web/dto/push-dto';
 export * from './ai/giskard/web/dto/required-input-dto';
 export * from './ai/giskard/web/dto/row-filter-dto';
 export * from './ai/giskard/web/dto/run-adhoc-test-request';
