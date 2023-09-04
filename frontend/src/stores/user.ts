@@ -1,10 +1,11 @@
-import { defineStore } from 'pinia';
-import { AdminUserDTO, ManagedUserVM, UpdateMeDTO } from '@/generated-sources';
-import { Role } from '@/enums';
-import { api } from '@/api';
-import { getLocalToken, removeLocalToken, saveLocalToken } from '@/utils';
-import { useMainStore } from '@/stores/main';
-import { TYPE } from 'vue-toastification';
+import {defineStore} from 'pinia';
+import {AdminUserDTO, ManagedUserVM, UpdateMeDTO} from '@/generated-sources';
+import {Role} from '@/enums';
+import {api} from '@/api';
+import {getLocalToken, removeLocalToken, saveLocalToken} from '@/utils';
+import {useMainStore} from '@/stores/main';
+import {TYPE} from 'vue-toastification';
+import {openapi} from "@/api-v2";
 
 interface State {
   token: string;
@@ -29,8 +30,14 @@ export const useUserStore = defineStore('user', {
     async login(payload: { username: string; password: string }) {
       const mainStore = useMainStore();
       try {
-        const response = await api.logInGetToken(payload.username, payload.password);
-        const idToken = response.id_token;
+        const response = await openapi.userJwt.authorize({
+          loginVM: {
+            username: payload.username,
+            password: payload.password
+          }
+        });
+
+        const idToken = response.idToken;
         if (idToken) {
           saveLocalToken(idToken);
           this.token = idToken;
@@ -38,7 +45,7 @@ export const useUserStore = defineStore('user', {
           this.loginError = null;
           await mainStore.getUserProfile();
           await this.routeLoggedIn();
-          mainStore.addNotification({ content: 'Logged in', color: TYPE.SUCCESS });
+          mainStore.addNotification({content: 'Logged in', color: TYPE.SUCCESS});
         } else {
           await this.logout();
         }
