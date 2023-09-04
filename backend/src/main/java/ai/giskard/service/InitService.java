@@ -12,6 +12,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.GalleryInitIndicator;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -143,7 +144,8 @@ public class InitService {
         return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
-    public static boolean isInitialized = false;
+    static final GalleryInitIndicator isInitialized = new GalleryInitIndicator();
+    public static GalleryInitIndicator galleryInitIndicator() { return isInitialized; }
 
     /**
      * Initializing first authorities, mock users, and mock projects
@@ -159,7 +161,7 @@ public class InitService {
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
-        isInitialized = true;
+        isInitialized.setInit(true);
     }
 
     /**

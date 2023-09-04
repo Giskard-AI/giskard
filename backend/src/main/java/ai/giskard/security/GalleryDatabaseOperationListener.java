@@ -12,7 +12,7 @@ public class GalleryDatabaseOperationListener {
     @PreUpdate
     @PreRemove
     void beforeEntityModification(Object entity) {
-        if (GeneralSettingsService.isGiskardGalleryInstance() && InitService.isInitialized) {
+        if (GeneralSettingsService.isGiskardGalleryInstance() && InitService.galleryInitIndicator().isInit()) {
             throw new GalleryDemoSpaceException("This is a read-only Giskard Gallery instance. You cannot modify entities " + entity.getClass().getName());
         }
     }
