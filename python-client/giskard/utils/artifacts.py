@@ -1,17 +1,17 @@
 import inspect
 import uuid
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 try:
     from types import NoneType
 except ImportError:
     # types.NoneType is only available from python >=3.10
-    NoneType = None.__class__
+    NoneType = type(None)
 
 PRIMITIVES = Union[bool, str, int, float, NoneType]
 
 
-def _serialize_artifact(artifact, artifact_uuid: Union[str, uuid.UUID, NoneType] = None) -> str:
+def _serialize_artifact(artifact, artifact_uuid: Optional[Union[str, uuid.UUID]]) -> str:
     if artifact_uuid is None:
         raise ValueError(f"Cannot serialize artifacts without UUID: {artifact}")
 

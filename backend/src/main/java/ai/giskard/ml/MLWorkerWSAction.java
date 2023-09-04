@@ -13,9 +13,11 @@ public enum MLWorkerWSAction {
     GENERATE_TEST_SUITE("generateTestSuite"),
     STOP_WORKER("stopWorker"),
     GET_CATALOG("getCatalog"),
-    GENERATE_QUERY_BASED_SLICING_FUNCTION("generateQueryBasedSlicingFunction");
+    GENERATE_QUERY_BASED_SLICING_FUNCTION("generateQueryBasedSlicingFunction"),
+    GET_PUSH("getPush");
 
     private final String actionName;
+
     MLWorkerWSAction(String name) {
         actionName = name;
     }

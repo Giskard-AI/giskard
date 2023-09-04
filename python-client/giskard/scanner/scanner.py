@@ -6,17 +6,17 @@ from time import perf_counter
 from typing import Optional, Sequence
 
 from giskard.client.python_utils import warning
+from giskard.core.model_validation import ValidationFlags
 
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
-from giskard.core.model_validation import ValidationFlags
-from .issues import Issue
+from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry
-from .result import ScanResult
+from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -31,9 +31,13 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-            self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False,
-            validation_flags: Optional[ValidationFlags] = ValidationFlags()
-    ) -> ScanResult:
+        self,
+        model: BaseModel,
+        dataset: Optional[Dataset] = None,
+        verbose=True,
+        raise_exceptions=False,
+        validation_flags: Optional[ValidationFlags] = ValidationFlags(),
+    ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues."""
 
         # Check that the model and dataset were appropriately wrapped with Giskard
@@ -113,7 +117,7 @@ class Scanner:
         issues = self._postprocess(issues)
         self._collect_analytics(model, dataset, issues, elapsed, model_validation_time)
 
-        return ScanResult(issues)
+        return ScanReport(issues)
 
     def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
         if not detectors:
@@ -165,13 +169,10 @@ class Scanner:
         return issues, errors
 
     def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
-        # If we detected a StochasticityIssue, we will have a possibly false
-        # positive DataLeakageIssue. We remove it here.
-        from .data_leakage.data_leakage_detector import DataLeakageIssue
-        from .stochasticity.stochasticity_detector import StochasticityIssue
-
-        if any(isinstance(issue, StochasticityIssue) for issue in issues):
-            issues = [issue for issue in issues if not isinstance(issue, DataLeakageIssue)]
+        # If we detected a Stochasticity issue, we will have a possibly false
+        # positive DataLeakage issue. We remove it here.
+        if any(issue.group == Stochasticity for issue in issues):
+            issues = [issue for issue in issues if issue.group != DataLeakage]
 
         return issues
 
