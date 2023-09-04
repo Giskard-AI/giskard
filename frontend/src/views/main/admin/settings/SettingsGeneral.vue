@@ -12,7 +12,7 @@
                 <table class="w100">
                   <tr>
                     <td>Instance</td>
-                    <td>{{ appSettings.generalSettings.instanceId }}</td>
+                    <td>{{ appSettings.generalSettings?.instanceId }}</td>
                   </tr>
                   <tr>
                     <td>Version</td>
@@ -28,7 +28,10 @@
                   </tr>
                   <tr>
                     <td>License expiration date</td>
-                    <td v-if="mainStore.license && mainStore.license.expiresOn">{{ mainStore.license.expiresOn | date }}</td>
+                    <td v-if="mainStore.license && mainStore.license.expiresOn">{{
+                        mainStore.license?.expiresOn | date
+                      }}
+                    </td>
                   </tr>
                   <tr>
                     <td colspan="2">
@@ -52,12 +55,14 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col>
+        <v-col v-if="appSettings.generalSettings">
           <v-card height="100%">
             <v-card-title class="font-weight-light secondary--text">
               <span>Usage reporting</span>
-              <v-spacer />
-              <v-switch v-model="appSettings.generalSettings.isAnalyticsEnabled" @change="saveGeneralSettings(appSettings.generalSettings)"></v-switch>
+              <v-spacer/>
+              <v-switch
+                  v-model="appSettings.generalSettings.isAnalyticsEnabled"
+                  @change="saveGeneralSettings(appSettings.generalSettings)"></v-switch>
             </v-card-title>
             <v-card-text>
               <div class="mb-2">
@@ -114,13 +119,14 @@
                   <tr>
                     <td>Python path</td>
                     <td>{{ currentWorker.interpreter }}</td>
-                  <tr>
+                  </tr>
                   <tr>
                     <td>Giskard client version</td>
                     <td>{{ currentWorker.giskardClientVersion }}</td>
+                  </tr>
                   <tr>
                     <td>Host</td>
-                    <td>{{ currentWorker.platform.node }}</td>
+                    <td>{{ currentWorker.platform?.node }}</td>
                   </tr>
                   <tr>
                     <td>Process id</td>
@@ -136,7 +142,7 @@
                   </tr>
                   <tr>
                     <td>Architecture</td>
-                    <td>{{ currentWorker.platform.machine }}</td>
+                    <td>{{ currentWorker.platform?.machine }}</td>
                   </tr>
                   <tr>
                     <td>Installed packages</td>
@@ -179,9 +185,7 @@
 
 <script setup lang="ts">
 import {computed, onBeforeMount, ref, watch} from "vue";
-import {GeneralSettings, MLWorkerInfoDTO} from "@/generated-sources";
 import mixpanel from "mixpanel-browser";
-import {api} from "@/api";
 import moment from "moment/moment";
 import {useMainStore} from "@/stores/main";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
@@ -189,11 +193,13 @@ import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import { HF_DEMO_SPACE_ID } from "@/enums";
+import {openapi} from "@/api-v2";
+import {GeneralSettings, MLWorkerInfoDTO} from "@/generated/client";
 
 const mainStore = useMainStore();
 
 const appSettings = computed(() => mainStore.appSettings);
-const currentWorker = ref<MLWorkerInfoDTO | null>(null);
+const currentWorker = ref<MLWorkerInfoDTO | undefined>(undefined);
 const allMLWorkerSettings = ref<MLWorkerInfoDTO[]>([]);
 const selectedWorkerTab = ref<number>(0);
 const mlWorkerSettingsLoading = ref<boolean>(false);
@@ -217,12 +223,12 @@ const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
 watch(() => [externalWorkerSelected.value, allMLWorkerSettings.value], () => {
   if (allMLWorkerSettings.value.length) {
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
-    installedPackagesData.value = currentWorker.value !== null ?
-      Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
-        name: key,
-        version: value
-      })) : [];
+    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || undefined;
+    installedPackagesData.value = (currentWorker.value !== undefined && currentWorker.value?.installedPackages) ?
+        Object.entries(currentWorker.value?.installedPackages).map(([key, value]) => ({
+          name: key,
+          version: value
+        })) : [];
   }
 }, { deep: true })
 
@@ -236,15 +242,15 @@ async function saveGeneralSettings(settings: GeneralSettings) {
   } else {
     mixpanel.opt_in_tracking();
   }
-  appSettings.value!.generalSettings = await api.saveGeneralSettings(settings);
+  appSettings.value!.generalSettings = await openapi.settings.saveGeneralSettings({generalSettings: settings});
 }
 
 async function initMLWorkerInfo() {
   try {
-    currentWorker.value = null;
+    currentWorker.value = undefined;
     mlWorkerSettingsLoading.value = true;
-    allMLWorkerSettings.value = await api.getMLWorkerSettings();
-    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || null;
+    allMLWorkerSettings.value = await openapi.mlWorker.getMLWorkerInfo();
+    currentWorker.value = allMLWorkerSettings.value.find(value => value.isRemote === externalWorkerSelected.value) || undefined;
   } catch (error) {
   } finally {
     mlWorkerSettingsLoading.value = false;
@@ -256,7 +262,7 @@ function epochToDate(epoch: number) {
 }
 
 async function stopMLWorker() {
-  await api.stopMLWorker(!externalWorkerSelected.value);
+  await openapi.mlWorker.stopWorker({internal: !externalWorkerSelected.value});
 }
 </script>
 
