@@ -158,3 +158,13 @@ def mad_transformation(
         value_added = compute_mad(data[column_name])
     data[column_name] = data[column_name].apply(lambda x: x + factor * value_added)
     return data
+
+
+@transformation_function(name="ADD value", tags=["num"], row_level=False)
+def add_value(data: pd.DataFrame, column_name: str, value_added: float = 0.0) -> pd.DataFrame:
+    """
+    Add the value_added to the column.
+    """
+    data = data.copy()
+    data[column_name] = data[column_name].apply(lambda x: x + value_added)
+    return data
