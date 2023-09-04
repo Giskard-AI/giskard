@@ -42,7 +42,7 @@ class _LlmConfig:
         :param kwargs: list of parameters to set for the llm
         :return: default llm with parameterized values
         """
-        default_llm = self.default_llm()
+        default_llm = self.default_llm
 
         for key, arg in kwargs.items():
             if hasattr(default_llm, key):

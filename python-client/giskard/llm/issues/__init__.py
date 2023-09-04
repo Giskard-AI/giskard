@@ -67,8 +67,8 @@ class _LlmIssueCategory:
         )
 
         return AutoChainParser(
-            LLMChain(llm=llm_config.default_llm(max_tokens=512, temperature=0.8), prompt=prompt),
-            OutputFixingParser.from_llm(parser=parser, llm=llm_config.default_llm(max_tokens=512, temperature=0.6)),
+            LLMChain(llm=llm_config.build_llm(max_tokens=512, temperature=0.8), prompt=prompt),
+            OutputFixingParser.from_llm(parser=parser, llm=llm_config.build_llm(max_tokens=512, temperature=0.6)),
         )
 
 

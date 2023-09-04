@@ -28,9 +28,9 @@ prompt = PromptTemplate(
     partial_variables={"format_instructions": parser.get_format_instructions()},
 )
 
-chain = LLMChain(llm=llm_config.default_llm(temperature=0.2), prompt=prompt)
+chain = LLMChain(llm=llm_config.build_llm(temperature=0.2), prompt=prompt)
 
-retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=llm_config.default_llm(temperature=0.2))
+retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=llm_config.build_llm(temperature=0.2))
 
 
 def validate_test_case(model: BaseModel, test_case: str, predictions: List[str]) -> List[bool]:
