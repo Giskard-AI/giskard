@@ -93,10 +93,8 @@ public class ModelController {
             return;
         }
         Project project = projectRepository.getOneByKey(projectKey);
-        if (
-            licenseService.getCurrentLicense().getModelPerProjectLimit() != null &&
-            project.getModels().size() >= licenseService.getCurrentLicense().getModelPerProjectLimit()
-        ) {
+        Integer modelPerProject = licenseService.getCurrentLicense().getModelPerProjectLimit();
+        if (modelPerProject != null && project.getModels().size() >= modelPerProject) {
             log.info("Exceed model numbers in project '{}'", project.getName());
             // Improve the statement
             throw new LicenseException(
