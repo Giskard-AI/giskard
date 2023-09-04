@@ -20,8 +20,6 @@ jobs:
 
       - name: Append ARM buildx builder from AWS
         uses: baschny/append-buildx-action@v1
-        timeout-minutes: 1  # Limit the connection time to one minute
-        continue-on-error: true
         with:
           builder: ${{ steps.builder.outputs.name }}
           endpoint: ssh://${{ secrets.ARM_SSH_CONNECTION_STRING }}
