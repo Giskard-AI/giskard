@@ -423,11 +423,11 @@ class PerturbationPush(FeaturePush):
         if self.transformation_functions_params:
             self.tests = [test_metamorphic_invariance_with_mad]
             self.test_params = self.transformation_functions_params[0]
-            self.push_title = (
-                f"Changing `{self.feature}` by "
-                f"{int(round((self.value_perturbed[0] - self.value)/self.value*100.))}% "
-                "makes the prediction change"
-            )
+            if self.value != 0:
+                _relative_change = int(round((self.value_perturbed[0] - self.value) / self.value * 100.0))
+            else:
+                _relative_change = int(round((self.value_perturbed[0] * 100.0)))
+            self.push_title = f"Changing `{self.feature}` by " f"{_relative_change}% " "makes the prediction change"
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}
