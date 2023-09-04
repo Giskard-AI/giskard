@@ -1,8 +1,82 @@
 version: "3.8"
 services:
 
-  mono:
-    image: 'docker.io/giskardai/giskard:${TAG-latest}'
+  db:
+    image: postgres:12-alpine
+    volumes:
+      - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  ml-worker:
+    image: 'docker.io/giskardai/ml-worker:${TAG-latest}'
+    hostname: giskard-embedded-docker-worker
     build:
-      dockerfile: ./Dockerfile
+      dockerfile: python-client/docker/Dockerfile
       context: .
+    environment:
+      GIT_REPOSITORY: http://frontend/git/udf.git
+      GIT_USER: ${GIT_USER:-giskard}
+      GIT_PASSWORD: ${GIT_PASSWORD:-giskard123!}
+    volumes:
+      - giskard-home:/giskard-home
+
+  backend:
+    image: 'docker.io/giskardai/backend:${TAG-latest}'
+    build:
+      dockerfile: ./backend/src/main/docker/app/app.dockerfile
+      context: .
+      args:
+        RUN_TESTS: ${RUN_TESTS-false}
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "${GISKARD_EXTERNAL_ML_WORKER_PORT-40051}:40051"
+    environment:
+      - _JAVA_OPTIONS=-Xmx4048m -Xms512m
+      - SPRING_PROFILES_ACTIVE=prod
+      - JHIPSTER_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET=${GISKARD_JWT_SECRET-}
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
+      - GISKARD_ML_WORKER_HOST=${GISKARD_ML_WORKER_HOST-ml-worker}
+      - GISKARD_ML_WORKER_PORT=50051
+      - SPRING_MAIL_HOST
+      - SPRING_MAIL_PORT
+      - SPRING_MAIL_USERNAME
+      - SPRING_MAIL_PASSWORD
+      - JHIPSTER_MAIL_BASEURL
+      - GISKARD_AUTH=${GISKARD_AUTH-}
+    volumes:
+      - giskard-home:/giskard-home
+
+  frontend:
+    image: 'docker.io/giskardai/frontend:${TAG-latest}'
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        FRONTEND_ENV: ${FRONTEND_ENV:-production}
+        GIT_USER: ${GIT_USER:-giskard}
+        GIT_PASSWORD: ${GIT_PASSWORD:-giskard123!}
+    ports:
+      - "${GISKARD_PORT-19000}:80"
+    expose:
+      - ${GISKARD_PORT-19000}
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    volumes:
+      - git-data:/git
+
+volumes:
+  app-db-data:
+  git-data:
+  giskard-home:
