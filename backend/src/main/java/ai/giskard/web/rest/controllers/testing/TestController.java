@@ -14,6 +14,7 @@ import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestDTO;
 import ai.giskard.ml.dto.MLWorkerWSRunAdHocTestParamDTO;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TestFunctionRepository;
+import ai.giskard.service.GeneralSettingsService;
 import ai.giskard.service.TestArgumentService;
 import ai.giskard.service.ml.MLWorkerWSCommService;
 import ai.giskard.service.ml.MLWorkerWSService;
@@ -50,6 +51,9 @@ public class TestController {
         Project project = projectRepository.getMandatoryById(request.getProjectId());
 
         MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSRunAdHocTestParamDTO.MLWorkerWSRunAdHocTestParamDTOBuilder builder =
                 MLWorkerWSRunAdHocTestParamDTO.builder()

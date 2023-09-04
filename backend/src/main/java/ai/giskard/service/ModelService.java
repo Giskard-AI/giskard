@@ -44,6 +44,9 @@ public class ModelService {
 
     public MLWorkerWSRunModelForDataFrameDTO predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             return getRunModelForDataFrameResponse(model, dataset, features);
         }
@@ -81,6 +84,9 @@ public class ModelService {
         }
 
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         // Perform the runModelForDataFrame action and parse the reply
         MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
             workerID,
@@ -102,6 +108,9 @@ public class ModelService {
 
     public MLWorkerWSExplainDTO explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSExplainParamDTO param = MLWorkerWSExplainParamDTO.builder()
                 .model(MLWorkerWSArtifactRefDTO.fromModel(model))
@@ -126,6 +135,9 @@ public class ModelService {
 
     public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSExplainTextParamDTO param = MLWorkerWSExplainTextParamDTO.builder()
                 .model(MLWorkerWSArtifactRefDTO.fromModel(model))
@@ -174,6 +186,9 @@ public class ModelService {
 
     protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
         MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES) {
+            workerID = MLWorkerID.INTERNAL;
+        }
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             // Initialize params
             MLWorkerWSRunModelParamDTO param = MLWorkerWSRunModelParamDTO.builder()
