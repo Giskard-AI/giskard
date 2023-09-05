@@ -103,6 +103,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up Pandoc (needed for python-client doc)
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+
       - name: Run Python commands
         run: |
           python -m pip install virtualenv -U --upgrade pip
@@ -123,7 +128,7 @@ jobs:
         env:
           GSK_DISABLE_ANALYTICS: True
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
-        run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
+        run: ./gradlew build test integrationTest :python-client:lint :python-client:sphinx-build :python-client:package jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}

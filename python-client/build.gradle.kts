@@ -87,5 +87,12 @@ tasks {
         module = "pdm"
         command = "build"
     }
+
+    create<PythonTask>("sphinx-build") { 
+        dependsOn("install") 
+        module = "pdm" 
+        command = "run sphinx-build" 
+    }
+
 }
 
