@@ -36,7 +36,7 @@ use([CanvasRenderer, BarChart, GridComponent]);
 interface Props {
   modelId: string;
   datasetId: string;
-  predictionTask: string;
+  predictionTask?: string;
   targetFeature: string;
   classificationLabels?: string[];
   inputData: { [key: string]: string };

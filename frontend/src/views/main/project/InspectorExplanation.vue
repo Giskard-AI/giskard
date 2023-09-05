@@ -4,7 +4,8 @@
       Explanation
     </v-card-title>
     <v-card-text>
-      <v-tabs :class="{ 'no-tab-header': !isClassification(model.modelType) || textFeatureNames.length === 0 }">
+      <v-tabs
+        :class="{ 'no-tab-header': model.modelType !== ModelType.CLASSIFICATION || textFeatureNames.length === 0 }">
         <v-tab v-if='modelFeatures.length > 1'>
           <v-icon left>mdi-align-horizontal-left</v-icon>
           Global
@@ -44,7 +45,6 @@
 </template>
 
 <script setup lang='ts'>
-import { isClassification } from '@/ml-utils';
 import { ColumnType, DatasetDTO, ModelType } from '@/generated-sources';
 import PredictionExplanations from '@/views/main/project/PredictionExplanations.vue';
 import TextExplanation from '@/views/main/project/TextExplanation.vue';
