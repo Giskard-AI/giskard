@@ -162,40 +162,16 @@
 </template>
 
 <script setup lang="ts">
-import { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
-import { editor } from "monaco-editor";
-import { DatasetProcessFunctionType, FunctionInputDTO, SlicingFunctionDTO, SlicingResultDTO } from "@/generated-sources";
-import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import { api } from "@/api";
-import DatasetTable from "@/components/DatasetTable.vue";
-import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
-import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
-import { alphabeticallySorted } from "@/utils/comparators";
-import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
-import CodeSnippet from "@/components/CodeSnippet.vue";
-import IEditorOptions = editor.IEditorOptions;
-import mixpanel from "mixpanel-browser";
-import { anonymize } from "@/utils";
-import { $vfm } from 'vue-final-modal';
-import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";
-import { copyToClipboard } from "@/global-keys";
-import { TYPE } from "vue-toastification";
-import { useMainStore } from "@/stores/main";
 import { chain } from 'lodash';
-import { computed, onActivated, ref, watch } from 'vue';
+import { computed, inject, onActivated, ref, watch } from 'vue';
 import { anonymize, pasterColor } from '@/utils';
+import { editor } from 'monaco-editor';
 import {
   DatasetProcessFunctionType,
   DatasetProcessingResultDTO,
   FunctionInputDTO,
   SlicingFunctionDTO
 } from '@/generated-sources';
-import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import { storeToRefs } from 'pinia';
 import { useCatalogStore } from '@/stores/catalog';
 import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
@@ -207,7 +183,14 @@ import { alphabeticallySorted } from '@/utils/comparators';
 import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
+import { $vfm } from 'vue-final-modal';
+import CreateSliceCatalogModal from './modals/CreateSliceCatalogModal.vue';
+import { copyToClipboard } from '@/global-keys';
+import { TYPE } from 'vue-toastification';
+import { useMainStore } from '@/stores/main';
+import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
+import IEditorOptions = editor.IEditorOptions;
 
 let props = defineProps<{
   projectId: number,
