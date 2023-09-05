@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 import platform
 import sys
@@ -8,7 +9,6 @@ import time
 import traceback
 from pathlib import Path
 
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -369,7 +369,7 @@ def run_model(ml_worker: MLWorker, params: websocket.RunModelParam, *args, **kwa
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
 def run_model_for_data_frame(
-        ml_worker: MLWorker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
@@ -389,6 +389,8 @@ def run_model_for_data_frame(
             ),
             prediction=list(predictions.prediction.astype(str)),
         )
+    elif model.is_text_generation:
+        return websocket.RunModelForDataFrame(prediction=list(predictions.prediction.astype(str)))
     else:
         return websocket.RunModelForDataFrame(
             prediction=list(predictions.prediction.astype(str)),
@@ -440,7 +442,7 @@ def get_catalog(*args, **kwargs) -> websocket.Catalog:
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
 def dataset_processing(
-        ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs
 ) -> websocket.DatasetProcessing:
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
@@ -480,7 +482,7 @@ def dataset_processing(
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
 def run_ad_hoc_test(
-        ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
@@ -553,7 +555,7 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
 
 @websocket_actor(MLWorkerAction.generateTestSuite)
 def generate_test_suite(
-        ml_worker: MLWorker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
+    ml_worker: MLWorker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
 ) -> websocket.GenerateTestSuite:
     inputs = [map_suite_input_ws(i) for i in params.inputs]
 
@@ -579,9 +581,7 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
 
 
 @websocket_actor(MLWorkerAction.getPush)
-def get_push(
-        ml_worker: MLWorker, params: websocket.GetPushParam, *args, **kwargs
-) -> websocket.GetPushResponse:
+def get_push(ml_worker: MLWorker, params: websocket.GetPushParam, *args, **kwargs) -> websocket.GetPushResponse:
     object_uuid = ""
     object_params = {}
     project_key = params.model.project_key
@@ -648,8 +648,8 @@ def get_push(
 
         # Upload related object depending on CTA type
         if (
-                params.cta_kind == CallToActionKind.CREATE_SLICE
-                or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
+            params.cta_kind == CallToActionKind.CREATE_SLICE
+            or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
         ):
             push.slicing_function.meta.tags.append("generated")
             object_uuid = push.slicing_function.upload(ml_worker.client)
@@ -676,7 +676,7 @@ def get_push(
         if object_uuid != "":
             logger.info(f"Uploaded object for CTA with uuid: {object_uuid}")
 
-    if object_uuid != '':
+    if object_uuid != "":
         return websocket.GetPushResponse(
             contribution=contrib_ws,
             perturbation=perturb_ws,

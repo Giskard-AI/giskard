@@ -278,7 +278,7 @@ class RunModelForDataFrame(WorkerReply):
 class RunModelForDataFrameParam(BaseModel):
     model: ArtifactRef
     dataframe: DataFrame
-    target: str
+    target: Optional[str]
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
 
@@ -335,7 +335,7 @@ class GetPushParam(BaseModel):
     model: ArtifactRef
     dataset: ArtifactRef
     dataframe: Optional[DataFrame]
-    target: str
+    target: Optional[str]
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
     push_kind: Optional[PushKind]
