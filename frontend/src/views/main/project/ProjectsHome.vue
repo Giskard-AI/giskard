@@ -34,7 +34,7 @@
                 Import
               </v-list-item-content>
             </v-list-item>
-            <v-list-item @click="openGiskardHFGallery">
+            <v-list-item v-if="!useMainStore().appSettings?.isDemoHfSpace" @click="openGiskardHFGallery">
               <v-list-item-content>
                 Examples
               </v-list-item-content>
@@ -191,6 +191,7 @@ import { PostImportProjectDTO, ProjectPostDTO } from '@/generated-sources';
 import { copyText, toSlug } from '@/utils';
 import { useRoute, useRouter } from 'vue-router/composables';
 import moment from 'moment';
+import { useMainStore } from '@/stores/main';
 import { useUserStore } from '@/stores/user';
 import { useProjectStore } from '@/stores/project';
 import { api } from '@/api';
