@@ -19,7 +19,7 @@ from giskard.models.base.model import BaseModel
 
 from ..models.model_explanation import explain, explain_text
 from ..push import ContributionPush
-from .utils import slice_bounds
+from .utils import slice_bounds_relative
 
 
 def _get_model_predictions(model: BaseModel, sliced_ds: Dataset):
