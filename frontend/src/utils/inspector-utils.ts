@@ -1,0 +1,23 @@
+import { ModelDTO, ModelDTOModelTypeEnum } from '@/generated/client';
+
+export enum InspectorFeature {
+  EXPLANATION
+}
+
+const FEATURES_PER_MODELS: { [type in ModelDTOModelTypeEnum]: InspectorFeature[] } = {
+  [ModelDTOModelTypeEnum.Classification]: [InspectorFeature.EXPLANATION],
+  [ModelDTOModelTypeEnum.Regression]: [InspectorFeature.EXPLANATION],
+  [ModelDTOModelTypeEnum.TextGeneration]: []
+};
+
+export class InspectorUtils {
+
+  private InspectorUtils() {
+
+  }
+
+  static hasFeature(feature: InspectorFeature, model?: ModelDTO): boolean {
+    return model?.modelType !== undefined && FEATURES_PER_MODELS[model.modelType].includes(feature);
+  }
+
+}

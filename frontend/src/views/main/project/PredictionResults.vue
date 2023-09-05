@@ -103,17 +103,17 @@ import VChart from 'vue-echarts';
 import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import ResultPopover from '@/components/ResultPopover.vue';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
-import {api} from '@/api';
-import {use} from 'echarts/core';
-import {BarChart} from 'echarts/charts';
-import {CanvasRenderer} from 'echarts/renderers';
-import {GridComponent} from 'echarts/components';
-import {ModelDTO, ModelType} from '@/generated-sources';
-import {isClassification} from '@/ml-utils';
-import {abbreviateMiddle, maxLengthDisplayedCategory} from '@/results-utils';
+import { api } from '@/api';
+import { use } from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GridComponent } from 'echarts/components';
+import { ModelDTO, ModelType } from '@/generated-sources';
+import { isClassification } from '@/ml-utils';
+import { abbreviateMiddle, maxLengthDisplayedCategory } from '@/results-utils';
 import * as _ from 'lodash';
-import {CanceledError} from 'axios';
-import PushPopover from "@/components/PushPopover.vue";
+import { CanceledError } from 'axios';
+import PushPopover from '@/components/PushPopover.vue';
 
 use([CanvasRenderer, BarChart, GridComponent]);
 

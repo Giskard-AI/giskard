@@ -86,41 +86,10 @@
 
         <v-col cols="12" md="6">
           <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target" :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modified="changed || isInputNotOriginal" :debouncingTimeout="debouncingTimeout" @result="setResult" />
-          <v-card class="mb-4" outlined>
-            <v-card-title>
-              Explanation
-            </v-card-title>
-            <v-card-text>
-              <v-tabs :class="{ 'no-tab-header': !isClassification(model.modelType) || textFeatureNames.length === 0 }">
-                <v-tab v-if='modelFeatures.length > 1'>
-                  <v-icon left>mdi-align-horizontal-left</v-icon>
-                  Global
-                </v-tab>
-
-                <v-tooltip bottom :disabled="textFeatureNames.length !== 0">
-                  <template v-slot:activator="{ on, attrs }">
-                    <div class="d-flex" v-on="on" v-bind="attrs">
-                      <v-tab :disabled="!textFeatureNames.length">
-                        <v-icon left>text_snippet</v-icon>
-                        Text
-                      </v-tab>
-                    </div>
-                  </template>
-                  <span>Text explanation is not available because your model does not contain any text features</span>
-                </v-tooltip>
-
-
-                <v-tab-item v-if='modelFeatures.length > 1'>
-
-                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout" />
-                </v-tab-item>
-                <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :classificationLabels='model.classificationLabels' :classificationResult='classificationResult' :inputData='inputData' />
-                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :inputData='inputData' />
-                </v-tab-item>
-              </v-tabs>
-            </v-card-text>
-          </v-card>
+          <InspectorExplanation v-if='InspectorUtils.hasFeature(InspectorFeature.EXPLANATION, model)'
+                                :dataset='dataset' :model='model' :input-data='inputData'
+                                :classification-result='classificationResult' :model-features='modelFeatures'
+                                :input-meta-data='inputMetaData' />
         </v-col>
       </v-row>
     </ValidationObserver>
@@ -130,19 +99,18 @@
 <script setup lang="ts">
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
-import PredictionExplanations from './PredictionExplanations.vue';
-import TextExplanation from './TextExplanation.vue';
-import RegressionTextExplanation from '@/views/main/project/RegressionTextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import {DatasetDTO, ModelDTO, ModelType} from '@/generated-sources';
-import {isClassification} from '@/ml-utils';
+import { DatasetDTO, ModelType } from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
 import { anonymize } from '@/utils';
 import _ from 'lodash';
-import TransformationPopover from "@/components/TransformationPopover.vue";
-import {useCatalogStore} from "@/stores/catalog";
-import {computed, onMounted, ref, watch} from 'vue';
-import PushPopover from "@/components/PushPopover.vue";
+import TransformationPopover from '@/components/TransformationPopover.vue';
+import { useCatalogStore } from '@/stores/catalog';
+import { computed, onMounted, ref, watch } from 'vue';
+import PushPopover from '@/components/PushPopover.vue';
+import InspectorExplanation from '@/views/main/project/InspectorExplanation.vue';
+import { InspectorFeature, InspectorUtils } from '@/utils/inspector-utils';
+import { ModelDTO } from '@/generated/client';
 
 const catalogStore = useCatalogStore();
 
@@ -157,7 +125,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isMiniMode: false
-})
+});
 
 const debouncingTimeout: number = 500;
 
@@ -215,10 +183,6 @@ const isInputNotOriginal = computed(() => {
   return result;
 })
 
-const textFeatureNames = computed(() => {
-  return inputMetaData.value.filter(e => e.type == 'text').map(e => e.name)
-})
-
 const modelFeatures = computed(() => {
   return inputMetaData.value
     .filter(x => (x.name !== props.dataset.target) && (!props.model.featureNames || props.model.featureNames.includes(x.name)))
@@ -233,7 +197,7 @@ const datasetNonTargetColumns = computed(() => {
 })
 
 function setResult(r: string) {
-  if (isClassification(props.model.modelType)) {
+  if (props.model.modelType === ModelType.CLASSIFICATION) {
     classificationResult.value = r
   }
 }

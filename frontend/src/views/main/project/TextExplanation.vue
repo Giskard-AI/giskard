@@ -49,13 +49,14 @@ interface Props {
   modelId: string,
   datasetId: string,
   textFeatureNames: string[],
-  classificationLabels: string[]
+  classificationLabels?: string[]
   inputData?: object,
   classificationResult: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  inputData: () => ({})
+  inputData: () => ({}),
+  classificationLabels: () => []
 });
 
 const loading = ref<boolean>(false);

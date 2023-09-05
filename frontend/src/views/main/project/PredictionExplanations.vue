@@ -19,17 +19,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from "vue";
-import LoadingFullscreen from "@/components/LoadingFullscreen.vue";
-import { api } from "@/api";
-import { use } from "echarts/core";
-import { BarChart } from "echarts/charts";
-import { CanvasRenderer } from "echarts/renderers";
-import { GridComponent } from "echarts/components";
-import { ModelType } from "@/generated-sources";
-import * as _ from "lodash";
-import { CanceledError } from "axios";
-import VChart from "vue-echarts";
+import { computed, onMounted, ref, watch } from 'vue';
+import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
+import { api } from '@/api';
+import { use } from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GridComponent } from 'echarts/components';
+import { ModelType } from '@/generated-sources';
+import * as _ from 'lodash';
+import { CanceledError } from 'axios';
+import VChart from 'vue-echarts';
 
 use([CanvasRenderer, BarChart, GridComponent]);
 
@@ -38,7 +38,7 @@ interface Props {
   datasetId: string;
   predictionTask: string;
   targetFeature: string;
-  classificationLabels: string[];
+  classificationLabels?: string[];
   inputData: { [key: string]: string };
   modelFeatures: string[];
   debounceTime?: number;
@@ -46,6 +46,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   debounceTime: 250,
+  classificationLabels: (_) => []
 });
 
 const loading = ref<boolean>(false);

@@ -1,6 +1,6 @@
-import {InspectionCreateDTO, InspectionDTO, ParameterizedCallableDTO, RowFilterType} from '@/generated-sources';
-import {defineStore} from 'pinia';
-import {api} from '@/api';
+import { InspectionCreateDTO, InspectionDTO, ParameterizedCallableDTO, RowFilterType } from '@/generated-sources';
+import { defineStore } from 'pinia';
+import { api } from '@/api';
 
 interface FilterType {
     label: string;

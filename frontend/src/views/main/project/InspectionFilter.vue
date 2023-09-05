@@ -46,14 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import {isClassification} from "@/ml-utils";
-import {Filter, ModelType, RowFilterType} from "@/generated-sources";
-import CustomInspectionFilter from "./CustomInspectionFilter.vue";
-import _ from "lodash";
-import mixpanel from "mixpanel-browser";
-import {anonymize} from "@/utils";
-import {computed, onMounted, ref, watch} from "vue";
-import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import { isClassification } from '@/ml-utils';
+import { Filter, ModelType, RowFilterType } from '@/generated-sources';
+import CustomInspectionFilter from './CustomInspectionFilter.vue';
+import _ from 'lodash';
+import mixpanel from 'mixpanel-browser';
+import { anonymize } from '@/utils';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
 
 const debuggingSessionStore = useDebuggingSessionsStore();
 
