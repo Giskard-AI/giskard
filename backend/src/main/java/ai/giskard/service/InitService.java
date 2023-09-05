@@ -144,8 +144,8 @@ public class InitService {
         return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
-    static final GalleryInitIndicator isInitialized = new GalleryInitIndicator();
-    public static GalleryInitIndicator galleryInitIndicator() { return isInitialized; }
+    static final GalleryInitIndicator initIndicator = new GalleryInitIndicator();
+    public static boolean isInitialized() { return initIndicator.isInit(); }
 
     /**
      * Initializing first authorities, mock users, and mock projects
@@ -161,7 +161,7 @@ public class InitService {
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
-        isInitialized.setInit(true);
+        initIndicator.setInit(true);
     }
 
     /**
