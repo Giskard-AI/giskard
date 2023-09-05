@@ -7,14 +7,14 @@ Classes:
 
 Functions:
 
-- slice_bounds: Get quartile bounds values to slice Giskard dataset on a numerical feature.
+- slice_bounds_quartile: Get quartile bounds values to slice Giskard dataset on a numerical feature.
 - coltype_to_supported_perturbation_type: Map column type to perturbation type enum.
 
 """
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Union, Optional
+from typing import Union, Optional, Tuple
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class TransformationInfo:
     transformation_functions_params: list
 
 
-def slice_bounds(feature: str, value: Union[int, float], ds: Dataset) -> Optional[List[Union[int, float]]]:
+def slice_bounds_quartile(feature: str, value: Union[int, float], ds: Dataset) -> Optional[Tuple[Union[int, float]]]:
     """Get quartile bounds values to slice Giskard dataset on a numerical feature.
 
     Args:
@@ -52,15 +52,42 @@ def slice_bounds(feature: str, value: Union[int, float], ds: Dataset) -> Optiona
         # Find the quartile bounds for the value
         q1, q2, q3 = np.nanpercentile(ds.df[feature], [25, 50, 75])
         if value < q1:
-            return [ds.df[feature].min(), q1]
+            return (ds.df[feature].min(), q1)
         elif q1 <= value < q2:
-            return [q1, q2]
+            return (q1, q2)
         elif q2 <= value < q3:
-            return [q2, q3]
-        else:
-            return [q3, ds.df[feature].max()]
-    else:
-        return None
+            return (q2, q3)
+        return (q3, ds.df[feature].max())
+    return None
+
+
+def slice_bounds_relative(
+    feature: str, value: Union[int, float], ds: Dataset, window_size: float = 0.1
+) -> Optional[Tuple[Union[int, float]]]:
+    """Get fixed bounds values to slice Giskard dataset on a numerical feature.
+
+    Args:
+        feature (str): Feature name
+        value (float or int): Feature value
+        ds (Dataset): Dataset
+        window_size (float): interval in percentage around the value
+
+    Returns:
+        tuple: Lower and upper bounds of the slice
+    """
+    if ds.column_types[feature] == "numeric":
+        add_value = value * window_size / 2.0
+        up = value + add_value if value > 0 else value - add_value
+        low = value - add_value if value > 0 else value + add_value
+
+        _max = ds.df[feature].max()
+        _min = ds.df[feature].min()
+
+        up = up if up <= _max else _max
+        low = low if low >= _min else _min
+
+        return (low, up)
+    return None
 
 
 def coltype_to_supported_perturbation_type(coltype: str) -> SupportedPerturbationType:
