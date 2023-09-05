@@ -24,4 +24,8 @@
                                  initiallyDeferred="false" referencedColumnNames="id" referencedTableName="projects"
                                  validate="true"/>
     </changeSet>
+    <changeSet author="kevinmessiaen (generated)" id="1689144872766-8">
+        <dropColumn tableName="callable_functions" columnName="project_key">
+        </dropColumn>
+    </changeSet>
 </databaseChangeLog>
