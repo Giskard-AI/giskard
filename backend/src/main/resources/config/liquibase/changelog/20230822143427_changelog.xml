@@ -11,9 +11,8 @@
         <dropUniqueConstraint constraintName="UC_PROJECTSKEY_COL" tableName="PROJECTS"/>
     </changeSet>
     <changeSet author="andreyavtomonov" id="initialize-projects.project_key">
-        <update tableName="projects">
-            <column name="project_key" valueComputed="key"/>
-        </update>
+        <sql>UPDATE projects
+             SET project_key = "key"</sql>
     </changeSet>
     <changeSet author="andreyavtomonov (generated)" id="1692707676019-16">
         <dropColumn columnName="key" tableName="PROJECTS"/>
