@@ -19,7 +19,7 @@ from giskard.models.base.model import BaseModel
 
 from ..models.model_explanation import explain, explain_text
 from ..push import ContributionPush
-from .utils import slice_bounds
+from .utils import slice_bounds_relative
 
 
 def _get_model_predictions(model: BaseModel, sliced_ds: Dataset):
@@ -70,7 +70,7 @@ def _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, corre
         ContributionPush: An object representing the contribution push for non-text features.
     """
     # Calculate bounds for the feature
-    bounds = slice_bounds(feature=shap_feature, value=sliced_ds.df[shap_feature].values[0], ds=ds)
+    bounds = slice_bounds_relative(feature=shap_feature, value=sliced_ds.df[shap_feature].values[0], ds=ds)
 
     # Create the ContributionPush object
     return ContributionPush(
