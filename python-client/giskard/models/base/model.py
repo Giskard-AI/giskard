@@ -354,9 +354,11 @@ class BaseModel(ABC):
             This method saves the model to a temporary directory before uploading it. The temporary directory
             is deleted after the upload is completed.
         """
-        from giskard.core.model_validation import validate_model
+        from giskard.core.model_validation import validate_model, validate_model_loading_and_saving
 
-        validate_model(model=self, validate_ds=validate_ds)
+        reloaded_model = validate_model_loading_and_saving(self)
+        validate_model(model=reloaded_model, validate_ds=validate_ds)
+
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             self.save(f)
 

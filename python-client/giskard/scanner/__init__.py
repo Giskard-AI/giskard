@@ -62,9 +62,7 @@ def scan(
 
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(
-        model, dataset, verbose=verbose, raise_exceptions=raise_exceptions, validation_flags=validation_flags
-    )
+    return scanner.analyze(model, dataset, verbose=verbose, raise_exceptions=raise_exceptions)
 
 
 __all__ = ["scan", "Scanner", "logger"]
