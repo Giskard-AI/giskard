@@ -1,6 +1,6 @@
-import axios, {AxiosError} from 'axios';
-import {apiURL} from '@/env';
-import {getLocalHFToken, getLocalToken, removeLocalToken} from '@/utils';
+import axios, { AxiosError } from 'axios';
+import { apiURL } from '@/env';
+import { getLocalHFToken, getLocalToken, removeLocalToken } from '@/utils';
 import Vue from 'vue';
 
 import {
@@ -37,7 +37,6 @@ import {
     ProjectDTO,
     ProjectPostDTO,
     PushKind,
-    RoleDTO,
     RowFilterDTO,
     SetupDTO,
     SlicingFunctionDTO,
@@ -50,11 +49,11 @@ import {
     UpdateMeDTO,
     UserDTO
 } from './generated-sources';
-import {TYPE} from 'vue-toastification';
+import { TYPE } from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
-import {useUserStore} from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -447,11 +446,7 @@ export const api = {
         });
     },
     async getCatalog(projectId: number) {
-        return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
-            params: {
-                projectId
-            }
-        });
+        return apiV2.get<unknown, CatalogDTO>(`/project/${projectId}/catalog`);
     },
     async createSlicingFunction(projectKey: string, comparisonClauses: Array<ComparisonClauseDTO>) {
       return apiV2.post<unknown, SlicingFunctionDTO>(`/project/${projectKey}/slices/no-code`, comparisonClauses);
