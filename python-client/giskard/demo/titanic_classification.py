@@ -3,7 +3,6 @@ from enum import Enum
 from typing import Tuple
 
 import pandas as pd
-from lightgbm import LGBMClassifier
 from sklearn import model_selection
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
@@ -74,6 +73,7 @@ def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int 
     if model.lower() == ModelTypes.LOGISTIC_REGRESSION.lower():
         clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=max_iter))])
     elif model.lower() == ModelTypes.LGBM_CLASSIFIER.lower():
+        from lightgbm import LGBMClassifier
         clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(n_estimators=max_iter))])
     else:
         raise NotImplementedError(f"The model type '{model}' is not supported!")
