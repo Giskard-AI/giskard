@@ -27,13 +27,8 @@ public class GeneralSettingsService {
     public static final String hfSpaceId = System.getenv().get("SPACE_ID");
 
     public static final boolean IS_RUNNING_IN_DEMO_HF_SPACES = Objects.equals(System.getenv().get("SPACE_ID"),
-            System.getenv().get("DEMO_SPACE_ID") == null ? "giskardai/giskard" : System.getenv().get("DEMO_SPACE_ID")
+        System.getenv().get("DEMO_SPACE_ID") == null ? "giskardai/giskard" : System.getenv().get("DEMO_SPACE_ID")
     );
-
-    public static boolean isGiskardGalleryInstance() {
-        // Gallery instance allows to run some demo operations, not exactly read-only
-        return IS_RUNNING_IN_DEMO_HF_SPACES;
-    }
 
     public GeneralSettings getSettings() {
         return deserializeSettings(settingsRepository.getMandatoryById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());

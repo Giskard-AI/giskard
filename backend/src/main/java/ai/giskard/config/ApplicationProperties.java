@@ -42,7 +42,6 @@ public class ApplicationProperties {
     private CorsConfiguration cors = new CorsConfiguration();
 
     private String defaultApiKey;
-    private boolean demoSpace;
 }
 
 
