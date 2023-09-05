@@ -1,6 +1,4 @@
 import { ModelDTO, ModelDTOModelTypeEnum } from '@/generated/client';
-import { types } from 'sass';
-import Error = types.Error;
 
 export enum InspectorFeature {
   EXPLANATION
