@@ -31,17 +31,6 @@ public class ApiKeyService {
 
     @PostConstruct
     private void initCache() {
-        if (applicationProperties.getDefaultApiKey() != null) {
-            // Add a key provided from env to connect external MLWorker in HF
-            Optional<User> user = userRepository.findOneByLogin("admin");
-            if (user.isPresent() && ApiKey.doesStringLookLikeApiKey(applicationProperties.getDefaultApiKey())) {
-                ApiKey key = new ApiKey(user.get());
-                key.setKey(applicationProperties.getDefaultApiKey());
-                apiKeysCache.put(applicationProperties.getDefaultApiKey(), key);
-            } else {
-                log.warn("API Key provided but not conforming format.");
-            }
-        }
         apiKeyRepository.findAll().forEach(apiKey -> apiKeysCache.put(apiKey.getKey(), apiKey));
     }
 
@@ -66,5 +55,20 @@ public class ApiKeyService {
             .filter(k -> k.getId().equals(key)).findFirst()
             .ifPresent(k -> apiKeysCache.remove(k.getKey()));
         return getKeys(username);
+    }
+
+    public void initDefaultApiKey() {
+        // Create a default API key if set in env
+        if (applicationProperties.getDefaultApiKey() != null) {
+            // Add a key provided from env to connect external MLWorker in HF
+            Optional<User> user = userRepository.findOneByLogin("admin");
+            if (user.isPresent() && ApiKey.doesStringLookLikeApiKey(applicationProperties.getDefaultApiKey())) {
+                ApiKey key = new ApiKey(user.get());
+                key.setKey(applicationProperties.getDefaultApiKey());
+                apiKeysCache.put(applicationProperties.getDefaultApiKey(), key);
+            } else {
+                log.warn("API Key provided but not conforming format.");
+            }
+        }
     }
 }

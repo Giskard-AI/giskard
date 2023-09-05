@@ -75,6 +75,7 @@ public class InitService {
     private final GeneralSettingsService generalSettingsService;
     private final FileLocationService fileLocationService;
     private final LicenseService licenseService;
+    private final ApiKeyService apiKeyService;
     private Map<String, ProjectConfig> projects;
     String[] mockKeys = stream(AuthoritiesConstants.AUTHORITY_NAMES.keySet().toArray(new String[0])).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
@@ -157,11 +158,16 @@ public class InitService {
         // change readonly
         initAuthorities();
         initUsers();
+        initDefaultApiKey();
         List<String> profiles = Arrays.asList(env.getActiveProfiles());
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
         initIndicator.setInit(true);
+    }
+
+    private void initDefaultApiKey() {
+        apiKeyService.initDefaultApiKey();
     }
 
     /**
