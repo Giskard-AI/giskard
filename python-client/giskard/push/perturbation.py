@@ -12,7 +12,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from xxhash import xxh3_128_hexdigest
+import sys
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -36,7 +36,7 @@ from giskard.scanner.robustness.text_transformations import (
 )
 from ..push import PerturbationPush
 
-text_transfo_list = [
+text_transformation_list = [
     TextLowercase,
     TextUppercase,
     TextTitleCase,
@@ -45,12 +45,8 @@ text_transfo_list = [
     TextGenderTransformation,
 ]
 
-hashed_typo_transformations = dict()
 
-
-def create_perturbation_push(
-    model: BaseModel, ds: Dataset, df: pd.DataFrame
-) -> PerturbationPush:
+def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> PerturbationPush:
     """Create a perturbation notification by applying transformations.
 
     Applies supported perturbations to each feature in the dataset
@@ -69,6 +65,7 @@ def create_perturbation_push(
     for feat, coltype in ds.column_types.items():
         coltype = coltype_to_supported_perturbation_type(coltype)
         transformation_info = _apply_perturbation(model, ds, df, feat, coltype)
+        # df contains only one row, which is the sample being looked at in the debugger
         value = df.iloc[0][feat]
         if transformation_info is not None:
             return PerturbationPush(
@@ -168,28 +165,22 @@ def _text(
     model,
     transformation_function,
     value_perturbed,
-):          
+):
     passed = False
     # Iterate over the possible text transformations
-    for text_transformation in text_transfo_list:
+    for text_transformation in text_transformation_list:
         # Create the transformation
         _is_typo_transformation = issubclass(text_transformation, TextTypoTransformation)
         kwargs = {}
         if _is_typo_transformation:
-            kwargs = {"rng_seed": 1241}
+            hashed_seed = hash(f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8"))
+            positive_hashed_seed = hashed_seed % ((sys.maxsize + 1) * 2)
+            kwargs = {"rng_seed": positive_hashed_seed}
 
         t = text_transformation(column=feature, **kwargs)
 
         # Transform the slice
-        if _is_typo_transformation:
-            _hash = xxh3_128_hexdigest(
-                f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8")
-            )
-            if _hash not in hashed_typo_transformations.keys():
-                hashed_typo_transformations[_hash] = ds_slice_copy.transform(t)
-            transformed = hashed_typo_transformations.get(_hash)
-        else:
-            transformed = ds_slice_copy.transform(t)
+        transformed = ds_slice_copy.transform(t)
 
         # Generate the perturbation
         passed = _check_after_perturbation(model, ds_slice, transformed)
@@ -223,6 +214,7 @@ def _numeric(
             np.unique(np.linspace(-2 * mad, 0, num=10).round().astype(int)),
             np.unique(np.linspace(2 * mad, 0, num=10).round().astype(int)),
         ]
+    # df contains only one row, which is the sample being looked at in the debugger
     value_to_perturb = ds.df[feature].iloc[0]
     for values_added in values_added_list:
         for value in values_added:
@@ -239,17 +231,13 @@ def _numeric(
                 if perturbed:
                     value_perturbed.append(transformed.df[feature].values.item(0))
                     transformation_function.append(t)
-                    transformation_functions_params.append(
-                        dict(column_name=feature, value_added=float(value))
-                    )
+                    transformation_functions_params.append(dict(column_name=feature, value_added=float(value)))
                 else:
                     break
     return len(transformation_function) > 0
 
 
-def _check_after_perturbation(
-    model: BaseModel, ref_row: Dataset, row_perturbed: Dataset
-) -> bool:
+def _check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset) -> bool:
     """
     Check if perturbation changed the model's prediction.
 
