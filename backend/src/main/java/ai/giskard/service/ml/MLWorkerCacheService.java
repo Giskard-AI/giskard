@@ -1,5 +1,6 @@
 package ai.giskard.service.ml;
 
+import ai.giskard.domain.Project;
 import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.MLWorkerWSCatalogDTO;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static ai.giskard.ml.dto.MLWorkerWSUtils.convertMLWorkerWSObject;
 
@@ -61,12 +61,10 @@ public class MLWorkerCacheService {
             return;
         }
 
-        catalogWithoutPickles = getTestFunctions(false);
+        CatalogDTO catalogWithoutPickles = getTestFunctions(false);
         testFunctionService.saveAll(catalogWithoutPickles.getTests());
         slicingFunctionService.saveAll(catalogWithoutPickles.getSlices());
         transformationFunctionService.saveAll(catalogWithoutPickles.getTransformations());
-
-        return catalogWithoutPickles;
     }
 
     private CatalogDTO getTestFunctions(boolean isInternal) {

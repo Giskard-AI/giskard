@@ -16,15 +16,15 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -161,7 +161,7 @@ public class DatasetsController {
                     .build();
 
                 if (!callable.getProjects().isEmpty()) {
-                    artefactRefBuilder.setProjectKey(project.getKey());
+                    artifactRef.setProjectKey(project.getKey());
                 }
 
                 if (callable instanceof SlicingFunction) {
