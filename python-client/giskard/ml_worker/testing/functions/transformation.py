@@ -160,7 +160,7 @@ def mad_transformation(
     return data
 
 
-@transformation_function(name="ADD value", tags=["num"], row_level=False)
+@transformation_function(name="Add value", tags=["numerical"], row_level=False)
 def add_value(data: pd.DataFrame, column_name: str, value_added: float = 0.0) -> pd.DataFrame:
     """
     Add the value_added to the column.
