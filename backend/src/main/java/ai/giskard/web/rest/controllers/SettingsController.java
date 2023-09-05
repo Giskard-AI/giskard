@@ -100,6 +100,7 @@ public class SettingsController {
                 .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
                 .hfSpaceId(GeneralSettingsService.hfSpaceId)
                 .isRunningOnHfSpaces(GeneralSettingsService.isRunningInHFSpaces)
+                .isDemoHfSpace(GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES)
                 .roles(roles)
                 .build())
             .user(userDTO)

@@ -74,7 +74,7 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-row v-if="!mainStore.authAvailable && HF_DEMO_SPACE_ID != mainStore.appSettings?.hfSpaceId">
+      <v-row v-if="!mainStore.authAvailable && !appSettings.isDemoHfSpace">
         <v-col>
           <ApiTokenCard />
         </v-col>
@@ -168,7 +168,7 @@
                 </v-container>
               </v-card-text>
             </v-card-text>
-            <v-card-actions v-if="currentWorker && HF_DEMO_SPACE_ID != mainStore.appSettings?.hfSpaceId">
+            <v-card-actions v-if="currentWorker && !appSettings.isDemoHfSpace">
               <v-col class="text-right">
                 <v-btn @click="stopMLWorker()">Stop ML Worker</v-btn>
               </v-col>
@@ -192,7 +192,6 @@ import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
-import { HF_DEMO_SPACE_ID } from "@/enums";
 import {openapi} from "@/api-v2";
 import {GeneralSettings, MLWorkerInfoDTO} from "@/generated/client";
 

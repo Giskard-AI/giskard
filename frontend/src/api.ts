@@ -57,7 +57,6 @@ import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
 import { useMainStore } from './stores/main';
-import { HF_DEMO_SPACE_ID  } from '@/enums';
 
 function jwtRequestInterceptor(config) {
     // Do something before request is sent
@@ -125,8 +124,8 @@ async function errorInterceptor(error) {
             if (router.currentRoute.path !== '/auth/login') {
                 await router.push('/auth/login');
             }
-        } else if (error.response.status === 503 && HF_DEMO_SPACE_ID === useMainStore().appSettings?.hfSpaceId) {
-            console.warn(`HTTP503 received from demo space ${HF_DEMO_SPACE_ID}`);
+        } else if (error.response.status === 503 && useMainStore().appSettings?.isDemoHfSpace) {
+            console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
             Vue.$toast(
                 {
                     component: TipWithLinkToast,
