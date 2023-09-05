@@ -133,7 +133,7 @@ async function errorInterceptor(error) {
                         title: 'Warning',
                         detail: `You cannot modify Giskard Hugging Face demo space.
 Please create your own space and get a license from Giskard.`,
-                        link: "/hugging-face-spaces/tip",
+                        link: "/hfspaces/setup-tip",
                     },
                 },
                 {
