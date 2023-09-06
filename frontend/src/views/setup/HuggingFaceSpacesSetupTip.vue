@@ -14,6 +14,10 @@
         To test your own model, please create your own Giskard instance.
       </v-card-text>
     </v-card>
+    <v-btn color="primaryLight" class="primaryLightBtn" @click="back">
+      Continue
+    </v-btn>
+    <br/>
     <p class="text-center">To create <span class="font-weight-bold">your own Giskard instance on Hugging Face Spaces</span>, follow these steps:</p>
     <v-card max-width="800" class="mt-6 mb-4 card-step">
         <v-card-title class="font-weight-medium">
@@ -63,7 +67,13 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from "vue-router/composables";
 
+const router = useRouter();
+
+function back() {
+  router.back();
+}
 </script>
 <style scoped>
 </style>
