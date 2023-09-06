@@ -15,10 +15,7 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions.transformation import (
-    compute_mad,
-    mad_transformation,
-)
+from giskard.ml_worker.testing.functions.transformation import add_value
 from giskard.models.base.model import BaseModel
 from giskard.push.utils import (
     SupportedPerturbationType,
@@ -45,9 +42,7 @@ text_transfo_list = [
 ]
 
 
-def create_perturbation_push(
-    model: BaseModel, ds: Dataset, df: pd.DataFrame
-) -> PerturbationPush:
+def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> PerturbationPush:
     """Create a perturbation notification by applying transformations.
 
     Applies supported perturbations to each feature in the dataset
@@ -195,23 +190,24 @@ def _numeric(
     transformation_functions_params,
     value_perturbed,
 ):
-    # Compute the MAD of the column
-    mad = compute_mad(ds.df[feature])  # Small issue: distribution might not be normal
+    # Compute 10% around the value to be perturbed
+    value_to_perturb = ds_slice.df[feature].iloc[0]
+
     values_added_list = [
-        np.linspace(-2 * mad, 0, num=10),
-        np.linspace(2 * mad, 0, num=10),
+        np.linspace(-0.1 * value_to_perturb, 0, num=10, endpoint=False),
+        np.linspace(0.1 * value_to_perturb, 0, num=10, endpoint=False),
     ]
     if ds.df.dtypes[feature] == "int64":
         values_added_list = [
-            np.unique(np.linspace(-2 * mad, 0, num=10).round().astype(int)),
-            np.unique(np.linspace(2 * mad, 0, num=10).round().astype(int)),
+            np.unique(np.linspace(-0.1 * abs(value_to_perturb), 0, num=10, endpoint=False).round().astype(int))[:-1],
+            np.unique(np.linspace(0.1 * abs(value_to_perturb), 0, num=10, endpoint=False).round().astype(int))[1:],
         ]
-    value_to_perturb = ds.df[feature].iloc[0]
+
     for values_added in values_added_list:
         for value in values_added:
             if ds.df[feature].max() >= value + value_to_perturb >= ds.df[feature].min():
                 # Create the transformation
-                t = mad_transformation(column_name=feature, value_added=value)
+                t = add_value(column_name=feature, value_added=value)
 
                 # Transform the slice
                 transformed = ds_slice_copy.transform(t)
@@ -222,17 +218,13 @@ def _numeric(
                 if perturbed:
                     value_perturbed.append(transformed.df[feature].values.item(0))
                     transformation_function.append(t)
-                    transformation_functions_params.append(
-                        dict(column_name=feature, value_added=float(value))
-                    )
+                    transformation_functions_params.append(dict(column_name=feature, value_added=float(value)))
                 else:
                     break
     return len(transformation_function) > 0
 
 
-def _check_after_perturbation(
-    model: BaseModel, ref_row: Dataset, row_perturbed: Dataset
-) -> bool:
+def _check_after_perturbation(model: BaseModel, ref_row: Dataset, row_perturbed: Dataset) -> bool:
     """
     Check if perturbation changed the model's prediction.
 

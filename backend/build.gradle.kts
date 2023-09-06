@@ -1,4 +1,5 @@
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.*
 
 group = "ai.giskard"
@@ -146,6 +147,7 @@ openApi {
             listOf(
                 "--spring.profiles.active=dev",
                 "--server.port=11337",
+                "--giskard.home=" + outputDir.dir("giskard-home-"+ Instant.now().toEpochMilli()).get().toString(),
             )
         )
     }
