@@ -188,7 +188,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { ValidationObserver } from 'vee-validate';
 import { Role } from '@/enums';
 import { PostImportProjectDTO, ProjectPostDTO } from '@/generated-sources';
-import { copyText, toSlug } from '@/utils';
+import { copyText, toSlug, isFirstVisited, setVisited } from '@/utils';
 import { useRoute, useRouter } from 'vue-router/composables';
 import moment from 'moment';
 import { useMainStore } from '@/stores/main';
@@ -362,6 +362,10 @@ watch(() => newProjectName.value, (value) => {
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
   creatorFilter.value = parseInt(f) || 0;
+  if (useMainStore().appSettings?.isDemoHfSpace && isFirstVisited()) {
+    setVisited();
+    router.push('/hfspaces/setup-tip');
+  }
   await loadProjects();
 })
 </script>
