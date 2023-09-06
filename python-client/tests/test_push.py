@@ -11,7 +11,7 @@ from giskard.push.utils import (
     SupportedPerturbationType,
     TransformationInfo,
     coltype_to_supported_perturbation_type,
-    slice_bounds,
+    slice_bounds_quartile,
 )
 from giskard.slicing.slice import QueryBasedSliceFunction
 import pandas as pd
@@ -182,26 +182,26 @@ def test_slice_bounds_valid_numeric(german_credit_data):
     q1, q2, q3 = np.percentile(numeric_col, [25, 50, 75])
 
     # Test quartile values
-    bounds = slice_bounds("credit_amount", q2, german_credit_data)
-    assert bounds == [q2, q3]
+    bounds = slice_bounds_quartile("credit_amount", q2, german_credit_data)
+    assert bounds == (q2, q3)
 
     # Test min/max
-    bounds = slice_bounds("credit_amount", numeric_col.min(), german_credit_data)
-    assert bounds == [numeric_col.min(), q1]
+    bounds = slice_bounds_quartile("credit_amount", numeric_col.min(), german_credit_data)
+    assert bounds == (numeric_col.min(), q1)
 
-    bounds = slice_bounds("credit_amount", numeric_col.max(), german_credit_data)
-    assert bounds == [q3, numeric_col.max()]
+    bounds = slice_bounds_quartile("credit_amount", numeric_col.max(), german_credit_data)
+    assert bounds == (q3, numeric_col.max())
 
     # Test valid values
-    bounds = slice_bounds("credit_amount", 1500, german_credit_data)
-    assert bounds == [1365.5, 2319.5]
+    bounds = slice_bounds_quartile("credit_amount", 1500, german_credit_data)
+    assert bounds == (1365.5, 2319.5)
 
-    bounds = slice_bounds("credit_amount", 2500, german_credit_data)
-    assert bounds == [2319.5, 3972.25]
+    bounds = slice_bounds_quartile("credit_amount", 2500, german_credit_data)
+    assert bounds == (2319.5, 3972.25)
 
 
 def test_slice_bounds_non_numeric(german_credit_data):
-    bounds = slice_bounds("account_check_status", "c", german_credit_data)
+    bounds = slice_bounds_quartile("account_check_status", "c", german_credit_data)
     assert bounds is None
 
 
