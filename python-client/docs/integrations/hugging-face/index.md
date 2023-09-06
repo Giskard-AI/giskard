@@ -2,11 +2,11 @@
 
 **Giskard** is an open-source testing framework dedicated for AI models, from tabular to LLMs. Giskard is composed of 
 1. An open-source Python library containing a **vulnerability scan**, **testing** and **CI/CD** framework for ML models
-2. The **Giskard hub**, a server app, containing a collaborative ML Testing dashboard for model **debugging** (root-cause analysis), model **comparison** & human **feedback** collection for ML.
+2. The **Giskard Hub**, a server application, containing a collaborative ML Testing dashboard for model **debugging** (root-cause analysis), model **comparison** & human **feedback** collection for ML.
 
-The Giskard hub is a **self-contained application completely hosted on the Hub using Docker**. Visit the [Giskard documentation](https://docs.giskard.ai) to learn about its features.
+The Giskard Hub is a **self-contained application completely hosted on Hugging Face Spaces using Docker**. Visit the [Giskard documentation](https://docs.giskard.ai) to learn about its features.
 
-On this page, you'll learn to deploy your own Giskard hub and use it for testing and debugging your ML models. 
+On this page, you'll learn to deploy your own Giskard Hub and use it for testing and debugging your ML models. 
 
 <div class="flex justify-center">
 
@@ -14,64 +14,64 @@ On this page, you'll learn to deploy your own Giskard hub and use it for testing
 
 ## Try the Giskard Hub on demo models in 1 click
 
-If you want to try Giskard on some demo ML projects (and not on your own ML models), go to the Giskard Demo Hub in the **HF public space**.
+If you want to try the Giskard Hub on some demo ML projects (not on your own ML models), navigate to our public demo Space:
 
 <a  href="https://huggingface.co/spaces/giskardai/giskard">
     <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-lg.svg" />
 </a>
 
 :::{hint}
-You cannot upload your private models, datasets, and projects in the demo Giskard Space. To debug & test your own model, duplicate the Space (see below).
+The demo Giskard Space is read-only. To upload your own models, datasets and projects in the Giskard Space, we recommend that you duplicate the Space. More on this in the following sections. 
 :::
 
-## Test & debug your own ML model in the Giskard Hub using HF space
+## Test & debug your own ML model in the Giskard Hub using HF Spaces
 
-With the HF Space, you can easily test & debug your own ML models that you trained in your Python environment. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
+Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
 
 ### 1. Duplicate the demo Space from Giskard
-Go to Giskard HF space on https://huggingface.co/spaces/giskardai/giskard and duplicate the space (see the screenshot below).
+Begin by visiting the Giskard HF space at https://huggingface.co/spaces/giskardai/giskard and duplicate the space (as depicted below).
 
 [Duplication image](../../../assets/integrations/hfs/duplicate_this_space.png)
 
-In the popup, you can change the **owner**, the **visibility** and the **hardware**:
+During duplication, you're presented with options to modify the **owner**, the **visibility** and the **hardware**:
 
 ![Space Duplication popup](../../../assets/integrations/hfs/paid_tier.png)
 
 :::{hint}
 **Owner and visibility**:
-If you don't want to share publicly your model, keep the Space **private** and set the owner to **your organization**
+If you don't want to publicly share your model, set your Space to **private** and assign the owner as **your organization**
 **Hardware**:
-We recommend you use a paid hardware to have better performance. If you choose free hardware, after 48 hours of inactivity the space will be shutdown and you will lose all the data in the Giskard Space.
+We recommend to use paid hardware to get the best out of Giskard's HF Space. You can also incorporate [persistent storage](https://huggingface.co/docs/hub/spaces-storage) to retain your data even after the Space reboots. With free hardware that lacks persistent storage, any inactivity beyond 48 hours will result in the space being shut down. This will lead to a loss of all data within your Giskard Space.
 :::
 
-After clicking on `Duplicate Space` the build can take several minutes. You are now ready to upload your first model
+Once you're ready, click on Duplicate Space. The building process will take several minutes.
 
 ### 2. Create a new Giskard project
 
 [PUT THE SCREENSHOT]
 
-### 3. Put your HF Access token
+### 3. Enter your HF Access token
 
-On your first access, Giskard needs an HF access token to generate the Giskard Access Key. To do so, complete the pop-up that displays when you create your first project.
+On your first access, Giskard needs a HF access token to generate the Giskard Access Key. To do so, follow the instructions in the pop-up that you encounter when creating your first project.
 [PUT THE SCREENSHOT]
 
-Otherwise, you can also put your HF access token by going to the Giskard Settings.
+Alternatively, provide your HF access token through the Giskard Settings.
 
 ### 4. Wrap your model and scan it in your Python environment
 
-To do so follow the doc page here: https://docs.giskard.ai/en/latest/guides/scan/index.html
+For detailed guidance on this step, refer to the documentation: https://docs.giskard.ai/en/latest/guides/scan/index.html
 
 ### 5. Upload your test suite by creating a Giskard Client for your HF Space
 
-You can then upload the test suite resulting from your scan from your Python notebook to your HF Space. To do so you need to create a Giskard Client by copy-pasting the "Giskard client" code snippet from the Settings of the Giskard Hub to your Python notebook.
+You can then upload the test suite generated by the Giskard scan from your Python notebook to your HF Space. Achieve this by initializing a Giskard Client: simply copy the "Giskard Client" snippet from the Giskard Hub settings and run it within your Python notebook.
 
-You are now ready to debug the test you just uploaded in the test tab of the Giskard Hub.
+You are now ready to debug the tests which you've just uploaded in the test tab of the Giskard Hub.
 
-Here is the full example of the upload of a test suite to the Giskard Hub in HF Space:
+Here a comprehensive example of the upload of a test suite to the Giskard Hub in HF Spaces:
 
 .. code-block:: sh
             INSERT CODE
 
 ## Feedback and support
 
-If you have suggestions or need specific support, please join [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).
+If you have suggestions or need specialized support, please join us on the [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).
