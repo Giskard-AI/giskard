@@ -91,8 +91,7 @@
                              :inputData='inputData' :modified='changed || isInputNotOriginal'
                              :debouncingTimeout='debouncingTimeout' @result='setResult' />
           <GenerationResults v-if='InspectorUtils.hasFeature(InspectorFeature.GENERATION_RESULT, model)' :model='model'
-                             :dataset-id='dataset.id' :targetFeature='dataset.target' :modelFeatures='modelFeatures'
-                             :classificationLabels='model.classificationLabels' :predictionTask='model.modelType'
+                             :dataset-id='dataset.id' :modelFeatures='modelFeatures'
                              :inputData='inputData' :modified='changed || isInputNotOriginal'
                              :debouncingTimeout='debouncingTimeout' @result='setResult' />
           <InspectorExplanation v-if='InspectorUtils.hasFeature(InspectorFeature.EXPLANATION, model)'
