@@ -11,8 +11,6 @@
         </v-col>
       </v-row>
       <v-row>
-      </v-row>
-      <v-row>
         <v-col v-if='!prediction && !errorMsg && !loading'>
           <p>No data yet</p>
         </v-col>
@@ -23,12 +21,14 @@
         </v-col>
       </v-row>
     </v-card-text>
-
+    <v-card-actions>
+      <v-btn :loading='loading' :disabled='!predictionOutdated' text @click='submitPrediction'>Generate</v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
 import { api } from '@/api';
 import { ModelDTO } from '@/generated-sources';
@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const prediction = ref<string | number | undefined>('');
-const resultProbabilities = ref<any>({});
+const predictedInput = ref<{ [key: string]: string }>({});
 const loading = ref<boolean>(false);
 const errorMsg = ref<string>('');
 const controller = ref<AbortController | undefined>(undefined);
@@ -61,18 +61,16 @@ async function submitPrediction() {
   if (Object.keys(props.inputData).length) {
     try {
       loading.value = true;
+      predictedInput.value = _.pick(props.inputData, props.modelFeatures);
       const predictionResult = (await api.predict(
           props.model.id,
           props.datasetId,
-          _.pick(props.inputData, props.modelFeatures),
+          predictedInput.value,
           controller.value
       ));
       prediction.value = predictionResult.prediction;
-      emit('result', prediction.value);
 
-      resultProbabilities.value = Object.entries(predictionResult.probabilities)
-          .sort(([, v1], [, v2]) => +v2 - +v1)       // Sort the object by value - solution based on:
-          .reduce((r, [k, v]) => ({ ...r, [k]: v }), {}); // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
+      emit('result', prediction.value);
 
       errorMsg.value = '';
       loading.value = false;
@@ -87,9 +85,14 @@ async function submitPrediction() {
     // reset
     errorMsg.value = '';
     prediction.value = undefined;
-    resultProbabilities.value = {};
   }
 }
+
+
+const predictionOutdated = computed(() => !_.isEqual(
+    _.pick(props.inputData, props.modelFeatures),
+    _.pick(predictedInput.value, props.modelFeatures)
+));
 
 const emit = defineEmits(['result']);
 
