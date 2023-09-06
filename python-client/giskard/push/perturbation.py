@@ -12,6 +12,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+import sys
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -32,7 +33,7 @@ from giskard.scanner.robustness.text_transformations import (
 )
 from ..push import PerturbationPush
 
-text_transfo_list = [
+text_transformation_list = [
     TextLowercase,
     TextUppercase,
     TextTitleCase,
@@ -61,6 +62,7 @@ def create_perturbation_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
     for feat, coltype in ds.column_types.items():
         coltype = coltype_to_supported_perturbation_type(coltype)
         transformation_info = _apply_perturbation(model, ds, df, feat, coltype)
+        # df contains only one row, which is the sample being looked at in the debugger
         value = df.iloc[0][feat]
         if transformation_info is not None:
             return PerturbationPush(
@@ -103,6 +105,7 @@ def _apply_perturbation(
     transformation_function = list()
     value_perturbed = list()
     transformation_functions_params = list()
+
     passed = False
     # Create a slice of the dataset with only the row to perturb
     ds_slice = Dataset(
@@ -162,9 +165,20 @@ def _text(
 ):
     passed = False
     # Iterate over the possible text transformations
-    for text_transformation in text_transfo_list:
+    for text_transformation in text_transformation_list:
         # Create the transformation
-        t = text_transformation(column=feature)
+        _is_typo_transformation = issubclass(text_transformation, TextTypoTransformation)
+        kwargs = {}
+        if _is_typo_transformation:
+            # TextTypoTransformation generates a random typo for text features. In order to have the same typo per
+            # sample with the push feature in the debugger, we need to generate a unique seed per sample (hashed_seed)
+            # to guarantee the same perturbation per sample.
+            hashed_seed = hash(f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8"))
+            # hash could give negative ints, and np.random.seed accepts only positive ints
+            positive_hashed_seed = hashed_seed % ((sys.maxsize + 1) * 2)
+            kwargs = {"rng_seed": positive_hashed_seed}
+
+        t = text_transformation(column=feature, **kwargs)
 
         # Transform the slice
         transformed = ds_slice_copy.transform(t)
@@ -203,6 +217,8 @@ def _numeric(
             np.unique(np.linspace(0.1 * abs(value_to_perturb), 0, num=10, endpoint=False).round().astype(int))[1:],
         ]
 
+    # df contains only one row, which is the sample being looked at in the debugger
+    value_to_perturb = ds.df[feature].iloc[0]
     for values_added in values_added_list:
         for value in values_added:
             if ds.df[feature].max() >= value + value_to_perturb >= ds.df[feature].min():
