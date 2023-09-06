@@ -1,0 +1,77 @@
+name: SonarQube
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if organization member
+        id: is_organization_member
+        uses: JamesSingleton/is-organization-member@1.0.1
+        with:
+          organization: Giskard-AI
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ask to add the 'safe for build' label
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') && steps.is_organization_member.outputs.result == 'false' }}
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            Please add the 'safe for build' label in order to perform the sonar analysis!
+
+      - name: Interrupt job
+        if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.*.labels.*.name, 'safe for build') && steps.is_organization_member.outputs.result == 'false' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
+      - name: Stop on security check failure
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Gradle # To cache ~/.gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: false
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Analyze with Sonar
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: ./gradlew sonar --info --parallel
