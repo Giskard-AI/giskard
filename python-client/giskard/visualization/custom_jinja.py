@@ -1,5 +1,6 @@
 from typing import Sequence
 
+import markdown
 from jinja2 import nodes
 from jinja2.ext import Extension
 from markupsafe import Markup
@@ -18,6 +19,11 @@ class IncludeRawExtension(Extension):
 
     def _render(self, filename):
         return Markup(self.environment.loader.get_source(self.environment, filename)[0])
+
+
+def markdown_to_html(md_text):
+    html = markdown.markdown(md_text)
+    return Markup(html)
 
 
 def pluralize(count, singular="", plural="s"):

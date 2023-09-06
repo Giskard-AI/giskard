@@ -1,20 +1,22 @@
-import scipy
-import numpy as np
-import pandas as pd
-from sklearn import metrics
 from collections import defaultdict
 from typing import Callable, Optional, Sequence, Union
 
-from ..common.loss_based_detector import LossBasedDetector
-from ...models.base import BaseModel
-from ...models._precooked import PrecookedModel
+import numpy as np
+import pandas as pd
+import scipy
+from sklearn import metrics
+
+from ...client.python_utils import warning
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from .issues import PerformanceIssue, PerformanceIssueInfo
-from .metrics import PerformanceMetric, get_metric
+from ...models._precooked import PrecookedModel
+from ...models.base import BaseModel
+from ..common.examples import ExampleExtractor
+from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
+from ..issues import Issue, IssueLevel, Performance
 from ..logger import logger
-from ...client.python_utils import warning
+from .metrics import PerformanceMetric, get_metric
 
 
 @detector(name="performance_bias", tags=["performance_bias", "performance", "classification", "regression"])
@@ -99,7 +101,7 @@ class PerformanceBiasDetector(LossBasedDetector):
 
     def _find_issues(
         self, slices: Sequence[SlicingFunction], model: BaseModel, dataset: Dataset, meta: pd.DataFrame
-    ) -> Sequence[PerformanceIssue]:
+    ) -> Sequence[Issue]:
         # Use a precooked model to speed up the tests
         precooked = PrecookedModel.from_model(model, dataset)
         detector = IssueFinder(self.metrics, self.threshold, self.alpha)
@@ -139,13 +141,13 @@ class IssueFinder:
             p_values_rank = p_values.argsort() + 1
             p_value_threshold = p_values[p_values <= p_values_rank / len(p_values) * self.alpha].max()
             logger.info(f"PerformanceBiasDetector: Benjamini–Hocheberg p-value threshold is {p_value_threshold:.3e}")
-            issues = [issue for issue in issues if issue.info.p_value <= p_value_threshold]
+            issues = [issue for issue in issues if issue.meta.get("p_value", np.nan) <= p_value_threshold]
             logger.info(f"PerformanceBiasDetector: Kept {len(issues)} significant issues out of {len(p_values)}.")
 
         # Group issues by slice and keep only the most critical
         issues_by_slice = defaultdict(list)
         for issue in issues:
-            issues_by_slice[issue.info.slice_fn].append(issue)
+            issues_by_slice[issue.slicing_fn].append(issue)
 
         return sorted(
             [max(group, key=lambda i: i.importance) for group in issues_by_slice.values()], key=lambda i: i.importance
@@ -209,21 +211,87 @@ class IssueFinder:
             )
 
             if is_issue:
-                level = "major" if abs(relative_delta) > 2 * self.threshold else "medium"
-
-                issue_info = PerformanceIssueInfo(
-                    slice_fn=slice_fn,
-                    metric=metric,
-                    metric_value_slice=slice_metric.value,
-                    metric_value_reference=ref_metric.value,
-                    slice_size=len(sliced_dataset),
-                    threshold=self.threshold,
-                    p_value=p_value,
+                level = IssueLevel.MAJOR if abs(relative_delta) > 2 * self.threshold else IssueLevel.MEDIUM
+                desc = (
+                    "For records in your dataset where {slicing_fn}, the recall is 96.8% lower than the global recall."
                 )
 
-                issues.append(PerformanceIssue(model, dataset, level=level, info=issue_info))
+                issue = Issue(
+                    model=model,
+                    dataset=dataset,
+                    group=Performance,
+                    level=level,
+                    description=desc,
+                    meta={
+                        "metric": slice_metric.name,
+                        "metric_value": slice_metric.value,
+                        "metric_reference_value": ref_metric.value,
+                        "slice_metric": slice_metric,
+                        "reference_metric": ref_metric,
+                        "deviation": f"{relative_delta*100:+.2f}% than global",
+                        "slice_size": len(sliced_dataset),
+                        "threshold": self.threshold,
+                        "p_value": p_value,
+                    },
+                    slicing_fn=slice_fn,
+                    importance=-relative_delta if metric.greater_is_better else relative_delta,
+                    tests=_generate_performance_tests,
+                )
+
+                # Add failure examples
+                extractor = ExampleExtractor(issue, _filter_examples)
+                examples = extractor.get_examples_dataframe(n=20, with_prediction=True)
+                issue.add_examples(examples)
+
+                issues.append(issue)
 
         return issues, p_values
+
+
+def _filter_examples(issue, dataset):
+    pred = issue.model.predict(dataset)
+    bad_pred_mask = dataset.df[dataset.target] != pred.prediction
+
+    return dataset.slice(lambda df: df.loc[bad_pred_mask], row_level=False)
+
+
+_metric_test_mapping = {
+    "F1Score": "test_f1",
+    "Precision": "test_precision",
+    "Accuracy": "test_accuracy",
+    "Recall": "test_recall",
+    "AUC": "test_auc",
+    "MeanSquaredError": "test_mse",
+    "MeanAbsoluteError": "test_mae",
+}
+
+
+def _metric_to_test_object(metric: PerformanceMetric):
+    from ...testing.tests import performance as performance_tests
+
+    try:
+        test_name = _metric_test_mapping[metric.__class__.__name__]
+        return getattr(performance_tests, test_name)
+    except (KeyError, AttributeError):
+        return None
+
+
+def _generate_performance_tests(issue: Issue):
+    metric = issue.meta["slice_metric"].metric
+    test_fn = _metric_to_test_object(metric)
+
+    if test_fn is None:
+        return dict()
+
+    # Convert the relative threshold to an absolute one.
+    delta = (metric.greater_is_better * 2 - 1) * issue.meta["threshold"] * issue.meta["reference_metric"].value
+    abs_threshold = issue.meta["reference_metric"].value - delta
+
+    return {
+        f"{metric.name} on data slice “{issue.slicing_fn}”": test_fn(
+            model=issue.model, dataset=issue.dataset, slicing_function=issue.slicing_fn, threshold=abs_threshold
+        )
+    }
 
 
 def _is_unbalanced_target(classes: pd.Series):
