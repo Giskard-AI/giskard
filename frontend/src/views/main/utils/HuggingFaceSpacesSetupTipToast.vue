@@ -2,7 +2,7 @@
   <div>
     <div class="title">{{ title }}</div>
     <div class="detail" v-show="detail">{{ detail }}</div>
-    <a v-if="link" :href="link">See more</a>
+    <a href="/hfspaces/setup-tip">See more</a>
   </div>
 </template>
 
@@ -10,7 +10,6 @@
 interface Props {
   title: string;
   detail?: string;
-  link?: string;
 }
 
 const props = defineProps<Props>();

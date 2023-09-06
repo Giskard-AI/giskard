@@ -4,7 +4,7 @@ import {getLocalHFToken, getLocalToken, removeLocalToken} from '@/utils';
 import Vue from 'vue';
 import {TYPE} from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
-import TipWithLinkToast from '@/views/main/utils/TipWithLinkToast.vue';
+import HuggingFaceSpacesSetupTipToast from '@/views/main/utils/HuggingFaceSpacesSetupTipToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
@@ -95,12 +95,11 @@ async function errorInterceptor(context: ResponseContext): Promise<Response | vo
         console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
         Vue.$toast(
             {
-                component: TipWithLinkToast,
+                component: HuggingFaceSpacesSetupTipToast,
                 props: {
                     title: 'Warning',
                     detail: `You cannot modify Giskard Hugging Face demo space.
 Please create your own space and get a license from Giskard.`,
-                    link: "/hfspaces/setup-tip",
                 },
             },
             {
