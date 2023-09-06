@@ -85,7 +85,16 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target" :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modified="changed || isInputNotOriginal" :debouncingTimeout="debouncingTimeout" @result="setResult" />
+          <PredictionResults v-if='InspectorUtils.hasFeature(InspectorFeature.PREDICTION_RESULT, model)' :model='model'
+                             :dataset-id='dataset.id' :targetFeature='dataset.target' :modelFeatures='modelFeatures'
+                             :classificationLabels='model.classificationLabels' :predictionTask='model.modelType'
+                             :inputData='inputData' :modified='changed || isInputNotOriginal'
+                             :debouncingTimeout='debouncingTimeout' @result='setResult' />
+          <GenerationResults v-if='InspectorUtils.hasFeature(InspectorFeature.GENERATION_RESULT, model)' :model='model'
+                             :dataset-id='dataset.id' :targetFeature='dataset.target' :modelFeatures='modelFeatures'
+                             :classificationLabels='model.classificationLabels' :predictionTask='model.modelType'
+                             :inputData='inputData' :modified='changed || isInputNotOriginal'
+                             :debouncingTimeout='debouncingTimeout' @result='setResult' />
           <InspectorExplanation v-if='InspectorUtils.hasFeature(InspectorFeature.EXPLANATION, model)'
                                 :dataset='dataset' :model='model' :input-data='inputData'
                                 :classification-result='classificationResult' :model-features='modelFeatures'
@@ -111,6 +120,7 @@ import PushPopover from '@/components/PushPopover.vue';
 import InspectorExplanation from '@/views/main/project/InspectorExplanation.vue';
 import { InspectorFeature, InspectorUtils } from '@/utils/inspector-utils';
 import { ModelDTO } from '@/generated/client';
+import GenerationResults from '@/views/main/project/GenerationResults.vue';
 
 const catalogStore = useCatalogStore();
 

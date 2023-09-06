@@ -1,13 +1,13 @@
 import { ModelDTO, ModelDTOModelTypeEnum } from '@/generated/client';
 
 export enum InspectorFeature {
-  EXPLANATION
+    EXPLANATION, PREDICTION_RESULT, GENERATION_RESULT
 }
 
 const FEATURES_PER_MODELS: { [type in ModelDTOModelTypeEnum]: InspectorFeature[] } = {
-  [ModelDTOModelTypeEnum.Classification]: [InspectorFeature.EXPLANATION],
-  [ModelDTOModelTypeEnum.Regression]: [InspectorFeature.EXPLANATION],
-  [ModelDTOModelTypeEnum.TextGeneration]: []
+    [ModelDTOModelTypeEnum.Classification]: [InspectorFeature.PREDICTION_RESULT, InspectorFeature.EXPLANATION],
+    [ModelDTOModelTypeEnum.Regression]: [InspectorFeature.PREDICTION_RESULT, InspectorFeature.EXPLANATION],
+    [ModelDTOModelTypeEnum.TextGeneration]: [InspectorFeature.GENERATION_RESULT]
 };
 
 export class InspectorUtils {
