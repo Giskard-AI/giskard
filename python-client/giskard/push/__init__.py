@@ -30,7 +30,7 @@ from giskard.push.push_test_catalog.catalog import (
     test_metamorphic_invariance_with_mad,
 )
 from giskard.push.utils import TransformationInfo
-from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
+from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction, ContainsWord
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.statistic import test_theil_u
 
@@ -291,12 +291,15 @@ class ContributionPush(FeaturePush):
     model_type = None
     correct_prediction = None
 
-    def __init__(self, value=None, feature=None, bounds=None, model_type=None, correct_prediction=None):
+    def __init__(
+        self, value=None, feature=None, feature_type=None, bounds=None, model_type=None, correct_prediction=None
+    ):
         self.pushkind = PushKind.CONTRIBUTION
 
         self.value = value
         self.bounds = bounds
         self.feature = feature
+        self.feature_type = feature_type
         self.model_type = model_type
         self.correct_prediction = correct_prediction
 
@@ -309,7 +312,10 @@ class ContributionPush(FeaturePush):
         Generate title and details based on prediction.
         """
         if self.correct_prediction:
-            self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
+            if self.feature_type == "text":
+                self.push_title = f'The word "{str(self.value)}" contributes a lot to the prediction'
+            else:
+                self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
@@ -331,7 +337,12 @@ class ContributionPush(FeaturePush):
                 },
             ]
         else:
-            self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the incorrect prediction"
+            if self.feature_type == "text":
+                self.push_title = f'The word "{str(self.value)}" contributes a lot to the incorrect prediction'
+            else:
+                self.push_title = (
+                    f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the incorrect prediction"
+                )
             self.details = [
                 {
                     "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
@@ -357,10 +368,16 @@ class ContributionPush(FeaturePush):
         """
         Generate slicing function based on feature/value.
         """
-        if self.bounds is not None:
-            clause = [GreaterThan(self.feature, self.bounds[0], True), LowerThan(self.feature, self.bounds[1], True)]
+        if self.feature_type == "text":
+            clause = [ContainsWord(self.feature, self.value)]
         else:
-            clause = [EqualTo(self.feature, self.value)]
+            if self.bounds is not None:
+                clause = [
+                    GreaterThan(self.feature, self.bounds[0], True),
+                    LowerThan(self.feature, self.bounds[1], True),
+                ]
+            else:
+                clause = [EqualTo(self.feature, self.value)]
         slicing_func = QueryBasedSliceFunction(Query(clause))
         self.slicing_function = slicing_func
         self.test_params = {"slicing_function": slicing_func}
@@ -423,10 +440,10 @@ class PerturbationPush(FeaturePush):
         if self.transformation_functions_params:
             self.tests = [test_metamorphic_invariance_with_mad]
             self.test_params = self.transformation_functions_params[0]
-            self.push_title = (
-                f"Adding {round(self.value_perturbed[0] - self.value, 2)} to `{self.feature}` makes the prediction change"
-            )
+            self.push_title = f"Adding {round(self.value_perturbed[0] - self.value, 2)} to `{self.feature}` makes the prediction change"
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}
-            self.push_title = f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
+            self.push_title = (
+                f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
+            )
