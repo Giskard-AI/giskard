@@ -6,7 +6,7 @@
       <v-row v-if='prediction && !loading'>
         <v-col>
           <div class='mb-3 text-start'>
-            <span>{{ prediction }}</span>
+            <span class='whitespace-pre'>{{ prediction }}</span>
           </div>
         </v-col>
       </v-row>
@@ -108,5 +108,9 @@ onMounted(async () => {
 
 .v-data-table tbody td {
   font-size: 10px !important;
+}
+
+.whitespace-pre {
+  white-space: pre;
 }
 </style>
