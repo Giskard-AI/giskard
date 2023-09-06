@@ -21,16 +21,11 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     FunctionInputDTO,
-    GeneralSettings,
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
-    JobDTO,
-    JWTToken,
-    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
-    MLWorkerInfoDTO,
     ModelDTO,
     ParameterizedCallableDTO,
     PasswordResetRequest,
@@ -77,14 +72,6 @@ function hfRequestInterceptor(config) {
         config.headers.Authorization = `Bearer ${hfToken}`;
     }
     return config;
-}
-
-function authHeaders(token: string | null) {
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    };
 }
 
 const API_V2_ROOT = `${apiURL}/api/v2`;
@@ -209,45 +196,14 @@ export const api = {
     async getHuggingFaceSpacesToken(spaceId: string) {
         return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
-    async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
-    },
-    async getLicense() {
-        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
-    },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
-    },
-    async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/ml-workers`);
-    },
-    async stopMLWorker(internal: boolean) {
-        return apiV2.post<unknown, MLWorkerInfoDTO[]>(`/ml-workers/stop`, null, {
-            params: {
-                internal,
-            },
-        });
-    },
-    async isExternalMLWorkerConnected() {
-        return apiV2.get<unknown, boolean>(`/ml-workers/external/connected`);
-    },
-    async getRunningWorkerJobs() {
-        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
-    },
-    async trackJob(jobUuid: string) {
-        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
-    },
-    async saveGeneralSettings(settings: GeneralSettings) {
-        return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
     },
     async getUsers() {
         return apiV2.get<unknown, AdminUserDTO[]>(`/admin/users`);
-    },
-    async getRoles() {
-        return apiV2.get<unknown, RoleDTO[]>(`/roles`);
     },
     async updateUser(data: Partial<AdminUserDTO.AdminUserDTOWithPassword>) {
         return apiV2.put<unknown, AdminUserDTO.AdminUserDTOWithPassword>(`/admin/users`, data);
@@ -420,9 +376,6 @@ export const api = {
     },
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
         return apiV2.delete<unknown, void>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/suite-test/${suiteTestId}`);
-    },
-    async getInspections() {
-        return apiV2.get<unknown, InspectionDTO[]>(`/inspections`);
     },
     async getProjectInspections(projectId: number) {
         return axiosProject.get<unknown, InspectionDTO[]>(`/${projectId}/inspections`);

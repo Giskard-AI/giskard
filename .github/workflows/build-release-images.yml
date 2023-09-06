@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@master
 
 
-      - name: Append ARM buildx builder from AWS
+      - name: Append ARM buildx builder from Oracle cloud
         uses: baschny/append-buildx-action@v1
         with:
           builder: ${{ steps.builder.outputs.name }}
