@@ -1,18 +1,18 @@
-name: Build
+name: Backend
 on:
   push:
     branches:
       - main
   pull_request:
+    # https://docs.github.com/fr/actions/using-workflows/workflow-syntax-for-github-actions#exemple--inclusion-de-chemins-dacc%C3%A8s
+    paths-ignore:
+      - 'python-client/**'
   workflow_dispatch:
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [ "3.8", "3.9", "3.10" ]
     steps:
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
 
@@ -74,20 +74,6 @@ jobs:
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
           restore-keys: ${{ runner.os }}-frontend
 
-      - name: Cache Giskard test resources
-        uses: actions/cache@v3
-        with:
-          path: ~/.giskard
-          key: ${{ runner.os }}-giskard-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
-          restore-keys: ${{ runner.os }}-giskard-test-resources
-
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: python-client/.venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
-          restore-keys: ${{ runner.os }}-client
-
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -98,32 +84,15 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Run Python commands
-        run: |
-          python -m pip install virtualenv -U --upgrade pip
-          echo "Python ($(which python)) packages:\n $(python -m pip list)"
-
-      - name: Get current date
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        id: current_date
-        env:
-          TZ: Europe/Paris
-        run: echo "CURRENT_DATE=$(date '+%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
-
-      - name: Get number of available workers
-        id: nb_workers
-        run: python -c 'import os; print(f"nb_workers={max(1,os.cpu_count()-1)}")' >> $GITHUB_OUTPUT
-
-      - name: Build
+      - name: Build frontend
         env:
           GSK_DISABLE_ANALYTICS: True
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.nb_workers.outputs.nb_workers }}
-        run: ./gradlew build test integrationTest :python-client:lint :python-client:package jacocoTestReport --info --parallel
+        run: ./gradlew :frontend:build
+  
+      - name: Build & test backend
+        env:
+          GSK_DISABLE_ANALYTICS: True
+        run: ./gradlew :backend:build :backend:test :backend:integrationTest :backend:jacocoTestReport --info --parallel
 
       - name: Analyze with Sonar
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -132,12 +101,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew sonar --info --parallel
-
-      - name: "Python client: archive built artifacts"
-        if: ${{ steps.extract_branch.outputs.branch == 'main' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: giskard-dev.whl
-          path: python-client/dist/*whl
 
       - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
