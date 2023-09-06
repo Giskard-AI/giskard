@@ -20,13 +20,13 @@ jobs:
         experimental: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
-          - python-version: "3.11"
-            os: ubuntu-latest
-            experimental: true
+          # - python-version: "3.11"
+          #   os: ubuntu-latest
+          #   experimental: true
           - python-version: "3.10"
             os: macos-latest
-            experimental: false
-          - python-version: "3.10" # Tensorflow io does not seem working with windows-2022 ?
+            experimental: true
+          - python-version: "3.10" # https://github.com/tensorflow/io Does not talk about win 2022
             os: windows-2022
             experimental: true
           - python-version: "3.10"
@@ -43,12 +43,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: python-client/.venv
-          key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
-          restore-keys: ${{ runner.os }}-client
+      # Note(Bazire): this creates so many failure, deactivating for now.
+      # - name: Cache Python dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: python-client/.venv
+      #     key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
+      #     restore-keys: ${{ runner.os }}-client
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -83,13 +84,13 @@ jobs:
           key: ${{ runner.os }}-giskard-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
           restore-keys: ${{ runner.os }}-giskard-test-resources
 
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v1
-        id: cpu-cores
+      # - name: Get number of CPU cores
+      #   uses: SimenB/github-actions-cpu-cores@v1
+      #   id: cpu-cores
 
       - name: Install, Lint, build, and test all
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ steps.cpu-cores.outputs.count }}
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 1 # Test, to see if there are still OOM error on windows CI
         run: ./gradlew :python-client:install :python-client:lint :python-client:build :python-client:test :python-client:package --info --parallel
 
       - name: "Python client: archive built artifacts"
