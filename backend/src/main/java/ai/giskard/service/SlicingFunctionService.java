@@ -9,7 +9,6 @@ import ai.giskard.web.dto.DatasetProcessFunctionType;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,16 +42,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
     protected SlicingFunction create(SlicingFunctionDTO dto) {
         SlicingFunction function = giskardMapper.fromDTO(dto);
         function.setProjectKey(dto.getProjectKey());
-
-        if (function.getArgs() != null) {
-            function.getArgs().forEach(arg -> arg.setFunction(function));
-        }
-
-        if (Strings.isBlank(function.getDisplayName())) {
-            function.setDisplayName(function.getModule() + "." + function.getName());
-        }
-
-        function.setVersion(slicingFunctionRepository.countByDisplayName(function.getDisplayName()) + 1);
+        initializeCallable(function);
         return function;
     }
 
