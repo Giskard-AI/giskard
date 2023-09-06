@@ -173,7 +173,11 @@ def _text(
         _is_typo_transformation = issubclass(text_transformation, TextTypoTransformation)
         kwargs = {}
         if _is_typo_transformation:
+            # TextTypoTransformation generates a random typo for text features. In order to have the same typo per
+            # sample with the push feature in the debugger, we need to generate a unique seed per sample (hashed_seed)
+            # to guarantee the same perturbation per sample.
             hashed_seed = hash(f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8"))
+            # hash could give negative ints, and np.random.seed accepts only positive ints
             positive_hashed_seed = hashed_seed % ((sys.maxsize + 1) * 2)
             kwargs = {"rng_seed": positive_hashed_seed}
 
