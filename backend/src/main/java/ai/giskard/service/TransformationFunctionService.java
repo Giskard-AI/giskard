@@ -26,10 +26,7 @@ public class TransformationFunctionService extends DatasetProcessFunctionService
 
     protected TransformationFunction create(TransformationFunctionDTO dto) {
         TransformationFunction function = giskardMapper.fromDTO(dto);
-        if (function.getArgs() != null) {
-            function.getArgs().forEach(arg -> arg.setFunction(function));
-        }
-        function.setVersion(transformationFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
+        initializeCallable(function);
         return function;
     }
 

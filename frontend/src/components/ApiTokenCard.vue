@@ -1,57 +1,48 @@
 <template>
-  <v-card height="100%">
-    <v-card-title class="font-weight-light secondary--text">API Access Token</v-card-title>
-    <v-card-text>
+  <v-card height="100%" class="d-flex flex-column">
+    <v-card-title class="font-weight-light secondary--text">API Keys</v-card-title>
+    <v-card-text class="flex-grow-1 d-flex flex-column">
       <div class="mb-2">
-        <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateToken">Generate</v-btn>
-        <v-btn v-if="apiAccessToken && apiAccessToken.id_token" small tile color="secondary" class="ml-2" @click="copyToken">
-          Copy
-          <v-icon right dark>mdi-content-copy</v-icon>
-        </v-btn>
+        <v-btn small tile color="primaryLight" class="primaryLightBtn text-right" @click="generateToken">Generate</v-btn>
       </div>
-      <v-row>
-        <v-col>
-          <div class="token-area-wrapper" v-if="apiAccessToken && apiAccessToken.id_token">
-            <CodeSnippet :code-content="apiAccessToken.id_token"/>
-          </div>
-        </v-col>
-      </v-row>
-      <v-row v-if="apiAccessToken && apiAccessToken.id_token">
-        <v-col class="text-right">
-          Expires on <span>{{ apiAccessToken.expiryDate | date }}</span>
-        </v-col>
-      </v-row>
+      <div class="flex-grow-1 overflow-x-hidden" style="max-height:170px">
+        <v-row v-for="key in apiKeyStore.apiKeys" dense>
+          <v-col>
+            <ApiKeySnippet :code="key.key" masked/>
+          </v-col>
+          <v-col cols="1">
+            <v-btn icon @click="deleteApiKey(key)" :disabled="apiKeyStore.apiKeys.length == 1">
+              <v-icon>mdi-delete</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {JWTToken} from "@/generated-sources";
-import {api} from "@/api";
-import {copyToClipboard} from "@/global-keys";
 import {useMainStore} from "@/stores/main";
-import {TYPE} from "vue-toastification";
-import CodeSnippet from "@/components/CodeSnippet.vue";
+import {useApiKeyStore} from "@/stores/api-key-store";
+import ApiKeySnippet from "@/components/ApiKeySnippet.vue";
 
 const mainStore = useMainStore();
+const apiKeyStore = useApiKeyStore();
 
 const apiAccessToken = ref<JWTToken | null>(null);
 
 async function generateToken() {
-  const loadingNotification = { content: 'Generating...', showProgress: true };
-  try {
-    mainStore.addNotification(loadingNotification);
-    mainStore.removeNotification(loadingNotification);
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-      mainStore.removeNotification(loadingNotification);
-      mainStore.addNotification({content: 'Could not reach server', color: TYPE.ERROR});
-  }
+  const loadingNotification = {content: 'Generating...', showProgress: true};
+  mainStore.addNotification(loadingNotification);
+  mainStore.removeNotification(loadingNotification);
+  await apiKeyStore.create();
 }
 
-async function copyToken() {
-    await copyToClipboard(apiAccessToken.value?.id_token);
-    mainStore.addNotification({content: "Copied to clipboard", color: TYPE.SUCCESS});
+async function deleteApiKey(key) {
+  await apiKeyStore.delete(key.id);
 }
+
+onMounted(async () => await apiKeyStore.getAll())
 </script>

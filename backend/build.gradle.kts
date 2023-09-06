@@ -1,4 +1,5 @@
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.*
 
 group = "ai.giskard"
@@ -29,6 +30,8 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
+    id("org.openapi.generator") version "7.0.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
 
@@ -134,6 +137,22 @@ gitProperties {
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
 }
 
+openApi {
+    apiDocsUrl.set("http://localhost:11337/v3/api-docs")
+    outputDir.set(file("$buildDir/docs"))
+    outputFileName.set("openapi.json")
+    waitTimeInSeconds.set(60)
+    customBootRun {
+        args.set(
+            listOf(
+                "--spring.profiles.active=dev",
+                "--server.port=11337",
+                "--giskard.home=" + outputDir.dir("giskard-home-"+ Instant.now().toEpochMilli()).get().toString(),
+            )
+        )
+    }
+}
+
 val liquibaseHibernate6Version: String by project.extra.properties
 val jaxbRuntimeVersion: String by project.extra.properties
 val archunitJunit5Version: String by project.extra.properties
@@ -176,7 +195,7 @@ dependencies {
 //    implementation("org.hibernate:hibernate-entitymanager")
     implementation("org.liquibase:liquibase-core")
     implementation("org.postgresql:postgresql")
-    implementation("org.springdoc:springdoc-openapi-webmvc-core")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
     implementation("org.springframework.boot:spring-boot-loader-tools")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -191,12 +210,11 @@ dependencies {
     implementation("org.springframework.security:spring-security-data")
     implementation("org.springframework.security:spring-security-messaging")
     implementation("org.springframework.security:spring-security-web")
-    implementation("org.testcontainers:postgresql:1.18.3")
+    implementation("org.testcontainers:postgresql")
     implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
     implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.1")
     implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
     implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
-    implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.11")
     implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
     implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
     liquibaseRuntime("info.picocli:picocli:4.7.0")
@@ -222,6 +240,10 @@ tasks {
 
     test {
         finalizedBy(jacocoTestReport)
+    }
+
+    build {
+        finalizedBy("generateWebClient")
     }
 
     jacocoTestReport {
@@ -285,6 +307,9 @@ tasks {
     create<Delete>("distClean") {
         delete(buildDir)
     }
+    create<Delete>("cleanOpenApiDocs") {
+        delete(file("$buildDir/docs/openapi.json"))
+    }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
     }
@@ -327,6 +352,14 @@ tasks {
     }
     register("package") {
         dependsOn("bootJar")
+    }
+
+    create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        dependsOn("compileJava", "cleanOpenApiDocs", "generateOpenApiDocs")
+
+        generatorName.set("typescript-fetch")
+        inputSpec.set(file("$buildDir/docs/openapi.json").toString())
+        outputDir.set("$buildDir/../../frontend/src/generated/client")
     }
 }
 

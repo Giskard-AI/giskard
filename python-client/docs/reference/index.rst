@@ -11,3 +11,4 @@ API reference
    suite/index
    slicing-functions/index
    transformation-functions/index
+   push/index

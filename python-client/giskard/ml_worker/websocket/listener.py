@@ -1,23 +1,26 @@
 import json
 import logging
-import math
-import numpy as np
 import os
-import pandas as pd
-import pkg_resources
 import platform
-import psutil
-import stomp
 import sys
 import tempfile
+import time
 import traceback
 from pathlib import Path
+
+import math
+import numpy as np
+import pandas as pd
+import pkg_resources
+import psutil
+import stomp
 
 import giskard
 from giskard.core.suite import Suite
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
+from giskard.ml_worker.core.savable import RegistryArtifact
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
@@ -26,7 +29,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunction,
 )
 from giskard.ml_worker.utils.file_utils import get_file_name
-from giskard.ml_worker.websocket import GetInfoParam
+from giskard.ml_worker.websocket import GetInfoParam, PushKind, CallToActionKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_run_adhoc_test,
@@ -46,7 +49,9 @@ from giskard.models.model_explanation import (
     explain,
     explain_text,
 )
+from giskard.push import Push
 from giskard.utils import threaded
+from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +74,17 @@ def dispatch_action(callback, ml_worker, action, req):
     rep_id = req["id"] if "id" in req.keys() else None
     # Parse the param
     params = req["param"] if "param" in req.keys() else {}
+
+    # Track usage frequency to optimize action param parsing
+    analytics.track(
+        "mlworker:websocket:action:type",
+        {
+            "name": action.name,
+            "worker": ml_worker.ml_worker_id,
+            "language": "PYTHON",
+        },
+    )
+    start = time.process_time()
     try:
         params = parse_action_param(action, params)
         # Call the function and get the response
@@ -78,6 +94,19 @@ def dispatch_action(callback, ml_worker, action, req):
             error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
         )
         logger.warning(e)
+    finally:
+        analytics.track(
+            "mlworker:websocket:action",
+            {
+                "name": action.name,
+                "worker": ml_worker.ml_worker_id,
+                "language": "PYTHON",
+                "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
+                "action_time": time.process_time() - start,
+                "error": info.error_str if isinstance(info, websocket.ErrorReply) else "",
+                "error_type": info.error_type if isinstance(info, websocket.ErrorReply) else "",
+            },
+        )
 
     if rep_id:
         # Reply if there is an ID
@@ -101,6 +130,20 @@ def dispatch_action(callback, ml_worker, action, req):
                     }
                 ),
             )
+
+        analytics.track(
+            "mlworker:websocket:action:reply",
+            {
+                "name": action.name,
+                "worker": ml_worker.ml_worker_id,
+                "language": "PYTHON",
+                "action_time": time.process_time() - start,
+                "is_error": isinstance(info, websocket.ErrorReply),
+                "frag_len": FRAG_LEN,
+                "frag_count": frag_count,
+                "reply_len": len(payload),
+            },
+        )
 
     # Post-processing of stopWorker
     if action == MLWorkerAction.stopWorker and ml_worker.ws_stopping is True:
@@ -326,7 +369,7 @@ def run_model(ml_worker: MLWorker, params: websocket.RunModelParam, *args, **kwa
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
 def run_model_for_data_frame(
-    ml_worker: MLWorker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
+        ml_worker: MLWorker, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
     df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
@@ -397,7 +440,7 @@ def get_catalog(*args, **kwargs) -> websocket.Catalog:
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
 def dataset_processing(
-    ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs
+        ml_worker: MLWorker, params: websocket.DatasetProcessingParam, *args, **kwargs
 ) -> websocket.DatasetProcessing:
     dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
@@ -437,7 +480,7 @@ def dataset_processing(
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
 def run_ad_hoc_test(
-    ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs
+        ml_worker: MLWorker, params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
     test: GiskardTest = GiskardTest.download(params.testUuid, ml_worker.client, None)
 
@@ -510,7 +553,7 @@ def run_test_suite(ml_worker: MLWorker, params: websocket.TestSuiteParam, *args,
 
 @websocket_actor(MLWorkerAction.generateTestSuite)
 def generate_test_suite(
-    ml_worker: MLWorker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
+        ml_worker: MLWorker, params: websocket.GenerateTestSuiteParam, *args, **kwargs
 ) -> websocket.GenerateTestSuite:
     inputs = [map_suite_input_ws(i) for i in params.inputs]
 
@@ -533,3 +576,122 @@ def generate_test_suite(
 @websocket_actor(MLWorkerAction.echo)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
+
+
+@websocket_actor(MLWorkerAction.getPush)
+def get_push(
+        ml_worker: MLWorker, params: websocket.GetPushParam, *args, **kwargs
+) -> websocket.GetPushResponse:
+    object_uuid = ""
+    object_params = {}
+    project_key = params.model.project_key
+    try:
+        model = BaseModel.download(ml_worker.client, params.model.project_key, params.model.id)
+        dataset = Dataset.download(ml_worker.client, params.dataset.project_key, params.dataset.id)
+
+        df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
+        if params.column_dtypes:
+            for missing_column in [
+                column_name for column_name in params.column_dtypes.keys() if column_name not in df.columns
+            ]:
+                df[missing_column] = np.nan
+            df = Dataset.cast_column_to_dtypes(df, params.column_dtypes)
+
+    except ValueError as e:
+        if "unsupported pickle protocol" in str(e):
+            raise ValueError(
+                "Unable to unpickle object, "
+                "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                f"\nOriginal Error: {e}"
+            ) from e
+        raise e
+    except ModuleNotFoundError as e:
+        raise GiskardException(
+            f"Failed to import '{e.name}'. "
+            f"Make sure it's installed in the ML Worker environment."
+            "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
+        ) from e
+
+    # if df is empty, return early
+    if df.empty:
+        return
+
+    from giskard.push.contribution import create_contribution_push
+    from giskard.push.perturbation import create_perturbation_push
+    from giskard.push.prediction import create_overconfidence_push
+    from giskard.push.prediction import create_borderline_push
+
+    contribs = create_contribution_push(model, dataset, df)
+    perturbs = create_perturbation_push(model, dataset, df)
+    overconf = create_overconfidence_push(model, dataset, df)
+    borderl = create_borderline_push(model, dataset, df)
+
+    contrib_ws = push_to_ws(contribs)
+    perturb_ws = push_to_ws(perturbs)
+    overconf_ws = push_to_ws(overconf)
+    borderl_ws = push_to_ws(borderl)
+
+    if params.cta_kind is not None and params.push_kind is not None:
+        if params.push_kind == PushKind.PERTURBATION:
+            push = perturbs
+        elif params.push_kind == PushKind.CONTRIBUTION:
+            push = contribs
+        elif params.push_kind == PushKind.OVERCONFIDENCE:
+            push = overconf
+        elif params.push_kind == PushKind.BORDERLINE:
+            push = borderl
+        else:
+            raise ValueError("Invalid push kind")
+
+        logger.info("Handling push kind: " + str(params.push_kind) + " with cta kind: " + str(params.cta_kind))
+
+        # Upload related object depending on CTA type
+        if (
+                params.cta_kind == CallToActionKind.CREATE_SLICE
+                or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
+        ):
+            push.slicing_function.meta.tags.append("generated")
+            object_uuid = push.slicing_function.upload(ml_worker.client)
+        if params.cta_kind == CallToActionKind.SAVE_PERTURBATION:
+            for perturbation in push.transformation_function:
+                object_uuid = perturbation.upload(ml_worker.client)
+        if params.cta_kind == CallToActionKind.SAVE_EXAMPLE:
+            object_uuid = push.saved_example.upload(ml_worker.client, project_key)
+        if params.cta_kind == CallToActionKind.CREATE_TEST or params.cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+            for test in push.tests:
+                object_uuid = test.upload(ml_worker.client)
+            # create empty dict
+            object_params = {}
+            # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
+            for test_param_name in push.test_params:
+                test_param = push.test_params[test_param_name]
+                if isinstance(test_param, RegistryArtifact):
+                    object_params[test_param_name] = test_param.upload(ml_worker.client)
+                elif isinstance(test_param, Dataset):
+                    object_params[test_param_name] = test_param.upload(ml_worker.client, project_key)
+                else:
+                    object_params[test_param_name] = test_param
+
+        if object_uuid != "":
+            logger.info(f"Uploaded object for CTA with uuid: {object_uuid}")
+
+    if object_uuid != '':
+        return websocket.GetPushResponse(
+            contribution=contrib_ws,
+            perturbation=perturb_ws,
+            overconfidence=overconf_ws,
+            borderline=borderl_ws,
+            action=websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params)),
+        )
+
+    return websocket.GetPushResponse(
+        contribution=contrib_ws,
+        perturbation=perturb_ws,
+        overconfidence=overconf_ws,
+        borderline=borderl_ws,
+    )
+
+
+def push_to_ws(push: Push):
+    return push.to_ws() if push is not None else None
