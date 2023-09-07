@@ -1,20 +1,63 @@
 import copy
 import math
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
+import pytest
 import xxhash
+from giskard.core.core import SupportedModelTypes
+from giskard.models.cache import ModelCache
 from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 import giskard
 from giskard import Dataset, Model
-from giskard.core.core import SupportedModelTypes
-from giskard.models.cache import ModelCache
+
+# https://symbl.cc/fr/unicode/blocks/
+
+
+@pytest.mark.parametrize(
+    "keys,values",
+    [
+        (["cyrillic"], ["ЖЛюф"]),
+        (["katakana"], ["ダボヴ"]),
+        (["emojis"], ["🙃😈🤯"]),
+        (["cyrillic", "katakana", "emojis"], ["ЖЛюф", "ダボヴ", "🙃😈🤯"]),
+    ],
+)
+def test_unicode_prediction(keys, values):
+    with TemporaryDirectory() as temp_cache_dir:
+        cache = ModelCache(
+            model_type=SupportedModelTypes.TEXT_GENERATION,
+            cache_dir=Path(temp_cache_dir),
+        )
+        key_series = pd.Series(keys)
+        # Ensure cache is empty
+        assert cache.read_from_cache(key_series).isna().all()
+        # Ensure writing and reading from cache is fine
+        cache.set_cache(key_series, values=values)
+        assert (pd.Series(values) == cache.read_from_cache(key_series)).all()
+        # Create other cache using same file
+        warmed_up_cache = ModelCache(
+            id="warmed_up",
+            model_type=SupportedModelTypes.TEXT_GENERATION,
+            cache_dir=Path(temp_cache_dir),
+        )
+        # Ensure warm up works fine
+        assert not warmed_up_cache._warmed_up
+        assert (pd.Series(values) == warmed_up_cache.read_from_cache(key_series)).all()
+        assert warmed_up_cache._warmed_up
 
 
 def test_model_prediction_is_cached_on_text_generation_model():
-    llm = FakeListLLM(responses=['This is my text with special chars" → ,.!? # and \n\nnewlines', "This is my text"])
+    llm = FakeListLLM(
+        responses=[
+            'This is my text with special chars" → ,.!? # and \n\nnewlines',
+            "This is my text",
+        ]
+    )
 
     prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
     chain = LLMChain(llm=llm, prompt=prompt)
@@ -54,7 +97,9 @@ def test_model_prediction_is_cached_on_regression_model():
     prediction = wrapped_model.predict(wrapped_dataset)
     cached_prediction = wrapped_model.predict(wrapped_dataset)
 
-    assert called_indexes == list(wrapped_dataset.df.index), "The  prediction should have been called once"
+    assert called_indexes == list(
+        wrapped_dataset.df.index
+    ), "The  prediction should have been called once"
     assert list(prediction.raw) == [12.0, 1, 23, 4, 5, 6, 7, 8, 9, 10.0]
     assert list(prediction.raw) == list(cached_prediction.raw)
     assert list(prediction.raw_prediction) == list(cached_prediction.raw_prediction)
@@ -62,7 +107,9 @@ def test_model_prediction_is_cached_on_regression_model():
     assert prediction.probabilities == cached_prediction.probabilities
 
 
-def test_model_prediction_is_cached_on_classification_model(german_credit_catboost, german_credit_data):
+def test_model_prediction_is_cached_on_classification_model(
+    german_credit_catboost, german_credit_data
+):
     model = german_credit_catboost
     dataset = german_credit_data
 
@@ -155,7 +202,10 @@ def test_predict_with_complex_dataset():
 
     wrapped_dataset = Dataset(
         df=pd.DataFrame(
-            [{"foo": 42, "bar": "Hello world!", "baz": True}, {"foo": 3.14, "bar": "This is a test", "baz": False}]
+            [
+                {"foo": 42, "bar": "Hello world!", "baz": True},
+                {"foo": 3.14, "bar": "This is a test", "baz": False},
+            ]
         )
     )
 
@@ -178,7 +228,9 @@ def test_predict_with_complex_dataset():
 
 def test_model_cache_multiple_index_type():
     model_cache = ModelCache(SupportedModelTypes.REGRESSION)
-    hashes = list(map(lambda x: xxhash.xxh3_128_hexdigest(str(x)), [-18313, 42, 184391849]))
+    hashes = list(
+        map(lambda x: xxhash.xxh3_128_hexdigest(str(x)), [-18313, 42, 184391849])
+    )
 
     int_idx = pd.Series(hashes, index=[-18313, 42, 184391849])
     int_cache = model_cache.read_from_cache(int_idx)
