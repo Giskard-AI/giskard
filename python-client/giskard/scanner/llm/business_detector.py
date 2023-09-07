@@ -6,7 +6,7 @@ from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
-from ...llm.issues import OUTPUT_FORMATTING_ISSUE
+from ...llm.issues import LLM_ISSUE_CATEGORIES
 from ...models.langchain import LangchainModel
 
 
@@ -55,11 +55,6 @@ class LLMBusinessDetector:
         self.num_tests = num_tests
 
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        test_cases = OUTPUT_FORMATTING_ISSUE.issue_generator.run_and_parse(
-            model_name=model.meta.name, model_description=model.meta.description
-        ).assertions
-        print(f"Generated tests: {test_cases}")
-
         potentially_failing_dataset = dataset = infer_dataset(
             f"""
         Name: {model.meta.name}
@@ -69,13 +64,21 @@ class LLMBusinessDetector:
             model.meta.feature_names,
             True,
         )
+        print(f"Generated potentially failing prompts: {potentially_failing_dataset}")
 
-        print(f"Generated potentially failing prompts: {test_cases}")
+        issues = []
+        for issue in LLM_ISSUE_CATEGORIES:
+            test_cases = issue.issue_generator.run_and_parse(
+                model_name=model.meta.name, model_description=model.meta.description
+            ).assertions
+            print(f"Generated tests: {test_cases}")
 
-        df = pd.concat([potentially_failing_dataset.df, dataset.df]).reset_index(drop=True)
-        df = df.head(min(len(df.index), self.num_samples))
-        dataset = Dataset(df)
+            df = pd.concat([potentially_failing_dataset.df, dataset.df]).reset_index(drop=True)
+            df = df.head(min(len(df.index), self.num_samples))
+            dataset = Dataset(df)
 
-        predictions = model.predict(dataset).prediction
+            predictions = model.predict(dataset).prediction
 
-        return validate_prediction(model, test_cases, dataset, predictions, self.threshold)
+            issues += validate_prediction(model, test_cases, dataset, predictions, self.threshold)
+
+        return issues
