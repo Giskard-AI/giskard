@@ -491,5 +491,5 @@ class BaseModel(ABC):
 
         return create_ml_llm(llm_config.default_llm, self, dataset, data_source_tools, scan_result)
 
-    def talk(self, question: str, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
-        return self._llm_agent(dataset, allow_dataset_queries, scan_result).run(question)
+    def talk(self, question: str, dataset=None, allow_dataset_queries: bool = False, scan_report=None):
+        return self._llm_agent(dataset, allow_dataset_queries, scan_report).run(question)
