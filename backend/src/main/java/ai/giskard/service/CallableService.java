@@ -8,6 +8,7 @@ import ai.giskard.web.dto.CallableDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -82,5 +83,17 @@ public abstract class CallableService<E extends Callable, D extends CallableDTO>
         });
 
         return existing;
+    }
+
+    protected void initializeCallable(E callable) {
+        if (callable.getArgs() != null) {
+            callable.getArgs().forEach(arg -> arg.setFunction(callable));
+        }
+
+        if (Strings.isBlank(callable.getDisplayName())) {
+            callable.setDisplayName(callable.getModule() + "." + callable.getName());
+        }
+
+        callable.setVersion(callableRepository.countByDisplayName(callable.getDisplayName()) + 1);
     }
 }
