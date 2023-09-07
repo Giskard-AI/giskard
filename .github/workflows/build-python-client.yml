@@ -23,12 +23,12 @@ jobs:
           # - python-version: "3.11"
           #   os: ubuntu-latest
           #   experimental: true
-          - python-version: "3.10"
-            os: macos-latest
-            experimental: true
-          - python-version: "3.10" # https://github.com/tensorflow/io Does not talk about win 2022
-            os: windows-2022
-            experimental: true
+          # - python-version: "3.10"
+          #   os: macos-latest
+          #   experimental: true
+          # - python-version: "3.10" # https://github.com/tensorflow/io Does not talk about win 2022
+          #   os: windows-2022
+          #   experimental: true
           - python-version: "3.10"
             os: windows-2019
             experimental: true
@@ -43,34 +43,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
 
-      # Note(Bazire): this creates so many failure, deactivating for now.
-      # - name: Cache Python dependencies
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: python-client/.venv
-      #     key: ${{ runner.os }}-${{ matrix.python-version }}-client-${{ hashFiles('python-client/pdm.lock')}}
-      #     restore-keys: ${{ runner.os }}-client
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Run Python commands
-        run: |
-          python3 -m pip install virtualenv -U --upgrade pip
-          echo "Python ($(which python)) packages:\n $(python -m pip list)"
-
-      - name: Setup Gradle # To cache ~/.gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          cache-read-only: false
-
-      - name: Set up JDK 17 # Needed because of Gradle anyway
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
+          cache: true
+          cache-dependency-path: 'python-client/pdm.lock'
 
       - name: Set up Pandoc (needed for python-client doc)
         uses: r-lib/actions/setup-pandoc@v2
@@ -84,14 +62,27 @@ jobs:
           key: ${{ runner.os }}-giskard-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
           restore-keys: ${{ runner.os }}-giskard-test-resources
 
-      # - name: Get number of CPU cores
-      #   uses: SimenB/github-actions-cpu-cores@v1
-      #   id: cpu-cores
+      - name: Install dependencies
+        working-directory: python-client 
+        run: pdm install -G :all
 
-      - name: Install, Lint, build, and test all
+      - name: Lint code
+        working-directory: python-client 
+        run: pdm lint
+
+      - name: Test code
+        working-directory: python-client
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: 1 # Test, to see if there are still OOM error on windows CI
-        run: ./gradlew :python-client:install :python-client:lint :python-client:build :python-client:test :python-client:package --info --parallel
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 1
+        run: pdm test-fast
+  
+      - name: Build
+        working-directory: python-client
+        run: pdm build
+
+      - name: Package
+        working-directory: python-client
+        run: pdm package
 
       - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}

@@ -25,14 +25,14 @@ name = "torch"
 
 
 [tool.pdm.scripts]
+_.env = { GSK_DISABLE_ANALYTICS = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
 test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
-test.env = { GSK_DISABLE_ANALYTICS = "True" }
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
-test-fast.env = { GSK_DISABLE_ANALYTICS = "True" }
 lint = "ruff giskard tests"
 doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
+clean = "rm -rf .venv coverage.xml coverage*"
 
 [tool.pdm.dev-dependencies]
 dev = [
