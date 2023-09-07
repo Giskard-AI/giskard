@@ -7,7 +7,6 @@ import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
-from giskard.models.shap_result import ShapResult
 from giskard.ml_worker.utils.logging import timer
 from giskard.core.errors import GiskardImportError
 
@@ -167,7 +166,7 @@ def _get_highest_proba_shap(shap_values: np.ndarray, model: BaseModel, dataset: 
     return [shap_values[predicted_class][sample_idx] for sample_idx, predicted_class in enumerate(predictions)]
 
 
-def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bool = True) -> ShapResult:
+def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bool = True):
     """Explain the model with SHAP and return the results as a `ShapResult` object.
 
     Parameters
@@ -190,6 +189,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bo
 
     try:
         from shap import Explanation
+        from giskard.models.shap_result import ShapResult
     except ImportError as e:
         raise GiskardImportError("shap") from e
     shap_values = _calculate_dataset_shap_values(model, dataset)
