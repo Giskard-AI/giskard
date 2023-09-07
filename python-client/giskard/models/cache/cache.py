@@ -11,6 +11,7 @@ from ...settings import settings
 
 NaN = float("NaN")
 
+ENCODING = "utf-8"
 CACHE_CSV_FILENAME = "giskard-model-cache.csv"
 
 
@@ -23,9 +24,16 @@ def flatten(xs):
 
 
 class ModelCache:
-    _default_cache_dir_prefix = Path(settings.home_dir / settings.cache_dir / "global" / "prediction_cache")
+    _default_cache_dir_prefix = Path(
+        settings.home_dir / settings.cache_dir / "global" / "prediction_cache"
+    )
 
-    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        model_type: SupportedModelTypes,
+        id: Optional[str] = None,
+        cache_dir: Optional[Path] = None,
+    ):
         self.id = id
         self.prediction_cache = dict()
 
@@ -34,7 +42,9 @@ class ModelCache:
 
         self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
 
-        self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
+        self.vectorized_get_cache_or_na = np.vectorize(
+            self.get_cache_or_na, otypes=[object]
+        )
         self.model_type = model_type
         self._warmed_up = False
 
@@ -43,7 +53,7 @@ class ModelCache:
             return
 
         try:
-            with self.cache_file.open("r", newline="") as pred_f:
+            with self.cache_file.open("r", newline="", encoding=ENCODING) as pred_f:
                 reader = csv.reader(pred_f)
                 for row in reader:
                     if self.model_type == SupportedModelTypes.TEXT_GENERATION:
@@ -74,14 +84,16 @@ class ModelCache:
 
         if self.cache_file is not None:
             self.cache_file.parent.mkdir(parents=True, exist_ok=True)
-            with self.cache_file.open("a", newline="") as pred_f:
+            with self.cache_file.open("a", newline="", encoding=ENCODING) as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
                     writer.writerow(flatten([keys.iloc[i], values[i]]))
 
     def _to_df(self):
         index = [key for key, values in self.prediction_cache.items()]
-        data = np.array([list(flatten([values])) for key, values in self.prediction_cache.items()])
+        data = np.array(
+            [list(flatten([values])) for key, values in self.prediction_cache.items()]
+        )
 
         if len(data) > 0:
             return pd.DataFrame(data, index=index)
