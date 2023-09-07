@@ -1,4 +1,3 @@
-import os
 import string
 from pathlib import Path
 
@@ -25,7 +24,7 @@ TARGET_COLUMN_NAME = "isHelpful"
 FEATURE_COLUMN_NAME = "reviewText"
 
 # Data.
-DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "amazon_review_dataset", "reviews.json")
+DATA_URL = '/'.join(["ftp://sys.giskard.ai", "pub", "unit_test_resources", "amazon_review_dataset", "reviews.json"])
 DATA_PATH = Path.home() / ".giskard" / "amazon_review_dataset" / "reviews.json"
 
 
