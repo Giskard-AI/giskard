@@ -22,7 +22,7 @@
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn :loading='loading' :disabled='!predictionOutdated' text @click='submitPrediction'>Generate</v-btn>
+      <v-btn :loading='loading' :disabled='!predictionOutdated' text @click='submitPrediction'>Run model</v-btn>
       <v-btn v-if='!predictionOutdated && !loading && modified' text @click='saveInput'>Save</v-btn>
     </v-card-actions>
   </v-card>
