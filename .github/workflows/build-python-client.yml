@@ -31,7 +31,7 @@ jobs:
           #   experimental: true
           - python-version: "3.10"
             os: windows-2019
-            experimental: true
+            experimental: false
     continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
 
@@ -43,14 +43,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
 
+      - name: Cache Python deps
+        uses: actions/cache@v3
+        with:
+          path: python-client/.venv
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps
+
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          working-directory: python-client 
-
           python-version: ${{ matrix.python-version }}
-          cache: true
-          cache-dependency-path: 'python-client/pdm.lock'
+          cache: false
 
       - name: Set up Pandoc (needed for python-client doc)
         uses: r-lib/actions/setup-pandoc@v2
@@ -61,8 +65,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.giskard
-          key: ${{ runner.os }}-giskard-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
-          restore-keys: ${{ runner.os }}-giskard-test-resources
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
       - name: Install dependencies
         working-directory: python-client 
@@ -75,7 +79,7 @@ jobs:
       - name: Test code
         working-directory: python-client
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: 1
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ matrix.os == 'windows-2019' && 1 || 2 }}
         run: pdm run test-fast
   
       - name: Build doc
