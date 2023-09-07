@@ -56,13 +56,13 @@ class _LlmIssueCategory:
 
         prompt = PromptTemplate(
             template=GENERATE_TEST_PROMPT,
-            input_variables=["prompt_template"],
+            input_variables=["model_name", "model_description"],
             partial_variables={
                 "format_instructions": parser.get_format_instructions(),
                 "issue_name": self.name,
                 "issue_description": self.description,
-                "issue_examples": self.issue_examples,
-                "input_examples": self.prompt_causing_issue_examples,
+                "input_examples": str(self.prompt_causing_issue_examples),
+                "issue_examples": str(self.issue_examples),
             },
         )
 

@@ -57,10 +57,10 @@ class LLMBusinessDetector:
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         potentially_failing_dataset = dataset = infer_dataset(
             f"""
-        Name: {model.meta.name}
-        
-        Description: {model.meta.description}
-        """,
+            Name: {model.meta.name}
+            
+            Description: {model.meta.description}
+            """,
             model.meta.feature_names,
             True,
         )
