@@ -79,8 +79,15 @@ jobs:
       - name: Test code
         working-directory: python-client
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ matrix.os == 'windows-2019' && 1 || 2 }}
+          # Windows runner are oom with two worker, limit to one and use 2 for linux
+          # See hardware ressources at top for info on runners
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ runner.os == 'windows-2019' && 1 || 2 }}
         run: pdm run test-fast
+  
+      - name: Update summary
+        if: ${{ always() }}
+        working-directory: python-client
+        run: cat test-report.md >> $GITHUB_STEP_SUMMARY
   
       - name: Build doc
         working-directory: python-client

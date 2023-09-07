@@ -6,7 +6,7 @@ groups = ["default", "dev", "doc", "llm", "server", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:c7d19b8a6804b51d12af9ed0f5a50edee4ed4eef6dea993e1d42f30caff9b61f"
+content_hash = "sha256:91935cea9eaa770761ba84f541dfec4a7db2c4c91268df14626eef26f41abfb2"
 
 [[package]]
 name = "absl-py"
@@ -796,6 +796,20 @@ dependencies = [
 files = [
     {file = "dataclasses_json-0.5.14-py3-none-any.whl", hash = "sha256:5ec6fed642adb1dbdb4182badb01e0861badfd8fda82e3b67f44b2d1e9d10d21"},
     {file = "dataclasses_json-0.5.14.tar.gz", hash = "sha256:d82896a94c992ffaf689cd1fafc180164e2abdd415b8f94a7f78586af5886236"},
+]
+
+[[package]]
+name = "dataproperty"
+version = "1.0.1"
+requires_python = ">=3.7"
+summary = "Python library for extract property from data."
+dependencies = [
+    "mbstrdecoder<2,>=1.0.0",
+    "typepy[datetime]<2,>=1.2.0",
+]
+files = [
+    {file = "DataProperty-1.0.1-py3-none-any.whl", hash = "sha256:0b8b07d4fb6453fcf975b53d35dea41f3cfd69c9d79b5010c3cf224ff0407a7a"},
+    {file = "DataProperty-1.0.1.tar.gz", hash = "sha256:723e5729fa6e885e127a771a983ee1e0e34bb141aca4ffe1f0bfa7cde34650a4"},
 ]
 
 [[package]]
@@ -2376,6 +2390,19 @@ files = [
 ]
 
 [[package]]
+name = "mbstrdecoder"
+version = "1.1.3"
+requires_python = ">=3.7"
+summary = "mbstrdecoder is a Python library for multi-byte character string decoder"
+dependencies = [
+    "chardet<6,>=3.0.4",
+]
+files = [
+    {file = "mbstrdecoder-1.1.3-py3-none-any.whl", hash = "sha256:d66c1ed3f2dc4e7c5d87cd44a75be10bc5af4250f95b38bbaedd7851308ce938"},
+    {file = "mbstrdecoder-1.1.3.tar.gz", hash = "sha256:dcfd2c759322eb44fe193a9e0b1b86c5b87f3ec5ea8e1bb43b3e9ae423f1e8fe"},
+]
+
+[[package]]
 name = "mdit-py-plugins"
 version = "0.4.0"
 requires_python = ">=3.8"
@@ -2999,6 +3026,16 @@ files = [
 ]
 
 [[package]]
+name = "pathvalidate"
+version = "3.1.0"
+requires_python = ">=3.7"
+summary = "pathvalidate is a Python library to sanitize/validate a string such as filenames/file-paths/etc."
+files = [
+    {file = "pathvalidate-3.1.0-py3-none-any.whl", hash = "sha256:912fd1d2e1a2a6a6f98da36a91f21ed86746473810ff625b9c34f3d06c0caa1d"},
+    {file = "pathvalidate-3.1.0.tar.gz", hash = "sha256:426970226e24199fd90d93995d223c1e28bda967cdf4370755a14cdf72a2a8ee"},
+]
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 summary = "Pexpect allows easy control of interactive console applications."
@@ -3405,6 +3442,25 @@ files = [
 ]
 
 [[package]]
+name = "pytablewriter"
+version = "1.0.0"
+requires_python = ">=3.7"
+summary = "pytablewriter is a Python library to write a table in various formats: AsciiDoc / CSV / Elasticsearch / HTML / JavaScript / JSON / LaTeX / LDJSON / LTSV / Markdown / MediaWiki / NumPy / Excel / Pandas / Python / reStructuredText / SQLite / TOML / TSV / YAML."
+dependencies = [
+    "DataProperty<2,>=0.55.0",
+    "mbstrdecoder<2,>=1.0.0",
+    "pathvalidate<4,>=2.3.0",
+    "setuptools>=38.3.0",
+    "tabledata<2,>=1.3.1",
+    "tcolorpy<1,>=0.0.5",
+    "typepy[datetime]<2,>=1.2.0",
+]
+files = [
+    {file = "pytablewriter-1.0.0-py3-none-any.whl", hash = "sha256:d789a363a71de312e7c6f18ba57f15e14b1b73b910ab636ba7b943779b5024a5"},
+    {file = "pytablewriter-1.0.0.tar.gz", hash = "sha256:3c81496ad5c119741f8adc59218574a3be12ba5d3fb190a595cd301d1625d404"},
+]
+
+[[package]]
 name = "pytest"
 version = "7.4.2"
 requires_python = ">=3.7"
@@ -3434,6 +3490,22 @@ dependencies = [
 files = [
     {file = "pytest-cov-4.1.0.tar.gz", hash = "sha256:3904b13dfbfec47f003b8e77fd5b589cd11904a21ddf1ab38a64f204d6a10ef6"},
     {file = "pytest_cov-4.1.0-py3-none-any.whl", hash = "sha256:6ba70b9e97e69fcc3fb45bfeab2d0a138fb65c4d0d6a41ef33983ad114be8c3a"},
+]
+
+[[package]]
+name = "pytest-md-report"
+version = "0.4.0"
+requires_python = ">=3.7"
+summary = "A pytest plugin to make a test results report with Markdown table format."
+dependencies = [
+    "pytablewriter<2,>=0.59.0",
+    "pytest!=6.0.0,<8,>=3.3.2",
+    "tcolorpy<1,>=0.0.5",
+    "typepy<2,>=1.1.1",
+]
+files = [
+    {file = "pytest-md-report-0.4.0.tar.gz", hash = "sha256:89a6e3e96b92ebeeb93b8ced6a04f5fc7f94f3f48ac9243d6d088e7ef967d404"},
+    {file = "pytest_md_report-0.4.0-py3-none-any.whl", hash = "sha256:0650e96c18426b00f5ddf0405e309b0c1025a0fd05a72c64b784ea0309a3d911"},
 ]
 
 [[package]]
@@ -4546,6 +4618,20 @@ files = [
 ]
 
 [[package]]
+name = "tabledata"
+version = "1.3.1"
+requires_python = ">=3.6"
+summary = "tabledata is a Python library to represent tabular data. Used for pytablewriter/pytablereader/SimpleSQLite/etc."
+dependencies = [
+    "DataProperty<2,>=0.54.2",
+    "typepy<2,>=1.2.0",
+]
+files = [
+    {file = "tabledata-1.3.1-py3-none-any.whl", hash = "sha256:73e610c378670a2b9bb80e56cece24427d18c8672a36c80fcdf2a3753b19642b"},
+    {file = "tabledata-1.3.1.tar.gz", hash = "sha256:6608f86171f3285f16251ed6649dcf6e953d4fe6a8e622d39b80d1954b9e7711"},
+]
+
+[[package]]
 name = "tabulate"
 version = "0.9.0"
 requires_python = ">=3.7"
@@ -4553,6 +4639,16 @@ summary = "Pretty-print tabular data"
 files = [
     {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
     {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[[package]]
+name = "tcolorpy"
+version = "0.1.3"
+requires_python = ">=3.7"
+summary = "tcolopy is a Python library to apply true color for terminal text."
+files = [
+    {file = "tcolorpy-0.1.3-py3-none-any.whl", hash = "sha256:4ba9e4d52696a36dc16a55c20317115fb46e4b8e02796e8e270132719bcefad4"},
+    {file = "tcolorpy-0.1.3.tar.gz", hash = "sha256:43c1afe908f9968ff5ce59f129b62e392049b8e7cd6a8d3f416bd3d372bb5c7a"},
 ]
 
 [[package]]
@@ -5007,6 +5103,36 @@ dependencies = [
 files = [
     {file = "transformers-4.29.2-py3-none-any.whl", hash = "sha256:0ef158b99bad6f4e6652a0d8655fbbe58b4cb788ce7040f320b5d29c7c810a75"},
     {file = "transformers-4.29.2.tar.gz", hash = "sha256:ed9467661f459f1ce49461d83f18f3b36b6a37f306182dc2ba272935f3b93ebb"},
+]
+
+[[package]]
+name = "typepy"
+version = "1.3.1"
+requires_python = ">=3.7"
+summary = "typepy is a Python library for variable type checker/validator/converter at a run time."
+dependencies = [
+    "mbstrdecoder<2,>=1.0.0",
+]
+files = [
+    {file = "typepy-1.3.1-py3-none-any.whl", hash = "sha256:892566bff279368d63f02901aba0a3ce78cd7a319ec1f2bf6c8baab3520207a3"},
+    {file = "typepy-1.3.1.tar.gz", hash = "sha256:dfc37b888d6eed8542208389efa60ec8454e06fd84b276b45b2e33897f9d7825"},
+]
+
+[[package]]
+name = "typepy"
+version = "1.3.1"
+extras = ["datetime"]
+requires_python = ">=3.7"
+summary = "typepy is a Python library for variable type checker/validator/converter at a run time."
+dependencies = [
+    "packaging",
+    "python-dateutil<3.0.0,>=2.8.0",
+    "pytz>=2018.9",
+    "typepy==1.3.1",
+]
+files = [
+    {file = "typepy-1.3.1-py3-none-any.whl", hash = "sha256:892566bff279368d63f02901aba0a3ce78cd7a319ec1f2bf6c8baab3520207a3"},
+    {file = "typepy-1.3.1.tar.gz", hash = "sha256:dfc37b888d6eed8542208389efa60ec8454e06fd84b276b45b2e33897f9d7825"},
 ]
 
 [[package]]
