@@ -13,9 +13,9 @@ def _get_openai():
             """
         )
 
-    from langchain.llms import OpenAI
+    from langchain.chat_models import ChatOpenAI
 
-    return OpenAI(temperature=0.1)
+    return ChatOpenAI(temperature=0.1)
 
 
 class _TalkConfig:
