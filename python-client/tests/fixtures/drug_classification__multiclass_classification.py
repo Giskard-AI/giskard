@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pytest
@@ -15,8 +14,8 @@ from tests.url_utils import fetch_from_ftp
 
 
 # Data.
-DATA_URL = os.path.join(
-    "ftp://sys.giskard.ai", "pub", "unit_test_resources", "drug_classification_dataset", "drug200.csv"
+DATA_URL = '/'.join(
+    ["ftp://sys.giskard.ai", "pub", "unit_test_resources", "drug_classification_dataset", "drug200.csv"]
 )
 DATA_PATH = Path.home() / ".giskard" / "drug_classification_dataset" / "drug200.csv"
 

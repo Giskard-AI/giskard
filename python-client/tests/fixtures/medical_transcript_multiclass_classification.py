@@ -1,4 +1,3 @@
-import os
 import string
 from pathlib import Path
 from typing import Iterable
@@ -29,8 +28,8 @@ TARGET_COLUMN_NAME = "medical_specialty"
 LANGUAGE = "english"
 
 # Paths.
-DATA_URL = os.path.join(
-    "ftp://sys.giskard.ai", "pub", "unit_test_resources", "medical_transcript_classification_dataset", "mtsamples.csv"
+DATA_URL = '/'.join(
+    ["ftp://sys.giskard.ai", "pub", "unit_test_resources", "medical_transcript_classification_dataset", "mtsamples.csv"]
 )
 DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv"
 

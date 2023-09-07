@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Iterable
 
@@ -15,8 +14,8 @@ from giskard.models.sklearn import SKLearnModel
 
 
 # Data.
-DATA_URL = os.path.join(
-    "ftp://sys.giskard.ai", "pub", "unit_test_resources", "hotel_text_regression_dataset", "Hotel_Reviews.csv"
+DATA_URL = '/'.join(
+    ["ftp://sys.giskard.ai", "pub", "unit_test_resources", "hotel_text_regression_dataset", "Hotel_Reviews.csv"]
 )
 DATA_PATH = Path.home() / ".giskard" / "hotel_text_regression_dataset" / "Hotel_Reviews.csv"
 
