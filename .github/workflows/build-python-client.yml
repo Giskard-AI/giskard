@@ -46,6 +46,8 @@ jobs:
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
+          working-directory: python-client 
+
           python-version: ${{ matrix.python-version }}
           cache: true
           cache-dependency-path: 'python-client/pdm.lock'
@@ -68,26 +70,25 @@ jobs:
 
       - name: Lint code
         working-directory: python-client 
-        run: pdm lint
+        run: pdm run lint
 
       - name: Test code
         working-directory: python-client
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 1
-        run: pdm test-fast
+        run: pdm run test-fast
   
+      - name: Build doc
+        working-directory: python-client
+        run: pdm run doc
+
       - name: Build
         working-directory: python-client
         run: pdm build
-
-      - name: Package
-        working-directory: python-client
-        run: pdm package
 
       - name: "Python client: archive built artifacts"
         if: ${{ steps.extract_branch.outputs.branch == 'main' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: actions/upload-artifact@v3
         with:
-          name: giskard-dev.whl
           path: python-client/dist/*whl
 

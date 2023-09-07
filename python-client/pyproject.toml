@@ -31,7 +31,8 @@ test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disa
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 lint = "ruff giskard tests"
-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
+doc = "sphinx-build docs docs/_build/html"
+watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
 clean = "rm -rf .venv coverage.xml coverage*"
 
 [tool.pdm.dev-dependencies]
