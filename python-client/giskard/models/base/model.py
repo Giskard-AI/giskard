@@ -26,6 +26,7 @@ from ...settings import settings
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -359,6 +360,19 @@ class BaseModel(ABC):
         validate_model(model=self, validate_ds=validate_ds)
         reloaded_model = validate_model_loading_and_saving(self)
         validate_model(model=reloaded_model, validate_ds=validate_ds)
+
+        reloaded_model = validate_model_loading_and_saving(self)
+        try:
+            validate_model(model=reloaded_model, validate_ds=validate_ds)
+        except Exception as e_reloaded:
+            try:
+                validate_model(model=self, validate_ds=validate_ds)
+                logger.info("Original model validated successfully")
+            except Exception as e_loaded:
+                logger.exception("Failed to validate the original model", e_loaded)
+            raise GiskardException(
+                "An error occured while validating a deserialized version your model, please report this issue to Giskard"
+            ) from e_reloaded
 
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             self.save(f)
