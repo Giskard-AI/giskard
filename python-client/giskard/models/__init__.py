@@ -28,7 +28,6 @@ You can wrap your model in two different ways:
    serialization of the model object.
 """
 
-from .automodel import Model
 from .catboost import CatboostModel
 from .function import PredictionFunctionModel
 from .huggingface import HuggingFaceModel
@@ -38,7 +37,6 @@ from .sklearn import SKLearnModel
 from .tensorflow import TensorFlowModel
 
 __all__ = [
-    "Model",
     "CatboostModel",
     "PredictionFunctionModel",
     "HuggingFaceModel",
