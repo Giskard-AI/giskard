@@ -65,7 +65,7 @@ print(giskard_model.talk("Can I trust this model?", scan_report=scan_report))
 # -> No, this model is not reliable due to its vulnerabilities and overconfidence issues.
 
 print(giskard_model.talk("What are the risks of this model?", scan_report=scan_report))
-# -> The risks associated with this model are: not reliable, performance issues with Name containing "mr", Sex being "male", Pclass being 3, Name containing "master", Embarked being "S", Pclass being 1, Name containing "miss", Embarked being "Q", robustness issues, overconfidence issues, and spurious correlation issues.
+# -> The risks of this model include performance issues, robustness issues, overconfidence issues, and spurious correlations. Performance issues include lower than expected recall for records where `Name` contains "mr", `Sex` == "male", `Pclass` == 3, `Name` contains "master", `Embarked` == "S", `Pclass` == 1, `Name` contains "miss", and `Embarked` == "Q". Robustness issues include a fail rate of 0.067 when perturbing the content of feature “Name” with the transformation “Transform to title case”. Overconfidence issues include higher than expected overconfidence rate for records where `Name` contains "mr", `text_length(Name)` < 28.500, `Fare` < 14.850, `Sex` == "male", `avg_word_length(Name)` < 6.292, `Parch` < 0.500, and `avg_whitespace(Name)` >= 0.106. Spurious correlations include a high nominal association (Theil's U) for records where `Sex` == "female
 
 print(giskard_model.talk("How good is the quality of this model?", scan_report=scan_report))
 # -> The model is not reliable and has several vulnerabilities.
