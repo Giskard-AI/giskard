@@ -1,3 +1,4 @@
+from pathlib import Path
 import tempfile
 
 import mlflow
@@ -130,13 +131,19 @@ class ScanReport:
             model_artifact_path = "-for-" + model_artifact_path
 
         with tempfile.NamedTemporaryFile(
-            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html"
+            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html", delete=False
         ) as f:
+            # Get file path
             scan_results_local_path = f.name
-            scan_results_artifact_name = scan_results_local_path.split("/")[-1]
-            scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
+            # Get name from file
+            scan_results_artifact_name = Path(f.name).name
+            scan_summary_artifact_name = (
+                "scan-summary" + model_artifact_path + ".json" if summary else None
+            )
+            # Write the file on disk
             self.to_html(scan_results_local_path)
 
+        try:
             if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_artifact(scan_results_local_path)
                 if summary:
@@ -144,7 +151,15 @@ class ScanReport:
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
-                    mlflow_client.log_table(mlflow_run_id, results_df, artifact_file=scan_summary_artifact_name)
+                    mlflow_client.log_table(
+                        mlflow_run_id,
+                        results_df,
+                        artifact_file=scan_summary_artifact_name,
+                    )
+        finally:
+            # Force deletion of the temps file
+            Path(f.name).unlink(missing_ok=True)
+
         return scan_results_artifact_name, scan_summary_artifact_name
 
     def to_wandb(self, **kwargs):
