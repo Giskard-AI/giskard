@@ -1,4 +1,6 @@
 from pathlib import Path
+import random
+import string
 import tempfile
 
 import mlflow
@@ -72,7 +74,9 @@ class ScanReport:
                 {
                     "domain": issue.meta.get("domain"),
                     "slicing_fn": str(issue.slicing_fn) if issue.slicing_fn else None,
-                    "transformation_fn": str(issue.transformation_fn) if issue.transformation_fn else None,
+                    "transformation_fn": str(issue.transformation_fn)
+                    if issue.transformation_fn
+                    else None,
                     "metric": issue.meta.get("metric"),
                     "deviation": issue.meta.get("deviation"),
                     "description": issue.description,
@@ -83,7 +87,9 @@ class ScanReport:
         return df
 
     def generate_tests(self, with_names=False):
-        tests = sum([issue.generate_tests(with_names=with_names) for issue in self.issues], [])
+        tests = sum(
+            [issue.generate_tests(with_names=with_names) for issue in self.issues], []
+        )
         return tests
 
     def generate_test_suite(self, name=None):
@@ -131,7 +137,9 @@ class ScanReport:
             model_artifact_path = "-for-" + model_artifact_path
 
         with tempfile.NamedTemporaryFile(
-            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html", delete=False
+            prefix="giskard-scan-results" + model_artifact_path + "-",
+            suffix=".html",
+            delete=False,
         ) as f:
             # Get file path
             scan_results_local_path = f.name
@@ -147,7 +155,9 @@ class ScanReport:
             if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_artifact(scan_results_local_path)
                 if summary:
-                    mlflow.log_table(results_df, artifact_file=scan_summary_artifact_name)
+                    mlflow.log_table(
+                        results_df, artifact_file=scan_summary_artifact_name
+                    )
             elif mlflow_client and mlflow_run_id:
                 mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
@@ -180,30 +190,34 @@ class ScanReport:
         from ..utils.analytics_collector import analytics
 
         with wandb_run(**kwargs) as run:
-            with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-                try:
-                    self.to_html(filename=f.name)
-                    wandb_artifact_name = "Vulnerability scan results/" + f.name.split("/")[-1].split(".html")[0]
-                    analytics.track(
-                        "wandb_integration:scan_result",
-                        {
-                            "wandb_run_id": run.id,
-                            "has_issues": self.has_issues(),
-                            "issues_cnt": len(self.issues),
-                        },
-                    )
-                except Exception as e:
-                    analytics.track(
-                        "wandb_integration:scan_result:error:unknown",
-                        {
-                            "wandb_run_id": run.id,
-                            "error": str(e),
-                        },
-                    )
-                    raise ValueError(
-                        "An error occurred while logging the scan results into wandb. "
-                        "Please submit the traceback as a GitHub issue in the following "
-                        "repository for further assistance: https://github.com/Giskard-AI/giskard."
-                    ) from e
+            try:
+                html = self.to_html()
+                suffix = "".join(
+                    random.choices(string.ascii_lowercase + string.digits, k=8)
+                )
+                wandb_artifact_name = (
+                    f"Vulnerability scan results/giskard-scan-results-{suffix}"
+                )
+                analytics.track(
+                    "wandb_integration:scan_result",
+                    {
+                        "wandb_run_id": run.id,
+                        "has_issues": self.has_issues(),
+                        "issues_cnt": len(self.issues),
+                    },
+                )
+            except Exception as e:
+                analytics.track(
+                    "wandb_integration:scan_result:error:unknown",
+                    {
+                        "wandb_run_id": run.id,
+                        "error": str(e),
+                    },
+                )
+                raise ValueError(
+                    "An error occurred while logging the scan results into wandb. "
+                    "Please submit the traceback as a GitHub issue in the following "
+                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                ) from e
 
-                run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})
+            run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
