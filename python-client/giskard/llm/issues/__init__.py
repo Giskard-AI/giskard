@@ -86,4 +86,5 @@ OUTPUT_FORMATTING_ISSUE = _LlmIssueCategory(
         "The answer must not be truncated",
     ],
 )
+
 LLM_ISSUE_CATEGORIES = [OUTPUT_FORMATTING_ISSUE]

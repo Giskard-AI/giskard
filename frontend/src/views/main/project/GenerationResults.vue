@@ -23,6 +23,7 @@
     </v-card-text>
     <v-card-actions>
       <v-btn :loading='loading' :disabled='!predictionOutdated' text @click='submitPrediction'>Generate</v-btn>
+      <v-btn v-if='!predictionOutdated && !loading && modified' text @click='saveInput'>Save</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -34,6 +35,7 @@ import { api } from '@/api';
 import { ModelDTO } from '@/generated-sources';
 import * as _ from 'lodash';
 import { CanceledError } from 'axios';
+import { openapi } from '@/api-v2';
 
 interface Props {
   model: ModelDTO;
@@ -88,6 +90,13 @@ async function submitPrediction() {
   }
 }
 
+function saveInput() {
+  openapi.datasets.addRow({
+    projectKey: props.model.project.key,
+    datasetId: props.datasetId,
+    requestBody: props.inputData
+  });
+}
 
 const predictionOutdated = computed(() => !_.isEqual(
     _.pick(props.inputData, props.modelFeatures),
@@ -113,4 +122,6 @@ onMounted(async () => {
 .whitespace-pre {
   white-space: pre;
 }
+
+/** **/
 </style>
