@@ -2,11 +2,10 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import Optional
 
-from shap import Explanation
-
 from giskard.core.core import ModelType, SupportedModelTypes
 from ..utils.analytics_collector import analytics
 from giskard.client.python_utils import warning
+from giskard.core.errors import GiskardImportError
 
 
 class PanelNames(str, Enum):
@@ -38,6 +37,11 @@ class ShapResult:
     only_highest_proba: bool (default=True)
         A flag indicating whether to provide SHAP explanations only for the predictions with the highest probability or not.
     """
+
+    try:
+        from shap import Explanation
+    except ImportError as e:
+        raise GiskardImportError("shap") from e
 
     explanations: Explanation
     feature_types: Optional[dict] = None
