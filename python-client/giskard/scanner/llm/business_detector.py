@@ -38,10 +38,9 @@ def validate_prediction(
                     group=IssueGroup(name=issue.name, description=issue.description),
                     description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
                     # Todo: add more meta
-                    meta={
-                        "metric": "Use case",
-                    },
+                    meta={"metric": metric, "test_case": test_case},
                     examples=df_with_pred[failed],
+                    tests=_generate_business_test,
                 )
             )
 
@@ -86,3 +85,18 @@ class LLMBusinessDetector:
                 print(f"Failed to evaluate {issue}: {e}")
 
         return issues
+
+
+def _generate_business_test(issue: Issue):
+    from ...testing.tests.llm import test_test_case
+
+    # Only generates a single business test
+    return {
+        issue.meta["test_case"]: test_test_case(
+            model=issue.model,
+            dataset=issue.dataset,
+            test_case=issue.meta["test_case"],
+            slicing_function=None,
+            threshold=issue.meta["metric"],
+        )
+    }
