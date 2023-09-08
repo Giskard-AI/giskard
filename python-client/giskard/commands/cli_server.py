@@ -123,7 +123,6 @@ def _start(attached=False, version=None):
 
     settings = _get_settings() or {}
     port = settings.get("port", 19000)
-    ml_worker_port = settings.get("ml_worker_port", 40051)
 
     version = get_version(version)
 
@@ -138,7 +137,7 @@ def _start(attached=False, version=None):
             get_image_name(version),
             detach=not attached,
             name=get_container_name(version),
-            ports={7860: port, 40051: ml_worker_port},
+            ports={7860: port},
             volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
         )
     container.start()
