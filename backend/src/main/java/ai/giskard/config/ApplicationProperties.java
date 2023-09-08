@@ -16,8 +16,6 @@ import java.nio.file.Path;
 @Getter
 @ConfigurationProperties(prefix = "giskard", ignoreUnknownFields = false)
 public class ApplicationProperties {
-    private String mlWorkerHost;
-    private int mlWorkerPort;
     private int externalMlWorkerEntrypointPort;
     private String externalMlWorkerEntrypointHost;
     private boolean externalMlWorkerEnabled;
