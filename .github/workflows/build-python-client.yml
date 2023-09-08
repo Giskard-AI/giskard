@@ -19,6 +19,10 @@ jobs:
         os: [ubuntu-latest]
         experimental: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        include:
+          - python-version: "3.10"
+            os: windows-2019
+            experimental: false
     continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
 
