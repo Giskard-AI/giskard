@@ -43,8 +43,9 @@
                         </v-list>
                     </v-col>
                     <v-col cols="8" v-if="selected" class="vc fill-height">
-                        <div class="py-2">
+                        <div class="py-2 d-flex flex-column">
                             <span class="selected-func-name">{{ selected.displayName ?? selected.name }}</span>
+                            <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
                         </div>
 
                         <div class="vc overflow-x-hidden pr-5">
@@ -167,11 +168,16 @@ import IEditorOptions = editor.IEditorOptions;
 import CodeSnippet from "@/components/CodeSnippet.vue";
 import mixpanel from "mixpanel-browser";
 import { anonymize } from "@/utils";
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
 
 let props = defineProps<{
     projectId: number,
     suiteId?: number
 }>();
+
+const mainStore = useMainStore();
 
 const editor = ref(null)
 
@@ -189,11 +195,9 @@ const panel = ref<number[]>([0]);
 
 monacoOptions.readOnly = true;
 
-function resizeEditor() {
-    setTimeout(() => {
-        editor.value.editor.layout();
-    })
-}
+const hasCustomTag = computed(() => {
+    return selected.value?.tags?.includes('custom') ?? false;
+})
 
 const hasGiskardFilters = computed(() => {
     return transformationFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
@@ -278,6 +282,10 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 const doc = computed(() => extractArgumentDocumentation(selected.value));
 
+async function copyFunctionId() {
+    await copyToClipboard(selected.value!.uuid);
+    mainStore.addNotification({ content: "Copied Transformation Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style scoped lang="scss">
@@ -364,5 +372,17 @@ const doc = computed(() => extractArgumentDocumentation(selected.value));
 
 .suite-input-list-selector {
     padding-top: 0;
+}
+
+
+#function-id {
+    font-size: 0.675rem !important;
+    line-height: 0.675rem !important;
+    cursor: pointer;
+}
+
+#function-id span {
+    text-decoration: underline;
+    margin-right: 0.2rem;
 }
 </style>

@@ -38,8 +38,7 @@ public class TestSuiteController {
     @PostMapping("project/{projectKey}/suites")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public Long saveTestSuite(@PathVariable("projectKey") @NotNull String projectKey, @Valid @RequestBody TestSuiteDTO dto) {
-        TestSuite savedSuite = testSuiteRepository.save(giskardMapper.fromDTO(dto));
-        return savedSuite.getId();
+        return testSuiteService.saveTestSuite(projectKey, dto);
     }
 
     @PostMapping("project/{projectKey}/suites/generate")
@@ -60,8 +59,8 @@ public class TestSuiteController {
     @GetMapping("project/{projectId}/suite/{suiteId}")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
-    public TestSuiteDTO listTestSuiteComplete(@PathVariable("projectId") @NotNull Long projectId,
-                                              @PathVariable("suiteId") @NotNull Long suiteId) {
+    public TestSuiteDTO listTestSuite(@PathVariable("projectId") @NotNull Long projectId,
+                                      @PathVariable("suiteId") @NotNull Long suiteId) {
         return giskardMapper.toDTO(testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId));
     }
 
@@ -85,8 +84,8 @@ public class TestSuiteController {
     @GetMapping("project/{projectId}/suite/{suiteId}/complete")
     @PreAuthorize("@permissionEvaluator.canReadProject(#projectId)")
     @Transactional
-    public TestSuiteCompleteDTO listTestSuite(@PathVariable("projectId") @NotNull Long projectId,
-                                              @PathVariable("suiteId") @NotNull Long suiteId) {
+    public TestSuiteCompleteDTO listTestSuiteComplete(@PathVariable("projectId") @NotNull Long projectId,
+                                                      @PathVariable("suiteId") @NotNull Long suiteId) {
         return new TestSuiteCompleteDTO(
             giskardMapper.toDTO(testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId)),
             giskardMapper.datasetsToDatasetDTOs(datasetRepository.findAllByProjectId(projectId)),
