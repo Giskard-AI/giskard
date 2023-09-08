@@ -66,19 +66,22 @@ class LLMBusinessDetector:
         )
         print(f"Generated potentially failing prompts: {potentially_failing_dataset}")
 
+        df = pd.concat([potentially_failing_dataset.df, dataset.df]).reset_index(drop=True)
+        df = df.head(min(len(df.index), self.num_samples))
+        dataset = Dataset(df)
+
+        predictions = model.predict(dataset).prediction
+
         issues = []
         for issue in LLM_ISSUE_CATEGORIES:
-            test_cases = issue.issue_generator.run_and_parse(
-                model_name=model.meta.name, model_description=model.meta.description
-            ).assertions
-            print(f"Generated tests: {test_cases}")
+            try:
+                test_cases = issue.issue_generator.run_and_parse(
+                    model_name=model.meta.name, model_description=model.meta.description
+                ).assertions[:3]
+                print(f"Generated tests: {test_cases}")
 
-            df = pd.concat([potentially_failing_dataset.df, dataset.df]).reset_index(drop=True)
-            df = df.head(min(len(df.index), self.num_samples))
-            dataset = Dataset(df)
-
-            predictions = model.predict(dataset).prediction
-
-            issues += validate_prediction(model, test_cases, dataset, predictions, self.threshold)
+                issues += validate_prediction(model, test_cases, dataset, predictions, self.threshold)
+            except Exception as e:
+                print(f"Failed to evaluate {issue}: {e}")
 
         return issues
