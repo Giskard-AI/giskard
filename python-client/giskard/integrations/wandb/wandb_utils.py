@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 from shap import Explanation
 
+from giskard.core.errors import GiskardImportError
+
 try:
     import wandb  # noqa
     from wandb.wandb_run import Run
 except ImportError as e:
-    raise ImportError("The 'wandb' python package is not installed. To get it, run 'pip install wandb'.") from e
+    raise GiskardImportError("wandb") from e
 
 
 @contextlib.contextmanager

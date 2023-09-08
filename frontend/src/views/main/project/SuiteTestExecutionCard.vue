@@ -124,7 +124,10 @@ const params = computed(() => props.isPastExecution && props.result
         .filter(input => !input.isAlias)
         .reduce((r, input) => ({...r, [input.name]: input.value}), {}));
 
-function mapValue(value: string, type: string): string {
+function mapValue(value: string, type: string): string | null {
+  if (value == null) {
+    return null;
+  }
   if (type === 'SlicingFunction') {
     const slicingFunction = slicingFunctionsByUuid.value[value];
     return slicingFunction?.displayName ?? slicingFunction?.name ?? value;
