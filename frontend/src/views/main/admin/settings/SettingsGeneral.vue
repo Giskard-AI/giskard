@@ -13,10 +13,10 @@
                   <tr>
                     <td>Instance</td>
                     <td>{{ appSettings.generalSettings?.instanceId }}
-                      <v-btn v-if="appSettings.isDemoHfSpace && !isUnlocked" icon @click="switchGalleryUnlockStatus()">
+                      <v-btn v-if="appSettings.isDemoHfSpace && !isUnlocked" icon @click="unlockModal = true">
                         <v-icon>mdi-lock</v-icon>
                       </v-btn>
-                      <v-btn v-if="appSettings.isDemoHfSpace && isUnlocked" icon @click="switchGalleryUnlockStatus()">
+                      <v-btn v-if="appSettings.isDemoHfSpace && isUnlocked" icon @click="unlockModal = true">
                         <v-icon>mdi-lock-open</v-icon>
                       </v-btn>
                     </td>
@@ -187,6 +187,21 @@
     <v-dialog v-model="upgradeModal" width="700">
       <PlanUpgradeCard @done="upgradeModal = false" />
     </v-dialog>
+    <v-dialog v-model="unlockModal" width="500">
+      <v-card>
+        <v-card-title v-if="isUnlocked" >Lock Giskard demo Gallery Space</v-card-title>
+        <v-card-title v-else >Unlock Giskard demo Gallery Space</v-card-title>
+        <v-card-text>
+          <v-text-field outlined autofocus v-model="unlockToken" label="Token" type="password"/>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="primary" text @click="switchGalleryUnlockStatus()">
+            {{ isUnlocked ? "Lock" : "Unlock" }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -214,6 +229,8 @@ const installedPackagesSearch = ref<string>("");
 
 const upgradeModal = ref<boolean>(false);
 const isUnlocked = ref<boolean>(false);
+const unlockModal = ref<boolean>(false);
+const unlockToken = ref<string | undefined>(undefined);
 
 const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' }, {
   text: 'Version',
@@ -242,12 +259,15 @@ async function switchGalleryUnlockStatus() {
   try {
     const status = await openapi.galleryUnlock.setUnlockStatus({
       galleryUnlockDTO: {
-        token: "",  // TODO: Use input
+        token: unlockToken.value ? unlockToken.value : "",
         unlocked: !isUnlocked.value,
       }
     });
     isUnlocked.value = status.unlocked!;
   } catch (error) {
+  } finally {
+    unlockToken.value = undefined;
+    unlockModal.value = false;
   }
 }
 
