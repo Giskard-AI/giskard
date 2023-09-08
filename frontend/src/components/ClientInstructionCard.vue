@@ -41,6 +41,9 @@ import { state } from "@/socket";
 import { JWTToken } from "@/generated-sources";
 import { api } from "@/api";
 
+import { useApiKeyStore } from "@/stores/api-key-store";
+
+const apiKeyStore = useApiKeyStore();
 const mainStore = useMainStore();
 
 interface Props {
@@ -55,7 +58,7 @@ function generateGiskardClientInstruction(hf_token=null) {
   let snippet = `from giskard import GiskardClient
 
 url = "${apiURL}"
-token = "${apiAccessToken.value?.id_token}"
+api_token = "${apiKeyStore.getFirstApiKey ? apiKeyStore.getFirstApiKey : '<Generate your API Key first>'}"
 `;
   if (hf_token) {
     snippet += `hf_token = "${hf_token}"
@@ -63,23 +66,13 @@ token = "${apiAccessToken.value?.id_token}"
   }
   snippet += `
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token`;
+client = GiskardClient(url, api_token`;
   if (hf_token) {
     snippet += `, hf_token`;
   }
-  snippet += `);`;
+  snippet += `)`;
   return snippet;
 };
-
-// Giskard API token
-const apiAccessToken = ref<JWTToken | null>(null);
-async function generateToken() {
-  try {
-    apiAccessToken.value = await api.getApiAccessToken();
-  } catch (error) {
-    mainStore.addNotification({content: 'Could not reach server', color: TYPE.ERROR});
-  }
-}
 
 // Hugging Face Spaces token (Giskard Space token)
 const giskardClientTemplate = ref<string | null>(null);
@@ -111,8 +104,7 @@ async function generateHFToken() {
   }
 }
 
-onMounted(async () => {
-  await generateToken();
+onMounted(() => {
   if (mainStore.appSettings?.isRunningOnHfSpaces) {
     generateHFToken();
   } else {
