@@ -12,7 +12,14 @@
                 <table class="w100">
                   <tr>
                     <td>Instance</td>
-                    <td>{{ appSettings.generalSettings?.instanceId }}</td>
+                    <td>{{ appSettings.generalSettings?.instanceId }}
+                      <v-btn v-if="appSettings.isDemoHfSpace && !isUnlocked" icon @click="switchGalleryUnlockStatus()">
+                        <v-icon>mdi-lock</v-icon>
+                      </v-btn>
+                      <v-btn v-if="appSettings.isDemoHfSpace && isUnlocked" icon @click="switchGalleryUnlockStatus()">
+                        <v-icon>mdi-lock-open</v-icon>
+                      </v-btn>
+                    </td>
                   </tr>
                   <tr>
                     <td>Version</td>
@@ -206,6 +213,7 @@ const installedPackagesData = ref<{ name: string, version: string }[]>([]);
 const installedPackagesSearch = ref<string>("");
 
 const upgradeModal = ref<boolean>(false);
+const isUnlocked = ref<boolean>(false);
 
 const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' }, {
   text: 'Version',
@@ -216,7 +224,32 @@ const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' },
 
 onBeforeMount(async () => {
   await initMLWorkerInfo();
+  if (mainStore.appSettings?.isDemoHfSpace) {
+    await initGalleryUnlockInfo();
+  }
 })
+
+async function initGalleryUnlockInfo() {
+  try {
+    const status = await openapi.galleryUnlock.getUnlockStatus();
+    isUnlocked.value = status.unlocked!;
+  } catch (error) {
+    isUnlocked.value = false;
+  }
+}
+
+async function switchGalleryUnlockStatus() {
+  try {
+    const status = await openapi.galleryUnlock.setUnlockStatus({
+      galleryUnlockDTO: {
+        token: "",  // TODO: Use input
+        unlocked: !isUnlocked.value,
+      }
+    });
+    isUnlocked.value = status.unlocked!;
+  } catch (error) {
+  }
+}
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 

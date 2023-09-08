@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GalleryInitIndicator {
-    private boolean isInit = false;
+public class GalleryUnlockIndicator {
+    private boolean isUnlocked = false;
 }
