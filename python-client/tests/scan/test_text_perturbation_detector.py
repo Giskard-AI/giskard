@@ -1,15 +1,17 @@
-import giskard
 import numpy as np
 import pandas as pd
-from giskard import Model, Dataset
-from langchain import LLMChain, PromptTemplate
+import pytest
 from langchain.llms.fake import FakeListLLM
+
+import giskard
+from giskard import Dataset, Model
 from giskard.scanner.robustness.text_perturbation_detector import TextPerturbationDetector
+from langchain import LLMChain, PromptTemplate
 
 
-def test_perturbation_classification(enron_model, enron_data):
+def test_perturbation_classification(titanic_model, titanic_dataset):
     analyzer = TextPerturbationDetector(threshold=0.01)
-    res = analyzer.run(enron_model, enron_data)
+    res = analyzer.run(titanic_model, titanic_dataset)
     assert res
 
 
@@ -38,6 +40,7 @@ def test_text_perturbation_works_with_nan_values():
     assert len(issues) == 0
 
 
+@pytest.mark.slow
 def test_llm_text_transformation():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])

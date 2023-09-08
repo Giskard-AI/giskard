@@ -5,7 +5,10 @@ import Vue from 'vue';
 
 import {
     AdminUserDTO,
+    ApiKeyDTO,
     AppConfigDTO,
+    ApplyPushDTO,
+    CallToActionKind,
     CatalogDTO,
     ComparisonClauseDTO,
     CreateFeedbackDTO,
@@ -18,16 +21,11 @@ import {
     FeedbackDTO,
     FeedbackMinimalDTO,
     FunctionInputDTO,
-    GeneralSettings,
     GenerateTestSuiteDTO,
     InspectionCreateDTO,
     InspectionDTO,
-    JobDTO,
-    JWTToken,
-    LicenseDTO,
     ManagedUserVM,
     MessageDTO,
-    MLWorkerInfoDTO,
     ModelDTO,
     ParameterizedCallableDTO,
     PasswordResetRequest,
@@ -38,6 +36,7 @@ import {
     PrepareImportProjectDTO,
     ProjectDTO,
     ProjectPostDTO,
+    PushKind,
     RoleDTO,
     RowFilterDTO,
     SetupDTO,
@@ -73,14 +72,6 @@ function hfRequestInterceptor(config) {
         config.headers.Authorization = `Bearer ${hfToken}`;
     }
     return config;
-}
-
-function authHeaders(token: string | null) {
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    };
 }
 
 const API_V2_ROOT = `${apiURL}/api/v2`;
@@ -203,47 +194,16 @@ function downloadURL(urlString) {
 
 export const api = {
     async getHuggingFaceSpacesToken(spaceId: string) {
-      return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
-    },
-    async logInGetToken(username: string, password: string) {
-        return apiV2.post<unknown, JWTToken>(`/authenticate`, {username, password});
-    },
-    async getLicense() {
-        return apiV2.get<unknown, LicenseDTO>(`/settings/license`);
+        return await huggingface.get<unknown, any>(`https://huggingface.co/api/spaces/${spaceId}/jwt`);
     },
     async getUserAndAppSettings() {
         return apiV2.get<unknown, AppConfigDTO>(`/settings`);
-    },
-    async getMLWorkerSettings() {
-        return apiV2.get<unknown, MLWorkerInfoDTO[]>(`/ml-workers`);
-    },
-    async stopMLWorker(internal: boolean) {
-        return apiV2.post<unknown, MLWorkerInfoDTO[]>(`/ml-workers/stop`, null, {
-            params: {
-                internal,
-            },
-        });
-    },
-    async isExternalMLWorkerConnected() {
-        return apiV2.get<unknown, boolean>(`/ml-workers/external/connected`);
-    },
-    async getRunningWorkerJobs() {
-        return apiV2.get<unknown, JobDTO[]>(`/jobs/running`);
-    },
-    async trackJob(jobUuid: string) {
-        return apiV2.get<unknown, JobDTO>(`/jobs/${jobUuid}`);
-    },
-    async saveGeneralSettings(settings: GeneralSettings) {
-        return apiV2.post<unknown, GeneralSettings>(`/settings`, settings);
     },
     async updateMe(data: UpdateMeDTO) {
         return apiV2.put<unknown, AdminUserDTO>(`/account`, data);
     },
     async getUsers() {
         return apiV2.get<unknown, AdminUserDTO[]>(`/admin/users`);
-    },
-    async getRoles() {
-        return apiV2.get<unknown, RoleDTO[]>(`/roles`);
     },
     async updateUser(data: Partial<AdminUserDTO.AdminUserDTOWithPassword>) {
         return apiV2.put<unknown, AdminUserDTO.AdminUserDTOWithPassword>(`/admin/users`, data);
@@ -258,7 +218,7 @@ export const api = {
         return apiV2.delete<unknown, void>(`/admin/users/${login}`);
     },
     async disableUser(login: string) {
-      return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
+        return apiV2.patch<unknown, void>(`/admin/users/${login}/disable`);
     },
     async enableUser(login: string) {
         return apiV2.patch<unknown, void>(`/admin/users/${login}/enable`);
@@ -283,8 +243,14 @@ export const api = {
     async getCoworkersMinimal() {
         return apiV2.get<unknown, UserDTO[]>(`/users/coworkers`);
     },
-    async getApiAccessToken() {
-        return apiV2.get<unknown, JWTToken>(`/api-access-token`);
+    async createApiKey() {
+        return apiV2.post<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async getApiKeys() {
+        return apiV2.get<unknown, ApiKeyDTO[]>(`/apikey`);
+    },
+    async deleteApiKey(id) {
+        return apiV2.delete<unknown, ApiKeyDTO[]>(`/apikey/${id}`);
     },
 
     // Projects
@@ -411,9 +377,6 @@ export const api = {
     async removeTest(projectId: string, suiteId: number, suiteTestId: number) {
         return apiV2.delete<unknown, void>(`testing/project/${encodeURIComponent(projectId)}/suite/${suiteId}/suite-test/${suiteTestId}`);
     },
-    async getInspections() {
-        return apiV2.get<unknown, InspectionDTO[]>(`/inspections`);
-    },
     async getProjectInspections(projectId: number) {
         return axiosProject.get<unknown, InspectionDTO[]>(`/${projectId}/inspections`);
     },
@@ -434,82 +397,97 @@ export const api = {
         return apiV2.post<unknown, PredictionDTO>(`/models/${modelId}/predict`, data, {signal: controller.signal});
     },
 
-  async prepareInspection(payload: InspectionCreateDTO) {
-    return apiV2.post<unknown, InspectionDTO>(`/inspection`, payload);
-  },
-  async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
-    return apiV2.post<unknown, ExplainResponseDTO>(
-      `/models/${modelId}/explain/${datasetId}`,
-      { features: inputData },
-      { signal: controller.signal }
-    );
-  },
-  async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
-    return apiV2.post<unknown, ExplainTextResponseDTO>(
-      `/models/explain-text/${featureName}`,
-      {
-        features: inputData,
-      },
-      { params: { modelId, datasetId } }
-    );
-  },
-  // feedbacks
-  async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
-    return apiV2.post<unknown, void>(`/feedbacks/${projectId}`, payload);
-  },
-  async getProjectFeedbacks(projectId: number) {
-    return apiV2.get<unknown, FeedbackMinimalDTO[]>(`/feedbacks/all/${projectId}`);
-  },
-  async getFeedback(id: number) {
-    return apiV2.get<unknown, FeedbackDTO>(`/feedbacks/${id}`);
-  },
-  async replyToFeedback(feedbackId: number, content: string, replyToId: number | null = null) {
-    return apiV2.post<unknown, void>(`/feedbacks/${feedbackId}/reply`, <CreateFeedbackReplyDTO>{
-      content,
-      replyToReply: replyToId
-    });
-  },
-  async deleteFeedback(id: number) {
-    return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
-  },
-  async deleteFeedbackReply(feedbackId: number, replyId: number) {
-    return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
-  },
-  async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>, sample: boolean, debug: boolean = false) {
-    return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test?sample=${sample}`, {
-      projectId,
-      testUuid,
-      inputs,
-      debug
-    });
-  },
-  async getCatalog(projectId: number) {
-    return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
-      params: {
-        projectId
-      }
-    });
-  },
-  async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
-    return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses);
-  },
-  async uploadLicense(form: FormData) {
-    return apiV2.post<unknown, unknown>(`/ee/license`, form, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
-  async finalizeSetup(allowAnalytics: boolean, license: string) {
-    return apiV2.post<SetupDTO, unknown>(`/setup`, {
-      allowAnalytics: allowAnalytics,
-      license: license,
-    });
-  },
-  async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
-    return apiV2.post<unknown, DatasetProcessingResultDTO>(
-      `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process?sample=${sample}`,
-      functions
-    );
-  },
+    async prepareInspection(payload: InspectionCreateDTO) {
+        return apiV2.post<unknown, InspectionDTO>(`/inspection`, payload);
+    },
+    async explain(modelId: string, datasetId: string, inputData: object, controller: AbortController) {
+        return apiV2.post<unknown, ExplainResponseDTO>(
+            `/models/${modelId}/explain/${datasetId}`,
+            {features: inputData},
+            {signal: controller.signal}
+        );
+    },
+    async explainText(modelId: string, datasetId: string, inputData: object, featureName: string) {
+        return apiV2.post<unknown, ExplainTextResponseDTO>(
+            `/models/explain-text/${featureName}`,
+            {
+                features: inputData,
+            },
+            {params: {modelId, datasetId}}
+        );
+    },
+    // feedbacks
+    async submitFeedback(payload: CreateFeedbackDTO, projectId: number) {
+        return apiV2.post<unknown, void>(`/feedbacks/${projectId}`, payload);
+    },
+    async getProjectFeedbacks(projectId: number) {
+        return apiV2.get<unknown, FeedbackMinimalDTO[]>(`/feedbacks/all/${projectId}`);
+    },
+    async getFeedback(id: number) {
+        return apiV2.get<unknown, FeedbackDTO>(`/feedbacks/${id}`);
+    },
+    async replyToFeedback(feedbackId: number, content: string, replyToId: number | null = null) {
+        return apiV2.post<unknown, void>(`/feedbacks/${feedbackId}/reply`, <CreateFeedbackReplyDTO>{
+            content,
+            replyToReply: replyToId
+        });
+    },
+    async deleteFeedback(id: number) {
+        return apiV2.delete<unknown, void>(`/feedbacks/${id}`);
+    },
+    async deleteFeedbackReply(feedbackId: number, replyId: number) {
+        return apiV2.delete<unknown, void>(`/feedbacks/${feedbackId}/replies/${replyId}`);
+    },
+    async runAdHocTest(projectId: number, testUuid: string, inputs: Array<FunctionInputDTO>, sample: boolean, debug: boolean = false) {
+        return apiV2.post<unknown, TestTemplateExecutionResultDTO>(`/testing/tests/run-test?sample=${sample}`, {
+            projectId,
+            testUuid,
+            inputs,
+            debug
+        });
+    },
+    async getCatalog(projectId: number) {
+        return apiV2.get<unknown, CatalogDTO>(`/catalog`, {
+            params: {
+                projectId
+            }
+        });
+    },
+    async createSlicingFunction(comparisonClauses: Array<ComparisonClauseDTO>) {
+        return apiV2.post<unknown, SlicingFunctionDTO>(`/slices/no-code`, comparisonClauses);
+    },
+    async uploadLicense(form: FormData) {
+        return apiV2.post<unknown, unknown>(`/ee/license`, form, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+    async finalizeSetup(allowAnalytics: boolean, license: string) {
+        return apiV2.post<SetupDTO, unknown>(`/setup`, {
+            allowAnalytics: allowAnalytics,
+            license: license,
+        });
+    },
+    async datasetProcessing(projectId: number, datasetUuid: string, functions: Array<ParameterizedCallableDTO>, sample: boolean = true) {
+        return apiV2.post<unknown, DatasetProcessingResultDTO>(
+            `/project/${projectId}/datasets/${encodeURIComponent(datasetUuid)}/process?sample=${sample}`,
+            functions
+        );
+    },
+    async getPushes(modelId: string, datasetId: string, idx: number, features: any) {
+        return apiV2.post<unknown, unknown>(`/pushes/${modelId}/${datasetId}/${idx}`, {
+            features: features
+        });
+    },
+    async applyPush(modelId: string, datasetId: string, idx: number, pushKind: PushKind, ctaKind: CallToActionKind, features: any) {
+        return apiV2.post<ApplyPushDTO, void>(`/push/apply`, {
+            modelId,
+            datasetId,
+            rowIdx: idx,
+            pushKind: pushKind,
+            ctaKind: ctaKind,
+            features: features
+        });
+    },
 };

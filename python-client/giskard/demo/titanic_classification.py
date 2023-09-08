@@ -1,12 +1,20 @@
 import os
+from enum import Enum
+from typing import Tuple
+
 import pandas as pd
 from sklearn import model_selection
-from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+
+class ModelTypes(str, Enum):
+    LOGISTIC_REGRESSION = "LogisticRegression"
+    LGBM_CLASSIFIER = "LGBMClassifier"
 
 
 def get_df():
@@ -15,6 +23,7 @@ def get_df():
     _classification_labels = {0: "no", 1: "yes"}
     df["Survived"] = df["Survived"].apply(lambda x: _classification_labels[x])
     return df
+
 
 def get_test_df():
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), "titanic.csv"))
@@ -30,7 +39,7 @@ def get_test_df():
     return test_df
 
 
-def get_model_and_df(max_iter=100):
+def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int = 100) -> Tuple[Pipeline, pd.DataFrame]:
     df = get_df()
     cat_cols = ["Pclass", "Sex", "SibSp", "Parch", "Embarked"]
     num_cols = ["PassengerId", "Age", "Fare"]
@@ -60,8 +69,14 @@ def get_model_and_df(max_iter=100):
         ]
     )
 
-    # Pipeline for the model Logistic Regression
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=max_iter))])
+    # Define the final ML Pipeline.
+    if model.lower() == ModelTypes.LOGISTIC_REGRESSION.lower():
+        clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=max_iter))])
+    elif model.lower() == ModelTypes.LGBM_CLASSIFIER.lower():
+        from lightgbm import LGBMClassifier
+        clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(n_estimators=max_iter))])
+    else:
+        raise NotImplementedError(f"The model type '{model}' is not supported!")
 
     Y = df[target]
     X = df.drop(target, axis=1)
