@@ -8,6 +8,7 @@ import ai.giskard.web.dto.CallableDTO;
 import ai.giskard.web.dto.TestFunctionArgumentDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -51,13 +52,13 @@ public abstract class CallableService<E extends Callable, D extends CallableDTO>
 
     protected abstract E create(D dto);
 
-    protected E update(E existing, D dto) {
-        existing.setDoc(dto.getDoc());
-        existing.setModuleDoc(dto.getModuleDoc());
-        existing.setCode(dto.getCode());
-        existing.setTags(dto.getTags());
+    protected E update(E existingCallable, D dto) {
+        existingCallable.setDoc(dto.getDoc());
+        existingCallable.setModuleDoc(dto.getModuleDoc());
+        existingCallable.setCode(dto.getCode());
+        existingCallable.setTags(dto.getTags());
 
-        Map<String, FunctionArgument> existingArgs = existing.getArgs() != null ? existing.getArgs().stream()
+        Map<String, FunctionArgument> existingArgs = existingCallable.getArgs() != null ? existingCallable.getArgs().stream()
             .collect(Collectors.toMap(FunctionArgument::getName, Function.identity())) : new HashMap<>();
         Map<String, TestFunctionArgumentDTO> currentArgs = dto.getArgs() != null ? dto.getArgs().stream()
             .collect(Collectors.toMap(TestFunctionArgumentDTO::getName, Function.identity())) : new HashMap<>();
@@ -65,7 +66,7 @@ public abstract class CallableService<E extends Callable, D extends CallableDTO>
         // Delete removed args
         existingArgs.entrySet().stream()
             .filter(entry -> !currentArgs.containsKey(entry.getKey()))
-            .forEach(entry -> existing.getArgs().remove(entry.getValue()));
+            .forEach(entry -> existingCallable.getArgs().remove(entry.getValue()));
 
         // Update or create current args
         currentArgs.forEach((name, currentArg) -> {
@@ -76,11 +77,23 @@ public abstract class CallableService<E extends Callable, D extends CallableDTO>
                 existingArg.setDefaultValue(currentArg.getDefaultValue());
             } else {
                 FunctionArgument createdArg = giskardMapper.fromDTO(currentArg);
-                createdArg.setFunction(existing);
-                existing.getArgs().add(createdArg);
+                createdArg.setFunction(existingCallable);
+                existingCallable.getArgs().add(createdArg);
             }
         });
 
-        return existing;
+        return existingCallable;
+    }
+
+    protected void initializeCallable(E callable) {
+        if (callable.getArgs() != null) {
+            callable.getArgs().forEach(arg -> arg.setFunction(callable));
+        }
+
+        if (Strings.isBlank(callable.getDisplayName())) {
+            callable.setDisplayName(callable.getModule() + "." + callable.getName());
+        }
+
+        callable.setVersion(callableRepository.countByDisplayName(callable.getDisplayName()) + 1);
     }
 }
