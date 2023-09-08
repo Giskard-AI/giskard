@@ -38,9 +38,6 @@ import { attemptFetchHFSpacesToken } from "@/hf-utils";
 import { apiURL } from "@/env";
 import { state } from "@/socket";
 
-import { JWTToken } from "@/generated-sources";
-import { api } from "@/api";
-
 import { useApiKeyStore } from "@/stores/api-key-store";
 
 const apiKeyStore = useApiKeyStore();
