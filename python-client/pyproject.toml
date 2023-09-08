@@ -7,7 +7,7 @@ include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
 [tool.setuptools.package-data]
-giskard = ["**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
+giskard = ["**/*.md", "**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
 
 
 
