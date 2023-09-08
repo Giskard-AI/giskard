@@ -170,11 +170,11 @@ def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
 
         # If the SHAP feature is not a text feature, create a non-text ContributionPush
         if _shap_feature_is_not_text:
-            _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, correct_prediction)
+            return _create_non_text_contribution_push(shap_feature, sliced_ds, ds, model, correct_prediction)
 
         # If the SHAP feature is a text feature or it's the only feature, create a text ContributionPush
         elif _shap_feature_is_text or _text_is_the_only_feature:
-            _create_text_contribution_push(shap_feature, sliced_ds, model, raw_prediction, correct_prediction)
+            return _create_text_contribution_push(shap_feature, sliced_ds, model, raw_prediction, correct_prediction)
 
 
 def _detect_shap_outlier(global_feature_shap):
