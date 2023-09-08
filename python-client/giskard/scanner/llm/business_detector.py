@@ -6,11 +6,13 @@ from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
 from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
-from ...llm.issues import LLM_ISSUE_CATEGORIES
+from ...llm.issues import LLM_ISSUE_CATEGORIES, LlmIssueCategory
 from ...models.langchain import LangchainModel
 
 
-def validate_prediction(model, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float):
+def validate_prediction(
+    model, issue: LlmIssueCategory, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float
+):
     from ...llm.utils.validate_test_case import validate_test_case
 
     issues = list()
@@ -33,8 +35,7 @@ def validate_prediction(model, test_cases: List[str], dataset: Dataset, predicti
                     model,
                     dataset,
                     level=IssueLevel.MAJOR if metric < threshold else IssueLevel.MINOR,
-                    # TODO: Use the LlmIssueCategory name and description
-                    group=IssueGroup(name="Use case", description="TODO"),
+                    group=IssueGroup(name=issue.name, description=issue.description),
                     description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
                     # Todo: add more meta
                     meta={
@@ -80,7 +81,7 @@ class LLMBusinessDetector:
                 ).assertions[:3]
                 print(f"Generated tests: {test_cases}")
 
-                issues += validate_prediction(model, test_cases, dataset, predictions, self.threshold)
+                issues += validate_prediction(model, issue, test_cases, dataset, predictions, self.threshold)
             except Exception as e:
                 print(f"Failed to evaluate {issue}: {e}")
 
