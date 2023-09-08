@@ -11,7 +11,7 @@ from giskard import demo, Dataset
 wrapped_dataset = Dataset(
     df=demo.titanic_df(),
     target="Survived",  # Ground truth variable
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
     # name="titanic_dataset", # Optional
     # column_types=None # # Optional: if not provided, it is inferred automatically
 )
