@@ -135,6 +135,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router/composables';
 import moment from 'moment/moment';
 import { state, client } from '@/socket';
+import {openapi} from "@/api-v2";
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -195,8 +196,10 @@ watch(() => route.name, async (name) => {
 
 watch(() => state, () => { })
 
-onMounted(() => {
+onMounted(async () => {
   client.activate();
+  const workerInfo = await openapi.mlWorker.getMLWorkerInfo();
+  state.workerStatus.connected = workerInfo.find(value => value.isRemote) !== undefined;
 })
 
 onUnmounted(() => {
