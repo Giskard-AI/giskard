@@ -46,7 +46,7 @@ dev = [
     "pydocstyle>=6.1.1",
     "pylint>=2.13.9",
     "pyupgrade>=2.32.1",
-    "safety>=1.10.3",
+    # "safety>=1.10.3",
     "mypy>=0.982",
     "deptry>=0.5.13",
     "httpretty>=1.1.4",
@@ -80,7 +80,7 @@ test = [
     "mlflow>2",
     "wandb",
     # Transitive dependency, needed to make it work for windows (downgrade from 0.33 to 0.27)
-    "tensorflow-io-gcs-filesystem==0.27.0",
+    "tensorflow-io-gcs-filesystem<0.32.0",
 ]
 doc = [
     "furo>=2023.5.20",
