@@ -10,7 +10,7 @@
 * **Application and OS image**: Select the default Ubuntu server 22.04 LTS 64-bit (x86)
 * **Instance type**: We recommend you to choose at least a `t2.large` instance type (2vCPU, 8GB memory)
 * **Key pair**: Choose your usual key pair. If you don't have one, go to the [Amazon document](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) to create the right one
-* **Network settings**: You need to **open the ports `19000` and `40051` (TCP connection)** to access the Giskard frontend (port `19000`) and upload your model (port `40051`). To do so, click on `Edit` and add the following security groups:
+* **Network settings**: You need to **open the port `19000` to access the Giskard frontend and upload your model. To do so, click on `Edit` and add the following security groups:
 
 <figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
