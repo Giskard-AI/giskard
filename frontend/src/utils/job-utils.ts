@@ -1,6 +1,7 @@
-import {JobDTO, JobState} from '@/generated-sources';
-import {api} from '@/api';
 import {computeOnValueChanged, voidFunction} from '@/utils/functional-utils';
+import {openapi} from "@/api-v2";
+import {JobDTO} from "@/generated/client";
+import {JobState} from "@/generated-sources";
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -13,7 +14,7 @@ export async function trackJob(uuid: string, onUpdate?: (JobDTO) => void): Promi
         if (job !== null) {
             await sleep(500);
         }
-        job = await api.trackJob(uuid);
+        job = await openapi.mlWorkerJob.trackJob({jobUuid: uuid});
         distinctUpdate(job);
     } while (job.state !== JobState.ERROR && job.state !== JobState.SUCCESS);
 

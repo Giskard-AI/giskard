@@ -15,3 +15,4 @@ class MLWorkerAction(Enum):
     stopWorker = 10
     getCatalog = 11
     generateQueryBasedSlicingFunction = 12
+    getPush = 13

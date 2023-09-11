@@ -28,9 +28,14 @@ export function copyToClipboard(textToCopy) {
 
 Mousetrap.bind('@ j j', () => {
     const mainStore = useMainStore();
-    api.getApiAccessToken().then(token => {
-        copyToClipboard(token.id_token).then(() => {
-            mainStore.addNotification({content: 'Copied JWT token to clipboard'});
-        });
+    api.getApiKeys().then(keys => {
+        if (keys.length) {
+            let firstKey = keys[0].key;
+            copyToClipboard(firstKey).then(() => {
+                mainStore.addNotification({content: `Copied API key to clipboard: ${firstKey}`});
+            });
+        } else {
+            mainStore.addNotification({content: 'No API keys found'});
+        }
     })
 });

@@ -49,13 +49,13 @@
                   <span
                       :title="(session.dataset.name ? session.dataset.name : 'Unnamed dataset') + ` (ID: ${session.dataset.id})`"
                       @click.stop.prevent="copyText(session.dataset.id, 'Copied dataset ID to clipboard')">
-                    {{ session.dataset.name ? session.dataset.name : 'Unnamed dataset' }}
+                    {{ $tags(session.dataset.name ? session.dataset.name : 'Unnamed dataset') }}
                   </span>
                 </v-col>
                 <v-col class='col-container' cols='3'>
                   <span :title='`${session.model.name} (ID: ${session.model.id})`'
                         @click.stop.prevent="copyText(session.model.id, 'Copied model ID to clipboard')">{{
-                      session.model.name ? session.model.name : 'Unnamed model'
+                      $tags(session.model.name ? session.model.name : 'Unnamed model')
                     }}</span>
                 </v-col>
                 <v-col cols='1'>
@@ -109,6 +109,7 @@ import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import {copyText} from '@/utils';
 import {TYPE} from 'vue-toastification';
 import {state} from "@/socket";
+import {$tags} from "@/utils/nametags.utils";
 
 const router = useRouter();
 const route = useRoute();

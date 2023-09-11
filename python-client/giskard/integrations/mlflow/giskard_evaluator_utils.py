@@ -4,7 +4,6 @@ import logging
 
 from giskard import Model, Dataset, scan
 from giskard.core.core import SupportedModelTypes
-from giskard.core.model_validation import ValidationFlags
 
 logger = logging.getLogger(__name__)
 
@@ -109,18 +108,16 @@ def setup_model(model, model_type, feature_names, evaluator_config):
 
 
 def setup_scan(giskard_model, giskard_dataset, evaluator_config):
-    validation_flags = ValidationFlags()
-    validation_flags.model_loading_and_saving = False
 
     scan_config = evaluator_config.get("scan_config", None)
     if scan_config is None:
-        return scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags)
+        return scan(model=giskard_model, dataset=giskard_dataset)
 
     config_set = set(scan_config.keys())
     sign = inspect.signature(scan)
     sign_set = set(sign.parameters.keys())
     if config_set.issubset(sign_set):
-        return scan(model=giskard_model, dataset=giskard_dataset, validation_flags=validation_flags, **scan_config)
+        return scan(model=giskard_model, dataset=giskard_dataset, **scan_config)
 
     raise ValueError(
         f"The provided parameters {config_set - sign_set} in scan_config are not valid. "

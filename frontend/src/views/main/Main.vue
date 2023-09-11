@@ -136,6 +136,7 @@ import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from 'vue';
 import {useRoute} from 'vue-router/composables';
 import moment from 'moment/moment';
 import {client, state} from '@/socket';
+import {openapi} from "@/api-v2";
 
 const route = useRoute();
 const mainStore = useMainStore();
@@ -203,8 +204,10 @@ watchEffect(() => {
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   client.activate();
+  const workerInfo = await openapi.mlWorker.getMLWorkerInfo();
+  state.workerStatus.connected = workerInfo.find(value => value.isRemote) !== undefined;
 })
 
 onUnmounted(() => {

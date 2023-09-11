@@ -2,8 +2,8 @@ package ai.giskard.web.rest;
 
 import ai.giskard.IntegrationTest;
 import ai.giskard.domain.User;
+import ai.giskard.repository.ApiKeyRepository;
 import ai.giskard.repository.UserRepository;
-import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.utils.TestUtil;
 import ai.giskard.web.rest.controllers.UserJWTController;
 import ai.giskard.web.rest.vm.LoginVM;
@@ -12,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,6 +34,9 @@ class UserJWTControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApiKeyRepository apiKeyRepository;
 
     @Test
     @Transactional
@@ -84,17 +85,6 @@ class UserJWTControllerIT {
             .andExpect(jsonPath("$.id_token").isNotEmpty())
             .andExpect(header().string("Authorization", not(nullValue())))
             .andExpect(header().string("Authorization", not(is(emptyString()))));
-    }
-
-    @Test
-    @Transactional
-    @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
-    void testApiAccessToken() throws Exception {
-        mockMvc
-            .perform(get("/api/v2/api-access-token").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id_token").exists())
-            .andExpect(jsonPath("$.id_token").isNotEmpty());
     }
 
     @Test
