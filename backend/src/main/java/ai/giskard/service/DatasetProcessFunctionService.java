@@ -14,7 +14,7 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
 
     protected ProjectRepository projectRepository;
 
-    public DatasetProcessFunctionService(CallableRepository<E> callableRepository,
+    protected DatasetProcessFunctionService(CallableRepository<E> callableRepository,
                                          GiskardMapper giskardMapper,
                                          ProjectRepository projectRepository) {
         super(callableRepository, giskardMapper);
