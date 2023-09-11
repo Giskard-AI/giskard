@@ -149,28 +149,25 @@
 </template>
 
 <script setup lang="ts">
-import _, { chain } from "lodash";
-import { computed, inject, onActivated, ref, watch } from "vue";
-import { pasterColor } from "@/utils";
-import { editor } from "monaco-editor";
-import { FunctionInputDTO, TransformationFunctionDTO } from "@/generated-sources";
-import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
-import { storeToRefs } from "pinia";
-import { useCatalogStore } from "@/stores/catalog";
-import DatasetSelector from "@/views/main/utils/DatasetSelector.vue";
-import { api } from "@/api";
-import DatasetTable from "@/components/DatasetTable.vue";
-import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
-import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
-import { alphabeticallySorted } from "@/utils/comparators";
-import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
-import IEditorOptions = editor.IEditorOptions;
-import CodeSnippet from "@/components/CodeSnippet.vue";
-import mixpanel from "mixpanel-browser";
-import { anonymize } from "@/utils";
-import { copyToClipboard } from "@/global-keys";
-import { TYPE } from "vue-toastification";
-import { useMainStore } from "@/stores/main";
+import { chain } from 'lodash';
+import { computed, onActivated, ref, watch } from 'vue';
+import { anonymize, pasterColor } from '@/utils';
+import { FunctionInputDTO, TransformationFunctionDTO } from '@/generated-sources';
+import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
+import { storeToRefs } from 'pinia';
+import { useCatalogStore } from '@/stores/catalog';
+import DatasetSelector from '@/views/main/utils/DatasetSelector.vue';
+import { api } from '@/api';
+import DatasetTable from '@/components/DatasetTable.vue';
+import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
+import DatasetColumnSelector from '@/views/main/utils/DatasetColumnSelector.vue';
+import { alphabeticallySorted } from '@/utils/comparators';
+import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
+import CodeSnippet from '@/components/CodeSnippet.vue';
+import mixpanel from 'mixpanel-browser';
+import { copyToClipboard } from '@/global-keys';
+import { TYPE } from 'vue-toastification';
+import { useMainStore } from '@/stores/main';
 
 let props = defineProps<{
     projectId: number,
@@ -190,14 +187,7 @@ const selectedColumn = ref<string | null>(null);
 let transformationArguments = ref<{ [name: string]: FunctionInputDTO }>({})
 const isTransformationFunctionRunning = ref<boolean>(false);
 
-const monacoOptions: IEditorOptions = inject('monacoOptions');
 const panel = ref<number[]>([0]);
-
-monacoOptions.readOnly = true;
-
-const hasCustomTag = computed(() => {
-    return selected.value?.tags?.includes('custom') ?? false;
-})
 
 const hasGiskardFilters = computed(() => {
     return transformationFunctions.value.find(t => t.tags.includes('giskard')) !== undefined
