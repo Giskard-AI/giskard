@@ -1,0 +1,1686 @@
+<!doctype html>
+<html class="no-js"  lang="en" >
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PQ9MJ64');</script>
+    <!-- End Google Tag Manager --><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#"/><link rel="search" title="Search" href="search.html"/>
+
+    <link rel="shortcut icon" href="_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.08.19 --><title>Index - Giskard Documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5432af51" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=bb27ee1f" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-brand-content: #173A2F;
+  --color-api-highlight: #56D793;
+  --color-api-background: #F5F5F5;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-current-text: #56D793;
+  --color-sidebar-link-text--top-level: #0c0c0c;
+  --color-content-foreground: #484848;
+  --social-button-background: #FFFFFF;
+  --social-button-text: #91F6C0;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9MJ64"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<script>
+    document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+</script>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<input type="checkbox" class="sidebar-toggle" name="__search" id="__search">
+<label class="overlay sidebar-overlay" for="__navigation">
+    <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+    <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+<label class="overlay search-overlay" for="__search">
+    <div class="visually-hidden">Hide search</div>
+</label>
+
+
+
+<div class="page">
+    <header class="mobile-header">
+        <div class="header-left">
+            <label class="nav-overlay-icon" for="__navigation">
+                <div class="visually-hidden">Toggle site navigation sidebar</div>
+                <i class="icon"><svg>
+                    <use href="#svg-menu"></use>
+                </svg></i>
+            </label>
+        </div>
+        <div class="header-center">
+            <a href="index.html">
+                <div class="brand">
+                    <img class="header-logo only-light" src="_static/logo_black.png" alt="Light Logo" />
+                    <img class="header-logo only-dark" src="_static/logo_white.png" alt="Dark Logo" />
+                </div>
+            </a>
+        </div>
+
+        <div class="header-right">
+            <label class="search-icon" for="__search">
+                <div class="visually-hidden">Toggle search</div>
+            </label>
+            <!-- <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+              <div class="visually-hidden">Toggle table of contents sidebar</div>
+              <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            </label> -->
+        </div>
+    </header>
+    <div class="header__search">
+        <form class="header__search__container" method="get" action="search.html" role="search">
+            <input class="header__search__input" placeholder=Search name="q" aria-label=" Search">
+            <input type="hidden" name="check_keywords" value="yes">
+            <input type="hidden" name="area" value="default">
+            <label class="close-icon" for="__search">
+                <div class="visually-hidden">Hide search</div>
+            </label>
+        </form>
+        <div id="searchbox"></div>
+    </div>
+    <aside class="sidebar-drawer">
+        <div class="sidebar-container">
+            
+            <div class="theme-toggle-container theme-toggle-header sidebar__theme-toggle">
+                <button class="theme-toggle">
+                    <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                    <svg class="theme-icon-when-auto">
+                        <use href="#svg-sun-half"></use>
+                    </svg>
+                    <svg class="theme-icon-when-dark">
+                        <use href="#svg-moon"></use>
+                    </svg>
+                    <svg class="theme-icon-when-light">
+                        <use href="#svg-sun"></use>
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+    
+    <div class="sidebar-logo-container">
+        <img class="sidebar-logo only-light" src="_static/logo_black.png" alt="Light Logo"/>
+        <img class="sidebar-logo only-dark" src="_static/logo_white.png" alt="Dark Logo"/>
+    </div>
+    
+</a>
+<div class="social social--sidebar" style="margin-top: 1em; display: flex; justify-content: center; gap: 8px">
+    <div class="github-stars github-stars--sidebar"></div>
+    <div><a href="https://discord.gg/ABvfpbu69R"><img
+            src="https://dcbadge.vercel.app/api/server/ABvfpbu69R?style=flat-square"/></a></div>
+</div><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting-started/index.html">Why Giskard?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/key_vulnerabilities/index.html">Key vulnerabilities</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Key vulnerabilities</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/performance_bias/index.html">Performance Bias</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/robustness/index.html">Unrobustness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/overconfidence/index.html">Overconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/underconfidence/index.html">Underconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/ethics/index.html">Unethical behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/data_leakage/index.html">Data Leakage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/stochasticity/index.html">Stochasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/key_vulnerabilities/spurious/index.html">Spurious correlation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/installation_library/index.html">📥 Install the Giskard Python Library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/wrap_dataset/index.html">📦 Wrap your dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/wrap_model/index.html">🎁 Wrap your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/scan/index.html">🔍 Scan your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/slice/index.html">🔪 Identify data slices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/transformation/index.html">🔄 Define data transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/test-suite/index.html">🧪 Test your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/cicd/pipeline.html">🚀 Execute your test suite in your CI/CD pipeline</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="guides/installation_app/index.html">🌐 Run the Giskard Server</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 🌐 Run the Giskard Server</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/installation_app/install_aws/index.html">Installation in AWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/installation_app/install_gcp/index.html">Installation in GCP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/installation_app/install_azure/index.html">Installation in Azure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guides/upload/index.html">⬆️ Upload an object to the Giskard server</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contribute/index.html">🧑‍💻Contribute to Giskard</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 🧑‍💻Contribute to Giskard</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="contribute/dev-environment.html">How to configure local development environment</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/libraries/index.html">By ML libraries</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of By ML libraries</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/scikit-learn/index.html">Scikit-learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/xgboost/index.html">XGBoost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/lightgbm/index.html">LightGBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/tensorflow/index.html">TensorFlow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/pytorch/index.html">PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/huggingface/index.html">HuggingFace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/langchain/index.html">LangChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/libraries/api/index.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/tasks/index.html">By ML tasks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of By ML tasks</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tasks/classification/index.html">Classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tasks/regression/index.html">Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/tasks/text-generation/index.html">Text generation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/data-types/index.html">By data types</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of By data types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data-types/tabular/index.html">Tabular</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/data-types/text/index.html">Text</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">API reference</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cli/index.html">Command-line interface</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Command-line interface</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli/ngrok/index.html">Setup a <code class="code docutils literal notranslate"><span class="pre">ngrok</span></code> account</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Models</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/base_classes.html">Base model classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/catboost.html">Catboost models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/function.html">Prediction function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/huggingface.html">HuggingFace models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/langchain.html">Langchain models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/pytorch.html">Pytorch models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/sklearn.html">Sklearn models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models/integrations/tensorflow.html">Tensorflow models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/datasets/index.html">Dataset</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/tests/index.html">Tests</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Tests</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/tests/metamorphic.html">Metamorphic tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/tests/statistic.html">Statistical tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/tests/performance.html">Performance tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/tests/drift.html">Drift tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/suite/index.html">Test suite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/slicing-functions/index.html">Slicing functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/transformation-functions/index.html">Transformation functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/push/index.html">Push feature</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="catalogs/index.html">Catalog</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="catalogs/test-catalog/index.html">📖 Test catalog</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of 📖 Test catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="catalogs/test-catalog/classification/index.html">Classification tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="catalogs/test-catalog/regression/index.html">Regression tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="catalogs/slicing-function-catalog/index.html">🔪 Slicing function catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="catalogs/transformation-function-catalog/index.html">🪄 Transformation function catalog</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Integrations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="integrations/index.html">Integrations</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of Integrations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="integrations/mlflow/index.html">MLflow</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of MLflow</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="integrations/mlflow/mlflow-tabular-example.html">Notebook Example - Tabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="integrations/mlflow/mlflow-llm-example.html">Notebook Example - Text</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="integrations/wandb/index.html">Weights and Biases</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of Weights and Biases</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="integrations/wandb/wandb-tabular-example.html">Notebook Example - Tabular</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+            </div>
+            
+        </div>
+    </aside>
+    <div class="main">
+        <div class="content content--no-toc">
+            <div class="article-container">
+                <a href="#" class="back-to-top muted-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+                    </svg>
+                    <span>Back to top</span>
+                </a>
+                <div class="content-icon-container">
+                    <div class="theme-toggle-container theme-toggle-content">
+                        <button class="theme-toggle">
+                            <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                            <svg class="theme-icon-when-auto">
+                                <use href="#svg-sun-half"></use>
+                            </svg>
+                            <svg class="theme-icon-when-dark">
+                                <use href="#svg-moon"></use>
+                            </svg>
+                            <svg class="theme-icon-when-light">
+                                <use href="#svg-sun"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+                        <div class="visually-hidden">Toggle table of contents sidebar</div>
+                        <i class="icon"><svg>
+                            <use href="#svg-toc"></use>
+                        </svg></i>
+                    </label>
+                </div>
+                <article role="main">
+                    <div class="social social--main" style="margin-top: 1em; display: flex; justify-content: right; gap: 8px">
+                        <div class="github-stars github-stars--top-page"></div>
+                    </div>
+                    
+<section class="genindex-section">
+  <h1 id="index">Index</h1>
+  <div class="genindex-jumpbox"><a href="#Symbols"><strong>Symbols</strong></a> | <a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#H"><strong>H</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#K"><strong>K</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
+</section>
+<section id="Symbols" class="genindex-section">
+  <h2>Symbols</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    --all
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-a">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --api-key
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-k">giskard-worker-restart command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --attach
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-a">giskard-server-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --daemon
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-d">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --data
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-data">giskard-server-clean command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --follow
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-f">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-f">giskard-worker-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --hard
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-hard">giskard-server-restart command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --hf-token
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-t">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-t">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --key
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-k">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --lines
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-l">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-n">giskard-worker-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --out_path
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-o">giskard-server-diagnose command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --server
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-s">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-s">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-s">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --token
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-token">giskard-server-expose command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --url
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-u">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-u">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-u">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    --verbose
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-v">giskard-server-clean command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-v">giskard-server-diagnose command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-v">giskard-server-expose command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-v">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-v">giskard-server-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-v">giskard-server-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-status-v">giskard-server-status command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-stop-v">giskard-server-stop command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-v">giskard-server-upgrade command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-v">giskard-worker-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-v">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-v">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-v">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    --version
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-version">giskard command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-version">giskard-server-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -a
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-a">giskard-server-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-a">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -d
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-d">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -f
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-f">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-f">giskard-worker-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -k
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-k">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-k">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -l
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-l">giskard-server-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -n
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-n">giskard-worker-logs command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -o
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-o">giskard-server-diagnose command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -s
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-s">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-s">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-s">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -t
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-t">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-t">giskard-worker-start command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -u
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-u">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-u">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-u">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+        <li>
+    -v
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-v">giskard-server-clean command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-v">giskard-server-diagnose command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-v">giskard-server-expose command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-v">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-v">giskard-server-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-v">giskard-server-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-status-v">giskard-server-status command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-stop-v">giskard-server-stop command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-v">giskard-server-upgrade command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-v">giskard-worker-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-v">giskard-worker-restart command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-v">giskard-worker-start command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-v">giskard-worker-stop command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="_" class="genindex-section">
+  <h2>_</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.__init__">__init__() (giskard.Dataset method)</a>
+
+        <ul>
+          <li><a href="reference/suite/index.html#giskard.Suite.__init__">(giskard.Suite method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/index.html#giskard.Model.__new__">__new__() (giskard.Model static method)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset._infer_column_types">_infer_column_types() (giskard.Dataset method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="A" class="genindex-section">
+  <h2>A</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.add_slicing_function">add_slicing_function() (giskard.Dataset method)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.Suite.add_test">add_test() (giskard.Suite method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.add_transformation_function">add_transformation_function() (giskard.Dataset method)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults.all_predictions">all_predictions (giskard.models.base.ModelPredictionResults attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="B" class="genindex-section">
+  <h2>B</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel">BaseModel (class in giskard.models.base)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/huggingface.html#giskard.models.huggingface.HuggingFaceModel.batch_size">batch_size (giskard.models.huggingface.HuggingFaceModel attribute)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.BorderlinePush">BorderlinePush (class in giskard.push)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="C" class="genindex-section">
+  <h2>C</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.cat_columns">cat_columns (giskard.Dataset attribute)</a>
+</li>
+        <li><a href="reference/models/integrations/catboost.html#giskard.models.catboost.CatboostModel">CatboostModel (class in giskard.models.catboost)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.cell_level">cell_level (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction attribute)</a>
+</li>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.functions.transformation.change_writing_style">change_writing_style() (in module giskard.ml_worker.testing.functions.transformation)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.classification_labels">classification_labels (giskard.models.base.BaseModel attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.classification_threshold">classification_threshold (giskard.models.base.BaseModel attribute)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.CloudpickleSerializableModel">CloudpickleSerializableModel (class in giskard.models.base)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.column_types">column_types (giskard.Dataset attribute)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.ContributionPush">ContributionPush (class in giskard.push)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.correct_example">correct_example() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.data_processor">data_processor (giskard.Dataset attribute)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset">Dataset (class in giskard)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.core.suite.DatasetInput">DatasetInput (class in giskard.core.suite)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.Push.details">details (giskard.push.Push attribute)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.df">df (giskard.Dataset attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.download">download() (giskard.Dataset class method)</a>
+
+        <ul>
+          <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.download">(giskard.ml_worker.testing.registry.slicing_function.SlicingFunction class method)</a>
+</li>
+          <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.download">(giskard.ml_worker.testing.registry.transformation_function.TransformationFunction class method)</a>
+</li>
+          <li><a href="reference/models/index.html#giskard.Model.download">(giskard.Model class method)</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.download">(giskard.models.base.BaseModel class method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.emotion_sentiment_analysis">emotion_sentiment_analysis() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.ExamplePush">ExamplePush (class in giskard.push)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.execute">execute() (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction method)</a>
+
+        <ul>
+          <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.execute">(giskard.ml_worker.testing.registry.transformation_function.TransformationFunction method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.feature_names">feature_names (giskard.models.base.BaseModel attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/push/index.html#giskard.push.FeaturePush">FeaturePush (class in giskard.push)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.func">func (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    giskard command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-version">--version</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-clean command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-data">--data</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-clean-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-diagnose command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-o">--out_path</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-o">-o</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-diagnose-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-expose command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-token">--token</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-expose-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-logs command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-f">--follow</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-l">--lines</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-f">-f</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-l">-l</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-v">-v</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-arg-SERVICE">SERVICE</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-restart command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-hard">--hard</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-v">-v</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-arg-SERVICE">SERVICE</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-start command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-a">--attach</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-version">--version</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-a">-a</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-start-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-status command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-status-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-status-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-stop command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-stop-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-stop-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-server-upgrade command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-v">-v</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-arg-VERSION">VERSION</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-worker-logs command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-f">--follow</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-n">--lines</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-f">-f</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-n">-n</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-logs-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-worker-restart command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-k">--api-key</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-t">--hf-token</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-s">--server</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-u">--url</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-k">-k</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-s">-s</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-t">-t</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-u">-u</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-restart-v">-v</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    giskard-worker-start command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-d">--daemon</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-t">--hf-token</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-k">--key</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-s">--server</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-u">--url</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-d">-d</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-k">-k</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-s">-s</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-t">-t</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-u">-u</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-start-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard-worker-stop command line option
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-a">--all</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-s">--server</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-u">--url</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-v">--verbose</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-a">-a</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-s">-s</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-u">-u</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-worker-stop-v">-v</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models
+
+        <ul>
+          <li><a href="reference/models/index.html#module-giskard.models">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.base
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#module-giskard.models.base">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.catboost
+
+        <ul>
+          <li><a href="reference/models/integrations/catboost.html#module-giskard.models.catboost">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.function
+
+        <ul>
+          <li><a href="reference/models/integrations/function.html#module-giskard.models.function">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.huggingface
+
+        <ul>
+          <li><a href="reference/models/integrations/huggingface.html#module-giskard.models.huggingface">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.langchain
+
+        <ul>
+          <li><a href="reference/models/integrations/langchain.html#module-giskard.models.langchain">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.pytorch
+
+        <ul>
+          <li><a href="reference/models/integrations/pytorch.html#module-giskard.models.pytorch">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.sklearn
+
+        <ul>
+          <li><a href="reference/models/integrations/sklearn.html#module-giskard.models.sklearn">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.models.tensorflow
+
+        <ul>
+          <li><a href="reference/models/integrations/tensorflow.html#module-giskard.models.tensorflow">module</a>
+</li>
+        </ul></li>
+        <li>
+    giskard.push
+
+        <ul>
+          <li><a href="reference/push/index.html#module-giskard.push">module</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="H" class="genindex-section">
+  <h2>H</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.hate_sentiment_analysis">hate_sentiment_analysis() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/huggingface.html#giskard.models.huggingface.HuggingFaceModel">HuggingFaceModel (class in giskard.models.huggingface)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="I" class="genindex-section">
+  <h2>I</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/suite/index.html#giskard.Suite.id">id (giskard.Suite attribute)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.if_overconfidence_rate_decrease">if_overconfidence_rate_decrease() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.if_underconfidence_rate_decrease">if_underconfidence_rate_decrease() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.increase_probability">increase_probability() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.irony_sentiment_analysis">irony_sentiment_analysis() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.is_binary_classification">is_binary_classification (giskard.models.base.BaseModel property)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.is_binary_classification">is_binary_classification() (giskard.Model method)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.is_classification">is_classification (giskard.models.base.BaseModel property)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.is_classification">is_classification() (giskard.Model method)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.is_initialized">is_initialized (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction attribute)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.is_regression">is_regression (giskard.models.base.BaseModel property)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.is_regression">is_regression() (giskard.Model method)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.is_text_generation">is_text_generation (giskard.models.base.BaseModel property)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.is_text_generation">is_text_generation() (giskard.Model method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="K" class="genindex-section">
+  <h2>K</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation">keyboard_typo_transformation() (in module giskard.ml_worker.testing.functions.transformation)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.keyword_lookup_slicing_fn">keyword_lookup_slicing_fn() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="L" class="genindex-section">
+  <h2>L</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/langchain.html#giskard.models.langchain.LangchainModel">LangchainModel (class in giskard.models.langchain)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.load_model">load_model() (giskard.Model class method)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.CloudpickleSerializableModel.load_model">(giskard.models.base.CloudpickleSerializableModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.WrapperModel.load_model">(giskard.models.base.WrapperModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/catboost.html#giskard.models.catboost.CatboostModel.load_model">(giskard.models.catboost.CatboostModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/huggingface.html#giskard.models.huggingface.HuggingFaceModel.load_model">(giskard.models.huggingface.HuggingFaceModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/langchain.html#giskard.models.langchain.LangchainModel.load_model">(giskard.models.langchain.LangchainModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/pytorch.html#giskard.models.pytorch.PyTorchModel.load_model">(giskard.models.pytorch.PyTorchModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/sklearn.html#giskard.models.sklearn.SKLearnModel.load_model">(giskard.models.sklearn.SKLearnModel class method)</a>
+</li>
+          <li><a href="reference/models/integrations/tensorflow.html#giskard.models.tensorflow.TensorFlowModel.load_model">(giskard.models.tensorflow.TensorFlowModel class method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.functions.transformation.lowercase_transformation">lowercase_transformation() (in module giskard.ml_worker.testing.functions.transformation)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="M" class="genindex-section">
+  <h2>M</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.MLFlowSerializableModel">MLFlowSerializableModel (class in giskard.models.base)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model">Model (class in giskard)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.model">model (giskard.models.base.BaseModel attribute)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.model_predict">model_predict() (giskard.Model method)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.WrapperModel.model_predict">(giskard.models.base.WrapperModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/function.html#giskard.models.function.PredictionFunctionModel.model_predict">(giskard.models.function.PredictionFunctionModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/huggingface.html#giskard.models.huggingface.HuggingFaceModel.model_predict">(giskard.models.huggingface.HuggingFaceModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/langchain.html#giskard.models.langchain.LangchainModel.model_predict">(giskard.models.langchain.LangchainModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/pytorch.html#giskard.models.pytorch.PyTorchModel.model_predict">(giskard.models.pytorch.PyTorchModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/sklearn.html#giskard.models.sklearn.SKLearnModel.model_predict">(giskard.models.sklearn.SKLearnModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/tensorflow.html#giskard.models.tensorflow.TensorFlowModel.model_predict">(giskard.models.tensorflow.TensorFlowModel method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/suite/index.html#giskard.core.suite.ModelInput.model_type">model_type (giskard.core.suite.ModelInput attribute)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.model_type">(giskard.models.base.BaseModel attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/suite/index.html#giskard.core.suite.ModelInput">ModelInput (class in giskard.core.suite)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults">ModelPredictionResults (class in giskard.models.base)</a>
+</li>
+        <li>
+    module
+
+        <ul>
+          <li><a href="reference/models/index.html#module-giskard.models">giskard.models</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#module-giskard.models.base">giskard.models.base</a>
+</li>
+          <li><a href="reference/models/integrations/catboost.html#module-giskard.models.catboost">giskard.models.catboost</a>
+</li>
+          <li><a href="reference/models/integrations/function.html#module-giskard.models.function">giskard.models.function</a>
+</li>
+          <li><a href="reference/models/integrations/huggingface.html#module-giskard.models.huggingface">giskard.models.huggingface</a>
+</li>
+          <li><a href="reference/models/integrations/langchain.html#module-giskard.models.langchain">giskard.models.langchain</a>
+</li>
+          <li><a href="reference/models/integrations/pytorch.html#module-giskard.models.pytorch">giskard.models.pytorch</a>
+</li>
+          <li><a href="reference/models/integrations/sklearn.html#module-giskard.models.sklearn">giskard.models.sklearn</a>
+</li>
+          <li><a href="reference/models/integrations/tensorflow.html#module-giskard.models.tensorflow">giskard.models.tensorflow</a>
+</li>
+          <li><a href="reference/push/index.html#module-giskard.push">giskard.push</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/suite/index.html#giskard.core.suite.DatasetInput.name">name (giskard.core.suite.DatasetInput attribute)</a>
+
+        <ul>
+          <li><a href="reference/suite/index.html#giskard.core.suite.ModelInput.name">(giskard.core.suite.ModelInput attribute)</a>
+</li>
+          <li><a href="reference/suite/index.html#giskard.core.suite.SuiteInput.name">(giskard.core.suite.SuiteInput attribute)</a>
+</li>
+          <li><a href="reference/datasets/index.html#giskard.Dataset.name">(giskard.Dataset attribute)</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.name">(giskard.models.base.BaseModel attribute)</a>
+</li>
+          <li><a href="reference/suite/index.html#giskard.Suite.name">(giskard.Suite attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="O" class="genindex-section">
+  <h2>O</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.offensive_sentiment_analysis">offensive_sentiment_analysis() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.one_sample_overconfidence_test">one_sample_overconfidence_test() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.one_sample_underconfidence_test">one_sample_underconfidence_test() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.outlier_filter">outlier_filter() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.OverconfidencePush">OverconfidencePush (class in giskard.push)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="P" class="genindex-section">
+  <h2>P</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.params">params (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction attribute)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.PerturbationPush">PerturbationPush (class in giskard.push)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.positive_sentiment_analysis">positive_sentiment_analysis() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.Model.predict">predict() (giskard.Model method)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.predict">(giskard.models.base.BaseModel method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.predict_df">predict_df() (giskard.models.base.BaseModel method)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.WrapperModel.predict_df">(giskard.models.base.WrapperModel method)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults.prediction">prediction (giskard.models.base.ModelPredictionResults attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/function.html#giskard.models.function.PredictionFunctionModel">PredictionFunctionModel (class in giskard.models.function)</a>
+</li>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.prepare_dataframe">prepare_dataframe() (giskard.models.base.BaseModel method)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults.probabilities">probabilities (giskard.models.base.ModelPredictionResults attribute)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.process">process() (giskard.Dataset method)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.Push">Push (class in giskard.push)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.Push.push_title">push_title (giskard.push.Push attribute)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.Push.pushkind">pushkind (giskard.push.Push attribute)</a>
+</li>
+        <li><a href="reference/models/integrations/pytorch.html#giskard.models.pytorch.PyTorchModel">PyTorchModel (class in giskard.models.pytorch)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="R" class="genindex-section">
+  <h2>R</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults.raw">raw (giskard.models.base.ModelPredictionResults attribute)</a>
+</li>
+        <li><a href="reference/models/index.html#giskard.models.base.ModelPredictionResults.raw_prediction">raw_prediction (giskard.models.base.ModelPredictionResults attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.row_level">row_level (giskard.ml_worker.testing.registry.slicing_function.SlicingFunction attribute)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.Suite.run">run() (giskard.Suite method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="S" class="genindex-section">
+  <h2>S</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/index.html#giskard.Model.save_model">save_model() (giskard.Model method)</a>
+
+        <ul>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.CloudpickleSerializableModel.save_model">(giskard.models.base.CloudpickleSerializableModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.WrapperModel.save_model">(giskard.models.base.WrapperModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/catboost.html#giskard.models.catboost.CatboostModel.save_model">(giskard.models.catboost.CatboostModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/huggingface.html#giskard.models.huggingface.HuggingFaceModel.save_model">(giskard.models.huggingface.HuggingFaceModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/langchain.html#giskard.models.langchain.LangchainModel.save_model">(giskard.models.langchain.LangchainModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/pytorch.html#giskard.models.pytorch.PyTorchModel.save_model">(giskard.models.pytorch.PyTorchModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/sklearn.html#giskard.models.sklearn.SKLearnModel.save_model">(giskard.models.sklearn.SKLearnModel method)</a>
+</li>
+          <li><a href="reference/models/integrations/tensorflow.html#giskard.models.tensorflow.TensorFlowModel.save_model">(giskard.models.tensorflow.TensorFlowModel method)</a>
+</li>
+        </ul></li>
+        <li>
+    SERVICE
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-logs-arg-SERVICE">giskard-server-logs command line option</a>
+</li>
+          <li><a href="cli/index.html#cmdoption-giskard-server-restart-arg-SERVICE">giskard-server-restart command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.functions.slicing.short_comment_slicing_fn">short_comment_slicing_fn() (in module giskard.ml_worker.testing.functions.slicing)</a>
+</li>
+        <li><a href="reference/models/integrations/sklearn.html#giskard.models.sklearn.SKLearnModel">SKLearnModel (class in giskard.models.sklearn)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.slice">slice() (giskard.Dataset method)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.slicing_function">slicing_function() (in module giskard)</a>
+</li>
+        <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction">SlicingFunction (class in giskard.ml_worker.testing.registry.slicing_function)</a>
+</li>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.functions.transformation.strip_punctuation">strip_punctuation() (in module giskard.ml_worker.testing.functions.transformation)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.Suite">Suite (class in giskard)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.core.suite.SuiteInput">SuiteInput (class in giskard.core.suite)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/suite/index.html#giskard.core.suite.DatasetInput.target">target (giskard.core.suite.DatasetInput attribute)</a>
+
+        <ul>
+          <li><a href="reference/datasets/index.html#giskard.Dataset.target">(giskard.Dataset attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/models/integrations/tensorflow.html#giskard.models.tensorflow.TensorFlowModel">TensorFlowModel (class in giskard.models.tensorflow)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_accuracy">test_accuracy() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_auc">test_auc() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_cramer_v">test_cramer_v() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_diff_accuracy">test_diff_accuracy() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_diff_f1">test_diff_f1() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.test_diff_f1_push">test_diff_f1_push() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_diff_precision">test_diff_precision() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_diff_recall">test_diff_recall() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_diff_rmse">test_diff_rmse() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.test_diff_rmse_push">test_diff_rmse_push() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_disparate_impact">test_disparate_impact() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_chi_square">test_drift_chi_square() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_earth_movers_distance">test_drift_earth_movers_distance() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_ks">test_drift_ks() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_prediction_chi_square">test_drift_prediction_chi_square() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_prediction_earth_movers_distance">test_drift_prediction_earth_movers_distance() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_prediction_ks">test_drift_prediction_ks() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_prediction_psi">test_drift_prediction_psi() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/drift.html#giskard.testing.test_drift_psi">test_drift_psi() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_f1">test_f1() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_mae">test_mae() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_decreasing">test_metamorphic_decreasing() (in module giskard.testing)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_decreasing_t_test">test_metamorphic_decreasing_t_test() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_decreasing_wilcoxon">test_metamorphic_decreasing_wilcoxon() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_increasing">test_metamorphic_increasing() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_increasing_t_test">test_metamorphic_increasing_t_test() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_increasing_wilcoxon">test_metamorphic_increasing_wilcoxon() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_invariance">test_metamorphic_invariance() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_invariance_t_test">test_metamorphic_invariance_t_test() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/metamorphic.html#giskard.testing.test_metamorphic_invariance_wilcoxon">test_metamorphic_invariance_wilcoxon() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.push_test_catalog.catalog.test_metamorphic_invariance_with_mad">test_metamorphic_invariance_with_mad() (in module giskard.push.push_test_catalog.catalog)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_mutual_information">test_mutual_information() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_nominal_association">test_nominal_association() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_output_in_range">test_output_in_range() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_precision">test_precision() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_r2">test_r2() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_recall">test_recall() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_right_label">test_right_label() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/performance.html#giskard.testing.test_rmse">test_rmse() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/tests/statistic.html#giskard.testing.test_theil_u">test_theil_u() (in module giskard.testing)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.ml_worker.testing.test_result.TestResult">TestResult (class in giskard.ml_worker.testing.test_result)</a>
+</li>
+        <li><a href="reference/push/index.html#giskard.push.Push.tests">tests (giskard.push.Push attribute)</a>
+
+        <ul>
+          <li><a href="reference/suite/index.html#giskard.Suite.tests">(giskard.Suite attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="reference/suite/index.html#giskard.core.suite.TestSuiteResult">TestSuiteResult (class in giskard.core.suite)</a>
+</li>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.transform">transform() (giskard.Dataset method)</a>
+</li>
+        <li><a href="reference/transformation-functions/index.html#giskard.transformation_function">transformation_function() (in module giskard)</a>
+</li>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction">TransformationFunction (class in giskard.ml_worker.testing.registry.transformation_function)</a>
+</li>
+        <li><a href="reference/suite/index.html#giskard.core.suite.SuiteInput.type">type (giskard.core.suite.SuiteInput attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/datasets/index.html#giskard.Dataset.upload">upload() (giskard.Dataset method)</a>
+
+        <ul>
+          <li><a href="reference/slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction.upload">(giskard.ml_worker.testing.registry.slicing_function.SlicingFunction method)</a>
+</li>
+          <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.upload">(giskard.ml_worker.testing.registry.transformation_function.TransformationFunction method)</a>
+</li>
+          <li><a href="reference/models/index.html#giskard.Model.upload">(giskard.Model method)</a>
+</li>
+          <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.BaseModel.upload">(giskard.models.base.BaseModel method)</a>
+</li>
+          <li><a href="reference/suite/index.html#giskard.Suite.upload">(giskard.Suite method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/transformation-functions/index.html#giskard.ml_worker.testing.functions.transformation.uppercase_transformation">uppercase_transformation() (in module giskard.ml_worker.testing.functions.transformation)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="V" class="genindex-section">
+  <h2>V</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    VERSION
+
+        <ul>
+          <li><a href="cli/index.html#cmdoption-giskard-server-upgrade-arg-VERSION">giskard-server-upgrade command line option</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="W" class="genindex-section">
+  <h2>W</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="reference/models/integrations/base_classes.html#giskard.models.base.WrapperModel">WrapperModel (class in giskard.models.base)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+
+                </article>
+            </div>
+            <footer>
+                
+                <div class="related-pages">
+                    
+                    
+                </div>
+                <div class="bottom-of-page">
+                    <div class="left-details">
+                        <div class="copyright">
+                            Copyright &#169; 2023, Giskard AI
+                        </div>
+                        Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+                        
+                        <a href="https://github.com/pradyunsg/furo">Furo</a>
+                        
+                    </div>
+                    <div class="right-details">
+                        <div class="icons">
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </footer>
+        </div>
+        <aside class="toc-drawer no-toc">
+            
+            
+            
+        </aside>
+    </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=013534be"></script>
+<script src="_static/doctools.js?v=888ff710"></script>
+<script src="_static/sphinx_highlight.js?v=4825356b"></script>
+<script src="_static/scripts/furo.js?v=32e29ea5"></script>
+<script src="_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="_static/copybutton.js?v=f281be69"></script>
+<script src="_static/tabs.js?v=3030b3cb"></script>
+<script src="_static/design-tabs.js?v=36754332"></script>
+<script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+<script src="_static/js/githubStargazers.js?v=12ca5678"></script>
+<script src="_static/js/sidebarKeepScroll.js?v=70154bce"></script>
+</body>
+</html>

@@ -1,0 +1,822 @@
+<!doctype html>
+<html class="no-js"  lang="en" >
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PQ9MJ64');</script>
+    <!-- End Google Tag Manager --><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../genindex.html"/><link rel="search" title="Search" href="../../search.html"/><link rel="next" title="Tests" href="../tests/index.html"/><link rel="prev" title="Tensorflow models" href="../models/integrations/tensorflow.html"/>
+
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.08.19 -->
+    <title>Dataset - Giskard Documentation</title>
+    <meta content="Learn more about Dataset | Open source Python ML library to test and debug AI models."
+          name="description">
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5432af51" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=bb27ee1f" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-brand-content: #173A2F;
+  --color-api-highlight: #56D793;
+  --color-api-background: #F5F5F5;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-current-text: #56D793;
+  --color-sidebar-link-text--top-level: #0c0c0c;
+  --color-content-foreground: #484848;
+  --social-button-background: #FFFFFF;
+  --social-button-text: #91F6C0;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9MJ64"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<script>
+    document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+</script>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<input type="checkbox" class="sidebar-toggle" name="__search" id="__search">
+<label class="overlay sidebar-overlay" for="__navigation">
+    <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+    <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+<label class="overlay search-overlay" for="__search">
+    <div class="visually-hidden">Hide search</div>
+</label>
+
+
+
+<div class="page">
+    <header class="mobile-header">
+        <div class="header-left">
+            <label class="nav-overlay-icon" for="__navigation">
+                <div class="visually-hidden">Toggle site navigation sidebar</div>
+                <i class="icon"><svg>
+                    <use href="#svg-menu"></use>
+                </svg></i>
+            </label>
+        </div>
+        <div class="header-center">
+            <a href="../../index.html">
+                <div class="brand">
+                    <img class="header-logo only-light" src="../../_static/logo_black.png" alt="Light Logo" />
+                    <img class="header-logo only-dark" src="../../_static/logo_white.png" alt="Dark Logo" />
+                </div>
+            </a>
+        </div>
+
+        <div class="header-right">
+            <label class="search-icon" for="__search">
+                <div class="visually-hidden">Toggle search</div>
+            </label>
+            <!-- <label class="toc-overlay-icon toc-header-icon" for="__toc">
+              <div class="visually-hidden">Toggle table of contents sidebar</div>
+              <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            </label> -->
+        </div>
+    </header>
+    <div class="header__search">
+        <form class="header__search__container" method="get" action="../../search.html" role="search">
+            <input class="header__search__input" placeholder=Search name="q" aria-label=" Search">
+            <input type="hidden" name="check_keywords" value="yes">
+            <input type="hidden" name="area" value="default">
+            <label class="close-icon" for="__search">
+                <div class="visually-hidden">Hide search</div>
+            </label>
+        </form>
+        <div id="searchbox"></div>
+    </div>
+    <aside class="sidebar-drawer">
+        <div class="sidebar-container">
+            
+            <div class="theme-toggle-container theme-toggle-header sidebar__theme-toggle">
+                <button class="theme-toggle">
+                    <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                    <svg class="theme-icon-when-auto">
+                        <use href="#svg-sun-half"></use>
+                    </svg>
+                    <svg class="theme-icon-when-dark">
+                        <use href="#svg-moon"></use>
+                    </svg>
+                    <svg class="theme-icon-when-light">
+                        <use href="#svg-sun"></use>
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+    
+    <div class="sidebar-logo-container">
+        <img class="sidebar-logo only-light" src="../../_static/logo_black.png" alt="Light Logo"/>
+        <img class="sidebar-logo only-dark" src="../../_static/logo_white.png" alt="Dark Logo"/>
+    </div>
+    
+</a>
+<div class="social social--sidebar" style="margin-top: 1em; display: flex; justify-content: center; gap: 8px">
+    <div class="github-stars github-stars--sidebar"></div>
+    <div><a href="https://discord.gg/ABvfpbu69R"><img
+            src="https://dcbadge.vercel.app/api/server/ABvfpbu69R?style=flat-square"/></a></div>
+</div><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started/index.html">Why Giskard?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../getting-started/key_vulnerabilities/index.html">Key vulnerabilities</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Key vulnerabilities</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/performance_bias/index.html">Performance Bias</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/robustness/index.html">Unrobustness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/overconfidence/index.html">Overconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/underconfidence/index.html">Underconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/ethics/index.html">Unethical behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/data_leakage/index.html">Data Leakage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/stochasticity/index.html">Stochasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/spurious/index.html">Spurious correlation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/installation_library/index.html">📥 Install the Giskard Python Library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/wrap_dataset/index.html">📦 Wrap your dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/wrap_model/index.html">🎁 Wrap your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/scan/index.html">🔍 Scan your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/slice/index.html">🔪 Identify data slices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/transformation/index.html">🔄 Define data transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/test-suite/index.html">🧪 Test your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/cicd/pipeline.html">🚀 Execute your test suite in your CI/CD pipeline</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../guides/installation_app/index.html">🌐 Run the Giskard Server</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 🌐 Run the Giskard Server</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_aws/index.html">Installation in AWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_gcp/index.html">Installation in GCP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_azure/index.html">Installation in Azure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/upload/index.html">⬆️ Upload an object to the Giskard server</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../contribute/index.html">🧑‍💻Contribute to Giskard</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 🧑‍💻Contribute to Giskard</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../contribute/dev-environment.html">How to configure local development environment</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/libraries/index.html">By ML libraries</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of By ML libraries</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/scikit-learn/index.html">Scikit-learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/xgboost/index.html">XGBoost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/lightgbm/index.html">LightGBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/tensorflow/index.html">TensorFlow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/pytorch/index.html">PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/huggingface/index.html">HuggingFace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/langchain/index.html">LangChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/api/index.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/tasks/index.html">By ML tasks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of By ML tasks</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/classification/index.html">Classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/regression/index.html">Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/text-generation/index.html">Text generation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/data-types/index.html">By data types</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of By data types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/data-types/tabular/index.html">Tabular</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/data-types/text/index.html">Text</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../cli/index.html">Command-line interface</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Command-line interface</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../cli/ngrok/index.html">Setup a <code class="code docutils literal notranslate"><span class="pre">ngrok</span></code> account</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Models</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/base_classes.html">Base model classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/catboost.html">Catboost models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/function.html">Prediction function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/huggingface.html">HuggingFace models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/langchain.html">Langchain models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/pytorch.html">Pytorch models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/sklearn.html">Sklearn models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/tensorflow.html">Tensorflow models</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Dataset</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../tests/index.html">Tests</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Tests</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tests/metamorphic.html">Metamorphic tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/statistic.html">Statistical tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/performance.html">Performance tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/drift.html">Drift tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../suite/index.html">Test suite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slicing-functions/index.html">Slicing functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../transformation-functions/index.html">Transformation functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../push/index.html">Push feature</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../catalogs/index.html">Catalog</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../catalogs/test-catalog/index.html">📖 Test catalog</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of 📖 Test catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../catalogs/test-catalog/classification/index.html">Classification tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../catalogs/test-catalog/regression/index.html">Regression tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../catalogs/slicing-function-catalog/index.html">🔪 Slicing function catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../catalogs/transformation-function-catalog/index.html">🪄 Transformation function catalog</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Integrations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../integrations/index.html">Integrations</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of Integrations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../integrations/mlflow/index.html">MLflow</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of MLflow</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/mlflow/mlflow-tabular-example.html">Notebook Example - Tabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/mlflow/mlflow-llm-example.html">Notebook Example - Text</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../integrations/wandb/index.html">Weights and Biases</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of Weights and Biases</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/wandb/wandb-tabular-example.html">Notebook Example - Tabular</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+            </div>
+            
+        </div>
+    </aside>
+    <div class="main">
+        <div class="content">
+            <div class="article-container">
+                <a href="#" class="back-to-top muted-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+                    </svg>
+                    <span>Back to top</span>
+                </a>
+                <div class="content-icon-container">
+                    <div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/Giskard-AI/giskard/edit/main/python-client/docs/reference/datasets/index.rst" title="Edit this page">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
+      <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
+    </svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+                        <button class="theme-toggle">
+                            <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                            <svg class="theme-icon-when-auto">
+                                <use href="#svg-sun-half"></use>
+                            </svg>
+                            <svg class="theme-icon-when-dark">
+                                <use href="#svg-moon"></use>
+                            </svg>
+                            <svg class="theme-icon-when-light">
+                                <use href="#svg-sun"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <label class="toc-overlay-icon toc-content-icon" for="__toc">
+                        <div class="visually-hidden">Toggle table of contents sidebar</div>
+                        <i class="icon"><svg>
+                            <use href="#svg-toc"></use>
+                        </svg></i>
+                    </label>
+                </div>
+                <article role="main">
+                    <div class="social social--main" style="margin-top: 1em; display: flex; justify-content: right; gap: 8px">
+                        <div class="github-stars github-stars--top-page"></div>
+                    </div>
+                    <section id="dataset">
+<h1>Dataset<a class="headerlink" href="#dataset" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="giskard.Dataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giskard.</span></span><span class="sig-name descname"><span class="pre">Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Hashable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cat_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Hashable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">UUID</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset" title="Permalink to this definition">#</a></dt>
+<dd><p>To scan, test and debug your model, you need to provide a dataset that can be executed by your model.
+This dataset can be your training, testing, golden, or production dataset.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> you provide should contain the <strong>raw data before pre-processing</strong> (categorical encoding, scaling,
+etc.). The prediction function that you wrap with the Giskard <cite>Model</cite> should be able to
+execute the pandas dataframe.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.df">
+<span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#giskard.Dataset.df" title="Permalink to this definition">#</a></dt>
+<dd><p>A <cite>pandas.DataFrame</cite> that contains the raw data (before all the pre-processing steps) and the actual
+ground truth variable (target). <cite>df</cite> can contain more columns than the features of the model, such as the sample_id,
+metadata, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#giskard.Dataset.name" title="Permalink to this definition">#</a></dt>
+<dd><p>A string representing the name of the dataset (default None).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.target">
+<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#giskard.Dataset.target" title="Permalink to this definition">#</a></dt>
+<dd><p>The column name in df corresponding to the actual target variable (ground truth).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.cat_columns">
+<span class="sig-name descname"><span class="pre">cat_columns</span></span><a class="headerlink" href="#giskard.Dataset.cat_columns" title="Permalink to this definition">#</a></dt>
+<dd><p>A list of strings representing the names of categorical columns (default None). If not provided,
+the categorical columns will be automatically inferred.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[List[str]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.column_types">
+<span class="sig-name descname"><span class="pre">column_types</span></span><a class="headerlink" href="#giskard.Dataset.column_types" title="Permalink to this definition">#</a></dt>
+<dd><p>A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
+the categorical columns will be automatically inferred.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Dict[str, str]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="giskard.Dataset.data_processor">
+<span class="sig-name descname"><span class="pre">data_processor</span></span><a class="headerlink" href="#giskard.Dataset.data_processor" title="Permalink to this definition">#</a></dt>
+<dd><p>An instance of the <cite>DataProcessor</cite> class used for data processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataProcessor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Initializes a Dataset object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The input dataset as a pandas DataFrame.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the dataset.</p></li>
+<li><p><strong>target</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column name in df corresponding to the actual target variable (ground truth).</p></li>
+<li><p><strong>cat_columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – A list of column names that are categorical.</p></li>
+<li><p><strong>column_types</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A dictionary mapping column names to their types.</p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><em>uuid.UUID</em><em>]</em>) – A UUID that uniquely identifies this dataset.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>if neither of cat_columns or column_types are provided. We infer heuristically the types of the columns.
+See the _infer_column_types method.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Hashable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cat_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Hashable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">UUID</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#giskard.Dataset.__init__" title="Permalink to this definition">#</a></dt>
+<dd><p>Initializes a Dataset object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The input dataset as a pandas DataFrame.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the dataset.</p></li>
+<li><p><strong>target</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The column name in df corresponding to the actual target variable (ground truth).</p></li>
+<li><p><strong>cat_columns</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – A list of column names that are categorical.</p></li>
+<li><p><strong>column_types</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em><em>]</em>) – A dictionary mapping column names to their types.</p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><em>uuid.UUID</em><em>]</em>) – A UUID that uniquely identifies this dataset.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>if neither of cat_columns or column_types are provided. We infer heuristically the types of the columns.
+See the _infer_column_types method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset._infer_column_types">
+<span class="sig-name descname"><span class="pre">_infer_column_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cat_columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset._infer_column_types" title="Permalink to this definition">#</a></dt>
+<dd><p>This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be ‘text’, ‘numeric’, or ‘category’. The function also applies a logarithmic rule to determine the category threshold.</p>
+<p>Here’s a summary of the function’s logic:</p>
+<ol class="arabic simple">
+<li><p>If no column types are provided, initialize an empty dictionary.</p></li>
+<li><p>Determine the columns in the DataFrame, excluding the target column if it exists.</p></li>
+<li><p>If categorical columns are specified, prioritize them over the provided column types and mark them as ‘category’.</p></li>
+<li><p>Check for any unknown columns in the provided column types and remove them from the dictionary.</p></li>
+<li><p>If there are no missing columns, remove the target column (if present) from the column types dictionary.</p></li>
+<li><p>Calculate the number of unique values in each missing column.</p></li>
+<li><p>For each missing column:</p>
+<ul class="simple">
+<li><p>If the number of unique values is less than or equal to the category threshold, categorize it as ‘category’.</p></li>
+<li><p>Otherwise, attempt to convert the column to numeric using <cite>pd.to_numeric</cite> and categorize it as ‘numeric’.</p></li>
+<li><p>If the column does not have the expected numeric data type and validation is enabled, issue a warning message.</p></li>
+<li><p>If conversion to numeric raises a ValueError, categorize the column as ‘text’.</p></li>
+</ul>
+</li>
+<li><p>Return the column types dictionary.</p></li>
+</ol>
+<p>The logarithmic rule is used to calculate the category threshold. The formula is: <cite>category_threshold = round(np.log10(len(self.df))) if len(self.df) &gt;= 100 else 2</cite>. This means that if the length of the DataFrame is greater than or equal to 100, the category threshold is set to the rounded value of the base-10 logarithm of the DataFrame length. Otherwise, the category threshold is set to 2. The logarithmic rule helps in dynamically adjusting the category threshold based on the size of the DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary that maps column names to their inferred types, one of ‘text’, ‘numeric’, or ‘category’.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.add_slicing_function">
+<span class="sig-name descname"><span class="pre">add_slicing_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slicing_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction" title="giskard.ml_worker.testing.registry.slicing_function.SlicingFunction"><span class="pre">SlicingFunction</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.add_slicing_function" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a slicing function to the data processor’s list of steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>slicing_function</strong> (<a class="reference internal" href="../slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction" title="giskard.ml_worker.testing.registry.slicing_function.SlicingFunction"><em>SlicingFunction</em></a>) – A slicing function to add to the data processor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.add_transformation_function">
+<span class="sig-name descname"><span class="pre">add_transformation_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformation_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.add_transformation_function" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a transformation function to the data processor’s list of steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transformation_function</strong> (<a class="reference internal" href="../transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><em>TransformationFunction</em></a>) – A transformation function to add to the data processor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slicing_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction" title="giskard.ml_worker.testing.registry.slicing_function.SlicingFunction"><span class="pre">SlicingFunction</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.slice" title="Permalink to this definition">#</a></dt>
+<dd><p>Slice the dataset using the specified <cite>slicing_function</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slicing_function</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../slicing-functions/index.html#giskard.ml_worker.testing.registry.slicing_function.SlicingFunction" title="giskard.ml_worker.testing.registry.slicing_function.SlicingFunction"><em>SlicingFunction</em></a><em>, </em><em>SlicingFunctionType</em><em>]</em>) – A slicing function to apply.
+If <cite>slicing_function</cite> is a callable, it will be wrapped in a <cite>SlicingFunction</cite> object
+with <cite>row_level</cite> and <cite>cell_level</cite> as its arguments. The <cite>SlicingFunction</cite> object will be
+used to slice the DataFrame. If <cite>slicing_function</cite> is a <cite>SlicingFunction</cite> object, it
+will be used directly to slice the DataFrame.</p></li>
+<li><p><strong>row_level</strong> (<em>bool</em>) – Whether the <cite>slicing_function</cite> should be applied to the rows (True) or
+the whole dataframe (False). Defaults to True.</p></li>
+<li><p><strong>get_mask</strong> (<em>bool</em>) – Whether the <cite>slicing_function</cite> returns a dataset (False) or a mask, i.e.
+a list of indices (True).</p></li>
+<li><p><strong>cell_level</strong> (<em>bool</em>) – Whether the <cite>slicing_function</cite> should be applied to the cells (True) or
+the whole dataframe (False). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sliced dataset as a <cite>Dataset</cite> object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#giskard.Dataset" title="giskard.Dataset">Dataset</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Raises TypeError: If <cite>slicing_function</cite> is not a callable or a <cite>SlicingFunction</cite> object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformation_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.transform" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform the data in the current Dataset by applying a transformation function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transformation_function</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../transformation-functions/index.html#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><em>TransformationFunction</em></a><em>, </em><em>TransformationFunctionType</em><em>]</em>) – A transformation function to apply. If <cite>transformation_function</cite> is a callable, it will
+be wrapped in a <cite>TransformationFunction</cite> object with <cite>row_level</cite> and <cite>cell_level</cite> as its
+arguments. If <cite>transformation_function</cite> is a <cite>TransformationFunction</cite> object, it will be used
+directly to transform the DataFrame.</p></li>
+<li><p><strong>row_level</strong> (<em>bool</em>) – Whether the <cite>transformation_function</cite> should be applied to the rows (True) or
+the whole dataframe (False). Defaults to True.</p></li>
+<li><p><strong>cell_level</strong> (<em>bool</em>) – Whether the <cite>slicing_function</cite> should be applied to the cells (True) or
+the whole dataframe (False). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new Dataset object containing the transformed data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#giskard.Dataset" title="giskard.Dataset">Dataset</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Raises TypeError: If <cite>transformation_function</cite> is not a callable or a <cite>TransformationFunction</cite> object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.process" title="Permalink to this definition">#</a></dt>
+<dd><p>Process the dataset by applying all the transformation and slicing functions in the defined order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The processed dataset after applying all the transformation and slicing functions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.upload">
+<span class="sig-name descname"><span class="pre">upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.upload" title="Permalink to this definition">#</a></dt>
+<dd><p>Uploads the dataset to the specified Giskard project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> – A GiskardClient instance for connecting to the Giskard API.</p></li>
+<li><p><strong>project_key</strong> (<em>str</em>) – The key of the project to upload the dataset to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The ID of the uploaded dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.Dataset.download">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.Dataset.download" title="Permalink to this definition">#</a></dt>
+<dd><p>Downloads a dataset from a Giskard project and returns a Dataset object.
+If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>GiskardClient</em>) – The GiskardClient instance to use for downloading the dataset.
+If None, the function looks for the dataset locally.</p></li>
+<li><p><strong>project_key</strong> (<em>str</em>) – The key of the Giskard project that the dataset belongs to.</p></li>
+<li><p><strong>dataset_id</strong> (<em>str</em>) – The ID of the dataset to download.</p></li>
+<li><p><strong>sample</strong> (<em>bool</em>) – Only open a sample of 1000 rows if True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Dataset object that represents the downloaded dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#giskard.Dataset" title="giskard.Dataset">Dataset</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+                </article>
+            </div>
+            <footer>
+                
+                <div class="related-pages">
+                    <a class="next-page" href="../tests/index.html">
+                        <div class="page-info">
+                            <div class="context">
+                                <span>Next</span>
+                            </div>
+                            <div class="title">Tests</div>
+                        </div>
+                        <svg>
+                            <use href="#svg-arrow-right"></use>
+                        </svg>
+                    </a>
+                    <a class="prev-page" href="../models/integrations/tensorflow.html">
+                        <svg>
+                            <use href="#svg-arrow-right"></use>
+                        </svg>
+                        <div class="page-info">
+                            <div class="context">
+                                <span>Previous</span>
+                            </div>
+                            
+                            <div class="title">Tensorflow models</div>
+                            
+                        </div>
+                    </a>
+                </div>
+                <div class="bottom-of-page">
+                    <div class="left-details">
+                        <div class="copyright">
+                            Copyright &#169; 2023, Giskard AI
+                        </div>
+                        Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+                        
+                        <a href="https://github.com/pradyunsg/furo">Furo</a>
+                        
+                    </div>
+                    <div class="right-details">
+                        <div class="icons">
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </footer>
+        </div>
+        <aside class="toc-drawer">
+            
+            
+            <div class="toc-sticky toc-scroll">
+                <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+                </div>
+                <div class="toc-tree-container">
+                    <div class="toc-tree">
+                        <ul>
+<li><a class="reference internal" href="#">Dataset</a><ul>
+<li><a class="reference internal" href="#giskard.Dataset"><code class="docutils literal notranslate"><span class="pre">Dataset</span></code></a><ul>
+<li><a class="reference internal" href="#giskard.Dataset.df"><code class="docutils literal notranslate"><span class="pre">Dataset.df</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.name"><code class="docutils literal notranslate"><span class="pre">Dataset.name</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.target"><code class="docutils literal notranslate"><span class="pre">Dataset.target</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.cat_columns"><code class="docutils literal notranslate"><span class="pre">Dataset.cat_columns</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.column_types"><code class="docutils literal notranslate"><span class="pre">Dataset.column_types</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.data_processor"><code class="docutils literal notranslate"><span class="pre">Dataset.data_processor</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.__init__"><code class="docutils literal notranslate"><span class="pre">Dataset.__init__</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset._infer_column_types"><code class="docutils literal notranslate"><span class="pre">Dataset._infer_column_types</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.add_slicing_function"><code class="docutils literal notranslate"><span class="pre">Dataset.add_slicing_function</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.add_transformation_function"><code class="docutils literal notranslate"><span class="pre">Dataset.add_transformation_function</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.slice"><code class="docutils literal notranslate"><span class="pre">Dataset.slice</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.transform"><code class="docutils literal notranslate"><span class="pre">Dataset.transform</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.process"><code class="docutils literal notranslate"><span class="pre">Dataset.process</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.upload"><code class="docutils literal notranslate"><span class="pre">Dataset.upload</span></code></a></li>
+<li><a class="reference internal" href="#giskard.Dataset.download"><code class="docutils literal notranslate"><span class="pre">Dataset.download</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                    </div>
+                </div>
+            </div>
+            
+            
+        </aside>
+    </div>
+</div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=013534be"></script>
+<script src="../../_static/doctools.js?v=888ff710"></script>
+<script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+<script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+<script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../../_static/copybutton.js?v=f281be69"></script>
+<script src="../../_static/design-tabs.js?v=36754332"></script>
+<script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+<script src="../../_static/js/githubStargazers.js?v=12ca5678"></script>
+<script src="../../_static/js/sidebarKeepScroll.js?v=70154bce"></script>
+</body>
+</html>

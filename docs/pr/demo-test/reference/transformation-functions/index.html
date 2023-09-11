@@ -1,0 +1,662 @@
+<!doctype html>
+<html class="no-js"  lang="en" >
+<head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+            'gtm.start':
+                new Date().getTime(), event: 'gtm.js'
+        });
+        var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PQ9MJ64');</script>
+    <!-- End Google Tag Manager --><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../genindex.html"/><link rel="search" title="Search" href="../../search.html"/><link rel="next" title="Push feature" href="../push/index.html"/><link rel="prev" title="Slicing functions" href="../slicing-functions/index.html"/>
+
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.1.2 and Furo 2023.08.19 -->
+    <title>Transformation functions - Giskard Documentation</title>
+    <meta content="Learn more about Transformation functions | Open source Python ML library to test and debug AI models."
+          name="description">
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5432af51" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=bb27ee1f" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-brand-content: #173A2F;
+  --color-api-highlight: #56D793;
+  --color-api-background: #F5F5F5;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-current-text: #56D793;
+  --color-sidebar-link-text--top-level: #0c0c0c;
+  --color-content-foreground: #484848;
+  --social-button-background: #FFFFFF;
+  --social-button-text: #91F6C0;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #263238;
+  --color-code-foreground: #EEFFFF;
+  --color-brand-primary: #56D793;
+  --color-brand-content: #91F6C0;
+  --color-api-background: #242424;
+  --color-sidebar-current-text: #56D793;
+  --color-toc-title: #C4C4C4;
+  --color-toc-item-text--active: #56D793;
+  --color-sidebar-link-text--top-level: #FcFcFc;
+  --color-sidebar-search-foreground: #a4a4a4;
+  --color-sidebar-search-border: #a4a4a4;
+  --color-content-foreground: #FFFFFF;
+  --social-button-background: #000000;
+  --social-button-text: #000000;
+  
+      }
+    }
+  }
+</style></head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PQ9MJ64"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<script>
+    document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+</script>
+
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<input type="checkbox" class="sidebar-toggle" name="__search" id="__search">
+<label class="overlay sidebar-overlay" for="__navigation">
+    <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+    <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+<label class="overlay search-overlay" for="__search">
+    <div class="visually-hidden">Hide search</div>
+</label>
+
+
+
+<div class="page">
+    <header class="mobile-header">
+        <div class="header-left">
+            <label class="nav-overlay-icon" for="__navigation">
+                <div class="visually-hidden">Toggle site navigation sidebar</div>
+                <i class="icon"><svg>
+                    <use href="#svg-menu"></use>
+                </svg></i>
+            </label>
+        </div>
+        <div class="header-center">
+            <a href="../../index.html">
+                <div class="brand">
+                    <img class="header-logo only-light" src="../../_static/logo_black.png" alt="Light Logo" />
+                    <img class="header-logo only-dark" src="../../_static/logo_white.png" alt="Dark Logo" />
+                </div>
+            </a>
+        </div>
+
+        <div class="header-right">
+            <label class="search-icon" for="__search">
+                <div class="visually-hidden">Toggle search</div>
+            </label>
+            <!-- <label class="toc-overlay-icon toc-header-icon" for="__toc">
+              <div class="visually-hidden">Toggle table of contents sidebar</div>
+              <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+            </label> -->
+        </div>
+    </header>
+    <div class="header__search">
+        <form class="header__search__container" method="get" action="../../search.html" role="search">
+            <input class="header__search__input" placeholder=Search name="q" aria-label=" Search">
+            <input type="hidden" name="check_keywords" value="yes">
+            <input type="hidden" name="area" value="default">
+            <label class="close-icon" for="__search">
+                <div class="visually-hidden">Hide search</div>
+            </label>
+        </form>
+        <div id="searchbox"></div>
+    </div>
+    <aside class="sidebar-drawer">
+        <div class="sidebar-container">
+            
+            <div class="theme-toggle-container theme-toggle-header sidebar__theme-toggle">
+                <button class="theme-toggle">
+                    <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                    <svg class="theme-icon-when-auto">
+                        <use href="#svg-sun-half"></use>
+                    </svg>
+                    <svg class="theme-icon-when-dark">
+                        <use href="#svg-moon"></use>
+                    </svg>
+                    <svg class="theme-icon-when-light">
+                        <use href="#svg-sun"></use>
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+    
+    <div class="sidebar-logo-container">
+        <img class="sidebar-logo only-light" src="../../_static/logo_black.png" alt="Light Logo"/>
+        <img class="sidebar-logo only-dark" src="../../_static/logo_white.png" alt="Dark Logo"/>
+    </div>
+    
+</a>
+<div class="social social--sidebar" style="margin-top: 1em; display: flex; justify-content: center; gap: 8px">
+    <div class="github-stars github-stars--sidebar"></div>
+    <div><a href="https://discord.gg/ABvfpbu69R"><img
+            src="https://dcbadge.vercel.app/api/server/ABvfpbu69R?style=flat-square"/></a></div>
+</div><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started/index.html">Why Giskard?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../getting-started/key_vulnerabilities/index.html">Key vulnerabilities</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Key vulnerabilities</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/performance_bias/index.html">Performance Bias</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/robustness/index.html">Unrobustness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/overconfidence/index.html">Overconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/underconfidence/index.html">Underconfidence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/ethics/index.html">Unethical behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/data_leakage/index.html">Data Leakage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/stochasticity/index.html">Stochasticity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting-started/key_vulnerabilities/spurious/index.html">Spurious correlation</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/installation_library/index.html">📥 Install the Giskard Python Library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/wrap_dataset/index.html">📦 Wrap your dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/wrap_model/index.html">🎁 Wrap your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/scan/index.html">🔍 Scan your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/slice/index.html">🔪 Identify data slices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/transformation/index.html">🔄 Define data transformations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/test-suite/index.html">🧪 Test your ML model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/cicd/pipeline.html">🚀 Execute your test suite in your CI/CD pipeline</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../guides/installation_app/index.html">🌐 Run the Giskard Server</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of 🌐 Run the Giskard Server</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_aws/index.html">Installation in AWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_gcp/index.html">Installation in GCP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../guides/installation_app/install_azure/index.html">Installation in Azure</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/upload/index.html">⬆️ Upload an object to the Giskard server</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../contribute/index.html">🧑‍💻Contribute to Giskard</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of 🧑‍💻Contribute to Giskard</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../contribute/dev-environment.html">How to configure local development environment</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/libraries/index.html">By ML libraries</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of By ML libraries</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/scikit-learn/index.html">Scikit-learn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/xgboost/index.html">XGBoost</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/lightgbm/index.html">LightGBM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/tensorflow/index.html">TensorFlow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/pytorch/index.html">PyTorch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/huggingface/index.html">HuggingFace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/langchain/index.html">LangChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/libraries/api/index.html">API</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/tasks/index.html">By ML tasks</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of By ML tasks</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/classification/index.html">Classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/regression/index.html">Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/tasks/text-generation/index.html">Text generation</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tutorials/data-types/index.html">By data types</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of By data types</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/data-types/tabular/index.html">Tabular</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials/data-types/text/index.html">Text</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of API reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../cli/index.html">Command-line interface</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Command-line interface</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../cli/ngrok/index.html">Setup a <code class="code docutils literal notranslate"><span class="pre">ngrok</span></code> account</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../models/index.html">Models</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Models</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/base_classes.html">Base model classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/catboost.html">Catboost models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/function.html">Prediction function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/huggingface.html">HuggingFace models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/langchain.html">Langchain models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/pytorch.html">Pytorch models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/sklearn.html">Sklearn models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../models/integrations/tensorflow.html">Tensorflow models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../datasets/index.html">Dataset</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../tests/index.html">Tests</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of Tests</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tests/metamorphic.html">Metamorphic tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/statistic.html">Statistical tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/performance.html">Performance tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tests/drift.html">Drift tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../suite/index.html">Test suite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../slicing-functions/index.html">Slicing functions</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Transformation functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../push/index.html">Push feature</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../catalogs/index.html">Catalog</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of Catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../catalogs/test-catalog/index.html">📖 Test catalog</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of 📖 Test catalog</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../catalogs/test-catalog/classification/index.html">Classification tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../catalogs/test-catalog/regression/index.html">Regression tests</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../catalogs/slicing-function-catalog/index.html">🔪 Slicing function catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../catalogs/transformation-function-catalog/index.html">🪄 Transformation function catalog</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Integrations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../integrations/index.html">Integrations</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of Integrations</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../integrations/mlflow/index.html">MLflow</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of MLflow</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/mlflow/mlflow-tabular-example.html">Notebook Example - Tabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/mlflow/mlflow-llm-example.html">Notebook Example - Text</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../integrations/wandb/index.html">Weights and Biases</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of Weights and Biases</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../integrations/wandb/wandb-tabular-example.html">Notebook Example - Tabular</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+            </div>
+            
+        </div>
+    </aside>
+    <div class="main">
+        <div class="content">
+            <div class="article-container">
+                <a href="#" class="back-to-top muted-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+                    </svg>
+                    <span>Back to top</span>
+                </a>
+                <div class="content-icon-container">
+                    <div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/Giskard-AI/giskard/edit/main/python-client/docs/reference/transformation-functions/index.rst" title="Edit this page">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
+      <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
+    </svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+                        <button class="theme-toggle">
+                            <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+                            <svg class="theme-icon-when-auto">
+                                <use href="#svg-sun-half"></use>
+                            </svg>
+                            <svg class="theme-icon-when-dark">
+                                <use href="#svg-moon"></use>
+                            </svg>
+                            <svg class="theme-icon-when-light">
+                                <use href="#svg-sun"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <label class="toc-overlay-icon toc-content-icon" for="__toc">
+                        <div class="visually-hidden">Toggle table of contents sidebar</div>
+                        <i class="icon"><svg>
+                            <use href="#svg-toc"></use>
+                        </svg></i>
+                    </label>
+                </div>
+                <article role="main">
+                    <div class="social social--main" style="margin-top: 1em; display: flex; justify-content: right; gap: 8px">
+                        <div class="github-stars github-stars--top-page"></div>
+                    </div>
+                    <section id="transformation-functions">
+<h1>Transformation functions<a class="headerlink" href="#transformation-functions" title="Permalink to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.transformation_function">
+<span class="sig-prename descclassname"><span class="pre">giskard.</span></span><span class="sig-name descname"><span class="pre">transformation_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.transformation_function" title="Permalink to this definition">#</a></dt>
+<dd><p>Decorator that registers a function as a transformation function and returns a TransformationFunction instance.
+It can be used for transforming datasets in a specific way during testing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_fn</strong> – function to decorate. No need to provide this argument, the decorator will automatically take as input the function to decorate.</p></li>
+<li><p><strong>name</strong> – Optional name to use for the function when registering it.</p></li>
+<li><p><strong>tags</strong> – Optional list of tags to use when registering the function.</p></li>
+<li><p><strong>row_level</strong> – Whether to apply the transformation function row-wise (default) or on the full dataframe. If <cite>row_level</cite>
+is True, the slicing function will receive a row (either a Series or DataFrame),
+and if False, it will receive the entire dataframe.</p></li>
+<li><p><strong>cell_level</strong> – Whether to apply the transformation function on the cell level. If True, the slicing function
+will be applied to individual cells instead of rows or the entire dataframe.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The wrapped function or a new instance of TransformationFunction.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.registry.transformation_function.</span></span><span class="sig-name descname"><span class="pre">TransformationFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Series</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.execute" title="Permalink to this definition">#</a></dt>
+<dd><p>Transforms the data using the transformation function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>pd.Series</em><em>, </em><em>pd.DataFrame</em><em>]</em>) – The data to transform.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[pd.Series, pd.DataFrame]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.upload">
+<span class="sig-name descname"><span class="pre">upload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardClient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.upload" title="Permalink to this definition">#</a></dt>
+<dd><p>Uploads the slicing function and its metadata to the Giskard server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<em>GiskardClient</em>) – The Giskard client instance used for communication with the server.</p></li>
+<li><p><strong>project_key</strong> (<em>str</em><em>, </em><em>optional</em>) – The project key where the slicing function will be uploaded. If None, the function
+will be uploaded to the global scope. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The UUID of the uploaded slicing function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.download">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GiskardClient</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Artifact</span></span></span><a class="headerlink" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.download" title="Permalink to this definition">#</a></dt>
+<dd><p>Downloads the artifact from the Giskard server or retrieves it from the local cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uuid</strong> (<em>str</em>) – The UUID of the artifact to download.</p></li>
+<li><p><strong>client</strong> (<em>GiskardClient</em><em>, </em><em>optional</em>) – The Giskard client instance used for communication with the server. If None,
+the artifact will be retrieved from the local cache if available. Defaults to None.</p></li>
+<li><p><strong>project_key</strong> (<em>str</em><em>, </em><em>optional</em>) – The project key where the artifact is located. If None, the artifact will be
+retrieved from the global scope. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The downloaded artifact.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Artifact</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If the artifact metadata cannot be retrieved.</p></li>
+<li><p><strong>AssertionError</strong> – If the artifact is not found in the cache and the Giskard client is None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<section id="textual-transformation-functions">
+<h2>Textual transformation functions<a class="headerlink" href="#textual-transformation-functions" title="Permalink to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation">
+<span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.functions.transformation.</span></span><span class="sig-name descname"><span class="pre">keyboard_typo_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../suite/index.html#giskard.core.suite.SuiteInput" title="giskard.core.suite.SuiteInput"><span class="pre">SuiteInput</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></span><a class="headerlink" href="#giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation" title="Permalink to this definition">#</a></dt>
+<dd><p>Generate a random typo from words of the text of ‘column_name’
+Typos are generated through character substitution based on keyboard proximity</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.functions.transformation.uppercase_transformation">
+<span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.functions.transformation.</span></span><span class="sig-name descname"><span class="pre">uppercase_transformation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></span><a class="headerlink" href="#giskard.ml_worker.testing.functions.transformation.uppercase_transformation" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform the text to uppercase</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.functions.transformation.lowercase_transformation">
+<span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.functions.transformation.</span></span><span class="sig-name descname"><span class="pre">lowercase_transformation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></span><a class="headerlink" href="#giskard.ml_worker.testing.functions.transformation.lowercase_transformation" title="Permalink to this definition">#</a></dt>
+<dd><p>Transform the text of the column ‘column_name’ to lowercase</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.functions.transformation.strip_punctuation">
+<span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.functions.transformation.</span></span><span class="sig-name descname"><span class="pre">strip_punctuation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></span><a class="headerlink" href="#giskard.ml_worker.testing.functions.transformation.strip_punctuation" title="Permalink to this definition">#</a></dt>
+<dd><p>Remove all punctuation symbols (e.g., ., !, ?) from the text of the column ‘column_name’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="giskard.ml_worker.testing.functions.transformation.change_writing_style">
+<span class="sig-prename descclassname"><span class="pre">giskard.ml_worker.testing.functions.transformation.</span></span><span class="sig-name descname"><span class="pre">change_writing_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../suite/index.html#giskard.core.suite.SuiteInput" title="giskard.core.suite.SuiteInput"><span class="pre">SuiteInput</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../suite/index.html#giskard.core.suite.SuiteInput" title="giskard.core.suite.SuiteInput"><span class="pre">SuiteInput</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../suite/index.html#giskard.core.suite.SuiteInput" title="giskard.core.suite.SuiteInput"><span class="pre">SuiteInput</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OPENAI_API_KEY</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../suite/index.html#giskard.core.suite.SuiteInput" title="giskard.core.suite.SuiteInput"><span class="pre">SuiteInput</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction" title="giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><span class="pre">TransformationFunction</span></a></span></span><a class="headerlink" href="#giskard.ml_worker.testing.functions.transformation.change_writing_style" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+                </article>
+            </div>
+            <footer>
+                
+                <div class="related-pages">
+                    <a class="next-page" href="../push/index.html">
+                        <div class="page-info">
+                            <div class="context">
+                                <span>Next</span>
+                            </div>
+                            <div class="title">Push feature</div>
+                        </div>
+                        <svg>
+                            <use href="#svg-arrow-right"></use>
+                        </svg>
+                    </a>
+                    <a class="prev-page" href="../slicing-functions/index.html">
+                        <svg>
+                            <use href="#svg-arrow-right"></use>
+                        </svg>
+                        <div class="page-info">
+                            <div class="context">
+                                <span>Previous</span>
+                            </div>
+                            
+                            <div class="title">Slicing functions</div>
+                            
+                        </div>
+                    </a>
+                </div>
+                <div class="bottom-of-page">
+                    <div class="left-details">
+                        <div class="copyright">
+                            Copyright &#169; 2023, Giskard AI
+                        </div>
+                        Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+                        
+                        <a href="https://github.com/pradyunsg/furo">Furo</a>
+                        
+                    </div>
+                    <div class="right-details">
+                        <div class="icons">
+                            
+                        </div>
+                    </div>
+                </div>
+                
+            </footer>
+        </div>
+        <aside class="toc-drawer">
+            
+            
+            <div class="toc-sticky toc-scroll">
+                <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+                </div>
+                <div class="toc-tree-container">
+                    <div class="toc-tree">
+                        <ul>
+<li><a class="reference internal" href="#">Transformation functions</a><ul>
+<li><a class="reference internal" href="#giskard.transformation_function"><code class="docutils literal notranslate"><span class="pre">transformation_function</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction"><code class="docutils literal notranslate"><span class="pre">TransformationFunction</span></code></a><ul>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.execute"><code class="docutils literal notranslate"><span class="pre">TransformationFunction.execute</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.upload"><code class="docutils literal notranslate"><span class="pre">TransformationFunction.upload</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.registry.transformation_function.TransformationFunction.download"><code class="docutils literal notranslate"><span class="pre">TransformationFunction.download</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#textual-transformation-functions">Textual transformation functions</a><ul>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation"><code class="docutils literal notranslate"><span class="pre">keyboard_typo_transformation</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.functions.transformation.uppercase_transformation"><code class="docutils literal notranslate"><span class="pre">uppercase_transformation</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.functions.transformation.lowercase_transformation"><code class="docutils literal notranslate"><span class="pre">lowercase_transformation</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.functions.transformation.strip_punctuation"><code class="docutils literal notranslate"><span class="pre">strip_punctuation</span></code></a></li>
+<li><a class="reference internal" href="#giskard.ml_worker.testing.functions.transformation.change_writing_style"><code class="docutils literal notranslate"><span class="pre">change_writing_style</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                    </div>
+                </div>
+            </div>
+            
+            
+        </aside>
+    </div>
+</div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=013534be"></script>
+<script src="../../_static/doctools.js?v=888ff710"></script>
+<script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+<script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+<script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+<script src="../../_static/copybutton.js?v=f281be69"></script>
+<script src="../../_static/design-tabs.js?v=36754332"></script>
+<script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+<script src="../../_static/js/githubStargazers.js?v=12ca5678"></script>
+<script src="../../_static/js/sidebarKeepScroll.js?v=70154bce"></script>
+</body>
+</html>
