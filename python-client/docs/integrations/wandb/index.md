@@ -4,20 +4,20 @@ Weights and Biases, often abbreviated as "wandb," is a platform and toolkit desi
 and collaboration. It provides tools for tracking and visualizing machine learning experiments, managing machine learning 
 projects, and sharing results with team members or the broader community. Key features of Weights and Biases include:
 
-- **Experiment Tracking**: Wandb allows you to log and track various aspects of your machine learning experiments, such as hyperparameters, model performance metrics, and visualizations. This helps you keep a record of your experiments, compare different runs, and understand the impact of various changes on your models.
-- **Visualizations**: You can create interactive visualizations of your model's performance, which can be shared with others to facilitate collaboration and communication.
-- **Collaboration**: Teams can use Weights and Biases to work together on machine learning projects. It provides tools for sharing experiments, insights, and results, making it easier for team members to collaborate effectively.
-- **Model Versioning**: Weights and Biases helps you manage and version your machine learning models, making it easier to track changes and reproduce results.
-- **Hyperparameter Tuning**: You can use wandb for hyperparameter tuning, allowing you to systematically search for the best combination of hyperparameters for your models.
-- **Integration**: Weights and Biases integrates with popular machine learning frameworks like TensorFlow, PyTorch, and scikit-learn, making it easy to incorporate into your existing workflows.
+- **Experiment Tracking**: Wandb logs hyperparameters, metrics, and visuals for easy experiment comparison and change impact analysis.
+- **Visualizations**: Create interactive performance visuals for seamless collaboration and communication.
+- **Collaboration**: Wandb facilitates team collaboration by sharing experiments, insights, and results.
+- **Model Versioning**: Easily manage and version machine learning models for reproducibility.
+- **Hyperparameter Tuning**: Streamline hyperparameter search with wandb to find optimal model configurations.
+- **Integration**: Seamlessly incorporate Wandb into your ML workflow, integrating with popular frameworks like TensorFlow and PyTorch.
 
 ## Why integrating Giskard?
 
 Giskard offers several compelling reasons to use it in conjunction with Weights and Biases for your machine learning projects:
 
-- **Feature Importance Analysis with SHAP Plots**: Giskard provides the capability to log SHAP (SHapley Additive exPlanations) plots into Weights and Biases. SHAP plots are a powerful tool for understanding the impact of individual features on your model's predictions. They help you identify which features are most influential in your model's decision-making process. By logging SHAP plots, Giskard enables you to gain deeper insights into your model's behavior and feature importance.
-- **Automated Vulnerability Detection**: Giskard's scan feature is designed to automatically detect various vulnerabilities in your machine learning models. These vulnerabilities can include performance bias (where the model favors certain groups or classes), data leakage (inadvertently using information from the test set during training), unrobustness (sensitivity to small changes in input data), spurious correlation (false relationships between features and outcomes), overconfidence, underconfidence, and even ethical issues. This automated vulnerability detection helps you identify potential problems in your models early in the development process.
-- **Customizable Domain-Specific Tests**: Giskard goes beyond just identifying vulnerabilities; it also helps you take action by generating relevant tests based on the vulnerabilities it detects. These tests are tailored to address the specific issues found in your model. What's even more valuable is that Giskard allows you to customize these tests further to suit your specific use case. You can define domain-specific data slicers and transformers as fixtures of your test suites, ensuring that the generated tests align with your project's unique requirements. This level of customization ensures that you can effectively validate and improve your models.
+- **SHAP plot Logging**: Giskard logs SHAP plots into Weights and Biases, aiding feature importance analysis. SHAP plots reveal influential model features.
+- **Automated Vulnerability Detection**: Giskard automates the detection of model vulnerabilities, including bias, data leakage, unrobustness, and more. Early detection helps in model development.
+- **Customizable Tests**: Giskard generates tailored tests based on detected vulnerabilities. You can further customize these tests by defining domain-specific data slicers and transformers. This flexibility ensures effective model validation and improvement.
 
 ## Setup
 To use Giskard with Weights and Biases, you need to follow these steps:
