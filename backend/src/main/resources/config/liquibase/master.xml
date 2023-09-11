@@ -28,6 +28,7 @@
     <include file="config/liquibase/changelog/20230614134137_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230622130823_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230705162357_changelog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230712135428_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/clean_old_tests.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/migrate-process_type.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20230818143554_changelog.xml" relativeToChangelogFile="false"/>
