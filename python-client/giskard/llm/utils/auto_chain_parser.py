@@ -1,7 +1,7 @@
 from giskard.scanner.llm.utils import LLMImportError
 
 try:
-    from langchain.chains.base import LLMChain
+    from langchain import LLMChain
     from langchain.schema import BaseOutputParser
 except ImportError as err:
     raise LLMImportError() from err
