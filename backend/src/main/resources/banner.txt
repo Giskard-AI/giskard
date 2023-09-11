@@ -1,9 +1,5 @@
-
-${AnsiColor.GREEN} ██████╗ ${AnsiColor.RED}██╗███████╗██╗  ██╗ █████╗ ██████╗ ██████╗
-${AnsiColor.GREEN}██╔════╝ ${AnsiColor.RED}██║██╔════╝██║ ██╔╝██╔══██╗██╔══██╗██╔══██╗
-${AnsiColor.GREEN}██║  ███╗${AnsiColor.RED}██║███████╗█████╔╝ ███████║██████╔╝██║  ██║
-${AnsiColor.GREEN}██║   ██║${AnsiColor.RED}██║╚════██║██╔═██╗ ██╔══██║██╔══██╗██║  ██║
-${AnsiColor.GREEN}╚██████╔╝${AnsiColor.RED}██║███████║██║  ██╗██║  ██║██║  ██║██████╔╝
-${AnsiColor.GREEN} ╚═════╝ ${AnsiColor.RED}╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝
-
-${AnsiColor.GREEN}🐢 Giskard backend running on Spring Boot ${spring-boot.version}${AnsiColor.DEFAULT}
+  _____     ____
+ /      \  |  o |
+|        |/ ___\| Giskard
+|_________/
+|_|_| |_|_|

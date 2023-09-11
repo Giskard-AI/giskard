@@ -21,7 +21,6 @@ WORKDIR /app
 COPY python-client python-client
 COPY frontend frontend
 COPY backend backend
-COPY common common
 COPY gradle gradle
 # Copying .git to make gradle-git-properties gradle plugin work
 COPY .git .git
