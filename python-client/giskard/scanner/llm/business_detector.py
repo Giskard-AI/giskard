@@ -4,7 +4,6 @@ import pandas as pd
 
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
-from ..llm.utils import infer_dataset
 from ...datasets.base import Dataset
 from ...llm.issues import LLM_ISSUE_CATEGORIES, LlmIssueCategory
 from ...models.langchain import LangchainModel
@@ -49,39 +48,54 @@ def validate_prediction(
 
 @detector("llm_business", tags=["business", "llm", "generative", "text_generation"])
 class LLMBusinessDetector:
-    def __init__(self, threshold: float = 0.6, num_samples=10, num_tests=4):
+    def __init__(self, threshold: float = 0.6, num_samples=10, num_tests=3):
         self.threshold = threshold
         self.num_samples = num_samples
         self.num_tests = num_tests
 
-    def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
-        potentially_failing_dataset = dataset = infer_dataset(
-            f"""
-            Name: {model.meta.name}
-            
-            Description: {model.meta.description}
-            """,
-            model.meta.feature_names,
-            True,
-        )
-        print(f"Generated potentially failing prompts: {potentially_failing_dataset}")
-
-        df = pd.concat([potentially_failing_dataset.df, dataset.df]).reset_index(drop=True)
-        df = df.head(min(len(df.index), self.num_samples))
-        dataset = Dataset(df)
-
-        predictions = model.predict(dataset).prediction
+    def run(self, model: LangchainModel, _: Dataset) -> Sequence[Issue]:
 
         issues = []
 
         for issue in LLM_ISSUE_CATEGORIES:
             try:
-                test_cases = issue.issue_generator.run_and_parse(
-                    model_name=model.meta.name, model_description=model.meta.description
-                ).assertions[:3]
+                potentially_failing_inputs = (
+                    issue.input_generator(self.num_samples)
+                    .run_and_parse_with_prompt(
+                        model_name=model.meta.name,
+                        model_description=model.meta.description,
+                        variables=model.meta.feature_names,
+                    )
+                    .input[: self.num_samples]
+                )
+
+                potentially_failing_dataset = Dataset(
+                    pd.DataFrame(
+                        [
+                            {
+                                key: value
+                                for key, value in potentially_failing_input.items()
+                                if key in model.meta.feature_names
+                            }
+                            for potentially_failing_input in potentially_failing_inputs
+                        ]
+                    )
+                )
+
+                print(f"Generated potentially failing prompts: {potentially_failing_dataset.df}")
+
+                test_cases = (
+                    issue.issue_generator(self.num_tests)
+                    .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
+                    .assertions[: self.num_tests]
+                )
                 print(f"Generated tests: {test_cases}")
 
-                issues += validate_prediction(model, issue, test_cases, dataset, predictions, self.threshold)
+                predictions = model.predict(potentially_failing_dataset).prediction
+
+                issues += validate_prediction(
+                    model, issue, test_cases, potentially_failing_dataset, predictions, self.threshold
+                )
             except Exception as e:
                 print(f"Failed to evaluate {issue}: {e}")
 
