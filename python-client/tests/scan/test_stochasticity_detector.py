@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 
-from giskard import Model, Dataset
-from giskard.scanner.stochasticity.stochasticity_detector import StochasticityDetector, StochasticityIssue
+from giskard import Dataset, Model
+from giskard.scanner.issues import Stochasticity
+from giskard.scanner.stochasticity.stochasticity_detector import StochasticityDetector
 
 
 def _make_random_classification_model(n_labels=3):
@@ -47,4 +48,4 @@ def test_stochasticity_is_detected():
     issues = detector.run(model, dataset)
 
     assert len(issues) == 1
-    assert isinstance(issues[0], StochasticityIssue)
+    assert issues[0].group == Stochasticity

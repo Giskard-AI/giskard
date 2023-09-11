@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -30,13 +31,13 @@ public class TransformationFunctionController {
         return giskardMapper.toDTO(transformationFunctionRepository.getMandatoryById(uuid));
     }
 
-    @PutMapping({"project/{projectKey}/transformations/{uuid}", "/transformations/{uuid}"})
+    @PutMapping("project/{projectKey}/transformations/{uuid}")
     @Transactional
     public TransformationFunctionDTO updateTransformationFunction(
-        @PathVariable(value = "projectKey", required = false) String projectKey,
+        @PathVariable(value = "projectKey") String projectKey,
         @PathVariable("uuid") @NotNull UUID uuid,
         @Valid @RequestBody TransformationFunctionDTO transformationFunction) {
-        transformationFunction.setProjectKey(projectKey);
+        transformationFunction.setProjectKeys(Set.of(projectKey));
         return transformationFunctionService.save(transformationFunction);
     }
 

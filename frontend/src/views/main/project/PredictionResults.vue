@@ -1,20 +1,26 @@
 <template>
   <v-card class="mb-4" id="resultCard" outlined>
-    <v-card-title>Result</v-card-title>
+    <v-card-title>Result
+      <PushPopover type="overconfidence"/>
+      <PushPopover type="borderline"/>
+    </v-card-title>
     <v-card-text class="text-center card-text" v-if="inputData">
-      <LoadingFullscreen v-show="loading" name="result" class="pb-6" />
+      <LoadingFullscreen v-show="loading" name="result" class="pb-6"/>
       <v-row v-if="prediction && isClassification(predictionTask) && !loading">
         <v-col lg="8" md="12" sm="12" xs="12" v-if="resultProbabilities && Object.keys(resultProbabilities).length > 0
           ">
-          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{ Object.keys(resultProbabilities).length }})</span></div>
-          <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize />
+          <div>Probabilities <span v-if="Object.keys(resultProbabilities).length > 5"> (5 of {{
+              Object.keys(resultProbabilities).length
+            }})</span></div>
+          <v-chart class="chart" :option="chartOptions" :init-options="chartInit" autoresize/>
         </v-col>
         <v-col lg="4">
           <div class="mb-3">
             <div>Prediction</div>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <div class="text-h6" :class="classColorPrediction" v-on="prediction.length > maxLengthDisplayedCategoryComp ? on : ''">
+                <div class="text-h6" :class="classColorPrediction"
+                     v-on="prediction.length > maxLengthDisplayedCategoryComp ? on : ''">
                   {{ abbreviateMiddle(prediction, maxLengthDisplayedCategoryComp) }}
                 </div>
               </template>
@@ -29,7 +35,9 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div class="text-h6">
-                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategoryComp ? on : ''">{{ abbreviateMiddle(actual, maxLengthDisplayedCategoryComp) }}</div>
+                    <div v-if="isDefined(actual)" v-on="actual.length > maxLengthDisplayedCategoryComp ? on : ''">
+                      {{ abbreviateMiddle(actual, maxLengthDisplayedCategoryComp) }}
+                    </div>
                     <div v-else>-</div>
                   </div>
                 </template>
@@ -39,7 +47,8 @@
             </div>
             <div class="caption">
               <div v-if="targetFeature">target: {{ targetFeature }}</div>
-              <div v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
+              <div
+                  v-if="model && model.threshold && (model.modelType != ModelType.CLASSIFICATION || model.classificationLabels.length == 2)">
                 threshold:
                 {{ model.threshold }}
               </div>
@@ -82,7 +91,8 @@
     </v-card-text>
 
     <v-card-actions v-show="Object.keys(resultProbabilities).length > predCategoriesN">
-      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual' :classColorPrediction='classColorPrediction'></ResultPopover>
+      <ResultPopover :resultProbabilities='resultProbabilities' :prediction='prediction' :actual='actual'
+                     :classColorPrediction='classColorPrediction'></ResultPopover>
     </v-card-actions>
 
   </v-card>
@@ -93,16 +103,17 @@ import VChart from 'vue-echarts';
 import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import ResultPopover from '@/components/ResultPopover.vue';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
-import { api } from '@/api';
-import { use } from 'echarts/core';
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
-import { GridComponent } from 'echarts/components';
-import { ModelDTO, ModelType } from '@/generated-sources';
-import { isClassification } from '@/ml-utils';
-import { abbreviateMiddle, maxLengthDisplayedCategory } from '@/results-utils';
+import {api} from '@/api';
+import {use} from 'echarts/core';
+import {BarChart} from 'echarts/charts';
+import {CanvasRenderer} from 'echarts/renderers';
+import {GridComponent} from 'echarts/components';
+import {ModelDTO, ModelType} from '@/generated-sources';
+import {isClassification} from '@/ml-utils';
+import {abbreviateMiddle, maxLengthDisplayedCategory} from '@/results-utils';
 import * as _ from 'lodash';
-import { CanceledError } from 'axios';
+import {CanceledError} from 'axios';
+import PushPopover from "@/components/PushPopover.vue";
 
 use([CanvasRenderer, BarChart, GridComponent]);
 
@@ -163,11 +174,11 @@ async function submitPrediction() {
   if (Object.keys(props.inputData).length) {
     try {
       loading.value = true;
-      const predictionResult = (await api.predict(
-        props.model.id,
-        props.datasetId,
-        _.pick(props.inputData, props.modelFeatures),
-        controller.value
+        const predictionResult = (await api.predict(
+            props.model.id,
+            props.datasetId,
+            _.pick(props.inputData, props.modelFeatures),
+            controller.value
       ))
       prediction.value = predictionResult.prediction;
       emit("result", prediction.value);
@@ -176,7 +187,7 @@ async function submitPrediction() {
         .sort(([, v1], [, v2]) => +v2 - +v1)       // Sort the object by value - solution based on:
         .reduce((r, [k, v]) => ({ ...r, [k]: v }), {}); // https://stackoverflow.com/questions/55319092/sort-a-javascript-object-by-key-or-value-es6
 
-      errorMsg.value = "";
+            errorMsg.value = "";
       loading.value = false;
     } catch (error) {
       if (!(error instanceof CanceledError)) {
@@ -224,24 +235,24 @@ const chartOptions = computed(() => {
           show: true,
           position: "right",
           formatter: (params: any) =>
-            params.value % 1 == 0
-              ? params.value
-              : params.value.toFixed(2).toLocaleString(),
+                params.value % 1 == 0
+                    ? params.value
+                    : params.value.toFixed(2).toLocaleString(),
+          },
+          data: Object.values(results),
         },
-        data: Object.values(results),
+      ],
+      color: ["#0091EA"],
+      grid: {
+        width: "80%",
+        height: "80%",
+        top: "10%",
+        left: "10%",
+        right: "10%",
+        containLabel: true,
       },
-    ],
-    color: ["#0091EA"],
-    grid: {
-      width: "80%",
-      height: "80%",
-      top: "10%",
-      left: "10%",
-      right: "10%",
-      containLabel: true,
-    },
-  };
-});
+    };
+  });
 
 function firstNSortedByKey(obj: Object, n: number) {
   let listed = Object.entries(obj)

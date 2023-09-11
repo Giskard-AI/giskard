@@ -26,6 +26,7 @@ from ...settings import settings
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -75,14 +76,14 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -104,7 +105,7 @@ class BaseModel(ABC):
                 - meta: a ModelMeta object containing metadata about the model.
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
-        if type(model_type) == str:
+        if isinstance(model_type, str):
             try:
                 model_type = SupportedModelTypes(model_type)
             except ValueError as e:
@@ -354,9 +355,25 @@ class BaseModel(ABC):
             This method saves the model to a temporary directory before uploading it. The temporary directory
             is deleted after the upload is completed.
         """
-        from giskard.core.model_validation import validate_model
+        from giskard.core.model_validation import validate_model, validate_model_loading_and_saving
 
         validate_model(model=self, validate_ds=validate_ds)
+        reloaded_model = validate_model_loading_and_saving(self)
+        validate_model(model=reloaded_model, validate_ds=validate_ds)
+
+        reloaded_model = validate_model_loading_and_saving(self)
+        try:
+            validate_model(model=reloaded_model, validate_ds=validate_ds)
+        except Exception as e_reloaded:
+            try:
+                validate_model(model=self, validate_ds=validate_ds)
+                logger.info("Original model validated successfully")
+            except Exception as e_loaded:
+                logger.exception("Failed to validate the original model", e_loaded)
+            raise GiskardException(
+                "An error occured while validating a deserialized version your model, please report this issue to Giskard"
+            ) from e_reloaded
+
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             self.save(f)
 

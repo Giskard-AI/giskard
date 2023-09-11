@@ -9,7 +9,8 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from ..datasets.base import Dataset
 from ..ml_worker.core.savable import Artifact
 from ..models.base import BaseModel
-from ..visualization.custom_jinja import pluralize, format_metric
+from ..scanner.issues import IssueLevel
+from ..visualization.custom_jinja import format_metric, markdown_to_html, pluralize
 
 
 def _param_to_str(param: Any) -> str:
@@ -33,6 +34,7 @@ def get_template(file: str):
     )
     env.filters["pluralize"] = pluralize
     env.filters["format_metric"] = format_metric
+    env.filters["markdown"] = markdown_to_html
 
     return env.get_template(file)
 
@@ -48,7 +50,7 @@ class TestSuiteResultWidget(BaseWidget):
         self.test_suite_result = test_suite_result
 
     def render_html(self) -> str:
-        tpl = get_template("suite_results.html")
+        tpl = get_template("suite_results/suite_results.html")
 
         return tpl.render(
             passed=self.test_suite_result.passed,
@@ -58,37 +60,46 @@ class TestSuiteResultWidget(BaseWidget):
         )
 
 
-class ScanResultWidget(BaseWidget):
+class ScanReportWidget(BaseWidget):
     def __init__(self, scan_result):
         self.scan_result = scan_result
 
-    def render_html(self, **kwargs) -> str:
-        tpl = get_template("scan_results.html")
+    def render_template(self, template_filename: str, **kwargs) -> str:
+        tpl = get_template("scan_report/" + template_filename)
 
         issues_by_group = defaultdict(list)
         for issue in self.scan_result.issues:
             issues_by_group[issue.group].append(issue)
 
-        html = tpl.render(
+        groups = []
+        for group, issues in issues_by_group.items():
+            groups.append(
+                {
+                    "group": group,
+                    "issues": issues,
+                    "num_major_issues": len([i for i in issues if i.level == IssueLevel.MAJOR]),
+                    "num_medium_issues": len([i for i in issues if i.level == IssueLevel.MEDIUM]),
+                    "num_minor_issues": len([i for i in issues if i.level == IssueLevel.MINOR]),
+                }
+            )
+
+        return tpl.render(
             issues=self.scan_result.issues,
-            issues_by_group=issues_by_group,
-            num_major_issues={
-                group: len([i for i in issues if i.level == "major"]) for group, issues in issues_by_group.items()
-            },
-            num_medium_issues={
-                group: len([i for i in issues if i.level == "medium"]) for group, issues in issues_by_group.items()
-            },
-            num_info_issues={
-                group: len([i for i in issues if i.level == "info"]) for group, issues in issues_by_group.items()
-            },
+            groups=groups,
+            **kwargs,
         )
 
-        if kwargs.get("embed", False):
+    def render_html(self, template="full", embed=False) -> str:
+        html = self.render_template(f"html/{template}.html")
+
+        if embed:
             # Put the HTML in an iframe
             escaped = escape(html)
             uid = id(self)
 
-            with Path(__file__).parent.joinpath("templates", "static", "external.js").open("r") as f:
+            with Path(__file__).parent.joinpath("templates", "scan_report", "html", "static", "external.js").open(
+                "r"
+            ) as f:
                 js_lib = f.read()
 
             html = f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
@@ -98,3 +109,6 @@ class ScanResultWidget(BaseWidget):
 </script>"""
 
         return html
+
+    def render_markdown(self, template="full") -> str:
+        return self.render_template(f"markdown/{template}.md")

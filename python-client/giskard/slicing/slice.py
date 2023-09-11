@@ -16,7 +16,7 @@ from ..utils.display import format_number
 
 
 def escape(value) -> str:
-    return str(value) if type(value) is not str else "%s" % value
+    return str(value) if not isinstance(value, str) else "%s" % value
 
 
 def _decode(series: pd.Series) -> pd.Series:
@@ -222,6 +222,9 @@ class Query:
     def __init__(self, clauses, optimize=False):
         self.clauses = defaultdict(list)
         for clause in clauses:
+            # if clause.value is an int64, convert it to an int
+            if isinstance(clause.value, np.int64):
+                clause.value = int(clause.value)
             self.clauses[clause.column].append(clause)
 
         if optimize:

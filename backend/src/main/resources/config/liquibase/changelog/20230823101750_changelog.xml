@@ -1,0 +1,11 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="andreyavtomonov (generated)" id="1692778683763-13">
+        <addColumn tableName="test_input">
+            <column name="input_value" type="CLOB"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="andreyavtomonov (generated)" id="1692778683763-14">
+        <dropColumn columnName="value" tableName="TEST_INPUT"/>
+    </changeSet>
+</databaseChangeLog>

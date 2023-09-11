@@ -4,8 +4,6 @@
 # This configuration will be overridden by the Spring profile you use,
 # for example application-dev.yml if you use the "dev" profile.
 #
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
 # ===================================================================
@@ -35,8 +33,6 @@ management:
             'env',
             'health',
             'info',
-            'jhimetrics',
-            'jhiopenapigroups',
             'logfile',
             'loggers',
             'prometheus',
@@ -54,8 +50,6 @@ management:
           include: livenessState
         readiness:
           include: readinessState,db
-    jhimetrics:
-      enabled: true
   info:
     git:
       mode: full
@@ -96,17 +90,6 @@ spring:
       max-request-size: 1000MB
   application:
     name: giskard
-  profiles:
-    # The commented value for `active` can be replaced with valid Spring profiles to load.
-    # Otherwise, it will be filled in by gradle when building the JAR file
-    # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
-    active: #spring.profiles.active#
-    group:
-      dev:
-        - dev
-        - api-docs
-        # Uncomment to activate TLS for the dev profile
-        #- tls
   mail:
     host:
     port:
@@ -139,7 +122,7 @@ spring:
     hibernate:
       ddl-auto: validate
       naming:
-        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages
@@ -149,19 +132,21 @@ spring:
     execution:
       thread-name-prefix: giskard-task-
       pool:
-        core-size: 2
-        max-size: 50
-        queue-capacity: 10000
+          core-size: 2
+          max-size: 50
+          queue-capacity: 10000
     scheduling:
-      thread-name-prefix: giskard-scheduling-
-      pool:
-        size: 2
+        thread-name-prefix: giskard-scheduling-
+        pool:
+            size: 2
   thymeleaf:
-    mode: HTML
+      mode: HTML
   output:
-    ansi:
-      console-available: true
-
+      ansi:
+          console-available: true
+  mvc:
+      problemdetails:
+          enabled: true
 server:
   servlet:
     session:
@@ -175,48 +160,6 @@ springdoc:
 info:
   # Comma separated list of profiles that will trigger the ribbon to show
   display-ribbon-on-profiles: 'dev'
-
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-jhipster:
-  clientApp:
-    name: 'giskardApp'
-  # By default CORS is disabled. Uncomment to enable.
-  # cors:
-  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
-  #   allowed-methods: "*"
-  #   allowed-headers: "*"
-  #   exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
-  #   allow-credentials: true
-  #   max-age: 1800
-  mail:
-    from: welcome@giskard.ai
-  api-docs:
-    default-include-pattern: ${server.servlet.context-path:}/api/**
-    management-include-pattern: ${server.servlet.context-path:}/management/**
-    title: Giskard API
-    description: Giskard API documentation
-    version: 0.0.1
-    terms-of-service-url:
-    contact-name:
-    contact-url:
-    contact-email:
-    license: unlicensed
-    license-url:
-  security:
-    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
 giskard:
   ml-worker-host: localhost

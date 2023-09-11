@@ -1,9 +1,11 @@
-import { defineStore } from 'pinia';
-import { AdminUserDTO, RoleDTO } from '@/generated-sources';
-import { api } from '@/api';
-import { useMainStore } from '@/stores/main';
-import { useUserStore } from '@/stores/user';
-import { TYPE } from 'vue-toastification';
+import {defineStore} from 'pinia';
+import {api} from '@/api';
+import {useMainStore} from '@/stores/main';
+import {useUserStore} from '@/stores/user';
+import {TYPE} from 'vue-toastification';
+import {openapi} from "@/api-v2";
+import {RoleDTO} from "@/generated/client";
+import {AdminUserDTO} from "@/generated-sources";
 import AdminUserDTOWithPassword = AdminUserDTO.AdminUserDTOWithPassword;
 
 
@@ -35,7 +37,7 @@ export const useAdminStore = defineStore('admin', {
         async getRoles() {
             const mainStore = useMainStore();
             try {
-                this.roles = await api.getRoles();
+                this.roles = await openapi.publicUser.getAuthorities();
             } catch (err) {
                 await mainStore.checkApiError(err);
             }

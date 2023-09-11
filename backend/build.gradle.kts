@@ -1,15 +1,20 @@
-import com.google.protobuf.gradle.id
-import com.google.protobuf.gradle.protobuf
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.*
+
+group = "ai.giskard"
+description = "Giskard main java backend"
 
 val MIN_JAVA_VERSION = 17
 if (JavaVersion.current().majorVersion.toInt() < MIN_JAVA_VERSION) {
     throw GradleException("This build requires at least Java $MIN_JAVA_VERSION, version used: ${JavaVersion.current()}")
 }
-
+repositories {
+    mavenCentral()
+}
 buildscript {
     repositories {
+        mavenCentral()
         gradlePluginPortal()
     }
 }
@@ -18,19 +23,17 @@ plugins {
     id("java")
     id("idea")
     id("jacoco")
-    id("org.springframework.boot")
     id("org.sonarqube")
+    id("org.springframework.boot")
+    id("io.spring.dependency-management") version "1.1.2"
     id("com.gorylenko.gradle-git-properties") version "2.4.0"
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
-    id("com.google.protobuf") version "0.9.2"
+    id("org.openapi.generator") version "7.0.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
-group = "ai.giskard"
-description = "Giskard main java backend"
-
-defaultTasks("bootRun")
 
 var profiles: String = ""
 if (project.hasProperty("prod")) {
@@ -58,7 +61,7 @@ if (project.hasProperty("prod")) {
     springBoot {
         buildInfo {
             properties {
-                time = null
+//                time = null
             }
         }
     }
@@ -120,7 +123,7 @@ liquibase {
     activities.register("diffLog") {
         this.arguments = mapOf(
             "url" to "jdbc:h2:$liquibaseH2db/db",
-            "referenceUrl" to "hibernate:spring:ai.giskard.domain?dialect=tech.jhipster.domain.util.FixedPostgreSQL10Dialect&hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy",
+            "referenceUrl" to "hibernate:spring:ai.giskard.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy",
             "classpath" to "$buildDir/classes/java/main",
             "changeLogFile" to changeLogFile,
             "logLevel" to "info",
@@ -133,13 +136,24 @@ gitProperties {
     failOnNoGitDirectory = false
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
 }
-repositories {
-    mavenCentral()
+
+openApi {
+    apiDocsUrl.set("http://localhost:11337/v3/api-docs")
+    outputDir.set(file("$buildDir/docs"))
+    outputFileName.set("openapi.json")
+    waitTimeInSeconds.set(60)
+    customBootRun {
+        args.set(
+            listOf(
+                "--spring.profiles.active=dev",
+                "--server.port=11337",
+                "--giskard.home=" + outputDir.dir("giskard-home-"+ Instant.now().toEpochMilli()).get().toString(),
+            )
+        )
+    }
 }
 
-val grpcVersion: String by project.extra.properties
-val jhipsterDependenciesVersion: String by project.extra.properties
-val liquibaseHibernate5Version: String by project.extra.properties
+val liquibaseHibernate6Version: String by project.extra.properties
 val jaxbRuntimeVersion: String by project.extra.properties
 val archunitJunit5Version: String by project.extra.properties
 val springBootVersion: String by project.extra.properties
@@ -147,130 +161,75 @@ val mapstructVersion: String by project.extra.properties
 val liquibaseH2db = file(".liquibase_h2_db")
 
 dependencies {
-    implementation("io.grpc:grpc-netty:$grpcVersion")
-    implementation("io.grpc:grpc-census:$grpcVersion")
-    implementation("io.grpc:grpc-protobuf:$grpcVersion")
-    implementation("io.grpc:grpc-stub:$grpcVersion")
+    liquibaseRuntime(sourceSets.main.get().compileClasspath)
 
-
-    testImplementation("io.grpc:grpc-testing:$grpcVersion")
-
-    implementation(platform("tech.jhipster:jhipster-dependencies:${jhipsterDependenciesVersion}"))
-    implementation(group = "tech.jhipster", name = "jhipster-framework")
-    implementation("javax.annotation:javax.annotation-api")
-    implementation("io.dropwizard.metrics:metrics-core")
-    implementation("io.micrometer:micrometer-registry-prometheus")
+    annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
+    compileOnly("org.mapstruct:mapstruct:${mapstructVersion}")
+    compileOnly("org.projectlombok:lombok")
+    developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+    implementation("com.fasterxml.jackson.core:jackson-annotations")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hppc")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate5")
-    implementation("com.fasterxml.jackson.core:jackson-annotations")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("org.hibernate:hibernate-core")
-    implementation("com.zaxxer:HikariCP")
-    implementation("org.apache.commons:commons-lang3")
-    implementation("javax.transaction:javax.transaction-api")
-    implementation("org.hibernate:hibernate-entitymanager")
-    implementation("org.hibernate.validator:hibernate-validator")
-    implementation("org.liquibase:liquibase-core")
-
-    liquibaseRuntime("org.liquibase:liquibase-core")
-    liquibaseRuntime("org.liquibase.ext:liquibase-hibernate5:${liquibaseHibernate5Version}")
-    liquibaseRuntime("org.postgresql:postgresql:42.5.2")
-//    liquibaseRuntime("info.picocli:picocli:4.7.0")
-    liquibaseRuntime(sourceSets.main.get().compileClasspath)
-
-    implementation("org.springframework.boot:spring-boot-loader-tools")
-
-    implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springframework.boot:spring-boot-starter-logging")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-websocket")
-    implementation("org.springframework.security:spring-security-messaging")
-    testImplementation("org.testcontainers:postgresql")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-tomcat")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.zalando:problem-spring-web")
-    implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
-    implementation("org.springframework.security:spring-security-config")
-    implementation("org.springframework.security:spring-security-data")
-    implementation("org.springframework.security:spring-security-web")
-    implementation("io.jsonwebtoken:jjwt-api")
-    implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
-    implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
-    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson")
-
-    implementation("org.springdoc:springdoc-openapi-webmvc-core")
-    implementation(group = "org.springdoc", name = "springdoc-openapi-ui", version = "1.6.11")
-    implementation("org.postgresql:postgresql")
-
-    implementation("com.h2database:h2")
-    testImplementation("com.h2database:h2")
-
-
-//    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.springframework.boot:spring-boot-test")
-    testImplementation("com.tngtech.archunit:archunit-junit5-api:${archunitJunit5Version}")
-    testRuntimeOnly("com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}")
-    developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
-    protobuf(files("../common/proto"))
-
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    // MapStruct
-    compileOnly("org.mapstruct:mapstruct:${mapstructVersion}")
-    annotationProcessor("org.mapstruct:mapstruct-processor:${mapstructVersion}")
-
-    implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
-    implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.14.2")
-    implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
-    implementation("org.apache.commons:commons-compress:1.21")
-    implementation("org.apache.commons:commons-csv:1.10.0")
-    implementation("commons-codec:commons-codec:1.15")
-    implementation("com.google.protobuf:protobuf-java-util:3.21.9")
     implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
-
+    implementation("com.h2database:h2")
+    implementation("com.zaxxer:HikariCP")
+    implementation("commons-codec:commons-codec:1.15")
     implementation("commons-fileupload:commons-fileupload:1.4")
     implementation("commons-io:commons-io:2.11.0")
-}
-
-protobuf {
-    val protocVersion by project.extra.properties
-
-    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
-    plugins {
-        id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-        }
-    }
-    generateProtoTasks {
-        all().forEach {
-            it.plugins {
-                id("grpc")
-            }
-            it.doFirst {
-                delete(it.outputBaseDir)
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs.add(file("build/generated/source/proto/main/grpc"))
-            srcDirs.add(file("build/generated/source/proto/main/java"))
-            srcDirs.add(file("build/generated/source/proto/main/python"))
-        }
-    }
+    implementation("io.dropwizard.metrics:metrics-core")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+//    implementation("javax.annotation:javax.annotation-api")
+//    implementation("javax.transaction:javax.transaction-api")
+    implementation("org.apache.commons:commons-compress:1.21")
+    implementation("org.apache.commons:commons-csv:1.10.0")
+    implementation("org.apache.commons:commons-lang3")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("org.hibernate.validator:hibernate-validator")
+//    implementation("org.hibernate:hibernate-core")
+//    implementation("org.hibernate:hibernate-entitymanager")
+    implementation("org.liquibase:liquibase-core")
+    implementation("org.postgresql:postgresql")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    implementation("org.springframework.boot:spring-boot-loader-tools")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-tomcat")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.security:spring-security-config")
+    implementation("org.springframework.security:spring-security-data")
+    implementation("org.springframework.security:spring-security-messaging")
+    implementation("org.springframework.security:spring-security-web")
+    implementation("org.testcontainers:postgresql")
+    implementation(files("$projectDir/src/main/resources/third-party/j2ts-api.jar"))
+    implementation(group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version = "2.13.1")
+    implementation(group = "com.github.luben", name = "zstd-jni", version = "1.5.2-3")
+    implementation(group = "org.apache.commons", name = "commons-compress", version = "1.21")
+    implementation(group = "tech.tablesaw", name = "tablesaw-core", version = "0.43.1")
+    implementation(group = "tech.tablesaw", name = "tablesaw-json", version = "0.34.2")
+    liquibaseRuntime("info.picocli:picocli:4.7.0")
+    liquibaseRuntime("org.liquibase.ext:liquibase-hibernate6:${liquibaseHibernate6Version}")
+    liquibaseRuntime("org.liquibase:liquibase-core")
+    liquibaseRuntime("org.postgresql:postgresql:42.5.2")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    testImplementation("com.h2database:h2")
+    testImplementation("com.tngtech.archunit:archunit-junit5-api:${archunitJunit5Version}")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-test")
+    testImplementation("org.springframework.security:spring-security-test")
+    testRuntimeOnly("com.tngtech.archunit:archunit-junit5-engine:${archunitJunit5Version}")
+////    annotationProcessor("org.hibernate:hibernate-jpamodelgen:${hibernateVersion}.Final")
 }
 
 tasks {
@@ -281,6 +240,10 @@ tasks {
 
     test {
         finalizedBy(jacocoTestReport)
+    }
+
+    build {
+        finalizedBy("generateWebClient")
     }
 
     jacocoTestReport {
@@ -344,6 +307,9 @@ tasks {
     create<Delete>("distClean") {
         delete(buildDir)
     }
+    create<Delete>("cleanOpenApiDocs") {
+        delete(file("$buildDir/docs/openapi.json"))
+    }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
     }
@@ -373,15 +339,6 @@ tasks {
         }
     }
 
-    create<Delete>("cleanGenerated") {
-        delete = setOf(
-            "$buildDir/extracted-include-protos",
-            "$buildDir/extracted-protos",
-            "$buildDir/proto",
-            "$buildDir/generated/source/proto"
-        )
-    }
-
     create<Delete>("cleanResources") {
         delete = setOf("build/resources")
     }
@@ -396,7 +353,18 @@ tasks {
     register("package") {
         dependsOn("bootJar")
     }
+
+    create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        dependsOn("compileJava", "cleanOpenApiDocs", "generateOpenApiDocs")
+
+        generatorName.set("typescript-fetch")
+        inputSpec.set(file("$buildDir/docs/openapi.json").toString())
+        outputDir.set("$buildDir/../../frontend/src/generated/client")
+    }
 }
+
+defaultTasks("bootRun")
+
 
 
 

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ public class ProjectPostDTO {
 
     @NotNull
     private String name;
-    
+
     @NotNull
     @UINullable
     private String key;

@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from ..utils.artifacts import serialize_parameter
+
 try:
     from types import NoneType
 except ImportError:
@@ -128,12 +130,12 @@ class CallableMeta(SavableMeta, ABC):
     args: Dict[str, FunctionArgument]
 
     def __init__(
-            self,
-            callable_obj: Union[Callable, Type] = None,
-            name: Optional[str] = None,
-            tags: List[str] = None,
-            version: Optional[int] = None,
-            type: str = None,
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        version: Optional[int] = None,
+        type: str = None,
     ):
         self.version = version
         self.type = type
@@ -146,6 +148,7 @@ class CallableMeta(SavableMeta, ABC):
         self.module_doc = None
         self.full_name = None
         self.args = None
+
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 
@@ -171,7 +174,7 @@ class CallableMeta(SavableMeta, ABC):
                     name=parameter.name,
                     type=extract_optional(parameter.annotation).__qualname__,
                     optional=parameter.default != inspect.Parameter.empty,
-                    default=None if parameter.default == inspect.Parameter.empty else parameter.default,
+                    default=serialize_parameter(parameter.default),
                     argOrder=idx,
                 )
                 for idx, parameter in enumerate(parameters.values())
@@ -275,9 +278,15 @@ def __repr__(self) -> str:
 class TestFunctionMeta(CallableMeta):
     debug_description: str
 
-    def __init__(self, callable_obj: Union[Callable, Type] = None, name: Optional[str] = None, tags: List[str] = None,
-                 debug_description: str = None,
-                 version: Optional[int] = None, type: str = None):
+    def __init__(
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        debug_description: str = None,
+        version: Optional[int] = None,
+        type: str = None,
+    ):
         super().__init__(callable_obj, name, tags, version, type)
         self.debug_description = debug_description
 
@@ -310,15 +319,15 @@ class DatasetProcessFunctionMeta(CallableMeta):
     clauses: Optional[List[Dict[str, Any]]]
 
     def __init__(
-            self,
-            callable_obj: Union[Callable, Type] = None,
-            name: Optional[str] = None,
-            tags: List[str] = None,
-            version: Optional[int] = None,
-            type: str = None,
-            process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
-            cell_level: bool = False,
-            clauses: Optional[List[Dict[str, Any]]] = None,
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        version: Optional[int] = None,
+        type: str = None,
+        process_type: DatasetProcessFunctionType = DatasetProcessFunctionType.CODE,
+        cell_level: bool = False,
+        clauses: Optional[List[Dict[str, Any]]] = None,
     ):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
