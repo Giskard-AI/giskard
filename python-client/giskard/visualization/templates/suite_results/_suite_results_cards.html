@@ -1,6 +1,7 @@
 <div class='card-container'>
   {% for test_name, result, params in test_results %}
-  <div class='test-card test-card-{% if passed %}passed{% elif result.is_error %}error{% else %}failed{% endif %}'>
+  <div
+    class='test-card test-card-{% if result.passed %}passed{% elif result.is_error %}error{% else %}failed{% endif %}'>
     <div class='test-card-row'>
       <span class='test-name'>Test {{ test_name }}</span>
       <div class='spacer'></div>
