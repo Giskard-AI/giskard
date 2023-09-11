@@ -73,6 +73,7 @@ class LLMBusinessDetector:
         predictions = model.predict(dataset).prediction
 
         issues = []
+
         for issue in LLM_ISSUE_CATEGORIES:
             try:
                 test_cases = issue.issue_generator.run_and_parse(
