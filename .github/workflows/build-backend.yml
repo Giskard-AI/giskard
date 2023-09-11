@@ -1,31 +1,104 @@
-name: Backend
+name: Full CI
 on:
   push:
     branches:
       - main
   pull_request:
     # https://docs.github.com/fr/actions/using-workflows/workflow-syntax-for-github-actions#exemple--inclusion-de-chemins-dacc%C3%A8s
-    paths-ignore:
-      - 'python-client/**'
   workflow_dispatch:
-
+# https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow
+env:
+  GSK_DISABLE_ANALYTICS: true
+defaults:
+  run:
+    shell: bash
 jobs:
-  build:
-    name: Build
+  pre-check:
+    name: Pre check
     runs-on: ubuntu-latest
     steps:
-      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
-
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
       - name: Checkout code
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Extract branch name
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+        id: extract_branch
+  
+      # Inspired from https://blog.pantsbuild.org/skipping-github-actions-jobs-without-breaking-branch-protection/
+      - id: files
+        name: Get changed files outside python-client
+        uses: tj-actions/changed-files@v39
+        with:
+          files_ignore: python-client/**
+
+      - id: files-python
+        name: Get changed files in python-client
+        uses: tj-actions/changed-files@v39
+        with:
+          files: python-client/**
+  
+      - id: python_only
+        if: steps.files.outputs.any_changed != 'true'
+        name: Check for changes in python only 
+        run: echo 'python_only=PYTHON_ONLY' >> $GITHUB_OUTPUT
+
+      - id: python_at_least
+        if: steps.files-python.outputs.any_changed != 'true'
+        name: Check for changes in python
+        run: echo 'python_at_least=PYTHON_AT_LEAST' >> $GITHUB_OUTPUT
+
+  sonar:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Sonar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle # To cache ~/.gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: false
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+
+      - name: Analyze with Sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: ./gradlew sonar --info --parallel
+
+  build:
+    needs: pre-check
+    if: ${{ needs.pre-check.outputs.python_only != 'PYTHON_ONLY' }}
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+  
       - name: Setup Gradle # To cache ~/.gradle
         uses: gradle/gradle-build-action@v2
         with:
@@ -42,20 +115,84 @@ jobs:
         with:
           node-version: 16
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 17
-
       - name: Build frontend
-        env:
-          GSK_DISABLE_ANALYTICS: True
         run: ./gradlew :frontend:build
   
       - name: Build & test backend
-        env:
-          GSK_DISABLE_ANALYTICS: True
         run: ./gradlew :backend:build :backend:test :backend:integrationTest :backend:jacocoTestReport --info --parallel
 
-      - run: echo "$(du -sh $(ls -A ~) 2>/dev/null | sort -hr)"
+  build-python:
+    name: Build Python
+    needs: pre-check
+    if: ${{ needs.pre-check.outputs.python_at_least != 'PYTHON_AT_LEAST' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # Do not stop when any job fails
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10" ]
+        os: [ubuntu-latest]
+        experimental: [false]
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        include:
+          - python-version: "3.10"
+            os: windows-2019
+            experimental: false
+    continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.3.0
+
+      - name: Cache Python deps
+        uses: actions/cache@v3
+        with:
+          path: python-client/.venv
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: false # TODO(Bazire): https://linear.app/giskard/issue/GSK-1712/activate-cache-on-pdm-setup-in-github-action
+
+      - name: Set up Pandoc (needed for python-client doc)
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+  
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        with:
+          path: ~/.giskard
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
+
+      - name: Install dependencies
+        working-directory: python-client 
+        run: pdm install -G :all
+
+      - name: Lint code
+        working-directory: python-client 
+        run: pdm run lint
+
+      - name: Test code
+        working-directory: python-client
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ matrix.os == 'windows-2019' && 1 || 2 }}
+        run: pdm run test-fast
+  
+      - name: Build doc
+        if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
+        working-directory: python-client
+        run: pdm run doc
+
+      - name: Build
+        working-directory: python-client
+        run: pdm build
+
+      - name: "Python client: archive built artifacts"
+        if: ${{ needs.pre-check.outputs.branch == 'main' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: python-client/dist/*whl
+
