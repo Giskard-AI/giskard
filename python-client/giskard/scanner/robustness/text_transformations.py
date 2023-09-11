@@ -28,6 +28,9 @@ class TextTransformation(TransformationFunction):
         self.meta.tags = ["pickle", "scan"]
         self.meta.doc = "Automatically generated transformation function"
 
+    def __str__(self):
+        return self.name
+
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
         data.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation)

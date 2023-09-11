@@ -153,7 +153,7 @@ giskard_dataset = Dataset(
     df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
     target="Survived",  # Ground truth variable
     name="Titanic dataset", # Optional
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally

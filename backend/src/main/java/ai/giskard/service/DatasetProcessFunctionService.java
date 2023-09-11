@@ -11,12 +11,12 @@ public abstract class DatasetProcessFunctionService<E extends DatasetProcessFunc
         super(callableRepository, giskardMapper);
     }
 
-    protected E update(E existing, D dto) {
-        existing = super.update(existing, dto);
-        existing.setCellLevel(dto.isCellLevel());
-        existing.setColumnType(dto.getColumnType());
-        existing.setProcessType(dto.getProcessType());
-        existing.setClauses(dto.getClauses());
-        return existing;
+    protected E update(E existingCallable, D dto) {
+        existingCallable = super.update(existingCallable, dto);
+        existingCallable.setCellLevel(dto.isCellLevel());
+        existingCallable.setColumnType(dto.getColumnType());
+        existingCallable.setProcessType(dto.getProcessType());
+        existingCallable.setClauses(dto.getClauses());
+        return existingCallable;
     }
 }
