@@ -9,8 +9,6 @@ import {
     AppConfigDTO,
     ApplyPushDTO,
     CallToActionKind,
-    CatalogDTO,
-    ComparisonClauseDTO,
     CreateFeedbackDTO,
     CreateFeedbackReplyDTO,
     DatasetDTO,
@@ -39,7 +37,6 @@ import {
     PushKind,
     RowFilterDTO,
     SetupDTO,
-    SlicingFunctionDTO,
     SuiteTestDTO,
     TestSuiteCompleteDTO,
     TestSuiteDTO,
@@ -444,12 +441,6 @@ export const api = {
             inputs,
             debug
         });
-    },
-    async getCatalog(projectId: number) {
-        return apiV2.get<unknown, CatalogDTO>(`/project/${projectId}/catalog`);
-    },
-    async createSlicingFunction(projectKey: string, comparisonClauses: Array<ComparisonClauseDTO>) {
-      return apiV2.post<unknown, SlicingFunctionDTO>(`/project/${projectKey}/slices/no-code`, comparisonClauses);
     },
     async uploadLicense(form: FormData) {
         return apiV2.post<unknown, unknown>(`/ee/license`, form, {

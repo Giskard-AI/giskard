@@ -6,12 +6,12 @@ import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -43,7 +43,7 @@ public class SlicingFunctionController {
     }
 
     @PostMapping("project/{projectKey}/slices/no-code")
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey") @NotNull String projectKey,
+    public SlicingFunctionDTO createNoCodeSlicingFunction(@PathVariable(value = "projectKey") @NotNull String projectKey,
                                                     @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
         return slicingFunctionService.generate(comparisonClauses, projectKey);
     }
