@@ -1,9 +1,23 @@
 # MLflow
 
-Giskard, is available as a seamless plug-in with MLflow's `mlflow.evaluate()` API. With this integration,
-you can effectively log comprehensive vulnerability reports through Giskard's scanning [capabilities](https://docs.giskard.ai/en/latest/guides/scan/index.html) directly onto the
-MLflow platform. Furthermore, the integration facilitates metric logging, enabling you to compare the performance,
-robustness, and even ethical bias of various ML models.
+MLflow is an open-source platform for managing end-to-end machine learning (ML) workflows. 
+It was developed by Databricks and has gained popularity in the machine learning community for its versatility and ease of use. 
+MLflow provides a set of tools and functionalities that help data scientists and machine learning engineers with the 
+following aspects of the ML development process:
+
+- **Experiment Tracking**: Log and track ML experiments.
+- **Code Packaging**: Easily package ML code for reproducibility.
+- **Model Versioning**: Keep track of different model versions.
+- **Model Deployment**: Integrate with deployment platforms.
+- **UI and Community**: User-friendly UI with broad community support.
+
+## Why integrating Giskard?
+
+Integrating Giskard with MLflow offers several compelling advantages for managing and enhancing machine learning workflows:
+- **Seamless Integration with `mlflow.evaluate()`**: Giskard effortlessly integrates with MLflow's evaluation API, simplifying vulnerability assessment.
+- **Comprehensive Vulnerability Reports**: Giskard's [scans](https://docs.giskard.ai/en/latest/guides/scan/index.html) cover performance bias, data leakage, model robustness, and more, providing in-depth model assessments.
+- **Efficient Metric Logging**: Easily track and compare model performance, robustness, and ethical considerations within MLflow.
+- **Enhanced Model Governance**: This integration supports transparent model evaluation and governance, crucial for meeting best practices and compliance requirements.
 
 ## Setup
 The following requirements are necessary to use the plug-in:

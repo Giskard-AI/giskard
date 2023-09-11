@@ -194,8 +194,6 @@ watch(() => route.name, async (name) => {
   }
 })
 
-watch(() => state, () => { })
-
 onMounted(async () => {
   client.activate();
   const workerInfo = await openapi.mlWorker.getMLWorkerInfo();
