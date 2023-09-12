@@ -63,12 +63,20 @@ class LLMBusinessDetector:
 
         for issue in LLM_ISSUE_CATEGORIES:
             try:
+                test_cases = (
+                    issue.issue_generator(self.num_tests)
+                    .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
+                    .assertions[: self.num_tests]
+                )
+                print(f"Generated tests: {test_cases}")
+
                 potentially_failing_inputs = (
                     issue.input_generator(self.num_samples)
                     .run_and_parse_with_prompt(
                         model_name=model.meta.name,
                         model_description=model.meta.description,
                         variables=model.meta.feature_names,
+                        generated_tests=test_cases,
                     )
                     .input[: self.num_samples]
                 )
@@ -87,13 +95,6 @@ class LLMBusinessDetector:
                 )
 
                 print(f"Generated potentially failing prompts: {potentially_failing_dataset.df}")
-
-                test_cases = (
-                    issue.issue_generator(self.num_tests)
-                    .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
-                    .assertions[: self.num_tests]
-                )
-                print(f"Generated tests: {test_cases}")
 
                 predictions = model.predict(potentially_failing_dataset).prediction
 
