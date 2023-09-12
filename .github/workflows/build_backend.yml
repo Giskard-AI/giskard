@@ -44,7 +44,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 1 
       # Inspired from https://blog.pantsbuild.org/skipping-github-actions-jobs-without-breaking-branch-protection/
       - id: files
         name: Get changed files outside python-client
@@ -76,7 +76,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -113,7 +113,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -181,7 +181,10 @@ jobs:
             os: ubuntu-latest
             experimental: false
             pydantic_v1: true
-
+          - python-version: "3.10"
+            os: macos-latest
+            experimental: false
+            pydantic_v1: false
     continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
