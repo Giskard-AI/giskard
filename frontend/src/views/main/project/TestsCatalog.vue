@@ -117,16 +117,12 @@
                 <TestExecutionResultBadge v-if='testResult' :result='testResult' class='mt-4' />
               </div>
 
-              <div id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+              <div id="usage-group" class="py-4 mb-4" :key="selected.name + '_usage'">
                 <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="selectedTestUsage" />
               </div>
 
-              <div id='code-group' class='py-4'>
-                <div class='d-flex'>
-                  <v-icon class='group-icon pb-1 mr-1' left>mdi-code-braces-box</v-icon>
-                  <span class='group-title'>Source code</span>
-                </div>
-                <CodeSnippet :key="selected.name + '_source_code'" :codeContent='selected.code' class='mt-2'></CodeSnippet>
+              <div id="code-group" class="py-4" :key="selected.name + '_code_source'">
+                <CatalogCodeWidget :title="'Source code'" :icon="'mdi-code-braces-box'" :content="selected.code"></CatalogCodeWidget>
               </div>
             </div>
           </v-col>
