@@ -106,6 +106,7 @@ import { copyText, getUserFullDisplayName } from '@/utils';
 import { IUserProfileMinimal } from '@/interfaces';
 import mixpanel from 'mixpanel-browser';
 import { useProjectStore } from '@/stores/project';
+import { useMainStore } from "@/stores/main";
 import { computed, ref } from 'vue';
 import { $vfm } from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
@@ -157,7 +158,11 @@ async function cancelUserInvitation(user: IUserProfileMinimal) {
 
 function exportProject(id: number) {
   mixpanel.track('Export project', { id });
-  projectStore.exportProject(id);
+  try {
+    projectStore.exportProject(id);
+  } catch (err) {
+    useMainStore().addSimpleNotification('Failed to export project');
+  }
 }
 
 async function renameProjectName(newName: string) {
