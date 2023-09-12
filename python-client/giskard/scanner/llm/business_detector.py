@@ -36,8 +36,12 @@ def validate_prediction(
                     level=IssueLevel.MAJOR if metric < threshold else IssueLevel.MINOR,
                     group=IssueGroup(name=issue.name, description=issue.description),
                     description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
-                    # Todo: add more meta
-                    meta={"metric": metric, "test_case": test_case},
+                    meta={
+                        "metric": "Fail rate",
+                        "metric_value": metric,
+                        "test_case": test_case,
+                        "deviation": f"{round(metric * 100, 2)}% of generated inputs does not respect the test",
+                    },
                     examples=df_with_pred[failed],
                     tests=_generate_business_test,
                 )
@@ -112,6 +116,6 @@ def _generate_business_test(issue: Issue):
             dataset=issue.dataset,
             test_case=issue.meta["test_case"],
             slicing_function=None,
-            threshold=issue.meta["metric"],
+            threshold=issue.meta["metric_value"],
         )
     }
