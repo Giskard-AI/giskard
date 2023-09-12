@@ -129,12 +129,8 @@
                                 </v-row>
                             </div>
 
-                            <div v-if="hasCustomTag" id='usage-group' class='py-4 mb-4'>
-                                <div class='d-flex'>
-                                    <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
-                                    <span class='group-title'>How to use with code</span>
-                                </div>
-                                <CodeSnippet :key="selected.name + '_usage'" :codeContent="howToUseCode" :language="'python'" class='mt-2'></CodeSnippet>
+                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+                                <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="howToUseCode" />
                             </div>
 
                             <div id="code-group" class="py-4">
@@ -178,6 +174,7 @@ import { TYPE } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
 import { useProjectStore } from "@/stores/project";
 import { generateGiskardClientSnippet } from "@/snippets";
+import CatalogCodeWidget from "./CatalogCodeWidget.vue";
 
 let props = defineProps<{
     projectId: number,
@@ -202,7 +199,7 @@ const panel = ref<number[]>([0]);
 const giskardClientSnippet = ref<string | null>(null);
 
 const project = computed(() => {
-  return projectStore.project(props.projectId)
+    return projectStore.project(props.projectId)
 });
 
 const hasCustomTag = computed(() => {
@@ -235,7 +232,7 @@ const howToUseCode = computed(() => {
         return '';
     }
 
-    let content = 'import giskard\n\n';
+    let content = 'import giskard\n';
 
     content += `${giskardClientSnippet.value}\n`;
 

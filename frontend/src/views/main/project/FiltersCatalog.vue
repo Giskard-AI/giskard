@@ -93,15 +93,12 @@
 
                                 <div>
                                     <v-row>
-                                      <v-col>
-                                        <span class='input-name'>Dataset: <span
-                                          class='input-type'>BaseDataset</span></span>
-                                      </v-col>
-                                      <v-col class='input-selector-column'>
-                                        <DatasetSelector :project-id='projectId' label='Dataset'
-                                                         :return-object='false' :value.sync='selectedDataset'
-                                                         :filter='datasetFilter' />
-                                      </v-col>
+                                        <v-col>
+                                            <span class='input-name'>Dataset: <span class='input-type'>BaseDataset</span></span>
+                                        </v-col>
+                                        <v-col class='input-selector-column'>
+                                            <DatasetSelector :project-id='projectId' label='Dataset' :return-object='false' :value.sync='selectedDataset' :filter='datasetFilter' />
+                                        </v-col>
                                     </v-row>
                                 </div>
 
@@ -135,12 +132,8 @@
                                 </v-row>
                             </div>
 
-                            <div v-if="hasCustomTag" id='usage-group' class='py-4 mb-4'>
-                                <div class='d-flex'>
-                                    <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
-                                    <span class='group-title'>How to use with code</span>
-                                </div>
-                                <CodeSnippet :key="selected.name + '_usage'" :codeContent="howToUseCode" :language="'python'" class='mt-2'></CodeSnippet>
+                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+                                <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="howToUseCode" />
                             </div>
 
                             <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CODE">
@@ -150,6 +143,7 @@
                                 </div>
                                 <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
                             </div>
+
                             <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CLAUSES">
                                 <div class="d-flex">
                                     <v-icon left class="group-icon pb-1 mr-1">mdi-filter-check</v-icon>
@@ -175,10 +169,10 @@ import { computed, inject, onActivated, onMounted, ref, watch } from "vue";
 import { anonymize, pasterColor } from "@/utils";
 import { editor } from "monaco-editor";
 import {
-  DatasetProcessFunctionType,
-  DatasetProcessingResultDTO,
-  FunctionInputDTO,
-  SlicingFunctionDTO
+    DatasetProcessFunctionType,
+    DatasetProcessingResultDTO,
+    FunctionInputDTO,
+    SlicingFunctionDTO
 } from '@/generated-sources';
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import { storeToRefs } from "pinia";
@@ -201,10 +195,11 @@ import { useProjectStore } from "@/stores/project";
 import { generateGiskardClientSnippet } from "@/snippets";
 import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
 import IEditorOptions = editor.IEditorOptions;
+import CatalogCodeWidget from "./CatalogCodeWidget.vue";
 
 let props = defineProps<{
-  projectId: number,
-  suiteId?: number
+    projectId: number,
+    suiteId?: number
 }>();
 
 const mainStore = useMainStore();
@@ -242,23 +237,23 @@ const hasGiskardFilters = computed(() => {
 });
 
 const datasetFilter = computed(() =>
-  selected.value ? dataset => DatasetProcessFunctionUtils.canApply(selected.value!, dataset) : () => true);
+    selected.value ? dataset => DatasetProcessFunctionUtils.canApply(selected.value!, dataset) : () => true);
 
 const filteredTestFunctions = computed(() => {
-  return chain(slicingFunctions.value)
-    .filter((func) => {
-      const keywords = searchFilter.value.split(' ')
-        .map(keyword => keyword.trim().toLowerCase())
-        .filter(keyword => keyword !== '');
+    return chain(slicingFunctions.value)
+        .filter((func) => {
+            const keywords = searchFilter.value.split(' ')
+                .map(keyword => keyword.trim().toLowerCase())
+                .filter(keyword => keyword !== '');
 
-      return keywords.filter(keyword =>
-        func.name.toLowerCase().includes(keyword)
-        || func.doc?.toLowerCase()?.includes(keyword)
-        || func.displayName?.toLowerCase()?.includes(keyword)
-      ).length === keywords.length;
-    })
-    .sortBy(t => t.displayName ?? t.name)
-    .value();
+            return keywords.filter(keyword =>
+                func.name.toLowerCase().includes(keyword)
+                || func.doc?.toLowerCase()?.includes(keyword)
+                || func.displayName?.toLowerCase()?.includes(keyword)
+            ).length === keywords.length;
+        })
+        .sortBy(t => t.displayName ?? t.name)
+        .value();
 });
 
 const howToUseCode = computed(() => {
@@ -266,7 +261,7 @@ const howToUseCode = computed(() => {
         return '';
     }
 
-    let content = 'import giskard\n\n';
+    let content = 'import giskard\n';
 
     content += `${giskardClientSnippet.value}\n`;
 

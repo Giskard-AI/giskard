@@ -117,12 +117,8 @@
                 <TestExecutionResultBadge v-if='testResult' :result='testResult' class='mt-4' />
               </div>
 
-              <div id='usage-group' class='py-4 mb-4'>
-                <div class='d-flex'>
-                  <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
-                  <span class='group-title'>How to use with code</span>
-                </div>
-                <CodeSnippet :key="selected.name + '_usage'" :codeContent='selectedTestUsage' :language="'python'" class='mt-2'></CodeSnippet>
+              <div id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+                <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="selectedTestUsage" />
               </div>
 
               <div id='code-group' class='py-4'>
@@ -166,6 +162,7 @@ import { copyToClipboard } from "@/global-keys";
 import { TYPE } from "vue-toastification";
 import { useMainStore } from "@/stores/main";
 import { generateGiskardClientSnippet } from "@/snippets";
+import CatalogCodeWidget from "./CatalogCodeWidget.vue";
 
 const projectStore = useProjectStore();
 
