@@ -176,7 +176,6 @@ import SuiteInputListSelector from "@/components/SuiteInputListSelector.vue";
 import DatasetColumnSelector from "@/views/main/utils/DatasetColumnSelector.vue";
 import { alphabeticallySorted } from "@/utils/comparators";
 import { extractArgumentDocumentation } from "@/utils/python-doc.utils";
-import CodeSnippet from "@/components/CodeSnippet.vue";
 import mixpanel from "mixpanel-browser";
 import { $vfm } from 'vue-final-modal';
 import CreateSliceCatalogModal from "./modals/CreateSliceCatalogModal.vue";

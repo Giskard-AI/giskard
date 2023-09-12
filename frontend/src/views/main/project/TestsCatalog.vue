@@ -152,7 +152,6 @@ import { useProjectStore } from "@/stores/project";
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import { alphabeticallySorted } from '@/utils/comparators';
-import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
 import { copyToClipboard } from "@/global-keys";
 import { TYPE } from "vue-toastification";
