@@ -33,7 +33,7 @@ def validate_prediction(
                 Issue(
                     model,
                     dataset,
-                    level=IssueLevel.MAJOR if metric < threshold else IssueLevel.MINOR,
+                    level=IssueLevel.MAJOR if metric >= threshold else IssueLevel.MINOR,
                     group=IssueGroup(name=issue.name, description=issue.description),
                     description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
                     meta={
