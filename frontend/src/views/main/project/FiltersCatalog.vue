@@ -136,20 +136,12 @@
                                 <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="howToUseCode" />
                             </div>
 
-                            <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CODE">
-                                <div class="d-flex">
-                                    <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
-                                    <span class="group-title">Source code</span>
-                                </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
+                            <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CODE" :key="selected.name + '_source_code'">
+                                <CatalogCodeWidget :title="'Source code'" :icon="'mdi-code-braces-box'" :content="selected.code"></CatalogCodeWidget>
                             </div>
 
-                            <div id="code-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CLAUSES">
-                                <div class="d-flex">
-                                    <v-icon left class="group-icon pb-1 mr-1">mdi-filter-check</v-icon>
-                                    <span class="group-title">Clauses</span>
-                                </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.name" :key="selected.name + '_source_code'"></CodeSnippet>
+                            <div id="clauses-group" class="py-4" v-if="selected.processType == DatasetProcessFunctionType.CLAUSES" :key="selected.name + '_clauses'">
+                                <CatalogCodeWidget :title="'Clauses'" :icon="'mdi-filter-check'" :content="selected.name"></CatalogCodeWidget>
                             </div>
                         </div>
                     </v-col>
