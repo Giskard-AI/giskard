@@ -18,10 +18,13 @@ public interface CallableRepository<E extends Callable> extends MappableJpaRepos
     default List<E> saveAllIfNotExists(Collection<E> entities) {
         List<E> existing = findAllById(entities.stream().map(E::getUuid).collect(Collectors.toSet()));
 
+        entities.stream()
+            .filter(Predicate.not(existing::contains))
+            .forEach(callable -> callable.getArgs().forEach(functionArgument -> functionArgument.setFunction(callable)));
         return saveAll(entities.stream()
             .filter(Predicate.not(existing::contains))
-            .peek(callable -> callable.getArgs().forEach(functionArgument -> functionArgument.setFunction(callable)))
-            .toList());
+            .toList()
+        );
     }
 
 }

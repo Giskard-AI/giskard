@@ -116,11 +116,10 @@ public class ImportService {
     }
 
     private static void replaceFunctionInputValues(Map<UUID, UUID> mapFormerNewIdModel, Map<UUID, UUID> mapFormerNewIdDataset, FunctionInput functionInput) {
-        switch (functionInput.getType()) {
-            case "BaseModel" ->
-                functionInput.setValue(mapFormerNewIdModel.get(UUID.fromString(functionInput.getValue())).toString());
-            case "Dataset" ->
-                functionInput.setValue(mapFormerNewIdDataset.get(UUID.fromString(functionInput.getValue())).toString());
+        if (Objects.equals(functionInput.getType(), "BaseModel")) {
+            functionInput.setValue(mapFormerNewIdModel.get(UUID.fromString(functionInput.getValue())).toString());
+        } else if (Objects.equals(functionInput.getType(), "Dataset")) {
+            functionInput.setValue(mapFormerNewIdDataset.get(UUID.fromString(functionInput.getValue())).toString());
         }
     }
 

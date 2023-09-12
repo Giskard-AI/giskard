@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ArtifactUtils {
+    private ArtifactUtils() {}
 
     public static Set<TestFunction> getAllReferencedTestFunction(Project project) {
         return project.getTestSuites().stream().flatMap(ArtifactUtils::streamAllReferencedTestFunction)
