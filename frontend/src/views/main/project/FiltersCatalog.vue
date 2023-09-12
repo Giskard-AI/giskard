@@ -132,7 +132,7 @@
                                 </v-row>
                             </div>
 
-                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4" :key="selected.name + '_usage'">
                                 <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="howToUseCode" />
                             </div>
 
