@@ -262,7 +262,7 @@ const generateCodeContent = () => {
 
 # Replace this with your own data & model creation.
 df = giskard.demo.titanic_df()
-data_preprocessing_function, clf = giskard.demo.titanic_pipeline()
+data_preprocessing_function, titanic_pretrained_model = giskard.demo.titanic_pipeline()
 
 # Wrap your Pandas DataFrame
 giskard_dataset = giskard.Dataset(df=df,
@@ -273,12 +273,12 @@ giskard_dataset = giskard.Dataset(df=df,
 # Wrap your model
 def prediction_function(df):
     preprocessed_df = data_preprocessing_function(df)
-    return clf.predict_proba(preprocessed_df)
+    return titanic_pretrained_model.predict_proba(preprocessed_df)
 
 giskard_model = giskard.Model(model=prediction_function,
                               model_type="classification",
                               name="Titanic model",
-                              classification_labels=clf.classes_,
+                              classification_labels=titanic_pretrained_model.classes_,
                               feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'])
 
 # Then apply the scan
