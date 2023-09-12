@@ -28,7 +28,8 @@ from giskard.ml_worker.websocket import (
     RunAdHocTestParam,
     DatasetProcessingParam,
     GenerateTestSuiteParam,
-    RunModelForDataFrameParam, GetPushParam,
+    RunModelForDataFrameParam,
+    GetPushParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -65,7 +66,7 @@ def parse_action_param(action, params):
 
 
 def fragment_message(payload: str, frag_i: int, frag_length: int):
-    return payload[frag_i * frag_length: min((frag_i + 1) * frag_length, len(payload))]
+    return payload[frag_i * frag_length : min((frag_i + 1) * frag_length, len(payload))]
 
 
 def extract_debug_info(request_arguments):
@@ -105,6 +106,7 @@ def map_function_meta_ws(callable_type):
                 )
                 for a in test.args.values()
             ],
+            debugDescription=test.debug_description,
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type
