@@ -9,3 +9,8 @@ jobs:
     uses: ./.github/workflows/build_backend.yml
     with:
       run-integration-tests: true
+  call-build-images:
+    uses: ./.github/workflows/build-images.yml
+    with:
+      run-tests: false
+      build_only: true
