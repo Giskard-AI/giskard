@@ -129,16 +129,12 @@
                                 </v-row>
                             </div>
 
-                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4'" :key="selected.name + '_usage'">
+                            <div v-if="hasCustomTag" id="usage-group" class="py-4 mb-4" :key="selected.name + '_usage'">
                                 <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="howToUseCode" />
                             </div>
 
-                            <div id="code-group" class="py-4">
-                                <div class="d-flex">
-                                    <v-icon left class="group-icon pb-1 mr-1">mdi-code-braces-box</v-icon>
-                                    <span class="group-title">Source code</span>
-                                </div>
-                                <CodeSnippet class="mt-2" :codeContent="selected.code" :key="selected.name + '_source_code'"></CodeSnippet>
+                            <div id="code-group" class="py-4" :key="selected.name + '_source_code'">
+                                <CatalogCodeWidget :title="'Source code'" :icon="'mdi-code-braces-box'" :content="selected.code"></CatalogCodeWidget>
                             </div>
                         </div>
                     </v-col>
