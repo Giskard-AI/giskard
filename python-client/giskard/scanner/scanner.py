@@ -6,7 +6,6 @@ from time import perf_counter
 from typing import Optional, Sequence
 
 from giskard.client.python_utils import warning
-from giskard.core.model_validation import ValidationFlags
 
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
@@ -31,12 +30,7 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self,
-        model: BaseModel,
-        dataset: Optional[Dataset] = None,
-        verbose=True,
-        raise_exceptions=False,
-        validation_flags: Optional[ValidationFlags] = ValidationFlags(),
+        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues."""
 
@@ -63,7 +57,7 @@ class Scanner:
 
         if not model.is_text_generation:
             time_start = perf_counter()
-            validate_model(model=model, validate_ds=dataset, validation_flags=validation_flags)
+            validate_model(model=model, validate_ds=dataset)
             model_validation_time = perf_counter() - time_start
         else:
             model_validation_time = None

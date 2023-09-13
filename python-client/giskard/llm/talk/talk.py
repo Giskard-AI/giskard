@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel as GiskardBaseModel
 import giskard.models.model_explanation as model_explanation
-from giskard.scanner.result import ScanResult
+from giskard.scanner.report import ScanReport
 
 PredictionFunction = Callable[[pd.DataFrame], pd.Series]
 
@@ -50,7 +50,7 @@ class ModelSpec(BaseModel):
 
     model: GiskardBaseModel
     dataset: Optional[Dataset]
-    scan_result: Optional[ScanResult]
+    scan_report: Optional[ScanReport]
 
     def _parse_json_inputs(self, json_inputs: str) -> Dict[str, Any]:
         features = json.loads(json_inputs)
@@ -94,15 +94,15 @@ class ModelSpec(BaseModel):
             return repr(e)
 
     def scan_result_info(self):
-        if self.scan_result is None:
+        if self.scan_report is None:
             return "The model should be scanned with Giskard first"
 
-        return str({str(issue): issue.description for issue in self.scan_result.issues})
+        return self.scan_report.to_markdown()
 
     def model_quality(self):
-        if self.scan_result is None:
+        if self.scan_report is None:
             return "The model should be scanned with Giskard first"
-        majors = len([issue for issue in self.scan_result.issues if issue.is_major])
+        majors = len([issue for issue in self.scan_report.issues if issue.is_major])
 
         min_threshold, max_threshold = llm_config.talk.reliability_thresholds
 
@@ -258,7 +258,7 @@ class ModelToolkit(BaseToolkit):
         if self.spec.dataset is not None:
             tools.append(ModelPredictExplainTool(spec=self.spec))
 
-        if self.spec.scan_result is not None:
+        if self.spec.scan_report is not None:
             tools.append(ModelQualityTool(spec=self.spec))
 
         return tools
@@ -269,7 +269,7 @@ def create_ml_llm(
     model: GiskardBaseModel,
     dataset: Optional[Dataset] = None,
     data_source_tools: Optional[List[BaseTool]] = None,
-    scan_result: Optional[ScanResult] = None,
+    scan_report: Optional[ScanReport] = None,
     callback_manager: Optional[BaseCallbackManager] = None,
     verbose: bool = False,
     agent_executor_kwargs: Optional[Dict[str, Any]] = None,
@@ -277,7 +277,7 @@ def create_ml_llm(
 ) -> AgentExecutor:
     """Construct a json agent from an LLM and tools."""
     tools = ModelToolkit(
-        spec=ModelSpec(model=model, dataset=dataset, scan_result=scan_result),
+        spec=ModelSpec(model=model, dataset=dataset, scan_report=scan_report),
         data_source_tools=[] if data_source_tools is None else data_source_tools,
     ).get_tools()
 

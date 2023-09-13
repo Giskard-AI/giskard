@@ -194,6 +194,10 @@ public interface GiskardMapper {
 
     TestFunctionArgumentDTO toDTO(FunctionArgument functionArgument);
 
+    default String projectToKey(Project project) {
+        return project.getKey();
+    }
+
     @Mapping(target = "function", ignore = true)
     FunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
 
@@ -203,14 +207,18 @@ public interface GiskardMapper {
     @Mapping(target = "suiteTests", ignore = true)
     TestFunction fromDTO(TestFunctionDTO testFunction);
 
+    @Mapping(target = "projects", source = "projectKeys")
     SlicingFunction fromDTO(SlicingFunctionDTO testFunction);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
+    @Mapping(target = "projectKeys", source = "projects")
     SlicingFunctionDTO toDTO(SlicingFunction testFunction);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
+    @Mapping(target = "projectKeys", source = "projects")
     TransformationFunctionDTO toDTO(TransformationFunction testFunction);
 
+    @Mapping(target = "projects", source = "projectKeys")
     TransformationFunction fromDTO(TransformationFunctionDTO testFunction);
 
 }

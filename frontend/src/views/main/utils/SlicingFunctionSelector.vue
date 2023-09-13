@@ -6,8 +6,8 @@
       displayName: 'None',
       uuid: null,
       args: []
-    }, ...slicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
-      <template v-slot:prepend-item v-if='allowNoCodeSlicing'>
+    }, ...availableSlicingFunctions]" :item-text='extractName' item-value='uuid' :return-object='false' @input='onInput' :dense='fullWidth' hide-details :prepend-inner-icon="icon ? 'mdi-knife' : null">
+      <template v-slot:append-item v-if='allowNoCodeSlicing'>
         <v-list-item @click='createSlice'>
           <v-list-item-content>
             <v-list-item-title>
@@ -33,6 +33,8 @@ import { $vfm } from 'vue-final-modal';
 import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal.vue';
 import { chain } from 'lodash';
 import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
+import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
+import { api } from '@/api';
 
 interface Props {
   projectId: number,
@@ -53,10 +55,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);
 
-const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore())
+const { slicingFunctions, slicingFunctionsByUuid } = storeToRefs(useCatalogStore());
+
+const availableSlicingFunctions = computed(() => props.dataset
+  ? slicingFunctions.value.filter(slicingFn => DatasetProcessFunctionUtils.canApply(slicingFn, props.dataset!))
+  : slicingFunctions.value);
 
 function extractName(SlicingFunctionDTO: SlicingFunctionDTO) {
-  return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name
+  return SlicingFunctionDTO.displayName ?? SlicingFunctionDTO.name;
 }
 
 async function onInput(value) {
@@ -114,16 +120,18 @@ async function updateArgs() {
 }
 
 async function createSlice() {
+  const project = await api.getProject(props.projectId);
   await $vfm.show({
-    component: CreateSliceModal,
-    bind: {
-      dataset: props.dataset
-    },
-    on: {
-      async created(uuid: string) {
-        await onInput(uuid);
-      }
-    },
+      component: CreateSliceModal,
+      bind: {
+        projectKey: project.key,
+        dataset: props.dataset
+      },
+      on: {
+          async created(uuid: string) {
+              await onInput(uuid);
+          }
+      },
   })
 }
 

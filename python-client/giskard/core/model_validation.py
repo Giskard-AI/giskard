@@ -1,5 +1,4 @@
 import tempfile
-from dataclasses import dataclass, fields
 from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
@@ -17,32 +16,10 @@ from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
 
 
-@dataclass
-class ValidationFlags:
-    model_loading_and_saving: bool = True
-    data_preprocessing_function: bool = True
-    model_postprocessing_function: bool = True
-    classification_labels: bool = True
-    classification_threshold_label: bool = True
-    is_pandasdataframe: bool = True
-    features: bool = True
-    model_execution: bool = True
-    label_with_target: bool = True
-    order_classifcation_labels: bool = True
-
-    def deactivate_all(self):
-        for field in fields(self):
-            setattr(self, field.name, False)
-
-
 @configured_validate_arguments
-def validate_model(
-    model: BaseModel,
-    validate_ds: Optional[Dataset] = None,
-    validation_flags: Optional[ValidationFlags] = ValidationFlags(),
-):
+def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
     try:
-        _do_validate_model(model, validation_flags, validate_ds)
+        _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
         raise err
@@ -58,65 +35,42 @@ def _track_validation_error(err, model, dataset):
     analytics.track("validate_model:failed", properties)
 
 
-def _do_validate_model(
-    model: BaseModel,
-    validation_flags: ValidationFlags,
-    validate_ds: Optional[Dataset] = None,
-):
+def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
     model_type = model.meta.model_type
 
-    if validation_flags.model_loading_and_saving:
-        model = validate_model_loading_and_saving(model)
-
-    if (
-        isinstance(model, WrapperModel)
-        and model.data_preprocessing_function is not None
-        and validation_flags.data_preprocessing_function
-    ):
+    if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
 
-    if (
-        isinstance(model, WrapperModel)
-        and model.model_postprocessing_function is not None
-        and validation_flags.model_postprocessing_function
-    ):
+    if isinstance(model, WrapperModel) and model.model_postprocessing_function is not None:
         validate_model_postprocessing_function(model.model_postprocessing_function)
 
-    if validation_flags.classification_labels:
-        validate_classification_labels(model.meta.classification_labels, model_type)
+    validate_classification_labels(model.meta.classification_labels, model_type)
 
-    if model.is_classification and validation_flags.classification_threshold_label:
+    if model.is_classification:
         validate_classification_threshold_label(model.meta.classification_labels, model.meta.classification_threshold)
 
     assert model.meta.feature_names is None or isinstance(
         model.meta.feature_names, list
     ), "Invalid feature_names parameter. Please provide the feature names as a list."
 
-    if validate_ds is not None and validation_flags.is_pandasdataframe:
+    if validate_ds is not None:
         validate_is_pandasdataframe(validate_ds.df)
         validate_features(feature_names=model.meta.feature_names, validate_df=validate_ds.df)
 
-        if model.is_regression and validation_flags.model_execution:
+        if model.is_regression:
             validate_model_execution(model, validate_ds)
-        elif model.is_text_generation and validation_flags.model_execution:
+        elif model.is_text_generation:
             validate_model_execution(model, validate_ds, False)
         elif model.is_classification and validate_ds.target is not None:
             target_values = validate_ds.df[validate_ds.target].unique()
-            if validation_flags.label_with_target:
-                validate_label_with_target(
-                    model.meta.name, model.meta.classification_labels, target_values, validate_ds.target
-                )
-            if validation_flags.model_execution:
-                validate_model_execution(model, validate_ds)
+            validate_label_with_target(
+                model.meta.name, model.meta.classification_labels, target_values, validate_ds.target
+            )
+            validate_model_execution(model, validate_ds)
         else:  # Classification with target = None
-            if validation_flags.model_execution:
-                validate_model_execution(model, validate_ds)
+            validate_model_execution(model, validate_ds)
 
-        if (
-            model.meta.model_type == SupportedModelTypes.CLASSIFICATION
-            and validate_ds.target is not None
-            and validation_flags.order_classifcation_labels
-        ):
+        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and validate_ds.target is not None:
             validate_order_classifcation_labels(model, validate_ds)
 
 

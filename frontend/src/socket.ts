@@ -1,11 +1,11 @@
-import { reactive } from 'vue';
-import { Client, Frame } from '@stomp/stompjs';
-import { apiURL } from './env';
-import { getLocalToken, httpUrlToWsUrl } from './utils';
-import { useMainStore } from './stores/main';
-import { TYPE } from 'vue-toastification';
+import {reactive} from 'vue';
+import {Client, Frame} from '@stomp/stompjs';
+import {apiURL} from './env';
+import {getLocalToken, httpUrlToWsUrl} from './utils';
+import {useMainStore} from './stores/main';
+import {TYPE} from 'vue-toastification';
 
-export const state = reactive({
+export const state = reactive<{ workerStatus: { connected?: boolean } }>({
   workerStatus: {
     connected: undefined,
   },
