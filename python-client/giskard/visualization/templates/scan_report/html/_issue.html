@@ -61,7 +61,8 @@
         {% if issue.examples(3)|length %}
         <h4 class="font-bold text-sm mt-4">Examples</h4>
         <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.examples(3).to_html(notebook=True)|replace("\\n", "<br>")|safe }}
+            {{ issue.examples(3).to_html(notebook=True, index=not issue.meta.hide_index if "hide_index" in issue.meta
+            else True)|replace("\\n", "<br>")|safe }}
         </div>
         {% endif %}
 

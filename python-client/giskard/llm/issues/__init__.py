@@ -117,7 +117,7 @@ class LlmIssueCategory:
             ),
         )
 
-    def input_generator(self, input_count=5, max_tokens_per_input=64):
+    def input_generator(self, input_count=5, max_tokens_per_input=128):
         try:
             from langchain import PromptTemplate, LLMChain
             from langchain.output_parsers import PydanticOutputParser, OutputFixingParser

@@ -23,12 +23,12 @@ def validate_prediction(
         results = pd.DataFrame.from_records(
             [result.__dict__ for result in validate_test_case_with_reason(model, test_case, dataset.df, predictions)]
         )
-        failed = not results["results"]
+        failed = ~results["result"]
         failed_count = len([result for result in failed if result])
         metric = failed_count / len(predictions)
         print(f"Results: {metric} ({failed_count})")
 
-        df_with_pred = pd.concat([df_with_pred, results], axis=1)
+        df_with_pred = pd.concat([df_with_pred, results[["reason", "tip"]]], axis=1)
 
         if failed_count > 0:
             print("Test failed")
@@ -45,6 +45,7 @@ def validate_prediction(
                         "metric_value": metric,
                         "test_case": test_case,
                         "deviation": f"{round(metric * 100, 2)}% of generated inputs does not respect the test",
+                        "hide_index": True,
                     },
                     examples=df_with_pred[failed],
                     tests=_generate_business_test,

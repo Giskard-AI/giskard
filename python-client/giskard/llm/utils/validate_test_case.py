@@ -1,3 +1,4 @@
+from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 from typing import List, Optional
 
@@ -14,7 +15,7 @@ except ImportError as err:
     raise LLMImportError() from err
 
 
-class TestResult(BaseModel):
+class TestResult(PydanticBaseModel):
     result: bool = Field(description="true if the test passed, false if the test failed")
     reason: str = Field(description="A small explanation on why the test has passed or failed")
     tip: Optional[str] = Field(description="A small tip on how to improve the model if the test failed")
