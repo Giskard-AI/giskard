@@ -1,6 +1,5 @@
-from typing import List, Dict
-
 from pydantic import BaseModel, Field
+from typing import List, Dict
 
 from ..config import llm_config
 from ...scanner.llm.utils import LLMImportError
@@ -54,16 +53,15 @@ GENERATE_INPUT_PROMPT = """
 You are a Prompt QA Specialist, and your objective is to compile a list of {input_count} inputs for rigorous testing of a model's generated responses.
 
 Generate inputs that assess the model's performance, specifically focusing on scenarios where it may fail or exhibit suboptimal behavior regarding {issue_name}. Ensure these inputs are comprehensive, covering both common and unusual cases.
-
 {issue_description}
 
 We will perform the following tests: {generated_tests}
 
 Please ensure that the inputs are relevant to the following model:
 
-Name: {model_name}
+**Name**: {model_name}
 
-Description: {model_description}
+**Description**: {model_description}
 
 For each variable in the model, provide a textual input value: {variables}.
 
@@ -71,7 +69,7 @@ Additionally, ensure that the inputs are properly formatted according to the fol
 
 {format_instructions}
 
-Example:
+**Example**:
 {{"input": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}
 """
 

@@ -1,26 +1,28 @@
 VALIDATE_TEST_CASE = """
-You are a teacher.
-Your task is to verify that the response of the following prompt pass this test case: {test_case}
+You are a prompt QA tasked with evaluate LLM answer based on test assertions of the {model_name} model.
 
-Note that if you have doubt or if the response seems unrelated to the test case, it means the test case fails
+**Scope**: Please focus on testing '{test_case}'.
 
-Model:
+**Description**: The objective is to validate that the model answer related to the user prompt correctly pass the test.
+
+**Model Information**:
+``` 
+{model_description}
 ```
+
+**User Inputs**:
+
+```json
 {prompt}
 ```
 
-Response:
-```
+**Model Answer**:
 {response}
-```
 
-Please remember to evaluate the response of the prompt based on the given test case
-
-Make sure to provide the response for the following JSON template;
-true meaning that the test passed, false meaning that the test failed:
+**Format Instructions**: True meaning that the test passed, false meaning that the test failed:
 
 {format_instructions}
 
 Example: 
-{{"result": true}}
-    """
+{{"result": false, "reason": "The answer is missing the required key 'tips' in the json answer", "tip": "You should give example of expected json response to ensure that the schema is respecred"}}
+     """

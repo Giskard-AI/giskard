@@ -22,7 +22,7 @@ def test_test_case(
 
     predictions = model.predict(dataset).prediction
 
-    passed = validate_test_case(model, test_case, predictions)
+    passed = validate_test_case(model, test_case, dataset.df, predictions)
     metric = len([result for result in passed if result]) / len(predictions)
 
     return TestResult(

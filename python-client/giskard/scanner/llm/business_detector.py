@@ -1,6 +1,5 @@
-from typing import List, Sequence
-
 import pandas as pd
+from typing import List, Sequence
 
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
@@ -12,7 +11,7 @@ from ...models.langchain import LangchainModel
 def validate_prediction(
     model, issue: LlmIssueCategory, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float
 ):
-    from ...llm.utils.validate_test_case import validate_test_case
+    from ...llm.utils.validate_test_case import validate_test_case_with_reason
 
     issues = list()
 
@@ -21,10 +20,15 @@ def validate_prediction(
 
     for test_case in test_cases:
         print(f"Validating test: {test_case}")
-        failed = [not passed for passed in validate_test_case(model, test_case, predictions)]
+        results = pd.DataFrame.from_records(
+            [result.__dict__ for result in validate_test_case_with_reason(model, test_case, dataset.df, predictions)]
+        )
+        failed = not results["results"]
         failed_count = len([result for result in failed if result])
         metric = failed_count / len(predictions)
         print(f"Results: {metric} ({failed_count})")
+
+        df_with_pred = pd.concat([df_with_pred, results], axis=1)
 
         if failed_count > 0:
             print("Test failed")
@@ -37,7 +41,7 @@ def validate_prediction(
                     group=IssueGroup(name=issue.name, description=issue.description),
                     description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
                     meta={
-                        "metric": "Fail rate",
+                        "domain": test_case,
                         "metric_value": metric,
                         "test_case": test_case,
                         "deviation": f"{round(metric * 100, 2)}% of generated inputs does not respect the test",
