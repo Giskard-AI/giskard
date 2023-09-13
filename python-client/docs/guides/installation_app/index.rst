@@ -38,7 +38,7 @@ You can either install and run the server **locally** or on an **external server
 
          - If you don't have the `sudo` rights to run docker, please see the Docker setup `page <https://docs.docker.com/engine/install/linux-postinstall/>`_
 
-      To start the Giskard server, execute the following command in your terminal:
+      To start the Giskard server, install the Giskard Python library (see `here <../installation_library/index.md>`_) and execute the following command in your terminal:
 
       .. code-block:: sh
 
@@ -49,6 +49,7 @@ You can either install and run the server **locally** or on an **external server
       .. warning::
 
          - Make sure to **run Docker** before starting the Giskard server
+         - If the giskard command is not found then you need first to install the Giskard Python library (see the doc section)
          - To see the available commands of the giskard server, you can execute:
 
 

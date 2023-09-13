@@ -8,8 +8,10 @@ import org.mapstruct.Named;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static ai.giskard.web.rest.errors.EntityNotFoundException.By;
 
@@ -46,6 +48,8 @@ public interface ProjectRepository extends MappableJpaRepository<Project, Long> 
     Project getReferenceById(Long aLong);
 
     Optional<Project> findOneByKey(String key);
+
+    Set<Project> findAllByKeyIn(Collection<String> keys);
 
     default Project getOneByKey(String key) {
         return findOneByKey(key).orElseThrow(() -> new EntityNotFoundException(Entity.PROJECT, By.KEY, key));

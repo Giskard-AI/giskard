@@ -253,7 +253,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         return TestInputDTO(name=pname, value=str(p.id), type=ptype)
     elif issubclass(type(p), Artifact):
         if str(p.meta.uuid) not in uploaded_uuids:
-            p.upload(client)
+            p.upload(client, None if "giskard" in p.meta.tags else project_key)
         uploaded_uuids.append(str(p.meta.uuid))
         return TestInputDTO(
             name=pname,
