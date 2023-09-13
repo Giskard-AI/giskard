@@ -11,28 +11,36 @@ class TestCases(BaseModel):
 
 
 GENERATE_TEST_PROMPT = """
-You are a prompt QA tasked with generating test assertions for evaluating the performance of the {model_name} model.
+You are a prompt QA tasked with generating test assertions to evaluate the performance of the {model_name} model.
 
-Scope: Please focus on testing {issue_name}.
+**Scope**: Please focus on testing {issue_name}. {issue_description}
 
-Description: The goal is to create a set of {assertion_count} assertions that thoroughly assess the model's behavior in various scenarios. These assertions should encompass both typical and edge cases related to {issue_description}.
+**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively assess the {model_name} model's behavior across various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
 
-Please format the assertions as concise descriptions of expected behaviors.
-
-Model information:
-```
+**Model Information**:
+``` 
 {model_description}
 ```
 
-Example Inputs:
+**Example Inputs**: Here are some example inputs for the {issue_name} issue:
+
+```json
 {input_examples}
+```
+
+**Format Instructions**: Please format the assertions as concise descriptions of expected behaviors.
 
 {format_instructions}
 
-Example:
+
+**Example Assertions**:
+```json
 {{
   "assertions": {issue_examples}
 }}
+```
+
+Output for Irrelevant Issue: If no relevant assertions can be generated for a particular {issue_name}, the output should be an empty array: []
 """
 
 
@@ -64,7 +72,7 @@ Additionally, ensure that the inputs are properly formatted according to the fol
 {format_instructions}
 
 Example:
-{{"input": [{{"instruction": "Request a detailed explanation of a complex topic", "text": "Please explain the theory of relativity in simple terms"}}]}}
+{{"input": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}
 """
 
 
