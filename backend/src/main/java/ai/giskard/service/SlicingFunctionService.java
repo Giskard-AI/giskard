@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.SlicingFunction;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.SlicingFunctionRepository;
 import ai.giskard.utils.UUID5;
 import ai.giskard.web.dto.ComparisonClauseDTO;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ai.giskard.utils.GiskardStringUtils.escapePythonVariable;
@@ -26,8 +28,10 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
 
     private final SlicingFunctionRepository slicingFunctionRepository;
 
-    public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository, GiskardMapper giskardMapper) {
-        super(slicingFunctionRepository, giskardMapper);
+    public SlicingFunctionService(SlicingFunctionRepository slicingFunctionRepository,
+                                  GiskardMapper giskardMapper,
+                                  ProjectRepository projectRepository) {
+        super(slicingFunctionRepository, giskardMapper, projectRepository);
         this.slicingFunctionRepository = slicingFunctionRepository;
     }
 
@@ -41,7 +45,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
 
     protected SlicingFunction create(SlicingFunctionDTO dto) {
         SlicingFunction function = giskardMapper.fromDTO(dto);
-        function.setProjectKey(dto.getProjectKey());
+        function.setProjects(projectRepository.findAllByKeyIn(dto.getProjectKeys()));
         initializeCallable(function);
         return function;
     }
@@ -65,7 +69,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         );
     }
 
-    public SlicingFunctionDTO generate(List<ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
+    public SlicingFunctionDTO generate(List<ComparisonClauseDTO> comparisonClauses, String projectKey) throws JsonProcessingException {
         String name = comparisonClauses.stream().map(this::clauseToString).collect(Collectors.joining(" & "));
 
         SlicingFunction slicingFunction = new SlicingFunction();
@@ -83,6 +87,7 @@ public class SlicingFunctionService extends DatasetProcessFunctionService<Slicin
         slicingFunction.setCellLevel(false);
         slicingFunction.setColumnType("");
         slicingFunction.setProcessType(DatasetProcessFunctionType.CLAUSES);
+        slicingFunction.setProjects(Set.of(projectRepository.getOneByKey(projectKey)));
 
         return giskardMapper.toDTO(slicingFunctionRepository.save(slicingFunction));
     }

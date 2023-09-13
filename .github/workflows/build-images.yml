@@ -16,7 +16,6 @@ jobs:
         id: builder
         uses: docker/setup-buildx-action@master
 
-
       - name: "Append ARM buildx builder from Oracle cloud"
         uses: baschny/append-buildx-action@v1
         with:
@@ -43,25 +42,18 @@ jobs:
           username: giskardai
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/bake-action@master
+      - name: Build and push image based on the current branch
         env:
-          TAG: ${{ (steps.extract_branch.outputs.tag == 'main' && 'dev') || steps.extract_branch.outputs.tag }}
-        with:
-          push: true
-          set: |
-            *.attest=type=provenance,enabled=false
-            *.platform=linux/amd64
-            *.platform=linux/arm64
+          IMAGE: docker.io/giskardai/giskard
+        run: |
+          docker buildx build \
+          --platform linux/amd64,linux/arm64 \
+          --tag $IMAGE:${{ steps.extract_branch.outputs.tag }} \
+          --file Dockerfile \
+          --push \
+          .
 
       - name: Invoke deployment hook
         if: ${{ steps.extract_branch.outputs.branch == 'main' }}
         run: |
           curl -L --silent --max-time 900 ${{ secrets.TEST_SERVER_WEBHOOK_URL_BASE }}/redeploy-dev
-
-      - name: Remove containers and volumes
-        run: |
-          docker-compose down -v --remove-orphans
-          docker builder prune --force --keep-storage=10GB
-      
-
