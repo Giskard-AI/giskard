@@ -304,7 +304,7 @@ class TestFunctionMeta(CallableMeta):
 
     def init_from_json(self, json: Dict[str, Any]):
         super().init_from_json(json)
-        self.debug_description = json["debug_description"]
+        self.debug_description = json["debug_description"] if "debug_description" in json.keys() else None
 
 
 class DatasetProcessFunctionType(Enum):
