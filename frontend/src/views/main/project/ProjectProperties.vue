@@ -158,11 +158,9 @@ async function cancelUserInvitation(user: IUserProfileMinimal) {
 
 function exportProject(id: number) {
   mixpanel.track('Export project', { id });
-  try {
-    projectStore.exportProject(id);
-  } catch (err) {
-    useMainStore().addSimpleNotification('Failed to export project');
-  }
+  projectStore.exportProject(id).catch( err =>
+    useMainStore().addSimpleNotification('Failed to export project')
+  );
 }
 
 async function renameProjectName(newName: string) {
