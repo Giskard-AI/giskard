@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].capitalized }}
         </v-chip>
-        <v-btn color='primary' @click='debugTest' outlined small :disabled='!canBeDebugged' :loading='loading'>
+        <v-btn color='primary' @click='debugDescDialog = true' outlined small :disabled='!canBeDebugged' :loading='loading'>
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -80,6 +80,27 @@
         </v-card>
       </v-dialog>
     </div>
+    <div>
+      <v-dialog
+          v-model="debugDescDialog"
+          width="auto"
+      >
+        <v-card>
+          <v-card-title>
+            Test description
+          </v-card-title>
+          <v-card-text>
+            {{ suiteTest.test?.debugDescription ?? "TODO: Default debug description" }}
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" text @click="debugDescDialog = false; debugTest()">
+              Debug
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -121,6 +142,7 @@ const props = defineProps<{
 const loading = ref<boolean>(false);
 const modelDialog = ref<boolean>(false);
 const selectedModel = ref<string>("");
+const debugDescDialog = ref<boolean>(false);
 
 const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
