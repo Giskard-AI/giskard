@@ -2,15 +2,15 @@ import {
     DatasetDTO,
     FunctionInputDTO,
     JobDTO,
-    JobState,
+    JobDTOStateEnum,
     ModelDTO,
     RequiredInputDTO,
-    TestResult,
+    SuiteTestExecutionDTOStatusEnum,
     TestSuiteDTO,
     TestSuiteExecutionDTO
-} from '@/generated-sources';
+} from '@/generated/client/models';
 import { defineStore } from 'pinia';
-import { api } from '@/api';
+import { openapi } from '@/api-v2';
 import { chain } from 'lodash';
 import { trackJob } from '@/utils/job-utils';
 import { useMainStore } from '@/stores/main';
@@ -20,7 +20,7 @@ import { TYPE } from 'vue-toastification';
 import { anonymize } from '@/utils';
 
 
-function resultHasStatus(status: TestResult, result?): boolean {
+function resultHasStatus(status: SuiteTestExecutionDTOStatusEnum, result?): boolean {
     return result !== undefined && result.status === status;
 }
 
@@ -29,13 +29,13 @@ export const statusFilterOptions = [{
     filter: (_) => true
 }, {
     label: 'Passed',
-    filter: (result) => resultHasStatus(TestResult.PASSED, result)
+    filter: (result) => resultHasStatus(SuiteTestExecutionDTOStatusEnum.Passed, result)
 }, {
     label: 'Failed',
-    filter: (result) => resultHasStatus(TestResult.FAILED, result)
+    filter: (result) => resultHasStatus(SuiteTestExecutionDTOStatusEnum.Failed, result)
 }, {
     label: 'Error',
-    filter: (result) => resultHasStatus(TestResult.ERROR, result)
+    filter: (result) => resultHasStatus(SuiteTestExecutionDTOStatusEnum.Error, result)
 }, {
     label: 'Not executed',
     filter: (result) => result === undefined
@@ -85,10 +85,10 @@ export const useTestSuiteStore = defineStore('testSuite', {
                     })
                 ))
                 .flatten()
-                .groupBy(result => result.testResult.test.testUuid)
+                .groupBy(result => result.testResult.test?.testUuid)
                 .value();
         },
-        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0,
+        hasTest: ({suite}) => suite && Object.keys(suite.tests!).length > 0,
         hasInput: ({inputs}) => Object.keys(inputs).length > 0,
         hasJobInProgress: ({trackedJobs}) => Object.keys(trackedJobs).length > 0
     },
@@ -100,30 +100,39 @@ export const useTestSuiteStore = defineStore('testSuite', {
             }
         },
         async loadTestSuites(projectId: number, suiteId: number) {
-            const completeSuite = await api.getTestSuiteComplete(projectId, suiteId);
+            const completeSuite = await openapi.testSuite.listTestSuiteComplete({
+                projectId: projectId,
+                suiteId: suiteId,
+            });
 
             this.projectId = projectId;
-            this.inputs = completeSuite.inputs;
-            this.suite = completeSuite.suite;
-            this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
-            this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
-            this.executions = completeSuite.executions;
+            this.inputs = completeSuite.inputs!;
+            this.suite = completeSuite.suite!;
+            this.datasets = Object.fromEntries(completeSuite.datasets!.map(x => [x.id, x]));
+            this.models = Object.fromEntries(completeSuite.models!.map(x => [x.id, x]));
+            this.executions = completeSuite.executions!;
             testSuiteCompareStore.reset()
         },
         async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
-            this.suite = await api.updateTestSuite(projectKey, testSuite);
+            this.suite = await openapi.testSuite.updateTestSuite({
+                projectKey: projectKey, suiteId: testSuite.id!,testSuiteDTO: testSuite,
+            });
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
-            const jobUuid = await api.executeTestSuite(this.projectId!, this.suiteId!, input);
+            const jobUuid = await openapi.testSuite.scheduleTestSuiteExecution({
+                projectId: this.projectId!,
+                suiteId: this.suiteId!,
+                functionInputDTO: input,
+            });
 
             mixpanel.track('Schedule test suite execution', {
                 suiteId: this.suiteId,
                 projectId: this.projectId,
                 inputLength: input.length,
-                tests: this.suite!.tests.map(({test, functionInputs}) => ({
-                    uuid: test.uuid,
-                    name: test.displayName ?? test.name,
-                    inputs: Object.values(functionInputs).map(({value, ...data}) => ({
+                tests: this.suite!.tests?.map(({test, functionInputs}) => ({
+                    uuid: test?.uuid,
+                    name: test?.displayName ?? test?.name,
+                    inputs: Object.values(functionInputs!).map(({value, ...data}) => ({
                         ...data,
                         value: anonymize(value)
                     }))
@@ -140,7 +149,11 @@ export const useTestSuiteStore = defineStore('testSuite', {
             };
         },
         async tryTestSuite(input: Array<FunctionInputDTO>) {
-            this.tryResult = await api.tryTestSuite(this.projectId!, this.suiteId!, input);
+            this.tryResult = await openapi.testSuite.tryTestSuite({
+                projectId: this.projectId!,
+                suiteId: this.suiteId!,
+                functionInputDTO: input,
+            });
         },
         async trackJob(uuid: string) {
             const start = new Date();
@@ -157,13 +170,13 @@ export const useTestSuiteStore = defineStore('testSuite', {
             mixpanel.track('Executed test suite', {
                 suiteId: this.suiteId,
                 projectId: this.projectId,
-                testLength: this.suite!.tests.length,
+                testLength: this.suite!.tests?.length,
                 executionDurationMs: new Date().getTime() - start.getTime(),
                 jobUuid: uuid,
                 result: result.state
             });
 
-            if (result && result.state !== JobState.ERROR) {
+            if (result && result.state !== JobDTOStateEnum.Error) {
                 mainStore.addNotification({
                     content: 'Test suite execution has been executed successfully',
                     color: TYPE.SUCCESS

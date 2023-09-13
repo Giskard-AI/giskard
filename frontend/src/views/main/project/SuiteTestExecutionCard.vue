@@ -2,7 +2,7 @@
   <div class='test-container'>
     <div class='d-flex flex-row flex-wrap align-center test-card-header'>
       <span class='test-name text-black'>
-          Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
+          Test {{ suiteTest.test?.displayName ?? suiteTest.test?.name }}
           <span v-if='transformationFunction'> to {{
               transformationFunction.displayName ?? transformationFunction.name
             }}</span>
@@ -17,15 +17,15 @@
           </div>
       -->
       <div class='flex-grow-1'/>
-      <div v-if='result' :class='`d-flex flex-row flex-wrap align-center gap-8 test-${result.status.toLowerCase()}`'>
+      <div v-if='result' :class='`d-flex flex-row flex-wrap align-center gap-8 test-${result.status?.toLowerCase()}`'>
                 <span v-if='result.metric' class='metric'>Measured <strong>Metric = {{
                     result.metric
                   }}</strong></span>
-        <v-chip :color='TEST_RESULT_DATA[result.status].color'
-                :text-color='TEST_RESULT_DATA[result.status].textColor'
+        <v-chip :color='TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].color'
+                :text-color='TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].textColor'
                 label link @click='openLogs'>
-          <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
-          {{ TEST_RESULT_DATA[result.status].capitalized }}
+          <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].icon }}</v-icon>
+          {{ TEST_RESULT_DATA[result.status ?? SuiteTestExecutionDTOStatusEnum.Error].capitalized }}
         </v-chip>
         <v-btn color='primary' @click='debugTest' outlined small :disabled='!canBeDebugged' :loading='loading'>
           <v-icon small>info</v-icon>
@@ -36,7 +36,7 @@
     <div class='d-flex flex-row flex-wrap align-end test-card-footer'>
       <div v-for='({ name, value, type }) in orderedParams' class='d-flex flex-column'>
         <span class='text-input-name'>{{ name }}</span>
-        <span :class="['BaseModel', 'Dataset'].includes(type) ? 'text-input-value' : 'text-input-value-code'">{{
+        <span :class="['BaseModel', 'Dataset'].includes(type ?? '') ? 'text-input-value' : 'text-input-value-code'">{{
             value
           }}</span>
       </div>
@@ -84,7 +84,11 @@
 </template>
 
 <script lang='ts' setup>
-import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
+import {
+  SuiteTestDTO,
+  SuiteTestExecutionDTO,
+  SuiteTestExecutionDTOStatusEnum
+} from '@/generated/client/index';
 import {computed, ref} from 'vue';
 import {storeToRefs} from 'pinia';
 import {useCatalogStore} from '@/stores/catalog';
@@ -120,7 +124,7 @@ const selectedModel = ref<string>("");
 
 const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs
-    : Object.values(props.suiteTest.functionInputs)
+    : Object.values(props.suiteTest.functionInputs!)
         .filter(input => !input.isAlias)
         .reduce((r, input) => ({...r, [input.name]: input.value}), {}));
 
@@ -139,16 +143,16 @@ function mapValue(value: string, type: string): string | null {
     return model.name ?? value;
   } else if (type === 'Dataset') {
     const dataset = datasets.value[value];
-    return $tags(dataset.name) ?? value;
+    return $tags(dataset.name!) ?? value;
   }
   return value;
 }
 
-const orderedParams = computed(() => params.value ? props.suiteTest.test.args
-        .filter(({name}) => params.value!.hasOwnProperty(name))
+const orderedParams = computed(() => params.value ? props.suiteTest.test!.args!
+        .filter(({name}) => params.value!.hasOwnProperty(name!))
         .map(({name, type}) => ({
-          name: name.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
-          value: mapValue(params.value[name], type),
+          name: name!.split('_').map(word => word[0].toUpperCase() + word.slice(1)).join(' '),
+          value: mapValue(params.value![name!], type!),
           type
         }))
     : []);
@@ -214,7 +218,7 @@ async function runDebug(inputs, modelId: string) {
     const debuggingSession = await api.prepareInspection({
       datasetId: dataset,
       modelId: modelId,
-      name: "Debugging session for " + props.suiteTest.test.name,
+      name: "Debugging session for " + props.suiteTest.test?.name,
       sample: true
     });
     debuggingSessionStore.setCurrentDebuggingSessionId(debuggingSession.id);
@@ -292,7 +296,7 @@ function openLogs() {
 }
 
 const canBeDebugged = computed(() => {
-  return !(props.result?.status == "PASSED") && props.suiteTest.test.args.filter(arg => arg.name === 'debug' && arg.type === 'bool').length > 0;
+  return !(props.result?.status == "PASSED") && props.suiteTest.test!.args!.filter(arg => arg.name === 'debug' && arg.type === 'bool').length > 0;
 });
 </script>
 
