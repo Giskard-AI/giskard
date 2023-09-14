@@ -27,3 +27,21 @@ You can wrap your model in two different ways:
    If this fails, we will ask you to also override the ``save_model`` and ``load_model`` methods where you provide your own
    serialization of the model object.
 """
+
+from .catboost import CatboostModel
+from .function import PredictionFunctionModel
+from .huggingface import HuggingFaceModel
+from .langchain import LangchainModel
+from .pytorch import PyTorchModel
+from .sklearn import SKLearnModel
+from .tensorflow import TensorFlowModel
+
+__all__ = [
+    "CatboostModel",
+    "PredictionFunctionModel",
+    "HuggingFaceModel",
+    "LangchainModel",
+    "PyTorchModel",
+    "SKLearnModel",
+    "TensorFlowModel",
+]
