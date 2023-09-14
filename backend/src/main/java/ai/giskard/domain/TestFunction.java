@@ -32,4 +32,8 @@ public class TestFunction extends Callable implements Serializable {
         return new EqualsBuilder().append(getUuid(), testFunction.getUuid()).isEquals();
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
