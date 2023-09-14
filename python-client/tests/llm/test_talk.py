@@ -4,6 +4,7 @@ import sys
 import pytest
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
+from pydantic.error_wrappers import ValidationError
 
 from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec
@@ -106,7 +107,7 @@ def test_model_ask_description(german_credit_model):
 )
 def test_model_ask_description_invalid_version(german_credit_model):
     with pytest.raises(
-        Exception,
+        ValidationError,
         match=f"This tool relies on Python 3.9 or higher (as it uses new functionality in the `ast` module, you have Python version: {sys.version})",
     ):
         llm = FakeListLLM(
