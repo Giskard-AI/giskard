@@ -34,12 +34,17 @@ on:
             
   pull_request: # This will allow to trigger on PR only with a specific label
     types: [opened, reopened, synchronize, labeled, unlabeled]
-# https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
+# Concurrency : auto-cancel "old" jobs ie when pushing again
+# https://docs.github.com/fr/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 env:
   RUN_TESTS: false
   BUILD_ONLY: false
   REGISTRY_IMAGE: giskardai/giskard
   DOCKERHUB_USER: giskardai
+# https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
 jobs:
   build-images:
     # Debug
@@ -130,13 +135,14 @@ jobs:
           username: ${{ env.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Run python test inside docker
+      - name: Install deps inside docker
         if: ${{ env.RUN_TESTS }}
         uses: docker/build-push-action@v5
         with:
           context: .
-          target: test-python
+          target: full-install-python
           push: false
+          load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           builder: ${{ steps.builder.outputs.name }}
@@ -145,20 +151,35 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run python integration test inside docker
+      - name: Run python test inside docker
         if: ${{ env.RUN_TESTS }}
         uses: docker/build-push-action@v5
         with:
           context: .
-          target: integration-test-python
+          target: test-python
           push: false
+          load: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+
+      # - name: Run python integration test inside docker
+      #   if: ${{ env.RUN_TESTS }}
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     target: integration-test-python
+      #     push: false
+      #     load: false
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      #     builder: ${{ steps.builder.outputs.name }}
+      #     platforms: |
+      #       ${{ matrix.platform}}
+      #     cache-from: type=gha
 
       - name: Build and push
         id: build

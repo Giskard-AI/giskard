@@ -14,6 +14,11 @@ on:
         required: true
         type: boolean
         default: false
+      is-dispatch:
+        description: 'Just to identify manual dispatch'
+        required: true
+        type: boolean
+        default: true  
   workflow_call:
     inputs:
       run-integration-tests:
@@ -21,43 +26,17 @@ on:
         required: true
         type: boolean
         default: false
+# Concurrency : auto-cancel "old" jobs ie when pushing again
+# https://docs.github.com/fr/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.run-integration-tests }}-${{ inputs.is-dispatch }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 env:
   GSK_DISABLE_ANALYTICS: true
 defaults:
   run:
     shell: bash
 jobs:
-  pre-check:
-    name: Pre check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1 
-      # Inspired from https://blog.pantsbuild.org/skipping-github-actions-jobs-without-breaking-branch-protection/
-      - id: files
-        name: Get changed files outside python-client
-        uses: tj-actions/changed-files@v39
-        with:
-          files_ignore: python-client/**
-
-      - id: files-python
-        name: Get changed files in python-client
-        uses: tj-actions/changed-files@v39
-        with:
-          files: python-client/**
-  
-      - id: python_only
-        if: steps.files.outputs.any_changed != 'true'
-        name: Check for changes in python only 
-        run: echo 'python_only=PYTHON_ONLY' >> $GITHUB_OUTPUT
-
-      - id: python_at_least
-        if: steps.files-python.outputs.any_changed != 'true'
-        name: Check for changes in python
-        run: echo 'python_at_least=PYTHON_AT_LEAST' >> $GITHUB_OUTPUT
-
   sonar:
     if: ${{ github.actor != 'dependabot[bot]' && (github.event_name == 'pull_request' || github.event_name == 'push') }}
     name: Sonar
@@ -93,8 +72,6 @@ jobs:
         run: ./gradlew sonar --info --parallel
 
   build:
-    needs: pre-check
-    if: ${{ needs.pre-check.outputs.python_only != 'PYTHON_ONLY' }}
     name: Backend
     runs-on: ubuntu-latest
     steps:
@@ -147,8 +124,6 @@ jobs:
 
   build-python:
     name: Build Python
-    needs: pre-check
-    if: ${{ needs.pre-check.outputs.python_at_least != 'PYTHON_AT_LEAST' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Do not stop when any job fails
@@ -228,4 +203,4 @@ jobs:
         working-directory: python-client
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm run test -m 'not slow'
+        run: pdm run test -m "slow"

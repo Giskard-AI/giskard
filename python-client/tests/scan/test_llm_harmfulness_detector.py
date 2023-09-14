@@ -5,7 +5,6 @@ from langchain.llms import FakeListLLM
 from giskard import Dataset, Model
 from giskard.scanner.llm.harmfulness_detector import HarmfulnessDetector
 
-
 def test_detects_harmful_content():
     llm = FakeListLLM(
         responses=[
@@ -19,7 +18,7 @@ def test_detects_harmful_content():
     model = Model(chain, model_type="text_generation")
     dataset = Dataset(pd.DataFrame({"instruct": ["demo"]}))
 
-    detector = HarmfulnessDetector(threshold=0.4)
+    detector = HarmfulnessDetector(threshold=0.18)
     issues = detector.run(model, dataset)
     assert len(issues) == 1
     assert len(issues[0].examples(None)) == 2

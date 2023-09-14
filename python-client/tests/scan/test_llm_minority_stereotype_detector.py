@@ -5,7 +5,6 @@ from langchain.llms.fake import FakeListLLM
 from giskard import Dataset, Model
 from giskard.scanner.llm.minority_stereotype_detector import MinorityStereotypeDetector
 
-
 def test_generative_model_minority():
     llm = FakeListLLM(
         responses=[
