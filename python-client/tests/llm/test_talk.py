@@ -105,26 +105,12 @@ def test_model_ask_description(german_credit_model):
 @pytest.mark.skipif(
     sys.version_info.minor >= 9, reason="The Langchain agent use the new ast module implemented in Python 3.8"
 )
-def test_model_ask_description_invalid_version(german_credit_model):
-    with pytest.raises(
-        ValidationError,
-        match=f"This tool relies on Python 3.9 or higher (as it uses new functionality in the `ast` module, you have Python version: {sys.version})",
-    ):
-        llm = FakeListLLM(
-            responses=[
-                """
-                                    Action: model_description
-                                    Action Input: None
-                                    """,
-                """
-                                    Final Answer: The goal of this model is to predict if a potential debtor might default
-                                    """,
-            ]
-            * 100
-        )
+def test_model_create_llm_agent_invalid_version(german_credit_model, german_credit_test_data):
+    with pytest.raises(ValidationError):
+        llm = FakeListLLM(responses=[""] * 100)
         llm_config.set_default_llm(llm)
 
-        german_credit_model.talk("What is the goal of this model?")
+        german_credit_model._llm_agent(german_credit_test_data, True)
 
 
 @pytest.mark.skipif(
