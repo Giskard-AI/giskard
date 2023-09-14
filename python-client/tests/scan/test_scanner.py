@@ -99,6 +99,11 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock(Model)
     model.is_text_generation = True
+    model.meta = {
+        "name": "Model name",
+        "description": "Some meaningful model description",
+        "feature_names": "The feature name",
+    }
     scanner = Scanner()
 
     with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
