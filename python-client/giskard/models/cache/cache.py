@@ -11,6 +11,7 @@ from ...settings import settings
 
 NaN = float("NaN")
 
+ENCODING = "utf-8"
 CACHE_CSV_FILENAME = "giskard-model-cache.csv"
 
 
@@ -43,7 +44,7 @@ class ModelCache:
             return
 
         try:
-            with self.cache_file.open("r", newline="") as pred_f:
+            with self.cache_file.open("r", newline="", encoding=ENCODING) as pred_f:
                 reader = csv.reader(pred_f)
                 for row in reader:
                     if self.model_type == SupportedModelTypes.TEXT_GENERATION:
@@ -74,7 +75,7 @@ class ModelCache:
 
         if self.cache_file is not None:
             self.cache_file.parent.mkdir(parents=True, exist_ok=True)
-            with self.cache_file.open("a", newline="") as pred_f:
+            with self.cache_file.open("a", newline="", encoding=ENCODING) as pred_f:
                 writer = csv.writer(pred_f)
                 for i in range(len(keys)):
                     writer.writerow(flatten([keys.iloc[i], values[i]]))
