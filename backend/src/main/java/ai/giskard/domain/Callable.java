@@ -4,6 +4,8 @@ import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 import java.util.List;
@@ -38,4 +40,17 @@ public class Callable implements Serializable {
     @OneToMany(mappedBy = "function", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FunctionArgument> args;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (!(o instanceof Callable callable)) return false;
+
+        return new EqualsBuilder().append(uuid, callable.uuid).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(uuid).toHashCode();
+    }
 }

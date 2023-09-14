@@ -169,11 +169,6 @@ async function inviteUser() {
   }
 }
 
-function exportProject(id: number) {
-  mixpanel.track('Export project', { id });
-  projectStore.exportProject(id);
-}
-
 async function deleteProject() {
   if (project.value) {
     try {
