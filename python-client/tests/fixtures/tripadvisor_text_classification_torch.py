@@ -1,4 +1,3 @@
-import os
 import re
 import string
 from typing import Union, List
@@ -19,7 +18,7 @@ from tests.url_utils import fetch_from_ftp
 
 
 # Data
-DATA_URL = os.path.join("ftp://sys.giskard.ai", "pub", "unit_test_resources", "tripadvisor_reviews_dataset", "{}")
+DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/tripadvisor_reviews_dataset/{}"
 DATA_PATH = Path.home() / ".giskard" / "tripadvisor_reviews_dataset"
 DATA_FILE_NAME = "tripadvisor_hotel_reviews.csv"
 

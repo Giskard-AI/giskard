@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.Collection;
 
 public class YAMLConverter {
 
@@ -25,7 +25,7 @@ public class YAMLConverter {
         MAPPER.writeValue(p.toFile(), a);
     }
 
-    public static void exportEntitiesToYAML(Set<?> entities, Path p) throws IOException {
+    public static void exportEntitiesToYAML(Collection<?> entities, Path p) throws IOException {
         if (!Files.exists(p)) {
             Files.createFile(p);
         }
