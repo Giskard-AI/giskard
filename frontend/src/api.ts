@@ -106,6 +106,24 @@ function replacePlaceholders(detail: string) {
     return detail.replaceAll('GISKARD_ADDRESS', window.location.hostname);
 }
 
+function showDemoHFSpacesTip() {
+    console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
+    Vue.$toast(
+        {
+            component: HuggingFaceSpacesSetupTipToast,
+            props: {
+                title: 'Warning',
+                detail: `You cannot modify Giskard Hugging Face demo space.
+Please create your own space and get a license from Giskard.`,
+            },
+        },
+        {
+            toastClassName: 'error-toast',
+            type: TYPE.WARNING,
+        }
+    );
+}
+
 async function errorInterceptor(error) {
     if (error.code !== AxiosError.ERR_CANCELED) {
         trackError(error);
@@ -121,21 +139,7 @@ async function errorInterceptor(error) {
                 await router.push('/auth/login');
             }
         } else if (error.response.status === 503 && useMainStore().appSettings?.isDemoHfSpace) {
-            console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
-            Vue.$toast(
-                {
-                    component: HuggingFaceSpacesSetupTipToast,
-                    props: {
-                        title: 'Warning',
-                        detail: `You cannot modify Giskard Hugging Face demo space.
-Please create your own space and get a license from Giskard.`,
-                    },
-                },
-                {
-                    toastClassName: 'error-toast',
-                    type: TYPE.WARNING,
-                }
-            );
+            showDemoHFSpacesTip();
         } else {
             let title: string;
             let detail: string;
