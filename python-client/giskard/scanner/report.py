@@ -1,3 +1,6 @@
+from pathlib import Path
+import random
+import string
 import tempfile
 
 import mlflow
@@ -130,13 +133,19 @@ class ScanReport:
             model_artifact_path = "-for-" + model_artifact_path
 
         with tempfile.NamedTemporaryFile(
-            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html"
+            prefix="giskard-scan-results" + model_artifact_path + "-", suffix=".html", delete=False
         ) as f:
+            # Get file path
             scan_results_local_path = f.name
-            scan_results_artifact_name = scan_results_local_path.split("/")[-1]
-            scan_summary_artifact_name = "scan-summary" + model_artifact_path + ".json" if summary else None
+            # Get name from file
+            scan_results_artifact_name = Path(f.name).name
+            scan_summary_artifact_name = (
+                "scan-summary" + model_artifact_path + ".json" if summary else None
+            )
+            # Write the file on disk
             self.to_html(scan_results_local_path)
 
+        try:
             if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_artifact(scan_results_local_path)
                 if summary:
@@ -145,6 +154,10 @@ class ScanReport:
                 mlflow_client.log_artifact(mlflow_run_id, scan_results_local_path)
                 if summary:
                     mlflow_client.log_table(mlflow_run_id, results_df, artifact_file=scan_summary_artifact_name)
+        finally:
+            # Force deletion of the temps file
+            Path(f.name).unlink(missing_ok=True)
+
         return scan_results_artifact_name, scan_summary_artifact_name
 
     def to_wandb(self, **kwargs):
@@ -165,30 +178,34 @@ class ScanReport:
         from ..utils.analytics_collector import analytics
 
         with wandb_run(**kwargs) as run:
-            with tempfile.NamedTemporaryFile(prefix="giskard-scan-results-", suffix=".html") as f:
-                try:
-                    self.to_html(filename=f.name)
-                    wandb_artifact_name = "Vulnerability scan results/" + f.name.split("/")[-1].split(".html")[0]
-                    analytics.track(
-                        "wandb_integration:scan_result",
-                        {
-                            "wandb_run_id": run.id,
-                            "has_issues": self.has_issues(),
-                            "issues_cnt": len(self.issues),
-                        },
-                    )
-                except Exception as e:
-                    analytics.track(
-                        "wandb_integration:scan_result:error:unknown",
-                        {
-                            "wandb_run_id": run.id,
-                            "error": str(e),
-                        },
-                    )
-                    raise ValueError(
-                        "An error occurred while logging the scan results into wandb. "
-                        "Please submit the traceback as a GitHub issue in the following "
-                        "repository for further assistance: https://github.com/Giskard-AI/giskard."
-                    ) from e
+            try:
+                html = self.to_html()
+                suffix = "".join(
+                    random.choices(string.ascii_lowercase + string.digits, k=8)
+                )
+                wandb_artifact_name = (
+                    f"Vulnerability scan results/giskard-scan-results-{suffix}"
+                )
+                analytics.track(
+                    "wandb_integration:scan_result",
+                    {
+                        "wandb_run_id": run.id,
+                        "has_issues": self.has_issues(),
+                        "issues_cnt": len(self.issues),
+                    },
+                )
+            except Exception as e:
+                analytics.track(
+                    "wandb_integration:scan_result:error:unknown",
+                    {
+                        "wandb_run_id": run.id,
+                        "error": str(e),
+                    },
+                )
+                raise ValueError(
+                    "An error occurred while logging the scan results into wandb. "
+                    "Please submit the traceback as a GitHub issue in the following "
+                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
+                ) from e
 
-                run.log({wandb_artifact_name: wandb.Html(open(f.name), inject=False)})
+            run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
