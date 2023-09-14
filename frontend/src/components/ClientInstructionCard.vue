@@ -32,7 +32,7 @@ import CodeSnippet from "@/components/CodeSnippet.vue";
 import LoadingFullscreen from "./LoadingFullscreen.vue";
 import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
 
-import { saveLocalHFToken, getLocalHFToken } from "@/utils";
+import { saveLocalHFToken } from "@/utils";
 import { useHFSpacesTokenStore } from "@/stores/hfspaces";
 
 import { apiURL } from "@/env";
