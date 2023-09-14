@@ -79,6 +79,16 @@ public class Project extends AbstractAuditingEntity {
     private final Set<TestSuite> testSuites = new HashSet<>();
 
     @Getter
+    @JsonIgnore
+    @ManyToMany(mappedBy = "projects", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private final Set<SlicingFunction> slicingFunctions = new HashSet<>();
+
+    @Getter
+    @JsonIgnore
+    @ManyToMany(mappedBy = "projects", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private final Set<TransformationFunction> transformationFunctions = new HashSet<>();
+
+    @Getter
     @Setter
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonProperty(value = "guestlist")
