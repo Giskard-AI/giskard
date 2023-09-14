@@ -2,11 +2,10 @@ import os
 import sys
 
 import pytest
+from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
-
-from giskard import llm_config
 
 
 def test_predict(german_credit_test_data, german_credit_model):
@@ -75,7 +74,7 @@ def test_model_create_llm_agent(german_credit_test_data, german_credit_model):
 
 
 @pytest.mark.skipif(
-    sys.version_info.major < 9, reason="The Langchain agent use the new ast module implemented in Python 3.9"
+    sys.version_info.minor < 9, reason="The Langchain agent use the new ast module implemented in Python 3.9"
 )
 def test_model_ask_description(german_credit_model):
     llm = FakeListLLM(
@@ -99,7 +98,7 @@ def test_model_ask_description(german_credit_model):
 
 
 @pytest.mark.skipif(
-    sys.version_info.major >= 9, reason="The Langchain agent use the new ast module implemented in Python 3.8"
+    sys.version_info.minor >= 9, reason="The Langchain agent use the new ast module implemented in Python 3.8"
 )
 def test_model_ask_description_invalid_version(german_credit_model):
     with pytest.raises(
