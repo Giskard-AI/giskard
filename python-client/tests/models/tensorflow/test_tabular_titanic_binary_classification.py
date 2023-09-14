@@ -1,10 +1,11 @@
-import tensorflow as tf
+import pytest
 
 import tests.utils
 from giskard import Dataset
 from giskard.demo import titanic_classification
 from giskard.models.tensorflow import TensorFlowModel
 
+tf = pytest.importorskip("tensorflow")
 
 def test_tabular_titanic_binary_classification():
     df = titanic_classification.get_test_df()

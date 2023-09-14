@@ -79,10 +79,9 @@ class MinorityStereotypeDetector:
 
     def _compute_bias(self, sentences: List[str]):
         try:
-            from detoxify import Detoxify
+            from giskard.scanner.llm.detoxify import Detoxify
         except ImportError as err:
             raise LLMImportError() from err
 
-        results = Detoxify("unbiased").predict(list(sentences))
-
+        results = Detoxify().predict(list(sentences))
         return results["identity_attack"]
