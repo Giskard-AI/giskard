@@ -52,8 +52,8 @@
               To setup your own Giskard instance on Hugging Face Spaces, you need to set the owner, Space name, visibility and choose the hardware.
               We recommend to use paid hardware for better performance.
               <br/>
-              We also recommend to setup a paid <a href="https://huggingface.co/docs/hub/spaces-storage#persistent-storage" target="_blank">persistent storage</a> to avoid your personal data loss across restarting or upgrading.
-              <!-- But you can also use a free hardware. Keep in mind that without interactions after <a href="https://huggingface.co/docs/hub/spaces-gpus#sleep-time" target="_blank">sleep time</a>, the Space will be closed. Your data will be lost without a persistent storage. -->
+              We also recommend to setup a paid <a href="https://huggingface.co/docs/hub/spaces-storage#persistent-storage" target="_blank" rel="noopener">persistent storage</a> to avoid your personal data loss across restarting or upgrading.
+              <!-- But you can also use a free hardware. Keep in mind that without interactions after <a href="https://huggingface.co/docs/hub/spaces-gpus#sleep-time" target="_blank" rel="noopener">sleep time</a>, the Space will be closed. Your data will be lost without a persistent storage. -->
             </v-card-text>
             <v-card-title class="font-weight-medium">
               <v-icon class="mr-2" color="primary">mdi-numeric-3-circle-outline</v-icon>
@@ -62,10 +62,10 @@
             </v-card-title>
             <v-card-text>
               After your Space entering running status, you will see Giskard's setup page to request and upload your Giskard's license.
-              <!-- To avoid uploading your license after restarting or upgrading, we recommend to setup "GISKARD_LICENSE" with your obtained license in your <a href="https://huggingface.co/docs/hub/spaces-overview#managing-secrets" target="_blank">secrets</a> from Hugging Face Spaces settings. -->
+              <!-- To avoid uploading your license after restarting or upgrading, we recommend to setup "GISKARD_LICENSE" with your obtained license in your <a href="https://huggingface.co/docs/hub/spaces-overview#managing-secrets" target="_blank" rel="noopener">secrets</a> from Hugging Face Spaces settings. -->
             </v-card-text>
         </v-card>
-        <p class="text-center">You can also deploy Giskard on <span class="font-weight-bold">Cloud (AWS, GCP, Azure, etc.) or on-premise</span> by following <a href="https://docs.giskard.ai/en/latest/guides/installation_app/index.html" target="_blank">Giskard's documentation</a>.</p>
+        <p class="text-center">You can also deploy Giskard on <span class="font-weight-bold">Cloud (AWS, GCP, Azure, etc.) or on-premise</span> by following <a href="https://docs.giskard.ai/en/latest/guides/installation_app/index.html" target="_blank" rel="noopener">Giskard's documentation</a>.</p>
       </v-col>
     </v-row>
   </v-container>
@@ -80,5 +80,3 @@ function back() {
   router.back();
 }
 </script>
-<style scoped>
-</style>
