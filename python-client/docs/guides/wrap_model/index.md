@@ -24,17 +24,17 @@ Prediction function is any Python function that takes  input as <b>raw</b> panda
 ```python
 from giskard import demo, Model
 
-data_preprocessor, clf = demo.titanic_pipeline()
+data_preprocessor, titanic_pretrained_model = demo.titanic_pipeline()
 
 def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     preprocessed_df = data_preprocessor(df)
-    return clf.predict_proba(preprocessed_df)
+    return titanic_pretrained_model.predict_proba(preprocessed_df)
 
 wrapped_model = Model(
     model=prediction_function,
     model_type="classification",
-    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=titanic_pretrained_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
     # name="titanic_model", # Optional
     # classification_threshold=0.5, # Default: 0.5
@@ -168,7 +168,7 @@ This requires:
 ```python
 from giskard import demo, Model
 
-data_preprocessor, clf = demo.titanic_pipeline()
+data_preprocessor, titanic_pretrained_model = demo.titanic_pipeline()
 
 class MyCustomModel(Model):
     def model_predict(self, df):
@@ -176,9 +176,9 @@ class MyCustomModel(Model):
         return self.model.predict_proba(preprocessed_df)
 
 wrapped_model = MyCustomModel(
-    model=clf,
+    model=titanic_pretrained_model,
     model_type="classification",
-    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=titanic_pretrained_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
                  'Embarked', 'Survived'],  # Default: all columns of your dataset
     # name="titanic_model", # Optional
