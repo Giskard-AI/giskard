@@ -82,8 +82,6 @@
         <v-col>
           <ApiTokenCard />
         </v-col>
-      </v-row>
-      <v-row>
         <v-col>
           <ClientInstructionCard :internalHFAccessToken="false" />
         </v-col>
