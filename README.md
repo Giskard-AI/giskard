@@ -205,13 +205,14 @@ You can then **upload the test suite** created using the `giskard` Python librar
 
 <details>
   <summary>What is a ML worker?</summary>
-  Giskard executes your model using a worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
+
+  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
   </details>
-  
+
 <details>
   <summary>How to get the API key</summary>
   
-  Access the API key here in the Settings tab of the Giskard server http://localhost:8080/main/admin/general
+  Access the API key in the Settings tab of the Giskard server.
 </details>
 
 <details>
@@ -234,7 +235,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
   Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
 </details>
 
-Go to our [Discord](https://gisk.ar/discord) to get more help.
+For any other questions and doubts, head over to our [Discord](https://gisk.ar/discord).
 
 # 👋 Community
 We welcome contributions from the Machine Learning community! Read this [guide](CONTRIBUTING.md) to get started.
@@ -244,9 +245,4 @@ Join our thriving community on our Discord server : [join Discord server](https:
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
 ❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
-
-
-
-
-
 
