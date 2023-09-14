@@ -1,8 +1,17 @@
 import os
 from pathlib import Path
 from typing import Optional
+from packaging import version
 
-from pydantic.env_settings import BaseSettings
+import pydantic
+# See https://linear.app/giskard/issue/GSK-1745/upgrade-pydantic-to-20
+IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
+
+if IS_PYDANTIC_V2:
+    # Package have been moved out in Pydantic v2
+    from pydantic_settings import BaseSettings
+else:
+    from pydantic.env_settings import BaseSettings
 
 
 def expand_env_var(env_var: Optional[str]) -> Optional[str]:
@@ -22,9 +31,11 @@ class Settings(BaseSettings):
     ws_path: str = "/ml-worker"
     host: str = "localhost"
     max_workers: int = 10
-    loglevel = "INFO"
+    max_send_message_length_mb: int = 1024
+    max_receive_message_length_mb: int = 1024
+    loglevel: str = "INFO"
     cache_dir: str = "cache"
-    disable_analytics = False
+    disable_analytics: bool = False
 
     class Config:
         env_prefix = "GSK_"

@@ -170,11 +170,18 @@ jobs:
         python-version: [ "3.8", "3.9", "3.10" ]
         os: [ubuntu-latest]
         experimental: [false]
+        pydantic_v1: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
           - python-version: "3.10"
             os: windows-2019
             experimental: false
+            pydantic_v1: false
+          - python-version: "3.10"
+            os: ubuntu-latest
+            experimental: false
+            pydantic_v1: true
+
     continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
@@ -214,6 +221,24 @@ jobs:
       - name: Lint code
         working-directory: python-client 
         run: pdm run lint
+
+      - name: Install pydantic settings (Dirty hack, do not merge !)
+        if: ${{ !matrix.pydantic_v1 }}
+        working-directory: python-client 
+        run: pdm run pip install "pydantic_settings>2"
+
+      - name: Install pydantic v1
+        if: ${{ matrix.pydantic_v1 }}
+        working-directory: python-client 
+        run: |
+          pdm run pip uninstall pydantic pydantic_core -y
+          pdm run pip install "pydantic<2"
+
+      - name: Check Pydantic installed version
+        working-directory: python-client 
+        run: |
+          pdm run pip freeze | tail -n +1 | grep '^pydantic'
+          pdm run pip freeze | tail -n +1 | grep -q '^pydantic==${{ matrix.pydantic_v1 && '1' || '2' }}\.'
 
       - name: Test code
         working-directory: python-client
