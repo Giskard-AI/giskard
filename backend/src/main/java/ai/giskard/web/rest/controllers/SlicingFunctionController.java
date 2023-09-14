@@ -6,13 +6,14 @@ import ai.giskard.web.dto.ComparisonClauseDTO;
 import ai.giskard.web.dto.SlicingFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -37,15 +38,14 @@ public class SlicingFunctionController {
     public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) String projectKey,
                                                     @PathVariable("uuid") @NotNull UUID uuid,
                                                     @Valid @RequestBody SlicingFunctionDTO slicingFunction) {
-        slicingFunction.setProjectKey(projectKey);
+        slicingFunction.setProjectKeys(Set.of(projectKey));
         return slicingFunctionService.save(slicingFunction);
     }
 
-    @PostMapping({"project/{projectKey}/slices/no-code", "slices/no-code"})
-    public SlicingFunctionDTO createSlicingFunction(@PathVariable(value = "projectKey", required = false) @NotNull String projectKey,
+    @PostMapping("project/{projectKey}/slices/no-code")
+    public SlicingFunctionDTO createNoCodeSlicingFunction(@PathVariable(value = "projectKey") @NotNull String projectKey,
                                                     @Valid @RequestBody List<@NotNull ComparisonClauseDTO> comparisonClauses) throws JsonProcessingException {
-        // TODO GSK-1280: add projectKey to slicing function
-        return slicingFunctionService.generate(comparisonClauses);
+        return slicingFunctionService.generate(comparisonClauses, projectKey);
     }
 
 

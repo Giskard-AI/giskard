@@ -81,7 +81,6 @@ async function errorInterceptor(context: ResponseContext): Promise<Response | vo
     } catch (e) {
         data = {};
     }
-    debugger
     await trackError(context, data);
 
     if (response.status === 401) {

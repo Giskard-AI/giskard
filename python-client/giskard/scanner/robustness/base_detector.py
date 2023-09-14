@@ -62,9 +62,11 @@ class BaseTextPerturbationDetector(Detector):
         transformation: TextTransformation,
         features: Sequence[str],
     ) -> Sequence[Issue]:
-        num_samples = self.num_samples or _get_default_num_samples(model)
-        output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
-        threshold = self.threshold or _get_default_threshold(model)
+        num_samples = self.num_samples if self.num_samples is not None else _get_default_num_samples(model)
+        output_sensitivity = (
+            self.output_sensitivity if self.output_sensitivity is not None else _get_default_output_sensitivity(model)
+        )
+        threshold = self.threshold if self.threshold is not None else _get_default_threshold(model)
 
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
