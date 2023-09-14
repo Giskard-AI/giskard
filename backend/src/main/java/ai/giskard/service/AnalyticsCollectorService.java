@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +34,10 @@ public class AnalyticsCollectorService {
     private final Runtime.Version javaVersion = Runtime.version();
 
     @PostConstruct
-    private void configure() {
+    public void configure() {
         if (messageBuilder == null) {
             messageBuilder = new MessageBuilder(applicationProperties.getMixpanelProjectKey());
         }
-        // Prepare user information for MixPanel
-        JSONObject serverProps = new JSONObject();
-        serverProps.put("Giskard Instance", settingsService.getSettings().getInstanceId());
-        serverProps.put("Giskard Version", buildVersion);
-        serverProps.put("Giskard Plan", licenseService.getCurrentLicense().getPlanCode());
-        serverProps.put("Giskard LicenseID", licenseService.getCurrentLicense().getId());
-        serverProps.put("Is HuggingFace", GeneralSettingsService.isRunningInHFSpaces);
-        serverProps.put("HuggingFace Space ID", GeneralSettingsService.hfSpaceId);
-
-        messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
     }
 
     public void track(String eventName, JSONObject props) {
@@ -63,6 +54,21 @@ public class AnalyticsCollectorService {
     }
 
     public void doTrack(String eventName, JSONObject props) {
+        // Refresh user information for MixPanel
+        JSONObject serverProps = new JSONObject();
+        try {
+            serverProps.put("Giskard Instance", settingsService.getSettings().getInstanceId());
+            serverProps.put("Giskard Version", buildVersion);
+            serverProps.put("Giskard Plan", licenseService.getCurrentLicense().getPlanCode());
+            serverProps.put("Giskard LicenseID", licenseService.getCurrentLicense().getId());
+            serverProps.put("Is HuggingFace", GeneralSettingsService.isRunningInHFSpaces);
+            serverProps.put("HuggingFace Space ID", GeneralSettingsService.hfSpaceId);
+            messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
+            return;
+        }
+
         // Start a new thread
         new Thread(() -> {
             // Merge with server info
