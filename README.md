@@ -36,7 +36,7 @@ You can install the latest version of Giskard from PyPi using pip :
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
-We officially support Python 3.9 and 3.10.
+We officially support Python 3.8, 3.9 and 3.10.
 ## Try in Colab 📙
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
 
@@ -51,7 +51,7 @@ Giskard is a Python library that uses a variety of techniques to **detect vulner
 - **Data slicing and transformation**: Giskard can automatically generate different data slices and transformations to test the robustness of your model.
 - **Statistical analysis**: Giskard can use statistical analysis to identify patterns and relationships in your data that could indicate a vulnerability.
 
- It is a powerful tool that can help you to **save time and effort**, and it can help you to produce more **reliable and trustworthy models**.
+ It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
  
 <p align="center">
   <img src="readme/scan_example.gif" alt="Scan Example" width="800">
@@ -118,7 +118,7 @@ giskard_model = giskard.Model(
 
 ```
 
-✨✨✨Then run the scan✨✨✨
+✨✨✨Then run giskard's magical scan✨✨✨
 ```python
 results = giskard.scan(giskard_model, giskard_dataset)
 ```
@@ -130,17 +130,17 @@ display(scan_results)
 *If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
 ## 2. 🪄 Automatically generate a test suite
 
-If the scan found potential issues in your model, you can automatically generate a **test suite**.
+If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
 ```
-You can run the test suite locally to verify that it reproduces the issues
+You can then run the test suite locally to verify that it reproduces the issues:
 ```python
 test_suite.run()
 ```
 
-To get even more out of Giskard's library, head over to the Giskard server ⤵️
+Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the giskard library, we recommend heading over to the Giskard server ⤵️
 
 # ⭐️ Premium Features
 
