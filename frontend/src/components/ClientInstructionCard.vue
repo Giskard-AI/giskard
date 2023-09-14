@@ -9,7 +9,7 @@
     </v-card-text>
     <v-card-text v-else-if="!state.workerStatus.connected && !props.internalHFAccessToken">
       <div class="mb-2">
-        <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateHFToken">Generate</v-btn>
+        <v-btn small tile color="primaryLight" class="primaryLightBtn" @click="generateHFSpacesToken">Generate</v-btn>
       </div>
       <v-row>
         <v-col>
@@ -97,10 +97,13 @@ async function generateHFSpacesToken() {
     if (token === null) {
       // Private HFSpaces or no valid HF access token
       needFetchWithHFAccessToken.value = true;
+      return;
     } else if (!hfSpacesTokenStore.publicSpace) {
-      needFetchWithHFAccessToken.value = false;
       giskardClientTemplate.value = generateGiskardClientInstruction(token);
+    } else {
+      giskardClientTemplate.value = generateGiskardClientInstruction();
     }
+    needFetchWithHFAccessToken.value = false;
   }
 }
 

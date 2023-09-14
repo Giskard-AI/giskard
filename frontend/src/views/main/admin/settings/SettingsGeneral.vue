@@ -85,7 +85,7 @@
       </v-row>
       <v-row>
         <v-col>
-          <ClientInstructionCard />
+          <ClientInstructionCard :internalHFAccessToken="false" />
         </v-col>
       </v-row>
       <v-row>

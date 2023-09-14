@@ -448,11 +448,14 @@ async function generateHFSpacesToken() {
     if (token === null) {
       // Private HFSpaces or no valid HF access token
       needFetchWithHFAccessToken.value = true;
+      return;
     } else if (!hfSpacesTokenStore.publicSpace) {
-      needFetchWithHFAccessToken.value = false;
       giskardClientSnippet.value = await generateGiskardClientSnippet(token);
-      codeContent.value = generateCodeContent();
+    } else {
+      giskardClientSnippet.value = await generateGiskardClientSnippet();
     }
+    needFetchWithHFAccessToken.value = false;
+    codeContent.value = generateCodeContent();
   }
 }
 

@@ -100,10 +100,11 @@ async function generateHFSpacesToken() {
     if (token === null) {
       // Private HFSpaces or no valid HF access token
       needFetchWithHFAccessToken.value = true;
+      return;
     } else if (!hfSpacesTokenStore.publicSpace) {
-      needFetchWithHFAccessToken.value = false;
       hfToken.value = token;
     }
+    needFetchWithHFAccessToken.value = false;
   }
 }
 
