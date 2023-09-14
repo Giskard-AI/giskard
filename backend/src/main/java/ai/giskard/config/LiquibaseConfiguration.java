@@ -67,7 +67,7 @@ public class LiquibaseConfiguration {
             try (var conn = ds.getConnection()) {
                 log.info("Liquibase connection: {}", conn.getMetaData().getURL());
             } catch (SQLException e) {
-                throw new GiskardRuntimeException("Failed to get connection from liquibase datasource");
+                throw new GiskardRuntimeException("Failed to get connection from liquibase datasource", e);
             }
         } else {
             liquibase = new DataSourceClosingSpringLiquibase();
