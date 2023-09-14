@@ -46,12 +46,12 @@ import {useMainStore} from "@/stores/main";
 import {useRoute} from "vue-router/composables";
 import {apiURL} from "@/env";
 import CodeSnippet from "./CodeSnippet.vue";
-import {getLocalHFToken, saveLocalHFToken} from "@/utils";
+import {saveLocalHFToken} from "@/utils";
 import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
-import {attemptFetchHFSpacesToken} from "@/hf-utils";
 import LoadingFullscreen from "./LoadingFullscreen.vue";
 import {TYPE} from 'vue-toastification';
 import {useApiKeyStore} from "@/stores/api-key-store";
+import { useHFSpacesTokenStore } from "@/stores/hfspaces";
 
 const appSettings = computed(() => mainStore.appSettings);
 
@@ -79,13 +79,31 @@ const codeContent = computed(() => {
 async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
   if (mainStore.appSettings!.isRunningOnHfSpaces) {
     saveLocalHFToken(accessToken);
-    await attemptFetchHFSpacesToken((token) => {
-      needFetchWithHFAccessToken.value = false;
-      hfToken.value = token;
-    }, () => {
+
+    const hfSpacesTokenStore = useHFSpacesTokenStore();
+    const token = await hfSpacesTokenStore.getHFSpacesToken();
+    if (token === null) {
+      // Private HFSpaces or no valid HF access token
       needFetchWithHFAccessToken.value = true;
       mainStore.addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
-    });
+    } else if (!hfSpacesTokenStore.publicSpace) {
+      needFetchWithHFAccessToken.value = false;
+      hfToken.value = token;
+    }
+  }
+}
+
+async function generateHFSpacesToken() {
+  if (mainStore.appSettings?.isRunningOnHfSpaces) {
+    const hfSpacesTokenStore = useHFSpacesTokenStore();
+    const token = await hfSpacesTokenStore.getHFSpacesToken();
+    if (token === null) {
+      // Private HFSpaces or no valid HF access token
+      needFetchWithHFAccessToken.value = true;
+    } else if (!hfSpacesTokenStore.publicSpace) {
+      needFetchWithHFAccessToken.value = false;
+      hfToken.value = token;
+    }
   }
 }
 
@@ -93,15 +111,7 @@ onMounted(async () => {
 
   await apiKeyStore.getAll();
   if (mainStore.appSettings!.isRunningOnHfSpaces) {
-    await attemptFetchHFSpacesToken((token) => {
-      if (getLocalHFToken()) {
-        hfToken.value = token;
-      }
-      needFetchWithHFAccessToken.value = false;
-    }, () => {
-      // Access Token seems invalidated or private
-      needFetchWithHFAccessToken.value = true;
-    });
+    await generateHFSpacesToken();
   } else {
     needFetchWithHFAccessToken.value = false;
   }
