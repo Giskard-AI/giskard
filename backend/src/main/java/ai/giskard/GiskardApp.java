@@ -76,7 +76,6 @@ public class GiskardApp {
 
         // Configure analytics collector service
         AnalyticsCollectorService analyticsCollectorService = SpringContext.getBean(AnalyticsCollectorService.class);
-        analyticsCollectorService.configure(ctx.getEnvironment());
         analyticsCollectorService.track("Server startup", new JSONObject(), true);
     }
 

@@ -1,35 +1,29 @@
 package ai.giskard.service;
 
-import ai.giskard.config.GiskardConstants;
+import ai.giskard.config.ApplicationProperties;
 import ai.giskard.service.ee.LicenseService;
 import com.mixpanel.mixpanelapi.MessageBuilder;
 import com.mixpanel.mixpanelapi.MixpanelAPI;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
 public class AnalyticsCollectorService {
     private static final Logger log = LoggerFactory.getLogger(AnalyticsCollectorService.class);
 
-    private static final String DEV_MP_PROJECT_KEY = "4cca5fabca54f6df41ea500e33076c99";
-    private static final String PROD_MP_PROJECT_KEY = "2c3efacc6c26ffb991a782b476b8c620";
-
     private static final MixpanelAPI mixpanel = new MixpanelAPI();
 
-    private final MessageBuilder messageBuilderDev = new MessageBuilder(DEV_MP_PROJECT_KEY);
-    private final MessageBuilder messageBuilder = new MessageBuilder(PROD_MP_PROJECT_KEY);
+    private MessageBuilder messageBuilder;
 
-    private String activeProfile = GiskardConstants.SPRING_PROFILE_DEVELOPMENT;
+    private final ApplicationProperties applicationProperties;
 
     private final GeneralSettingsService settingsService;
     private final LicenseService licenseService;
@@ -38,9 +32,11 @@ public class AnalyticsCollectorService {
 
     private final Runtime.Version javaVersion = Runtime.version();
 
-    public void configure(Environment env) {
-        Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
-
+    @PostConstruct
+    private void configure() {
+        if (messageBuilder == null) {
+            messageBuilder = new MessageBuilder(applicationProperties.getMixpanelProjectKey());
+        }
         // Prepare user information for MixPanel
         JSONObject serverProps = new JSONObject();
         serverProps.put("Giskard Instance", settingsService.getSettings().getInstanceId());
@@ -50,13 +46,7 @@ public class AnalyticsCollectorService {
         serverProps.put("Is HuggingFace", GeneralSettingsService.isRunningInHFSpaces);
         serverProps.put("HuggingFace Space ID", GeneralSettingsService.hfSpaceId);
 
-        if (activeProfiles.contains(GiskardConstants.SPRING_PROFILE_DEVELOPMENT)) {
-            this.activeProfile = GiskardConstants.SPRING_PROFILE_DEVELOPMENT;
-            messageBuilderDev.set(settingsService.getSettings().getInstanceId(), serverProps);
-        } else {
-            this.activeProfile = GiskardConstants.SPRING_PROFILE_PRODUCTION;
-            messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
-        }
+        messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
     }
 
     public void track(String eventName, JSONObject props) {
@@ -79,12 +69,7 @@ public class AnalyticsCollectorService {
             props.put("Java version", javaVersion.toString());
             props.put("Giskard version", buildVersion);
 
-            JSONObject message;
-            if (GiskardConstants.SPRING_PROFILE_DEVELOPMENT.equals(activeProfile)) {
-                message = messageBuilderDev.event(settingsService.getSettings().getInstanceId(), eventName, props);
-            } else {
-                message = messageBuilder.event(settingsService.getSettings().getInstanceId(), eventName, props);
-            }
+            JSONObject message = messageBuilder.event(settingsService.getSettings().getInstanceId(), eventName, props);
 
             try {
                 mixpanel.sendMessage(message);
@@ -94,7 +79,7 @@ public class AnalyticsCollectorService {
         }).start();
     }
 
-    public class MLWorkerWebSocketTracking {
+    public static class MLWorkerWebSocketTracking {
         private MLWorkerWebSocketTracking() {}
         public static final String ACTION_TIME_FILED = "action_time";
         public static final String TYPE_FILED = "type";

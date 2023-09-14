@@ -40,6 +40,8 @@ public class ApplicationProperties {
     private long tokenValidityInSeconds = 1800; // 30 minutes;
     private long tokenValidityInSecondsForRememberMe = 2592000; // 30 days;
     private CorsConfiguration cors = new CorsConfiguration();
+
+    private String mixpanelProjectKey;
 }
 
 
