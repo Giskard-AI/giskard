@@ -1,3 +1,4 @@
+local_report.md
 .run
 .DS_Store
 # Byte-compiled / optimized / DLL files
@@ -169,3 +170,4 @@ generated
 
 # npm
 node_modules/
+mlruns

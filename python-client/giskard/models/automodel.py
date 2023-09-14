@@ -11,7 +11,6 @@ from .function import PredictionFunctionModel
 
 logger = logging.getLogger(__name__)
 
-
 _ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
     ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
@@ -19,7 +18,6 @@ _ml_libraries = {
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
     ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
-    ("giskard.models.base", "CloudpickleSerializableModel"): [("mlflow.pyfunc", "PyFuncModel")]
 }
 
 

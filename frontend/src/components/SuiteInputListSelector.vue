@@ -4,7 +4,7 @@
             <v-row>
                 <v-col>
                     <v-list-item-content class="py-2">
-                        <v-list-item-title class="input-name">{{ input.name }}: <span class="input-type">{{ input.type }}</span> <span v-if="test?.args[index].optional" class="input-type">= {{ test.args[index].defaultValue }}</span>
+                        <v-list-item-title class="input-name">{{ input.name }}: <span class="input-type">{{ input.type }}</span> <span v-if="test?.args[index].optional" class="input-type">= {{ test.args[index].defaultValue ?? 'None' }}</span>
                             <v-tooltip bottom v-if="doc && doc.args.hasOwnProperty(input.name)">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-icon v-bind="attrs" v-on="on">info</v-icon>
@@ -67,7 +67,7 @@ import SlicingFunctionSelector from "@/views/main/utils/SlicingFunctionSelector.
 import { useCatalogStore } from "@/stores/catalog";
 import TransformationFunctionSelector from "@/views/main/utils/TransformationFunctionSelector.vue";
 import KwargsCodeEditor from "@/views/main/utils/KwargsCodeEditor.vue";
-import {ParsedDocstring} from "@/utils/python-doc.utils";
+import { ParsedDocstring } from "@/utils/python-doc.utils";
 
 interface Props {
     functionInputs?: { [key: string]: FunctionInputDTO };

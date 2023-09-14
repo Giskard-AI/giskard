@@ -157,9 +157,12 @@
             </div>
 
             <div v-if="toggleSnippetType === 'demo'" class="mt-12 mb-6">
-                <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
-                <div class="mt-6 mb-6">
-                    <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                <HuggingFaceTokenCard v-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+                <div v-else>
+                    <p class="text-center">Execute the following Python code with <span class="font-weight-bold">Titanic example</span> to upload a demo test suite to the current project. <br>To upload other demo ML projects, visit our<a href="https://docs.giskard.ai/en/latest/tutorials/tasks/index.html" target="_blank" rel="noopener" class="font-weight-bold text-body-1 ml-1">example page</a>.</p>
+                    <div class="mt-6 mb-6">
+                        <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+                    </div>
                 </div>
             </div>
             <div v-else-if="toggleSnippetType === 'custom'" class="mt-12 mb-6 d-flex justify-center">
@@ -237,6 +240,9 @@ import {TestResult} from '@/generated-sources';
 import {useProjectStore} from '@/stores/project';
 import {useProjectArtifactsStore} from '@/stores/project-artifacts';
 import {generateGiskardClientSnippet} from "@/snippets";
+import {saveLocalHFToken, getLocalHFToken} from "@/utils";
+import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
+import {attemptFetchHFSpacesToken} from "@/hf-utils";
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -250,12 +256,13 @@ const searchSession = ref("");
 const toggleSnippetType = ref<string | undefined>(undefined);
 const giskardClientSnippet = ref<string | null>(null);
 
-const codeContent = computed(() => {
+const codeContent = ref<string | null>(null);
+const generateCodeContent = () => {
     return `import giskard
 
 # Replace this with your own data & model creation.
 df = giskard.demo.titanic_df()
-data_preprocessing_function, clf = giskard.demo.titanic_pipeline()
+data_preprocessing_function, titanic_pretrained_model = giskard.demo.titanic_pipeline()
 
 # Wrap your Pandas DataFrame
 giskard_dataset = giskard.Dataset(df=df,
@@ -266,12 +273,12 @@ giskard_dataset = giskard.Dataset(df=df,
 # Wrap your model
 def prediction_function(df):
     preprocessed_df = data_preprocessing_function(df)
-    return clf.predict_proba(preprocessed_df)
+    return titanic_pretrained_model.predict_proba(preprocessed_df)
 
 giskard_model = giskard.Model(model=prediction_function,
                               model_type="classification",
                               name="Titanic model",
-                              classification_labels=clf.classes_,
+                              classification_labels=titanic_pretrained_model.classes_,
                               feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'])
 
 # Then apply the scan
@@ -282,7 +289,7 @@ ${giskardClientSnippet.value}
 # Upload an automatically created test suite to the current project ✉️
 results.generate_test_suite("Test suite created by scan").upload(client, "${project.value!.key}")
 `
-});
+};
 
 const project = computed(() => {
     return projectStore.project(props.projectId)
@@ -406,6 +413,21 @@ function openCustomInstructions() {
     });
 }
 
+const needFetchWithHFAccessToken = ref<boolean>(false);
+async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        saveLocalHFToken(accessToken);
+        await attemptFetchHFSpacesToken(async (token) => {
+            giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+            codeContent.value = generateCodeContent();
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            needFetchWithHFAccessToken.value = true;
+            useMainStore().addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+        });
+    }
+}
+
 onActivated(async () => {
     searchSession.value = "";
     if (testSuitesStore.currentTestSuiteId !== null) {
@@ -415,7 +437,20 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
-  giskardClientSnippet.value = await generateGiskardClientSnippet();
+    giskardClientSnippet.value = await generateGiskardClientSnippet();
+    codeContent.value = generateCodeContent();
+    if (useMainStore().appSettings!.isRunningOnHfSpaces) {
+        await attemptFetchHFSpacesToken(async (token) => {
+            if (getLocalHFToken()) {
+                giskardClientSnippet.value = await generateGiskardClientSnippet(token);
+                codeContent.value = generateCodeContent();
+            }
+            needFetchWithHFAccessToken.value = false;
+        }, () => {
+            // Access Token seems invalidated or private
+            needFetchWithHFAccessToken.value = true;
+        });
+    }
 })
 </script>
 

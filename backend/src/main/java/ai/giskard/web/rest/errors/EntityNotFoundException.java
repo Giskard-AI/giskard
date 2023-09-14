@@ -1,8 +1,9 @@
 package ai.giskard.web.rest.errors;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-public class EntityNotFoundException extends BadRequestAlertException {
+public class EntityNotFoundException extends GiskardException {
     public enum By {
         NAME("name"),
         ID("id"),
@@ -22,10 +23,10 @@ public class EntityNotFoundException extends BadRequestAlertException {
     }
 
     public EntityNotFoundException(Entity entity, String key) {
-        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by key: %s", entity.getName(), key), entity.name().toLowerCase(), "entitynotfound");
+        super(HttpStatus.NOT_FOUND, String.format("%s not found by key: %s", entity.getName(), key));
     }
 
     public EntityNotFoundException(Entity entity, By by, Object selector) {
-        super(ErrorConstants.DEFAULT_TYPE, String.format("%s not found by %s: %s", entity.getName(), by.getSelector(), selector), entity.name().toLowerCase(), "entitynotfound");
+        super(HttpStatus.NOT_FOUND, String.format("%s not found by %s: %s", entity.getName(), by.getSelector(), selector));
     }
 }

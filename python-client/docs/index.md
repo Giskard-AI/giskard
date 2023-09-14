@@ -22,6 +22,7 @@ guides/scan/index
 guides/slice/index
 guides/transformation/index
 guides/test-suite/index
+guides/talk_to_your_model/index
 guides/cicd/pipeline
 guides/installation_app/index
 guides/upload/index
@@ -47,6 +48,15 @@ tutorials/data-types/index
 
 reference/index
 catalogs/index
+```
+
+```{toctree}
+:caption: Integrations
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+integrations/index
 ```
 
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
@@ -122,4 +132,3 @@ catalogs/index
 ::::
 :::::
 
-    

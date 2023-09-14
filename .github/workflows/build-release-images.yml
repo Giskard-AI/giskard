@@ -1,9 +1,9 @@
 name: Build and publish released version
 
 on:
-#  push:
-#    tags:
-#      - "v*.*.*"
+  push:
+    tags:
+      - "v*.*.*"
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@master
 
 
-      - name: Append ARM buildx builder from AWS
+      - name: Append ARM buildx builder from Oracle cloud
         uses: baschny/append-buildx-action@v1
         with:
           builder: ${{ steps.builder.outputs.name }}
@@ -37,54 +37,6 @@ jobs:
         with:
           username: giskardai
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build <current version>+latest backend image
-        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
-        env:
-          IMAGE: docker.io/giskardai/backend
-        run: |
-          docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          --tag $IMAGE:latest \
-          --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --file backend/src/main/docker/app/app.dockerfile \
-          --push \
-          .
-
-      - name: Build <current version> backend image
-        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
-        env:
-          IMAGE: docker.io/giskardai/backend
-        run: |
-          docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --file backend/src/main/docker/app/app.dockerfile \
-          --push \
-          .
-
-      - name: Build <current version>+latest frontend image
-        if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}
-        env:
-          IMAGE: docker.io/giskardai/frontend
-        run: |
-          docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          --tag $IMAGE:latest \
-          --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --push \
-          frontend
-
-      - name: Build <current version> frontend image
-        if: ${{ steps.tag.outputs.name != steps.tag.outputs.latest_version }}
-        env:
-          IMAGE: docker.io/giskardai/frontend
-        run: |
-          docker buildx build \
-          --platform linux/amd64,linux/arm64 \
-          --tag $IMAGE:${{ steps.tag.outputs.version }} \
-          --push \
-          frontend
 
       - name: Build <current version>+latest global image
         if: ${{ steps.tag.outputs.name == steps.tag.outputs.latest_version }}

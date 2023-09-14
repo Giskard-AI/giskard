@@ -294,12 +294,8 @@ def test_metamorphic_llm():
         x["product"] = f"some {x['product']}"
         return x
 
-    results = metamorphic.test_metamorphic_invariance(
-        model=wrapped_model,
-        dataset=wrapped_dataset,
-        transformation_function=perturbation,
-        threshold=0,
-        output_sensitivity=0.5,
+    results = metamorphic.test_metamorphic_increasing(
+        model=wrapped_model, dataset=wrapped_dataset, transformation_function=perturbation, threshold=0
     ).execute()
 
     assert results.actual_slices_size[0] == 2

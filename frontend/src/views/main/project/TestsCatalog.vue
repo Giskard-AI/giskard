@@ -30,8 +30,7 @@
                         </div>
                       </v-list-item-title>
                       <v-list-item-subtitle v-if='test.tags'>
-                        <v-chip v-for='tag in alphabeticallySorted(test.tags)' :color='pasterColor(tag)' class='mr-2'
-                                x-small>
+                        <v-chip v-for='tag in alphabeticallySorted(test.tags)' :color='pasterColor(tag)' class='mr-2' x-small>
                           {{ tag }}
                         </v-chip>
                       </v-list-item-subtitle>
@@ -45,7 +44,10 @@
 
           <v-col v-if='selected' class='vc fill-height' cols='8'>
             <div class='d-flex justify-space-between py-2'>
-              <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+              <div class="d-flex flex-column">
+                <span class='selected-test-name'>{{ selected.displayName ?? selected.name }}</span>
+                <span v-if="hasCustomTag" id="function-id" @click.stop.prevent="copyFunctionId">ID: <span>{{ selected.uuid }}</span><v-icon x-small class="grey--text">mdi-content-copy</v-icon></span>
+              </div>
               <v-btn class='primaryLightBtn' color='primaryLight' @click='addToTestSuite'>
                 <v-icon left>mdi-plus</v-icon>
                 Add to test suite
@@ -53,9 +55,7 @@
             </div>
 
             <div class='vc overflow-x-hidden pr-5'>
-              <v-alert v-if='selected.potentiallyUnavailable' border='left' color='warning' colored-border
-                       icon='warning'
-                       outlined>
+              <v-alert v-if='selected.potentiallyUnavailable' border='left' color='warning' colored-border icon='warning' outlined>
                 <span>This test is potentially unavailable. Start your external ML worker to display available tests.</span>
                 <pre></pre>
                 <StartWorkerInstructions />
@@ -88,14 +88,12 @@
                   <span class='group-title'>Inputs</span>
                   <v-spacer></v-spacer>
                 </div>
-                <SuiteInputListSelector :doc='doc' :editing='true' :inputs='inputType'
-                                        :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
+                <SuiteInputListSelector :doc='doc' :editing='true' :inputs='inputType' :modelValue='testArguments' :project-id='props.projectId' :test='selected' />
                 <div class='d-flex'>
                   <v-spacer></v-spacer>
                   <v-menu offset-y>
                     <template v-slot:activator='{ on, attrs }'>
-                      <v-btn class='primaryLightBtn' v-bind='attrs' color='primaryLight' small width='100'
-                             :loading='testRunning' @click='() => runTest(true)'>
+                      <v-btn class='primaryLightBtn' v-bind='attrs' color='primaryLight' small width='100' :loading='testRunning' @click='() => runTest(true)'>
                         <v-icon>arrow_right</v-icon>
                         <span class='pe-2'>Run</span>
                         <v-icon class='ps-2 primary-left-border' v-on='on' @click.stop>mdi-menu-down</v-icon>
@@ -105,9 +103,7 @@
                       <v-list-item>
                         <v-tooltip bottom>
                           <template v-slot:activator='{ on, attrs }'>
-                            <v-btn color='secondary' text v-bind='attrs'
-                                   @click='() => runTest(false)'
-                                   v-on='on' :loading='testRunning'>
+                            <v-btn color='secondary' text v-bind='attrs' @click='() => runTest(false)' v-on='on' :loading='testRunning'>
                               <v-icon>science</v-icon>
                               Run on whole dataset
                             </v-btn>
@@ -121,22 +117,12 @@
                 <TestExecutionResultBadge v-if='testResult' :result='testResult' class='mt-4' />
               </div>
 
-              <div id='usage-group' class='py-4 mb-4'>
-                <div class='d-flex'>
-                  <v-icon class='group-icon pb-1 mr-1' left>mdi-code-greater-than</v-icon>
-                  <span class='group-title'>How to use with code</span>
-                </div>
-                <CodeSnippet :key="selected.name + '_usage'" :codeContent='selectedTestUsage' :language="'python'"
-                             class='mt-2'></CodeSnippet>
+              <div id="usage-group" class="py-4 mb-4" :key="selected.name + '_usage'">
+                <CatalogCodeWidget :title="'How to use with code'" :icon="'mdi-code-greater-than'" :content="selectedTestUsage" />
               </div>
 
-              <div id='code-group' class='py-4'>
-                <div class='d-flex'>
-                  <v-icon class='group-icon pb-1 mr-1' left>mdi-code-braces-box</v-icon>
-                  <span class='group-title'>Source code</span>
-                </div>
-                <CodeSnippet :key="selected.name + '_source_code'" :codeContent='selected.code'
-                             class='mt-2'></CodeSnippet>
+              <div id="code-group" class="py-4" :key="selected.name + '_code_source'">
+                <CatalogCodeWidget :title="'Source code'" :icon="'mdi-code-braces-box'" :content="selected.code"></CatalogCodeWidget>
               </div>
             </div>
           </v-col>
@@ -153,7 +139,7 @@
 <script lang='ts' setup>
 import { chain } from 'lodash';
 import { api } from '@/api';
-import { computed, onActivated, ref, watch } from 'vue';
+import { computed, onActivated, onMounted, ref, watch } from 'vue';
 import { anonymize, pasterColor } from '@/utils';
 import TestExecutionResultBadge from '@/views/main/project/TestExecutionResultBadge.vue';
 import { FunctionInputDTO, TestFunctionDTO, TestTemplateExecutionResultDTO } from '@/generated-sources';
@@ -162,17 +148,26 @@ import { $vfm } from 'vue-final-modal';
 import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
 import { storeToRefs } from 'pinia';
 import { useCatalogStore } from '@/stores/catalog';
+import { useProjectStore } from "@/stores/project";
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import { extractArgumentDocumentation } from '@/utils/python-doc.utils';
 import { alphabeticallySorted } from '@/utils/comparators';
-import CodeSnippet from '@/components/CodeSnippet.vue';
 import mixpanel from 'mixpanel-browser';
+import { copyToClipboard } from "@/global-keys";
+import { TYPE } from "vue-toastification";
+import { useMainStore } from "@/stores/main";
+import { generateGiskardClientSnippet } from "@/snippets";
+import CatalogCodeWidget from "./CatalogCodeWidget.vue";
+
+const projectStore = useProjectStore();
 
 const props = defineProps<{
   projectId: number,
   suiteId?: number
 }>();
 
+const mainStore = useMainStore();
+const pythonPrimitiveTypes = ['int', 'str', 'float', 'bool'];
 
 const searchFilter = ref<string>('');
 const { testFunctions } = storeToRefs(useCatalogStore());
@@ -182,8 +177,16 @@ const testRunning = ref<boolean>(false);
 const testResult = ref<TestTemplateExecutionResultDTO | null>(null);
 
 const panel = ref<number[]>([0]);
+const giskardClientSnippet = ref<string | null>(null);
+
+const project = computed(() => {
+  return projectStore.project(props.projectId)
+});
+
 
 const selectedTestUsage = computed(() => {
+  let isCustom = selected.value!.tags.includes('custom');
+  let customParams: { [name: string]: string } = {};
 
   if (selected.value === null) {
     return '';
@@ -197,12 +200,44 @@ const selectedTestUsage = computed(() => {
       .map('type')
       .uniq()
       .value()
-      .filter(i => i !== 'str'),
-    selected.value.name
+      .filter(i => !pythonPrimitiveTypes.includes(i))
   ];
 
-  content += `from giskard import ${uniqueImports.join(', ')}`;
-  content += '\n\n';
+  if (isCustom) {
+    content += 'import giskard\n';
+  } else {
+    content += `from giskard.testing import ${selected.value.name}\n`;
+  }
+
+  if (uniqueImports.length > 0) {
+    content += `from giskard import ${uniqueImports.join(', ')}\n\n`;
+  }
+
+  if (isCustom) {
+    content += `${giskardClientSnippet.value}\n`;
+
+    const customSlicingFunctions = selected.value.args.filter(arg => {
+      return arg.type === "SlicingFunction" && arg.defaultValue !== null;
+    });
+
+    customSlicingFunctions.forEach((arg, index) => {
+      const sfName = `sf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${sfName}`;
+      content += `${sfName} = giskard.SlicingFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    const customTransformationFunctions = selected.value.args.filter(arg => {
+      return arg.type === "TransformationFunction" && arg.defaultValue !== null;
+    });
+
+    customTransformationFunctions.forEach((arg, index) => {
+      const tfName = `tf_${index + 1}`;
+      customParams[arg.name] = `${arg.name}=${tfName}`;
+      content += `${tfName} = giskard.TransformationFunction.download("${arg.defaultValue}", client, "${project.value!.key}")\n`;
+    })
+
+    content += `${selected.value.name} = giskard.GiskardTest.download("${selected.value.uuid}", client, "${project.value!.key}")\n\n`;
+  }
 
   requiredArgs.forEach(arg => {
     content += `${arg.name} = ${arg.type}(...)`;
@@ -211,14 +246,14 @@ const selectedTestUsage = computed(() => {
   content += '\n';
 
   const parametersWithDefaults = selected.value.args.map(arg => {
+    if (arg.name in customParams) return customParams[arg.name];
     if (arg.name === 'kwargs') return '**kwargs';
-    if (arg.optional) return `${arg.name}=${arg.defaultValue}`;
+    if (arg.defaultValue === "true") return `${arg.name}=True`;
+    if (arg.defaultValue === "false") return `${arg.name}=False`;
+    if (arg.optional) return `${arg.name}=${arg.defaultValue ?? 'None'}`;
     return arg.name;
   });
-  content += `test_result, passed = ${selected.value.name}(${parametersWithDefaults.join(', ')})`;
-  content += '\n\n';
-
-  content += `print(f"TEST RESULT: {test_result} - PASSED: {passed}")`;
+  content += `${selected.value.name}(${parametersWithDefaults.join(', ')}).execute()`;
 
   return content;
 });
@@ -256,7 +291,7 @@ watch(selected, (value) => {
       isAlias: false,
       type: arg.type,
       value: arg.optional ? arg.defaultValue : null
-    }))
+    } as FunctionInputDTO))
     .value();
 });
 
@@ -283,6 +318,10 @@ const filteredTestFunctions = computed(() => {
     .value();
 });
 
+onMounted(async () => {
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
+})
+
 onActivated(async () => {
   if (testFunctions.value.length > 0) {
     selected.value = testFunctions.value[0];
@@ -307,6 +346,14 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
   .value()
 );
 
+const hasCustomTag = computed(() => {
+  return selected.value?.tags?.includes('custom') ?? false;
+});
+
+async function copyFunctionId() {
+  await copyToClipboard(selected.value!.uuid);
+  mainStore.addNotification({ content: "Copied Testing Function ID to clipboard", color: TYPE.SUCCESS });
+}
 </script>
 
 <style lang='scss' scoped>
@@ -360,5 +407,16 @@ const inputType = computed(() => chain(selected.value?.args ?? [])
 
 .primary-left-border {
   border-left: 1px solid #087038;
+}
+
+#function-id {
+  font-size: 0.675rem !important;
+  line-height: 0.675rem !important;
+  cursor: pointer;
+}
+
+#function-id span {
+  text-decoration: underline;
+  margin-right: 0.2rem;
 }
 </style>

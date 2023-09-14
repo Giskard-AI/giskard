@@ -1,14 +1,14 @@
 package ai.giskard.domain.ml;
 
 import ai.giskard.domain.TestFunction;
-import ai.giskard.worker.GeneratedTest;
+import ai.giskard.ml.dto.MLWorkerWSGeneratedTestSuiteDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -40,10 +40,10 @@ public class SuiteTest implements Serializable {
     @JsonIgnore
     private List<SuiteTestExecution> executions = new java.util.ArrayList<>();
 
-    public SuiteTest(TestSuite suite, GeneratedTest test, TestFunction testFunction) {
+    public SuiteTest(TestSuite suite, MLWorkerWSGeneratedTestSuiteDTO test, TestFunction testFunction) {
         this.suite = suite;
         this.testFunction = testFunction;
-        this.functionInputs.addAll(test.getInputsList().stream()
+        this.functionInputs.addAll(test.getInputs().stream()
             .map(FunctionInput::new)
             .toList());
     }

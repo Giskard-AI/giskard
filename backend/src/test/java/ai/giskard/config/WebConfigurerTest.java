@@ -7,10 +7,8 @@ import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import tech.jhipster.config.JHipsterConstants;
-import tech.jhipster.config.JHipsterProperties;
 
-import javax.servlet.*;
+import jakarta.servlet.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +33,7 @@ class WebConfigurerTest {
 
     private MockEnvironment env;
 
-    private JHipsterProperties props;
+    private ApplicationProperties props;
 
     @BeforeEach
     public void setup() {
@@ -44,21 +42,21 @@ class WebConfigurerTest {
         doReturn(mock(ServletRegistration.Dynamic.class)).when(servletContext).addServlet(anyString(), any(Servlet.class));
 
         env = new MockEnvironment();
-        props = new JHipsterProperties();
+        props = new ApplicationProperties();
 
         webConfigurer = new WebConfigurer(env, props);
     }
 
     @Test
     void shouldStartUpProdServletContext() throws ServletException {
-        env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION);
+        env.setActiveProfiles(GiskardConstants.SPRING_PROFILE_PRODUCTION);
 
         assertThatCode(() -> webConfigurer.onStartup(servletContext)).doesNotThrowAnyException();
     }
 
     @Test
     void shouldStartUpDevServletContext() throws ServletException {
-        env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT);
+        env.setActiveProfiles(GiskardConstants.SPRING_PROFILE_DEVELOPMENT);
 
         assertThatCode(() -> webConfigurer.onStartup(servletContext)).doesNotThrowAnyException();
     }

@@ -14,3 +14,15 @@
 :link: ../../../tutorials/libraries/pytorch/linear_regression.md
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center>💸 Insurance charges prediction</center></h3>
+:link: ../../../reference/notebooks/insurance_prediction_lgbm.ipynb
+:::
+:::::
+
+:::::{grid-item}
+:::{card} <h3><center> 🏷️ Sales prediction</center></h3>
+:link: ../../../reference/notebooks/m5_sales_prediction_lgbm.ipynb
+:::
+:::::

@@ -1,6 +1,7 @@
 package ai.giskard.service;
 
 import ai.giskard.domain.TransformationFunction;
+import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.ml.TransformationFunctionRepository;
 import ai.giskard.web.dto.TransformationFunctionDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -12,8 +13,10 @@ public class TransformationFunctionService extends DatasetProcessFunctionService
 
     private final TransformationFunctionRepository transformationFunctionRepository;
 
-    public TransformationFunctionService(TransformationFunctionRepository transformationFunctionRepository, GiskardMapper giskardMapper) {
-        super(transformationFunctionRepository, giskardMapper);
+    public TransformationFunctionService(TransformationFunctionRepository transformationFunctionRepository,
+                                         GiskardMapper giskardMapper,
+                                         ProjectRepository projectRepository) {
+        super(transformationFunctionRepository, giskardMapper, projectRepository);
         this.transformationFunctionRepository = transformationFunctionRepository;
     }
 
@@ -26,10 +29,7 @@ public class TransformationFunctionService extends DatasetProcessFunctionService
 
     protected TransformationFunction create(TransformationFunctionDTO dto) {
         TransformationFunction function = giskardMapper.fromDTO(dto);
-        if (function.getArgs() != null) {
-            function.getArgs().forEach(arg -> arg.setFunction(function));
-        }
-        function.setVersion(transformationFunctionRepository.countByNameAndModule(function.getName(), function.getModule()) + 1);
+        initializeCallable(function);
         return function;
     }
 

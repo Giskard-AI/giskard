@@ -1,13 +1,11 @@
 package ai.giskard.web.rest.errors;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/api/exception-translator-test")
@@ -37,10 +35,6 @@ public class ExceptionTranslatorTestController {
         throw new BadCredentialsException("test authentication failed!");
     }
 
-    @GetMapping("/response-status")
-    public void exceptionWithResponseStatus() {
-        throw new TestResponseStatusException();
-    }
 
     @GetMapping("/internal-server-error")
     public void internalServerError() {
@@ -60,8 +54,4 @@ public class ExceptionTranslatorTestController {
             this.test = test;
         }
     }
-
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "test response status")
-    @SuppressWarnings("serial")
-    public static class TestResponseStatusException extends RuntimeException {}
 }

@@ -4,14 +4,18 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
-import ai.giskard.ml.MLWorkerClient;
+import ai.giskard.exception.MLWorkerIllegalReplyException;
+import ai.giskard.exception.MLWorkerNotConnectedException;
+import ai.giskard.ml.MLWorkerID;
+import ai.giskard.ml.MLWorkerWSAction;
+import ai.giskard.ml.dto.*;
 import ai.giskard.repository.FeedbackRepository;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.service.ml.MLWorkerService;
-import ai.giskard.worker.*;
+import ai.giskard.service.ml.MLWorkerWSCommService;
+import ai.giskard.service.ml.MLWorkerWSService;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -19,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,43 +38,60 @@ public class ModelService {
     private final PermissionEvaluator permissionEvaluator;
     private final InspectionRepository inspectionRepository;
     private final Logger log = LoggerFactory.getLogger(ModelService.class);
-    private final MLWorkerService mlWorkerService;
-    private final FileLocationService fileLocationService;
-    private final GRPCMapper grpcMapper;
+    private final MLWorkerWSService mlWorkerWSService;
+    private final MLWorkerWSCommService mlWorkerWSCommService;
 
 
-    public RunModelForDataFrameResponse predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        RunModelForDataFrameResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            response = getRunModelForDataFrameResponse(model, dataset, features, client);
+    public MLWorkerWSRunModelForDataFrameDTO predict(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            return getRunModelForDataFrameResponse(model, dataset, features);
         }
-        return response;
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
-    private RunModelForDataFrameResponse getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features, MLWorkerClient client) {
-        RunModelForDataFrameResponse response;
-        RunModelForDataFrameRequest.Builder requestBuilder = RunModelForDataFrameRequest.newBuilder()
-            .setModel(grpcMapper.createRef(model))
-            .setDataframe(
-                DataFrame.newBuilder()
-                    .addRows(DataRow.newBuilder().putAllColumns(
+    private MLWorkerWSRunModelForDataFrameDTO getRunModelForDataFrameResponse(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        // Initialize the parameters and build the Data Frame
+        MLWorkerWSDataFrameDTO dataframe = MLWorkerWSDataFrameDTO.builder()
+            .rows(
+                List.of(
+                    MLWorkerWSDataRowDTO.builder().columns(
                         features.entrySet().stream()
-                            .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    ))
-                    .build()
-            );
+                            .filter(entry -> !shouldDrop(
+                                dataset.getColumnDtypes().get(entry.getKey()),
+                                entry.getValue()
+                            )).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    ).build()
+                )
+            ).build();
+
+        MLWorkerWSRunModelForDataFrameParamDTO param = MLWorkerWSRunModelForDataFrameParamDTO.builder()
+            .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+            .dataframe(dataframe)
+            .build();
+
         if (dataset.getTarget() != null) {
-            requestBuilder.setTarget(dataset.getTarget());
+            param.setTarget(dataset.getTarget());
         }
         if (dataset.getColumnTypes() != null) {
-            requestBuilder.putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
+            param.setColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName));
         }
         if (dataset.getColumnDtypes() != null) {
-            requestBuilder.putAllColumnDtypes(dataset.getColumnDtypes());
+            param.setColumnDtypes(dataset.getColumnDtypes());
         }
-        response = client.getBlockingStub().runModelForDataFrame(requestBuilder.build());
-        return response;
+
+        // Perform the runModelForDataFrame action and parse the reply
+        MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+            model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+            MLWorkerWSAction.RUN_MODEL_FOR_DATA_FRAME,
+            param
+        );
+        if (result instanceof MLWorkerWSRunModelForDataFrameDTO response) {
+            return response;
+        } else if (result instanceof MLWorkerWSErrorDTO error) {
+            throw new MLWorkerIllegalReplyException(error);
+        }
+        throw new MLWorkerIllegalReplyException("Cannot get ML Worker RunModelForDataFrame reply");
     }
 
     public boolean shouldDrop(String columnDtype, String value) {
@@ -78,33 +99,53 @@ public class ModelService {
             ((columnDtype.startsWith("int") || columnDtype.startsWith("float")) && Strings.isBlank(value));
     }
 
-    public ExplainResponse explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            ExplainRequest request = ExplainRequest.newBuilder()
-                .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset, false))
-                .putAllColumns(features.entrySet().stream()
-                    .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+    public MLWorkerWSExplainDTO explain(ProjectModel model, Dataset dataset, Map<String, String> features) {
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSExplainParamDTO param = MLWorkerWSExplainParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset))
+                .columns(
+                    features.entrySet().stream()
+                        .filter(entry -> !shouldDrop(dataset.getColumnDtypes().get(entry.getKey()), entry.getValue()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                )
                 .build();
 
-            return client.getBlockingStub().explain(request);
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.EXPLAIN, param);
+            if (result instanceof MLWorkerWSExplainDTO response) {
+                return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot get ML Worker Explain reply");
         }
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
-    public ExplainTextResponse explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) throws IOException {
-        ExplainTextResponse response;
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            response = client.getBlockingStub().explainText(
-                ExplainTextRequest.newBuilder()
-                    .setModel(grpcMapper.createRef(model))
-                    .setFeatureName(featureName)
-                    .putAllColumns(features)
-                    .putAllColumnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
-                    .build()
+    public MLWorkerWSExplainTextDTO explainText(ProjectModel model, Dataset dataset, String featureName, Map<String, String> features) {
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            MLWorkerWSExplainTextParamDTO param = MLWorkerWSExplainTextParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .featureName(featureName)
+                .columns(features)
+                .columnTypes(Maps.transformValues(dataset.getColumnTypes(), ColumnType::getName))
+                .build();
+
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
+                workerID,
+                MLWorkerWSAction.EXPLAIN_TEXT,
+                param
             );
+            if (result instanceof MLWorkerWSExplainTextDTO response) {
+                return response;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot get ML Worker explainText reply");
         }
-        return response;
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 
     public Inspection createInspection(String name, UUID modelId, UUID datasetId, boolean sample) {
@@ -131,14 +172,25 @@ public class ModelService {
     }
 
     protected void predictSerializedDataset(ProjectModel model, Dataset dataset, Long inspectionId, boolean sample) {
-        try (MLWorkerClient client = mlWorkerService.createClient(model.getProject().isUsingInternalWorker())) {
-            RunModelRequest request = RunModelRequest.newBuilder()
-                .setModel(grpcMapper.createRef(model))
-                .setDataset(grpcMapper.createRef(dataset, sample))
-                .setInspectionId(inspectionId)
-                .setProjectKey(model.getProject().getKey())
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        if (mlWorkerWSService.isWorkerConnected(workerID)) {
+            // Initialize params
+            MLWorkerWSRunModelParamDTO param = MLWorkerWSRunModelParamDTO.builder()
+                .model(MLWorkerWSArtifactRefDTO.fromModel(model))
+                .dataset(MLWorkerWSArtifactRefDTO.fromDataset(dataset, sample))
+                .inspectionId(inspectionId)
+                .projectKey(model.getProject().getKey())
                 .build();
-            client.getBlockingStub().runModel(request);
+
+            // Execute runModel action
+            MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(workerID, MLWorkerWSAction.RUN_MODEL, param);
+            if (result instanceof MLWorkerWSEmptyDTO) {
+                return;
+            } else if (result instanceof MLWorkerWSErrorDTO error) {
+                throw new MLWorkerIllegalReplyException(error);
+            }
+            throw new MLWorkerIllegalReplyException("Cannot get ML Worker explainText reply");
         }
+        throw new MLWorkerNotConnectedException(workerID, log);
     }
 }
