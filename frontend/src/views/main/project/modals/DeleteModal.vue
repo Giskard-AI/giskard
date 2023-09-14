@@ -48,7 +48,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" @click="dialogOpened = false; $emit('submit', true)">Delete</v-btn>
+        <v-btn color="primary" @click="dialogOpened = false; $emit('submit')">Delete</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -80,7 +80,6 @@ function openSuite(suite: PrepareDeleteDTO.LightTestSuite) {
       projectId: suite.projectId.toString()
     }
   });
-  emit('submit', false);
 }
 
 function openFeedback(feedback: PrepareDeleteDTO.LightFeedback) {
@@ -91,7 +90,6 @@ function openFeedback(feedback: PrepareDeleteDTO.LightFeedback) {
       projectId: feedback.projectId.toString()
     }
   });
-  emit('submit', false);
 }
 
 async function openModal() {

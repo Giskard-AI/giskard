@@ -5,7 +5,7 @@ import ai.giskard.web.rest.errors.Entity;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TransformationFunctionRepository extends CallableRepository<TransformationFunction> {
+public interface TransformationFunctionRepository extends DatasetProcessFunctionRepository<TransformationFunction> {
 
     @Override
     default Entity getEntityType() {

@@ -122,18 +122,18 @@ logger = logging.getLogger(__name__)
 class HuggingFaceModel(WrapperModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            batch_size: Optional[int] = 1,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        batch_size: Optional[int] = 1,
+        **kwargs,
     ) -> None:
         """Automatically wraps a HuggingFace model or pipeline.
 
@@ -248,16 +248,19 @@ class HuggingFaceModel(WrapperModel):
         return predictions
 
     def _get_predictions(self, data):
+        if isinstance(self.model, pipelines.Pipeline):
+            if isinstance(data, pd.DataFrame):
+                data = data.to_dict(orient="records")
+            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(data, top_k=None)]
+            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
+
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():
                 return self.model(**data)
-
-        if isinstance(self.model, pipelines.Pipeline):
-            _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(list(data), top_k=None)]
-            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
 
         return self.model(**data)
 
     def to_mlflow(self, artifact_path: str = "transformers-model-from-giskard", **kwargs):
         import mlflow
+
         return mlflow.transformers.log_model(self.model, artifact_path, **kwargs)

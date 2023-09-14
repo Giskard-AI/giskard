@@ -3,19 +3,18 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
-import ai.giskard.service.GeneralSettingsService;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serial;
 import java.util.HashSet;
 import java.util.Objects;
@@ -38,7 +37,7 @@ public class Project extends AbstractAuditingEntity {
     @Getter
     @Setter
     @NotNull
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "project_key")
     private String key;
 
     @Getter
@@ -80,6 +79,16 @@ public class Project extends AbstractAuditingEntity {
     private final Set<TestSuite> testSuites = new HashSet<>();
 
     @Getter
+    @JsonIgnore
+    @ManyToMany(mappedBy = "projects", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private final Set<SlicingFunction> slicingFunctions = new HashSet<>();
+
+    @Getter
+    @JsonIgnore
+    @ManyToMany(mappedBy = "projects", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private final Set<TransformationFunction> transformationFunctions = new HashSet<>();
+
+    @Getter
     @Setter
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonProperty(value = "guestlist")
@@ -98,9 +107,7 @@ public class Project extends AbstractAuditingEntity {
     private MLWorkerType mlWorkerType = MLWorkerType.EXTERNAL;
 
     public boolean isUsingInternalWorker() {
-        return mlWorkerType == MLWorkerType.INTERNAL ||
-            // In HF Spaces, we always use the internal worker
-            GeneralSettingsService.isRunningInHFSpaces;
+        return mlWorkerType == MLWorkerType.INTERNAL;
     }
 
     public void addGuest(User user) {

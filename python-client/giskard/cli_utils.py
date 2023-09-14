@@ -75,7 +75,7 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
     return parse_obj_as(AnyHttpUrl, value)
 
 
-def run_daemon(is_server, url, api_key):
+def run_daemon(is_server, url, api_key, hf_token):
     from giskard.ml_worker.ml_worker import MLWorker
     from daemon import DaemonContext
     from daemon.daemon import change_working_directory
@@ -95,7 +95,7 @@ def run_daemon(is_server, url, api_key):
         change_working_directory(workdir)
 
         logger.info(f"Daemon PID: {os.getpid()}")
-        asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key).start())
+        asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key, hf_token).start())
 
 
 def get_log_path():

@@ -12,11 +12,11 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:postgresql:12:///giskard?TC_TMPFS=/testtmpfs:rw
+    url: jdbc:tc:postgresql:13:///giskard?TC_TMPFS=/testtmpfs:rw
     username: giskard
     password:
     hikari:
       poolName: Hikari
       auto-commit: false
   jpa:
-    database-platform: tech.jhipster.domain.util.FixedPostgreSQL10Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

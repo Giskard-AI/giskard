@@ -33,21 +33,22 @@
 
 <script setup lang="ts">
 
-import {ColumnType, ComparisonClauseDTO, DatasetDTO} from "@/generated-sources";
-import {ref} from "vue";
-import ColumnFilterCreator from "@/views/main/utils/ColumnFilterCreator.vue";
-import {useCatalogStore} from "@/stores/catalog";
+import { ColumnType, ComparisonClauseDTO, DatasetDTO } from '@/generated-sources';
+import { ref } from 'vue';
+import ColumnFilterCreator from '@/views/main/utils/ColumnFilterCreator.vue';
+import { useCatalogStore } from '@/stores/catalog';
 
 const props = defineProps<{
-    dataset: DatasetDTO
+  projectKey: string,
+  dataset: DatasetDTO
 }>();
 
-const columnFilters = ref<Array<Partial<ComparisonClauseDTO & { columnType: ColumnType }>>>([{}])
+const columnFilters = ref<Array<Partial<ComparisonClauseDTO & { columnType: ColumnType }>>>([{}]);
 
 const emit = defineEmits(['created']);
 
 async function save(close) {
-    const slicingFunction = await useCatalogStore().createSlicingFunction(props.dataset, columnFilters.value)
+  const slicingFunction = await useCatalogStore().createSlicingFunction(props.projectKey, props.dataset, columnFilters.value);
     emit('created', slicingFunction.uuid);
     close()
 }

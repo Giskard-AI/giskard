@@ -1,8 +1,9 @@
 package ai.giskard.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @Entity(name = "test_function_arguments")
@@ -17,6 +18,7 @@ public class FunctionArgument extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "function_uuid")
+    @JsonIgnore
     private Callable function;
     @Column(nullable = false)
     private String name;

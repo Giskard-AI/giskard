@@ -32,7 +32,7 @@ Scan your model to detect vulnerabilities
 
     If you want to try this interactively, you can find a ready-to-use `notebook here <https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb>`_.
 
-After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_, you can scan your model for vulnerabilities using:
+To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_:
 
 .. code-block:: python
 
@@ -40,14 +40,14 @@ After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_
 
     # Replace this with your own data & model creation.
     df = giskard.demo.titanic_df()
-    data_preprocessor, clf = giskard.demo.titanic_pipeline()
+    data_preprocessor, titanic_pretrained_model = giskard.demo.titanic_pipeline()
 
     # Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
     giskard_dataset = giskard.Dataset(
         df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
         target="Survived",  # Ground truth variable
         name="Titanic dataset", # Optional
-        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
     )
 
     # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
@@ -56,24 +56,23 @@ After having wrapped your `model <../wrap_model/index.md>`_ & `dataset <../wrap_
     def prediction_function(df):
         # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
         preprocessed_df = data_preprocessor(df)
-        return clf.predict_proba(preprocessed_df)
+        return titanic_pretrained_model.predict_proba(preprocessed_df)
 
     giskard_model = giskard.Model(
         model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
         model_type="classification",  # Either regression, classification or text_generation.
         name="Titanic model",  # Optional
-        classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+        classification_labels=titanic_pretrained_model.classes_,  # Their order MUST be identical to the prediction_function's output order
         feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
         # classification_threshold=0.5,  # Default: 0.5
     )
 
-    # Then apply the scan
-    scan_results = giskard.scan(giskard_model, giskard_dataset)
 
-Once the scan completes, you can display the results directly in your notebook:
+Now you can scan your model and display your scan report:
 
 .. code-block:: python
 
+    scan_results = giskard.scan(giskard_model, giskard_dataset)
     display(scan_results)  # in your notebook
 
 If you are not working in a notebook or want to keep the results for later, you can save them to an HTML file like this:
@@ -134,7 +133,7 @@ You can then upload the test suite to the local Giskard server. This will enable
     # Upload to the current project ✉️
     test_suite.upload(client, "my_project")
     
-For more information on uploading to your local Giskard server, go to the [Upload an object to the Giskard server](../upload/index.md) page.
+For more information on uploading to your local Giskard server, go to the `Upload an object to the Giskard server <../../guides/upload/index.md>`_ page.
 
 .. note::
    Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
@@ -143,7 +142,7 @@ For more information on uploading to your local Giskard server, go to the [Uploa
 Troubleshooting
 ^^^^^^^^^^^^^^^
 
-If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and navigate to the #support channel. Our community
+If you encounter any issues, join our `Discord <https://discord.gg/fkv7CAr3FE>`_ and ask questions in our #support channel. Our community
 will gladly help!
 
 

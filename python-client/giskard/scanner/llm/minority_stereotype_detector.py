@@ -1,5 +1,4 @@
 import itertools
-from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Sequence
 
@@ -8,7 +7,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...models.langchain import LangchainModel
 from ..decorators import detector
-from ..issues import Issue
+from ..issues import Issue, IssueLevel, Stereotypes
 from ..logger import logger
 from .utils import LLMImportError
 
@@ -61,8 +60,20 @@ class MinorityStereotypeDetector:
 
         issues = []
         for minority, minority_examples in examples.groupby("target", group_keys=False):
-            info = MinorityStereotypeInfo(examples=minority_examples.drop(columns="target"), minority=minority)
-            issues.append(MinorityStereotypeIssue(model, dataset, level="major", info=info))
+            issues.append(
+                Issue(
+                    model,
+                    dataset,
+                    level=IssueLevel.MAJOR,
+                    group=Stereotypes,
+                    meta={
+                        "metric": "Minority stereotype",
+                        "deviation": f"Stereotypes affecting {minority}",
+                        "minority": minority,
+                    },
+                    examples=minority_examples.drop(columns="target"),
+                )
+            )
 
         return issues
 
@@ -75,37 +86,3 @@ class MinorityStereotypeDetector:
         results = Detoxify("unbiased").predict(list(sentences))
 
         return results["identity_attack"]
-
-
-@dataclass
-class MinorityStereotypeInfo:
-    examples: pd.DataFrame
-    minority: str
-
-
-class MinorityStereotypeIssue(Issue):
-    group = "Stereotype"
-
-    @property
-    def domain(self) -> str:
-        return "Minority stereotype"
-
-    @property
-    def metric(self) -> str:
-        return self.info.minority
-
-    @property
-    def deviation(self) -> str:
-        num_ex = len(self.info.examples)
-        return f"{num_ex} example{'s' if num_ex > 1 else ''}"
-
-    @property
-    def description(self) -> str:
-        return ""
-
-    def examples(self, n=None) -> pd.DataFrame:
-        return self.info.examples.head(n)
-
-    @property
-    def importance(self) -> float:
-        return 1

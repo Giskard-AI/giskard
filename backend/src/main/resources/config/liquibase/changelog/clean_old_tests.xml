@@ -1,0 +1,41 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet id="clean-old-tests" author="kevinmessiaen">
+        <sql>
+            DELETE
+            FROM test_function_arguments tfa
+            WHERE tfa.function_uuid IN (SELECT cf.uuid
+                                        FROM callable_functions cf
+                                        WHERE cf.callable_type = 'TEST'
+                                          AND cf.module LIKE 'giskard.ml_worker.testing.tests.%');
+            DELETE
+            FROM suite_test_execution ste
+            WHERE ste.test_id IN (SELECT st.id
+                                  FROM suite_test st
+                                           JOIN callable_functions cf
+                                                ON cf.uuid = st.test_function_uuid
+                                  WHERE cf.callable_type = 'TEST'
+                                    AND cf.module LIKE 'giskard.ml_worker.testing.tests.%');
+            DELETE
+            FROM test_input ti
+            WHERE ti.suite_test_id IN (SELECT st.id
+                                       FROM suite_test st
+                                                JOIN callable_functions cf
+                                                     ON cf.uuid = st.test_function_uuid
+                                       WHERE cf.callable_type = 'TEST'
+                                         AND cf.module LIKE 'giskard.ml_worker.testing.tests.%');
+            DELETE
+            FROM suite_test st
+            WHERE st.test_function_uuid IN (SELECT cf.uuid
+                                            FROM callable_functions cf
+                                            WHERE cf.callable_type = 'TEST'
+                                              AND cf.module LIKE 'giskard.ml_worker.testing.tests.%');
+            DELETE
+            FROM callable_functions cf
+            WHERE cf.callable_type = 'TEST'
+              AND cf.module LIKE 'giskard.ml_worker.testing.tests.%'
+        </sql>
+    </changeSet>
+</databaseChangeLog>

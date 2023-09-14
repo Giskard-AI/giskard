@@ -6,11 +6,12 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Union
 
 import cloudpickle
+import mlflow
 import numpy as np
 import pandas as pd
 import yaml
-import mlflow
 
+import giskard.models.sklearn
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
 from ..utils import warn_once
@@ -31,18 +32,18 @@ class WrapperModel(BaseModel, ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model: Any,
-            model_type: ModelType,
-            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-            name: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            batch_size: Optional[int] = None,
-            **kwargs,
+        self,
+        model: Any,
+        model_type: ModelType,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        name: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        batch_size: Optional[int] = None,
+        **kwargs,
     ) -> None:
         """
         Parameters
@@ -99,6 +100,14 @@ class WrapperModel(BaseModel, ABC):
     def _preprocess(self, data):
         if self.data_preprocessing_function:
             return self.data_preprocessing_function(data)
+
+        # In the case where a dataframe has one column, most sklearn models require a Series instead of a DataFrame.
+        # We check also the case of PredictionFunctionModel to be extra inclusive.
+        if len(data.columns) == 1 and (
+            isinstance(self, giskard.models.sklearn.SKLearnModel)
+            or isinstance(self, giskard.models.function.PredictionFunctionModel)
+        ):
+            return data[data.columns[0]]
         return data
 
     def _postprocess(self, raw_predictions):
@@ -130,7 +139,12 @@ class WrapperModel(BaseModel, ABC):
             output = self._postprocess(output)
             outputs.append(output)
 
-        return np.concatenate(outputs)
+        raw_prediction = np.concatenate(outputs)
+
+        if self.is_regression:
+            return raw_prediction.astype(float)
+
+        return raw_prediction
 
     def _possibly_fix_predictions_shape(self, raw_predictions: np.ndarray):
         if not self.is_classification:
@@ -292,15 +306,11 @@ class WrapperModel(BaseModel, ABC):
             # ensuring backward compatibility
             return {"batch_size": None}
 
-    def to_mlflow(self,
-                  artifact_path: str = "prediction-function-from-giskard",
-                  **kwargs):
-
+    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", **kwargs):
         def _giskard_predict(df):
             return self.predict(df)
 
         class MLflowModel(mlflow.pyfunc.PythonModel):
-
             def predict(self, df):
                 return _giskard_predict(df)
 

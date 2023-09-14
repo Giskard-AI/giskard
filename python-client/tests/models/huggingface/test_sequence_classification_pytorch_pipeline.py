@@ -1,10 +1,9 @@
 # For the complete tutorial, check: https://huggingface.co/docs/transformers/tasks/sequence_classification
 import pandas as pd
-
 from transformers import pipeline
 
-from giskard import Dataset
 import tests.utils
+from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
 
@@ -26,7 +25,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     feature_names = ["text"]
 
     def my_preproccessing_function(df):
-        return df["text"].values
+        return df["text"].tolist()
 
     my_model = HuggingFaceModel(
         name="stevhliu/my_awesome_model",

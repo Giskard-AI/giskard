@@ -1,24 +1,27 @@
+import { ColumnType, DatasetDTO } from '@/generated-sources';
+import { defineStore } from 'pinia';
+import { chain } from 'lodash';
+import { getColumnType } from '@/utils/column-type-utils';
+import { openapi } from '@/api-v2';
 import {
-    CallableDTO,
     CatalogDTO,
-    ColumnType,
     ComparisonClauseDTO,
-    DatasetDTO,
-    DatasetProcessFunctionDTO
-} from '@/generated-sources';
-import {defineStore} from 'pinia';
-import {api} from '@/api';
-import {chain} from "lodash";
-import {getColumnType} from "@/utils/column-type-utils";
+    SlicingFunctionDTO,
+    TestFunctionDTO,
+    TransformationFunctionDTO
+} from '@/generated/client';
+
+type DatasetProcessFunctionDTO = TransformationFunctionDTO & SlicingFunctionDTO
+type CallableDTO = DatasetProcessFunctionDTO & TestFunctionDTO
 
 interface State {
-    catalog: CatalogDTO | null
+    catalog: CatalogDTO | null;
 }
 
 
 function latestVersions<E extends CallableDTO>(data?: Array<E>): Array<E> {
     return chain(data ?? [])
-        .groupBy(func => `${func.module}.${func.name}`)
+      .groupBy(func => func.displayName)
         .mapValues(functions => chain(functions)
             .maxBy(func => func.version ?? 1)
             .value())
@@ -33,7 +36,7 @@ function keyByUuid<E extends CallableDTO>(data?: Array<E>): { [uuid: string]: E 
 
 function groupByColumnType<E extends DatasetProcessFunctionDTO>(data?: Array<E>) {
     return chain(data ?? [])
-        .filter(d => d.cellLevel && getColumnType(d.columnType) !== null)
+      .filter(d => d.cellLevel! && getColumnType(d.columnType) !== null)
         .groupBy(d => getColumnType(d.columnType))
         .value()
 }
@@ -67,20 +70,23 @@ export const useCatalogStore = defineStore('catalog', {
     },
     actions: {
         async loadCatalog(projectId: number) {
-            this.catalog = await api.getCatalog(projectId);
+            this.catalog = await openapi.catalog.getCatalog({ projectId });
         },
-        async createSlicingFunction(dataset: DatasetDTO, clauses: Array<ComparisonClauseDTO & {
+        async createSlicingFunction(projectKey: string, dataset: DatasetDTO, clauses: Array<ComparisonClauseDTO & {
             columnType: ColumnType
         }>) {
-            const slicingFunction = await api.createSlicingFunction(clauses.map(c => {
-                const {columnType, ...clause} = c;
-                return {
-                    ...clause,
-                    columnDtype: dataset.columnDtypes[clause.columnName]
-                }
-            }));
+            const slicingFunction = await openapi.slicingFunction.createNoCodeSlicingFunction({
+                projectKey,
+                comparisonClauseDTO: clauses.map(c => {
+                    const { columnType, ...clause } = c;
+                    return {
+                        ...clause,
+                        columnDtype: dataset.columnDtypes[clause.columnName]
+                    };
+                })
+            });
 
-            this.catalog!.slices.push(slicingFunction);
+            this.catalog!.slices!.push(slicingFunction);
             return slicingFunction;
         }
     }
