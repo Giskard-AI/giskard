@@ -26,11 +26,7 @@ Test description |  Check if this specific example has the right label with enou
 "explanation": "This enables you to make sure this specific example is correct for a new model",
 "button": "Create unit test"
 
-"action": "Generate a test to check if the rate of <br>overconfidence</br> rows is decreasing",
-"explanation": "This may help you ensure that the overconfidence rate is at an acceptable level",
-"button": "Create unit test"
-
-"action": "Filter this debugger session with similar examples",
+"action": "Open the debugger session on similar examples",
 "explanation": "Debugging similar examples may help you find common patterns",
 "button": "Open debugger"
 ```
@@ -71,7 +67,7 @@ Test description |  Check if this specific example has the right label with enou
 
 Title| Description
 -- | --
-Description|  Tag features that contributes a lot to the prediction
+Description|  Tag features that contribute a lot to the prediction
 Requirement| NA
 Triggering event | When we switch examples and the first or the first two most contributing shapley’s value are really high compared to the rest
 Test description |  Check if the chi 2 / Kolmogorov-Smirnov correlation statistical test between the feature and the prediction has a p-value above α=0.05
@@ -126,7 +122,7 @@ Title| Description
 -- | --
 Description| Tag features that make the prediction change after a small variation
 Requirement| Applicable only to numerical features and textual feature
-Triggering event |  When we switch examples and the prediction changes after: 2 MAD (Median absolute deviation) variation or for textual feature, a small variation such as uppercase or punctuation transformation
+Triggering event |  When we switch examples and the prediction changes after: 3 MAD (Median absolute deviation) variation or for textual feature, a small variation such as uppercase or punctuation transformation
 Test description | Check if the prediction change ratio is not higher than a certain threshold after the perturbation of the whole dataset
 ```
  Check if the prediction change ratio is not higher than a certain threshold after the perturbation of the whole dataset
