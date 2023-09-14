@@ -15,5 +15,6 @@ pluginManagement {
 rootProject.name = "giskard"
 include(
     "backend",
-    "frontend"
+    "frontend",
+    "python-client",
 )
