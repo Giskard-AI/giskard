@@ -11,7 +11,14 @@
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+          <div id="export-default">
+            <p>Export to a Python notebook</p>
+            <CodeSnippet :key="codeContent" :codeContent="codeContent" :language="'python'"></CodeSnippet>
+          </div>
+          <div v-show="false">
+            <p>Export to a CI pipeline</p>
+            <CodeSnippet :codeContent="codeContent" :language="'python'"></CodeSnippet>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -22,10 +29,36 @@
   </vue-final-modal>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import { computed, ref, onMounted } from 'vue';
+import { useProjectStore } from '@/stores/project';
 import CodeSnippet from '@/components/CodeSnippet.vue';
+import { generateGiskardClientSnippet } from '@/snippets';
 
-const codeContent = `import giskard`;
+interface Props {
+  projectId: number;
+  suiteId: number;
+}
+
+const props = defineProps<Props>();
+
+const projectStore = useProjectStore();
+
+const giskardClientSnippet = ref<string | null>(null);
+
+const project = computed(() => projectStore.project(props.projectId))
+
+const codeContent = computed(() => {
+  let content = `import giskard\n`;
+  content += `${giskardClientSnippet.value}\n`;
+  content += `# Load test suite from Giskard Hub\n`;
+  content += `my_test_suite = giskard.Suite.download(client, ${project.value!.key}, ${props.suiteId})`;
+  return content;
+});
+
+onMounted(async () => {
+  giskardClientSnippet.value = await generateGiskardClientSnippet();
+})
 </script>
 
 <style scoped>
