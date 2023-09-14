@@ -168,10 +168,10 @@ giskard server start
 
 ## 2. Upload your test suite to the Giskard server
 
-You can then **upload the test suite** to the local Giskard server. This will enable you to:
+You can then **upload the test suite** created using the `giskard` Python library to the Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
-- Debug your tests to diagnose the identified issues
-- Create more domain-specific tests relevant to your use case
+- Debug your tests to diagnose identified vulnerabilities
+- Create more domain-specific tests relevant to your use-case
 - Share results, and collaborate with your team to integrate business feedback
 
 1. First, make sure Giskard server is installed 
@@ -187,10 +187,7 @@ You can then **upload the test suite** to the local Giskard server. This will en
        !giskard worker start -d -k YOUR_TOKEN
     ```
 
-
-
-
-3. Finally upload test suite to the giskard server using the following code:
+3. Finally upload your test suite to the giskard server using the following code:
     ```python
     token = "API_TOKEN"  # Find it in Settings in the Giskard server
     client = GiskardClient(
@@ -201,7 +198,6 @@ You can then **upload the test suite** to the local Giskard server. This will en
     
     # Upload to the current project
     test_suite.upload(client, "my_project")
-    
     ```
 
 # ❓ Where can I get more help?
@@ -209,7 +205,7 @@ You can then **upload the test suite** to the local Giskard server. This will en
 
 <details>
   <summary>What is a ML worker?</summary>
-  Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
+  Giskard executes your model using a worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
   </details>
   
 <details>
