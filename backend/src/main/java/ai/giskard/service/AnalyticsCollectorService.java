@@ -65,7 +65,7 @@ public class AnalyticsCollectorService {
             serverProps.put("HuggingFace Space ID", GeneralSettingsService.hfSpaceId);
             messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
         } catch (NoSuchElementException e) {
-            e.printStackTrace();
+            // Do not track when we failed to initialize the server properties
             return;
         }
 
