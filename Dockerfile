@@ -71,6 +71,7 @@ COPY --from=build /app/python-client/.venv-prod $VENV_PATH
 COPY --from=build /app/backend/build/libs/backend*.jar $GSK_DIST_PATH/backend/giskard.jar
 COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist
 COPY scripts/file-guard.sh $GSK_DIST_PATH/file-guard.sh
+COPY scripts/start-*.sh $GSK_DIST_PATH/
 
 COPY supervisord.conf ./
 COPY packaging/nginx.conf.template $GSK_DIST_PATH/frontend/
