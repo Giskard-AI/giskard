@@ -56,15 +56,16 @@ test = [
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
-    "transformers>=4.27.4, <4.30",
+    "transformers>=4.33, <4.34", # https://github.com/huggingface/transformers/issues/23352
     "torch>=2.0.0",
     "torchdata>=0.6.0",
     "torchtext>=0.15.1",
     "portalocker>=2.0.0",
     "scikit-learn==1.0.2",
-    "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
-    "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
+    "tensorflow-macos>=2.13.0, <2.14; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.13, <2.14",
+    # tensorflow-text is only available on linux, and neither on arm64 nor windows
+    "tensorflow-text>=2.13, <2.14; sys_platform == 'linux' and (platform_machine == 'amd64' or platform_machine == 'x86_64')",
     "mlflow>2",
     "wandb",
     "tensorflow-io-gcs-filesystem<0.32", # Tensorflow io does not work for windows from 0.32
