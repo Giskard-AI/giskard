@@ -1,8 +1,11 @@
 import copy
 import math
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
+import pytest
 import xxhash
 from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
@@ -11,6 +14,41 @@ import giskard
 from giskard import Dataset, Model
 from giskard.core.core import SupportedModelTypes
 from giskard.models.cache import ModelCache
+
+# https://symbl.cc/fr/unicode/blocks/
+
+
+@pytest.mark.parametrize(
+    "keys,values",
+    [
+        (["cyrillic"], ["ЖЛюф"]),
+        (["katakana"], ["ダボヴ"]),
+        (["emojis"], ["🙃😈🤯"]),
+        (["cyrillic", "katakana", "emojis"], ["ЖЛюф", "ダボヴ", "🙃😈🤯"]),
+    ],
+)
+def test_unicode_prediction(keys, values):
+    with TemporaryDirectory() as temp_cache_dir:
+        cache = ModelCache(
+            model_type=SupportedModelTypes.TEXT_GENERATION,
+            cache_dir=Path(temp_cache_dir),
+        )
+        key_series = pd.Series(keys)
+        # Ensure cache is empty
+        assert cache.read_from_cache(key_series).isna().all()
+        # Ensure writing and reading from cache is fine
+        cache.set_cache(key_series, values=values)
+        assert (pd.Series(values) == cache.read_from_cache(key_series)).all()
+        # Create other cache using same file
+        warmed_up_cache = ModelCache(
+            id="warmed_up",
+            model_type=SupportedModelTypes.TEXT_GENERATION,
+            cache_dir=Path(temp_cache_dir),
+        )
+        # Ensure warm up works fine
+        assert not warmed_up_cache._warmed_up
+        assert (pd.Series(values) == warmed_up_cache.read_from_cache(key_series)).all()
+        assert warmed_up_cache._warmed_up
 
 
 def test_model_prediction_is_cached_on_text_generation_model():
