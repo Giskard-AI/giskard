@@ -144,29 +144,29 @@ Test suites are reusable objects that provide a way to apply consistent checks o
 
 # ⭐️ Premium Features
 
-The Giskard server feature is closed-source and is only available to commercial users. They provide a number of additional capabilities that are not available in the open-source version of Giskard, including
+The Giskard server is Giskard's premium offering. It provides a number of additional capabilities that are not available in the open-source version of Giskard, including:
 
-- **Advanced test generation**: This includes the ability to debug your mdoels to diagnose issues and create more domain-specific tests.
-- **Model comparator**: This includes the ability to compare models to decide which one to promote,
-- **Test hub**: This includes a place to gather all your internal tests of your team at the same place to work more efficiently.
+- **Advanced test generation**: This includes the ability to to diagnose failing tests, debug your models and create more domain-specific tests.
+- **Model comparison**: This includes the ability to compare models in order to decide which one to promote,
+- **Test hub**: This includes a place to gather all of your team's tests in one place to collaborate more efficiently.
 - **Business feedback**: This includes the ability to share your results and collect business feedback from your team.
 
-If you are interested in learning more about Giskard's closed-source test and catalog features, please contact us.
+If you are interested in learning more about Giskard's premium offering, please [contact us](https://www.giskard.ai/contact).
 
 <p align="center">
   <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
 
-## Start the Giskard server
+## 1. Start the Giskard server
 
-For full functionality start **Giskard server** with: 
+To start the **Giskard server**, run the following command: 
 ```sh
 giskard server start
 ```
 
-🚀 That's it! Access at http://localhost:19000
+🚀 That's it! Access it at http://localhost:19000
 
-## Upload your test suite to the Giskard server
+## 2. Upload your test suite to the Giskard server
 
 You can then **upload the test suite** to the local Giskard server. This will enable you to:
 - Compare the quality of different models to decide which one to promote
