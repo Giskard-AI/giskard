@@ -251,6 +251,7 @@ import {generateGiskardClientSnippet} from "@/snippets";
 import { saveLocalHFToken } from "@/utils";
 import HuggingFaceTokenCard from "@/components/HuggingFaceTokenCard.vue";
 import ClientInstructionCard from '@/components/ClientInstructionCard.vue';
+import { useApiKeyStore } from '@/stores/api-key-store';
 
 const projectStore = useProjectStore();
 const testSuitesStore = useTestSuitesStore();
@@ -464,6 +465,7 @@ onActivated(async () => {
         await testSuitesStore.loadTestSuiteComplete(props.projectId);
         await projectArtifactsStore.setProjectId(props.projectId, false);
     }
+    await useApiKeyStore().getAll();
     giskardClientSnippet.value = await generateGiskardClientSnippet();
     codeContent.value = generateCodeContent();
     if (useMainStore().appSettings!.isRunningOnHfSpaces) {

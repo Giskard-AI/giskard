@@ -105,6 +105,7 @@ async function generateHFSpacesToken() {
 }
 
 onMounted(async () => {
+  await apiKeyStore.getAll();
   if (mainStore.appSettings?.isRunningOnHfSpaces) {
     await generateHFSpacesToken();
   } else {
