@@ -30,7 +30,7 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
         )
     ]
     print(issues[0].generate_tests())
-    result = ScanReport(issues)
+    result = ScanReport(issues, german_credit_data)
     test_suite = result.generate_test_suite("Custom name")
 
     assert isinstance(test_suite, Suite)

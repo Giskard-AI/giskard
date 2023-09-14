@@ -101,12 +101,12 @@ def test_default_dataset_is_used_with_generative_model():
     model.is_text_generation = True
     scanner = Scanner()
 
-    with mock.patch("giskard.scanner.llm.utils.load_default_dataset") as load_default_dataset:
+    with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
             pass
-        load_default_dataset.assert_called_once()
+        infer_dataset.assert_called_once()
 
 
 @pytest.mark.slow
