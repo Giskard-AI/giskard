@@ -131,11 +131,11 @@ class LLMToxicityDetector:
 
     def _compute_toxicity_score(self, sentences: List[str]):
         try:
-            from detoxify import Detoxify
+            from giskard.scanner.llm.detoxify import Detoxify
         except ImportError as err:
             raise LLMImportError() from err
-
-        return Detoxify("unbiased").predict(list(sentences))["toxicity"]
+        results = Detoxify().predict(list(sentences))
+        return results["toxicity"]
 
 
 @dataclass
