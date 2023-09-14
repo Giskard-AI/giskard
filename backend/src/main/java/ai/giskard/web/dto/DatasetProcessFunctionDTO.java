@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -19,5 +21,5 @@ public class DatasetProcessFunctionDTO extends CallableDTO {
     private String columnType;
     private DatasetProcessFunctionType processType;
     private List<Map<String, Object>> clauses;
-    private String projectKey;
+    private Set<String> projectKeys = new HashSet<>();
 }

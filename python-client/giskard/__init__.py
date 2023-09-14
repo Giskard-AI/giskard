@@ -17,6 +17,7 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
 from giskard.models.model_explanation import explain_with_shap
+from giskard import push
 from . import demo
 from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
@@ -46,6 +47,7 @@ __all__ = [
     "Dataset",
     "GiskardClient",
     "test",
+    "push",
     "Model",
     "Suite",
     "slicing_function",

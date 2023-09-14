@@ -1,4 +1,5 @@
-from giskard.scanner.data_leakage.data_leakage_detector import DataLeakageDetector, DataLeakageIssue
+from giskard.scanner.data_leakage.data_leakage_detector import DataLeakageDetector
+from giskard.scanner.issues import DataLeakage
 
 
 def test_data_leakage_is_detected(enron_data, enron_model):
@@ -21,7 +22,7 @@ def test_data_leakage_is_detected(enron_data, enron_model):
     issues = detector.run(enron_model, enron_data)
 
     assert len(issues) == 1
-    assert isinstance(issues[0], DataLeakageIssue)
+    assert issues[0].group == DataLeakage
 
     enron_model.data_preprocessing_function = _prev_func
 
