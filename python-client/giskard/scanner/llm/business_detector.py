@@ -29,7 +29,7 @@ def validate_prediction(
         metric = failed_count / len(predictions)
         print(f"Results: {metric} ({failed_count})")
 
-        df_with_pred = pd.concat([df_with_pred, results[["reason", "tip"]]], axis=1)
+        df_with_pred_and_test_results = pd.concat([df_with_pred, results[["reason", "tip"]]], axis=1)
 
         if failed_count > 0:
             print("Test failed")
@@ -48,7 +48,7 @@ def validate_prediction(
                         "deviation": f"{round(metric * 100, 2)}% of generated inputs does not respect the test",
                         "hide_index": True,
                     },
-                    examples=df_with_pred[failed],
+                    examples=df_with_pred_and_test_results[failed],
                     tests=_generate_business_test,
                 )
             )
