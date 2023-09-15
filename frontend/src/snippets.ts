@@ -4,7 +4,7 @@ import {useApiKeyStore} from "@/stores/api-key-store";
 
 const mainStore = useMainStore();
 const apiKeyStore = useApiKeyStore();
-export async function generateGiskardClientSnippet(hfToken=null) {
+export async function generateGiskardClientSnippet(hfToken: string | null = null) {
     let apiKey: string;
     if (apiKeyStore.getFirstApiKey) {
         apiKey = apiKeyStore.getFirstApiKey;
