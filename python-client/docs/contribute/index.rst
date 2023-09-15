@@ -7,6 +7,8 @@
    :hidden:
 
    dev-environment
+   giskard-architecture
+   configuration
 
 .. warning::
   🚧 This page isn't up to date and will be updated shortly

@@ -12,7 +12,7 @@
 * **Key pair**: Choose your usual key pair. If you don't have one, go to the [Amazon document](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) to create the right one
 * **Network settings**: You need to **open the port `19000` to access the Giskard frontend and upload your model. To do so, click on `Edit` and add the following security groups:
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+![](<../../../assets/image_(1)_(1)_(2).png>)
 
 * **Storage**: Choose a minimum of 30 Gigs of SSD (this will mainly depend on the size of your datasets)
 
