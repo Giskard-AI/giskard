@@ -103,9 +103,13 @@ def _create_text_contribution_push(
         ContributionPush: An object representing the contribution push for text features.
     """
     # Explain the text feature
+    input_df = sliced_ds.df
+    if model.meta.feature_names:
+        input_df = input_df[model.meta.feature_names]
+
     text_explanation = explain_text(
         model=model,
-        input_df=sliced_ds.df,
+        input_df=input_df,
         text_column=shap_feature,
         text_document=sliced_ds.df[shap_feature].iloc[0],
     )
@@ -121,13 +125,15 @@ def _create_text_contribution_push(
     # Detect the most important word based on the explanation
     most_important_word = _detect_text_shap_outlier(text_explanation_map)
 
-    return ContributionPush(
-        feature=shap_feature,
-        feature_type="text",
-        value=most_important_word,
-        model_type=model.meta.model_type,
-        correct_prediction=correct_prediction,
-    )
+    # If for any reason, the most_important_word is not found, don't create a push notification
+    if most_important_word is not None:
+        return ContributionPush(
+            feature=shap_feature,
+            feature_type="text",
+            value=most_important_word,
+            model_type=model.meta.model_type,
+            correct_prediction=correct_prediction,
+        )
 
 
 def create_contribution_push(

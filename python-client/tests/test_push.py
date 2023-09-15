@@ -211,3 +211,12 @@ def test_coltype_to_supported_perturbation_type():
 
     perturbation_type = coltype_to_supported_perturbation_type("text")
     assert perturbation_type == SupportedPerturbationType.TEXT
+
+
+def test_text_explain_in_push(medical_transcript_model, medical_transcript_data):
+
+    problematic_df_entry = medical_transcript_data.df.iloc[[3]]
+    output = create_contribution_push(medical_transcript_model, medical_transcript_data, problematic_df_entry)
+
+    assert output is not None
+    assert output.value is not None
