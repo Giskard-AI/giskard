@@ -86,7 +86,14 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        raise ValueError(error_message) from e
+        if "index 1 is out of bounds for axis 0 with size 1" in str(e):
+            try:
+                model.accepts_only_pd_series = True
+                prediction = model.predict(validation_ds)
+            except Exception as e2:
+                raise ValueError(error_message) from e2
+        else:
+            raise ValueError(error_message) from e
 
     # testing one entry
     validation_size = min(len(dataset), 1)
