@@ -1,17 +1,18 @@
 package ai.giskard.service;
 
 
-import ai.giskard.domain.Feedback;
-import ai.giskard.domain.Project;
-import ai.giskard.domain.User;
+import ai.giskard.domain.*;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
 import ai.giskard.exception.EntityAlreadyExistsException;
 import ai.giskard.repository.ProjectRepository;
 import ai.giskard.repository.UserRepository;
+import ai.giskard.repository.ml.SlicingFunctionRepository;
+import ai.giskard.repository.ml.TransformationFunctionRepository;
 import ai.giskard.security.SecurityUtils;
 import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.ArtifactUtils;
 import ai.giskard.utils.LicenseUtils;
 import ai.giskard.utils.YAMLConverter;
 import ai.giskard.utils.ZipUtils;
@@ -40,11 +41,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -56,13 +55,14 @@ public class ProjectService {
     private final TaskScheduler giskardTaskScheduler;
     private final ImportService importService;
     private final TestSuiteService testSuiteService;
+    private final SlicingFunctionRepository slicingFunctionRepository;
+    private final TransformationFunctionRepository transformationFunctionRepository;
 
     final GiskardMapper giskardMapper;
 
     private final Logger log = LoggerFactory.getLogger(ProjectService.class);
 
     public static final Pattern PROJECT_KEY_PATTERN = Pattern.compile("^[a-z\\d_]+$");
-
 
     /**
      * Update project
@@ -143,12 +143,22 @@ public class ProjectService {
         try {
             temporaryExportDir = locationService.temporaryMetadataDirectory("project_export-" + project.getKey());
             Files.createDirectories(temporaryExportDir);
-            createMetadataYamlFiles(temporaryExportDir, project);
+
+            Set<TestFunction> testFunctions = ArtifactUtils.getAllReferencedTestFunction(project);
+            Set<UUID> slicingFunctionUuids = ArtifactUtils.getAllReferencedTestInput(project, "SlicingFunction");
+            Set<UUID> transformationFunctionUuids = ArtifactUtils.getAllReferencedTestInput(project, "TransformationFunction");
+
+            createMetadataYamlFiles(temporaryExportDir, project, testFunctions, slicingFunctionUuids, transformationFunctionUuids);
 
             // Copy content of the /giskard-home/projects/{projecKey} into the temporary newly created folder
             try {
-
                 FileSystemUtils.copyRecursively(homeProject, temporaryExportDir);
+
+                Path globalSource = locationService.globalPath();
+                ArtifactUtils.copyAllArtifactFolders(globalSource.resolve("tests"), temporaryExportDir.resolve("tests"),
+                    testFunctions.stream().map(TestFunction::getUuid).collect(Collectors.toSet()));
+                ArtifactUtils.copyAllArtifactFolders(globalSource.resolve("slices"), temporaryExportDir.resolve("slices"), slicingFunctionUuids);
+                ArtifactUtils.copyAllArtifactFolders(globalSource.resolve("transformations"), temporaryExportDir.resolve("transformations"), transformationFunctionUuids);
             } catch (IOException e) {
                 throw new GiskardRuntimeException("Error while copying your project for export", e);
             }
@@ -171,17 +181,26 @@ public class ProjectService {
         }
     }
 
-    public void createMetadataYamlFiles(Path temporaryExportDirectory, Project project) throws IOException {
+    public void createMetadataYamlFiles(Path temporaryExportDirectory, Project project, Set<TestFunction> testFunctions,
+                                        Set<UUID> slicingFunctionUuids, Set<UUID> transformationFunctionUuids) throws IOException {
         // Convert every part of the project into YAML files stored into the created folder
         Path projectMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Project.class.getSimpleName());
         Path modelsMetadatPath = locationService.resolvedMetadataPath(temporaryExportDirectory, ProjectModel.class.getSimpleName());
         Path datasetsMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Dataset.class.getSimpleName());
+        Path testFunctionMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TestFunction.class.getSimpleName());
+        Path slicingFunctionMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, SlicingFunction.class.getSimpleName());
+        Path transformationFunctionMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TransformationFunction.class.getSimpleName());
         Path feedBacksMetadataPath = locationService.resolvedMetadataPath(temporaryExportDirectory, Feedback.class.getSimpleName());
         Path testSuiteMetadataPath = testSuiteService.resolvedMetadataPath(temporaryExportDirectory, TestSuite.class.getSimpleName());
 
         YAMLConverter.exportEntityToYAML(project, projectMetadataPath);
         YAMLConverter.exportEntitiesToYAML(project.getModels(), modelsMetadatPath);
         YAMLConverter.exportEntitiesToYAML(project.getDatasets(), datasetsMetadataPath);
+
+        YAMLConverter.exportEntitiesToYAML(testFunctions, testFunctionMetadataPath);
+        YAMLConverter.exportEntitiesToYAML(slicingFunctionRepository.findAllById(slicingFunctionUuids), slicingFunctionMetadataPath);
+        YAMLConverter.exportEntitiesToYAML(transformationFunctionRepository.findAllById(transformationFunctionUuids), transformationFunctionMetadataPath);
+
         YAMLConverter.exportEntitiesToYAML(project.getFeedbacks(), feedBacksMetadataPath);
         YAMLConverter.exportEntitiesToYAML(project.getTestSuites(), testSuiteMetadataPath);
     }
