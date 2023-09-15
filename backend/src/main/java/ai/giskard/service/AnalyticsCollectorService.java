@@ -4,7 +4,6 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.service.ee.LicenseService;
 import com.mixpanel.mixpanelapi.MessageBuilder;
 import com.mixpanel.mixpanelapi.MixpanelAPI;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -22,8 +21,6 @@ public class AnalyticsCollectorService {
 
     private static final MixpanelAPI mixpanel = new MixpanelAPI();
 
-    private MessageBuilder messageBuilder;
-
     private final ApplicationProperties applicationProperties;
 
     private final GeneralSettingsService settingsService;
@@ -32,13 +29,6 @@ public class AnalyticsCollectorService {
     private String buildVersion;
 
     private final Runtime.Version javaVersion = Runtime.version();
-
-    @PostConstruct
-    public void configure() {
-        if (messageBuilder == null) {
-            messageBuilder = new MessageBuilder(applicationProperties.getMixpanelProjectKey());
-        }
-    }
 
     public void track(String eventName, JSONObject props) {
         if (!settingsService.getSettings().isAnalyticsEnabled()) return;
@@ -54,6 +44,7 @@ public class AnalyticsCollectorService {
     }
 
     public void doTrack(String eventName, JSONObject props) {
+        MessageBuilder messageBuilder = new MessageBuilder(applicationProperties.getMixpanelProjectKey());
         // Refresh user information for MixPanel
         JSONObject serverProps = new JSONObject();
         try {
