@@ -86,7 +86,10 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        if "index 1 is out of bounds for axis 0 with size 1" in str(e) and len(validation_ds.df.columns) == 1:
+        number_of_features = (
+            len(model.meta.feature_names) if model.meta.feature_names is not None else len(validation_ds.df.columns)
+        )
+        if "index 1 is out of bounds for axis 0 with size 1" in str(e) and number_of_features == 1:
             try:
                 model.accepts_only_pd_series = True
                 prediction = model.predict(validation_ds)
