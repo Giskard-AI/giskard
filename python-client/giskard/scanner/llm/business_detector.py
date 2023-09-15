@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import List, Sequence
+
+import pandas as pd
 
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
@@ -96,7 +97,8 @@ class LLMBusinessDetector:
                             }
                             for potentially_failing_input in potentially_failing_inputs
                         ]
-                    )
+                    ),
+                    validation=False,
                 )
 
                 print(f"Generated potentially failing prompts: {potentially_failing_dataset.df}")

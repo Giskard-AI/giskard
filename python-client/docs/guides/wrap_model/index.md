@@ -293,7 +293,7 @@ wrapped_model = MyCustomModel(
 from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 from langchain.prompts import PromptTemplate
-from giskard import Model
+import giskard
 
 responses = [
     "\n\nHueFoots.", "\n\nEcoDrive Motors.", 
@@ -306,11 +306,7 @@ prompt = PromptTemplate(
 )
 chain = LLMChain(llm=llm, prompt=prompt)
 
-class MyCustomModel(Model):
-    def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict('records')]
-
-wrapped_model = MyCustomModel(chain, model_type='text_generation')
+wrapped_model = giskard.Model(chain, model_type='text_generation')
 ```
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
@@ -322,6 +318,7 @@ wrapped_model = MyCustomModel(chain, model_type='text_generation')
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Name of the wrapped model.
+    * `description`: An optional description of the model
     * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your
       dataset.
       Make sure these features are in the same order as your training dataset.
