@@ -5,13 +5,14 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 import pytest
-from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
+from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
+from langchain import LLMChain, PromptTemplate
 
 
 @pytest.mark.parametrize(
@@ -99,11 +100,16 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock(Model)
     model.is_text_generation = True
-    model.meta = {
-        "name": "Model name",
-        "description": "Some meaningful model description",
-        "feature_names": "The feature name",
-    }
+    model.meta = ModelMeta(
+        "Model name",
+        "Some meaningful model description",
+        SupportedModelTypes.TEXT_GENERATION,
+        ["query"],
+        [],
+        0,
+        "test",
+        "test",
+    )
     scanner = Scanner()
 
     with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
