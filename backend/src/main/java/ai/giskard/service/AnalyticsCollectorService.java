@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,8 @@ public class AnalyticsCollectorService {
     private String buildVersion;
 
     private final Runtime.Version javaVersion = Runtime.version();
+
+    private final ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newFixedThreadPool(1);
 
     public void track(String eventName, JSONObject props) {
         if (!settingsService.getSettings().isAnalyticsEnabled()) return;
@@ -60,8 +64,8 @@ public class AnalyticsCollectorService {
             return;
         }
 
-        // Start a new thread
-        new Thread(() -> {
+        // Start a new thread in thread pool executor
+        executor.submit(() -> {
             // Merge with server info
             props.put("Java version", javaVersion.toString());
             props.put("Giskard version", buildVersion);
@@ -73,7 +77,7 @@ public class AnalyticsCollectorService {
             } catch (IOException e) {
                 log.warn("MixPanel tracking failed {0}", e);
             }
-        }).start();
+        });
     }
 
     public static class MLWorkerWebSocketTracking {
