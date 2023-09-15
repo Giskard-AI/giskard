@@ -44,7 +44,7 @@ mlflow.models.list_evaluators() # ['default', 'giskard']
 :::::
 
 :::::{grid-item}
-:::{card} <br><h3><center>📝 Text</center></h3>
+:::{card} <br><h3><center>📝 LLM</center></h3>
 :link: mlflow-llm-example.ipynb
 :::
 :::::
