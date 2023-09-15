@@ -106,7 +106,18 @@ class WrapperModel(BaseModel, ABC):
         # In the case where a dataframe has one column, most sklearn models require a Series instead of a DataFrame.
         # It could also be the case of PredictionFunctionModel that calls sklearn models.
         if self.accepts_only_pd_series:
-            return data[data.columns[0]]
+
+            # Get all features
+            features = self.meta.feature_names if self.meta.feature_names is not None else data.columns
+
+            # Check that pd.Series is applicable
+            if len(features) != 1:
+                raise ValueError(
+                    "Only 1 feature must be present if giskard_model.accepts_only_pd_series is set to be 'True'."
+                )
+
+            # Return data as pd.Series
+            return data[data.columns[features[0]]]
 
         return data
 
