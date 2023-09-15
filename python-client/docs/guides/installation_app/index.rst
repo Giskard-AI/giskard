@@ -70,6 +70,7 @@ You can either install and run the server **locally** or on an **external server
          install_aws/index
          install_gcp/index
          install_azure/index
+         install_hfs/index
    
    .. tab-item:: Hosting in Hugging Face Spaces
 
