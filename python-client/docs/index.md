@@ -22,6 +22,7 @@ guides/scan/index
 guides/slice/index
 guides/transformation/index
 guides/test-suite/index
+guides/talk_to_your_model/index
 guides/cicd/pipeline
 guides/installation_app/index
 guides/upload/index
@@ -131,4 +132,3 @@ integrations/index
 ::::
 :::::
 
-    

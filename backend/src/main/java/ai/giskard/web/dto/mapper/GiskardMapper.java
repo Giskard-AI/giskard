@@ -50,6 +50,8 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slicingFunctions", ignore = true)
+    @Mapping(target = "transformationFunctions", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -63,6 +65,8 @@ public interface GiskardMapper {
     @Mapping(target = "lastModifiedDate", ignore = true)
     @Mapping(target = "datasets", ignore = true)
     @Mapping(target = "feedbacks", ignore = true)
+    @Mapping(target = "slicingFunctions", ignore = true)
+    @Mapping(target = "transformationFunctions", ignore = true)
     @Mapping(target = "guests", ignore = true)
     @Mapping(target = "models", ignore = true)
     @Mapping(target = "owner", ignore = true)
@@ -194,6 +198,10 @@ public interface GiskardMapper {
 
     TestFunctionArgumentDTO toDTO(FunctionArgument functionArgument);
 
+    default String projectToKey(Project project) {
+        return project.getKey();
+    }
+
     @Mapping(target = "function", ignore = true)
     FunctionArgument fromDTO(TestFunctionArgumentDTO testFunctionArgument);
 
@@ -203,14 +211,18 @@ public interface GiskardMapper {
     @Mapping(target = "suiteTests", ignore = true)
     TestFunction fromDTO(TestFunctionDTO testFunction);
 
+    @Mapping(target = "projects", source = "projectKeys")
     SlicingFunction fromDTO(SlicingFunctionDTO testFunction);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
+    @Mapping(target = "projectKeys", source = "projects")
     SlicingFunctionDTO toDTO(SlicingFunction testFunction);
 
     @Mapping(target = "potentiallyUnavailable", ignore = true)
+    @Mapping(target = "projectKeys", source = "projects")
     TransformationFunctionDTO toDTO(TransformationFunction testFunction);
 
+    @Mapping(target = "projects", source = "projectKeys")
     TransformationFunction fromDTO(TransformationFunctionDTO testFunction);
 
 }

@@ -67,21 +67,21 @@ Upload your suite to the Giskard server to:
 ```python
 from giskard import demo, Model, testing, Suite, GiskardClient
 
-data_preprocessor, clf = demo.titanic_pipeline()
+demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline()
 
 # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
 # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
 # for classification, regression & text generation.
 def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-    preprocessed_df = data_preprocessor(df)
-    return clf.predict_proba(preprocessed_df)
+    preprocessed_df = demo_data_processing_function(df)
+    return demo_sklearn_model.predict_proba(preprocessed_df)
 
 giskard_model = Model(
     model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
     model_type="classification",  # Either regression, classification or text_generation.
     name="Titanic model",  # Optional
-    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
     # classification_threshold=0.5,  # Default: 0.5
 )
@@ -121,21 +121,21 @@ Uploading the model to the Giskard server enables you to:
 ```python
 from giskard import demo, Model, GiskardClient
 
-data_preprocessor, clf = demo.titanic_pipeline()
+demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline()
 
 # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
 # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
 # for classification, regression & text generation.
 def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-    preprocessed_df = data_preprocessor(df)
-    return clf.predict_proba(preprocessed_df)
+    preprocessed_df = demo_data_processing_function(df)
+    return demo_sklearn_model.predict_proba(preprocessed_df)
 
 giskard_model = Model(
     model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
     model_type="classification",  # Either regression, classification or text_generation.
     name="Titanic model",  # Optional
-    classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
     # classification_threshold=0.5,  # Default: 0.5
 )
@@ -170,7 +170,7 @@ giskard_dataset = Dataset(
     df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
     target="Survived",  # Ground truth variable
     name="Titanic dataset", # Optional
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally

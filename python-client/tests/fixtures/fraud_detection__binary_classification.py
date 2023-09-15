@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import pandas as pd
@@ -10,9 +9,7 @@ from giskard import Dataset, Model
 from tests.url_utils import fetch_from_ftp
 
 # Data.
-DATA_URL = os.path.join(
-    "ftp://sys.giskard.ai", "pub", "unit_test_resources", "fraud_detection_classification_dataset", "{}"
-)
+DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/fraud_detection_classification_dataset/{}"
 DATA_PATH = Path.home() / ".giskard" / "fraud_detection_classification_dataset"
 
 # Constants.
