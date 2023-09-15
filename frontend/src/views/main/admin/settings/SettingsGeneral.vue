@@ -11,6 +11,10 @@
               <v-simple-table>
                 <table class="w100">
                   <tr>
+                    <td>Giskard Instance URL</td>
+                    <td>{{ apiURL }}</td>
+                  </tr>
+                  <tr>
                     <td>Instance</td>
                     <td>{{ appSettings.generalSettings?.instanceId }}</td>
                   </tr>
@@ -77,6 +81,9 @@
       <v-row v-if="!mainStore.authAvailable">
         <v-col>
           <ApiTokenCard />
+        </v-col>
+        <v-col>
+          <ClientInstructionCard :internalHFAccessToken="false" />
         </v-col>
       </v-row>
       <v-row>
@@ -192,6 +199,7 @@ import ApiTokenCard from "@/components/ApiTokenCard.vue";
 import PlanUpgradeCard from "@/components/ee/PlanUpgradeCard.vue";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 import CodeSnippet from "@/components/CodeSnippet.vue";
+import ClientInstructionCard from "@/components/ClientInstructionCard.vue";
 import {openapi} from "@/api-v2";
 import {GeneralSettings, MLWorkerInfoDTO} from "@/generated/client";
 
