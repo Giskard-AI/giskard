@@ -89,14 +89,20 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
         number_of_features = (
             len(model.meta.feature_names) if model.meta.feature_names is not None else len(validation_ds.df.columns)
         )
-        if "index 1 is out of bounds for axis 0 with size 1" in str(e) and number_of_features == 1:
-            try:
-                model.accepts_only_pd_series = True
-                prediction = model.predict(validation_ds)
-            except Exception as e2:
-                raise ValueError(error_message) from e2
-        else:
+        one_dimension_case = (
+            isinstance(e, IndexError)
+            and "index 1 is out of bounds for axis 0 with size 1" in str(e)
+            and number_of_features != 1
+        )
+
+        if not one_dimension_case:
             raise ValueError(error_message) from e
+
+        try:
+            model.accepts_only_pd_series = True
+            prediction = model.predict(validation_ds)
+        except Exception as e2:
+            raise ValueError(error_message) from e2
 
     # testing one entry
     validation_size = min(len(dataset), 1)
