@@ -26,7 +26,7 @@ export const useHFSpacesTokenStore = defineStore('hfSpacesToken', {
 
             // Fetch new HFSpaces token
             try {
-                const res = await api.getHuggingFaceSpacesToken(useMainStore().appSettings?.hfSpaceId!!);
+                const res = await api.getHuggingFaceSpacesToken(useMainStore().appSettings?.hfSpaceId!);
                 this.token = res.data.token;
                 this.expire = new Date();
                 this.expire.setDate(this.expire.getDate() + 1); // Expire in 24 hours
