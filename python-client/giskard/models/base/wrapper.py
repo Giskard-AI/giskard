@@ -117,7 +117,7 @@ class WrapperModel(BaseModel, ABC):
                 )
 
             # Return data as pd.Series
-            return data[data.columns[features[0]]]
+            return data[features[0]]
 
         return data
 

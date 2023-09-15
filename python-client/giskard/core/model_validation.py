@@ -92,7 +92,7 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
         one_dimension_case = (
             isinstance(e, IndexError)
             and "index 1 is out of bounds for axis 0 with size 1" in str(e)
-            and number_of_features != 1
+            and number_of_features == 1
         )
 
         if not one_dimension_case:
