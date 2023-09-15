@@ -63,12 +63,7 @@ class MockedClient:
         self.mocked_requests.register_uri(
             requests_mock.GET,
             self.ml_worker_connect_url_pattern,
-            json={
-                "externalMlWorkerEntrypointPort": 40051,
-                "externalMlWorkerEntrypointHost": None,
-                "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
-                "keyId": "fh1sjr7h",
-            },
+            json={},
         )
 
         url = "http://giskard-host:12345"
@@ -95,12 +90,7 @@ def verify_model_upload(my_model, my_data):
         m.register_uri(
             requests_mock.GET,
             ml_worker_connect_url_pattern,
-            json={
-                "externalMlWorkerEntrypointPort": 40051,
-                "externalMlWorkerEntrypointHost": None,
-                "encryptionKey": "7J2oBM4si/GciQScXjjs6w==",
-                "keyId": "fh1sjr7h",
-            },
+            json={},
         )
 
         url = "http://giskard-host:12345"
