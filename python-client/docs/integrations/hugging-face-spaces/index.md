@@ -1,4 +1,4 @@
-# Giskard on Spaces
+# Giskard on HF Spaces
 
 **Giskard** is an open-source testing framework dedicated for AI models, from tabular to LLMs. Giskard is composed of 
 1. An open-source Python library containing a **vulnerability scan**, **testing** and **CI/CD** framework for ML models
