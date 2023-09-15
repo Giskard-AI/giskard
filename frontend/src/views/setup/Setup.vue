@@ -43,10 +43,10 @@
           </v-stepper-step>
           <v-stepper-content step="1" class="px-0">
             <p class="pl-6">
-              Giskard server requires a license. If you don't have one, you can request a <span class="font-weight-bold">free</span> license by filling the form below.
+              Welcome to the Giskard Hub! You'll be required to get a license to use the Hub.
             </p>
             <p class="pl-6">
-              The license will be <span class="font-weight-bold">sent by email</span>. You don't need to submit a new request if you already have one.
+              If you don't have one yet, request a <span class="font-weight-bold">free trial license</span> by filling out the form below. The license will be <span class="font-weight-bold">sent by email</span>.
             </p>
 
             <div class="pl-6 py-4 mt-8">
@@ -57,7 +57,7 @@
               </v-radio-group>
             </div>
             <div class="pl-6 py-4" v-show="hasLicense === '1'">
-              <span class="has-license-question pb-2">Fill the form below to get your license</span>
+              <span class="has-license-question pb-2">Please fill out the form to get a license</span>
               <ValidationObserver ref="observer" v-slot="{ invalid }">
                 <v-form @keyup.enter="submit" style="max-width: 500px" class="">
                   <ValidationProvider name="First name" mode="eager" rules="required" v-slot="{ errors }">
@@ -107,7 +107,7 @@
             Launch Giskard
           </v-stepper-step>
           <v-stepper-content step="3">
-            <p>Your Giskard setup is now complete! You can now refresh this page or click the button below to open
+            <p>Your Giskard setup is now complete! You can now click on the button below or refresh this page to launch
               Giskard.</p>
 
             <v-btn color="primary" large @click="finalizeSetup()" class="mb-1">Launch Giskard</v-btn>
