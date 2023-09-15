@@ -1,4 +1,4 @@
-error_log stderr info;
+error_log stderr notice;
 pid "${GSK_HOME}/run/nginx/nginx.pid";
 daemon off;
 working_directory "${GSK_HOME}/run/nginx";
