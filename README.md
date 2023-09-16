@@ -46,12 +46,9 @@ ______________________________________________________________________
   <img src="readme/architechture_giskard.png" alt="Giskard Architechture" width="800">
 </p>
 
-Giskard is a Python library that uses a variety of techniques to **detect vulnerabilities**, including:
+Giskard is a Python library that automatically **detects vulnerabilities** of AI models, from tabular models to LLM, including: performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
 
-- **Data slicing and transformation**: Giskard can automatically generate different data slices and transformations to test the robustness of your model.
-- **Statistical analysis**: Giskard can use statistical analysis to identify patterns and relationships in your data that could indicate a vulnerability.
-
- It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
+It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
  
 <p align="center">
   <img src="readme/scan_example.gif" alt="Scan Example" width="800">
