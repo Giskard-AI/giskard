@@ -87,7 +87,7 @@ import giskard
 
 # Replace this with your own data & model creation.
 df = giskard.demo.titanic_df()
-demo_demo_data_processing_function, demo_sklearn_model = giskard.demo.titanic_pipeline()
+demo_data_processing_function, demo_sklearn_model = giskard.demo.titanic_pipeline()
 
 # Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.).
 giskard_dataset = giskard.Dataset(
