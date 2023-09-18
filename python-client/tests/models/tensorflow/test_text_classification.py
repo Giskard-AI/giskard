@@ -1,15 +1,15 @@
 import pandas as pd
 import pytest
-from tensorflow.keras import layers
 
-import tensorflow as tf
 import tests.utils
 from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
 
+tf = pytest.importorskip("tensorflow")
 
 @pytest.mark.slow
 def test_text_classification_1d_output(imdb_data):
+
     raw_train_ds, raw_test_ds = imdb_data
 
     test_dataset = {"Review": [], "Label": []}
@@ -36,11 +36,11 @@ def test_text_classification_1d_output(imdb_data):
 
     model = tf.keras.Sequential(
         [
-            layers.Embedding(max_features + 1, embedding_dim),
-            layers.Dropout(0.2),
-            layers.GlobalAveragePooling1D(),
-            layers.Dropout(0.2),
-            layers.Dense(1),
+            tf.keras.layers.Embedding(max_features + 1, embedding_dim),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.GlobalAveragePooling1D(),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(1),
         ]
     )
 
@@ -101,11 +101,11 @@ def test_text_classification_2d_output(imdb_data):
 
     model = tf.keras.Sequential(
         [
-            layers.Embedding(max_features + 1, embedding_dim),
-            layers.Dropout(0.2),
-            layers.GlobalAveragePooling1D(),
-            layers.Dropout(0.2),
-            layers.Dense(2),
+            tf.keras.layers.Embedding(max_features + 1, embedding_dim),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.GlobalAveragePooling1D(),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(2),
             tf.keras.layers.Softmax(),
         ]
     )
