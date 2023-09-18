@@ -21,15 +21,16 @@ import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +88,7 @@ public class ModelController {
 
     @PostMapping("project/{projectKey}/models")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
     public void createModelMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull ModelDTO dto) {
         if (modelRepository.existsById(dto.getId())) {
             log.info("Model already exists {}", dto.getId());
@@ -96,7 +98,6 @@ public class ModelController {
         Integer modelPerProject = licenseService.getCurrentLicense().getModelPerProjectLimit();
         if (modelPerProject != null && project.getModels().size() >= modelPerProject) {
             log.info("Exceed model numbers in project '{}'", project.getName());
-            // Improve the statement
             throw new LicenseException(
                 "You've reached your limit of " +
                     licenseService.getCurrentLicense().getModelPerProjectLimit() +
