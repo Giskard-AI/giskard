@@ -2,13 +2,13 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-import tensorflow as tf
 from sklearn import model_selection
 
 import tests.utils
 from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
 
+tf = pytest.importorskip("tensorflow")
 
 def test_text_classification_tfhub():
     hub = pytest.importorskip("tensorflow_hub")
