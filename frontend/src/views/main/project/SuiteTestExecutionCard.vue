@@ -100,8 +100,8 @@
               This will enable you to:
               <ul>
                 <li>Understand why the test fail looking at model explanation</li>
-                <li>Create new tests by looking at the model insights ([LOGO_PUSH])</li>
-                <li>Collect feedback to integrate domain knowledge </li>
+                <li>Create new tests by looking at the model insights <v-icon>mdi-shield-search</v-icon></li>
+                <li>Collect feedback to integrate domain knowledge <v-icon>mdi-comment-multiple</v-icon></li>
               </ul>
             </p>
 
