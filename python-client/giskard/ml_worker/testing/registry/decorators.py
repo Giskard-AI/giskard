@@ -4,7 +4,6 @@ import sys
 from typing import Callable, Optional, List, Union, Type, TypeVar
 
 from giskard.core.core import TestFunctionMeta
-from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.decorators_utils import make_all_optional_or_suite_input, set_return_type
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
@@ -44,5 +43,4 @@ def _wrap_test_method(original):
     giskard_test_method = functools.wraps(original)(GiskardTestMethod(original))
     make_all_optional_or_suite_input(giskard_test_method)
     set_return_type(giskard_test_method, GiskardTestMethod)
-
-    return configured_validate_arguments(giskard_test_method)()
+    return giskard_test_method()

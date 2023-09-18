@@ -60,7 +60,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         """
         self.is_initialized = False
         self.params = {}
-        self.func = func
+        self.func = configured_validate_arguments(func)
         self.row_level = row_level
         self.cell_level = cell_level
 
@@ -147,7 +147,7 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 
-        return _wrap_slicing_function(func, row_level, cell_level)()
+        return _wrap_slicing_function(func, row_level, cell_level)#()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
@@ -166,4 +166,4 @@ def _wrap_slicing_function(original: Callable, row_level: bool, cell_level: bool
     make_all_optional_or_suite_input(slicing_fn)
     set_return_type(slicing_fn, SlicingFunction)
 
-    return configured_validate_arguments(slicing_fn)
+    return slicing_fn()
