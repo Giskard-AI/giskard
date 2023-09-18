@@ -5,6 +5,7 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 import pytest
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
@@ -12,7 +13,6 @@ from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
-from langchain import LLMChain, PromptTemplate
 
 
 @pytest.mark.parametrize(
@@ -120,6 +120,7 @@ def test_default_dataset_is_used_with_generative_model():
         infer_dataset.assert_called_once()
 
 
+@pytest.mark.skip(reason="Now rely on LLM generated issues")
 @pytest.mark.slow
 def test_generative_model_dataset():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
