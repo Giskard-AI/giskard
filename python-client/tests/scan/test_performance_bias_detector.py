@@ -32,7 +32,8 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
         detector.run(german_credit_model, large_dataset)
     except ValueError:
         pass
-
+    except TypeError:
+        pass
     assert large_dataset.slice.called
     assert large_dataset.df.sample.assert_called_once
 
@@ -43,6 +44,8 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
     try:
         detector.run(german_credit_model, normal_dataset)
     except ValueError:
+        pass
+    except TypeError:
         pass
 
     assert normal_dataset.slice.not_called

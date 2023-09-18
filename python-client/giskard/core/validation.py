@@ -22,8 +22,12 @@ def configured_validate_arguments(func):
     # If you check https://docs.pydantic.dev/latest/usage/validation_decorator/#coercion-and-strictness,
     # this explains it will try to convert/coerce type to the type hinting
     # So a string will be "coerced" to an enum element, and so on
-    to_return = functools.wraps(func)(validate_arguments(config={"arbitrary_types_allowed":True})(func))
-    return to_return
+
+    # Add validation wrapper
+    validated_func = validate_arguments(func, config={"arbitrary_types_allowed":True})
+    # Call wraps, to update name, docs, ...
+    validated_func = functools.wraps(func)(validated_func)
+    return func
 
 
 def validate_is_pandasdataframe(df):
