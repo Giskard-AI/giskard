@@ -9,6 +9,7 @@ from typing import Union, Callable, Optional
 import cloudpickle
 
 from giskard.core.core import TestFunctionMeta, SMT
+from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.registry.registry import tests_registry, get_object_uuid
 from giskard.ml_worker.testing.test_result import TestResult
@@ -104,7 +105,7 @@ class GiskardTestMethod(GiskardTest):
     def __init__(self, test_fn: Function) -> None:
         self.params = {}
         self.is_initialized = False
-        self.test_fn = test_fn
+        self.test_fn = configured_validate_arguments(test_fn)
         test_uuid = get_object_uuid(test_fn)
         meta = tests_registry.get_test(test_uuid)
         if meta is None:

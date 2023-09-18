@@ -4,7 +4,7 @@ import sys
 import pytest
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec

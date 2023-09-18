@@ -200,8 +200,8 @@ jobs:
       - name: Check Pydantic installed version
         working-directory: python-client 
         run: |
-          pdm run pip freeze | tail -n +1 | grep '^pydantic'
-          pdm run pip freeze | tail -n +1 | grep -q '^pydantic==${{ matrix.pydantic_v1 && '1' || '2' }}\.'
+          pdm run pip freeze | grep '^pydantic'
+          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v1 && '1' || '2' }}\.'
 
       - name: Test code
         working-directory: python-client
