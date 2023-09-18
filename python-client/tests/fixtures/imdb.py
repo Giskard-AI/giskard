@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from keras.utils import text_dataset_from_directory, get_file
 
 batch_size = 32
 seed = 42
@@ -9,6 +8,9 @@ seed = 42
 
 @pytest.fixture()
 def imdb_data():
+    # Import put here to avoid failure when resolving tests
+    from keras.utils import text_dataset_from_directory, get_file
+
     dataset = get_file(
         "aclImdb",
         "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
