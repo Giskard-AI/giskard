@@ -2,9 +2,12 @@ package ai.giskard;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.config.GiskardConstants;
+import ai.giskard.config.SpringContext;
+import ai.giskard.service.AnalyticsCollectorService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -70,6 +73,10 @@ public class GiskardApp {
 
         ConfigurableApplicationContext ctx = app.run(args);
         logApplicationStartup(ctx.getEnvironment());
+
+        // Configure analytics collector service
+        AnalyticsCollectorService analyticsCollectorService = SpringContext.getBean(AnalyticsCollectorService.class);
+        analyticsCollectorService.track("Server startup", new JSONObject(), true);
     }
 
     private static void logApplicationStartup(Environment env) {

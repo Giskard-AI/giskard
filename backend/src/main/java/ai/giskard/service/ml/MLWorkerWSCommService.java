@@ -6,9 +6,11 @@ import ai.giskard.ml.MLWorkerReplyMessage;
 import ai.giskard.ml.MLWorkerReplyType;
 import ai.giskard.ml.MLWorkerWSAction;
 import ai.giskard.ml.dto.*;
+import ai.giskard.service.AnalyticsCollectorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,12 +23,15 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static ai.giskard.service.AnalyticsCollectorService.MLWorkerWebSocketTracking.*;
+
 @Service
 @RequiredArgsConstructor
 public class MLWorkerWSCommService {
     private final Logger log = LoggerFactory.getLogger(MLWorkerWSCommService.class.getName());
 
     private final MLWorkerWSService mlWorkerWSService;
+    private final AnalyticsCollectorService analyticsCollectorService;
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
@@ -50,6 +55,15 @@ public class MLWorkerWSCommService {
     // This operation can be slow so that it should not be executed inside a DB transaction
     @Transactional(propagation = Propagation.NEVER)
     public MLWorkerWSBaseDTO performAction(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param, long milliseconds) {
+        JSONObject trackMsg = new JSONObject();
+        trackMsg.put("name", action.toString());
+        trackMsg.put("worker", workerID.toString());
+        analyticsCollectorService.track(
+            "MLWorker sync action type",
+            trackMsg
+        );
+        long start = System.currentTimeMillis();
+
         // Prepare to receive the final result
         UUID repId = UUID.randomUUID();
         mlWorkerWSService.prepareResultWaiter(repId.toString());
@@ -67,11 +81,22 @@ public class MLWorkerWSCommService {
         if (result == null) {
             mlWorkerWSService.removeResultWaiter(repId.toString());
             log.warn("Received an empty reply for {} {}", action, repId);
+
+            // Track null message
+            trackMsg.put(ACTION_TIME_FILED, System.currentTimeMillis() - start);
+            trackMsg.put(TYPE_FILED, "ERROR");
+            trackMsg.put(ERROR_FIELD, "Empty");
+            trackMsg.put(ERROR_TYPE_FIELD, "Empty");
+            analyticsCollectorService.track(
+                "MLWorker sync action",
+                trackMsg
+            );
             return null;
         }
 
+        MLWorkerWSBaseDTO reply = null;
         try {
-            return switch (action) {
+            reply = switch (action) {
                 case GET_INFO -> parseReplyDTO(result, MLWorkerWSGetInfoDTO.class);
                 case RUN_AD_HOC_TEST -> parseReplyDTO(result, MLWorkerWSRunAdHocTestDTO.class);
                 case DATASET_PROCESSING -> parseReplyDTO(result, MLWorkerWSDatasetProcessingDTO.class);
@@ -86,8 +111,25 @@ public class MLWorkerWSCommService {
                 case GET_PUSH -> parseReplyDTO(result, MLWorkerWSGetPushResultDTO.class);
             };
         } catch (JsonProcessingException e) {
-            return parseReplyErrorDTO(result);
+            reply = parseReplyErrorDTO(result);
+        } finally {
+            // Track reply or error message
+            trackMsg.put(ACTION_TIME_FILED, System.currentTimeMillis() - start);
+            if (reply instanceof MLWorkerWSErrorDTO error) {
+                trackMsg.put(TYPE_FILED, "ERROR");
+                trackMsg.put(ERROR_FIELD, error.getErrorStr());
+                trackMsg.put(ERROR_TYPE_FIELD, error.getErrorType());
+            } else {
+                trackMsg.put(TYPE_FILED, "SUCCESS");
+                trackMsg.put(ERROR_FIELD, "");
+                trackMsg.put(ERROR_TYPE_FIELD, "");
+            }
+            analyticsCollectorService.track(
+                "MLWorker sync action",
+                trackMsg
+            );
         }
+        return reply;
     }
 
     public UUID performActionAsync(MLWorkerID workerID, MLWorkerWSAction action, MLWorkerWSBaseDTO param) {

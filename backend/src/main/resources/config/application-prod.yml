@@ -102,3 +102,4 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
+  mixpanel-project-key: 2c3efacc6c26ffb991a782b476b8c620

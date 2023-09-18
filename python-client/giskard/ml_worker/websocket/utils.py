@@ -28,7 +28,8 @@ from giskard.ml_worker.websocket import (
     RunAdHocTestParam,
     DatasetProcessingParam,
     GenerateTestSuiteParam,
-    RunModelForDataFrameParam, GetPushParam,
+    RunModelForDataFrameParam,
+    GetPushParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -65,7 +66,7 @@ def parse_action_param(action, params):
 
 
 def fragment_message(payload: str, frag_i: int, frag_length: int):
-    return payload[frag_i * frag_length: min((frag_i + 1) * frag_length, len(payload))]
+    return payload[frag_i * frag_length : min((frag_i + 1) * frag_length, len(payload))]
 
 
 def extract_debug_info(request_arguments):
@@ -175,12 +176,12 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
         elif arg.model is not None:
             arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
         elif arg.slicingFunction is not None:
-            arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, ml_worker.client, None)(
-                **parse_function_arguments(ml_worker, arg.args)
-            )
+            arguments[arg.name] = SlicingFunction.download(
+                arg.slicingFunction.id, ml_worker.client, arg.slicingFunction.project_key
+            )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
-                arg.transformationFunction.id, ml_worker.client, None
+                arg.transformationFunction.id, ml_worker.client, arg.transformationFunction.project_key
             )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
