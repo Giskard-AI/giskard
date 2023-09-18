@@ -6,8 +6,6 @@ services:
       - "5432:5432"
 
   ml-worker:
-    ports:
-      - "50051:50051"
 
   backend:
     ports:
