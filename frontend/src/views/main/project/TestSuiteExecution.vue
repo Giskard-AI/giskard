@@ -15,7 +15,7 @@ const {executions} = storeToRefs(useTestSuiteStore());
 
 const route = useRoute();
 
-const selectedExecution = computed(() => executions.value.find(e => e.id! == route.params.executionId))
+const selectedExecution = computed(() => executions.value.find(e => e.id == route.params.executionId))
 </script>
 
 <style scoped lang="scss">

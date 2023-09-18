@@ -10,7 +10,7 @@
 
 import {storeToRefs} from 'pinia';
 import {useTestSuiteStore} from '@/stores/test-suite';
-import {SuiteTestDTO, SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated/client/index';
+import {SuiteTestDTO, SuiteTestExecutionDTO, TestSuiteExecutionDTO} from '@/generated-sources';
 import SuiteTestExecutionCard from "@/views/main/project/SuiteTestExecutionCard.vue";
 
 const props = withDefaults(defineProps<{
