@@ -6,11 +6,11 @@ import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -42,4 +42,9 @@ public class DatasetDTO {
 
     @JsonAlias("created_date")
     private Instant createdDate;
+
+    @JsonAlias("last_modified_date")
+    private Instant lastModifiedDate;
+
+
 }

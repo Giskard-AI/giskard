@@ -2,16 +2,19 @@
 import logging
 import os
 import posixpath
+import shutil
+from pathlib import Path
+from typing import List, Optional
+from urllib.parse import urljoin
+from uuid import UUID
+
+import dateutil.parser
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
-from pathlib import Path
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
-from typing import List
-from urllib.parse import urljoin
-from uuid import UUID
 
 import giskard
 from giskard.client.dtos import TestSuiteDTO
@@ -167,6 +170,8 @@ class GiskardClient:
             column_dtypes=res["columnDtypes"],
             number_of_rows=res["numberOfRows"],
             category_features=res["categoryFeatures"],
+            created_date=res["createdDate"],
+            last_modified_date=res["lastModifiedDate"],
         )
 
     def save_model_meta(
@@ -233,10 +238,20 @@ class GiskardClient:
             for f in filenames:
                 self.log_artifact(os.path.join(root, f), artifact_dir)
 
-    def load_artifact(self, local_file: Path, artifact_path: str = None):
-        if local_file.exists():
+    def load_artifact(self, local_file: Path, artifact_path: str = None, last_modified_date: Optional[str] = None):
+        if last_modified_date is None and local_file.exists():
             logger.info(f"Artifact {artifact_path} already exists, skipping download")
             return
+
+        if local_file.exists():
+            if (
+                os.path.getmtime(Path(local_file) / "giskard-dataset-meta.yaml")
+                >= dateutil.parser.parse(last_modified_date).timestamp()
+            ):
+                logger.info(f"Artifact {artifact_path} already exists, skipping download")
+                return
+            # Clear the existing folder
+            shutil.rmtree(local_file)
 
         files = self._session.get("artifact-info/" + artifact_path)
         augmented_raise_for_status(files)

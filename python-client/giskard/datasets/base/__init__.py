@@ -1,8 +1,10 @@
 import inspect
 import logging
+import os
 import posixpath
 import tempfile
 import uuid
+from datetime import datetime
 from functools import cached_property
 from pathlib import Path
 from typing import Dict, Optional, List, Union, Hashable
@@ -11,11 +13,11 @@ import numpy as np
 import pandas
 import pandas as pd
 import yaml
+from mlflow import MlflowClient
 from pandas.api.types import is_list_like
 from pandas.api.types import is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
-from mlflow import MlflowClient
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import save_df, compress
@@ -156,6 +158,8 @@ class Dataset(ColumnMetadataMixin):
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
         validation=True,
+        created_date: Optional[str] = None,
+        last_modified_date: Optional[str] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -179,6 +183,9 @@ class Dataset(ColumnMetadataMixin):
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
+
+        self.created_date = created_date if created_date is not None else datetime.now().isoformat()
+        self.last_modified_date = last_modified_date if last_modified_date is not None else datetime.now().isoformat()
 
         if validation:
             from giskard.core.dataset_validation import validate_dtypes, validate_target
@@ -498,6 +505,8 @@ class Dataset(ColumnMetadataMixin):
             column_dtypes=self.column_dtypes,
             number_of_rows=self.number_of_rows,
             category_features=self.category_features,
+            created_date=self.created_date,
+            last_modified_date=self.last_modified_date,
         )
 
     @staticmethod
@@ -542,7 +551,8 @@ class Dataset(ColumnMetadataMixin):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing dataset {project_key}.{dataset_id}"
-            with open(Path(local_dir) / "giskard-dataset-meta.yaml") as f:
+            meta_file = Path(local_dir) / "giskard-dataset-meta.yaml"
+            with open(meta_file) as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
                 meta = DatasetMeta(
                     name=saved_meta["name"],
@@ -551,10 +561,14 @@ class Dataset(ColumnMetadataMixin):
                     column_dtypes=saved_meta["column_dtypes"],
                     number_of_rows=saved_meta["number_of_rows"],
                     category_features=saved_meta["category_features"],
+                    created_date=datetime.isoformat(datetime.fromtimestamp(os.path.getctime(meta_file))),
+                    last_modified_date=datetime.isoformat(datetime.fromtimestamp(os.path.getmtime(meta_file))),
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
+            client.load_artifact(
+                local_dir, posixpath.join(project_key, "datasets", dataset_id), meta.last_modified_date
+            )
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
         df = cls.cast_column_to_dtypes(df, meta.column_dtypes)
@@ -661,9 +675,7 @@ class Dataset(ColumnMetadataMixin):
 
         # To avoid file being open in write mode and read at the same time,
         # First, we'll write it, then make sure to remove it
-        with tempfile.NamedTemporaryFile(
-            prefix="dataset-", suffix=".csv", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv", delete=False) as f:
             # Get file path
             local_path = f.name
             # Get name from file

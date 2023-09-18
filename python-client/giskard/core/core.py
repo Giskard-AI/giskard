@@ -106,6 +106,8 @@ class DatasetMeta:
     column_dtypes: Dict[str, str]
     number_of_rows: int
     category_features: Dict[str, List[str]]
+    created_date: str
+    last_modified_date: str
 
 
 @dataclass
