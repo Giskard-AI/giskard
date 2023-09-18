@@ -1,6 +1,7 @@
+from typing import List, Optional
+
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
-from typing import List, Optional
 
 from ..config import llm_config
 from ..prompts.prompts import VALIDATE_TEST_CASE
@@ -16,9 +17,11 @@ except ImportError as err:
 
 
 class TestResult(PydanticBaseModel):
-    result: bool = Field(description="true if the test passed, false if the test failed")
-    reason: str = Field(description="A small explanation on why the test has passed or failed")
-    tip: Optional[str] = Field(description="A small tip on how to improve the model if the test failed")
+    score: int = Field(description="The score from 1 to 5")
+    reason: str = Field(description="A small explanation on why the score was given")
+    tip: Optional[str] = Field(
+        description="A tip on how to improve the model in order to get better generated responses"
+    )
 
 
 parser = PydanticOutputParser(pydantic_object=TestResult)
@@ -50,4 +53,4 @@ def validate_test_case_with_reason(model: BaseModel, test_case: str, df, predict
 
 
 def validate_test_case(model: BaseModel, test_case: str, df, predictions: List[str]) -> List[bool]:
-    return [res.result for res in validate_test_case_with_reason(model, test_case, df, predictions)]
+    return [res.score >= 3 for res in validate_test_case_with_reason(model, test_case, df, predictions)]

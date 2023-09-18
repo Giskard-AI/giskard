@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import List, Dict
+
+from pydantic import BaseModel, Field
 
 from ..config import llm_config
 from ...scanner.llm.utils import LLMImportError
@@ -83,7 +84,7 @@ class LlmIssueCategory:
         self.prompt_causing_issue_examples = prompt_causing_issue_examples
         self.issue_examples = issue_examples
 
-    def issue_generator(self, assertion_count=4, max_tokens_per_test=32):
+    def issue_generator(self, assertion_count=4, max_tokens_per_test=64):
         try:
             from langchain import PromptTemplate, LLMChain
             from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
