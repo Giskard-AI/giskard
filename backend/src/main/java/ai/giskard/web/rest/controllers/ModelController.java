@@ -98,7 +98,7 @@ public class ModelController {
             log.info("Exceed model numbers in project '{}'", project.getName());
             // Improve the statement
             throw new LicenseException(
-                "You are uploading a new model to a project with model number limits. " +
+                "You've reached your limit of " + licenseService.getCurrentLicense().getModelPerProjectLimit() + " models per project allowed by the " + licenseService.getCurrentLicense().getPlanName() + " plan. " +
                 "Please upgrade your license to keep more versions."
             );
         }
