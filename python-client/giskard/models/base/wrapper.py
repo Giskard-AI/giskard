@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import yaml
 
-import giskard.models.sklearn
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
 from ..utils import warn_once
@@ -100,14 +99,6 @@ class WrapperModel(BaseModel, ABC):
     def _preprocess(self, data):
         if self.data_preprocessing_function:
             return self.data_preprocessing_function(data)
-
-        # In the case where a dataframe has one column, most sklearn models require a Series instead of a DataFrame.
-        # We check also the case of PredictionFunctionModel to be extra inclusive.
-        if len(data.columns) == 1 and (
-            isinstance(self, giskard.models.sklearn.SKLearnModel)
-            or isinstance(self, giskard.models.function.PredictionFunctionModel)
-        ):
-            return data[data.columns[0]]
         return data
 
     def _postprocess(self, raw_predictions):

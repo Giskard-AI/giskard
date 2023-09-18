@@ -24,17 +24,17 @@ Prediction function is any Python function that takes  input as <b>raw</b> panda
 ```python
 from giskard import demo, Model
 
-data_preprocessor, titanic_pretrained_model = demo.titanic_pipeline()
+demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline()
 
 def prediction_function(df):
     # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-    preprocessed_df = data_preprocessor(df)
-    return titanic_pretrained_model.predict_proba(preprocessed_df)
+    preprocessed_df = demo_data_processing_function(df)
+    return demo_sklearn_model.predict_proba(preprocessed_df)
 
 wrapped_model = Model(
     model=prediction_function,
     model_type="classification",
-    classification_labels=titanic_pretrained_model.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
     # name="titanic_model", # Optional
     # classification_threshold=0.5, # Default: 0.5
@@ -75,10 +75,10 @@ Prediction function is any Python function that takes the input as <b>raw</b> pa
 import numpy as np
 from giskard import demo, Model
 
-data_preprocessor, reg = demo.linear_pipeline()
+demo_data_processing_function, reg = demo.linear_pipeline()
 
 def prediction_function(df):
-    preprocessed_df = data_preprocessor(df)
+    preprocessed_df = demo_data_processing_function(df)
     return np.squeeze(reg.predict(preprocessed_df))
 
 wrapped_model = Model(
@@ -199,17 +199,17 @@ This requires:
 ```python
 from giskard import demo, Model
 
-data_preprocessor, titanic_pretrained_model = demo.titanic_pipeline()
+demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline()
 
 class MyCustomModel(Model):
     def model_predict(self, df):
-        preprocessed_df = data_preprocessor(df)
+        preprocessed_df = demo_data_processing_function(df)
         return self.model.predict_proba(preprocessed_df)
 
 wrapped_model = MyCustomModel(
-    model=titanic_pretrained_model,
+    model=demo_sklearn_model,
     model_type="classification",
-    classification_labels=titanic_pretrained_model.classes_,  # Their order MUST be identical to the prediction_function's output order
+    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',
                  'Embarked', 'Survived'],  # Default: all columns of your dataset
     # name="titanic_model", # Optional
@@ -251,11 +251,11 @@ wrapped_model = MyCustomModel(
 import numpy as np
 from giskard import demo, Model
 
-data_preprocessor, reg = demo.linear_pipeline()
+demo_data_processing_function, reg = demo.linear_pipeline()
 
 class MyCustomModel(Model):
     def model_predict(self, df):
-        preprocessed_df = data_preprocessor(df)
+        preprocessed_df = demo_data_processing_function(df)
         return np.squeeze(self.model.predict(preprocessed_df))
 
 wrapped_model = MyCustomModel(

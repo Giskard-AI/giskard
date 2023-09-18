@@ -162,10 +162,6 @@ info:
   display-ribbon-on-profiles: 'dev'
 
 giskard:
-  ml-worker-host: localhost
-  ml-worker-port: 50051
-  external-ml-worker-entrypoint-port: 40051
-  external-ml-worker-enabled: true
   api-token-validity-in-days: 90
   invitation-token-validity-in-days: 3
   borderLineThreshold: 0.1
