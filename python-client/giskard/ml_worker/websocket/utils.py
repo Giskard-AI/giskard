@@ -177,12 +177,12 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
         elif arg.model is not None:
             arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
         elif arg.slicingFunction is not None:
-            arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, ml_worker.client, None)(
-                **parse_function_arguments(ml_worker, arg.args)
-            )
+            arguments[arg.name] = SlicingFunction.download(
+                arg.slicingFunction.id, ml_worker.client, arg.slicingFunction.project_key
+            )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
-                arg.transformationFunction.id, ml_worker.client, None
+                arg.transformationFunction.id, ml_worker.client, arg.transformationFunction.project_key
             )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)

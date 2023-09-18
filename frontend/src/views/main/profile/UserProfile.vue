@@ -73,6 +73,11 @@
           <ApiTokenCard/>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col>
+          <ClientInstructionCard :internalHFAccessToken="true" />
+        </v-col>
+      </v-row>
       <v-row v-if="isAdmin">
         <v-col>
           <RunningWorkerJobs/>
@@ -87,6 +92,7 @@ import {computed, ref} from "vue";
 import {UpdateMeDTO} from "@/generated-sources";
 import {Role} from "@/enums";
 import ApiTokenCard from "@/components/ApiTokenCard.vue";
+import ClientInstructionCard from "@/components/ClientInstructionCard.vue";
 import RunningWorkerJobs from '@/views/main/profile/RunningWorkerJobs.vue';
 
 import {useUserStore} from "@/stores/user";

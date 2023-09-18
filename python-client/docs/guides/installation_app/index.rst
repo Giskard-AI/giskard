@@ -38,7 +38,7 @@ You can either install and run the server **locally** or on an **external server
 
          - If you don't have the `sudo` rights to run docker, please see the Docker setup `page <https://docs.docker.com/engine/install/linux-postinstall/>`_
 
-      To start the Giskard server, execute the following command in your terminal:
+      To start the Giskard server, install the Giskard Python library (see `here <../installation_library/index.md>`_) and execute the following command in your terminal:
 
       .. code-block:: sh
 
@@ -49,6 +49,7 @@ You can either install and run the server **locally** or on an **external server
       .. warning::
 
          - Make sure to **run Docker** before starting the Giskard server
+         - If the giskard command is not found then you need first to install the Giskard Python library (see the doc section)
          - To see the available commands of the giskard server, you can execute:
 
 
@@ -61,7 +62,7 @@ You can either install and run the server **locally** or on an **external server
 
       Installing Giskard in the cloud is preferable if you want to use the **collaborative** features of Giskard: collect feedback on your model from your team, share your Quality Assurance results, save and provide all your custom tests to your team, etc.
 
-      Since Giskard uses 2 TCP ports: ``19000`` and ``40051``, **make sure that these two ports are open** on the cloud instances where Giskard is installed. For step-by-step installation steps in the cloud, please go to the `AWS <install_aws/index/index.md>`_, `GCP <install_gcp/index.md>`_, and `Azure <install_azure/index.md>`_ installation pages.
+      Since Giskard uses a TCP ports: ``19000``, **make sure that the port is open** on the cloud instances where Giskard is installed. For step-by-step installation steps in the cloud, please go to the `AWS <install_aws/index/index.md>`_, `GCP <install_gcp/index.md>`_, and `Azure <install_azure/index.md>`_ installation pages.
 
       .. toctree::
          :maxdepth: 1
@@ -122,8 +123,6 @@ Giskard executes your model using an worker that runs directly the model in your
 
          .. code-block:: sh
 
-            %env GSK_EXTERNAL_ML_WORKER_HOST=4.tcp.ngrok.io
-            %env GSK_EXTERNAL_ML_WORKER_PORT=10853
             %env GSK_API_KEY=YOUR_API_KEY
             !giskard worker start -d -k YOUR_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
 
