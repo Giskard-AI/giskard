@@ -83,3 +83,4 @@ giskard:
   home: ${user.home}/giskard-home
   auth: true
   email-from: giskard@localhost
+  mixpanel-project-key: 4cca5fabca54f6df41ea500e33076c99

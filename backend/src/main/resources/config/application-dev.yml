@@ -77,6 +77,7 @@ giskard:
     allowed-headers: '*'
     allow-credentials: false
     max-age: 1800
+  mixpanel-project-key: 4cca5fabca54f6df41ea500e33076c99
 springdoc:
   api-docs:
     enabled: true
