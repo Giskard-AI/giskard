@@ -87,15 +87,33 @@
       >
         <v-card>
           <v-card-title>
-            Test description
+            Debug the {{ suiteTest.test?.displayName }} test
           </v-card-title>
           <v-card-text>
-            {{ suiteTest.test?.debugDescription ?? "TODO: Default debug description" }}
+            <p>
+              {{
+                suiteTest.test?.debugDescription ??
+                "This debugging session opens one by one all the examples that makes the prediction vary after applying the perturbation."
+              }}
+            </p>
+            <p>
+              This will enable you to:
+              <ul>
+                <li>Understand why the test fail looking at model explanation</li>
+                <li>Create new tests by looking at the model insights ([LOGO_PUSH])</li>
+                <li>Collect feedback to integrate domain knowledge </li>
+              </ul>
+            </p>
+
+            Start debugging?
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
+            <v-btn color="error" text @click="debugDescDialog = false;">
+              No
+            </v-btn>
             <v-btn color="primary" text @click="debugDescDialog = false; debugTest()">
-              Debug
+              Yes
             </v-btn>
           </v-card-actions>
         </v-card>
