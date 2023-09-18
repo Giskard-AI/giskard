@@ -95,8 +95,6 @@ public class SettingsController {
                 .buildCommitTime(buildCommitTime)
                 .planCode(currentLicense.getPlanCode())
                 .planName(currentLicense.getPlanName())
-                .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
-                .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
                 .hfSpaceId(GeneralSettingsService.hfSpaceId)
                 .isRunningOnHfSpaces(GeneralSettingsService.isRunningInHFSpaces)
                 .roles(roles)
@@ -110,8 +108,6 @@ public class SettingsController {
         String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
 
         return MLWorkerConnectionInfoDTO.builder()
-            .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
-            .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
             .instanceId(settingsService.getSettings().getInstanceId())
             .serverVersion(buildVersion)
             .user(currentUser)

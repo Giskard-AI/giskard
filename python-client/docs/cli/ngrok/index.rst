@@ -33,7 +33,5 @@ Now you can run :code:`giskard server expose --token <ngrok_API_key>` which shou
 
     # To run your model with the Giskard Server, execute these three lines on Google Colab:
 
-    %env GSK_EXTERNAL_ML_WORKER_HOST=<host>
-    %env GSK_EXTERNAL_ML_WORKER_PORT=<port>
     %env GSK_API_KEY=...
     !giskard worker start -d -u <ngrok_external_server_link>

@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jayway.jsonpath.JsonPath;
+
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -113,20 +115,28 @@ class UserAdminControllerIT {
         managedUserVM.setActivated(true);
         managedUserVM.setRoles(Collections.singleton(AuthoritiesConstants.AICREATOR));
 
-        restUserMockMvc
+        // To use ? https://www.baeldung.com/spring-boot-testresttemplate
+        Long userId = JsonPath.parse(restUserMockMvc
             .perform(
                 post("/api/v2/admin/users").contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(managedUserVM))
             )
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andReturn().getResponse().getContentAsString())
+            .read("$.id", Long.class);
 
-        // Validate the User in the database
+        // Validate the number of users in the database
         assertPersistedUsers(users -> {
             assertThat(users).hasSize(databaseSizeBeforeCreate + 1);
-            User testUser = users.get(users.size() - 1);
+        });
+
+        // Validate the User in the database
+        Consumer<List<User>> assertions = users -> {
+            User testUser = users.get(0);
             assertThat(testUser.getLogin()).isEqualTo(DEFAULT_LOGIN);
             assertThat(testUser.getDisplayName()).isEqualTo(DEFAULT_DISPLAY_NAME);
             assertThat(testUser.getEmail()).isEqualTo(DEFAULT_EMAIL);
-        });
+        };
+        assertions.accept(userRepository.findAllById(List.of(userId)));
     }
 
     @Test
