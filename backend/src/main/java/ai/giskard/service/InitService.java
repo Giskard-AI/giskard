@@ -159,16 +159,12 @@ public class InitService {
         // change readonly
         initAuthorities();
         initUsers();
-        initDefaultApiKey();
+        apiKeyService.initDefaultApiKey();
         List<String> profiles = Arrays.asList(env.getActiveProfiles());
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
         lockIndicator.setUnlocked(false);
-    }
-
-    private void initDefaultApiKey() {
-        apiKeyService.initDefaultApiKey();
     }
 
     /**
