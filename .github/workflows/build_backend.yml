@@ -160,7 +160,7 @@ jobs:
         run: ./gradlew :backend:integrationTest --info -Ptestcontainers
 
   build-python:
-    name: Build Python
+    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v1 && ' (Pydantic V1)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
     needs: pre-check
     if: ${{ needs.pre-check.outputs.python_at_least != 'PYTHON_AT_LEAST' }}
     runs-on: ${{ matrix.os }}
@@ -221,11 +221,6 @@ jobs:
       - name: Lint code
         working-directory: python-client 
         run: pdm run lint
-
-      - name: Install pydantic settings (Dirty hack, do not merge !)
-        if: ${{ !matrix.pydantic_v1 }}
-        working-directory: python-client 
-        run: pdm run pip install "pydantic_settings>2"
 
       - name: Install pydantic v1
         if: ${{ matrix.pydantic_v1 }}
