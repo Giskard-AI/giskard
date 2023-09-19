@@ -2,6 +2,7 @@ package ai.giskard.service.ee;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +51,11 @@ public class KeygenLicenseReader {
 
         license.setFeatures(feats);
         JsonNode licenseAttributes = json.get("data").get("attributes"); // NOSONAR
-        license.setActive("ACTIVE".equals(licenseAttributes.get("status").asText()));
-        license.setExpiresOn(ZonedDateTime.parse(licenseAttributes.get("expiry").asText()).toInstant());
+
+        Instant expiry = ZonedDateTime.parse(licenseAttributes.get("expiry").asText()).toInstant();
+        license.setActive("ACTIVE".equals(licenseAttributes.get("status").asText()) && expiry.isAfter(Instant.now()));
+        license.setExpiresOn(expiry);
+
         license.setId(json.get("data").get("id").asText());
         return license;
     }
