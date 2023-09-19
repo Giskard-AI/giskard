@@ -93,7 +93,7 @@
             <p>
               {{
                 suiteTest.test?.debugDescription ??
-                "This debugging session opens one by one all the examples that makes the prediction vary after applying the perturbation."
+                "This debugging session opens one by one all the examples that makes the test fail."
               }}
             </p>
             <p>
