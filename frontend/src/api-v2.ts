@@ -83,6 +83,27 @@ async function errorInterceptor(context: ResponseContext): Promise<Response | vo
     }
     await trackError(context, data);
 
+    if (response.status === 405 && useMainStore().appSettings?.isDemoHfSpace) {
+        if (data.detail.startsWith("This is a read-only Giskard Gallery instance.")) {
+            console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
+            Vue.$toast(
+                {
+                    component: HuggingFaceSpacesSetupTipToast,
+                    props: {
+                        title: 'Warning',
+                        detail: `You cannot modify Giskard Hugging Face demo space.
+    Please create your own space and get a license from Giskard.`,
+                    },
+                },
+                {
+                    toastClassName: 'error-toast',
+                    type: TYPE.WARNING,
+                }
+            );
+            return Promise.reject(response);
+        }
+    }
+
     if (response.status === 401) {
         const userStore = useUserStore();
         removeLocalToken();
@@ -91,22 +112,6 @@ async function errorInterceptor(context: ResponseContext): Promise<Response | vo
         if (router.currentRoute.path !== '/auth/login') {
             await router.push('/auth/login');
         }
-    } else if (response.status === 503 && useMainStore().appSettings?.isDemoHfSpace) {
-        console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
-        Vue.$toast(
-            {
-                component: HuggingFaceSpacesSetupTipToast,
-                props: {
-                    title: 'Warning',
-                    detail: `You cannot modify Giskard Hugging Face demo space.
-Please create your own space and get a license from Giskard.`,
-                },
-            },
-            {
-                toastClassName: 'error-toast',
-                type: TYPE.WARNING,
-            }
-        );
     } else {
         let title: string;
         let detail: string;

@@ -136,14 +136,20 @@ async function errorInterceptor(error) {
     }
 
     if (error.response) {
+        if (error.response.status === 405 && useMainStore().appSettings?.isDemoHfSpace) {
+            if (error.response.data.detail.startsWith("This is a read-only Giskard Gallery instance.")) {
+                console.log("Data ", error.response.data);
+                showDemoHFSpacesTip();
+                return Promise.reject(error);
+            }
+        }
+
         if (error.response.status === 401) {
             const userStore = useUserStore();
             removeLocalToken();
             userStore.token = '';
             userStore.isLoggedIn = false;
             await redirectToLogin();
-        } else if (error.response.status === 503 && useMainStore().appSettings?.isDemoHfSpace) {
-            showDemoHFSpacesTip();
         } else {
             let title: string;
             let detail: string;
