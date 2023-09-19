@@ -59,13 +59,8 @@ def test_single_feature():
         feature_names=["sentence"],
     )
 
-    with pytest.raises(Exception) as e:
-        giskard_model.predict(giskard_dataset)
-    assert e.match(r"index 1 is out of bounds for axis 0 with size 1")
-
     from giskard.core.model_validation import validate_model
 
-    # validate should set giskard.model.accepts_only_pd_series to True
-    validate_model(giskard_model, giskard_dataset)
-
-    assert giskard_model.predict(giskard_dataset).prediction.shape[0] == 5
+    with pytest.raises(Exception) as e:
+        validate_model(giskard_model, giskard_dataset)
+    assert e.match(r"Your model returned an error when we passed a 'pandas.Dataframe' as input.*")

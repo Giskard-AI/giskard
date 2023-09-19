@@ -86,9 +86,8 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        number_of_features = (
-            len(model.meta.feature_names) if model.meta.feature_names is not None else len(validation_ds.df.columns)
-        )
+        features = model.meta.feature_names if model.meta.feature_names is not None else validation_ds.df.columns
+        number_of_features = len(features)
         one_dimension_case = (
             isinstance(e, IndexError)
             and "index 1 is out of bounds for axis 0 with size 1" in str(e)
@@ -98,11 +97,13 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
         if not one_dimension_case:
             raise ValueError(error_message) from e
 
-        try:
-            model.accepts_only_pd_series = True
-            prediction = model.predict(validation_ds)
-        except Exception as e2:
-            raise ValueError(error_message) from e2
+        feature = features[0]
+        one_dimension_error_message = (
+            "Your model returned an error when we passed a 'pandas.Dataframe' as input. "
+            f"Try to use a one-dimensional input like 'df.{feature}' "
+            "inside your prediction function."
+        )
+        raise ValueError(one_dimension_error_message) from e
 
     # testing one entry
     validation_size = min(len(dataset), 1)
