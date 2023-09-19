@@ -14,20 +14,23 @@ import ai.giskard.security.PermissionEvaluator;
 import ai.giskard.service.ModelService;
 import ai.giskard.service.ProjectFileDeletionService;
 import ai.giskard.service.UsageService;
+import ai.giskard.service.ee.LicenseException;
+import ai.giskard.service.ee.LicenseService;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.ModelDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,7 @@ public class ModelController {
     private final PermissionEvaluator permissionEvaluator;
     private final ModelService modelService;
     private final ProjectFileDeletionService deletionService;
+    private final LicenseService licenseService;
 
 
     /**
@@ -84,12 +88,25 @@ public class ModelController {
 
     @PostMapping("project/{projectKey}/models")
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    @Transactional
     public void createModelMeta(@PathVariable("projectKey") @NotNull String projectKey, @RequestBody @NotNull ModelDTO dto) {
         if (modelRepository.existsById(dto.getId())) {
             log.info("Model already exists {}", dto.getId());
             return;
         }
         Project project = projectRepository.getOneByKey(projectKey);
+        Integer modelPerProject = licenseService.getCurrentLicense().getModelPerProjectLimit();
+        if (modelPerProject != null && project.getModels().size() >= modelPerProject) {
+            log.info("Exceed model numbers in project '{}'", project.getName());
+            throw new LicenseException(
+                "You've reached your limit of " +
+                    licenseService.getCurrentLicense().getModelPerProjectLimit() +
+                    " models per project allowed by the " +
+                    licenseService.getCurrentLicense().getPlanName() +
+                    " plan. " +
+                "Please upgrade your license to keep more versions."
+            );
+        }
         ProjectModel model = giskardMapper.fromDTO(dto);
         model.setProject(project);
         modelRepository.save(model);
