@@ -34,8 +34,6 @@ services:
       - db
     env_file:
       - .env
-    ports:
-      - "${GISKARD_EXTERNAL_ML_WORKER_PORT-40051}:40051"
     environment:
       - _JAVA_OPTIONS=-Xmx4048m -Xms512m
       - SPRING_PROFILES_ACTIVE=prod
@@ -45,8 +43,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=y1QYbF2BtFUC
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://db:5432/app
-      - GISKARD_ML_WORKER_HOST=${GISKARD_ML_WORKER_HOST-ml-worker}
-      - GISKARD_ML_WORKER_PORT=50051
       - SPRING_MAIL_HOST
       - SPRING_MAIL_PORT
       - SPRING_MAIL_USERNAME

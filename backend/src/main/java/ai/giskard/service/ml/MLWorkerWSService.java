@@ -4,16 +4,20 @@ import ai.giskard.ml.MLWorkerID;
 import ai.giskard.ml.MLWorkerReplyAggregator;
 import ai.giskard.ml.MLWorkerReplyMessage;
 import ai.giskard.ml.MLWorkerReplyType;
+import ai.giskard.service.AnalyticsCollectorService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,28 @@ public class MLWorkerWSService {
 
     private final ConcurrentHashMap<String, MLWorkerReplyAggregator> messagePool = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, BlockingQueue<MLWorkerReplyMessage>> finalMessagePool = new ConcurrentHashMap<>();
+
+    // Track WebSocket Service status once per day
+    private final AnalyticsCollectorService analyticsCollectorService;
+    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.DAYS)
+    public void trackMLWorkerWSServiceStatus() {
+        int messagePoolSize = messagePool.size();
+        int finalMessagePoolSize = finalMessagePool.size();
+        int numOfWorkers = workers.size();
+        log.debug(
+            "MessagePool size {}, FinalMessagePool size {}, Number of workers {}",
+            messagePoolSize, finalMessagePoolSize, numOfWorkers
+        );
+        JSONObject message = new JSONObject();
+        message.put("Message pool size", messagePoolSize);
+        message.put("Final message pool size", finalMessagePoolSize);
+        message.put("Number of workers", numOfWorkers);
+        analyticsCollectorService.track(
+            "MLWorker service status",
+            message,
+            true
+        );
+    }
 
     public boolean prepareInternalWorker(@NonNull String uuid) {
         if (uuid.equals(pendingInternalWorkerId)) return false;
