@@ -145,6 +145,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Run python integration test inside docker
+        if: ${{ env.RUN_TESTS }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: integration-test-python
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          builder: ${{ steps.builder.outputs.name }}
+          platforms: |
+            ${{ matrix.platform}}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Build and push
         id: build
         uses: docker/build-push-action@v5
