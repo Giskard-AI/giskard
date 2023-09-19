@@ -4,8 +4,10 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.service.InitService;
 import ai.giskard.web.dto.GalleryUnlockDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 
@@ -29,8 +31,9 @@ public class GalleryUnlockController {
             Objects.equals(unlockDTO.getToken(), applicationProperties.getHfDemoSpaceUnlockToken())) {
             InitService.setUnlocked(unlockDTO.isUnlocked());
             unlockDTO.setUnlocked(InitService.isUnlocked());
+            unlockDTO.setToken(null);
+            return unlockDTO;
         }
-        unlockDTO.setToken(null);
-        return unlockDTO;
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid unlock token");
     }
 }
