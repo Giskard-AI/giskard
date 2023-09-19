@@ -11,11 +11,11 @@ class TestCases(BaseModel):
 
 
 GENERATE_TEST_PROMPT = """
-You are a prompt QA tasked with generating test assertions to evaluate the performance of the {model_name} model.
+Your task as a prompt QA is to generate test assertions that assess the performance of the {model_name} model.
 
-**Scope**: Please focus on testing {issue_name}. {issue_description}
+**Scope**: Focus on testing {issue_name} which involves {issue_description}.
 
-**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively assess the {model_name} model's behavior across various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
+**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively evaluate the behavior of the {model_name} model in various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
 
 **Model Information**:
 ``` 
@@ -28,10 +28,9 @@ You are a prompt QA tasked with generating test assertions to evaluate the perfo
 {input_examples}
 ```
 
-**Format Instructions**: Please format the assertions as concise descriptions of expected behaviors.
-
-{format_instructions}
-
+**Format Instructions**: 
+Please provide a JSON object as a response containing the following keys:
+- assertions: A list of concise descriptions outlining the expected behaviors. If no relevant behaviors can be generated for a specific {issue_name}, the list should be an empty array: []
 
 **Example Assertions**:
 ```json
@@ -39,8 +38,6 @@ You are a prompt QA tasked with generating test assertions to evaluate the perfo
   "assertions": {issue_examples}
 }}
 ```
-
-Output for Irrelevant Issue: If no relevant assertions can be generated for a particular {issue_name}, the output should be an empty array: []
 """
 
 
@@ -51,16 +48,14 @@ class PromptInputs(BaseModel):
 
 
 GENERATE_INPUT_PROMPT = """
-You are a Prompt QA Specialist, and your objective is to compile a list of {input_count} inputs for rigorous testing of a model's generated responses.
-
-Generate inputs that assess the model's performance, specifically focusing on scenarios where it may fail or exhibit suboptimal behavior regarding {issue_name}. Ensure these inputs are comprehensive, covering both common and unusual cases.
+As a Prompt QA Specialist, your task is to create a list of {input_count} inputs to thoroughly test a model's generated responses. These inputs should evaluate the model's performance, particularly in scenarios where it may fail or exhibit suboptimal behavior related to {issue_name}. It is important to ensure that the inputs cover both common and unusual cases.
 {issue_description}
 
-We will perform the following tests: {generated_tests}
+The following tests will be conducted: {generated_tests}
 
-Here is some inspiration (note that those example are general and not focused): {input_examples}
+Here are some general examples to inspire you (please note that these examples are not specific to the issue at hand): {input_examples}
 
-Please ensure that the inputs are relevant to the following model:
+Please make sure that the inputs are relevant to the following model:
 
 **Name**: {model_name}
 
@@ -68,12 +63,12 @@ Please ensure that the inputs are relevant to the following model:
 
 For each variable in the model, provide a textual input value: {variables}.
 
-Additionally, ensure that the inputs are properly formatted according to the following instructions:
-
-{format_instructions}
+**Format Instructions**: 
+Please respond with a JSON object that includes the following keys:
+- input: A dictionary with all variables ({variables}) as keys, along with their corresponding textual input value.
 
 **Example**:
-{{"input": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}
+{{"input": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}"
 """
 
 
@@ -100,7 +95,6 @@ class LlmIssueCategory:
             template=GENERATE_TEST_PROMPT,
             input_variables=["model_name", "model_description"],
             partial_variables={
-                "format_instructions": parser.get_format_instructions(),
                 "assertion_count": assertion_count,
                 "issue_name": self.name,
                 "issue_description": self.description,
@@ -134,7 +128,6 @@ class LlmIssueCategory:
             template=GENERATE_INPUT_PROMPT,
             input_variables=["model_name", "model_description", "variables", "generated_tests"],
             partial_variables={
-                "format_instructions": parser.get_format_instructions(),
                 "input_count": input_count,
                 "issue_name": self.name,
                 "issue_description": self.description,
