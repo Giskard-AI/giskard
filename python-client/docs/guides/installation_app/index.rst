@@ -1,15 +1,15 @@
 🌐 Run the Giskard Server
 ===============
 
-Additionally to the `Giskard Python library <../installation_library/index.md>`_, the Giskard server is the app that you can install either **locally** or on your **cloud instance**. The Giskard server offers a bunch of features such as:
+Complementing the `Giskard Python library <../installation_library/index.md>`_, the Giskard server is the app that you can install either **locally**, on your **cloud instance** or on `Hugging Face Spaces <install_hfs/index.md>`_. The Giskard server offers a bunch of features such as:
 
 - Debugging your tests to diagnose issues
 - Comparing models to decide which one to promote
-- Gathering all your internal tests of your team at the same place to work more efficiently
-- Sharing your results and collect business feedback from your team
-- Creating more domain-specific tests based on the debugging sessions
+- Gathering all of your team's internal tests in one place to work more efficiently
+- Sharing your results and collecting business feedback from your team
+- Creating more domain-specific tests based on model debugging sessions
 
-To run the Giskard server and use all the above UI features, you need to complete the following 2 steps:
+To run the Giskard server and use all the features mentioned above, you need to complete the following 2 steps:
 
 - **Start the server**: the server contains all the UI components to test, debug and compare your ML models
 - **Start the worker**: the worker enables the server to execute your model directly within your Python environment. This is important to be able to execute the model with all its dependent libraries.
@@ -62,7 +62,7 @@ You can either install and run the server **locally** or on an **external server
 
       Installing Giskard in the cloud is preferable if you want to use the **collaborative** features of Giskard: collect feedback on your model from your team, share your Quality Assurance results, save and provide all your custom tests to your team, etc.
 
-      Since Giskard uses a TCP ports: ``19000``, **make sure that the port is open** on the cloud instances where Giskard is installed. For step-by-step installation steps in the cloud, please go to the `AWS <install_aws/index/index.md>`_, `GCP <install_gcp/index.md>`_, and `Azure <install_azure/index.md>`_ installation pages.
+      Since Giskard uses a TCP port: ``19000``, **make sure that the port is open** on the cloud instances where Giskard is installed. For step-by-step installation steps in the cloud, please go to the `AWS <install_aws/index/index.md>`_, `GCP <install_gcp/index.md>`_, and `Azure <install_azure/index.md>`_ installation pages.
 
       .. toctree::
          :maxdepth: 1
@@ -70,11 +70,25 @@ You can either install and run the server **locally** or on an **external server
          install_aws/index
          install_gcp/index
          install_azure/index
+         install_hfs/index
+   
+   .. tab-item:: Hosting in Hugging Face Spaces
+
+      Hosting Giskard in `Hugging Face Spaces <https://huggingface.co/spaces>`_ leverages Giskard's collaboration features, as highlighted in the Cloud installation option. This option is especially useful for new users of Giskard or users entrenched in the Hugging Face ecosystem.
+
+      .. warning:: In Hugging Face Spaces, Giskard operates within a Docker container activated by a Space. You can opt for:
+
+        - A public Space: open to everyone (ideal for showcasing your models and their performance).
+        - A private Space: restricted to your organization or yourself (facilitates internal collaboration and ensures security for your data and models).
+
+        **For private Hugging Face Spaces, you'll need an extra token (YOUR_SPACE_TOKEN) to connect the Giskard Client and ML worker.**
+
+     If you're new to Giskard, we recommend trying this method. For comprehensive details, explore the guide on `Installation in Hugging Face Spaces <install_hfs/index.md>`_ or visit `our Hugging Face organization page <https://huggingface.co/giskardai>`_ if you're acquainted with Hugging Face Spaces.
 
 2. Start the ML worker
 ^^^^^^^^^
 
-Giskard executes your model using an worker that runs directly the model in your Python environment containing all the dependencies required by your model. You can either execute the ML worker:
+Giskard executes your model using a worker that runs the model directly in your Python environment, with all the dependencies required by your model. You can either execute the ML worker:
 
 - From your **local notebook** within the kernel that contains all the dependencies of your model
 - From **Google Colab** within the kernel that contains all the dependencies of your model
@@ -92,11 +106,17 @@ Giskard executes your model using an worker that runs directly the model in your
 
             !giskard worker start -d -k YOUR_TOKEN
 
-      - If Giskard server is installed on an **external server** (for instance in AWS ec2 instance), run in your notebook:
+      - If Giskard server is installed on an **external server** (for instance in AWS ec2 instance), or a public Space on Hugging Face Spaces, run the following in your notebook:
 
          .. code-block:: sh
 
             !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+      
+      - If Giskard server is hosted on a private Space on Hugging Face Spaces, run the following in your notebook:
+
+         .. code-block:: sh
+
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -126,13 +146,22 @@ Giskard executes your model using an worker that runs directly the model in your
             %env GSK_API_KEY=YOUR_API_KEY
             !giskard worker start -d -k YOUR_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
 
-      - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance):
+      - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance), or a public Space on Hugging Face Spaces:
 
          Run on a cell in Colab:
 
          .. code-block:: sh
 
                !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+
+
+      - If Giskard server is hosted on a private Space on Hugging Face Spaces:
+
+         Run on a cell in Colab:
+
+         .. code-block:: sh
+
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -154,13 +183,21 @@ Giskard executes your model using an worker that runs directly the model in your
 
             You then will be asked to provide your API token. The API access token can be found in the Settings tab of the Giskard server (accessible via: http://localhost:19000/)
 
-      - If Giskard server is installed in an **external server** (for instance in AWS ec2 instance):
+      - If Giskard server is installed in an **external server** (for instance in AWS ec2 instance), or a public Space on Hugging Face Spaces:
 
          Run this command **within the Python environment that contains all the dependencies of your model**:
 
             .. code-block:: sh
 
                giskard worker start -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+
+      - If Giskard server is hosted on a private Space on Hugging Face Spaces:
+
+         Run this command within the Python environment that contains all the dependencies of your model:
+
+         .. code-block:: sh
+
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 

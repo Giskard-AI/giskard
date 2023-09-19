@@ -44,6 +44,9 @@ public class KeygenLicenseReader {
             license.setUserLimit(policyMeta.get("userLimit").asInt(0));
         }
 
+        if (policyMeta.has("modelPerProjectLimit")) {
+            license.setModelPerProjectLimit(policyMeta.get("modelPerProjectLimit").asInt(0));
+        }
 
         license.setFeatures(feats);
         JsonNode licenseAttributes = json.get("data").get("attributes"); // NOSONAR
