@@ -19,10 +19,15 @@ RUN pdm build
 # stage, but not in the production one
 RUN WHEEL=$(ls dist/giskard*.whl) && .venv-prod/bin/pip install $WHEEL\[server\]
 
-FROM build-python AS test-python
+FROM build-python AS full-install-python
 # TODO(Bazire): have a complete pass over deps to ensure what is where
 RUN pdm install -G :all
-RUN pdm run test
+
+FROM full-install-python AS test-python
+RUN pdm run test -m 'not slow'
+
+FROM full-install-python AS integration-test-python
+RUN pdm run test -m 'slow'
 
 FROM eclipse-temurin:17-jdk-jammy as build-back-front
 ARG FRONTEND_ENV=production
