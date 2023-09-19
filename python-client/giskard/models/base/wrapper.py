@@ -38,11 +38,10 @@ class WrapperModel(BaseModel, ABC):
         model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         name: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
-        classification_threshold: float = 0.5,
+        classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
         id: Optional[str] = None,
         batch_size: Optional[int] = None,
-        accepts_only_pd_series: bool = False,
         **kwargs,
     ) -> None:
         """
@@ -78,14 +77,12 @@ class WrapperModel(BaseModel, ABC):
             classification_labels=classification_labels,
             id=id,
             batch_size=batch_size,
-            accepts_only_pd_series=accepts_only_pd_series,
             **kwargs,
         )
         self.model = model
         self.data_preprocessing_function = data_preprocessing_function
         self.model_postprocessing_function = model_postprocessing_function
         self.batch_size = batch_size
-        self.accepts_only_pd_series = False
 
         # TODO: refactor this into validate_args or another decorator @validate_sign
         if self.data_preprocessing_function and isfunction(self.data_preprocessing_function):
@@ -102,23 +99,6 @@ class WrapperModel(BaseModel, ABC):
     def _preprocess(self, data):
         if self.data_preprocessing_function:
             return self.data_preprocessing_function(data)
-
-        # In the case where a dataframe has one column, most sklearn models require a Series instead of a DataFrame.
-        # It could also be the case of PredictionFunctionModel that calls sklearn models.
-        if self.accepts_only_pd_series:
-
-            # Get all features
-            features = self.meta.feature_names if self.meta.feature_names is not None else data.columns
-
-            # Check that pd.Series is applicable
-            if len(features) != 1:
-                raise ValueError(
-                    "Only 1 feature must be present if giskard_model.accepts_only_pd_series is set to be 'True'."
-                )
-
-            # Return data as pd.Series
-            return data[features[0]]
-
         return data
 
     def _postprocess(self, raw_predictions):
@@ -253,7 +233,9 @@ class WrapperModel(BaseModel, ABC):
     def save_wrapper_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w") as f:
             yaml.dump(
-                {"batch_size": self.batch_size, "accepts_only_pd_series": self.accepts_only_pd_series},
+                {
+                    "batch_size": self.batch_size,
+                },
                 f,
                 default_flow_style=False,
             )
@@ -310,13 +292,10 @@ class WrapperModel(BaseModel, ABC):
             with open(wrapper_meta_file) as f:
                 wrapper_meta = yaml.load(f, Loader=yaml.Loader)
                 wrapper_meta["batch_size"] = int(wrapper_meta["batch_size"]) if wrapper_meta["batch_size"] else None
-                wrapper_meta["accepts_only_pd_series"] = (
-                    bool(wrapper_meta["accepts_only_pd_series"]) if wrapper_meta["accepts_only_pd_series"] else False
-                )
                 return wrapper_meta
         else:
             # ensuring backward compatibility
-            return {"batch_size": None, "accepts_only_pd_series": False}
+            return {"batch_size": None}
 
     def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", **kwargs):
         def _giskard_predict(df):
