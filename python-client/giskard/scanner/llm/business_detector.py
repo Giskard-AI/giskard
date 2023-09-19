@@ -24,7 +24,7 @@ def validate_prediction(
         results = pd.DataFrame.from_records(
             [result.__dict__ for result in validate_test_case_with_reason(model, test_case, dataset.df, predictions)]
         )
-        failed = ~results["result"]
+        failed = results["score"] < 3
         failed_count = len([result for result in failed if result])
         metric = failed_count / len(predictions)
         print(f"Results: {metric} ({failed_count})")
