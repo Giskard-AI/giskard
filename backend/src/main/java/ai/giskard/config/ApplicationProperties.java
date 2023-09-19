@@ -16,11 +16,6 @@ import java.nio.file.Path;
 @Getter
 @ConfigurationProperties(prefix = "giskard", ignoreUnknownFields = false)
 public class ApplicationProperties {
-    private String mlWorkerHost;
-    private int mlWorkerPort;
-    private int externalMlWorkerEntrypointPort;
-    private String externalMlWorkerEntrypointHost;
-    private boolean externalMlWorkerEnabled;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
     private int maxInboundMLWorkerMessageMB = 1024;
@@ -43,6 +38,7 @@ public class ApplicationProperties {
 
     private String defaultApiKey;
     private String hfDemoSpaceUnlockToken;
+    private String mixpanelProjectKey;
 }
 
 

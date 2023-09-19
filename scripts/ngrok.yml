@@ -11,6 +11,3 @@ tunnels:
   backend:
     proto: http
     addr: 19000
-  mlworker:
-    proto: tcp
-    addr: 40051
