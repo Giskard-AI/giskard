@@ -132,7 +132,19 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     # Upload to the current project ✉️
     test_suite.upload(client, "my_project")
-    
+
+.. warning:: You may need another token (SPACE_TOKEN) in order to upload your test suite to a private Space on Hugging Face Spaces. To create your Giskard Client, please use the following code instead:
+
+    .. code-block:: python
+
+        token = "API_TOKEN"  # Find it in Settings in your Giskard Hugging Face Space instance
+        hf_token = "SPACE_TOKEN"  # Find it in Upload instructions in your Giskard Hugging Face Space instance
+        client = GiskardClient(
+            url="https://huggingface.co/spaces/<user-id>/<space-id>",  # URL of the Space
+            token=token,
+            hf_token=hf_token,
+        )
+
 For more information on uploading to your local Giskard server, go to the `Upload an object to the Giskard server <../../guides/upload/index.md>`_ page.
 
 .. note::
