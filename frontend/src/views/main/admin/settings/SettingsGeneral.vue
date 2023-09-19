@@ -17,11 +17,9 @@
                   <tr>
                     <td>Instance</td>
                     <td>{{ appSettings.generalSettings?.instanceId }}
-                      <v-btn v-if="appSettings.isDemoHfSpace && !isUnlocked" icon @click="unlockModal = true">
-                        <v-icon>mdi-lock</v-icon>
-                      </v-btn>
-                      <v-btn v-if="appSettings.isDemoHfSpace && isUnlocked" icon @click="unlockModal = true">
-                        <v-icon>mdi-lock-open</v-icon>
+                      <v-btn v-if="appSettings.isDemoHfSpace" icon @click="unlockModal = true">
+                        <v-icon v-if="isUnlocked">mdi-lock-open</v-icon>
+                        <v-icon v-else>mdi-lock</v-icon>
                       </v-btn>
                     </td>
                   </tr>
