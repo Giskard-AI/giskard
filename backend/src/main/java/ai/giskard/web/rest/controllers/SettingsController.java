@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -117,7 +116,7 @@ public class SettingsController {
     }
 
     @GetMapping("/api/v2/settings/license")
-    public LicenseDTO getLicense() throws IOException {
+    public LicenseDTO getLicense() {
         LicenseDTO.LicenseDTOBuilder dtoBuilder = LicenseDTO.builder();
         License currentLicense = licenseService.getCurrentLicense();
 
