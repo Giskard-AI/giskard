@@ -1,31 +1,31 @@
+from typing import Optional
+
 import os
 from pathlib import Path
-from typing import Optional
-from packaging import version
 
 import pydantic
-# See https://linear.app/giskard/issue/GSK-1745/upgrade-pydantic-to-20
+from packaging import version
+from pydantic import BaseModel
+
+# See https://linear.app/giskard/issue/GSK-1745/upgrade-pydantic-to-20
 IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 
 if IS_PYDANTIC_V2:
-    # Package have been moved out in Pydantic v2
-    from pydantic_settings import BaseSettings
+    FIELD_ATTR = "model_fields"
 else:
-    from pydantic.env_settings import BaseSettings
+    FIELD_ATTR = "__fields__"
 
 
 def expand_env_var(env_var: Optional[str]) -> Optional[str]:
-    if not env_var:
-        return env_var
-    while True:
-        interpolated = os.path.expanduser(os.path.expandvars(str(env_var)))
-        if interpolated == env_var:
-            return interpolated
-        else:
-            env_var = interpolated
+    current = env_var
+    previous = None
+    while current != previous:
+        previous = current
+        current = os.path.expandvars(current)
+    return current
 
 
-class Settings(BaseSettings):
+class Settings(BaseModel):
     home: str = "~/giskard-home"
     ws_port: int = 9000
     ws_path: str = "/ml-worker"
@@ -42,7 +42,13 @@ class Settings(BaseSettings):
 
     @property
     def home_dir(self) -> Path:
-        return Path(expand_env_var(self.home))
+        return Path(expand_env_var(self.home)).resolve()
+
+    @classmethod
+    def build_from_env(cls) -> "Settings":
+        return Settings(
+            **{k: os.getenv(cls.Config.env_prefix + k.upper(), v.default) for k, v in getattr(cls, FIELD_ATTR).items()}
+        )
 
 
-settings = Settings()
+settings = Settings.build_from_env()
