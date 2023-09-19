@@ -4,13 +4,20 @@ import pandas as pd
 
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, IssueGroup
+from ..scanner import maybe_print
 from ...datasets.base import Dataset
 from ...llm.issues import LLM_ISSUE_CATEGORIES, LlmIssueCategory
 from ...models.langchain import LangchainModel
 
 
 def validate_prediction(
-    model, issue: LlmIssueCategory, test_cases: List[str], dataset: Dataset, predictions: List[str], threshold: float
+    model,
+    issue: LlmIssueCategory,
+    test_cases: List[str],
+    dataset: Dataset,
+    predictions: List[str],
+    threshold: float,
+    verbose=True,
 ):
     from ...llm.utils.validate_test_case import validate_test_case_with_reason
 
@@ -20,19 +27,19 @@ def validate_prediction(
     df_with_pred["prediction_result"] = predictions
 
     for test_case in test_cases:
-        print(f"Validating test: {test_case}")
+        maybe_print(f"Validating test: {test_case}", verbose=verbose)
         results = pd.DataFrame.from_records(
             [result.__dict__ for result in validate_test_case_with_reason(model, test_case, dataset.df, predictions)]
         )
         failed = results["score"] < 3
         failed_count = len([result for result in failed if result])
         metric = failed_count / len(predictions)
-        print(f"Results: {metric} ({failed_count})")
+        maybe_print(f"Results: {metric} ({failed_count})", verbose=verbose)
 
         df_with_pred_and_test_results = pd.concat([df_with_pred, results[["reason", "tip"]]], axis=1)
 
         if failed_count > 0:
-            print("Test failed")
+            maybe_print("Test failed", verbose)
 
             issues.append(
                 Issue(
@@ -63,7 +70,7 @@ class LLMBusinessDetector:
         self.num_samples = num_samples
         self.num_tests = num_tests
 
-    def run(self, model: LangchainModel, _: Dataset) -> Sequence[Issue]:
+    def run(self, model: LangchainModel, _: Dataset, verbose=True, **kwargs) -> Sequence[Issue]:
 
         issues = []
 
@@ -74,7 +81,7 @@ class LLMBusinessDetector:
                     .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
                     .assertions[: self.num_tests]
                 )
-                print(f"Generated tests: {test_cases}")
+                maybe_print(f"Generated tests: {test_cases}", verbose=verbose)
 
                 potentially_failing_inputs = (
                     issue.input_generator(self.num_samples)
@@ -101,15 +108,15 @@ class LLMBusinessDetector:
                     validation=False,
                 )
 
-                print(f"Generated potentially failing prompts: {potentially_failing_dataset.df}")
+                maybe_print(f"Generated potentially failing prompts: {potentially_failing_dataset.df}", verbose=verbose)
 
                 predictions = model.predict(potentially_failing_dataset).prediction
 
                 issues += validate_prediction(
-                    model, issue, test_cases, potentially_failing_dataset, predictions, self.threshold
+                    model, issue, test_cases, potentially_failing_dataset, predictions, self.threshold, verbose
                 )
             except Exception as e:
-                print(f"Failed to evaluate {issue}: {e}")
+                maybe_print(f"Failed to evaluate {issue}: {e}", verbose=verbose)
 
         return issues
 
