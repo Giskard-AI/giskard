@@ -29,7 +29,6 @@ parser = PydanticOutputParser(pydantic_object=TestResult)
 prompt = PromptTemplate(
     template=VALIDATE_TEST_CASE,
     input_variables=["prompt", "test_case", "response", "model_name", "model_description"],
-    partial_variables={"format_instructions": parser.get_format_instructions()},
 )
 
 chain = LLMChain(llm=llm_config.build_llm(temperature=0.2), prompt=prompt)
