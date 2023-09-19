@@ -86,7 +86,28 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        raise ValueError(error_message) from e
+        features = model.meta.feature_names if model.meta.feature_names is not None else validation_ds.df.columns
+        number_of_features = len(features)
+
+        # Some models (mostly sklearn) expect a 1-dimensional ndarray or pd.Series as input in the case they're
+        # trained with 1 feature. Here we try to detect in case a user defines their prediction function using
+        # model.predict_proba(df) (which would break) instead of model.predict_proba(df.feature)
+        one_dimension_case = (
+            isinstance(e, IndexError)
+            and "index 1 is out of bounds for axis 0 with size 1" in str(e)
+            and number_of_features == 1
+        )
+
+        if not one_dimension_case:
+            raise ValueError(error_message) from e
+
+        feature = features[0]
+        one_dimension_error_message = (
+            "Your model returned an error when we passed a 'pandas.Dataframe' as input. "
+            f"Try to use a one-dimensional input like 'df.{feature}' "
+            "inside your prediction function."
+        )
+        raise ValueError(one_dimension_error_message) from e
 
     # testing one entry
     validation_size = min(len(dataset), 1)
