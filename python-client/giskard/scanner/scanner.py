@@ -124,7 +124,7 @@ class Scanner:
             maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
             detector_start = perf_counter()
             try:
-                detected_issues = detector.run(model, dataset)
+                detected_issues = detector.run(model, dataset, verbose=verbose)
             except Exception as err:
                 logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))

@@ -7,13 +7,12 @@ from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
 from giskard.scanner.issues import DataLeakage, Issue, IssueLevel
 from giskard.scanner.logger import logger
-
 from ..registry import Detector
 
 
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
 class DataLeakageDetector(Detector):
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         logger.info("DataLeakageDetector: Running")
 
         # Dataset prediction
