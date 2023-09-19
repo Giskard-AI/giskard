@@ -124,6 +124,12 @@ Please create your own space and get a license from Giskard.`,
     );
 }
 
+async function redirectToLogin() {
+    if (router.currentRoute.path !== '/auth/login') {
+        await router.push('/auth/login');
+    }
+}
+
 async function errorInterceptor(error) {
     if (error.code !== AxiosError.ERR_CANCELED) {
         trackError(error);
@@ -135,9 +141,7 @@ async function errorInterceptor(error) {
             removeLocalToken();
             userStore.token = '';
             userStore.isLoggedIn = false;
-            if (router.currentRoute.path !== '/auth/login') {
-                await router.push('/auth/login');
-            }
+            await redirectToLogin();
         } else if (error.response.status === 503 && useMainStore().appSettings?.isDemoHfSpace) {
             showDemoHFSpacesTip();
         } else {
