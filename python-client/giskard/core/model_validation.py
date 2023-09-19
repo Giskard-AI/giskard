@@ -88,6 +88,10 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     except Exception as e:
         features = model.meta.feature_names if model.meta.feature_names is not None else validation_ds.df.columns
         number_of_features = len(features)
+
+        # Some models (mostly sklearn) expect a 1-dimensional ndarray or pd.Series as input in the case they're
+        # trained with 1 feature. Here we try to detect in case a user defines their prediction function using
+        # model.predict_proba(df) (which would break) instead of model.predict_proba(df.feature)
         one_dimension_case = (
             isinstance(e, IndexError)
             and "index 1 is out of bounds for axis 0 with size 1" in str(e)
