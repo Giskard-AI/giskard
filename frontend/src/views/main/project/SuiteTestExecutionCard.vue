@@ -90,7 +90,7 @@
             Debug the {{ suiteTest.test?.displayName }} test
           </v-card-title>
           <v-card-text>
-            <p v-html="suiteTest.test.debugDescription"/> <!-- //NOSONAR -->
+            <!-- //NOSONAR --><p v-html="suiteTest.test.debugDescription"/>
             <p>
               This will enable you to:
               <ul>
