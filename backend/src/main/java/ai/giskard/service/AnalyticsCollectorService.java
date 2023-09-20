@@ -56,8 +56,8 @@ public class AnalyticsCollectorService {
             serverProps.put("Giskard Version", buildVersion);
             serverProps.put("Giskard Plan", licenseService.getCurrentLicense().getPlanCode());
             serverProps.put("Giskard LicenseID", licenseService.getCurrentLicense().getId());
-            serverProps.put("Is HuggingFace", GeneralSettingsService.isRunningInHFSpaces);
-            serverProps.put("HuggingFace Space ID", GeneralSettingsService.hfSpaceId);
+            serverProps.put("Is HuggingFace", GeneralSettingsService.IS_RUNNING_IN_HFSPACES);
+            serverProps.put("HuggingFace Space ID", GeneralSettingsService.HF_SPACE_ID);
             messageBuilder.set(settingsService.getSettings().getInstanceId(), serverProps);
         } catch (NoSuchElementException e) {
             // Do not track when we failed to initialize the server properties

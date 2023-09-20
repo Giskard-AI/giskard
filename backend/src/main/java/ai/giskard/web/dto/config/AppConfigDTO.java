@@ -45,5 +45,7 @@ public class AppConfigDTO {
         private String hfSpaceId;
         @JsonProperty(value = "isRunningOnHfSpaces")
         private boolean isRunningOnHfSpaces;
+        @JsonProperty(value = "isDemoHfSpace")
+        private boolean isDemoHfSpace;
     }
 }
