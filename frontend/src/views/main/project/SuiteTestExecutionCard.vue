@@ -90,10 +90,7 @@
             Debug the {{ suiteTest.test?.displayName }} test
           </v-card-title>
           <v-card-text>
-            <p v-if="suiteTest.test?.debugDescription" v-html="suiteTest.test?.debugDescription"/>
-            <p v-else>
-              This debugging session opens one by one all the examples that makes the test fail.
-            </p>
+            <p v-html="suiteTest.test.debugDescription"/>
             <p>
               This will enable you to:
               <ul>
