@@ -5,8 +5,8 @@ import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ModelType;
 import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
-import ai.giskard.utils.FileUtils;
 import ai.giskard.web.dto.InspectionCreateDTO;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -16,7 +16,6 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -73,7 +72,7 @@ public class InspectionService {
      * @throws FileNotFoundException when file not found
      */
     private Selection getSelectionRegression(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString());
+        Table calculatedTable = getTableFromBucketFile(fileLocationService.resolvedInspectionCalculatedPath(inspection).toString());
         Selection selection = null;
         Double threshold;
         if (inspection.getDataset().getTarget() != null) {
@@ -133,22 +132,10 @@ public class InspectionService {
         return selection;
     }
 
-    public Path getPredictionsPath(Inspection inspection) {
-        String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
-            .resolve(FileUtils.getFileName("predictions", "csv", inspection.isSample()));
-    }
-
-    public Path getCalculatedPath(Inspection inspection) {
-        String projectKey = inspection.getModel().getProject().getKey();
-        return fileLocationService.resolvedInspectionPath(projectKey, inspection.getId())
-            .resolve(FileUtils.getFileName("calculated", "csv", inspection.isSample()));
-    }
-
     private Selection getSelection(Inspection inspection, Filter filter) throws FileNotFoundException {
-        Table predsTable = getTableFromBucketFile(getPredictionsPath(inspection).toString());
+        Table predsTable = getTableFromBucketFile(fileLocationService.resolvedInspectionPredictionsPath(inspection).toString());
         tech.tablesaw.api.ColumnType[] columnDtypes = {tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.STRING, tech.tablesaw.api.ColumnType.DOUBLE};
-        Table calculatedTable = getTableFromBucketFile(getCalculatedPath(inspection).toString(), columnDtypes);
+        Table calculatedTable = getTableFromBucketFile(fileLocationService.resolvedInspectionCalculatedPath(inspection).toString(), columnDtypes);
         StringColumn predictedClass = calculatedTable.stringColumn(0);
         Selection selection = predictedClass.isNotMissing();
         if (inspection.getDataset().getTarget() != null) {
@@ -247,7 +234,7 @@ public class InspectionService {
         inspection.setName(update.getName());
         inspection.setSample(update.isSample());
 
-        if (!Files.exists(getPredictionsPath(inspection))) {
+        if (!Files.exists(fileLocationService.resolvedInspectionPredictionsPath(inspection))) {
             modelService.predictSerializedDataset(inspection.getModel(), inspection.getDataset(), inspectionId, inspection.isSample());
         }
 

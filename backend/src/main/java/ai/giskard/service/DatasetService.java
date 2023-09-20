@@ -4,20 +4,19 @@ import ai.giskard.domain.ColumnType;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.repository.ml.DatasetRepository;
 import ai.giskard.security.PermissionEvaluator;
-import ai.giskard.utils.FileUtils;
 import ai.giskard.utils.StreamUtils;
 import ai.giskard.web.dto.DatasetPageDTO;
 import ai.giskard.web.dto.RowFilterDTO;
 import ai.giskard.web.rest.errors.Entity;
 import ai.giskard.web.rest.errors.EntityNotFoundException;
 import com.univocity.parsers.common.TextParsingException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class DatasetService {
         Map<String, tech.tablesaw.api.ColumnType> columnDtypes = dataset.getColumnTypes().entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, e -> ColumnType.featureToColumn.get(e.getValue())));
 
-        Path filePath = getDataFile(dataset, sample);
+        Path filePath = locationService.resolvedDatasetCsvPath(dataset, sample);
 
         String filePathName = filePath.toAbsolutePath().toString().replace(".zst", "");
         Table table;
@@ -65,12 +64,6 @@ public class DatasetService {
             table = Table.read().csv(options);
         }
         return table;
-    }
-
-    private Path getDataFile(@NotNull Dataset dataset, boolean sample) {
-        return locationService.datasetsDirectory(dataset.getProject().getKey())
-            .resolve(dataset.getId().toString())
-            .resolve(FileUtils.getFileName("data", "csv.zst", sample));
     }
 
     /**

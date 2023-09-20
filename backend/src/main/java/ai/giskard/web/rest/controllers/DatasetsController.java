@@ -20,7 +20,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,6 +39,7 @@ public class DatasetsController {
     private final Logger log = LoggerFactory.getLogger(DatasetsController.class);
 
     private final DatasetRepository datasetRepository;
+    private final DatasetEditionService datasetEditionService;
     private final GiskardMapper giskardMapper;
     private final DatasetService datasetService;
     private final ProjectRepository projectRepository;
@@ -75,9 +75,16 @@ public class DatasetsController {
     public DatasetDTO addRow(@PathVariable("projectKey") @NotNull String projectKey,
                              @PathVariable("datasetId") @NotNull UUID datasetId,
                              @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> row) {
-        throw new NotImplementedException("This feature is not available ATM");
+        return giskardMapper.datasetToDatasetDTO(datasetEditionService.addRow(datasetId, row));
     }
 
+    @DeleteMapping("project/{projectKey}/datasets/{datasetId}/rows/{rowId}")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    public DatasetDTO deleteRow(@PathVariable("projectKey") @NotNull String projectKey,
+                                @PathVariable("datasetId") @NotNull UUID datasetId,
+                                @PathVariable("rowId") @NotNull int rowId) throws IOException {
+        return giskardMapper.datasetToDatasetDTO(datasetEditionService.deleteRow(datasetId, rowId));
+    }
 
     /**
      * Get the rows in the specified range

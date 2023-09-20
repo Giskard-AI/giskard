@@ -2,7 +2,10 @@ package ai.giskard.service;
 
 import ai.giskard.config.ApplicationProperties;
 import ai.giskard.domain.ml.Dataset;
+import ai.giskard.domain.ml.Inspection;
 import ai.giskard.domain.ml.ProjectModel;
+import ai.giskard.utils.FileUtils;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,10 @@ public class FileLocationService {
         return datasetsDirectory(projectKey).resolve(datasetId.toString());
     }
 
+    public Path resolvedDatasetCsvPath(@NotNull Dataset dataset, boolean sample) {
+        return resolvedDatasetPath(dataset).resolve(FileUtils.getFileName("data", "csv.zst", sample));
+    }
+
     public Path temporaryMetadataDirectory(String prefix) {
         String randomDirName = RandomStringUtils.randomAlphanumeric(8).toLowerCase(); // NOSONAR: no security risk here
         return resolvedTmpPath().resolve(prefix + "-" + randomDirName);
@@ -59,6 +66,25 @@ public class FileLocationService {
 
     public Path resolvedModelPath(String projectKey, UUID modelId) {
         return modelsDirectory(projectKey).resolve(modelId.toString());
+    }
+
+    public Path resolvedInspectionPredictionsPath(Inspection inspection) {
+        return resolvedInspectionPredictionsPath(inspection, inspection.isSample());
+    }
+
+
+    public Path resolvedInspectionPredictionsPath(Inspection inspection, boolean sample) {
+        return resolvedInspectionPath(inspection.getModel().getProject().getKey(), inspection.getId())
+            .resolve(FileUtils.getFileName("predictions", "csv", sample));
+    }
+
+    public Path resolvedInspectionCalculatedPath(Inspection inspection) {
+        return resolvedInspectionCalculatedPath(inspection, inspection.isSample());
+    }
+
+    public Path resolvedInspectionCalculatedPath(Inspection inspection, boolean sample) {
+        return resolvedInspectionPath(inspection.getModel().getProject().getKey(), inspection.getId())
+            .resolve(FileUtils.getFileName("calculated", "csv", sample));
     }
 
     public Path resolvedInspectionPath(String projectKey, Long inspectionId) {
