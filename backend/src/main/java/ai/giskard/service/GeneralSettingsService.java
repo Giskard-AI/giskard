@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -21,9 +22,21 @@ public class GeneralSettingsService {
 
     private final GeneralSettingsRepository settingsRepository;
 
-    public static final boolean isRunningInHFSpaces = Stream.of("SPACE_REPO_NAME", "SPACE_ID", "SPACE_HOST").allMatch(System.getenv()::containsKey);
+    private static final String SPACE_REPO_NAME_ENV = "SPACE_REPO_NAME";
+    private static final String SPACE_HOST_ENV = "SPACE_HOST";
+    private static final String SPACE_ID_ENV = "SPACE_ID";
+    private static final String DEMO_SPACE_ID_ENV = "DEMO_SPACE_ID";
+    private static final String DEFAULT_DEMO_SPACE_ID = "giskardai/giskard";
 
-    public static final String hfSpaceId = System.getenv().get("SPACE_ID");
+    public static final boolean IS_RUNNING_IN_HFSPACES =
+        Stream.of(SPACE_REPO_NAME_ENV, SPACE_ID_ENV, SPACE_HOST_ENV).allMatch(System.getenv()::containsKey);
+
+    public static final String HF_SPACE_ID = System.getenv().get(SPACE_ID_ENV);
+
+    public static final boolean IS_RUNNING_IN_DEMO_HF_SPACES = Objects.equals(
+        System.getenv().get(SPACE_ID_ENV),
+        System.getenv().get(DEMO_SPACE_ID_ENV) == null ? DEFAULT_DEMO_SPACE_ID : System.getenv().get(DEMO_SPACE_ID_ENV)
+    );
 
     public GeneralSettings getSettings() {
         return deserializeSettings(settingsRepository.getMandatoryById(SerializedGiskardGeneralSettings.SINGLE_ID).getSettings());

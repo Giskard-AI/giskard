@@ -1,6 +1,7 @@
 package ai.giskard.domain;
 
 import ai.giskard.config.Constants;
+import ai.giskard.security.GalleryDatabaseOperationListener;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -29,6 +30,7 @@ import java.util.Set;
 @Setter
 @NotNull
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "login")
+@EntityListeners(GalleryDatabaseOperationListener.class)
 public class User extends AbstractAuditingEntity {
     @Serial
     private static final long serialVersionUID = 0L;
