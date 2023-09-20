@@ -4,9 +4,11 @@ import {getLocalHFToken, getLocalToken, removeLocalToken} from '@/utils';
 import Vue from 'vue';
 import {TYPE} from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
+import HuggingFaceSpacesSetupTipToast from '@/views/main/utils/HuggingFaceSpacesSetupTipToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
 import {useUserStore} from '@/stores/user';
+import { useMainStore } from './stores/main';
 import {
     AccountControllerApi,
     CatalogControllerApi,
@@ -16,6 +18,7 @@ import {
     DownloadControllerApi,
     ErrorContext,
     FeedbackControllerApi,
+    GalleryUnlockControllerApi,
     InspectionControllerApi,
     LicenseControllerApi,
     Middleware,
@@ -79,6 +82,27 @@ async function errorInterceptor(context: ResponseContext): Promise<Response | vo
         data = {};
     }
     await trackError(context, data);
+
+    if (response.status === 405 && useMainStore().appSettings?.isDemoHfSpace) {
+        if (data.detail.startsWith("This is a read-only Giskard Gallery instance.")) {
+            console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
+            Vue.$toast(
+                {
+                    component: HuggingFaceSpacesSetupTipToast,
+                    props: {
+                        title: 'Warning',
+                        detail: `You cannot modify Giskard Hugging Face demo space.
+    Please create your own space and get a license from Giskard.`,
+                    },
+                },
+                {
+                    toastClassName: 'error-toast',
+                    type: TYPE.WARNING,
+                }
+            );
+            return Promise.reject(response);
+        }
+    }
 
     if (response.status === 401) {
         const userStore = useUserStore();
@@ -164,6 +188,7 @@ export const openapi = {
     dev: new DevControllerApi(configuration),
     download: new DownloadControllerApi(configuration),
     feedback: new FeedbackControllerApi(configuration),
+    galleryUnlock: new GalleryUnlockControllerApi(configuration),
     inspection: new InspectionControllerApi(configuration),
     license: new LicenseControllerApi(configuration),
     mlWorker: new MlWorkerControllerApi(configuration),

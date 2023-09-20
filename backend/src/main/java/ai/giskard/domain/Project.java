@@ -3,6 +3,7 @@ package ai.giskard.domain;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.ProjectModel;
 import ai.giskard.domain.ml.TestSuite;
+import ai.giskard.security.GalleryDatabaseOperationListener;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,7 +23,7 @@ import java.util.Set;
 
 @Entity(name = "projects")
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, GalleryDatabaseOperationListener.class})
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "key")
 public class Project extends AbstractAuditingEntity {
     @Serial

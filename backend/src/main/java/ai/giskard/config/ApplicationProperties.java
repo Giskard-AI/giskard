@@ -36,6 +36,8 @@ public class ApplicationProperties {
     private long tokenValidityInSecondsForRememberMe = 2592000; // 30 days;
     private CorsConfiguration cors = new CorsConfiguration();
 
+    private String defaultApiKey;
+    private String hfDemoSpaceUnlockToken;
     private String mixpanelProjectKey;
 }
 

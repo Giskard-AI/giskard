@@ -2,6 +2,7 @@ package ai.giskard.domain.ml;
 
 import ai.giskard.domain.AbstractAuditingEntity;
 import ai.giskard.domain.Project;
+import ai.giskard.security.GalleryDatabaseOperationListener;
 import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(GalleryDatabaseOperationListener.class)
 public class ProjectModel extends AbstractAuditingEntity {
     @Serial
     private static final long serialVersionUID = 0L;

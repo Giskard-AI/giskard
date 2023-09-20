@@ -1,7 +1,9 @@
 package ai.giskard.domain;
 
+import ai.giskard.security.GalleryDatabaseOperationListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -12,6 +14,7 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "role")
+@EntityListeners(GalleryDatabaseOperationListener.class)
 public class Role extends BaseEntity {
     @lombok.Setter
     @lombok.Getter
