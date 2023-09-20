@@ -48,8 +48,10 @@ import {
 } from './generated-sources';
 import { TYPE } from 'vue-toastification';
 import ErrorToast from '@/views/main/utils/ErrorToast.vue';
+import HuggingFaceSpacesSetupTipToast from '@/views/main/utils/HuggingFaceSpacesSetupTipToast.vue';
 import router from '@/router';
 import mixpanel from 'mixpanel-browser';
+import { useMainStore } from './stores/main';
 import { useUserStore } from '@/stores/user';
 
 function jwtRequestInterceptor(config) {
@@ -104,20 +106,50 @@ function replacePlaceholders(detail: string) {
     return detail.replaceAll('GISKARD_ADDRESS', window.location.hostname);
 }
 
+function showDemoHFSpacesTip() {
+    console.warn(`HTTP503 received from demo space ${useMainStore().appSettings?.hfSpaceId}`);
+    Vue.$toast(
+        {
+            component: HuggingFaceSpacesSetupTipToast,
+            props: {
+                title: 'Warning',
+                detail: `You cannot modify Giskard Hugging Face demo space.
+Please create your own space and get a license from Giskard.`,
+            },
+        },
+        {
+            toastClassName: 'error-toast',
+            type: TYPE.WARNING,
+        }
+    );
+}
+
+async function redirectToLogin() {
+    if (router.currentRoute.path !== '/auth/login') {
+        await router.push('/auth/login');
+    }
+}
+
 async function errorInterceptor(error) {
     if (error.code !== AxiosError.ERR_CANCELED) {
         trackError(error);
     }
 
     if (error.response) {
+        if (error.response.status === 405 && useMainStore().appSettings?.isDemoHfSpace) {
+            if (error.response.data.detail.startsWith("This is a read-only Giskard Gallery instance.")) {
+                console.log("Data ", error.response.data);
+                showDemoHFSpacesTip();
+                return Promise.reject(error);
+            }
+        }
+
         if (error.response.status === 401) {
             const userStore = useUserStore();
             removeLocalToken();
             userStore.token = '';
             userStore.isLoggedIn = false;
-            if (router.currentRoute.path !== '/auth/login') {
-                await router.push('/auth/login');
-            }
+            await redirectToLogin();
         } else {
             let title: string;
             let detail: string;
