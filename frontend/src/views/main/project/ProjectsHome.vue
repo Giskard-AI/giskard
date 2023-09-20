@@ -34,6 +34,11 @@
                 Import
               </v-list-item-content>
             </v-list-item>
+            <v-list-item v-if="!useMainStore().appSettings?.isDemoHfSpace" @click="openGiskardHFGallery">
+              <v-list-item-content>
+                Examples
+              </v-list-item-content>
+            </v-list-item>
           </v-list-item-group>
         </v-list>
       </v-menu>
@@ -183,9 +188,10 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { ValidationObserver } from 'vee-validate';
 import { Role } from '@/enums';
 import { PostImportProjectDTO, ProjectPostDTO } from '@/generated-sources';
-import { copyText, toSlug } from '@/utils';
+import { copyText, toSlug, isFirstVisited, setVisited } from '@/utils';
 import { useRoute, useRouter } from 'vue-router/composables';
 import moment from 'moment';
+import { useMainStore } from '@/stores/main';
 import { useUserStore } from '@/stores/user';
 import { useProjectStore } from '@/stores/project';
 import { api } from '@/api';
@@ -344,6 +350,10 @@ async function updateCurrentProject(projectId: number) {
   await router.push({ name: 'project-home', params: { id: projectId.toString() } });
 }
 
+function openGiskardHFGallery() {
+  window.open("https://huggingface.co/spaces/giskardai/giskard", '_blank', "noopener noreferrer");
+}
+
 // watchers
 watch(() => newProjectName.value, (value) => {
   newProjectKey.value = toSlug(value);
@@ -352,6 +362,10 @@ watch(() => newProjectName.value, (value) => {
 onMounted(async () => {
   const f = route.query.f ? route.query.f[0] || '' : '';
   creatorFilter.value = parseInt(f) || 0;
+  if (useMainStore().appSettings?.isDemoHfSpace && isFirstVisited()) {
+    setVisited();
+    router.push('/hfspaces/setup-tip');
+  }
   await loadProjects();
 })
 </script>
