@@ -132,12 +132,14 @@ def _test_diff_prediction(
     debug_percent_rows: float = None,
     debug: bool = False,
 ):
-    args = {"dataset": reference_dataset, "model": model, "debug": debug}
+    reference_args = {"dataset": reference_dataset, "model": model, "debug": debug}
+    actual_args = {"dataset": actual_dataset, "model": model, "debug": debug}
     if debug_percent_rows is not None:
-        args["debug_percent_rows"] = debug_percent_rows
+        reference_args["debug_percent_rows"] = debug_percent_rows
+        actual_args["debug_percent_rows"] = debug_percent_rows
 
-    result_reference = test_fn(**args)
-    result_actual = test_fn(**args)
+    result_reference = test_fn(**reference_args)
+    result_actual = test_fn(**actual_args)
 
     try:
         rel_change = (result_actual.metric - result_reference.metric) / result_reference.metric
