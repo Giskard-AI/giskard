@@ -541,7 +541,7 @@ def clean(delete_data):
 
 @server.command("expose")
 @click.option(
-    "--token",
+    "--ngrok-token",
     "token",
     required=True,
     help="In case you have an ngrok account, you can use a token "
