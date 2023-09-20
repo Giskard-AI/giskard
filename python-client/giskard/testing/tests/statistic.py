@@ -11,10 +11,14 @@ from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel
 from giskard.ml_worker.testing.utils import check_slice_not_empty
-from . import debug_prefix
+from . import debug_prefix, debug_description_prefix
 
 
-@test(name="Right Label", tags=["heuristic", "classification"])
+@test(
+    name="Right Label",
+    tags=["heuristic", "classification"],
+    debug_description=debug_description_prefix + "that <b>do not return the right classification label</b>.",
+)
 @validate_classification_label
 def test_right_label(
     model: BaseModel,
@@ -80,7 +84,11 @@ def test_right_label(
     return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
-@test(name="Output in range", tags=["heuristic", "classification", "regression"])
+@test(
+    name="Output in range",
+    tags=["heuristic", "classification", "regression"],
+    debug_description=debug_description_prefix + "that are <b>out of the given range</b>.",
+)
 @validate_classification_label
 def test_output_in_range(
     model: BaseModel,
@@ -169,7 +177,12 @@ def test_output_in_range(
     return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
 
 
-@test(name="Disparate impact", tags=["heuristic", "classification"])
+@test(
+    name="Disparate impact",
+    tags=["heuristic", "classification"],
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted on the positive outcome "
+    "from both the protected and unprotected slices</b>.",
+)
 def test_disparate_impact(
     model: BaseModel,
     dataset: Dataset,
@@ -311,7 +324,11 @@ def _theil_u(x, y):
     return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
 
 
-@test(name="Nominal Association", tags=["statistic", "nominal association", "classification"])
+@test(
+    name="Nominal Association",
+    tags=["statistic", "nominal association", "classification"],
+    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+)
 def test_nominal_association(
     model: BaseModel,
     dataset: Dataset,
@@ -385,7 +402,11 @@ def test_nominal_association(
     return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
 
 
-@test(name="Cramer's V", tags=["statistic", "nominal association", "classification"])
+@test(
+    name="Cramer's V",
+    tags=["statistic", "nominal association", "classification"],
+    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+)
 def test_cramer_v(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
@@ -425,7 +446,11 @@ def test_cramer_v(
     return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug).execute()
 
 
-@test(name="Mutual Information", tags=["statistic", "nominal association", "classification"])
+@test(
+    name="Mutual Information",
+    tags=["statistic", "nominal association", "classification"],
+    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+)
 def test_mutual_information(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
@@ -464,7 +489,11 @@ def test_mutual_information(
     return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug).execute()
 
 
-@test(name="Theil's U", tags=["statistic", "nominal association", "classification"])
+@test(
+    name="Theil's U",
+    tags=["statistic", "nominal association", "classification"],
+    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+)
 def test_theil_u(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
 ) -> TestResult:
