@@ -327,7 +327,7 @@ def _theil_u(x, y):
 @test(
     name="Nominal Association",
     tags=["statistic", "nominal association", "classification"],
-    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+    debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_nominal_association(
     model: BaseModel,
@@ -405,7 +405,7 @@ def test_nominal_association(
 @test(
     name="Cramer's V",
     tags=["statistic", "nominal association", "classification"],
-    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+    debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_cramer_v(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
@@ -449,7 +449,7 @@ def test_cramer_v(
 @test(
     name="Mutual Information",
     tags=["statistic", "nominal association", "classification"],
-    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+    debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_mutual_information(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
@@ -492,7 +492,7 @@ def test_mutual_information(
 @test(
     name="Theil's U",
     tags=["statistic", "nominal association", "classification"],
-    debug_description=debug_description_prefix + "of the <b>given data slice</b>.",
+    debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_theil_u(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
