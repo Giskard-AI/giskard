@@ -10,7 +10,7 @@ from ...ml_worker.testing.test_result import TestResult
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from . import debug_prefix
+from . import debug_prefix, debug_description_prefix
 
 
 def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -32,14 +32,18 @@ def _default_overconfidence_threshold(model: BaseModel) -> float:
     return 1 / (3e-1 * (n - 2) + 2 - 1e-3 * (n - 2) ** 2)
 
 
-@test(name="Overconfidence Rate", tags=["classification"])
+@test(
+    name="Overconfidence Rate",
+    tags=["classification"],
+    debug_description=debug_description_prefix + "that are <b>predicted with overconfidence</b>.",
+)
 def test_overconfidence_rate(
-        model: BaseModel,
-        dataset: Dataset,
-        slicing_function: Optional[SlicingFunction] = None,
-        threshold: Optional[float] = 0.10,
-        p_threshold: Optional[float] = None,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: Optional[float] = 0.10,
+    p_threshold: Optional[float] = None,
+    debug: bool = False,
 ):
     """Tests that the rate of overconfident predictions is below a threshold.
 
@@ -97,11 +101,7 @@ def test_overconfidence_rate(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        passed=bool(passed),
-        metric=rate,
-        output_df=output_ds
-    )
+    return TestResult(passed=bool(passed), metric=rate, output_df=output_ds)
 
 
 def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -116,14 +116,18 @@ def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.S
     return pd.Series(score_values, index=dataset.df.index)
 
 
-@test(name="Underconfidence Rate", tags=["classification"])
+@test(
+    name="Underconfidence Rate",
+    tags=["classification"],
+    debug_description=debug_description_prefix + "that are <b>predicted with underconfidence</b>.",
+)
 def test_underconfidence_rate(
-        model: BaseModel,
-        dataset: Dataset,
-        slicing_function: Optional[SlicingFunction] = None,
-        threshold: Optional[float] = 0.10,
-        p_threshold: float = 0.90,
-        debug: bool = False
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: Optional[float] = 0.10,
+    p_threshold: float = 0.90,
+    debug: bool = False,
 ):
     """Tests that the rate of underconfident predictions is below a threshold.
 
@@ -178,8 +182,4 @@ def test_underconfidence_rate(
         output_ds.name = debug_prefix + test_name
     # ---
 
-    return TestResult(
-        passed=bool(passed),
-        metric=rate,
-        output_df=output_ds
-    )
+    return TestResult(passed=bool(passed), metric=rate, output_df=output_ds)
