@@ -52,7 +52,7 @@ const codeContent = computed(() => {
   let content = `import giskard\n`;
   content += `${giskardClientSnippet.value}\n`;
   content += `# Load test suite from Giskard Hub\n`;
-  content += `my_test_suite = giskard.Suite.download(client, ${project.value!.key}, ${props.suiteId})`;
+  content += `my_test_suite = giskard.Suite.download(client, "${project.value!.key}", ${props.suiteId})`;
   return content;
 });
 
