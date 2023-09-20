@@ -182,7 +182,7 @@ def _test_diff_prediction(
 @test(
     name="AUC",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted</b>.",
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_auc(
     model: BaseModel,
@@ -254,7 +254,7 @@ def test_auc(
 @test(
     name="F1",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted</b>.",
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_f1(
     model: BaseModel,
@@ -299,7 +299,7 @@ def test_f1(
 @test(
     name="Accuracy",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted</b>.",
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_accuracy(
     model: BaseModel,
@@ -344,7 +344,7 @@ def test_accuracy(
 @test(
     name="Precision",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted</b>.",
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_precision(
     model: BaseModel,
@@ -389,7 +389,7 @@ def test_precision(
 @test(
     name="Recall",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted</b>.",
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_recall(
     model: BaseModel,
@@ -434,7 +434,7 @@ def test_recall(
 @test(
     name="RMSE",
     tags=["performance", "regression", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that have the highest absolute error "
+    debug_description=debug_description_prefix + "that have the highest <b>absolute error "
     "(difference between prediction and data)</b>.",
 )
 def test_rmse(
@@ -486,7 +486,7 @@ def test_rmse(
 @test(
     name="MSE",
     tags=["performance", "regression", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that have the highest absolute error "
+    debug_description=debug_description_prefix + "that have the highest <b>absolute error "
     "(difference between prediction and data)</b>.",
 )
 def test_mse(
@@ -538,7 +538,7 @@ def test_mse(
 @test(
     name="MAE",
     tags=["performance", "regression", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that have the highest absolute error "
+    debug_description=debug_description_prefix + "that have the highest <b>absolute error "
     "(difference between prediction and data)</b>.",
 )
 def test_mae(
@@ -592,7 +592,7 @@ def test_mae(
 @test(
     name="R2",
     tags=["performance", "regression", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that have the highest absolute error "
+    debug_description=debug_description_prefix + "that have the highest <b>absolute error "
     "(difference between prediction and data)</b>.",
 )
 def test_r2(
@@ -644,7 +644,7 @@ def test_r2(
 @test(
     name="Accuracy difference",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted from both "
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted from both "
     "'actual_dataset' and 'reference_dataset'</b>.",
 )
 def test_diff_accuracy(
@@ -713,7 +713,7 @@ def test_diff_accuracy(
 @test(
     name="F1 difference",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted from both "
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted from both "
     "'actual_dataset' and 'reference_dataset'</b>.",
 )
 def test_diff_f1(
@@ -781,7 +781,7 @@ def test_diff_f1(
 @test(
     name="Precision difference",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted from both "
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted from both "
     "'actual_dataset' and 'reference_dataset'</b>.",
 )
 def test_diff_precision(
@@ -849,7 +849,7 @@ def test_diff_precision(
 @test(
     name="Recall difference",
     tags=["performance", "classification", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that are incorrectly predicted from both "
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted from both "
     "'actual_dataset' and 'reference_dataset'</b>.",
 )
 def test_diff_recall(
@@ -917,9 +917,9 @@ def test_diff_recall(
 @test(
     name="RMSE difference",
     tags=["performance", "regression", "ground_truth"],
-    debug_description=debug_description_prefix + "<b>that have the highest absolute error "
+    debug_description=debug_description_prefix + "that have the highest <b>absolute error "
     "(difference between prediction and data) from both "
-    "'actual_dataset' and 'reference_dataset'.</b>.",
+    "'actual_dataset' and 'reference_dataset'</b>.",
 )
 def test_diff_rmse(
     model: BaseModel,
