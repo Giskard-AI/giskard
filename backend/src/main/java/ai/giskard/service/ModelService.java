@@ -80,9 +80,10 @@ public class ModelService {
             param.setColumnDtypes(dataset.getColumnDtypes());
         }
 
+        MLWorkerID workerID = model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         // Perform the runModelForDataFrame action and parse the reply
         MLWorkerWSBaseDTO result = mlWorkerWSCommService.performAction(
-            model.getProject().isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL,
+            workerID,
             MLWorkerWSAction.RUN_MODEL_FOR_DATA_FRAME,
             param
         );

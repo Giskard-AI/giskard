@@ -357,6 +357,19 @@ export default new Router({
             },
           ],
         },
+        {
+          path: 'hfspaces',
+          name: 'Hugging Face Spaces',
+          redirect: 'hfspaces/setup-tip',
+          component: () => import(/* webpackChunkName: "main" */ './views/main/Main.vue'),
+          children: [
+            {
+              path: 'setup-tip',
+              name: 'setup-tip',
+              component: () => import(/* webpackChunkName: "hugging-face-spaces-setup-tip" */ './views/setup/HuggingFaceSpacesSetupTip.vue'),
+            },
+          ],
+        },
       ],
     },
     {

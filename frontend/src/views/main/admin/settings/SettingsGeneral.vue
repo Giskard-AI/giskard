@@ -16,7 +16,12 @@
                   </tr>
                   <tr>
                     <td>Instance</td>
-                    <td>{{ appSettings.generalSettings?.instanceId }}</td>
+                    <td>{{ appSettings.generalSettings?.instanceId }}
+                      <v-btn v-if="appSettings.isDemoHfSpace" icon @click="unlockModal = true">
+                        <v-icon v-if="isUnlocked">mdi-lock-open</v-icon>
+                        <v-icon v-else>mdi-lock</v-icon>
+                      </v-btn>
+                    </td>
                   </tr>
                   <tr>
                     <td>Version</td>
@@ -78,7 +83,7 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-row v-if="!mainStore.authAvailable">
+      <v-row v-if="!mainStore.authAvailable && !appSettings.isDemoHfSpace">
         <v-col>
           <ApiTokenCard />
         </v-col>
@@ -175,7 +180,7 @@
                 </v-container>
               </v-card-text>
             </v-card-text>
-            <v-card-actions v-if="currentWorker">
+            <v-card-actions v-if="currentWorker && !appSettings.isDemoHfSpace">
               <v-col class="text-right">
                 <v-btn @click="stopMLWorker()">Stop ML Worker</v-btn>
               </v-col>
@@ -186,6 +191,21 @@
     </v-container>
     <v-dialog v-model="upgradeModal" width="700">
       <PlanUpgradeCard @done="upgradeModal = false" />
+    </v-dialog>
+    <v-dialog v-model="unlockModal" width="500">
+      <v-card>
+        <v-card-title v-if="isUnlocked" >Lock Giskard demo Gallery Space</v-card-title>
+        <v-card-title v-else >Unlock Giskard demo Gallery Space</v-card-title>
+        <v-card-text>
+          <v-text-field outlined autofocus v-model="unlockToken" label="Token" type="password"/>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="primary" text @click="switchGalleryUnlockStatus()">
+            {{ isUnlocked ? "Lock" : "Unlock" }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
   </div>
 </template>
@@ -214,6 +234,9 @@ const installedPackagesData = ref<{ name: string, version: string }[]>([]);
 const installedPackagesSearch = ref<string>("");
 
 const upgradeModal = ref<boolean>(false);
+const isUnlocked = ref<boolean>(false);
+const unlockModal = ref<boolean>(false);
+const unlockToken = ref<string | undefined>(undefined);
 
 const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' }, {
   text: 'Version',
@@ -224,7 +247,35 @@ const installedPackagesHeaders = [{ text: 'Name', value: 'name', width: '70%' },
 
 onBeforeMount(async () => {
   await initMLWorkerInfo();
+  if (mainStore.appSettings?.isDemoHfSpace) {
+    await initGalleryUnlockInfo();
+  }
 })
+
+async function initGalleryUnlockInfo() {
+  try {
+    const status = await openapi.galleryUnlock.getUnlockStatus();
+    isUnlocked.value = status.unlocked!;
+  } catch (error) {
+    isUnlocked.value = false;
+  }
+}
+
+async function switchGalleryUnlockStatus() {
+  try {
+    const status = await openapi.galleryUnlock.setUnlockStatus({
+      galleryUnlockDTO: {
+        token: unlockToken.value ? unlockToken.value : "",
+        unlocked: !isUnlocked.value,
+      }
+    });
+    isUnlocked.value = status.unlocked!;
+  } catch (error) {
+  } finally {
+    unlockToken.value = undefined;
+    unlockModal.value = false;
+  }
+}
 
 const externalWorkerSelected = computed(() => selectedWorkerTab.value == 0);
 
