@@ -39,12 +39,10 @@ public class DatasetDTO {
     private int compressedSizeBytes;
     private long numberOfRows;
     private Map<String, List<String>> categoryFeatures;
-
     @JsonAlias("created_date")
     private Instant createdDate;
-
     @JsonAlias("last_modified_date")
     private Instant lastModifiedDate;
-
+    private boolean editable;
 
 }

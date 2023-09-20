@@ -108,6 +108,7 @@ class DatasetMeta:
     category_features: Dict[str, List[str]]
     created_date: str
     last_modified_date: str
+    editable: bool
 
 
 @dataclass

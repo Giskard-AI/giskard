@@ -9,11 +9,11 @@ import ai.giskard.utils.SimpleJSONStringAttributeConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.io.Serial;
 import java.util.*;
 
@@ -64,5 +64,8 @@ public class Dataset extends AbstractAuditingEntity {
     @Column(columnDefinition = "VARCHAR")
     @Convert(converter = SimpleJSONStringAttributeConverter.class)
     private Map<String, List<String>> categoryFeatures;
+
+    @Column(nullable = false, columnDefinition = "BOOL DEFAULT FALSE")
+    private boolean editable;
 
 }

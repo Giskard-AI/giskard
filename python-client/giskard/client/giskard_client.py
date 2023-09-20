@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 from uuid import UUID
 
 import dateutil.parser
+import yaml
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
@@ -172,6 +173,7 @@ class GiskardClient:
             category_features=res["categoryFeatures"],
             created_date=res["createdDate"],
             last_modified_date=res["lastModifiedDate"],
+            editable=res["editable"],
         )
 
     def save_model_meta(
@@ -244,12 +246,14 @@ class GiskardClient:
             return
 
         if local_file.exists():
-            if (
-                os.path.getmtime(Path(local_file) / "giskard-dataset-meta.yaml")
-                >= dateutil.parser.parse(last_modified_date).timestamp()
-            ):
-                logger.info(f"Artifact {artifact_path} already exists, skipping download")
-                return
+            with open(Path(local_file) / "giskard-dataset-meta.yaml") as f:
+                saved_meta = yaml.load(f, Loader=yaml.Loader)
+                if (
+                    dateutil.parser.parse(saved_meta["last_modified_date"]).timestamp()
+                    >= dateutil.parser.parse(last_modified_date).timestamp()
+                ):
+                    logger.info(f"Artifact {artifact_path} already exists, skipping download")
+                    return
             # Clear the existing folder
             shutil.rmtree(local_file)
 

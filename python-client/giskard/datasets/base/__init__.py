@@ -1,6 +1,5 @@
 import inspect
 import logging
-import os
 import posixpath
 import tempfile
 import uuid
@@ -147,6 +146,7 @@ class Dataset(ColumnMetadataMixin):
     df: pd.DataFrame
     id: uuid.UUID
     data_processor: DataProcessor
+    editable: bool
 
     @configured_validate_arguments
     def __init__(
@@ -160,6 +160,7 @@ class Dataset(ColumnMetadataMixin):
         validation=True,
         created_date: Optional[str] = None,
         last_modified_date: Optional[str] = None,
+        editable: Optional[bool] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -182,6 +183,15 @@ class Dataset(ColumnMetadataMixin):
             self.id = id
         self.name = name
         self.df = pd.DataFrame(df)
+
+        if editable is None:
+            editable = "__GSK_UID__" in self.df.columns
+        elif editable is True and "__GSK_UID__" not in self.df.columns:
+            self.df["__GSK_UID__"] = range(len(self.df))
+        elif editable is False and "__GSK_UID__" in self.df.columns:
+            self.df = self.df.drop(columns=["__GSK_UID__"])
+        self.editable = editable
+
         self.target = target
 
         self.created_date = created_date if created_date is not None else datetime.now().isoformat()
@@ -507,6 +517,7 @@ class Dataset(ColumnMetadataMixin):
             category_features=self.category_features,
             created_date=self.created_date,
             last_modified_date=self.last_modified_date,
+            editable=self.editable,
         )
 
     @staticmethod
@@ -551,9 +562,9 @@ class Dataset(ColumnMetadataMixin):
         if client is None:
             # internal worker case, no token based http client
             assert local_dir.exists(), f"Cannot find existing dataset {project_key}.{dataset_id}"
-            meta_file = Path(local_dir) / "giskard-dataset-meta.yaml"
-            with open(meta_file) as f:
+            with open(Path(local_dir) / "giskard-dataset-meta.yaml") as f:
                 saved_meta = yaml.load(f, Loader=yaml.Loader)
+                now = datetime.now().isoformat()
                 meta = DatasetMeta(
                     name=saved_meta["name"],
                     target=saved_meta["target"],
@@ -561,13 +572,16 @@ class Dataset(ColumnMetadataMixin):
                     column_dtypes=saved_meta["column_dtypes"],
                     number_of_rows=saved_meta["number_of_rows"],
                     category_features=saved_meta["category_features"],
-                    created_date=datetime.isoformat(datetime.fromtimestamp(os.path.getctime(meta_file))),
-                    last_modified_date=datetime.isoformat(datetime.fromtimestamp(os.path.getmtime(meta_file))),
+                    created_date=saved_meta.get("created_date", False, now),
+                    last_modified_date=saved_meta.get("last_modified_date", now),
+                    editable=saved_meta.get("editable", False),
                 )
         else:
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
             client.load_artifact(
-                local_dir, posixpath.join(project_key, "datasets", dataset_id), meta.last_modified_date
+                local_dir,
+                posixpath.join(project_key, "datasets", dataset_id),
+                meta.last_modified_date if meta.editable else None,
             )
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
@@ -615,6 +629,7 @@ class Dataset(ColumnMetadataMixin):
                         "compressed_size_bytes": compressed_size_bytes,
                         "number_of_rows": self.meta.number_of_rows,
                         "category_features": self.meta.category_features,
+                        "editable": self.meta.editable,
                     },
                     meta_f,
                     default_flow_style=False,
@@ -657,18 +672,18 @@ class Dataset(ColumnMetadataMixin):
             validation=False,
         )
 
-    def copy(self):
+    def copy(self, **kwargs):
         dataset = Dataset(
-            df=self.df.copy(),
-            target=self.target,
-            column_types=self.column_types.copy(),
-            validation=False,
+            df=self.df.copy(), target=self.target, column_types=self.column_types.copy(), validation=False, **kwargs
         )
 
         if hasattr(self, "column_meta"):
             dataset.load_metadata_from_instance(self.column_meta)
 
         return dataset
+
+    def copy_editable(self):
+        return self.copy(editable=True)
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
