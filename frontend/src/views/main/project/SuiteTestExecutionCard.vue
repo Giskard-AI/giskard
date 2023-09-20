@@ -93,7 +93,7 @@
             <p>
               {{
                 suiteTest.test?.debugDescription ??
-                "This debugging session opens one by one all the examples that makes the test fail."
+                "This debugging session opens one by one all the examples that <b>make the test fail</b>."
               }}
             </p>
             <p>
