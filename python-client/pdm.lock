@@ -6,7 +6,7 @@ groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:609a73e218a97eb838651aa97ccab6459223700b86ede6e12e16df27d7e792d4"
+content_hash = "sha256:d2edc01a2fed0b28f83064ee52f064979e68ceb96b29f8c8003c3572f4e690ed"
 
 [[package]]
 name = "absl-py"
@@ -4961,9 +4961,29 @@ version = "2.13.0"
 requires_python = ">=3.8"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 dependencies = [
+    "absl-py>=1.0.0",
+    "astunparse>=1.6.0",
+    "flatbuffers>=23.1.21",
+    "gast<=0.4.0,>=0.2.1",
+    "google-pasta>=0.1.1",
+    "grpcio<2.0,>=1.24.3",
+    "h5py>=2.9.0",
+    "keras<2.14,>=2.13.1",
+    "libclang>=13.0.0",
+    "numpy<=1.24.3,>=1.22",
+    "opt-einsum>=2.3.2",
+    "packaging",
+    "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
+    "setuptools",
+    "six>=1.12.0",
+    "tensorboard<2.14,>=2.13",
     "tensorflow-cpu-aws==2.13.0; platform_system == \"Linux\" and (platform_machine == \"arm64\" or platform_machine == \"aarch64\")",
+    "tensorflow-estimator<2.14,>=2.13.0",
     "tensorflow-intel==2.13.0; platform_system == \"Windows\"",
-    "tensorflow-macos==2.13.0; platform_system == \"Darwin\" and platform_machine == \"arm64\"",
+    "tensorflow-io-gcs-filesystem>=0.23.1; platform_machine != \"arm64\" or platform_system != \"Darwin\"",
+    "termcolor>=1.1.0",
+    "typing-extensions<4.6.0,>=3.6.6",
+    "wrapt>=1.11.0",
 ]
 files = [
     {file = "tensorflow-2.13.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:89125443e998548059c4e4a129dfab2b1ff7f2fd4c8eaed97842c3cd9b663101"},

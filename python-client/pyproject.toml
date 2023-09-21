@@ -53,8 +53,9 @@ ml_runtime = [
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
-    "transformers>=4.33, <4.34",                                                                 # https://github.com/huggingface/transformers/issues/23352
-    "sentencepiece",                                                                             # needed for some transformers stuff with tokenizer
+    "transformers>=4.33, <4.34", # https://github.com/huggingface/transformers/issues/23352
+    "absl-py", # Needed for 3.11 transformers
+    "sentencepiece", # needed for some transformers stuff with tokenizer
     "torch>=2.0.0",
     "torchdata>=0.6.0",
     "portalocker>=2.0.0", # Needed by torchdata for test_newspaper_classification_pytorch_dataset
@@ -65,7 +66,7 @@ ml_runtime = [
     "tensorflow-text>=2.13, <2.14; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                          # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1"]
 doc = [
