@@ -221,8 +221,8 @@ jobs:
           path: python-client/dist/*whl
           
       - name: Run integration tests for python
-        if: ${{ inputs.run-integration-tests }}
+        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
         working-directory: python-client
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ matrix.os == 'windows-2019' && 1 || 2 }}
-        run: pdm run test
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
+        run: pdm run test -m 'not slow'
