@@ -27,4 +27,4 @@ def test_expand_path():
 
     settings = Settings(home="${ENV1}")
     print(settings.home_dir.as_posix())
-    assert settings.home_dir.as_posix() == (Path("~").resolve() / "tutu/tata").as_posix()
+    assert settings.home_dir.as_posix() == (Path("~").expanduser().resolve() / "tutu/tata").as_posix()

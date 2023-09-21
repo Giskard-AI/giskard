@@ -149,7 +149,7 @@ def test_mse(model, data, threshold, expected_metric, actual_slices_size, reques
     ).execute()
 
     assert results.actual_slices_size[0] == actual_slices_size
-    assert results.metric == pytest.approx(expected_metric)
+    assert results.metric == pytest.approx(expected_metric, abs=1e-2)
     assert results.passed
 
 

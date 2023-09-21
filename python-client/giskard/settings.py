@@ -42,7 +42,7 @@ class Settings(BaseModel):
 
     @property
     def home_dir(self) -> Path:
-        return Path(expand_env_var(self.home)).resolve()
+        return Path(expand_env_var(self.home)).expanduser().resolve()
 
     @classmethod
     def build_from_env(cls) -> "Settings":
