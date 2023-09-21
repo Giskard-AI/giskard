@@ -110,7 +110,6 @@ def test_default_dataset_is_used_with_generative_model():
 
 
 @pytest.mark.slow
-@pytest.mark.skip("Crashing test for docker")
 def test_generative_model_dataset():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don't want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])

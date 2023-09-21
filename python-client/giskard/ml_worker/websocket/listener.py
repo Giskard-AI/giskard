@@ -218,6 +218,7 @@ class MLWorkerWebSocketListener(stomp.ConnectionListener):
 def on_ml_worker_get_info(ml_worker: MLWorker, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
 
+    # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = (
         {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else None
     )
