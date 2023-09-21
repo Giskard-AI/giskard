@@ -85,13 +85,13 @@ const show = computed(() => {
 
   switch (props.type) {
     case "contribution":
-      return value.value.contribution?.kind !== PushKind.Invalid && value.value.contribution?.key == props.column;
+      return value.value.contribution && value.value.contribution?.kind !== PushKind.Invalid && value.value.contribution?.key == props.column;
     case "perturbation":
-      return value.value.perturbation?.kind !== PushKind.Invalid && value.value.perturbation?.key == props.column;
+      return value.value.perturbation && value.value.perturbation?.kind !== PushKind.Invalid && value.value.perturbation?.key == props.column;
     case "overconfidence":
-      return value.value.overconfidence?.kind !== PushKind.Invalid && value.value.overconfidence.push_title !== "";
+      return value.value.overconfidence && value.value.overconfidence?.kind !== PushKind.Invalid && value.value.overconfidence?.push_title !== "";
     case "borderline":
-      return value.value.borderline?.kind !== PushKind.Invalid && value.value.borderline.push_title !== "";
+      return value.value.borderline && value.value.borderline?.kind !== PushKind.Invalid && value.value.borderline?.push_title !== "";
     default:
       return false;
   }
@@ -152,6 +152,8 @@ async function applyCta(kind: CallToActionKind) {
       break;
     case CallToActionKind.OpenDebuggerOverconfidence:
       // Programmatically apply Overconfidence filter
+      //debuggingStore.setSelectedFilter({value: RowFilterType.OVERCONFIDENCE, label: 'Overconfidence', disabled: false});
+      debuggingStore.setSelectedFilter({value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: false});
       break;
     case CallToActionKind.SaveExample:
       mainStore.addSimpleNotification("This feature is not yet implemented.");

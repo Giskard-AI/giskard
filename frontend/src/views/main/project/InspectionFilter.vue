@@ -3,7 +3,8 @@
           :nudge-left="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" :nudge-bottom="28"
           :max-width="dirtyFilterValue.type === RowFilterType.CUSTOM ? 1000 : 300" min-width="300">
     <template v-slot:activator="{ on, attrs }">
-      <v-btn outlined tile small v-bind="attrs" v-on="on" :style="{ 'background-color': backgroundColors[filter.type] }">
+      <v-btn outlined tile small v-bind="attrs" v-on="on"
+             :style="{ 'background-color': backgroundColors[filter.type] }">
         <v-icon left>
           {{ filter.type === RowFilterType.ALL ? 'mdi-filter-outline' : 'mdi-filter' }}
         </v-icon>
@@ -54,8 +55,11 @@ import mixpanel from "mixpanel-browser";
 import {anonymize} from "@/utils";
 import {computed, onMounted, ref, watch} from "vue";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
+import {storeToRefs} from "pinia";
 
 const debuggingSessionStore = useDebuggingSessionsStore();
+
+const {selectedFilter} = storeToRefs(debuggingSessionStore);
 
 interface FilterType {
   label: string;
@@ -88,7 +92,7 @@ const menu = ref(false);
 const filter = ref<Filter>(initFilter());
 const dirtyFilterValue = ref<Filter>(initFilter());
 
-watch(() => debuggingSessionStore.selectedFilter, (value) => {
+watch(() => selectedFilter.value, (value) => {
   selectFilter(<FilterType>value);
 })
 

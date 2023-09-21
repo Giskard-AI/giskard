@@ -6,6 +6,8 @@ interface State {
     pushes: { [key: string]: Pushes };
     current: Pushes | undefined;
     identifier: PushIdentifier | undefined;
+    active: boolean;
+    loading: boolean;
 }
 
 interface Pushes {
@@ -28,24 +30,31 @@ export const usePushStore = defineStore('push', {
         pushes: {},
         current: undefined,
         identifier: undefined,
+        active: true,
+        loading: false
     }),
     getters: {},
     actions: {
         async fetchPushSuggestions(modelId: string, datasetId: string, rowNb: number, inputData: any, modelFeatures: string[]) {
+            if (!this.active) {
+                this.current = undefined;
+                return;
+            }
+
             this.identifier = {modelId, datasetId, rowNb, inputData, modelFeatures};
             let identifierString = JSON.stringify({modelId, datasetId, rowNb, inputData, modelFeatures});
             let previous = this.current;
             this.current = undefined;
 
+            this.loading = true;
             let result = await api.getPushes(modelId, datasetId, rowNb, inputData);
-
+            this.loading = false;
             if (previous == result) {
                 return;
             }
 
             let currentIdentifier = JSON.stringify(this.identifier);
             if (currentIdentifier === identifierString) {
-                console.log("Setting pushes")
                 // @ts-ignore
                 this.current = result;
             }

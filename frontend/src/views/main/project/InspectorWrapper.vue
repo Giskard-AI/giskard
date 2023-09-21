@@ -78,6 +78,7 @@
             <InspectionFilter :is-target-available="isDefined(inspection.dataset.target)" :labels="labels"
                               :model-type="inspection.model.modelType" @input="f => filter = f"
                               :inspectionId="inspectionId" :value="filter"/>
+            <InsightsPanel class="ml-3"/>
           </v-col>
         </v-row>
       </v-col>
@@ -159,6 +160,7 @@ import {confirm} from "@/utils/confirmation.utils";
 import {usePushStore} from "@/stores/push";
 import {useDebuggingSessionsStore} from "@/stores/debugging-sessions";
 import {$tags} from "@/utils/nametags.utils";
+import InsightsPanel from "@/components/InsightsPanel.vue";
 
 interface CreatedFeedbackCommonDTO {
   targetFeature?: string | null;
@@ -254,9 +256,10 @@ function next() {
 }
 
 watch(() => inputData.value, async (newValue, oldValue) => {
-  console.log("RowNb changed");
-  const pushStore = usePushStore();
-  await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, rowNb.value, newValue, modelFeatures.value);
+  if (newValue !== undefined) {
+    const pushStore = usePushStore();
+    await pushStore.fetchPushSuggestions(inspection.value!.model.id, inspection.value!.dataset.id, rowNb.value, newValue, modelFeatures.value);
+  }
 });
 
 async function submitGeneralFeedback() {
@@ -296,7 +299,7 @@ async function submitValueVariationFeedback(userData: object) {
 
 const debouncedUpdateRow = _.debounce(async () => {
   await updateRow(false);
-}, 150);
+}, 250);
 
 async function applyFilter(nv, ov) {
   if (JSON.stringify(nv) === JSON.stringify(ov)) {
@@ -343,6 +346,10 @@ async function fetchRows(rowIdxInResults: number, forceFetch: boolean) {
 
 
 function assignCurrentRow(forceFetch: boolean) {
+  if (forceFetch) {
+    rowNb.value = 0;
+  }
+
   rowIdxInPage.value = rowNb.value % itemsPerPage;
   loadingData.value = true;
 
@@ -351,9 +358,6 @@ function assignCurrentRow(forceFetch: boolean) {
   dataErrorMsg.value = '';
   loadingData.value = false;
   totalRows.value = numberOfRows.value;
-  if (forceFetch) {
-    rowNb.value = 0;
-  }
 }
 
 
