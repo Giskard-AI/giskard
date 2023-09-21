@@ -81,7 +81,7 @@ You can either install and run the server **locally** or on an **external server
         - A public Space: open to everyone (ideal for showcasing your models and their performance).
         - A private Space: restricted to your organization or yourself (facilitates internal collaboration and ensures security for your data and models).
 
-        **For private Hugging Face Spaces, you'll need an extra token (YOUR_SPACE_TOKEN) to connect the Giskard Client and ML worker.**
+        **For private Hugging Face Spaces, you'll need an extra token (YOUR_HF_SPACE_TOKEN) to connect the Giskard Client and ML worker.**
 
      If you're new to Giskard, we recommend trying this method. For comprehensive details, explore the guide on `Installation in Hugging Face Spaces <install_hfs/index.md>`_ or visit `our Hugging Face organization page <https://huggingface.co/giskardai>`_ if you're acquainted with Hugging Face Spaces.
 
@@ -116,7 +116,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -161,7 +161,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -197,7 +197,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> -t YOUR_SPACE_TOKEN
+            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACE_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 

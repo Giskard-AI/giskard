@@ -1,6 +1,6 @@
 <template>
   <v-card outlined v-if="needFetchWithHFAccessToken === false" :loading="isLoading">
-    <v-skeleton-loader v-if="isLoading" type="card"/>
+    <v-skeleton-loader v-if="isLoading" type="card" />
     <template v-else>
       <v-card-text v-if="apiKeyStore.getFirstApiKey">
         <v-alert class="pa-0 text-body-2" colored-border type="info">
@@ -12,9 +12,9 @@
         </v-alert>
         <div>
           <p>To connect a worker, install giskard library in any code environment of your choice with</p>
-          <CodeSnippet codeContent='pip install "giskard>=2.0.0b" -U'/>
+          <CodeSnippet codeContent='pip install "giskard>=2.0.0b" -U' />
           <p class="mt-4 mb-4">then run the following command to connect to this Giskard server:</p>
-          <CodeSnippet :codeContent="codeContent"/>
+          <CodeSnippet :codeContent="codeContent" />
           <p class="mt-4" v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and
             generate a new API token on the
             <router-link :to="{ name: 'admin-general' }">Settings</router-link>
@@ -36,21 +36,21 @@
       </v-card-text>
     </template>
   </v-card>
-  <HuggingFaceTokenCard v-else-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
-  <LoadingFullscreen v-else :name="'MLWorker instructions'"/>
+  <HuggingFaceTokenCard v-else-if="needFetchWithHFAccessToken" @submit="fetchAndSaveHFSpacesTokenWithAccessToken" />
+  <LoadingFullscreen v-else :name="'MLWorker instructions'" />
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref} from "vue";
-import {useMainStore} from "@/stores/main";
-import {useRoute} from "vue-router/composables";
-import {apiURL} from "@/env";
+import { computed, onMounted, ref } from "vue";
+import { useMainStore } from "@/stores/main";
+import { useRoute } from "vue-router/composables";
+import { apiURL } from "@/env";
 import CodeSnippet from "./CodeSnippet.vue";
-import {saveLocalHFToken} from "@/utils";
+import { saveLocalHFToken } from "@/utils";
 import HuggingFaceTokenCard from "./HuggingFaceTokenCard.vue";
 import LoadingFullscreen from "./LoadingFullscreen.vue";
-import {TYPE} from 'vue-toastification';
-import {useApiKeyStore} from "@/stores/api-key-store";
+import { TYPE } from 'vue-toastification';
+import { useApiKeyStore } from "@/stores/api-key-store";
 import { useHFSpacesTokenStore } from "@/stores/hfspaces";
 
 const appSettings = computed(() => mainStore.appSettings);
@@ -68,7 +68,7 @@ const isLoading = ref<boolean>(true);
 const codeContent = computed(() => {
   if (mainStore.appSettings!.isRunningOnHfSpaces && hfToken.value) {
     try {
-      return `giskard worker start -u ${apiURL} -k ${apiKeyStore.getFirstApiKey} -t ${hfToken.value}`;
+      return `giskard worker start -u ${apiURL} -k ${apiKeyStore.getFirstApiKey} --hf-token ${hfToken.value}`;
     } catch (error) {
       console.error(error);
     }
@@ -85,7 +85,7 @@ async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     if (token === null) {
       // Private HFSpaces or no valid HF access token
       needFetchWithHFAccessToken.value = true;
-      mainStore.addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+      mainStore.addNotification({ content: 'Invalid Hugging Face access token', color: TYPE.ERROR });
     } else if (!hfSpacesTokenStore.publicSpace) {
       needFetchWithHFAccessToken.value = false;
       hfToken.value = token;
