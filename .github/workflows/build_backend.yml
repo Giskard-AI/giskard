@@ -14,10 +14,20 @@ on:
         required: true
         type: boolean
         default: false
+      use-cache:
+        description: 'If cache should be used'
+        required: true
+        type: boolean
+        default: true
   workflow_call:
     inputs:
       run-integration-tests:
         description: 'If integration test should be run'
+        required: true
+        type: boolean
+        default: false
+      use-cache:
+        description: 'If cache should be used'
         required: true
         type: boolean
         default: false
@@ -77,10 +87,12 @@ jobs:
       - name: Setup Gradle # To cache ~/.gradle
         uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: ${{ github.event_name != 'pull_request' && !inputs.use-cache }} 
           cache-read-only: false
 
       - name: Cache SonarQube packages
         uses: actions/cache@v3
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -112,10 +124,12 @@ jobs:
       - name: Setup Gradle # To cache ~/.gradle
         uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: ${{ github.event_name != 'pull_request' && !inputs.use-cache }} 
           cache-read-only: false
 
       - name: Cache Frontend dependencies
         uses: actions/cache@v3
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
         with:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json')}}
@@ -168,6 +182,7 @@ jobs:
 
       - name: Cache Python deps
         uses: actions/cache@v3
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
         with:
           path: python-client/.venv
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
@@ -186,6 +201,7 @@ jobs:
   
       - name: Cache Giskard test resources
         uses: actions/cache@v3
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
         with:
           path: ~/.giskard
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}

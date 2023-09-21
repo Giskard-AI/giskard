@@ -1,0 +1,18 @@
+name: Clear all caches
+on:
+  workflow_dispatch:
+  schedule: 
+    - cron: '0 0 * * 0' # Every week
+
+permissions:
+    actions: write
+
+jobs:
+  clear:
+    name: Clear all cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clear cache
+        run: gh cache delete --all
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
