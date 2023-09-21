@@ -137,30 +137,30 @@ jobs:
         run: ./gradlew :backend:integrationTest --info -Ptestcontainers
 
   build-python:
-    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v1 && ' (Pydantic V1)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
+    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v2 && ' (Pydantic V2)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: [ "3.8", "3.9", "3.10" ]
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
         os: [ubuntu-latest]
-        experimental: [false]
-        pydantic_v1: [false]
+        pydantic_v2: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
           - python-version: "3.10"
             os: windows-2019
-            experimental: false
-            pydantic_v1: false
+            pydantic_v2: false
           - python-version: "3.10"
-            os: ubuntu-latest
-            experimental: false
-            pydantic_v1: true
+            os: windows-2022
+            pydantic_v2: false
           - python-version: "3.10"
             os: macos-latest
-            experimental: false
-            pydantic_v1: false
-    continue-on-error: ${{ matrix.experimental }} # https://ncorti.com/blog/howto-github-actions-build-matrix
+            pydantic_v2: false
+          - python-version: "3.10"
+            os: ubuntu-latest
+            pydantic_v2: true
+
+    continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.3.0
@@ -200,23 +200,23 @@ jobs:
         working-directory: python-client 
         run: pdm run lint
 
-      - name: Install pydantic v1
-        if: ${{ matrix.pydantic_v1 }}
+      - name: Install pydantic v2
+        if: ${{ matrix.pydantic_v2 }}
         working-directory: python-client 
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
-          pdm run pip install "pydantic<2"
+          pdm run pip install "pydantic>=2<3"
 
       - name: Check Pydantic installed version
         working-directory: python-client 
         run: |
           pdm run pip freeze | grep '^pydantic'
-          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v1 && '1' || '2' }}\.'
+          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v2 && '2' || '1' }}\.'
 
       - name: Test code
         working-directory: python-client
         env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ matrix.os == 'windows-2019' && 1 || 2 }}
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
         run: pdm run test-fast
   
       - name: Build doc
