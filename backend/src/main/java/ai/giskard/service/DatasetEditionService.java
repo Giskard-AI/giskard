@@ -3,28 +3,38 @@ package ai.giskard.service;
 import ai.giskard.domain.ml.Dataset;
 import ai.giskard.domain.ml.Inspection;
 import ai.giskard.repository.ml.DatasetRepository;
-import ai.giskard.utils.CsvEditStream;
 import ai.giskard.web.rest.errors.BadRequestException;
+import com.github.luben.zstd.ZstdInputStream;
+import com.github.luben.zstd.ZstdOutputStream;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class DatasetEditionService {
-    public static final String GISKARD_DATASET_UID_COLUMN = "__GSK_UID__";
+
+    private static final String GISKARD_DATASET_UID_COLUMN = "__GSK_UID__";
+    private static final CSVFormat READER_FORMAT = CSVFormat.DEFAULT.builder()
+        .setHeader()
+        .setSkipHeaderRecord(true)
+        .build();
+    private static final CSVFormat WRITER_FORMAT = CSVFormat.DEFAULT.builder()
+        .setHeader()
+        .setSkipHeaderRecord(false)
+        .build();
 
     private final DatasetRepository datasetRepository;
     private final FileLocationService locationService;
@@ -35,11 +45,21 @@ public class DatasetEditionService {
         }
     }
 
-    public Dataset addRow(UUID datasetId, Map<@NotNull String, @NotNull String> row) {
+    public Dataset addRow(UUID datasetId,
+                          Map<@NotNull String, @NotNull String> row,
+                          Map<@NotNull String, @NotNull String> prediction,
+                          Map<@NotNull String, @NotNull String> calculated) throws IOException {
         Dataset dataset = datasetRepository.getMandatoryById(datasetId);
         ensureEditable(dataset);
 
-        throw new NotImplementedException("This feature is not available ATM");
+        addDatasetRow(dataset, true, row, prediction, calculated);
+        addDatasetRow(dataset, false, row, prediction, calculated);
+
+        // TODO: update file size
+        dataset.setNumberOfRows(dataset.getNumberOfRows() + 1);
+        datasetRepository.save(dataset);
+
+        return dataset;
 
     }
 
@@ -48,70 +68,116 @@ public class DatasetEditionService {
         ensureEditable(dataset);
 
         deleteDatasetRow(dataset, rowId, true);
-        int totalRows = deleteDatasetRow(dataset, rowId, false);
-
-        for (Inspection inspection : dataset.getInspections()) {
-            deletePredictionRow(inspection, rowId);
-        }
+        deleteDatasetRow(dataset, rowId, false);
 
         // TODO: update file size
-        dataset.setNumberOfRows(totalRows);
+        dataset.setNumberOfRows(dataset.getNumberOfRows() - 1);
         datasetRepository.save(dataset);
 
         return dataset;
     }
 
-    private int deleteDatasetRow(Dataset dataset, int rowId, boolean sample) throws IOException {
+    private void addDatasetRow(Dataset dataset,
+                               boolean sample,
+                               Map<@NotNull String, @NotNull String> row,
+                               Map<@NotNull String, @NotNull String> prediction,
+                               Map<@NotNull String, @NotNull String> calculated) throws IOException {
+        CsvOperationResult result = updateDataset(locationService.resolvedDatasetCsvPath(dataset, sample), null, List.of(row));
+
+        for (Inspection inspection : dataset.getInspections()) {
+            updateCsvIfExists(locationService.resolvedInspectionPredictionsPath(inspection, sample), result, List.of(prediction));
+            updateCsvIfExists(locationService.resolvedInspectionCalculatedPath(inspection, sample), result, List.of(calculated));
+        }
+    }
+
+    private void deleteDatasetRow(Dataset dataset, int rowId, boolean sample) throws IOException {
         String rowIdStr = String.valueOf(rowId);
-        return deleteCsvRow(locationService.resolvedDatasetCsvPath(dataset, sample), true,
-            record -> record.get(GISKARD_DATASET_UID_COLUMN).equals(rowIdStr));
-    }
+        CsvOperationResult result = updateDataset(locationService.resolvedDatasetCsvPath(dataset, sample),
+            record -> record.get(GISKARD_DATASET_UID_COLUMN).equals(rowIdStr), Collections.emptyList());
 
-    private void deletePredictionRow(Inspection inspection, int rowId) throws IOException {
-        // TODO fix row retrieval
-        deleteCsvRowIfExists(rowId, locationService.resolvedInspectionPredictionsPath(inspection, true), false);
-        deleteCsvRowIfExists(rowId, locationService.resolvedInspectionPredictionsPath(inspection, false), false);
-        deleteCsvRowIfExists(rowId, locationService.resolvedInspectionCalculatedPath(inspection, true), false);
-        deleteCsvRowIfExists(rowId, locationService.resolvedInspectionCalculatedPath(inspection, false), false);
-    }
-
-    private void deleteCsvRowIfExists(int rowId, Path path, boolean compressed) throws IOException {
-        if (Files.exists(path)) {
-            String rowIdStr = String.valueOf(rowId);
-            deleteCsvRow(path, compressed, record -> record.get(GISKARD_DATASET_UID_COLUMN).equals(rowIdStr));
+        for (Inspection inspection : dataset.getInspections()) {
+            updateCsvIfExists(locationService.resolvedInspectionPredictionsPath(inspection, sample), result, Collections.emptyList());
+            updateCsvIfExists(locationService.resolvedInspectionCalculatedPath(inspection, sample), result, Collections.emptyList());
         }
     }
 
-    private int deleteCsvRow(Path path, boolean compressed, Predicate<CSVRecord> shouldKeepRow) throws IOException {
-        int rows = 0;
-        try (CsvEditStream csvEditStream = new CsvEditStream(path, compressed)) {
-            for (Iterator<CSVRecord> it = csvEditStream.iterator(); it.hasNext(); ) {
+    private CsvOperationResult updateDataset(Path path, Predicate<CSVRecord> shouldKeepRow,
+                                             List<Map<String, String>> appendedRows) throws IOException {
+        int curRow = 0;
+
+        final Path tmp = Files.createTempFile("gsk", "csv.zst");
+
+        try (CSVParser parser = new CSVParser(new BufferedReader(new InputStreamReader(new ZstdInputStream(Files.newInputStream(path)))), READER_FORMAT);
+             CSVPrinter printer = new CSVPrinter(new BufferedWriter(new OutputStreamWriter(new ZstdOutputStream(Files.newOutputStream(tmp)))),
+                 WRITER_FORMAT.builder().setHeader(parser.getHeaderNames().toArray(String[]::new)).build())) {
+            CsvOperationResult result = new CsvOperationResult(parser.getHeaderNames());
+
+            for (Iterator<CSVRecord> it = parser.iterator(); it.hasNext(); curRow++) {
                 CSVRecord record = it.next();
 
-                if (shouldKeepRow.test(record)) {
-                    csvEditStream.write(record);
-                    rows++;
+                if (shouldKeepRow != null && shouldKeepRow.test(record)) {
+                    printer.printRecord(record);
+                } else {
+                    result.deleteRow(curRow);
                 }
             }
-        }
 
-        return rows;
+            for (Map<String, String> row : appendedRows) {
+                printer.printRecord(result.headers.stream().map(row::get));
+            }
+
+            return result;
+        } finally {
+            Files.delete(path);
+            Files.move(tmp, path);
+        }
     }
 
-    private int deleteCsvRow(Path path, boolean compressed, Predicate<CSVRecord> shouldKeepRow) throws IOException {
-        int rows = 0;
-        try (CsvEditStream csvEditStream = new CsvEditStream(path, compressed)) {
-            for (Iterator<CSVRecord> it = csvEditStream.iterator(); it.hasNext(); ) {
-                CSVRecord record = it.next();
-
-                if (shouldKeepRow.test(record)) {
-                    csvEditStream.write(record);
-                    rows++;
-                }
-            }
+    private void updateCsvIfExists(Path path, CsvOperationResult result,
+                                   List<Map<String, String>> appendedRows) throws IOException {
+        if (!Files.exists(path)) {
+            return;
         }
 
-        return rows;
+        final Path tmp = Files.createTempFile("gsk", "csv");
+
+        int currentRow = 0;
+        try (CSVParser parser = new CSVParser(Files.newBufferedReader(path), READER_FORMAT);
+             CSVPrinter printer = new CSVPrinter(Files.newBufferedWriter(tmp),
+                 WRITER_FORMAT.builder().setHeader(parser.getHeaderNames().toArray(String[]::new)).build())) {
+            Iterator<CSVRecord> it = parser.iterator();
+
+            for (int nextDeletedRow : result.deletedRows) {
+                while (currentRow++ < nextDeletedRow) {
+                    printer.printRecord(it.next());
+                }
+                it.next();
+            }
+
+            while (it.hasNext()) {
+                printer.printRecord(it.next());
+            }
+
+            for (Map<String, String> row : appendedRows) {
+                printer.printRecord(result.headers.stream().map(row::get));
+            }
+        } finally {
+            Files.delete(path);
+            Files.move(tmp, path);
+        }
+    }
+
+    private static class CsvOperationResult {
+        private final List<String> headers;
+        private final SortedSet<Integer> deletedRows = new TreeSet<>();
+
+        private CsvOperationResult(List<String> headers) {
+            this.headers = headers;
+        }
+
+        public void deleteRow(int index) {
+            deletedRows.add(index);
+        }
     }
 
 }

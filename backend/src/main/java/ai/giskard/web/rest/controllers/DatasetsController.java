@@ -74,8 +74,10 @@ public class DatasetsController {
     @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
     public DatasetDTO addRow(@PathVariable("projectKey") @NotNull String projectKey,
                              @PathVariable("datasetId") @NotNull UUID datasetId,
-                             @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> row) {
-        return giskardMapper.datasetToDatasetDTO(datasetEditionService.addRow(datasetId, row));
+                             @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> row,
+                             @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> prediction,
+                             @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> calculated) throws IOException {
+        return giskardMapper.datasetToDatasetDTO(datasetEditionService.addRow(datasetId, row, prediction, calculated));
     }
 
     @DeleteMapping("project/{projectKey}/datasets/{datasetId}/rows/{rowId}")
