@@ -30,6 +30,11 @@
                   </v-list-item>
                 </v-list>
               </v-menu>
+              <v-btn v-if="dataset.editable" color="error" icon @click="deleteRow"
+                     v-track-click="'Delete dataset row'"
+                     :disabled="changed || isInputNotOriginal">
+                <v-icon>delete</v-icon>
+              </v-btn>
 
             </v-card-title>
             <v-card-text v-if="!errorLoadingMetadata && Object.keys(inputMetaData).length > 0" id="inputTextCard">
@@ -108,18 +113,24 @@
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import { DatasetDTO, ModelType } from '@/generated-sources';
+import {ModelType} from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
-import { anonymize } from '@/utils';
+import {anonymize} from '@/utils';
 import _ from 'lodash';
 import TransformationPopover from '@/components/TransformationPopover.vue';
-import { useCatalogStore } from '@/stores/catalog';
-import { computed, onMounted, ref, watch } from 'vue';
+import {useCatalogStore} from '@/stores/catalog';
+import {computed, onMounted, ref, watch} from 'vue';
 import PushPopover from '@/components/PushPopover.vue';
 import InspectorExplanation from '@/views/main/project/InspectorExplanation.vue';
-import { InspectorFeature, InspectorUtils } from '@/utils/inspector-utils';
-import { ModelDTO } from '@/generated/client';
+import {InspectorFeature, InspectorUtils} from '@/utils/inspector-utils';
+import {DatasetDTO, ModelDTO} from '@/generated/client';
 import GenerationResults from '@/views/main/project/GenerationResults.vue';
+import {$vfm} from "vue-final-modal";
+import ConfirmModal from "@/views/main/project/modals/ConfirmModal.vue";
+import {useMainStore} from "@/stores/main";
+import {TYPE} from "vue-toastification";
+import {openapi} from "@/api-v2";
+import {api} from "@/api";
 
 const catalogStore = useCatalogStore();
 
@@ -130,6 +141,7 @@ interface Props {
   transformationModifications: any; // used for the variation feedback
   inputData: { [key: string]: string };
   isMiniMode?: boolean;
+  projectId: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -199,7 +211,7 @@ const modelFeatures = computed(() => {
 })
 
 const datasetNonTargetColumns = computed(() => {
-  return _.sortBy(inputMetaData.value.filter(x => x.name !== props.dataset.target),
+  return _.sortBy(inputMetaData.value.filter(x => x.name !== props.dataset.target && !x.name.startsWith('__GSK_')),
     e => !props.model.featureNames?.includes(e.name),
     'name'
   )
@@ -236,6 +248,35 @@ async function onValuePerturbation(featureMeta) {
 
 async function loadMetaData() {
   featuresToView.value = inputMetaData.value.map(e => e.name)
+}
+
+async function deleteRow() {
+  const project = await api.getProject(props.projectId);
+
+  $vfm.show({
+    component: ConfirmModal,
+    bind: {
+      title: `Delete row this row permanently`,
+      text: `Are you sure that you want to delete this row permanently from the dataset?`,
+      isWarning: true
+    },
+    on: {
+      async confirm(close) {
+        await openapi.datasets.deleteRow({
+          projectKey: project.key,
+          datasetId: props.dataset.id,
+          rowId: parseInt(props.inputData['__GSK_UID__'], 10)
+        });
+        //TODO: reload
+        close();
+        useMainStore().addNotification({
+          content: `The row has been deleted from dataset.`,
+          color: TYPE.SUCCESS,
+          showProgress: false
+        });
+      }
+    }
+  });
 }
 
 const emit = defineEmits(['reset', 'update:inputData', 'submitValueVariationFeedback', 'submitValueFeedback']);

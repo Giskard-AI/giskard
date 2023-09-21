@@ -2,7 +2,6 @@ package ai.giskard.web.dto.ml;
 
 import ai.giskard.domain.ColumnType;
 import com.dataiku.j2ts.annotations.UIModel;
-import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @UIModel
 public class DatasetDTO {
-    @UINullable
+    @Nullable
     private String target;
     @JsonAlias("column_types")
     private Map<String, ColumnType> columnTypes;
@@ -43,6 +43,7 @@ public class DatasetDTO {
     private Instant createdDate;
     @JsonAlias("last_modified_date")
     private Instant lastModifiedDate;
+    @NotNull
     private boolean editable;
 
 }

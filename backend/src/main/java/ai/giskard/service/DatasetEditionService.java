@@ -117,12 +117,15 @@ public class DatasetEditionService {
 
                 if (shouldKeepRow != null && shouldKeepRow.test(record)) {
                     printer.printRecord(record);
+                    result.writeRow(Integer.parseInt(record.get(GISKARD_DATASET_UID_COLUMN)));
                 } else {
                     result.deleteRow(curRow);
                 }
             }
 
             for (Map<String, String> row : appendedRows) {
+                row = new HashMap<>(row);
+                row.put(GISKARD_DATASET_UID_COLUMN, Integer.toString(++result.maxGskUid));
                 printer.printRecord(result.headers.stream().map(row::get));
             }
 
@@ -170,6 +173,7 @@ public class DatasetEditionService {
     private static class CsvOperationResult {
         private final List<String> headers;
         private final SortedSet<Integer> deletedRows = new TreeSet<>();
+        private int maxGskUid = -1;
 
         private CsvOperationResult(List<String> headers) {
             this.headers = headers;
@@ -177,6 +181,10 @@ public class DatasetEditionService {
 
         public void deleteRow(int index) {
             deletedRows.add(index);
+        }
+
+        public void writeRow(int uid) {
+            maxGskUid = Math.max(maxGskUid, uid);
         }
     }
 
