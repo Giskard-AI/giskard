@@ -241,4 +241,4 @@ jobs:
         working-directory: python-client
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm run test -m 'not slow'
+        run: pdm run test -m 'slow'
