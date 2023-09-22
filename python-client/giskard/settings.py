@@ -31,8 +31,6 @@ class Settings(BaseModel):
     ws_path: str = "/ml-worker"
     host: str = "localhost"
     max_workers: int = 10
-    max_send_message_length_mb: int = 1024
-    max_receive_message_length_mb: int = 1024
     loglevel: str = "INFO"
     cache_dir: str = "cache"
     disable_analytics: bool = False

@@ -17,7 +17,7 @@ def configured_validate_arguments(func):
     Decorator to enforce a function args to be compatible with their type hints.
     :return: A wrapper function decorated by pydantic validate_arguments configured to allow arbitrary types check.
     """
-    # https://docs.pydantic.dev/latest/usage/validation_decorator/
+    # https://docs.pydantic.dev/2.3/usage/validation_decorator/
     # Actually, this is more than just validation
     # If you check https://docs.pydantic.dev/latest/usage/validation_decorator/#coercion-and-strictness,
     # this explains it will try to convert/coerce type to the type hinting
