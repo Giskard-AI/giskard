@@ -14,33 +14,8 @@ class TestCases(BaseModel):
 
 class PromptInputs(BaseModel):
     inputs: List[Dict[str, str]] = Field(
-        description="A list of input dictionary, the keys are the variable name inside brackets and the realistic value are the replacement text"
+        description="A list of dictionaries with all variables as keys, along with their corresponding textual input value.t"
     )
-
-
-GENERATE_INPUT_PROMPT = """
-As a Prompt QA Specialist, your task is to create a list of {input_count} inputs to thoroughly test a model's generated responses. These inputs should evaluate the model's performance, particularly in scenarios where it may fail or exhibit suboptimal behavior related to {issue_name}. It is important to ensure that the inputs cover both common and unusual cases.
-{issue_description}
-
-The following tests will be conducted: {generated_tests}
-
-Here are some general examples to inspire you (please note that these examples are not specific to the issue at hand): {input_examples}
-
-Please make sure that the inputs are relevant to the following model:
-
-**Name**: {model_name}
-
-**Description**: {model_description}
-
-For each variable in the model, provide a textual input value: {variables}.
-
-**Format Instructions**: 
-Please respond with a JSON object that includes the following keys:
-- inputs: A list of {input_count} dictionaries with all variables ({variables}) as keys, along with their corresponding textual input value.
-
-**Example**:
-{{"inputs": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}"
-"""
 
 
 class LlmIssueCategory:
@@ -104,20 +79,45 @@ Your task as a prompt QA is to generate test assertions that assess the performa
 
     def input_generator(self, input_count=5, max_tokens_per_input=128):
         try:
-            from langchain import PromptTemplate
+            from langchain.prompts import ChatPromptTemplate
             from langchain.chains.openai_functions import create_structured_output_chain
         except ImportError as err:
             raise LLMImportError() from err
 
-        prompt = PromptTemplate(
-            template=GENERATE_INPUT_PROMPT,
-            input_variables=["model_name", "model_description", "variables", "generated_tests"],
-            partial_variables={
-                "input_count": input_count,
-                "issue_name": self.name,
-                "issue_description": self.description,
-                "input_examples": str(self.prompt_causing_issue_examples),
-            },
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """
+As a Prompt QA Specialist, your task is to create a list of {input_count} inputs to thoroughly test a model's generated responses. These inputs should evaluate the model's performance, particularly in scenarios where it may fail or exhibit suboptimal behavior related to {issue_name}. It is important to ensure that the inputs cover both common and unusual cases.
+{issue_description}
+
+The following tests will be conducted: {generated_tests}
+
+Here are some general examples to inspire you (please note that these examples are not specific to the issue at hand): {input_examples}
+
+Please make sure that the inputs are relevant to the following model:
+
+**Name**: {model_name}
+
+**Description**: {model_description}
+
+For each variable in the model, provide a textual input value: {variables}.
+
+**Format Instructions**: 
+Please respond with a JSON object that includes the following keys:
+- inputs: A list of {input_count} dictionaries with all variables ({variables}) as keys, along with their corresponding textual input value.
+
+**Example**:
+{{"inputs": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}"
+""",
+                )
+            ]
+        ).partial(
+            input_count=str(input_count),
+            issue_name=self.name,
+            issue_description=self.description,
+            input_examples=str(self.prompt_causing_issue_examples),
         )
 
         return create_structured_output_chain(
