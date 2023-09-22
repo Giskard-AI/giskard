@@ -1,0 +1,32 @@
+name: Publish on Pipy
+
+env:
+  PACKAGE_NAME: giskard
+defaults:
+  run:
+    working-directory: python-client
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  publish-pipy:
+    name: Publish on Pipy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 1
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.10
+          cache: false
+            
+      - name: Build wheel
+        run: pdm build
+
+      - name: Publish on PiPy
+        run: pdm publish --repository ${{ env.PACKAGE_NAME }} --username ${{ secrets.PIPY_USERNAME }} --password ${{ secrets.PIPY_PASSWORD }}

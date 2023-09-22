@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          include-v-in-tag: true
+          release-type: python
+          package-name: giskard
+          # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+          versioning-strategy: always-bump-minor # Once in semantic, use default
