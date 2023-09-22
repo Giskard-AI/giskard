@@ -53,7 +53,9 @@ You are a prompt QA responsible for evaluating the LLM answer based on test asse
     ]
 )
 
-chain = create_structured_output_chain(TestResult, llm_config.build_scan_llm(max_tokens=512, temperature=0.2), prompt)
+chain = create_structured_output_chain(
+    TestResult, llm_config.build_scan_llm(gpt4_preferred=True, max_tokens=512, temperature=0.2), prompt
+)
 
 
 def validate_test_case_with_reason(model: BaseModel, test_case: str, df, predictions: List[str]) -> List[TestResult]:
