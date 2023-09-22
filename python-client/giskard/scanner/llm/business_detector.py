@@ -116,7 +116,7 @@ class LLMBusinessDetector:
                     model, issue, test_cases, potentially_failing_dataset, predictions, self.threshold, verbose
                 )
             except Exception as e:
-                maybe_print(f"Failed to evaluate {issue}: {e}", verbose=verbose)
+                maybe_print(f"Failed to evaluate {issue.name}: {e}", verbose=verbose)
 
         return issues
 
