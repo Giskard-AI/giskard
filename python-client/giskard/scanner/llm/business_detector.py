@@ -91,7 +91,7 @@ class LLMBusinessDetector:
                         variables=model.meta.feature_names,
                         generated_tests=test_cases,
                     )
-                    .input[: self.num_samples]
+                    .inputs[: self.num_samples]
                 )
 
                 potentially_failing_dataset = Dataset(

@@ -65,10 +65,10 @@ For each variable in the model, provide a textual input value: {variables}.
 
 **Format Instructions**: 
 Please respond with a JSON object that includes the following keys:
-- input: A dictionary with all variables ({variables}) as keys, along with their corresponding textual input value.
+- inputs: A list of {input_count} dictionaries with all variables ({variables}) as keys, along with their corresponding textual input value.
 
 **Example**:
-{{"input": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}"
+{{"inputs": [{{"reply_instruction": "Ask to reschedule on Tuesday at 2PM", "mail": "I hereby confirm our interview next Monday at 10AM"}}]}}"
 """
 
 
