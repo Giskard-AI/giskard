@@ -38,12 +38,12 @@ def _find_categories(model_description, failed=False):
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=llm_config.build_llm(max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.build_scan_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     output = chain.run(prompt_template=model_description)
 
     retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser, llm=llm_config.build_llm(max_tokens=512, temperature=0.6)
+        parser=parser, llm=llm_config.build_scan_llm(max_tokens=512, temperature=0.6)
     )
 
     return retry_parser.parse_with_prompt(output, prompt.format_prompt(prompt_template=model_description)).objectives
@@ -70,10 +70,10 @@ def _generate_inputs(model_description, feature_names, categories, failed=False)
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
-    chain = LLMChain(llm=llm_config.build_llm(max_tokens=512, temperature=0.8), prompt=prompt)
+    chain = LLMChain(llm=llm_config.build_scan_llm(max_tokens=512, temperature=0.8), prompt=prompt)
 
     retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser, llm=llm_config.build_llm(max_tokens=512, temperature=0.6)
+        parser=parser, llm=llm_config.build_scan_llm(max_tokens=512, temperature=0.6)
     )
 
     results = dict()

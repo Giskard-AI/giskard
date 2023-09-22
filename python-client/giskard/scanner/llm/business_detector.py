@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Sequence
 
 import pandas as pd
@@ -83,16 +84,12 @@ class LLMBusinessDetector:
                 )
                 maybe_print(f"Generated tests: {test_cases}", verbose=verbose)
 
-                potentially_failing_inputs = (
-                    issue.input_generator(self.num_samples)
-                    .run(
-                        model_name=model.meta.name,
-                        model_description=model.meta.description,
-                        variables=model.meta.feature_names,
-                        generated_tests=test_cases,
-                    )
-                    .inputs[: self.num_samples]
-                )
+                potentially_failing_inputs = issue.input_generator(model.meta.feature_names, self.num_samples).run(
+                    model_name=model.meta.name,
+                    model_description=model.meta.description,
+                    variables=model.meta.feature_names,
+                    generated_tests=test_cases,
+                )["inputs"][: self.num_samples]
 
                 potentially_failing_dataset = Dataset(
                     pd.DataFrame(
@@ -117,6 +114,8 @@ class LLMBusinessDetector:
                 )
             except Exception as e:
                 maybe_print(f"Failed to evaluate {issue.name}: {e}", verbose=verbose)
+                if verbose:
+                    traceback.print_exc()
 
         return issues
 

@@ -14,8 +14,31 @@ class TestCases(BaseModel):
 
 class PromptInputs(BaseModel):
     inputs: List[Dict[str, str]] = Field(
-        description="A list of dictionaries with all variables as keys, along with their corresponding textual input value.t"
+        description="A list of dictionaries with all variables as keys, along with their corresponding textual input value."
     )
+
+
+def _build_inputs_json_schema(variables: List[str]):
+    return {
+        "title": "Prompt input",
+        "description": "An object containing the list of inputs",
+        "type": "object",
+        "properties": {
+            "inputs": {
+                "type": "array",
+                "title": "Inputs",
+                "description": "List of inputs",
+                "items": {
+                    "title": "Input",
+                    "description": "List of variables for an input",
+                    "type": "object",
+                    "properties": {name: {"type": "string"} for name in variables},
+                    "required": variables,
+                },
+            }
+        },
+        "required": ["inputs"],
+    }
 
 
 class LlmIssueCategory:
@@ -74,10 +97,14 @@ Your task as a prompt QA is to generate test assertions that assess the performa
         )
 
         return create_structured_output_chain(
-            TestCases, llm_config.build_llm(max_tokens=assertion_count * max_tokens_per_test, temperature=0.8), prompt
+            TestCases,
+            llm_config.build_scan_llm(
+                gpt4_preferred=True, max_tokens=assertion_count * max_tokens_per_test, temperature=0.8
+            ),
+            prompt,
         )
 
-    def input_generator(self, input_count=5, max_tokens_per_input=128):
+    def input_generator(self, variables: List[str], input_count=5, max_tokens_per_input=128):
         try:
             from langchain.prompts import ChatPromptTemplate
             from langchain.chains.openai_functions import create_structured_output_chain
@@ -121,7 +148,11 @@ Please respond with a JSON object that includes the following keys:
         )
 
         return create_structured_output_chain(
-            PromptInputs, llm_config.build_llm(max_tokens=input_count * max_tokens_per_input, temperature=0.8), prompt
+            _build_inputs_json_schema(variables),
+            llm_config.build_scan_llm(
+                gpt4_preferred=True, max_tokens=input_count * max_tokens_per_input * len(variables), temperature=0.8
+            ),
+            prompt,
         )
 
 
