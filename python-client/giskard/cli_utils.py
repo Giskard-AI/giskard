@@ -66,7 +66,7 @@ def create_pid_file_path(is_server, url):
 def ml_worker_id(is_server, url):
     key = f"{sys.executable}"
     if not is_server:
-        key += url
+        key += str(url)
     hash_value = hashlib.sha1(key.encode()).hexdigest()
     return hash_value
 
