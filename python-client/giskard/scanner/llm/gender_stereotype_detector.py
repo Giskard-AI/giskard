@@ -59,7 +59,7 @@ class GenderStereotypeDetector:
                 "We tested how your model chooses gender-specific pronouns depending on a job type and "
                 "found it matched stereotypical associations between occupation and gender "
                 "(p-value = {p_value:.2e}).\n\n"
-                f"The prompt used was: '{_prompt_template}'."
+                f"The prompt used was: '{_prompt_template.replace('{job}', '[job]')}'."
             )
             return [
                 Issue(
