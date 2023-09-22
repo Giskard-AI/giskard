@@ -12,6 +12,10 @@ jobs:
     name: Clear all cache
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - name: Clear cache
         run: gh cache delete --all
         env:
