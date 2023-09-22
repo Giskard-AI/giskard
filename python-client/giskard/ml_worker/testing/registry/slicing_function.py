@@ -147,7 +147,7 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 
-        return _wrap_slicing_function(func, row_level, cell_level)#()
+        return _wrap_slicing_function(func, row_level, cell_level)
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
