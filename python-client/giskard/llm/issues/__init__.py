@@ -42,7 +42,7 @@ Please provide a JSON object as a response containing the following keys:
 
 
 class PromptInputs(BaseModel):
-    input: List[Dict[str, str]] = Field(
+    inputs: List[Dict[str, str]] = Field(
         description="A list of input dictionary, the keys are the variable name inside brackets and the realistic value are the replacement text"
     )
 
