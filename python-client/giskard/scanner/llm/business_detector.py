@@ -78,14 +78,14 @@ class LLMBusinessDetector:
             try:
                 test_cases = (
                     issue.issue_generator(self.num_tests)
-                    .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
+                    .run(model_name=model.meta.name, model_description=model.meta.description)
                     .assertions[: self.num_tests]
                 )
                 maybe_print(f"Generated tests: {test_cases}", verbose=verbose)
 
                 potentially_failing_inputs = (
                     issue.input_generator(self.num_samples)
-                    .run_and_parse_with_prompt(
+                    .run(
                         model_name=model.meta.name,
                         model_description=model.meta.description,
                         variables=model.meta.feature_names,

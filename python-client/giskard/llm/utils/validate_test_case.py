@@ -4,36 +4,56 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
 from ..config import llm_config
-from ..prompts.prompts import VALIDATE_TEST_CASE
 from ...models.base.model import BaseModel
 from ...scanner.llm.utils import LLMImportError
 
 try:
-    from langchain import PromptTemplate, LLMChain
-    from langchain.output_parsers import PydanticOutputParser
-    from langchain.output_parsers import RetryWithErrorOutputParser
+    from langchain.prompts import ChatPromptTemplate
+    from langchain.chains.openai_functions import create_structured_output_chain
 except ImportError as err:
     raise LLMImportError() from err
 
 
 class TestResult(PydanticBaseModel):
-    score: int = Field(description="The score from 1 to 5")
-    reason: str = Field(description="A small explanation on why the score was given")
+    score: int = Field(
+        description="A number ranging from 1 to 5: 1 indicates that the answer does not meet the criteria at all, 3 indicates that the answer can be improved, 5 indicates that the answer completely meets the criteria"
+    )
+    reason: str = Field(description="A text that clearly explains the given score")
     tip: Optional[str] = Field(
-        description="A tip on how to improve the model in order to get better generated responses"
+        description="A text that offers a clear and descriptive suggestion on how to enhance the model"
     )
 
 
-parser = PydanticOutputParser(pydantic_object=TestResult)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+You are a prompt QA responsible for evaluating the LLM answer based on test assertions of the {model_name} model.
 
-prompt = PromptTemplate(
-    template=VALIDATE_TEST_CASE,
-    input_variables=["prompt", "test_case", "response", "model_name", "model_description"],
+**Scope**: Please focus on testing '{test_case}'.
+
+**Description**: The objective is to verify that the model answer related to the user prompt passes the test correctly.
+
+**Model Information**:
+``` 
+{model_description}
+```
+""",
+        ),
+        (
+            "user",
+            """
+```json
+{prompt}
+```
+""",
+        ),
+        ("ai", "{response}"),
+    ]
 )
 
-chain = LLMChain(llm=llm_config.build_llm(temperature=0.2), prompt=prompt)
-
-retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=llm_config.build_llm(temperature=0.2))
+chain = create_structured_output_chain(TestResult, llm_config.build_llm(temperature=0.2), prompt)
 
 
 def validate_test_case_with_reason(model: BaseModel, test_case: str, df, predictions: List[str]) -> List[TestResult]:
@@ -48,7 +68,7 @@ def validate_test_case_with_reason(model: BaseModel, test_case: str, df, predict
         for i in range(len(predictions))
     ]
 
-    return [retry_parser.parse_with_prompt(chain.run(**input), prompt.format_prompt(**input)) for input in inputs]
+    return [chain.run(**input) for input in inputs]
 
 
 def validate_test_case(model: BaseModel, test_case: str, df, predictions: List[str]) -> List[bool]:

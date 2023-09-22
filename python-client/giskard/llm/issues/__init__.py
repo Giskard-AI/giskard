@@ -7,38 +7,9 @@ from ...scanner.llm.utils import LLMImportError
 
 
 class TestCases(BaseModel):
-    assertions: List[str] = Field(description="list of assertions that the answer must pass")
-
-
-GENERATE_TEST_PROMPT = """
-Your task as a prompt QA is to generate test assertions that assess the performance of the {model_name} model.
-
-**Scope**: Focus on testing {issue_name} which involves {issue_description}.
-
-**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively evaluate the behavior of the {model_name} model in various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
-
-**Model Information**:
-``` 
-{model_description}
-```
-
-**Example Inputs**: Here are some example inputs for the {issue_name} issue:
-
-```json
-{input_examples}
-```
-
-**Format Instructions**: 
-Please provide a JSON object as a response containing the following keys:
-- assertions: A list of concise descriptions outlining the expected behaviors. If no relevant behaviors can be generated for a specific {issue_name}, the list should be an empty array: []
-
-**Example Assertions**:
-```json
-{{
-  "assertions": {issue_examples}
-}}
-```
-"""
+    assertions: List[str] = Field(
+        description="A list of concise descriptions outlining the expected behaviors. If no relevant behaviors can be generated for a specific {issue_name}, the list should be an empty array: []"
+    )
 
 
 class PromptInputs(BaseModel):
@@ -83,46 +54,60 @@ class LlmIssueCategory:
 
     def issue_generator(self, assertion_count=4, max_tokens_per_test=64):
         try:
-            from langchain import PromptTemplate, LLMChain
-            from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
-            from ..utils.auto_chain_parser import AutoChainParser
+            from langchain.prompts import ChatPromptTemplate
+            from langchain.chains.openai_functions import create_structured_output_chain
         except ImportError as err:
             raise LLMImportError() from err
 
-        parser = PydanticOutputParser(pydantic_object=TestCases)
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """
+Your task as a prompt QA is to generate test assertions that assess the performance of the {model_name} model.
 
-        prompt = PromptTemplate(
-            template=GENERATE_TEST_PROMPT,
-            input_variables=["model_name", "model_description"],
-            partial_variables={
-                "assertion_count": assertion_count,
-                "issue_name": self.name,
-                "issue_description": self.description,
-                "input_examples": str(self.prompt_causing_issue_examples),
-                "issue_examples": str(self.issue_examples),
-            },
+**Scope**: Focus on testing {issue_name} which involves {issue_description}.
+
+**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively evaluate the behavior of the {model_name} model in various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
+
+**Model Information**:
+``` 
+{model_description}
+```
+
+**Example Inputs**: Here are some example inputs for the {issue_name} issue:
+
+```json
+{input_examples}
+```
+
+**Example Assertions**:
+```json
+{{
+  "assertions": {issue_examples}
+}}
+```
+""",
+                )
+            ]
+        ).partial(
+            assertion_count=str(assertion_count),
+            issue_name=self.name,
+            issue_description=self.description,
+            input_examples=str(self.prompt_causing_issue_examples),
+            issue_examples=str(self.issue_examples),
         )
 
-        return AutoChainParser(
-            LLMChain(
-                llm=llm_config.build_llm(max_tokens=assertion_count * max_tokens_per_test, temperature=0.8),
-                prompt=prompt,
-            ),
-            OutputFixingParser.from_llm(
-                parser=parser,
-                llm=llm_config.build_llm(max_tokens=assertion_count * max_tokens_per_test, temperature=0.6),
-            ),
+        return create_structured_output_chain(
+            TestCases, llm_config.build_llm(max_tokens=assertion_count * max_tokens_per_test, temperature=0.8), prompt
         )
 
     def input_generator(self, input_count=5, max_tokens_per_input=128):
         try:
-            from langchain import PromptTemplate, LLMChain
-            from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
-            from ..utils.auto_chain_parser import AutoChainParser
+            from langchain import PromptTemplate
+            from langchain.chains.openai_functions import create_structured_output_chain
         except ImportError as err:
             raise LLMImportError() from err
-
-        parser = PydanticOutputParser(pydantic_object=PromptInputs)
 
         prompt = PromptTemplate(
             template=GENERATE_INPUT_PROMPT,
@@ -135,13 +120,8 @@ class LlmIssueCategory:
             },
         )
 
-        return AutoChainParser(
-            LLMChain(
-                llm=llm_config.build_llm(max_tokens=input_count * max_tokens_per_input, temperature=0.8), prompt=prompt
-            ),
-            OutputFixingParser.from_llm(
-                parser=parser, llm=llm_config.build_llm(max_tokens=input_count * max_tokens_per_input, temperature=0.6)
-            ),
+        return create_structured_output_chain(
+            PromptInputs, llm_config.build_llm(max_tokens=input_count * max_tokens_per_input, temperature=0.8), prompt
         )
 
 
