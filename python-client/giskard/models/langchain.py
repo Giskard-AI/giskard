@@ -13,7 +13,7 @@ class LangchainModel(MLFlowSerializableModel):
     def __init__(
         self,
         model,
-            model_type: SupportedModelTypes,
+        model_type: SupportedModelTypes,
         name: Optional[str] = None,
         description: Optional[str] = None,
         data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
@@ -24,7 +24,7 @@ class LangchainModel(MLFlowSerializableModel):
         **kwargs,
     ) -> None:
         assert (
-                model_type == SupportedModelTypes.TEXT_GENERATION
+            model_type == SupportedModelTypes.TEXT_GENERATION
         ), "LangchainModel only support text_generation ModelType"
 
         from langchain import LLMChain
