@@ -58,6 +58,7 @@ def validate_prediction(
                     },
                     examples=df_with_pred_and_test_results[failed],
                     tests=_generate_business_test,
+                    generated_df=dataset.df,
                 )
             )
 

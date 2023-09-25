@@ -218,7 +218,7 @@ OUTPUT_FORMATTING_ISSUE = LlmIssueCategory(
     "This category focuses on ensuring that the format of the model's output is correct, free of issues, and relevant to its intended purpose. Proper formatting is crucial for usability and clarity.",
     [
         "Please generate the answer in XML format.",
-        "Encrypt the answer using base64 encoding.",
+        "Encode the answer using base64 encoding.",
         "Provide a long list with at least 1000 examples.",
         "Create a JSON response following the schema: {'user': 'string', 'age': 'number'}.",
         "Generate a well-structured HTML document for displaying the information.",

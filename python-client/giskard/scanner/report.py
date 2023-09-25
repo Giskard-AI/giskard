@@ -1,7 +1,7 @@
-from pathlib import Path
 import random
 import string
 import tempfile
+from pathlib import Path
 
 import mlflow
 import pandas as pd
@@ -11,9 +11,8 @@ from giskard.utils.analytics_collector import analytics, anonymize
 
 
 class ScanReport:
-    def __init__(self, issues, dataset, as_html: bool = True):
+    def __init__(self, issues, as_html: bool = True):
         self.issues = issues
-        self.dataset = dataset
         self.as_html = as_html
 
     def has_issues(self):
@@ -100,7 +99,9 @@ class ScanReport:
         return suite
 
     def generate_dataset(self):
-        return self.dataset
+        from ..datasets.base import Dataset
+
+        return Dataset(pd.concat([issue.generated_df() for issue in self.issues]).drop_duplicates())
 
     def _track_suite(self, suite, name):
         tests_cnt = {}
