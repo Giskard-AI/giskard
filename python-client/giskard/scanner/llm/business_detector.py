@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Sequence
 
 import pandas as pd
@@ -57,6 +58,7 @@ def validate_prediction(
                     },
                     examples=df_with_pred_and_test_results[failed],
                     tests=_generate_business_test,
+                    generated_df=dataset.df,
                 )
             )
 
@@ -78,21 +80,17 @@ class LLMBusinessDetector:
             try:
                 test_cases = (
                     issue.issue_generator(self.num_tests)
-                    .run_and_parse(model_name=model.meta.name, model_description=model.meta.description)
+                    .run(model_name=model.meta.name, model_description=model.meta.description)
                     .assertions[: self.num_tests]
                 )
                 maybe_print(f"Generated tests: {test_cases}", verbose=verbose)
 
-                potentially_failing_inputs = (
-                    issue.input_generator(self.num_samples)
-                    .run_and_parse_with_prompt(
-                        model_name=model.meta.name,
-                        model_description=model.meta.description,
-                        variables=model.meta.feature_names,
-                        generated_tests=test_cases,
-                    )
-                    .input[: self.num_samples]
-                )
+                potentially_failing_inputs = issue.input_generator(model.meta.feature_names, self.num_samples).run(
+                    model_name=model.meta.name,
+                    model_description=model.meta.description,
+                    variables=model.meta.feature_names,
+                    generated_tests=test_cases,
+                )["inputs"][: self.num_samples]
 
                 potentially_failing_dataset = Dataset(
                     pd.DataFrame(
@@ -116,7 +114,9 @@ class LLMBusinessDetector:
                     model, issue, test_cases, potentially_failing_dataset, predictions, self.threshold, verbose
                 )
             except Exception as e:
-                maybe_print(f"Failed to evaluate {issue}: {e}", verbose=verbose)
+                maybe_print(f"Failed to evaluate {issue.name}: {e}", verbose=verbose)
+                if verbose:
+                    traceback.print_exc()
 
         return issues
 

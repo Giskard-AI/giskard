@@ -130,7 +130,7 @@ class BaseModel(ABC):
             name=name if name is not None else self.__class__.__name__,
             description=description if description is not None else "No description",
             model_type=model_type,
-            feature_names=list(feature_names) if feature_names else None,
+            feature_names=list(feature_names) if feature_names is not None else None,
             classification_labels=np_types_to_native(classification_labels),
             loader_class=self.__class__.__name__,
             loader_module=self.__module__,

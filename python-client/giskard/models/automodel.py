@@ -5,7 +5,7 @@ from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
-from ..core.core import ModelType
+from ..core.core import ModelType, SupportedModelTypes
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
 
@@ -159,11 +159,11 @@ class Model(CloudpickleSerializableModel):
 
             obj = output_cls(
                 model=model,
-                model_type=model_type,
+                model_type=SupportedModelTypes(model_type) if isinstance(model_type, str) else model_type,
                 data_preprocessing_function=data_preprocessing_function,
                 model_postprocessing_function=model_postprocessing_function,
                 name=name,
-                feature_names=feature_names,
+                feature_names=list(feature_names) if feature_names is not None else None,
                 classification_threshold=classification_threshold,
                 classification_labels=classification_labels,
                 **kwargs,

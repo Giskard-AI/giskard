@@ -33,8 +33,9 @@ public class WorkerStatusSocketService {
 
 
     public void sendCurrentStatus() {
+        MLWorkerID workerID = MLWorkerID.EXTERNAL;
         Map<String, Boolean> data = new HashMap<>();
-        data.put("connected", mlWorkerWSService.isWorkerConnected(MLWorkerID.EXTERNAL));
+        data.put("connected", mlWorkerWSService.isWorkerConnected(workerID));
         sendData(data);
     }
 

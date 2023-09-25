@@ -28,6 +28,7 @@ class SKLearnModel(MLFlowSerializableModel):
             batch_size: Optional[int] = None,
             **kwargs,
     ) -> None:
+        model_type = SupportedModelTypes(model_type) if isinstance(model_type, str) else model_type
         if model_type == SupportedModelTypes.CLASSIFICATION:
             if classification_labels is None and hasattr(model, "classes_"):
                 classification_labels = list(getattr(model, "classes_"))
