@@ -13,7 +13,7 @@ from giskard.client.giskard_client import GiskardClient
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
 
-headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
+headers_to_match = {"Authorization": "Bearer API_ACCESS_KEY", "Content-Type": "application/json"}
 
 
 def match_model_id(my_model_id):
@@ -67,8 +67,8 @@ class MockedClient:
         )
 
         url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        return GiskardClient(url, token), self.mocked_requests
+        key = "API_ACCESS_KEY"
+        return GiskardClient(url, key), self.mocked_requests
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.mocked_requests:
@@ -94,8 +94,8 @@ def verify_model_upload(my_model, my_data):
         )
 
         url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        client = GiskardClient(url, token)
+        key = "SECRET_TOKEN"
+        client = GiskardClient(url, key)
         my_model.upload(client, "test-project", my_data)
 
         tests.utils.match_model_id(my_model.id)
