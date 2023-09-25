@@ -44,13 +44,17 @@ Question: {input}
 Thought: I should look at the features that are required to see what I should gather to predict in the available tools
 {agent_scratchpad}"""
 
+class LenientBaseToolkit(BaseToolkit):
+    """Extended class to allow arbitrary_types_allowed for pydantic compatibility"""
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class ModelSpec(BaseModel):
     """Base class for model spec."""
-
     model: GiskardBaseModel
-    dataset: Optional[Dataset]
-    scan_report: Optional[ScanReport]
+    dataset: Optional[Dataset] = None
+    scan_report: Optional[ScanReport] = None
 
     def _parse_json_inputs(self, json_inputs: str) -> Dict[str, Any]:
         features = json.loads(json_inputs)
@@ -242,7 +246,7 @@ class ModelQualityTool(BaseTool):
         return self._run(tool_input)
 
 
-class ModelToolkit(BaseToolkit):
+class ModelToolkit(LenientBaseToolkit):
     """Toolkit for interacting with an ML model."""
 
     spec: ModelSpec

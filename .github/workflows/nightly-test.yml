@@ -9,3 +9,4 @@ jobs:
     uses: ./.github/workflows/build_backend.yml
     with:
       run-integration-tests: true
+      use-cache: false
