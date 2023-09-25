@@ -16,7 +16,7 @@
           <p class="mt-4 mb-4">then run the following command to connect to this Giskard server:</p>
           <CodeSnippet :codeContent="codeContent" />
           <p class="mt-4" v-if="route.name !== 'admin-general'">You can check the status of an ML Worker and
-            generate a new API token on the
+            generate a new API Access Key on the
             <router-link :to="{ name: 'admin-general' }">Settings</router-link>
             page
           </p>

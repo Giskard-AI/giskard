@@ -2,10 +2,10 @@
   <v-card height="100%">
     <v-card-title class="font-weight-light secondary--text">Create a Giskard Client</v-card-title>
     <v-card-text v-if="giskardClientTemplate != null">
-      <CodeSnippet :code-content="giskardClientTemplate"/>
+      <CodeSnippet :code-content="giskardClientTemplate" />
     </v-card-text>
     <v-card-text v-else-if="needFetchWithHFAccessToken == null">
-      <LoadingFullscreen :name="'Giskard Client creating instructions'"/>
+      <LoadingFullscreen :name="'Giskard Client creating instructions'" />
     </v-card-text>
     <v-card-text v-else-if="!state.workerStatus.connected && !props.internalHFAccessToken">
       <div class="mb-2">
@@ -18,7 +18,7 @@
       </v-row>
     </v-card-text>
     <v-card-text v-else>
-      <HuggingFaceTokenCard @submit="fetchAndSaveHFSpacesTokenWithAccessToken"/>
+      <HuggingFaceTokenCard @submit="fetchAndSaveHFSpacesTokenWithAccessToken" />
     </v-card-text>
   </v-card>
 </template>
@@ -55,7 +55,7 @@ function generateGiskardClientInstruction(hf_token: string | null = null) {
   let snippet = `from giskard import GiskardClient
 
 url = "${apiURL}"
-api_token = "${apiKeyStore.getFirstApiKey ? apiKeyStore.getFirstApiKey : '<Generate your API Key first>'}"
+api_key = "${apiKeyStore.getFirstApiKey ? apiKeyStore.getFirstApiKey : '<Generate your API Key first>'}"
 `;
   if (hf_token) {
     snippet += `hf_token = "${hf_token}"
@@ -63,7 +63,7 @@ api_token = "${apiKeyStore.getFirstApiKey ? apiKeyStore.getFirstApiKey : '<Gener
   }
   snippet += `
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, api_token`;
+client = GiskardClient(url, api_key`;
   if (hf_token) {
     snippet += `, hf_token`;
   }
@@ -82,7 +82,7 @@ async function fetchAndSaveHFSpacesTokenWithAccessToken(accessToken: string) {
     const token = await hfSpacesTokenStore.getHFSpacesToken();
     if (token === null) {
       needFetchWithHFAccessToken.value = true;
-      mainStore.addNotification({content: 'Invalid Hugging Face access token', color: TYPE.ERROR});
+      mainStore.addNotification({ content: 'Invalid Hugging Face access token', color: TYPE.ERROR });
     } else {
       giskardClientTemplate.value = generateGiskardClientInstruction(token);
       needFetchWithHFAccessToken.value = false;
