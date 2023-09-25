@@ -23,7 +23,7 @@ class _TalkConfig:
 
 class _LlmConfig:
     _default_llm = None
-    _scan_model: str = "gpt-3.5"
+    _scan_model: str = "gpt-4"
     talk: _TalkConfig = _TalkConfig()
 
     @property
