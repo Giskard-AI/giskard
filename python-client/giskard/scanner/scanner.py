@@ -173,7 +173,7 @@ class Scanner:
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
-            return model, Dataset(pd.DataFrame())
+            return model, Dataset(pd.DataFrame(), validation=False)
         if dataset is None:
             raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")
 
