@@ -32,7 +32,7 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         return "transformations"
 
     def __init__(self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False):
-        self.func = func
+        self.func = configured_validate_arguments(func)
         self.row_level = row_level
         self.cell_level = cell_level
 
@@ -136,5 +136,4 @@ def _wrap_transformation_function(original: Callable, row_level: bool, cell_leve
 
     make_all_optional_or_suite_input(transformation_fn)
     set_return_type(transformation_fn, TransformationFunction)
-
-    return configured_validate_arguments(transformation_fn)
+    return transformation_fn()

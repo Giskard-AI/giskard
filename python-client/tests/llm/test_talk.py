@@ -4,7 +4,6 @@ import sys
 import pytest
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
-from pydantic.error_wrappers import ValidationError
 
 from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec
@@ -106,11 +105,12 @@ def test_model_ask_description(german_credit_model):
     sys.version_info.minor >= 9, reason="The Langchain agent use the new ast module implemented in Python 3.8"
 )
 def test_model_create_llm_agent_invalid_version(german_credit_model, german_credit_test_data):
-    with pytest.raises(ValidationError):
+    with pytest.raises(Exception) as exc_info:
         llm = FakeListLLM(responses=[""] * 100)
         llm_config.set_default_llm(llm)
 
         german_credit_model._llm_agent(german_credit_test_data, True)
+        assert "This tool relies on Python 3.9 or higher" in str(exc_info)
 
 
 @pytest.mark.skipif(

@@ -334,12 +334,12 @@ class CallToActionKind(Enum):
 class GetPushParam(BaseModel):
     model: ArtifactRef
     dataset: ArtifactRef
-    dataframe: Optional[DataFrame]
+    dataframe: Optional[DataFrame] = None
     target: str
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
-    push_kind: Optional[PushKind]
-    cta_kind: Optional[CallToActionKind]
+    push_kind: Optional[PushKind] = None
+    cta_kind: Optional[CallToActionKind] = None
 
 
 class PushDetails(BaseModel):
@@ -351,20 +351,20 @@ class PushDetails(BaseModel):
 
 class Push(BaseModel):
     kind: PushKind
-    key: Optional[str]
-    value: Optional[str]
+    key: Optional[str] = None
+    value: Optional[str] = None
     push_title: str
     push_details: List[PushDetails]
 
 
 class PushAction(BaseModel):
     object_uuid: str
-    arguments: Optional[List[FuncArgument]]
+    arguments: Optional[List[FuncArgument]] = None
 
 
 class GetPushResponse(BaseModel):
-    contribution: Optional[Push]
-    perturbation: Optional[Push]
-    overconfidence: Optional[Push]
-    borderline: Optional[Push]
-    action: Optional[PushAction]
+    contribution: Optional[Push] = None
+    perturbation: Optional[Push] = None
+    overconfidence: Optional[Push] = None
+    borderline: Optional[Push] = None
+    action: Optional[PushAction] = None
