@@ -7,6 +7,7 @@ import ai.giskard.domain.ml.table.Filter;
 import ai.giskard.repository.InspectionRepository;
 import ai.giskard.utils.FileUtils;
 import ai.giskard.web.dto.InspectionCreateDTO;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -16,7 +17,6 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.selection.Selection;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -166,6 +166,16 @@ public class InspectionService {
                 case BORDERLINE -> {
                     DoubleColumn absDiff = calculatedTable.doubleColumn("absDiff");
                     selection = correctSelection.and(absDiff.isLessThanOrEqualTo(applicationProperties.getBorderLineThreshold()));
+                }
+                case OVERCONFIDENCE -> {
+                    DoubleColumn overconfidenceScore = calculatedTable.doubleColumn("absDiff");
+                    DoubleColumn overconfidenceThreshold = DoubleColumn.create("overconfidenceThreshold", overconfidenceScore.size());
+                    for (int i = 0; i < overconfidenceScore.size(); i++) {
+                        int n = predsTable.columnCount();
+                        double threshold = 1 / (3e-1 * (n - 2) + 2 - 1e-3 * Math.pow(n - 2, 2));
+                        overconfidenceThreshold.set(i, threshold);
+                    }
+                    selection = correctSelection.and(overconfidenceScore.isGreaterThanOrEqualTo(overconfidenceThreshold));
                 }
                 default -> selection = null;
             }

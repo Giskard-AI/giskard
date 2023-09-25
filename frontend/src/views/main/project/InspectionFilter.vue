@@ -112,6 +112,7 @@ const filterTypes = computed(() => [
     disabled: !props.isTargetAvailable
   },
   {value: RowFilterType.BORDERLINE, label: 'Underconfidence', disabled: !props.isTargetAvailable},
+  {value: RowFilterType.OVERCONFIDENCE, label: 'Overconfidence', disabled: !props.isTargetAvailable},
   {value: RowFilterType.CUSTOM, label: 'Custom'}
 ]);
 

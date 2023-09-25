@@ -6,5 +6,6 @@ export enum RowFilterType {
     WRONG = 'WRONG',
     CORRECT = 'CORRECT',
     BORDERLINE = 'BORDERLINE',
+    OVERCONFIDENCE = 'OVERCONFIDENCE',
     CUSTOM = 'CUSTOM'
 }

@@ -8,5 +8,6 @@ public enum RowFilterType {
     WRONG,
     CORRECT,
     BORDERLINE,
+    OVERCONFIDENCE,
     CUSTOM
 }

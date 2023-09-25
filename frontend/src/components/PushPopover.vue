@@ -6,7 +6,7 @@
           <v-btn small icon outlined color="warning" class="ml-1 ripple"
                  v-on="{ ...onMenu, ...onTooltip }" v-if="show">
             <div class="rim1"></div>
-            <v-icon size="18" color="warning">mdi-alert-outline</v-icon>
+            <v-icon size="18" color="warning">mdi-lightbulb-on-10</v-icon>
           </v-btn>
         </template>
         <span>{{ push.push_title }}. Click for more details.</span>
@@ -122,6 +122,7 @@ async function applyCta(kind: CallToActionKind) {
   let action: PushActionDTO = (await pushStore.applyPush(push.value!.kind, kind)).action;
   switch (kind) {
     case CallToActionKind.CreateSlice:
+      await catalogStore.loadCatalog(projectStore.currentProjectId ?? 0);
       mainStore.addSimpleNotification("Successfully saved");
       break;
     case CallToActionKind.CreateSliceOpenDebugger:
@@ -242,6 +243,11 @@ watch(() => opened, (newValue, oldValue) => {
     border: white .5em solid;
     opacity: 0;
   }
+}
+
+.ripple:hover {
+  transform: translateY(-3px); /* Adjust the value to control the lift height */
+  background-color: rgba(255, 165, 0, 0.5);
 }
 
 .v-card__title {
