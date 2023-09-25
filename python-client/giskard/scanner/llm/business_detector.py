@@ -131,6 +131,6 @@ def _generate_business_test(issue: Issue):
             dataset=issue.dataset,
             test_case=issue.meta["test_case"],
             slicing_function=None,
-            threshold=issue.meta["metric_value"],
+            threshold=1 - issue.meta["metric_value"],
         )
     }
