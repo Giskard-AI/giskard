@@ -10,6 +10,7 @@ import giskard
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.settings import settings
+from giskard.cli_utils import validate_url
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class MLWorker:
     client: GiskardClient
 
     def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
-        client = None if is_server else GiskardClient(backend_url, api_key, hf_token)
+        client = None if is_server else GiskardClient(str(backend_url), api_key, hf_token)
         self.client = client
 
         ws_conn = self._create_websocket_client(backend_url, is_server, hf_token)
@@ -53,21 +54,19 @@ class MLWorker:
         if is_server:
             # Retrieve from settings for internal ML Worker
             self.ml_worker_id = INTERNAL_WORKER_ID
-            backend_url = AnyHttpUrl(
-                url=f"http://{settings.host}:{settings.ws_port}/{settings.ws_path}",  # noqa NOSONAR - we don't actually use http here
-                scheme="http",
-                host=settings.host,
-                port=settings.ws_port,
-                path=settings.ws_path,
-            )
+            backend_url = validate_url(None, None, f"http://{settings.host}:{settings.ws_port}{settings.ws_path}")
         else:
             # External ML worker: URL should be provided
             self.ml_worker_id = EXTERNAL_WORKER_ID
             # Use the URL path component provided by settings
-            backend_url.path = settings.ws_path
+
+            port = backend_url.port
             # Use 443 port if https and no given port
             if backend_url.scheme == "https" and backend_url.port is None:
-                backend_url.port = 443
+                port = 443
+            backend_url = validate_url(
+                None, None, f"{backend_url.scheme}://{backend_url.host}:{port}{settings.ws_path}"
+            )
         ws_conn = stomp.WSStompConnection(
             [(backend_url.host, backend_url.port)],
             ws_path=backend_url.path,
