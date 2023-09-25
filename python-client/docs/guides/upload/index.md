@@ -21,25 +21,25 @@ from giskard import GiskardClient
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload in a Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API key in the Settings tab of the Giskard application
 project_name = "enron"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 ```
 
-You can find the URL and the tokens in the Settings tab of the Giskard application.
+You can find the URL and the API Access Key in the Settings tab of the Giskard application.
 
 :::{hint}
 You may also need an extra token (Giskard Space Token) to upload your test suite to a private Space on Hugging Face Spaces. To create your Giskard client, please use the following code snippet instead:
 
 ```python
 url = "https://huggingface.co/spaces/<user-id>/<space-id>"
-token = "API_TOKEN"                 # You can generate your API token in the Settings tab of your Giskard Hugging Face Space
+key = "API_KEY"                 # You can generate your API Access Key in the Settings tab of your Giskard Hugging Face Space
 hf_token = "<Giskard Space Token>"  # Find it in Settings in your Giskard Hugging Face Space
 client = GiskardClient(
     url=url,
-    token=token,
+    key=key,
     hf_token=hf_token,
 )
 ```
@@ -88,11 +88,11 @@ giskard_model = Model(
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API Acces Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
@@ -142,11 +142,11 @@ giskard_model = Model(
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
@@ -175,11 +175,11 @@ giskard_dataset = Dataset(
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
@@ -205,11 +205,11 @@ def slice_sex(row: pd.Series):
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")
@@ -238,11 +238,11 @@ def increase_age(row):
 
 url = "http://localhost:19000"  # If Giskard is installed locally
 # url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
-token = "API_TOKEN"  # you can generate your API token in the Settings tab of the Giskard application
+key = "API_KEY"  # you can generate your API Acces Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, token)
+client = GiskardClient(url, key)
 
 # Create a project
 client.create_project(project_name, "Project name", "Small description of the project")

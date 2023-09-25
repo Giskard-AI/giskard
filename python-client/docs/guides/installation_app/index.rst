@@ -98,25 +98,25 @@ Giskard executes your model using a worker that runs the model directly in your 
 
    .. tab-item:: From your local notebook
 
-      To start the ML worker from your notebook, you need to start Giskard in the deamon mode by providing the token in the Settings tab of the Giskard server (accessible via http://localhost:19000/).
+      To start the ML worker from your notebook, you need to start Giskard in the deamon mode by providing the API Access Key in the Settings tab of the Giskard server (accessible via http://localhost:19000/).
 
       - If Giskard server is installed **locally**, run in a cell in your notebook:
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN
+            !giskard worker start -d -k YOUR_KEY
 
       - If Giskard server is installed on an **external server** (for instance in AWS ec2 instance), or a public Space on Hugging Face Spaces, run the following in your notebook:
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+            !giskard worker start -d -k YOUR_KEY -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
       
       - If Giskard server is hosted on a private Space on Hugging Face Spaces, run the following in your notebook:
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
+            !giskard worker start -d -k YOUR_KEY -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -128,7 +128,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
    .. tab-item:: From Colab notebook
 
-      To start the ML worker from your Colab notebook, you need to start Giskard in the deamon mode by providing the token in the Settings tab of the Giskard server (accessible via http://localhost:19000/).
+      To start the ML worker from your Colab notebook, you need to start Giskard in the deamon mode by providing the API Access Key in the Settings tab of the Giskard server (accessible via http://localhost:19000/).
 
       - If the Giskard server is installed **locally**:
 
@@ -144,7 +144,7 @@ Giskard executes your model using a worker that runs the model directly in your 
          .. code-block:: sh
 
             %env GSK_API_KEY=YOUR_API_KEY
-            !giskard worker start -d -k YOUR_TOKEN -u https://e840-93-23-184-184.ngrok-free.app
+            !giskard worker start -d -k YOUR_KEY -u https://e840-93-23-184-184.ngrok-free.app
 
       - If the Giskard server is installed on an **external** server (for instance on an AWS ec2 instance), or a public Space on Hugging Face Spaces:
 
@@ -152,7 +152,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-               !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+               !giskard worker start -d -k YOUR_KEY -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
 
 
       - If Giskard server is hosted on a private Space on Hugging Face Spaces:
@@ -161,7 +161,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
+            !giskard worker start -d -k YOUR_KEY -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
@@ -181,7 +181,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
                giskard worker start -u http://localhost:19000/
 
-            You then will be asked to provide your API token. The API access token can be found in the Settings tab of the Giskard server (accessible via: http://localhost:19000/)
+            You then will be asked to provide your API Access Key. The API Access key can be found in the Settings tab of the Giskard server (accessible via: http://localhost:19000/)
 
       - If Giskard server is installed in an **external server** (for instance in AWS ec2 instance), or a public Space on Hugging Face Spaces:
 
@@ -197,7 +197,7 @@ Giskard executes your model using a worker that runs the model directly in your 
 
          .. code-block:: sh
 
-            !giskard worker start -d -k YOUR_TOKEN -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
+            !giskard worker start -d -k YOUR_KEY -u https://huggingface.co/spaces/<user-id>/<space-id> --hf-token YOUR_HF_SPACES_TOKEN
 
       .. hint:: To see the available commands of the worker, you can execute:
 
