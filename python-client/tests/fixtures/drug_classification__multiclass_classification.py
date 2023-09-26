@@ -72,7 +72,7 @@ def drug_classification_model(drug_classification_data) -> SKLearnModel:
         steps=[
             ("one_hot_encoder", OneHotEncoder()),
             ("resampler", SMOTE()),
-            ("classifier", SVC(kernel="linear", max_iter=250, probability=True)),
+            ("classifier", SVC(random_state=30, kernel="linear", max_iter=250, probability=True)),
         ]
     )
 
