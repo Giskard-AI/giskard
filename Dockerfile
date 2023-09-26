@@ -1,6 +1,5 @@
-
-FROM python:3.10 AS base-python
-ARG RUN_TESTS=false
+ARG PYTHON_VERSION=3.10
+FROM python:${PYTHON_VERSION}-bookworm AS base-python
 
 WORKDIR /app
 # Install PDM
@@ -78,7 +77,7 @@ RUN jlink \
 FROM build-back-front as build-frontend
 RUN ./gradlew :frontend:package -Pprod --info --stacktrace --no-parallel
 
-FROM python:3.10-slim-bookworm as prod
+FROM python:${PYTHON_VERSION}-slim-bookworm as prod
 ARG GISKARD_UID=50000
 
 ENV SPRING_PROFILES_ACTIVE=prod

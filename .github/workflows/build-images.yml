@@ -51,6 +51,7 @@ jobs:
     strategy:
       matrix:
         platform: ["linux/amd64", "linux/arm64"]
+        python-version: [  "3.10", "3.11", "3.12-rc" ]
       fail-fast: false
     if: ${{ !github.event.pull_request || contains( github.event.pull_request.labels.*.name, 'Docker') }}
     runs-on: ubuntu-latest
@@ -127,7 +128,10 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
             type=ref,event=pr
-      
+          flavor: |
+            latest=auto
+            suffix=-py${{ matrix.python-version }}
+          
       - name: Login to Docker registry
         if: ${{ env.BUILD_ONLY != 'true' }}
         uses: docker/login-action@v3
@@ -140,6 +144,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python-version }}
           target: full-install-python
           push: false
           load: true
@@ -148,15 +154,34 @@ jobs:
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
 
       - name: Run python test inside docker
         if: ${{ env.RUN_TESTS }}
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python-version }}
           target: test-python
+          push: false
+          load: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          builder: ${{ steps.builder.outputs.name }}
+          platforms: |
+            ${{ matrix.platform}}
+          # cache-from: type=gha
+
+      - name: Run python integration test inside docker
+        if: ${{ env.RUN_TESTS }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python-version }}
+          target: integration-test-python
           push: false
           load: false
           tags: ${{ steps.meta.outputs.tags }}
@@ -166,26 +191,13 @@ jobs:
             ${{ matrix.platform}}
           cache-from: type=gha
 
-      # - name: Run python integration test inside docker
-      #   if: ${{ env.RUN_TESTS }}
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: .
-      #     target: integration-test-python
-      #     push: false
-      #     load: false
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     builder: ${{ steps.builder.outputs.name }}
-      #     platforms: |
-      #       ${{ matrix.platform}}
-      #     cache-from: type=gha
-
       - name: Build and push
         id: build
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python-version }}
           target: prod
           push: ${{ env.BUILD_ONLY != 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -193,8 +205,8 @@ jobs:
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=${{ env.BUILD_ONLY != 'true' }}
 
       # For details, see link below
