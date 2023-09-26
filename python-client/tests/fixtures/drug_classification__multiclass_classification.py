@@ -47,7 +47,7 @@ def bin_numerical(df: pd.DataFrame) -> np.ndarray:
     return df
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def drug_classification_data() -> Dataset:
     # Download data.
     fetch_from_ftp(DATA_URL, DATA_PATH)
@@ -63,7 +63,7 @@ def drug_classification_data() -> Dataset:
     return wrapped_dataset
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def drug_classification_model(drug_classification_data) -> SKLearnModel:
     x = drug_classification_data.df.drop(TARGET_NAME, axis=1)
     y = drug_classification_data.df.Drug

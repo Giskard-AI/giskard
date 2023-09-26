@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 
 import pandas as pd
 import pytest
@@ -42,16 +43,19 @@ input_types = {
     "foreign_worker": "category",
 }
 
-
-@pytest.fixture()
-def german_credit_data() -> Dataset:
+@pytest.fixture(scope="session")
+def german_credit_data_df() -> Dataset:
     logger.info("Reading german_credit_prepared.csv")
-    df = pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
-    return Dataset(df=df, name="Test german credit scoring dataset", target="default", column_types=input_types)
+    return pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
 
 
 @pytest.fixture()
-def german_credit_catboost_raw_model(german_credit_data):
+def german_credit_data(german_credit_data_df) -> Dataset:
+    return Dataset(df=deepcopy(german_credit_data_df), name="Test german credit scoring dataset", target="default", column_types=input_types)
+
+
+@pytest.fixture(scope="session")
+def german_credit_catboost_raw_model(german_credit_data_df):
     from catboost import CatBoostClassifier
     from sklearn import model_selection
 
@@ -60,7 +64,7 @@ def german_credit_catboost_raw_model(german_credit_data):
 
     columns_to_encode = [key for key in column_types.keys() if column_types[key] == "category"]
 
-    credit = german_credit_data.df
+    credit = german_credit_data_df
 
     Y = credit["default"]
     X = credit.drop(columns="default")
@@ -92,8 +96,8 @@ def german_credit_test_data(german_credit_data):
     return Dataset(df=df, target=None, column_types=input_types)
 
 
-@pytest.fixture()
-def german_credit_raw_model(german_credit_data):
+@pytest.fixture(scope="session")
+def german_credit_raw_model(german_credit_data_df):
     timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
@@ -117,8 +121,8 @@ def german_credit_raw_model(german_credit_data):
     )
     clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))])
 
-    Y = german_credit_data.df["default"]
-    X = german_credit_data.df[german_credit_data.columns].drop(columns="default")
+    Y = german_credit_data_df["default"]
+    X = german_credit_data_df.drop(columns="default")
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
         X, Y, test_size=0.20, random_state=30, stratify=Y  # NOSONAR
     )

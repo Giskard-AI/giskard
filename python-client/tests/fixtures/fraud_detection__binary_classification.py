@@ -148,7 +148,7 @@ def fraud_detection_data() -> Dataset:
     return wrapped_dataset
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def fraud_detection_train_data() -> Dataset:
     train_set, _ = preprocess_dataset(*read_dataset())
     wrapped_dataset = Dataset(
@@ -157,7 +157,7 @@ def fraud_detection_train_data() -> Dataset:
     return wrapped_dataset
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def fraud_detection_model(fraud_detection_train_data: Dataset) -> Model:
     from lightgbm import LGBMClassifier
 

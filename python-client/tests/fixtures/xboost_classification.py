@@ -16,7 +16,7 @@ RANDOM_SEED = 42
 TARGET_COLUMN_NAME = "target"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def breast_cancer_data() -> Dataset:
     logger.info("Fetching Breast Cancer Data")
     raw_data = load_breast_cancer(as_frame=True)
@@ -25,7 +25,7 @@ def breast_cancer_data() -> Dataset:
     return Dataset(df, name="breast_cancer", target="target", column_types=column_types)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def breast_cancer_model(breast_cancer_data: Dataset) -> Model:
     X_train, X_test, y_train, y_test = train_test_split(
         breast_cancer_data.df.loc[:, breast_cancer_data.df.columns != TARGET_COLUMN_NAME],

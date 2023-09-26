@@ -13,7 +13,7 @@ from giskard.models.pytorch import PyTorchModel
 from tests.utils import resource_dir
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sst2_dev_data():
     dev_datapipe = SST2(split="dev")
     return pd.DataFrame(dev_datapipe, columns=["text", "label"])
@@ -24,7 +24,7 @@ def sst2_data(sst2_dev_data):
     return Dataset(sst2_dev_data.head(), name="test dataset", target="label")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sst2_model(sst2_dev_data):
     torch_softmax = nn.Softmax(dim=1)
     device = "cuda" if torch.cuda.is_available() else "cpu"

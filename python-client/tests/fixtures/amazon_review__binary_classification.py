@@ -1,5 +1,6 @@
 import string
 from pathlib import Path
+from copy import deepcopy
 
 import pytest
 import numpy as np
@@ -56,11 +57,16 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-@pytest.fixture()
-def amazon_review_data() -> Dataset:
+@pytest.fixture(scope="session")
+def amazon_review_data_df() -> Dataset:
     raw_data = preprocess_data(download_data(nrows=5000))
+    return raw_data
+
+
+@pytest.fixture()
+def amazon_review_data(amazon_review_data_df) -> Dataset:
     wrapped_data = Dataset(
-        raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
+        deepcopy(amazon_review_data_df), name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
     )
     return wrapped_data
 
@@ -88,10 +94,10 @@ def tokenizer(x):
     return stems
 
 
-@pytest.fixture()
-def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
-    x = amazon_review_data.df[[FEATURE_COLUMN_NAME]]
-    y = amazon_review_data.df[TARGET_COLUMN_NAME]
+@pytest.fixture(scope="session")
+def amazon_review_model(amazon_review_data_df: Dataset) -> SKLearnModel:
+    x = amazon_review_data[[FEATURE_COLUMN_NAME]]
+    y = amazon_review_data[TARGET_COLUMN_NAME]
 
     # Define and fit pipeline.
     vectorizer = TfidfVectorizer(tokenizer=tokenizer, stop_words="english", ngram_range=(1, 1), min_df=0.01)

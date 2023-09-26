@@ -85,8 +85,10 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
     return df
 
 
-@pytest.fixture()
-def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
+@pytest.fixture(scope="session")
+def medical_transcript_model() -> SKLearnModel:
+    df = load_data()
+
     # Define final pipeline.
     pipeline = Pipeline(
         steps=[
@@ -98,7 +100,7 @@ def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
     )
 
     # Fit pipeline.
-    pipeline.fit(medical_transcript_data.df[[TEXT_COLUMN_NAME]], medical_transcript_data.df[TARGET_COLUMN_NAME])
+    pipeline.fit(df[[TEXT_COLUMN_NAME]], df[TARGET_COLUMN_NAME])
 
     # Wrap model with giskard
     wrapped_model = SKLearnModel(

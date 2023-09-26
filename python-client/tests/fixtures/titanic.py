@@ -4,7 +4,7 @@ from giskard import Model, Dataset
 from giskard.demo import titanic
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def titanic_model_data_raw():
     return titanic()
 

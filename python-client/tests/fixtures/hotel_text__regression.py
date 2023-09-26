@@ -31,7 +31,7 @@ def load_data(**kwargs) -> pd.DataFrame:
     return df
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hotel_text_data() -> Dataset:
     fetch_from_ftp(DATA_URL, DATA_PATH)
 
@@ -56,7 +56,7 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
     return df
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hotel_text_model(hotel_text_data) -> SKLearnModel:
     x = hotel_text_data.df[[FEATURE_COLUMN_NAME]]
     y = hotel_text_data.df[TARGET_COLUMN_NAME]

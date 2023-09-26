@@ -201,7 +201,7 @@ class CustomWrapper(Model):
         return predicted_probabilities
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def tripadvisor_data() -> Dataset:
     # Download dataset
     df = load_dataset()
@@ -210,7 +210,7 @@ def tripadvisor_data() -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
     # Load model.
     model = DistilBertForSequenceClassification.from_pretrained(

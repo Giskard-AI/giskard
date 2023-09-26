@@ -8,7 +8,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker.utils.logging import Timer
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def linear_regression_diabetes_raw():
     timer = Timer()
     diabetes = datasets.load_diabetes()
