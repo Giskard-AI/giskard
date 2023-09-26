@@ -159,7 +159,10 @@ jobs:
           - python-version: "3.10"
             os: ubuntu-latest
             pydantic_v2: true
-
+          - python-version: "3.12"
+            os: ubuntu-latest
+            pydantic_v2: false
+  
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
@@ -177,6 +180,7 @@ jobs:
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
+          allow-python-prereleases: ${{ matrix.python-version == '3.12' }}
           cache: false # TODO(Bazire): https://linear.app/giskard/issue/GSK-1712/activate-cache-on-pdm-setup-in-github-action
 
       - name: Set up Pandoc (needed for python-client doc)
