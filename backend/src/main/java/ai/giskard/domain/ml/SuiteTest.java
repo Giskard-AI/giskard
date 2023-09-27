@@ -3,12 +3,12 @@ package ai.giskard.domain.ml;
 import ai.giskard.domain.TestFunction;
 import ai.giskard.ml.dto.MLWorkerWSGeneratedTestSuiteDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -25,6 +25,9 @@ public class SuiteTest implements Serializable {
 
     @ManyToOne(optional = false)
     private TestFunction testFunction;
+
+    @Column
+    private String displayName;
 
     @ManyToOne
     @JoinColumn(name = "test_suite")

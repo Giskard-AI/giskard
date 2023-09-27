@@ -2,7 +2,7 @@
   <div class='test-container'>
     <div class='d-flex flex-row flex-wrap align-center test-card-header'>
       <span class='test-name text-black'>
-          Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
+          Test {{ suiteTest.displayName ?? suiteTest.test.displayName ?? suiteTest.test.name }}
           <span v-if='transformationFunction'> to {{
               transformationFunction.displayName ?? transformationFunction.name
             }}</span>
@@ -84,7 +84,7 @@
 </template>
 
 <script lang='ts' setup>
-import {SuiteTestDTO, SuiteTestExecutionDTO} from '@/generated-sources';
+import {SuiteTestExecutionDTO} from '@/generated-sources';
 import {computed, ref} from 'vue';
 import {storeToRefs} from 'pinia';
 import {useCatalogStore} from '@/stores/catalog';
@@ -100,6 +100,7 @@ import router from '@/router';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {chain} from 'lodash';
 import {$tags} from "@/utils/nametags.utils";
+import {SuiteTestDTO} from "@/generated/client";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());

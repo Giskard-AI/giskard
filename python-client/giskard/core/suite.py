@@ -238,7 +238,8 @@ class ModelInput(SuiteInput):
 class TestPartial:
     giskard_test: GiskardTest
     provided_inputs: Dict[str, Any]
-    test_name: Union[int, str]
+    test_id: Union[int, str]
+    display_name: Optional[str] = None
 
 
 def single_binary_result(test_results: List):
@@ -277,7 +278,9 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         return TestInputDTO(name=pname, value=str(p), type=ptype)
 
 
-def _generate_test_partial(test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> TestPartial:
+def _generate_test_partial(
+    test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
+) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
         actual_params = {k: v for k, v in test_fn.params.items() if v is not None}
     elif isinstance(test_fn, GiskardTest):
@@ -292,10 +295,10 @@ def _generate_test_partial(test_fn: Test, test_name: Optional[Union[int, str]] =
 
     actual_params.update(params)
 
-    if test_name is None:
-        test_name = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
+    if test_id is None:
+        test_id = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
 
-    return TestPartial(test_fn, actual_params, test_name)
+    return TestPartial(test_fn, actual_params, test_id, display_name)
 
 
 class Suite:
@@ -360,17 +363,17 @@ class Suite:
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
 
-                results.append((test_partial.test_name, result, test_params))
+                results.append((test_partial.test_id, result, test_params))
                 if verbose:
                     print(
-                        """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_name, test_params, result)
+                        """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_id, test_params, result)
                     )
             except BaseException:  # noqa NOSONAR
                 error = traceback.format_exc()
-                logging.exception(f"An error happened during test execution for test: {test_partial.test_name}")
+                logging.exception(f"An error happened during test execution for test: {test_partial.test_id}")
                 results.append(
                     (
-                        test_partial.test_name,
+                        test_partial.test_id,
                         TestResult(
                             passed=False,
                             is_error=True,
@@ -443,20 +446,24 @@ class Suite:
                         )
                         for pname, p in t.provided_inputs.items()
                     },
+                    displayName=t.display_name,
                 )
             )
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
 
-    def add_test(self, test_fn: Test, test_name: Optional[Union[int, str]] = None, **params) -> "Suite":
+    def add_test(
+        self, test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
+    ) -> "Suite":
         """
         Add a test to the suite.
 
         Args:
             test_fn (Test): A test method that will be executed or an instance of a GiskardTest class.
-            test_name (Optional[Union[int, str]], optional): A unique identifier used to track the test result.
+            test_id (Optional[Union[int, str]], optional): A unique identifier used to track the test result.
                 If None, the identifier will be generated based on the module and name of the test method.
                 If the identifier already exists in the suite, a new unique identifier will be generated.
+            display_name (Optional[str]): The name of the test to be displayed
             **params: Default parameters to be passed to the test method.
                 This parameter will be ignored if `test_fn` is an instance of GiskardTest.
 
@@ -464,7 +471,7 @@ class Suite:
             Suite: The current instance of the test suite to allow chained calls.
 
         """
-        self.tests.append(_generate_test_partial(test_fn, test_name, **params))
+        self.tests.append(_generate_test_partial(test_fn, test_id, display_name, **params))
 
         return self
 
@@ -492,7 +499,7 @@ class Suite:
 
     @remove_test.register
     def _remove_test_by_name(self, test_name: str):
-        self.tests = [test for test in self.tests if test.test_name != test_name]
+        self.tests = [test for test in self.tests if test.test_id != test_name]
         return self
 
     @remove_test.register
@@ -515,7 +522,7 @@ class Suite:
         test = self.tests[index]
         inputs = test.provided_inputs.copy()
         inputs.update(**params)
-        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_name, **inputs)
+        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_id, **inputs)
 
         return self
 

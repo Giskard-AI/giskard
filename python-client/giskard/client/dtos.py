@@ -14,6 +14,7 @@ class TestInputDTO(BaseModel):
 class SuiteTestDTO(BaseModel):
     testUuid: str
     functionInputs: Dict[str, TestInputDTO]
+    displayName: Optional[str] = None
 
 
 class TestSuiteDTO(BaseModel):

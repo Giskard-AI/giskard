@@ -2,11 +2,11 @@ package ai.giskard.web.dto;
 
 import com.dataiku.j2ts.annotations.UINullable;
 import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.Data;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,4 +19,6 @@ public class SuiteTestDTO {
     private UUID testUuid;
     private TestFunctionDTO test;
     private Map<@NotBlank String, @Valid FunctionInputDTO> functionInputs;
+    private String displayName;
+
 }
