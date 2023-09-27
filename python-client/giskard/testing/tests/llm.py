@@ -11,18 +11,10 @@ def test_llm_response_validation(
     test_case: str,
     threshold: float = 0.5,
 ):
-    """Tests that the rate of generated answer is over a threshold for a given test case.
+    """Tests that the rate of generated response is over a threshold for a given test case.
 
-    Overconfident predictions are defined as predictions where the model
-    assigned a large probability to the wrong label. We quantify this as the
-    difference between the largest probability assigned to a label and the
-    probability assigned to the correct label (this will be 0 if the model
-    made the correct prediction). If this is larger than a threshold
-    (`p_threshold`, typically determined automatically depending on the number
-    of classes), then the prediction is considered overconfident.
-    We then calculate the rate of overconfident predictions as the number of
-    overconfident samples divided by the total number of wrongly predicted
-    samples, and check that it is below a user-specified threshold.
+    The generated response will be validated using GPT-4
+    using the OPENAI_API_TOKEN stored inside the environment variable.
 
     Arguments:
         model(BaseModel): The generative model to test.
