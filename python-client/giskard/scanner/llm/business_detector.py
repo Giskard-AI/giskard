@@ -129,7 +129,7 @@ def _generate_business_test(issue: Issue):
         issue.meta["test_case"]: test_llm_response_validation(
             model=issue.model,
             dataset=issue.dataset,
-            test_case=issue.meta["test_case"],
+            evaluation_criteria=issue.meta["test_case"],
             threshold=1 - issue.meta["metric_value"],
         )
     }
