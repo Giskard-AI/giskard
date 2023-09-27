@@ -39,7 +39,6 @@ class Issue:
         examples: Optional[pd.DataFrame] = None,
         features: Optional[List[str]] = None,
         tests=None,
-        generated_df=None,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -85,7 +84,6 @@ class Issue:
         self._examples = examples
         self._features = features
         self._tests = tests
-        self._generated_df = generated_df
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -137,14 +135,6 @@ class Issue:
         if with_names:
             return list(zip(tests.values(), tests.keys()))
         return list(tests.values())
-
-    def generated_df(self) -> pd.DataFrame:
-        df = self._generated_df(self) if callable(self._generated_df) else self._generated_df
-
-        if df is None:
-            return pd.DataFrame([])
-
-        return df
 
 
 Robustness = IssueGroup(
