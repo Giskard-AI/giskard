@@ -147,7 +147,7 @@ openApi {
     apiDocsUrl.set("http://localhost:11337/v3/api-docs")
     outputDir.set(file("$buildDir/docs"))
     outputFileName.set("openapi.json")
-    waitTimeInSeconds.set(60)
+    waitTimeInSeconds.set(600)
     customBootRun {
         args.set(
             listOf(

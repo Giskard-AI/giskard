@@ -135,7 +135,7 @@ giskard_model = giskard.Model(
 )
 
 # Then apply the scan
-results = giskard.scan(giskard_model, giskard_dataset)
+scan_results = giskard.scan(giskard_model, giskard_dataset)
 ```
 
 Once the scan completes, you can display the results directly in your notebook:
@@ -177,7 +177,7 @@ First, install the Giskard server by following [this documentation](https://docs
 ```python
 # Create a Giskard client after having installed the Giskard server (see documentation)
 token = "API_TOKEN"  # Find it in Settings in the Giskard server
-client = GiskardClient(
+client = giskard.GiskardClient(
     url="http://localhost:19000", token=token  # URL of your Giskard instance
 )
 
