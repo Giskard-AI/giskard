@@ -10,3 +10,8 @@ jobs:
     with:
       run-integration-tests: true
       use-cache: false
+  call-build-images:
+    uses: ./.github/workflows/build-images.yml
+    with:
+      run-tests: false
+      build_only: true

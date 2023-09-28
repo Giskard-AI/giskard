@@ -17,14 +17,16 @@ from ..utils.analytics_collector import analytics, get_dataset_properties, get_m
 
 
 @configured_validate_arguments
-def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
+def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
         raise err
 
-    print("Your model is successfully validated.")
+    # TODO: switch to logger
+    if print_validation_message:
+        print("Your model is successfully validated.")
 
 
 def _track_validation_error(err, model, dataset):

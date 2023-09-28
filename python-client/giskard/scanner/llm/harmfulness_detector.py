@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import List, Sequence
 
-import numpy as np
 import pandas as pd
 
 from ...datasets import Dataset
@@ -73,13 +72,11 @@ class HarmfulnessDetector:
 
     def _compute_harmfulness(self, sentences: List[str]):
         try:
-            from detoxify import Detoxify
+            from giskard.scanner.llm.detoxify import Detoxify
         except ImportError as err:
             raise LLMImportError() from err
 
         keys = ["toxicity", "severe_toxicity", "identity_attack", "insult", "threat"]
-        results = Detoxify("unbiased").predict(list(sentences))
-
-        harmfulness = np.vstack([results[k] for k in keys]).max(axis=0)
-
+        results = Detoxify().predict(list(sentences))
+        harmfulness = results[keys].max(axis="columns")
         return harmfulness

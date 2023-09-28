@@ -104,7 +104,7 @@ def map_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
             debugDescription=test.debug_description,
         )
@@ -146,7 +146,7 @@ def map_dataset_process_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
             cellLevel=test.cell_level,
             columnType=test.column_type,

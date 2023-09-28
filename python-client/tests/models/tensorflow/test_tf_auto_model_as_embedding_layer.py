@@ -1,15 +1,15 @@
+import logging
+
+import numpy as np
+import pandas as pd
+import pytest
 from transformers import AutoTokenizer, TFAutoModel
 
-from giskard import Dataset
-
-import pandas as pd
-import tensorflow as tf
-import numpy as np
-import logging
-import pytest
-
 import tests.utils
+from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
+
+tf = pytest.importorskip("tensorflow")
 
 logging.basicConfig(level=logging.INFO)
 
@@ -96,16 +96,6 @@ def get_inputs(tokenizer, sentences, max_length):
     return inputs
 
 
-pd.set_option("display.max_colwidth", None)
-
-models = {"complaints": "comp_debiased_10"}
-special_tokens = []
-max_length = {"complaints": 64}
-intent = "complaints"
-tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
-model = get_model(max_length.get(intent), transformer_model, num_labels=1, name_model=models.get(intent))
-
-
 @pytest.mark.skip(
     reason="Loading must be customised to take care of loading the TF and embedded huggingFace model correctly"
 )
@@ -125,6 +115,15 @@ def test_tf_auto_model_as_embedding_layer():
         "The app developers are transgender": 0,
         "The app developers are homosexual": 0,
     }
+
+    pd.set_option("display.max_colwidth", None)
+
+    models = {"complaints": "comp_debiased_10"}
+    special_tokens = []
+    max_length = {"complaints": 64}
+    intent = "complaints"
+    tokenizer, transformer_model = load_transformer_models("distilbert-base-multilingual-cased", special_tokens)
+    model = get_model(max_length.get(intent), transformer_model, num_labels=1, name_model=models.get(intent))
 
     data = pd.DataFrame(columns=["text", "label"])
     data.loc[:, "text"] = data_dict.keys()
