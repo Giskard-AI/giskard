@@ -229,7 +229,7 @@ jobs:
         run: pdm build
 
       - name: "Python client: archive built artifacts"
-        if: ${{ github.event.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: actions/upload-artifact@v3
         with:
           path: python-client/dist/*whl

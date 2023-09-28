@@ -42,7 +42,7 @@ concurrency:
 env:
   RUN_TESTS: false
   BUILD_ONLY: false
-  REGISTRY_IMAGE: giskardai/giskard
+  REGISTRY_IMAGE: 'giskardai/giskard'
   DOCKERHUB_USER: giskardai
 # https://docs.docker.com/build/ci/github-actions/multi-platform/#distribute-build-across-multiple-runners
 jobs:
@@ -64,7 +64,7 @@ jobs:
         run: echo 'BUILD_ONLY=true' >> $GITHUB_ENV
 
       - name: Check disk space
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         run: |
           df -h
       - name: List installed packages
@@ -73,7 +73,7 @@ jobs:
           apt list --installed | wc -l
 
       - name: Free disk space
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         run: |
           sudo swapoff -a
           sudo rm -f /swapfile
@@ -89,11 +89,11 @@ jobs:
           sudo apt autoclean -y
 
       - name: Check new disk space
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         run: |
           df -h
       - name: List remaning installed packages
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         run: |
           dpkg-query --show --showformat='${Installed-Size}\t${Package}\n' | sort -rh | head -25 | awk '{print $1/1024, $2}'
           apt list --installed | wc -l
@@ -123,8 +123,8 @@ jobs:
             ${{ env.REGISTRY_IMAGE }}
           tags: |
             type=edge,branch=main
-            type=schedule
             type=ref,event=branch
+            type=schedule
             type=ref,event=tag
             type=ref,event=pr
       
@@ -136,38 +136,32 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Install deps inside docker
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
           target: full-install-python
-          push: false
           load: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Run python test inside docker
-        if: ${{ env.RUN_TESTS }}
+        if: ${{ env.RUN_TESTS == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
           target: test-python
-          push: false
-          load: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
-          cache-from: type=gha
 
       # - name: Run python integration test inside docker
-      #   if: ${{ env.RUN_TESTS }}
+      #   if: ${{ env.RUN_TESTS == 'true' }}
       #   uses: docker/build-push-action@v5
       #   with:
       #     context: .
@@ -187,14 +181,10 @@ jobs:
         with:
           context: .
           target: prod
-          push: ${{ env.BUILD_ONLY != 'true' }}
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           builder: ${{ steps.builder.outputs.name }}
           platforms: |
             ${{ matrix.platform}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=${{ env.BUILD_ONLY != 'true' }}
 
       # For details, see link below
@@ -230,7 +220,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY_IMAGE }}
+          images: |
+            ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=edge,branch=main
+            type=ref,event=branch
+            type=schedule
+            type=ref,event=tag
+            type=ref,event=pr
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
