@@ -56,3 +56,9 @@
 :link: ../../../reference/notebooks/movie_review_sentiment_classification_pytorch_sklearn.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <h3><center> 𝕏 Twitter Sentiment Analysis</center></h3>
+:link: ../../../reference/notebooks/twitter_sentiment_analysis_roberta.ipynb
+:::
+:::::
