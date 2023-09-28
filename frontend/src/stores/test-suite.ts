@@ -1,23 +1,15 @@
-import {
-    DatasetDTO,
-    FunctionInputDTO,
-    JobDTO,
-    JobState,
-    ModelDTO,
-    RequiredInputDTO,
-    TestResult,
-    TestSuiteDTO,
-    TestSuiteExecutionDTO
-} from '@/generated-sources';
-import { defineStore } from 'pinia';
-import { api } from '@/api';
-import { chain } from 'lodash';
-import { trackJob } from '@/utils/job-utils';
-import { useMainStore } from '@/stores/main';
+import {FunctionInputDTO, JobDTO, JobState, TestResult,} from '@/generated-sources';
+import {defineStore} from 'pinia';
+import {api} from '@/api';
+import {chain} from 'lodash';
+import {trackJob} from '@/utils/job-utils';
+import {useMainStore} from '@/stores/main';
 import mixpanel from 'mixpanel-browser';
-import { useTestSuiteCompareStore } from '@/stores/test-suite-compare';
-import { TYPE } from 'vue-toastification';
-import { anonymize } from '@/utils';
+import {useTestSuiteCompareStore} from '@/stores/test-suite-compare';
+import {TYPE} from 'vue-toastification';
+import {anonymize} from '@/utils';
+import {openapi} from "@/api-v2";
+import {DatasetDTO, ModelDTO, TestSuiteDTO, TestSuiteExecutionDTO} from "@/generated/client";
 
 
 function resultHasStatus(status: TestResult, result?): boolean {
@@ -43,7 +35,7 @@ export const statusFilterOptions = [{
 
 interface State {
     projectId: number | null,
-    inputs: { [name: string]: RequiredInputDTO },
+    inputs: { [name: string]: string },
     suite: TestSuiteDTO | null,
     datasets: { [key: string]: DatasetDTO },
     models: { [key: string]: ModelDTO },
@@ -71,7 +63,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
         searchFilter: ''
     }),
     getters: {
-        suiteId: ({suite}) => suite === null ? null : suite.id,
+        suiteId: ({suite}) => suite?.id,
         testSuiteResults: ({executions}) => {
             if (!executions) {
                 return {};
@@ -85,10 +77,10 @@ export const useTestSuiteStore = defineStore('testSuite', {
                     })
                 ))
                 .flatten()
-                .groupBy(result => result.testResult.test.testUuid)
+                .groupBy(result => result.testResult.test!.testUuid)
                 .value();
         },
-        hasTest: ({suite}) => suite && Object.keys(suite.tests).length > 0,
+        hasTest: ({suite}) => suite && Object.keys(suite.tests!).length > 0,
         hasInput: ({inputs}) => Object.keys(inputs).length > 0,
         hasJobInProgress: ({trackedJobs}) => Object.keys(trackedJobs).length > 0
     },
@@ -100,18 +92,18 @@ export const useTestSuiteStore = defineStore('testSuite', {
             }
         },
         async loadTestSuites(projectId: number, suiteId: number) {
-            const completeSuite = await api.getTestSuiteComplete(projectId, suiteId);
+            const completeSuite = await openapi.testSuite.listTestSuiteComplete({projectId, suiteId});
 
             this.projectId = projectId;
-            this.inputs = completeSuite.inputs;
-            this.suite = completeSuite.suite;
-            this.datasets = Object.fromEntries(completeSuite.datasets.map(x => [x.id, x]));
-            this.models = Object.fromEntries(completeSuite.models.map(x => [x.id, x]));
-            this.executions = completeSuite.executions;
+            this.inputs = completeSuite.inputs!;
+            this.suite = completeSuite.suite!;
+            this.datasets = Object.fromEntries(completeSuite.datasets!.map(x => [x.id, x]));
+            this.models = Object.fromEntries(completeSuite.models!.map(x => [x.id, x]));
+            this.executions = completeSuite.executions ?? [];
             testSuiteCompareStore.reset()
         },
-        async updateTestSuite(projectKey: string, testSuite: TestSuiteDTO) {
-            this.suite = await api.updateTestSuite(projectKey, testSuite);
+        async updateTestSuite(projectKey: string, testSuiteDTO: TestSuiteDTO) {
+            this.suite = await openapi.testSuite.updateTestSuite({projectKey, testSuiteDTO, suiteId: testSuiteDTO.id!});
         },
         async runTestSuite(input: Array<FunctionInputDTO>) {
             const jobUuid = await api.executeTestSuite(this.projectId!, this.suiteId!, input);
@@ -120,10 +112,10 @@ export const useTestSuiteStore = defineStore('testSuite', {
                 suiteId: this.suiteId,
                 projectId: this.projectId,
                 inputLength: input.length,
-                tests: this.suite!.tests.map(({test, functionInputs}) => ({
-                    uuid: test.uuid,
-                    name: test.displayName ?? test.name,
-                    inputs: Object.values(functionInputs).map(({value, ...data}) => ({
+                tests: this.suite!.tests!.map(({test, functionInputs}) => ({
+                    uuid: test!.uuid,
+                    name: test!.displayName ?? test!.name,
+                    inputs: Object.values(functionInputs!).map(({value, ...data}) => ({
                         ...data,
                         value: anonymize(value)
                     }))
@@ -157,7 +149,7 @@ export const useTestSuiteStore = defineStore('testSuite', {
             mixpanel.track('Executed test suite', {
                 suiteId: this.suiteId,
                 projectId: this.projectId,
-                testLength: this.suite!.tests.length,
+                testLength: this.suite!.tests!.length,
                 executionDurationMs: new Date().getTime() - start.getTime(),
                 jobUuid: uuid,
                 result: result.state

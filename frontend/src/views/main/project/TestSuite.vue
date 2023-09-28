@@ -81,21 +81,21 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, ref, watch } from 'vue';
-import { statusFilterOptions, useTestSuiteStore } from '@/stores/test-suite';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router/composables';
-import { $vfm } from 'vue-final-modal';
+import {computed, onActivated, ref, watch} from 'vue';
+import {statusFilterOptions, useTestSuiteStore} from '@/stores/test-suite';
+import {storeToRefs} from 'pinia';
+import {useRoute, useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
 import RunTestSuiteModal from '@/views/main/project/modals/RunTestSuiteModal.vue';
-import { useCatalogStore } from '@/stores/catalog';
+import {useCatalogStore} from '@/stores/catalog';
 import EditTestSuiteModal from '@/views/main/project/modals/EditTestSuiteModal.vue';
-import { api } from '@/api';
-import { useTestSuitesStore } from '@/stores/test-suites';
+import {api} from '@/api';
+import {useTestSuitesStore} from '@/stores/test-suites';
 import ExportTestModalVue from './modals/ExportTestModal.vue';
-import { debounce } from 'lodash';
+import {debounce} from 'lodash';
 import mixpanel from 'mixpanel-browser';
 import StartWorkerInstructions from '@/components/StartWorkerInstructions.vue';
-import { state } from '@/socket';
+import {state} from '@/socket';
 
 const router = useRouter();
 const route = useRoute();
@@ -114,7 +114,7 @@ const { suite, inputs, executions, hasTest, hasInput, statusFilter, searchFilter
 const openWorkerInstructions = ref(false);
 
 const suiteName = computed(() => {
-  return suite.value?.name ?? 'Unnamed test suite';
+  return suite?.value?.name ?? 'Unnamed test suite';
 });
 
 const isMLWorkerConnected = computed(() => {
@@ -139,7 +139,7 @@ async function openRunTestSuite(compareMode: boolean) {
         suiteId: props.suiteId,
         inputs: inputs.value,
         compareMode,
-        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs.reduce((acc, curr) => {
+        previousParams: executions.value.length === 0 ? {} : executions.value[0].inputs!.reduce((acc, curr) => {
           acc[curr.name] = curr.value;
           return acc;
         }, {}),
