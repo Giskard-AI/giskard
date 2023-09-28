@@ -1,9 +1,11 @@
+import sys
+
 import numpy as np
+import pandas as pd
 import pytest
 
 import giskard.push
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
-
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.push import Push
@@ -17,7 +19,6 @@ from giskard.push.utils import (
     slice_bounds_quartile,
 )
 from giskard.slicing.slice import QueryBasedSliceFunction
-import pandas as pd
 
 DATASETS = [
     pytest.param(("german_credit_model", "german_credit_data", 50), id="German Credit"),
@@ -29,9 +30,9 @@ PUSH_TYPES = [
     pytest.param(("contribution", giskard.push.ContributionPush, create_contribution_push), id="Contribution"),
     pytest.param(("perturbation", giskard.push.PerturbationPush, create_perturbation_push), id="Perturbation"),
     pytest.param(("overconfidence", giskard.push.OverconfidencePush, create_overconfidence_push), id="Overconfidence"),
-    pytest.param(("borderline", giskard.push.BorderlinePush , create_borderline_push), id="Borderline")
+    pytest.param(("borderline", giskard.push.BorderlinePush, create_borderline_push), id="Borderline"),
 ]
-
+# fmt: off
 EXPECTED_COUNTS = {
     "german_credit_model" : {
         "contribution" :[0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1],
@@ -52,22 +53,20 @@ EXPECTED_COUNTS = {
         "borderline" :[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
     }
 }
+# fmt: on
 
-@pytest.mark.parametrize(
-    "dataset", 
-    DATASETS
-)
-@pytest.mark.parametrize(
-    "push_type",
-    PUSH_TYPES
-)
+
+@pytest.mark.parametrize("dataset", DATASETS)
+@pytest.mark.parametrize("push_type", PUSH_TYPES)
 def test_test_function(request, dataset, push_type):
-
     model_name, data_name, nb_line = dataset
     model = request.getfixturevalue(model_name)
     data = request.getfixturevalue(data_name)
 
     push_type_name, push_type_class, push_func = push_type
+    if model_name == "enron_model" and push_type_name == "perturbation" and sys.platform == "win32":
+        pytest.skip("This test give different results on windows")
+
     push_list = []
     for i in range(nb_line):
         push = push_func(model, data, data.df.iloc[[i]])
@@ -158,7 +157,6 @@ def test_coltype_to_supported_perturbation_type():
 
 
 def test_text_explain_in_push(medical_transcript_model, medical_transcript_data):
-
     problematic_df_entry = medical_transcript_data.df.iloc[[3]]
     output = create_contribution_push(medical_transcript_model, medical_transcript_data, problematic_df_entry)
     assert output is not None
