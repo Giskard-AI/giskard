@@ -71,23 +71,26 @@ public class TestSuiteService {
             ImmutableMap<String, FunctionInput> providedInputs = Maps.uniqueIndex(test.getFunctionInputs(),
                     FunctionInput::getName);
 
-            test.getTestFunction().getArgs().stream()
-                    .filter(a -> !a.isOptional())
+            test.getTestFunction().getArgs()
                     .forEach(a -> {
                         String name = null;
-                        if (!providedInputs.containsKey(a.getName())) {
+                        FunctionInput input = providedInputs.getOrDefault(a.getName(), null);
+                        if (input == null && !a.isOptional()) {
                             name = a.getName();
-                        } else if (providedInputs.get(a.getName()).isAlias()) {
-                            name = providedInputs.get(a.getName()).getValue();
+                        } else if (input != null && input.isAlias()) {
+                            name = input.getValue();
                         }
-                        if (name != null) {
-                            if (!res.containsKey(name)) {
-                                res.put(name, a.getType());
-                            } else if (!a.getType().equals(res.get(name))) {
-                                throw new IllegalArgumentException(
-                                        "Variable with name %s is declared as %s and %s at the same time"
-                                                .formatted(a.getName(), res.get(a.getName()), a.getType()));
-                            }
+
+                        if (name == null) {
+                            return;
+                        }
+
+                        if (!res.containsKey(name)) {
+                            res.put(name, a.getType());
+                        } else if (!a.getType().equals(res.get(name))) {
+                            throw new IllegalArgumentException(
+                                "Variable with name %s is declared as %s and %s at the same time"
+                                    .formatted(a.getName(), res.get(a.getName()), a.getType()));
                         }
                     });
         });
