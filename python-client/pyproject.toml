@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -18,7 +18,6 @@ url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
 name = "torch"
 
 
-
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -28,7 +27,9 @@ test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=gisk
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
-clean = "rm -rf .venv coverage.xml coverage*"
+clean = "rm -rf coverage.xml coverage* .coverage*"
+notebook = "jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --notebook-dir ./notebooks --NotebookApp.token=''"
+check-deps = "deptry ."
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -38,37 +39,36 @@ dev = [
     "pre-commit>=2.19.0",
     "mypy>=0.982",
     "deptry>=0.5.13",
-    "httpretty>=1.1.4",
+    "ruff>=0.0.271",
+    "mlflow>2",
+    "black[d]>=22.12.0",
     "pip>=23.1.2",
+]
+ml_runtime = [
     "langchain>=0.0.187",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
     "imbalanced-learn>=0.10.1",
-    "pytest-xdist>=3.3.1",
-    "ruff>=0.0.271",
-    "mlflow>2",
-    "black[d]>=22.12.0",
-]
-test = [
-    "pytest-cov>=4.0.0",
-    "pytest>=7.1.2",
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
-    "transformers>=4.27.4, <4.30",
+    "transformers>=4.33, <4.34", # https://github.com/huggingface/transformers/issues/23352
+    "absl-py", # Needed for 3.11 transformers
+    "sentencepiece", # needed for some transformers stuff with tokenizer
     "torch>=2.0.0",
     "torchdata>=0.6.0",
+    "portalocker>=2.0.0", # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1",
-    "portalocker>=2.0.0",
-    "scikit-learn==1.0.2",
-    "tensorflow-macos>=2.10.0, <2.11; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow>=2.10.0, <2.11; sys_platform != 'darwin' or platform_machine != 'arm64'",
-    "tensorflow-text>=2.10.0, <2.11; platform_machine == 'x86_64' or platform_machine == 'amd64'",
+    "tensorflow-macos>=2.13.0, <2.14; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.13, <2.14",
+    # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
+    "tensorflow-text>=2.13, <2.14; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32", # Tensorflow io does not work for windows from 0.32
+    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
+test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1"]
 doc = [
     "furo>=2023.5.20",
     "myst-parser>=1.0.0",
@@ -82,7 +82,7 @@ doc = [
     "sphinx-copybutton>=0.5.2",
     "sphinx-click>=4.4.0",
     "nbsphinx>=0.9.2",
-    "ipython==8.12.0"
+    "ipython==8.12.0",
 ]
 
 [project.scripts]
@@ -106,7 +106,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b20"
+version = "2.0.0b22"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [
     { name = "Giskard AI", email = "hello@giskard.ai" },
@@ -131,42 +131,43 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 
-requires-python = ">=3.8.1, <3.11"
+requires-python = ">=3.8.1, <3.12"
 dependencies = [
     "cloudpickle>=1.1.1",
-    "zstandard>=0.10.0 ",
+    "zstandard>=0.10.0",
     "mlflow-skinny>=2",
-    "numpy>=1.22.0,<1.24.0", # shap doesn't work with numpy>1.24.0: module 'numpy' has no attribute 'int'
+    "gitpython",
+    "protobuf<3.21",            # Not compatible with transformers/tensorflow
+    "numpy>=1.22.0",
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic<3,>1",
-    "tqdm>=4.42.0",
-    "setuptools>=39.1.0,<68.0.0",
     "pandas>=1.3.4,<2",
     "xxhash>=3.2.0",
     "langdetect>=1.0.9",
-    "chardet", # text metadata
-    "jinja2>=3", # scan template
-    "markdown",
+    "chardet",                  # text metadata
+    "jinja2>=3",                # scan template
     "requests-toolbelt>=0.9.1",
     "stomp-py>=8.1.0",
-    "pyyaml", # cli_server
-    "packaging", # cli_server
+    "setuptools",               # used in ml worker for pkg_resources
+    "typing_extensions",        # used in registry/decorators, for python <3.10
+    "websocket-client",         # used in worker, to get exception from stomp
+    "pyyaml",                   # cli_server
+    "packaging",                # cli_server
 ]
 
 [project.optional-dependencies]
 llm = [
     "transformers",
-    "torch",
-    "langchain",
-    "evaluate",
-    "detoxify>=0.5.0",
-    # pdm lock -G:all doesn't work without fixing these two versions
-    "datasets>=2.13.0",
-    "bert-score>=0.3.13",
+    "torch", 
+    "langchain", 
+    "evaluate", 
+    "bert-score", 
+    "datasets"
 ]
+
 server = [
     "tenacity>=4.11.0",
     "psutil>=5.4.6",
@@ -264,3 +265,7 @@ addopts = [
     "--doctest-modules",
     "--doctest-continue-on-failure",
 ]
+
+[tool.deptry]
+extend_exclude = [".history"]
+ignore_notebooks = true

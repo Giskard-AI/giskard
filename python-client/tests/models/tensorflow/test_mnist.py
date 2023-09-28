@@ -1,18 +1,19 @@
-import tensorflow as tf
-from tensorflow import keras
 import pytest
-from giskard import Dataset
+
 import tests.utils
+from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
+
+tf = pytest.importorskip("tensorflow")
 
 
 # Define a simple sequential model
 def create_model():
     model = tf.keras.Sequential(
         [
-            keras.layers.Dense(512, activation="relu", input_shape=(784,)),
-            keras.layers.Dropout(0.2),
-            keras.layers.Dense(10, activation="softmax"),
+            tf.keras.layers.Dense(512, activation="relu", input_shape=(784,)),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(10, activation="softmax"),
         ]
     )
 

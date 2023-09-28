@@ -18,7 +18,7 @@ public class MLWorkerIllegalReplyException extends RuntimeException {
     }
 
     public MLWorkerIllegalReplyException(MLWorkerWSErrorDTO error) {
-        super(error.getErrorStr());
+        super(error.getErrorStr() + "\n" + error.getDetail());
         this.errorType = error.getErrorType() + ": " + error.getErrorStr();
         this.errorString = error.getDetail();
     }
