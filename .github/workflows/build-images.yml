@@ -82,7 +82,7 @@ jobs:
           docker system prune -f
           sudo apt remove -y \
             alsa-topology-conf alsa-ucm-conf \
-            google-cloud-sdk azure-cli microsoft-edge-stable dotnet-sdk-7.0 dotnet-sdk-6.0 temurin-17-jdk \
+            google-cloud-cli azure-cli microsoft-edge-stable dotnet-sdk-7.0 dotnet-sdk-6.0 temurin-17-jdk \
             google-chrome-stable temurin-11-jdk llvm-14-dev llvm-13-dev llvm-12-dev firefox temurin-8-jdk \
             powershell mysql-server-core-8.0 libllvm15 libllvm14 libllvm13 libllvm12 libclang-common-13-dev
           sudo apt autoremove -y
