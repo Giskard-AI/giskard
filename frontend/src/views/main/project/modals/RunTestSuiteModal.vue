@@ -127,7 +127,7 @@ function isAllParamsSet() {
   return testSuiteInputs.value
       .filter((inputs) => Object.entries(props.inputs)
           .map(([name]) => inputs[name])
-      .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
+          .findIndex(param => param && (param.value === null || ("" + param.value).trim() === '')) !== -1)
     .length === 0;
 }
 
