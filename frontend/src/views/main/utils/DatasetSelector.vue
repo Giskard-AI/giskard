@@ -1,14 +1,28 @@
 <template>
-  <v-select attach clearable outlined class='dataset-selector' :label='label' v-model='value' :items='filteredDatasets'
-            :item-text='extractDatasetName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense
-            hide-details></v-select>
+  <div class="d-flex">
+    <v-select attach clearable outlined class='dataset-selector' :label='label' v-model='value'
+              :items='filteredDatasets'
+              :item-text='extractDatasetName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense
+              hide-details></v-select>
+    <v-tooltip bottom>
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn icon :disabled="!value" v-bind="attrs" v-on="on" @click="exploreDataset">
+          <v-icon>mdi-open-in-new</v-icon>
+        </v-btn>
+      </template>
+      <span>Explore dataset</span>
+    </v-tooltip>
+
+  </div>
+
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import axios from 'axios';
-import { apiURL } from '@/env';
-import { DatasetDTO } from '@/generated-sources';
+import {apiURL} from '@/env';
+import {DatasetDTO} from '@/generated-sources';
+import router from "@/router";
 
 interface Props {
   projectId: number;
@@ -41,6 +55,12 @@ function extractDatasetName(dataset: DatasetDTO) {
 
 function onInput(value) {
   emit('update:value', value);
+}
+
+
+function exploreDataset() {
+  const routeData = router.resolve({name: 'project-catalog-datasets', query: {dataset: props.value}});
+  window.open(routeData.href, '_blank');
 }
 </script>
 

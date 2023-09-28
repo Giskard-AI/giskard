@@ -19,7 +19,7 @@
 
     <LoadingFullscreen v-if="isLoading" name="datasets"/>
     <v-container v-if="projectArtifactsStore.datasets.length > 0 && !isLoading" fluid class="vc">
-      <v-expansion-panels flat>
+      <v-expansion-panels flat v-model="panel">
         <v-row dense no-gutters class="mr-6 ml-3 caption secondary--text text--lighten-3 pb-2">
           <v-col cols="4" class="col-container">Name</v-col>
           <v-col cols="1" class="col-container">Size</v-col>
@@ -106,7 +106,7 @@ import {api} from '@/api';
 import {Role} from '@/enums';
 import mixpanel from 'mixpanel-browser';
 import DeleteModal from '@/views/main/project/modals/DeleteModal.vue';
-import {computed, onBeforeMount, ref} from 'vue';
+import {computed, onBeforeMount, onMounted, ref} from 'vue';
 import InlineEditText from '@/components/InlineEditText.vue';
 import {useUserStore} from '@/stores/user';
 import {useProjectStore} from '@/stores/project';
@@ -115,6 +115,7 @@ import {TYPE} from 'vue-toastification';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
 import {useMainStore} from '@/stores/main';
 import {$tags} from "@/utils/nametags.utils";
+import {useRoute} from "vue-router/composables";
 
 const userStore = useUserStore();
 const projectStore = useProjectStore();
@@ -133,6 +134,7 @@ const lastVisitedFileId = ref<string | null>(null);
 const filePreviewHeader = ref<{ text: string, value: string, sortable: boolean }[]>([]);
 const filePreviewData = ref<any[]>([]);
 const searchDataset = ref<string>('');
+const panel = ref<number | undefined>(undefined);
 
 const project = computed(() => {
   return projectStore.project(props.projectId)
@@ -192,7 +194,7 @@ async function peakDataFile(id: string) {
       }
       filePreviewData.value = response.content
     } catch (error) {
-      mainStore.addNotification({content: error.response.statusText, color: TYPE.ERROR});
+      useMainStore().addNotification({content: error.response.statusText, color: TYPE.ERROR});
       filePreviewHeader.value = [];
       filePreviewData.value = [];
     }
@@ -217,6 +219,21 @@ async function reloadDatasets() {
 onBeforeMount(async () => {
   await projectArtifactsStore.setProjectId(props.projectId, false);
 });
+
+onMounted(async () => {
+  const data = useRoute().query;
+
+  if (data.hasOwnProperty("dataset")) {
+    const idx = datasets.value.findIndex(dataset => dataset.id === data.dataset);
+    if (idx === -1) {
+      return;
+    }
+
+    panel.value = idx
+    await peakDataFile(data.dataset as string)
+  }
+
+})
 </script>
 
 <style lang="scss" scoped>
