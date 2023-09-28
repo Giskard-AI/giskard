@@ -8,7 +8,12 @@ from giskard.ml_worker.testing.registry.decorators_utils import make_all_optiona
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 
-def test(_fn=None, name=None, tags: Optional[List[str]] = None):
+def test(
+    _fn=None,
+    name=None,
+    tags: Optional[List[str]] = None,
+    debug_description: str = "This debugging session opens one by one all the examples that make the test fail.",
+):
     if sys.version_info >= (3, 10):
         import typing as t
     else:
@@ -25,7 +30,9 @@ def test(_fn=None, name=None, tags: Optional[List[str]] = None):
         """
         from giskard.ml_worker.testing.registry.registry import tests_registry
 
-        tests_registry.register(TestFunctionMeta(original, name=name, tags=tags, type="TEST"))
+        tests_registry.register(
+            TestFunctionMeta(original, name=name, tags=tags, debug_description=debug_description, type="TEST")
+        )
 
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original

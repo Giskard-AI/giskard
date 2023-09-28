@@ -106,6 +106,7 @@ def map_function_meta_ws(callable_type):
                 )
                 for a in (test.args.values() if test.args else [])  # args could be None
             ],
+            debugDescription=test.debug_description,
         )
         for test in tests_registry.get_all().values()
         if test.type == callable_type

@@ -30,4 +30,10 @@ public class TestFunctionService extends CallableService<TestFunction, TestFunct
         return function;
     }
 
+    @Override
+    protected TestFunction update(TestFunction existingCallable, TestFunctionDTO dto) {
+        existingCallable = super.update(existingCallable, dto);
+        existingCallable.setDebugDescription(dto.getDebugDescription());
+        return existingCallable;
+    }
 }
