@@ -450,11 +450,15 @@ def dataset_processing(
         arguments = parse_function_arguments(ml_worker, function.arguments)
         if function.slicingFunction:
             dataset.add_slicing_function(
-                SlicingFunction.download(function.slicingFunction.id, ml_worker.client, None)(**arguments)
+                SlicingFunction.download(
+                    function.slicingFunction.id, ml_worker.client, function.slicingFunction.project_key
+                )(**arguments)
             )
         else:
             dataset.add_transformation_function(
-                TransformationFunction.download(function.transformationFunction.id, ml_worker.client, None)(**arguments)
+                TransformationFunction.download(
+                    function.transformationFunction.id, ml_worker.client, function.slicingFunction.project_key
+                )(**arguments)
             )
 
     result = dataset.process()

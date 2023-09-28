@@ -45,7 +45,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <div v-on="on">
-                    <v-btn color="primary" disabled large text @click="openExportDialog">Export </v-btn>
+                    <v-btn color="primary" large text @click="openExportDialog">Export </v-btn>
                   </div>
                 </template>
                 <span>Coming soon</span>
@@ -175,6 +175,10 @@ async function redirectToTesting() {
 function openExportDialog() {
   $vfm.show({
     component: ExportTestModalVue,
+    bind: {
+      projectId: props.projectId,
+      suiteId: props.suiteId,
+    },
   });
 }
 

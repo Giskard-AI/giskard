@@ -361,18 +361,11 @@ class BaseModel(ABC):
         from giskard.core.model_validation import validate_model, validate_model_loading_and_saving
 
         validate_model(model=self, validate_ds=validate_ds)
-        reloaded_model = validate_model_loading_and_saving(self)
-        validate_model(model=reloaded_model, validate_ds=validate_ds)
 
         reloaded_model = validate_model_loading_and_saving(self)
         try:
-            validate_model(model=reloaded_model, validate_ds=validate_ds)
+            validate_model(model=reloaded_model, validate_ds=validate_ds, print_validation_message=False)
         except Exception as e_reloaded:
-            try:
-                validate_model(model=self, validate_ds=validate_ds)
-                logger.info("Original model validated successfully")
-            except Exception as e_loaded:
-                logger.exception("Failed to validate the original model", e_loaded)
             raise GiskardException(
                 "An error occured while validating a deserialized version your model, please report this issue to Giskard"
             ) from e_reloaded

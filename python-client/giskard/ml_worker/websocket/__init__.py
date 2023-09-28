@@ -146,7 +146,7 @@ class ExplainText(WorkerReply):
 class ExplainTextParam(BaseModel):
     model: ArtifactRef
     feature_name: str
-    columns: Dict[str, str]
+    columns: Dict[str, Optional[str]]
     column_types: Dict[str, str]
 
 
