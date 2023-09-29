@@ -8,15 +8,16 @@ from typing import Optional, Sequence
 import pandas as pd
 
 from giskard.client.python_utils import warning
-from .issues import DataLeakage, Issue, Stochasticity
-from .logger import logger
-from .registry import DetectorRegistry
-from .report import ScanReport
+
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
+from .issues import DataLeakage, Issue, Stochasticity
+from .logger import logger
+from .registry import DetectorRegistry
+from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -126,7 +127,7 @@ class Scanner:
             maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
             detector_start = perf_counter()
             try:
-                detected_issues = detector.run(model, dataset, verbose=verbose)
+                detected_issues = detector.run(model, dataset)
             except Exception as err:
                 logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))
