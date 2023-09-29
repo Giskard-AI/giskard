@@ -5,24 +5,16 @@ from ..models.base import BaseModel
 from .logger import logger
 from .scanner import Scanner
 
-_default_detectors = [
-    ".performance.performance_bias_detector",
-    ".robustness.text_perturbation_detector",
-    ".robustness.ethical_bias_detector",
-    ".data_leakage.data_leakage_detector",
-    ".stochasticity.stochasticity_detector",
-    ".calibration.overconfidence_detector",
-    ".calibration.underconfidence_detector",
-    ".correlation.spurious_correlation_detector",
-    ".llm.business_detector",
-]
-
 
 def _register_default_detectors():
     import importlib
+    from pathlib import Path
 
-    for _default_detector in _default_detectors:
-        importlib.import_module(_default_detector, package=__package__)
+    root = Path(__file__).parent
+    modules = ["." + str(p.relative_to(root).with_suffix("")).replace("/", ".") for p in root.glob("**/*_detector.py")]
+
+    for detector_module in modules:
+        importlib.import_module(detector_module, package=__package__)
 
 
 _register_default_detectors()
