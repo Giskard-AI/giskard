@@ -80,8 +80,8 @@
               </ValidationProvider>
               <ValidationProvider v-else-if="input.type === 'str'" v-slot="{ errors }" mode="eager" name="input"
                                   rules="required" class="flex-1">
-                <v-text-field v-model="editedInputs[input.name].value" :error-messages="errors" dense outlined
-                              single-line type="text"/>
+                <v-textarea v-model="editedInputs[input.name].value" :error-messages="errors" dense outlined
+                            single-line type="text" auto-grow rows="1"/>
               </ValidationProvider>
               <ValidationProvider v-else-if="input.type === 'bool'" v-slot="{ errors }" mode="eager" name="input"
                                   rules="required" class="flex-1">

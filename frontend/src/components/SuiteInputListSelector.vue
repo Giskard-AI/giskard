@@ -69,7 +69,7 @@
                           type="number" :disabled="readOnlyInputs.includes(input.name)"></v-text-field>
             <v-textarea v-else-if="input.type === 'str'" v-model="props.modelValue[input.name].value"
                         :label="input.name" dense hide-details outlined type="text" rows="1"
-                        :disabled="readOnlyInputs.includes(input.name)"></v-textarea>
+                        :disabled="readOnlyInputs.includes(input.name)" auto-grow></v-textarea>
             <v-switch v-else-if="input.type === 'bool'" v-model="props.modelValue[input.name].value"
                       :label="props.modelValue[input.name].value ? 'True' : 'False'" dense :disabled="readOnlyInputs.includes(input.name)"></v-switch>
           </template>
