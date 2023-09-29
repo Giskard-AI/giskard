@@ -146,6 +146,7 @@ onMounted(async () => {
 
 .whitespace-pre {
   white-space: pre;
+  text-wrap: wrap;
 }
 
 /** **/
