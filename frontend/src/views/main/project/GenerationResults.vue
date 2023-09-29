@@ -23,21 +23,27 @@
     </v-card-text>
     <v-card-actions>
       <v-btn :loading='loading' :disabled='!predictionOutdated' text @click='submitPrediction'>Run model</v-btn>
-      <v-btn v-if='!predictionOutdated && !loading && modified' text @click='saveInput'>Save</v-btn>
+      <v-btn v-if='!predictionOutdated && !loading && model.featureNames?.length === 1' text @click='addToTestSuite'>Add
+        to test suite
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup lang='ts'>
-import { computed, onMounted, ref } from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import LoadingFullscreen from '@/components/LoadingFullscreen.vue';
-import { api } from '@/api';
-import { ModelDTO } from '@/generated-sources';
+import {api} from '@/api';
+import {ModelDTO} from '@/generated-sources';
 import * as _ from 'lodash';
-import { CanceledError } from 'axios';
-import { openapi } from '@/api-v2';
+import {CanceledError} from 'axios';
+import {$vfm} from "vue-final-modal";
+import AddTestToSuite from "@/views/main/project/modals/AddTestToSuite.vue";
+import {storeToRefs} from "pinia";
+import {useCatalogStore} from "@/stores/catalog";
 
 interface Props {
+  projectId: number,
   model: ModelDTO;
   datasetId: string;
   modelFeatures: string[];
@@ -48,6 +54,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   modified: false
 });
+
+const {testFunctionsByUuid} = storeToRefs(useCatalogStore());
 
 const prediction = ref<string | number | undefined>('');
 const predictedInput = ref<{ [key: string]: string }>({});
@@ -90,11 +98,28 @@ async function submitPrediction() {
   }
 }
 
-function saveInput() {
-  openapi.datasets.addRow({
-    projectKey: props.model.project.key,
-    datasetId: props.datasetId,
-    requestBody: props.inputData
+function addToTestSuite() {
+  $vfm.show({
+    component: AddTestToSuite,
+    bind: {
+      projectId: props.projectId,
+      test: testFunctionsByUuid.value['1c6ec6db-8bdb-5446-a81e-4f0ceeb3a27e'],
+      testArguments: {
+        model: {
+          name: 'model',
+          value: props.model.id,
+          type: 'Model',
+          isAlias: false
+        },
+        prompt_input: {
+          name: 'prompt_input',
+          value: props.inputData[props.model.featureNames[0]],
+          type: 'str',
+          isAlias: false
+        }
+      },
+      readOnlyInputs: ['model', 'prompt_input']
+    }
   });
 }
 

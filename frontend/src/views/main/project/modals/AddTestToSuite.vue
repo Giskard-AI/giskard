@@ -5,7 +5,7 @@
       <ValidationObserver ref="observer" v-slot="{ invalid }">
         <v-card class="modal-card">
           <v-card-title>
-            Add {{ test.name }} to a test suite
+            Add "{{ test.displayName ?? test.name }}" to a test suite
           </v-card-title>
 
           <v-card-text>
@@ -37,7 +37,7 @@
                   <p>Specify inputs that will be constant during each execution of the test.<br/>
                     The inputs left blank will have to be provided at test execution time.</p>
                   <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs"
-                                          :model-value="testInputs" :doc="doc"/>
+                                          :model-value="testInputs" :doc="doc" :read-only-inputs="readOnlyInputs"/>
                 </template>
               </v-col>
             </v-row>
@@ -75,13 +75,17 @@ import {openapi} from "@/api-v2";
 
 const router = useRouter();
 
-const {projectId, test, suiteId, testArguments} = defineProps<{
+const {projectId, test, suiteId, testArguments} = withDefaults(defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
   testArguments: { [name: string]: FunctionInputDTO },
-  hideFixedInputs?: boolean
-}>();
+  hideFixedInputs?: boolean,
+  readOnlyInputs?: string[]
+}>(), {
+  hideFixedInputs: false,
+  readOnlyInputs: () => []
+})
 
 const dialog = ref<boolean>(false);
 const testSuites = ref<TestSuiteDTO[]>([]);

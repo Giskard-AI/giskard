@@ -93,7 +93,8 @@
           <GenerationResults v-if='InspectorUtils.hasFeature(InspectorFeature.GENERATION_RESULT, model)' :model='model'
                              :dataset-id='dataset.id' :modelFeatures='modelFeatures'
                              :inputData='inputData' :modified='changed || isInputNotOriginal'
-                             :debouncingTimeout='debouncingTimeout' @result='setResult' />
+                             :debouncingTimeout='debouncingTimeout' @result='setResult'
+                             :project-id="projectId"/>
           <InspectorExplanation v-if='InspectorUtils.hasFeature(InspectorFeature.EXPLANATION, model)'
                                 :dataset='dataset' :model='model' :input-data='inputData'
                                 :classification-result='classificationResult' :model-features='modelFeatures'
@@ -108,22 +109,23 @@
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import { DatasetDTO, ModelType } from '@/generated-sources';
+import {DatasetDTO, ModelType} from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
-import { anonymize } from '@/utils';
+import {anonymize} from '@/utils';
 import _ from 'lodash';
 import TransformationPopover from '@/components/TransformationPopover.vue';
-import { useCatalogStore } from '@/stores/catalog';
-import { computed, onMounted, ref, watch } from 'vue';
+import {useCatalogStore} from '@/stores/catalog';
+import {computed, onMounted, ref, watch} from 'vue';
 import PushPopover from '@/components/PushPopover.vue';
 import InspectorExplanation from '@/views/main/project/InspectorExplanation.vue';
-import { InspectorFeature, InspectorUtils } from '@/utils/inspector-utils';
-import { ModelDTO } from '@/generated/client';
+import {InspectorFeature, InspectorUtils} from '@/utils/inspector-utils';
+import {ModelDTO} from '@/generated/client';
 import GenerationResults from '@/views/main/project/GenerationResults.vue';
 
 const catalogStore = useCatalogStore();
 
 interface Props {
+  projectId: number;
   model: ModelDTO;
   dataset: DatasetDTO;
   originalData: any; // used for the variation feedback

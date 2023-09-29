@@ -46,25 +46,30 @@
           </template>
           <template v-else-if="props.modelValue">
             <DatasetSelector v-if="input.type === 'Dataset'" :label="input.name" :project-id="projectId"
-                             :return-object="false" :value.sync="props.modelValue[input.name].value"/>
+                             :return-object="false" :value.sync="props.modelValue[input.name].value"
+                             :disabled="readOnlyInputs.includes(input.name)"/>
             <ModelSelector v-else-if="input.type === 'BaseModel'" :label="input.name" :project-id="projectId"
-                           :return-object="false" :value.sync="props.modelValue[input.name].value"/>
+                           :return-object="false" :value.sync="props.modelValue[input.name].value"
+                           :disabled="readOnlyInputs.includes(input.name)"/>
             <SlicingFunctionSelector v-else-if="input.type === 'SlicingFunction'"
                                      :args.sync="props.modelValue[input.name].params"
                                      :label="input.name"
                                      :project-id="projectId"
-                                     :value.sync="props.modelValue[input.name].value"/>
+                                     :value.sync="props.modelValue[input.name].value"
+                                     :disabled="readOnlyInputs.includes(input.name)"/>
             <TransformationFunctionSelector v-else-if="input.type === 'TransformationFunction'"
                                             :args.sync="props.modelValue[input.name].params"
                                             :label="input.name"
                                             :project-id="projectId"
-                                            :value.sync="props.modelValue[input.name].value"/>
+                                            :value.sync="props.modelValue[input.name].value"
+                                            :disabled="readOnlyInputs.includes(input.name)"/>
             <KwargsCodeEditor v-else-if="input.type === 'Kwargs'" :value.sync="props.modelValue[input.name].value"/>
             <v-text-field v-else-if="['float', 'int'].includes(input.type)" v-model="props.modelValue[input.name].value"
                           :label="input.name" :step='input.type === "float" ? 0.1 : 1' dense hide-details outlined
-                          type="number"></v-text-field>
+                          type="number" :disabled="readOnlyInputs.includes(input.name)"></v-text-field>
             <v-textarea v-else-if="input.type === 'str'" v-model="props.modelValue[input.name].value"
-                        :label="input.name" dense hide-details outlined type="text" rows="1"></v-textarea>
+                        :label="input.name" dense hide-details outlined type="text" rows="1"
+                        :disabled="readOnlyInputs.includes(input.name)"></v-textarea>
           </template>
         </v-col>
       </v-row>
@@ -93,9 +98,12 @@ interface Props {
   modelValue?: { [name: string]: FunctionInputDTO };
   editing: boolean;
   doc?: ParsedDocstring;
+  readOnlyInputs?: string[]
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  readOnlyInputs: () => []
+})
 
 const {models, datasets} = storeToRefs(useTestSuiteStore());
 const {slicingFunctionsByUuid} = storeToRefs(useCatalogStore());

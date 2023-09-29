@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex" :class="{ w100: fullWidth }">
     <v-autocomplete attach clearable :outlined='fullWidth' class='slice-function-selector' :label='label'
-                    v-model='value' :items="[{
+                    v-model='value' :disabled="disabled" :items="[{
       name: 'None',
       displayName: 'None',
       uuid: null,
@@ -25,16 +25,16 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetDTO, FunctionInputDTO, SlicingFunctionDTO } from '@/generated-sources';
-import { storeToRefs } from 'pinia';
-import { useCatalogStore } from '@/stores/catalog';
-import { computed } from 'vue';
-import { $vfm } from 'vue-final-modal';
+import {DatasetDTO, FunctionInputDTO, SlicingFunctionDTO} from '@/generated-sources';
+import {storeToRefs} from 'pinia';
+import {useCatalogStore} from '@/stores/catalog';
+import {computed} from 'vue';
+import {$vfm} from 'vue-final-modal';
 import FunctionInputsModal from '@/views/main/project/modals/FunctionInputsModal.vue';
-import { chain } from 'lodash';
+import {chain} from 'lodash';
 import CreateSliceModal from '@/views/main/project/modals/CreateSliceModal.vue';
-import { DatasetProcessFunctionUtils } from '@/utils/dataset-process-function.utils';
-import { api } from '@/api';
+import {DatasetProcessFunctionUtils} from '@/utils/dataset-process-function.utils';
+import {api} from '@/api';
 
 interface Props {
   projectId: number,
@@ -44,13 +44,15 @@ interface Props {
   args?: Array<FunctionInputDTO>,
   icon?: boolean,
   dataset?: DatasetDTO,
-  allowNoCodeSlicing?: boolean
+  allowNoCodeSlicing?: boolean,
+  disabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   fullWidth: true,
   icon: false,
-  allowNoCodeSlicing: false
+  allowNoCodeSlicing: false,
+  disabled: false
 });
 
 const emit = defineEmits(['update:value', 'update:args', 'onChanged']);

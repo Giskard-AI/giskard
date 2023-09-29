@@ -53,29 +53,31 @@
       </div>
     </v-tab-item>
     <v-tab-item class="height85vh scrollable">
-      <Inspector :model="data.model" :dataset="data.dataset" :originalData="originalData" :inputData="userData" :isMiniMode="true" @reset="resetInput" />
+      <Inspector :project-id="projectId" :model="data.model" :dataset="data.dataset" :originalData="originalData"
+                 :inputData="userData" :isMiniMode="true" @reset="resetInput"/>
     </v-tab-item>
   </v-tabs>
   <div v-else>Feedback #{{ id }} non existent</div>
 </template>
 
 <script setup lang="ts">
-import { api } from '@/api';
+import {api} from '@/api';
 import Inspector from './Inspector.vue';
 import MessageReply from '@/components/MessageReply.vue';
-import { FeedbackDTO, FeedbackReplyDTO } from '@/generated-sources';
+import {FeedbackDTO, FeedbackReplyDTO} from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router/composables';
-import { $vfm } from 'vue-final-modal';
+import {computed, onMounted, ref} from 'vue';
+import {useRouter} from 'vue-router/composables';
+import {$vfm} from 'vue-final-modal';
 import ConfirmModal from '@/views/main/project/modals/ConfirmModal.vue';
-import { useMainStore } from '@/stores/main';
+import {useMainStore} from '@/stores/main';
 
 const mainStore = useMainStore();
 
 const router = useRouter();
 
 interface Props {
+  projectId: number,
   id: number,
 }
 

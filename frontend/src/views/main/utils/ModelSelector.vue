@@ -1,26 +1,28 @@
 <template>
   <v-select attach clearable outlined class='model-selector' :label='label' v-model='value' :items='projectModels'
             :item-text='extractModelName' :item-value="'id'" :return-object='returnObject' @input='onInput' dense
-            hide-details></v-select>
+            hide-details :disabled="disabled"></v-select>
 </template>
 
 <script setup lang="ts">
 import axios from 'axios';
-import { apiURL } from '@/env';
-import { ModelDTO } from '@/generated-sources';
-import { onMounted, ref } from 'vue';
+import {apiURL} from '@/env';
+import {ModelDTO} from '@/generated-sources';
+import {onMounted, ref} from 'vue';
 
 interface Props {
   projectId: number;
   returnObject?: boolean;
   label?: string;
   value?: string | null;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   returnObject: true,
   label: 'Model',
   value: undefined,
+  disabled: false
 })
 
 const projectModels = ref<Array<ModelDTO>>([]);
