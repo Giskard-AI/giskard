@@ -67,7 +67,7 @@ def german_credit_catboost_raw_model(german_credit_data):
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
         X, Y, test_size=0.20, random_state=30, stratify=Y
     )
-    cb = CatBoostClassifier(iterations=2, learning_rate=1, depth=2)
+    cb = CatBoostClassifier(iterations=2, learning_rate=1, depth=2, random_seed=0)
     cb.fit(X_train, Y_train, columns_to_encode)
 
     model_score = cb.score(X_test, Y_test)
@@ -115,7 +115,7 @@ def german_credit_raw_model(german_credit_data):
             ("cat", categorical_transformer, columns_to_encode),
         ]
     )
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))])
 
     Y = german_credit_data.df["default"]
     X = german_credit_data.df[german_credit_data.columns].drop(columns="default")

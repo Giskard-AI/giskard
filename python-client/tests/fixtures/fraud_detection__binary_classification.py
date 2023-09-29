@@ -164,7 +164,7 @@ def fraud_detection_model(fraud_detection_train_data: Dataset) -> Model:
     x = fraud_detection_train_data.df.drop(TARGET_COLUMN, axis=1)
     y = fraud_detection_train_data.df[TARGET_COLUMN]
 
-    estimator = LGBMClassifier()
+    estimator = LGBMClassifier(random_state=30)
     estimator.fit(x, y)
 
     wrapped_model = Model(
