@@ -5,8 +5,8 @@
       <LoadingFullscreen v-show='loading' name='result' class='pb-6' />
       <v-row v-if='prediction && !loading'>
         <v-col>
-          <div class='mb-3 text-start'>
-            <span class='whitespace-pre'>{{ prediction }}</span>
+          <div class='mb-3 text-start generation-box'>
+            <span class='generation-response'>{{ prediction }}</span>
           </div>
         </v-col>
       </v-row>
@@ -145,9 +145,20 @@ onMounted(async () => {
   font-size: 10px !important;
 }
 
-.whitespace-pre {
+.generation-response {
   white-space: pre;
   text-wrap: wrap;
+  font-family: 'Montserrat', "Helvetica Neue", sans-serif;
+  color: black;
+  font-size: 1rem;
+}
+
+.generation-box {
+  border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  border: 1px solid #CCC;
+  padding: 4px;
 }
 
 /** **/

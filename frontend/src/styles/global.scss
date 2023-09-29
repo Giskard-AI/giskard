@@ -21,6 +21,14 @@ $color-pack: false;
   src: url('@/assets/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
 }
 
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 0% 200%;
+  src: url('@/assets/fonts/Montserrat-VariableFont_wght.ttf') format('truetype');
+}
+
 html {
   scrollbar-width: thin;
 
