@@ -2,7 +2,7 @@
   <div class='test-container'>
     <div class='d-flex flex-row flex-wrap align-center test-card-header'>
       <span class='test-name text-black'>
-          Test {{ suiteTest.displayName ?? suiteTest.test.displayName ?? suiteTest.test.name }}
+          Test {{ SuiteTestUtils.getDisplayName(suiteTest) }}
           <span v-if='transformationFunction'> to {{
               transformationFunction.displayName ?? transformationFunction.name
             }}</span>
@@ -101,6 +101,7 @@ import ModelSelector from '@/views/main/utils/ModelSelector.vue';
 import {chain} from 'lodash';
 import {$tags} from "@/utils/nametags.utils";
 import {SuiteTestDTO} from "@/generated/client";
+import {SuiteTestUtils} from "@/utils/suite-test-utils";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());

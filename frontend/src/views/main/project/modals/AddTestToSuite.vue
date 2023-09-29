@@ -75,13 +75,14 @@ import {openapi} from "@/api-v2";
 
 const router = useRouter();
 
-const {projectId, test, suiteId, testArguments} = withDefaults(defineProps<{
+const {projectId, test, suiteId, testArguments, displayName} = withDefaults(defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
   testArguments: { [name: string]: FunctionInputDTO },
   hideFixedInputs?: boolean,
-  readOnlyInputs?: string[]
+  readOnlyInputs?: string[],
+  displayName?: string
 }>(), {
   hideFixedInputs: false,
   readOnlyInputs: () => []
@@ -132,7 +133,8 @@ async function submit(close) {
         .omitBy(({value}) => value === null
             || (typeof value === 'string' && value.trim() === '')
             || (typeof value === 'number' && Number.isNaN(value)))
-        .value() as { [name: string]: FunctionInputDTO }
+        .value() as { [name: string]: FunctionInputDTO },
+    displayName: displayName
   }
 
   await openapi.testSuite.addTestToSuite({

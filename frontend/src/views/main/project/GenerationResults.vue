@@ -104,6 +104,7 @@ function addToTestSuite() {
     bind: {
       projectId: props.projectId,
       test: testFunctionsByUuid.value['1c6ec6db-8bdb-5446-a81e-4f0ceeb3a27e'],
+      displayName: '{evaluation_criteria}',
       testArguments: {
         model: {
           name: 'model',
