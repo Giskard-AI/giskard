@@ -16,20 +16,14 @@
                     <v-icon>delete</v-icon>
                   </v-btn>
                 </div>
-                <div v-if="Object.entries(input.globalInput).length > 0">
-                  <h4>Global inputs</h4>
-                  <SuiteInputListSelector :inputs="globalTypes" :model-value="input.globalInput" :project-id="props.projectId" editing />
-                </div>
-                <div v-if="Object.entries(input.sharedInputs).length > 0">
-                  <h4>Shared inputs</h4>
-                  <SuiteInputListSelector :inputs="sharedTypes" :model-value="input.sharedInputs" :project-id="props.projectId" editing />
+                <div>
+                  <h4>Suite inputs</h4>
+                  <SuiteInputListSelector :inputs="inputs" :model-value="input" :project-id="props.projectId" editing/>
                 </div>
               </div>
             </div>
-            <v-btn v-if="testSuiteInputs.length > 1" @click="() => testSuiteInputs = [...testSuiteInputs, {
-              globalInput: createInputs(globalInputs),
-              sharedInputs: createInputs(sharedInputs),
-            }]">
+            <v-btn v-if="testSuiteInputs.length > 1"
+                   @click="() => testSuiteInputs = [...testSuiteInputs, createInputs(props.inputs)]">
               <v-icon>add</v-icon>
               Add another comparison
             </v-btn>
@@ -82,22 +76,21 @@
 
 <script lang="ts" setup>
 
-import { computed, onMounted, ref } from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import mixpanel from 'mixpanel-browser';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import { useMainStore } from "@/stores/main";
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { FunctionInputDTO, RequiredInputDTO } from '@/generated-sources';
-import { useRouter } from 'vue-router/composables';
-import { chain } from 'lodash';
-import { TYPE } from "vue-toastification";
-import { state } from "@/socket";
+import {useMainStore} from "@/stores/main";
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {FunctionInputDTO} from '@/generated-sources';
+import {useRouter} from 'vue-router/composables';
+import {TYPE} from "vue-toastification";
+import {state} from "@/socket";
 import StartWorkerInstructions from "@/components/StartWorkerInstructions.vue";
 
 const props = defineProps<{
   projectId: number,
   suiteId: number,
-  inputs: { [name: string]: RequiredInputDTO },
+  inputs: { [name: string]: string },
   compareMode: boolean,
   previousParams: { [name: string]: string }
 }>();
@@ -107,68 +100,34 @@ const testSuiteStore = useTestSuiteStore();
 
 const running = ref<boolean>(false);
 
-const testSuiteInputs = ref<{
-  globalInput: {
-    [name: string]: FunctionInputDTO
-  },
-  sharedInputs: {
-    [name: string]: FunctionInputDTO
-  }
-}[]>([]);
+const testSuiteInputs = ref<{ [name: string]: FunctionInputDTO }[]>([]);
 
 const isMLWorkerConnected = computed(() => {
   return state.workerStatus.connected;
 });
 
-const inputs = computed(() => Object.keys(props.inputs).map((name) => ({
-  ...props.inputs[name],
-  name,
-})));
-
-const globalInputs = computed(() => inputs.value.filter(i => !i.sharedInput))
-const sharedInputs = computed(() => inputs.value.filter(i => i.sharedInput))
-
-const globalTypes = computed(() => chain(globalInputs.value)
-  .keyBy('name')
-  .mapValues('type')
-  .value())
-
-const sharedTypes = computed(() => chain(sharedInputs.value)
-  .keyBy('name')
-  .mapValues('type')
-  .value())
-
-function createInputs(inputs: (RequiredInputDTO & { name: string })[]) {
-  return inputs
-    .reduce((result, { name, type }) => {
-      result[name] = {
-        isAlias: false,
-        name,
-        type,
-        value: testSuiteStore.suite!.functionInputs.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
-      }
-      return result;
-    }, {});
+function createInputs(inputs: { [name: string]: string }) {
+  return Object.entries(inputs)
+      .reduce((result, [name, type]) => {
+        result[name] = {
+          isAlias: false,
+          name,
+          type,
+          value: testSuiteStore.suite!.functionInputs!.find(t => t.name === name)?.value ?? props.previousParams[name] ?? ''
+        }
+        return result;
+      }, {});
 }
 
 onMounted(async () => {
-  testSuiteInputs.value = props.compareMode ? [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }, {
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }] : [{
-    globalInput: createInputs(globalInputs.value),
-    sharedInputs: createInputs(sharedInputs.value),
-  }];
+  testSuiteInputs.value = props.compareMode ? [createInputs(props.inputs), createInputs(props.inputs)] : [createInputs(props.inputs)];
 })
 
 function isAllParamsSet() {
   return testSuiteInputs.value
-    .filter(({ sharedInputs, globalInput }) => Object.entries(props.inputs)
-      .map(([name, { sharedInput }]) => sharedInput ? sharedInputs[name] : globalInput[name])
-      .findIndex(param => param && (param.value === null || param.value!.trim() === '')) !== -1)
+      .filter((inputs) => Object.entries(props.inputs)
+          .map(([name]) => inputs[name])
+          .findIndex(param => param && (param.value === null || ("" + param.value).trim() === '')) !== -1)
     .length === 0;
 }
 
@@ -180,8 +139,7 @@ async function executeTestSuite(close) {
   try {
     const jobUuids = await Promise.all(testSuiteInputs.value.map(input =>
       testSuiteStore.runTestSuite([
-        ...Object.values(input.globalInput),
-        ...Object.values(input.sharedInputs)
+        ...Object.values(input)
       ])
     ));
 
@@ -205,8 +163,7 @@ async function tryTestSuite(close) {
   try {
     const input = testSuiteInputs.value[0];
     await testSuiteStore.tryTestSuite([
-      ...Object.values(input.globalInput),
-      ...Object.values(input.sharedInputs)
+      ...Object.values(input)
     ]);
   } finally {
     running.value = false;

@@ -34,36 +34,8 @@
         </v-col>
         <v-col :cols="6">
           <div v-if="editedInputs" class="d-flex">
-                        <span v-if="!editedInputs.hasOwnProperty(input.name)" class="font-italic">
-                            Suite input. Provided at the execution time.
-                        </span>
-            <template v-else-if="!editedInputs[input.name].isAlias">
-              <DatasetSelector v-if="input.type === 'Dataset'" :label="input.name" :project-id="projectId"
-                               :return-object="false" :value.sync="editedInputs[input.name].value"/>
-              <ModelSelector v-else-if="input.type === 'BaseModel'" :label="input.name" :project-id="projectId"
-                             :return-object="false" :value.sync="editedInputs[input.name].value"/>
-              <SlicingFunctionSelector v-else-if="input.type === 'SlicingFunction'"
-                                       :args.sync="editedInputs[input.name].params"
-                                       :label="input.name" :project-id="projectId"
-                                       :value.sync="editedInputs[input.name].value"/>
-              <TransformationFunctionSelector v-else-if="input.type === 'TransformationFunction'"
-                                              :args.sync="editedInputs[input.name].params" :label="input.name"
-                                              :project-id="projectId"
-                                              :value.sync="editedInputs[input.name].value"/>
-              <KwargsCodeEditor v-else-if="input.type === 'Kwargs'" :value.sync="editedInputs[input.name].value"/>
-              <ValidationProvider v-else-if="['float', 'int'].includes(input.type)" v-slot="{ errors }"
-                                  class="flex-1" mode="eager" name="value" rules="required">
-                <v-text-field v-model="editedInputs[input.name].value"
-                              :error-messages="errors" :step='input.type === "float" ? 0.1 : 1'
-                              dense outlined single-line type="number"/>
-              </ValidationProvider>
-              <ValidationProvider v-else-if="input.type === 'str'" v-slot="{ errors }" class="flex-1"
-                                  mode="eager" name="input" rules="required">
-                <v-textarea v-model="editedInputs[input.name].value" :error-messages="errors" dense
-                            outlined rows="1" type="text"/>
-              </ValidationProvider>
-            </template>
-            <ValidationProvider v-else v-slot="{ errors }" mode="eager" name="alias" rules="required">
+            <ValidationProvider v-if="!editedInputs.hasOwnProperty(input.name) || editedInputs[input.name].isAlias"
+                                v-slot="{ errors }" mode="eager" name="alias" rules="required" class="flex-1">
               <v-select v-model="editedInputs[input.name].value" :error-messages="errors"
                         :items="aliases[input.type] ?? []" :menu-props="{
                                 closeOnClick: true,
@@ -87,6 +59,37 @@
                 </template>
               </v-select>
             </ValidationProvider>
+            <template v-else="!editedInputs[input.name].isAlias">
+              <DatasetSelector v-if="input.type === 'Dataset'" :label="input.name" :project-id="projectId"
+                               :return-object="false" :value.sync="editedInputs[input.name].value"/>
+              <ModelSelector v-else-if="input.type === 'BaseModel'" :label="input.name" :project-id="projectId"
+                             :return-object="false" :value.sync="editedInputs[input.name].value"/>
+              <SlicingFunctionSelector v-else-if="input.type === 'SlicingFunction'"
+                                       :args.sync="editedInputs[input.name].params"
+                                       :label="input.name" :project-id="projectId"
+                                       :value.sync="editedInputs[input.name].value"/>
+              <TransformationFunctionSelector v-else-if="input.type === 'TransformationFunction'"
+                                              :args.sync="editedInputs[input.name].params" :label="input.name"
+                                              :project-id="projectId"
+                                              :value.sync="editedInputs[input.name].value"/>
+              <KwargsCodeEditor v-else-if="input.type === 'Kwargs'" :value.sync="editedInputs[input.name].value"/>
+              <ValidationProvider v-else-if="['float', 'int'].includes(input.type)" v-slot="{ errors }" mode="eager"
+                                  name="value" rules="required" class="flex-1">
+                <v-text-field v-model="editedInputs[input.name].value" :error-messages="errors"
+                              :step='input.type === "float" ? 0.1 : 1' dense outlined single-line type="number"/>
+              </ValidationProvider>
+              <ValidationProvider v-else-if="input.type === 'str'" v-slot="{ errors }" mode="eager" name="input"
+                                  rules="required" class="flex-1">
+                <v-text-field v-model="editedInputs[input.name].value" :error-messages="errors" dense outlined
+                              single-line type="text"/>
+              </ValidationProvider>
+              <ValidationProvider v-else-if="input.type === 'bool'" v-slot="{ errors }" mode="eager" name="input"
+                                  rules="required" class="flex-1">
+                <v-switch v-model="editedInputs[input.name].value"
+                          :error-messages="errors"
+                          :label="editedInputs[input.name].value ? 'True' : 'False'"></v-switch>
+              </ValidationProvider>
+            </template>
           </div>
 
         </v-col>
@@ -125,43 +128,37 @@ const {models, datasets, suite} = storeToRefs(useTestSuiteStore());
 
 const editedInputs = ref<{ [input: string]: FunctionInputDTO }>({});
 
+function onSuiteInputSelected(name: string) {
+  editedInputs.value = {
+    ...editedInputs.value,
+    [name]: {
+      isAlias: true,
+      name,
+      type: props.inputs[name],
+      value: name,
+      params: []
+    }
+  }
+}
+
 const inputTypeSelector = [{
   name: 'Suite input',
   description: 'Input to be defined at the execution time of the suite',
-  isSelected: (name) => !editedInputs.value.hasOwnProperty(name),
-  select: (name) => {
-    delete editedInputs.value[name];
-    editedInputs.value = {
-      ...editedInputs.value
-    };
-  }
+  isSelected: (name: string) => !editedInputs.value.hasOwnProperty(name) || editedInputs.value[name].isAlias,
+  select: (name: string) => onSuiteInputSelected(name)
 }, {
   name: 'Fixed value',
   description: 'Constant value defined before a suite is executed',
-  isSelected: (name) => editedInputs.value.hasOwnProperty(name) && !editedInputs.value[name].isAlias,
-  select: (name) => {
+  isSelected: (name: string) => editedInputs.value.hasOwnProperty(name) && !editedInputs.value[name].isAlias,
+  select: (name: string) => {
     editedInputs.value = {
       ...editedInputs.value,
       [name]: {
         isAlias: false,
         name,
         type: props.inputs[name],
-        value: null
-      }
-    }
-  }
-}, {
-  name: 'Shared suite input',
-  description: 'A placeholder of an input to be defined at suite execution time. Can be used by multiple tests.',
-  isSelected: (name) => editedInputs.value.hasOwnProperty(name) && editedInputs.value[name].isAlias,
-  select: (name) => {
-    editedInputs.value = {
-      ...editedInputs.value,
-      [name]: {
-        isAlias: true,
-        name,
-        type: props.inputs[name],
-        value: null
+        value: null,
+        params: []
       }
     }
   }
@@ -171,6 +168,10 @@ function updateEditedValue() {
   editedInputs.value = {
     ...props.modelValue
   }
+
+  Object.keys(props.inputs)
+      .filter(inputName => !editedInputs.value.hasOwnProperty(inputName))
+      .forEach(inputName => onSuiteInputSelected(inputName));
 }
 
 onMounted(() => {

@@ -62,36 +62,35 @@ public class TestSuiteService {
     }
 
     @Transactional(readOnly = true)
-    public Map<String, RequiredInputDTO> getSuiteInputs(Long projectId, Long suiteId) {
+    public Map<String, String> getSuiteInputs(Long projectId, Long suiteId) {
         TestSuite suite = testSuiteRepository.findOneByProjectIdAndId(projectId, suiteId);
 
-        Map<String, RequiredInputDTO> res = new HashMap<>();
+        Map<String, String> res = new HashMap<>();
 
         suite.getTests().forEach(test -> {
             ImmutableMap<String, FunctionInput> providedInputs = Maps.uniqueIndex(test.getFunctionInputs(),
                     FunctionInput::getName);
 
-            test.getTestFunction().getArgs().stream()
-                    .filter(a -> !a.isOptional())
+            test.getTestFunction().getArgs()
                     .forEach(a -> {
                         String name = null;
-                        boolean isShared = false;
-                        if (!providedInputs.containsKey(a.getName())) {
+                        FunctionInput input = providedInputs.getOrDefault(a.getName(), null);
+                        if (input == null && !a.isOptional()) {
                             name = a.getName();
-                        } else if (providedInputs.get(a.getName()).isAlias()) {
-                            name = providedInputs.get(a.getName()).getValue();
-                            isShared = true;
+                        } else if (input != null && input.isAlias()) {
+                            name = input.getValue();
                         }
-                        if (name != null) {
-                            if (res.containsKey(name) && !a.getType().equals(res.get(name).getType())) {
-                                throw new IllegalArgumentException(
-                                        "Variable with name %s is declared as %s and %s at the same time"
-                                                .formatted(a.getName(), res.get(a.getName()), a.getType()));
-                            } else if (res.containsKey(name)) {
-                                res.get(name).setSharedInput(isShared || res.get(name).isSharedInput());
-                            } else {
-                                res.put(name, new RequiredInputDTO(a.getType(), isShared));
-                            }
+
+                        if (name == null) {
+                            return;
+                        }
+
+                        if (!res.containsKey(name)) {
+                            res.put(name, a.getType());
+                        } else if (!a.getType().equals(res.get(name))) {
+                            throw new IllegalArgumentException(
+                                "Variable with name %s is declared as %s and %s at the same time"
+                                    .formatted(a.getName(), res.get(a.getName()), a.getType()));
                         }
                     });
         });
@@ -107,8 +106,7 @@ public class TestSuiteService {
         TestSuiteExecution execution = new TestSuiteExecution(testSuite);
         execution.setInputs(inputs.stream().map(giskardMapper::fromDTO).toList());
 
-        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId).entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getType()));
+        Map<String, String> suiteInputs = getSuiteInputs(projectId, suiteId);
 
         verifyAllInputProvided(inputs, testSuite, suiteInputs);
 
