@@ -130,13 +130,17 @@ Answer 'Y' if the issue category is relevant for the audit of the model, 'N' oth
 
         return selection
 
-    def _run_category_detections(self, issue_category: LlmIssueCategory, model: BaseModel):
+    def _run_category_detections(self, issue_category: LlmIssueCategory, model: BaseModel, use_issue_examples=False):
         verbose = True
-        test_cases = (
-            issue_category.issue_generator(self.num_tests)
-            .run(model_name=model.meta.name, model_description=model.meta.description)
-            .assertions[: self.num_tests]
-        )
+
+        if not use_issue_examples:
+            test_cases = (
+                issue_category.issue_generator(self.num_tests)
+                .run(model_name=model.meta.name, model_description=model.meta.description)
+                .assertions[: self.num_tests]
+            )
+        else:
+            test_cases = issue_category.issue_examples
 
         potentially_failing_inputs = issue_category.input_generator(model.meta.feature_names, self.num_samples).run(
             model_name=model.meta.name,

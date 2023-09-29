@@ -8,7 +8,7 @@ from ..issues import Issue
 from .business_detector import LLMBusinessDetector
 
 
-@detector("llm_prompt_injection", tags=["llm", "generative", "text_generation"])
+@detector(name="llm_prompt_injection", tags=["llm_prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector(LLMBusinessDetector):
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # I keep for now the legacy behaviour
