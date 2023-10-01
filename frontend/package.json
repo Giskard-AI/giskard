@@ -27,7 +27,7 @@
     "highlight.js": "^11.8.0",
     "lodash": "^4.17.21",
     "mixpanel-browser": "^2.45.0",
-    "monaco-editor": "^0.34.0",
+    "monaco-editor": "^0.43.0",
     "mousetrap": "^1.6.5",
     "numeral": "^2.0.6",
     "pinia": "^2.0.28",
