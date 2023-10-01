@@ -182,7 +182,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hppc")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations")
-    implementation("com.github.blagerweij:liquibase-sessionlock:1.6.2")
+    implementation("com.github.blagerweij:liquibase-sessionlock:1.6.5")
     implementation("com.h2database:h2")
     implementation("com.zaxxer:HikariCP")
     implementation("commons-codec:commons-codec:1.15")
