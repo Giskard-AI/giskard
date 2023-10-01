@@ -36,7 +36,7 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
-    id("org.openapi.generator") version "7.0.0"
+    id("org.openapi.generator") version "7.0.1"
     id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
