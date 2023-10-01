@@ -50,7 +50,7 @@
     "vuetify-dialog": "^2.0.17"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3",
+    "@babel/core": "^7.23.0",
     "@types/lodash": "^4.14.182",
     "@types/node": "^18.6.5",
     "@types/vue-moment": "^4.0.3",
