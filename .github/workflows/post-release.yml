@@ -1,0 +1,40 @@
+name: Tag release
+
+on:
+  repository_dispatch:
+    types:
+      - post-release
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if organization member
+        id: is_organization_member
+        uses: JamesSingleton/is-organization-member@1.0.1
+        with:
+          organization: Giskard-AI
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Interrupt job
+        if: ${{ steps.is_organization_member.outputs.result == 'false' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+        with:
+          fetch-tags: true
+          ref: ${{ github.event.client_payload.version  }}
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.10
+          cache: false
+
+      - name: Push to Pipy
+        run: pdm publish --username ${{ secrets.PIPY_USERNAME }} --password ${{ secrets.PIPY_PASSWORD }}

@@ -1,0 +1,45 @@
+name: Tag release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.10
+          cache: false
+      - name: Build dist
+        run: pdm build
+
+      - name: Release
+        id: github-release
+        uses: softprops/action-gh-release@v1
+        with:
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: |
+            dist/giskard-*.tar.gz
+            dist/giskard-*.whl
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.RELEASE_PAT_TOKEN }}
+          event-type: trigger-release
+          repository: giskard-ai/giskard-hub
+          client-payload: |
+            {
+              "wheel_url": "${{ steps.github-release.outputs.assets[1].browser_download_url }}",
+              "version": "${{ github.ref_name }}",
+              "ref": "${{ github.ref }}",
+            }

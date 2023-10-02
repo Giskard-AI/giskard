@@ -1,0 +1,55 @@
+name: Tag release
+
+on:
+  workflow_dispatch:
+    inputs:
+        version:
+          description: 'Tag to be created, in the form vX.Y.Z'
+          required: true
+          type: string
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if organization member
+        id: is_organization_member
+        uses: JamesSingleton/is-organization-member@1.0.1
+        with:
+          organization: Giskard-AI
+          username: ${{ github.actor }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Interrupt job
+        if: ${{ steps.is_organization_member.outputs.result == 'false' }}
+        shell: bash
+        run: |
+          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+          exit 1
+
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+        with:
+          fetch-tags: true
+          ref: main
+          token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
+
+      - name: Edit pyproject.toml
+        run:  sed -i "s/\^(version *= *\).*$/\1${{ inputs.version }}/" pyproject.toml
+
+      - name: Configure git
+        run:  |
+          git config --global user.name 'BotReleaser'
+          git config --global user.email 'bot.releaser@users.noreply.github.com'
+
+      - name: Adding file
+        run:  |
+          git add pyproject.toml
+          git commit -m "${{ inputs.version }}"
+          git tag ${{ inputs.version }}
+
+      - name: Push to main and tags
+        run: |
+          git push origin main
+          git push origin ${{ inputs.version }}
