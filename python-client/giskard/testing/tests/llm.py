@@ -6,7 +6,7 @@ from ...ml_worker.testing.test_result import TestResult
 from ...models.base import BaseModel
 
 
-@test(name="LLM response validation using GPT-4", tags=["llm", "GPT-4"])
+@test(name="Validate LLM evaluation dataset using GPT-4", tags=["llm", "GPT-4"])
 def test_llm_response_validation(
     model: BaseModel,
     dataset: Dataset,
@@ -45,7 +45,7 @@ def test_llm_response_validation(
     )
 
 
-@test(name="LLM individual response validation using GPT-4", tags=["llm", "GPT-4"])
+@test(name="Validate LLM single prompt input using GPT-4", tags=["llm", "GPT-4"])
 def test_llm_individual_response_validation(model: BaseModel, prompt_input: str, evaluation_criteria: str):
     """Tests that the rate of generated response is over a threshold for a given test case.
 
