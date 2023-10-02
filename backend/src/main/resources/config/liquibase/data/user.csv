@@ -1,3 +1,0 @@
-id;created_by;created_date;last_modified_by;last_modified_date;activated;activation_key;display_name;email;first_name;image_url;lang_key;last_name;login;password_hash;reset_date;reset_key
-1;system;;system;;true;;Administrator;admin@localhost;Administrator;"";en;Administrator;admin;$2a$10$gSAhZrxMllrbgj/kkK9UceBPpChGWJA7SYIb1Mqo.n5aNLq1/oRrC;;
-2;system;;system;;true;;User;user@localhost;User;"";en;User;user;$2a$10$VEjxo0jq2YG9Rbk2HmX9S.k1uZBGYUHdUcid3g/vfiEl7lwWgOH/K;;
