@@ -43,7 +43,7 @@
             {{ issue.meta.slice_size }} samples affected<br>
             ({{ (issue.meta.slice_size / (issue.dataset|length) * 100)|round(1) }}% of dataset)
         </span>
-    {% endif %}
+        {% endif %}
     <td class="p-3 text-xs text-right space-x-1">
         <a href="#"
             class="gsk-issue-detail-btn inline-block group-[.open]:hidden border border-zinc-100/50 text-zinc-100/90 hover:bg-zinc-500 hover:border-zinc-500 hover:text-white px-2 py-0.5 rounded-sm">Show details</a>
@@ -60,8 +60,9 @@
 
         {% if issue.examples(3)|length %}
         <h4 class="font-bold text-sm mt-4">Examples</h4>
-        <div class="text-white max-w-xl text-sm overflow-scroll" style="max-width: 920px">
-            {{ issue.examples(3).to_html(notebook=True, index=not issue.meta.hide_index if "hide_index" in issue.meta
+        <div class="text-white text-sm overflow-scroll">
+            {{ issue.examples(issue.meta.num_examples if "num_examples" in issue.meta else 3).to_html(notebook=True,
+            index=not issue.meta.hide_index if "hide_index" in issue.meta
             else True)|replace("\\n", "<br>")|safe }}
         </div>
         {% endif %}
