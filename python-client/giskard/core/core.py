@@ -196,7 +196,9 @@ class CallableMeta(SavableMeta, ABC):
     def populate_tags(self, tags=None):
         tags = [] if not tags else tags.copy()
 
-        if self.full_name.partition(".")[0] == "giskard":
+        if self.name == "<lambda>":
+            tags.append("lambda")
+        elif self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         else:
             tags.append("custom")
