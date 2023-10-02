@@ -1,8 +1,0 @@
-version: "3.8"
-services:
-
-  frontend:
-    ports:
-      - "80:80"
-    expose:
-      - 80
