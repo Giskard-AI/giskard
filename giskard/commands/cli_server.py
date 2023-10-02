@@ -132,9 +132,9 @@ def _start(attached=False, skip_version_check=False, version=None):
 You're trying to start the server with version '{version}' while currently using Giskard '{giskard.get_version()}'
         
 This might lead to incompatibility issues!
-If you want to proceed please add `--skip-version-check`
+If you want to proceed please add `--skip-version-check` to the start command.
         
-To upgrade giskard please run `giskard server stop && giskard server upgrade`
+We recommend you to upgrade giskard by running `giskard server stop && giskard server upgrade` in order to fix this issue.
 """
         )
         return
