@@ -1,6 +1,6 @@
 <template>
   <v-card class='mb-4' id='resultCard' outlined>
-    <v-card-title>Result</v-card-title>
+    <v-card-title>LLM response</v-card-title>
     <v-card-text class='text-center card-text' v-if='inputData'>
       <LoadingFullscreen v-show='loading' name='result' class='pb-6' />
       <v-row v-if='prediction && !loading'>
