@@ -118,13 +118,26 @@ def _wait_backend_ready(port: int) -> bool:
     return up
 
 
-def _start(attached=False, version=None):
+def _start(attached=False, skip_version_check=False, version=None):
     logger.info("Starting Giskard Server")
 
     settings = _get_settings() or {}
     port = settings.get("port", 19000)
 
     version = get_version(version)
+
+    if not skip_version_check and version == giskard.get_version():
+        logger.error(
+            f"""
+You're trying to start the server with version '{version}' while currently using Giskard '{giskard.get_version()}'
+        
+This might lead to incompatibility issues!
+If you want to proceed please add `--skip-version-check`
+        
+To upgrade giskard please run `giskard server stop && giskard server upgrade`
+"""
+        )
+        return
 
     _pull_image(version)
 
@@ -268,9 +281,17 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
     default=False,
     help="Starts the server and attaches to it, displaying logs in console.",
 )
+@click.option(
+    "--skip-version-check",
+    "-s",
+    "skip_version_check",
+    is_flag=True,
+    default=False,
+    help="Force the server to start with a different version of the giskard python library.",
+)
 @click.option("--version", "version", required=False, help="Version of Giskard server to start")
 @common_options
-def start(attached, version):
+def start(attached, skip_version_check, version):
     """\b
     Start Giskard Server.
 
@@ -281,10 +302,11 @@ def start(attached, version):
         "giskard-server:start",
         {
             "attached": attached,
+            "skip_version_check": skip_version_check,
             "version": version,
         },
     )
-    _start(attached, version)
+    _start(attached, skip_version_check, version)
 
 
 @server.command("stop")
