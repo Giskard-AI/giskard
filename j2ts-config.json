@@ -1,8 +1,0 @@
-{
-  "path": [
-    "backend/src/main/java"
-  ],
-  "src-root": "backend/src/main/java",
-  "front-root": "frontend",
-  "target-root": "src/generated-sources"
-}
