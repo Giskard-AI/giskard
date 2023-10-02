@@ -126,7 +126,7 @@ def _start(attached=False, skip_version_check=False, version=None):
 
     version = get_version(version)
 
-    if not skip_version_check and version == giskard.get_version():
+    if not skip_version_check and version != giskard.get_version():
         logger.error(
             f"""
 You're trying to start the server with version '{version}' while currently using Giskard '{giskard.get_version()}'
