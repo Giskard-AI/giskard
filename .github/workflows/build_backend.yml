@@ -76,19 +76,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
 
-      - name: Cache Python deps
-        uses: actions/cache@v3
-        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
-        with:
-          path: python-client/.venv
-          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
-          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-deps
-
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: ${{ matrix.python-version }}
-          cache: false # TODO(Bazire): https://linear.app/giskard/issue/GSK-1712/activate-cache-on-pdm-setup-in-github-action
+          cache: true
 
       - name: Set up Pandoc (needed for python-client doc)
         uses: r-lib/actions/setup-pandoc@v2
@@ -104,50 +96,42 @@ jobs:
           restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
       - name: Install dependencies
-        working-directory: python-client 
         run: pdm install -G :all
 
       - name: Lint code
-        working-directory: python-client 
         run: pdm run lint
 
       - name: Install pydantic v2
         if: ${{ matrix.pydantic_v2 }}
-        working-directory: python-client 
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
           pdm run pip install "pydantic>=2<3"
 
       - name: Check Pydantic installed version
-        working-directory: python-client 
         run: |
           pdm run pip freeze | grep '^pydantic'
           pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v2 && '2' || '1' }}\.'
 
       - name: Test code
-        working-directory: python-client
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
         run: pdm run test-fast
   
       - name: Build doc
         if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
-        working-directory: python-client
         run: pdm run doc
 
       - name: Build
-        working-directory: python-client
         run: pdm build
 
       - name: "Python client: archive built artifacts"
         if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: actions/upload-artifact@v3
         with:
-          path: python-client/dist/*whl
+          path: dist/*whl
           
       - name: Run integration tests for python
         if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
-        working-directory: python-client
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
         run: pdm run test -m 'slow'
