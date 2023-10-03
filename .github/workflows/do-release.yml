@@ -41,5 +41,5 @@ jobs:
             {
               "wheel_url": "${{ steps.github-release.outputs.assets[1].browser_download_url }}",
               "version": "${{ github.ref_name }}",
-              "ref": "${{ github.ref }}",
+              "ref": "${{ github.ref }}"
             }
