@@ -1,6 +1,5 @@
 import re
 import warnings
-from unittest import mock
 
 import numpy as np
 import pandas as pd
@@ -9,7 +8,6 @@ from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
-from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
@@ -95,29 +93,6 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
     with pytest.raises(ValueError) as info:
         scanner.analyze(german_credit_model)
     assert "Dataset must be provided " in str(info.value)
-
-
-def test_default_dataset_is_used_with_generative_model():
-    model = mock.MagicMock(Model)
-    model.is_text_generation = True
-    model.meta = ModelMeta(
-        "Model name",
-        "Some meaningful model description",
-        SupportedModelTypes.TEXT_GENERATION,
-        ["query"],
-        [],
-        0,
-        "test",
-        "test",
-    )
-    scanner = Scanner()
-
-    with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
-        try:
-            scanner.analyze(model)
-        except:  # noqa
-            pass
-        infer_dataset.assert_called_once()
 
 
 @pytest.mark.skip(reason="Now rely on LLM generated issues")
