@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Edit pyproject.toml
-        run:  sed -i "s/\^(version *= *\).*$/\1${{ inputs.version }}/" pyproject.toml
+        run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
 
       - name: Configure git
         run:  |
