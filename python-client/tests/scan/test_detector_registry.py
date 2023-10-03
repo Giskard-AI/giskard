@@ -1,10 +1,10 @@
-from giskard.scanner.registry import DetectorRegistry
 from giskard.scanner.decorators import detector
+from giskard.scanner.registry import DetectorRegistry
 
 
 def test_detector_registry():
     class MyTestDetector:
-        def run(self, model, dataset):
+        def run(self, model, dataset, **kwargs):
             return []
 
     DetectorRegistry.register("test_detector", MyTestDetector, tags=["tag_1", "tag_2", "classification"])
