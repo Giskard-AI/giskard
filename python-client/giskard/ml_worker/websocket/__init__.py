@@ -45,6 +45,7 @@ class FunctionMeta(BaseModel):
     tags: Optional[List[str]] = None
     code: Optional[str] = None
     type: Optional[str] = None
+    debugDescription: Optional[str] = None
 
 
 class DatasetProcessFunctionMeta(BaseModel):

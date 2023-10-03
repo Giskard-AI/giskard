@@ -10,9 +10,10 @@ Functions:
 """
 from typing import Optional
 
+import hashlib
+
 import numpy as np
 import pandas as pd
-import sys
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -31,6 +32,7 @@ from giskard.scanner.robustness.text_transformations import (
     TextTypoTransformation,
     TextUppercase,
 )
+
 from ..push import PerturbationPush
 
 text_transformation_list = [
@@ -173,10 +175,16 @@ def _text(
             # TextTypoTransformation generates a random typo for text features. In order to have the same typo per
             # sample with the push feature in the debugger, we need to generate a unique seed per sample (hashed_seed)
             # to guarantee the same perturbation per sample.
-            hashed_seed = hash(f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8"))
-            # hash could give negative ints, and np.random.seed accepts only positive ints
-            positive_hashed_seed = hashed_seed % ((sys.maxsize + 1) * 2)
-            kwargs = {"rng_seed": positive_hashed_seed}
+            # SHA1 is used here, since it does not matter that there are collisions
+            hashed_seed = int.from_bytes(
+                hashlib.sha1(
+                    (f"{', '.join(map(lambda x: repr(x), ds_slice_copy.df.values))}".encode("utf-8"))
+                ).digest(),
+                byteorder="big",
+                signed=False,
+            )
+            # hash is positive, since signed is false
+            kwargs = {"rng_seed": hashed_seed}
 
         t = text_transformation(column=feature, **kwargs)
 

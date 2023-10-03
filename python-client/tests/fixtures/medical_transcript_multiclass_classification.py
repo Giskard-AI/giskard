@@ -93,7 +93,7 @@ def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
             ("text_preprocessor", FunctionTransformer(preprocess_text)),
             ("vectorizer_input_adapter", FunctionTransformer(adapt_vectorizer_input)),
             ("vectorizer", CountVectorizer(ngram_range=(1, 1))),
-            ("estimator", RandomForestClassifier(n_estimators=1, max_depth=3)),
+            ("estimator", RandomForestClassifier(n_estimators=10, max_depth=3, random_state=30)),
         ]
     )
 

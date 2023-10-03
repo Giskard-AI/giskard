@@ -1,6 +1,11 @@
-import numpy as np
-from giskard.ml_worker.testing.functions.transformation import mad_transformation
+import sys
 
+import numpy as np
+import pandas as pd
+import pytest
+
+import giskard.push
+from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
 from giskard.push import Push
@@ -14,130 +19,68 @@ from giskard.push.utils import (
     slice_bounds_quartile,
 )
 from giskard.slicing.slice import QueryBasedSliceFunction
-import pandas as pd
+
+DATASETS = [
+    pytest.param(("german_credit_model", "german_credit_data", 50), id="German Credit"),
+    pytest.param(("enron_model", "enron_data", 50), id="Enron"),
+    pytest.param(("linear_regression_diabetes", "diabetes_dataset_with_target", 50), id="Diabetes"),
+]
+
+PUSH_TYPES = [
+    pytest.param(("contribution", giskard.push.ContributionPush, create_contribution_push), id="Contribution"),
+    pytest.param(("perturbation", giskard.push.PerturbationPush, create_perturbation_push), id="Perturbation"),
+    pytest.param(("overconfidence", giskard.push.OverconfidencePush, create_overconfidence_push), id="Overconfidence"),
+    pytest.param(("borderline", giskard.push.BorderlinePush, create_borderline_push), id="Borderline"),
+]
+# fmt: off
+EXPECTED_COUNTS = {
+    "german_credit_model" : {
+        "contribution" :[0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1],
+        "perturbation": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "overconfidence": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "borderline": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    },
+    "linear_regression_diabetes": {
+        "contribution" :[0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
+        "perturbation" :[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "overconfidence" :[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "borderline" :[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    "enron_model": {
+        "contribution" :[0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "perturbation" :[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "overconfidence" :[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "borderline" :[0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+    }
+}
+# fmt: on
 
 
-# Classification
-def test_instance_if_not_none(german_credit_model, german_credit_data):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_perturbation_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_overconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_borderline_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-        ]
-        for push in push_list:
-            if push is not None:
-                assert isinstance(push, Push)
+@pytest.mark.parametrize("dataset", DATASETS)
+@pytest.mark.parametrize("push_type", PUSH_TYPES)
+def test_test_function(request, dataset, push_type):
+    model_name, data_name, nb_line = dataset
+    model = request.getfixturevalue(model_name)
+    data = request.getfixturevalue(data_name)
 
+    push_type_name, push_type_class, push_func = push_type
+    if model_name == "enron_model" and push_type_name == "perturbation" and sys.platform == "win32":
+        pytest.skip("This test give different results on windows")
 
-def test_slicing_function(german_credit_model, german_credit_data):
-    for i in range(50):
-        push = create_contribution_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]])
+    push_list = []
+    for i in range(nb_line):
+        push = push_func(model, data, data.df.iloc[[i]])
         if push is not None:
-            assert isinstance(push.slicing_function, QueryBasedSliceFunction)
-
-
-def test_test_function(german_credit_model, german_credit_data):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_perturbation_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_overconfidence_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-            create_borderline_push(german_credit_model, german_credit_data, german_credit_data.df.iloc[[i]]),
-        ]
-        for push in push_list:
-            if push is not None:
-                for test in push.tests:
-                    assert isinstance(test(), GiskardTest)
-
-
-# Regression
-def test_instance_if_not_none_reg(linear_regression_diabetes, diabetes_dataset_with_target):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_perturbation_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_overconfidence_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_borderline_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-        ]
-        for push in push_list:
-            if push is not None:
-                assert isinstance(push, Push)
-
-
-def test_slicing_function_reg(linear_regression_diabetes, diabetes_dataset_with_target):
-    for i in range(50):
-        push = create_contribution_push(
-            linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-        )
-        if push is not None:
-            assert isinstance(push.slicing_function, QueryBasedSliceFunction)
-
-
-def test_test_function_reg(linear_regression_diabetes, diabetes_dataset_with_target):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_perturbation_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_overconfidence_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-            create_borderline_push(
-                linear_regression_diabetes, diabetes_dataset_with_target, diabetes_dataset_with_target.df.iloc[[i]]
-            ),
-        ]
-        for push in push_list:
-            if push is not None:
-                for test in push.tests:
-                    assert isinstance(test(), GiskardTest)
-
-
-# Multiclass Classification
-def test_instance_if_not_none_multi(enron_model, enron_data):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_perturbation_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_overconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_borderline_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-        ]
-        for push in push_list:
-            if push is not None:
-                assert isinstance(push, Push)
-
-
-def test_slicing_function_multi(enron_model, enron_data):
-    for i in range(50):
-        push = create_contribution_push(enron_model, enron_data, enron_data.df.iloc[[i]])
-        if push is not None:
-            assert isinstance(push.slicing_function, QueryBasedSliceFunction)
-
-
-def test_test_function_multi(enron_model, enron_data):
-    for i in range(50):
-        push_list = [
-            create_contribution_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_perturbation_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_overconfidence_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-            create_borderline_push(enron_model, enron_data, enron_data.df.iloc[[i]]),
-        ]
-        for push in push_list:
-            if push is not None:
-                for test in push.tests:
-                    assert isinstance(test(), GiskardTest)
+            assert isinstance(push, Push)
+            assert isinstance(push, push_type_class)
+            push_list.append(len(push.tests))
+            assert all([isinstance(test(), GiskardTest) for test in push.tests])
+            if hasattr(push, "slicing_function"):
+                assert isinstance(push.slicing_function, QueryBasedSliceFunction)
+        else:
+            push_list.append(0)
+    print(push_list)
+    assert push_list == EXPECTED_COUNTS[model_name][push_type_name]
 
 
 def test_mad_transformation_mad_precomputed(enron_data):
@@ -214,9 +157,7 @@ def test_coltype_to_supported_perturbation_type():
 
 
 def test_text_explain_in_push(medical_transcript_model, medical_transcript_data):
-
     problematic_df_entry = medical_transcript_data.df.iloc[[3]]
     output = create_contribution_push(medical_transcript_model, medical_transcript_data, problematic_df_entry)
-
     assert output is not None
     assert output.value is not None

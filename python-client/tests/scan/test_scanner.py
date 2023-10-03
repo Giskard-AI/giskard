@@ -123,7 +123,7 @@ def test_default_dataset_is_used_with_generative_model():
 @pytest.mark.skip(reason="Now rely on LLM generated issues")
 @pytest.mark.slow
 def test_generative_model_dataset():
-    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
+    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don't want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
     chain = LLMChain(llm=llm, prompt=prompt)
     model = Model(chain, model_type="text_generation")
