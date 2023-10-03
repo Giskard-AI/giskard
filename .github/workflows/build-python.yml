@@ -1,0 +1,137 @@
+# https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow
+# https://docs.github.com/fr/actions/using-workflows/workflow-syntax-for-github-actions#exemple--inclusion-de-chemins-dacc%C3%A8s
+
+name: Full CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run-integration-tests:
+        description: 'If integration test should be run'
+        required: true
+        type: boolean
+        default: false
+      use-cache:
+        description: 'If cache should be used'
+        required: true
+        type: boolean
+        default: true
+      is-dispatch:
+        description: 'Just to identify manual dispatch'
+        required: true
+        type: boolean
+        default: true  
+  workflow_call:
+    inputs:
+      run-integration-tests:
+        description: 'If integration test should be run'
+        required: true
+        type: boolean
+        default: false
+      use-cache:
+        description: 'If cache should be used'
+        required: true
+        type: boolean
+        default: false
+# Concurrency : auto-cancel "old" jobs ie when pushing again
+# https://docs.github.com/fr/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.run-integration-tests }}-${{ inputs.is-dispatch }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+env:
+  GSK_DISABLE_ANALYTICS: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  build-python:
+    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v2 && ' (Pydantic V2)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # Do not stop when any job fails
+      matrix:
+        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
+        os: [ubuntu-latest]
+        pydantic_v2: [false]
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        include:
+          - python-version: "3.10"
+            os: windows-2019
+            pydantic_v2: false
+          - python-version: "3.10"
+            os: windows-2022
+            pydantic_v2: false
+          - python-version: "3.10"
+            os: macos-latest
+            pydantic_v2: false
+          - python-version: "3.10"
+            os: ubuntu-latest
+            pydantic_v2: true
+
+    continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: true
+
+      - name: Set up Pandoc (needed for python-client doc)
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+  
+      - name: Cache Giskard test resources
+        uses: actions/cache@v3
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
+        with:
+          path: ~/.giskard
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
+          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
+
+      - name: Install dependencies
+        run: pdm install -G :all
+
+      - name: Lint code
+        run: pdm run lint
+
+      - name: Install pydantic v2
+        if: ${{ matrix.pydantic_v2 }}
+        run: |
+          pdm run pip uninstall pydantic pydantic_core -y
+          pdm run pip install "pydantic>=2<3"
+
+      - name: Check Pydantic installed version
+        run: |
+          pdm run pip freeze | grep '^pydantic'
+          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v2 && '2' || '1' }}\.'
+
+      - name: Test code
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
+        run: pdm run test-fast
+  
+      - name: Build doc
+        if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
+        run: pdm run doc
+
+      - name: Build
+        run: pdm build
+
+      - name: "Python client: archive built artifacts"
+        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: dist/*whl
+          
+      - name: Run integration tests for python
+        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
+        run: pdm run test -m 'slow'

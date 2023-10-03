@@ -6,12 +6,7 @@ on:
 
 jobs:
   call-full-ci:
-    uses: ./.github/workflows/build_backend.yml
+    uses: ./.github/workflows/build-python.yml
     with:
       run-integration-tests: true
       use-cache: false
-  call-build-images:
-    uses: ./.github/workflows/build-images.yml
-    with:
-      run-tests: false
-      build_only: true
