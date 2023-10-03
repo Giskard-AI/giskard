@@ -46,7 +46,7 @@ jobs:
       - name: Adding file
         run:  |
           git add pyproject.toml
-          git commit -m "v${{ inputs.version }}"
+          git commit -m "v${{ inputs.version }}" --allow-empty
           git tag v${{ inputs.version }}
 
       - name: Push to main and tags
