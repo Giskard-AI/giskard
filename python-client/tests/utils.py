@@ -68,7 +68,7 @@ class MockedClient:
         )
 
         url = "http://giskard-host:12345"
-        key = "API_ACCESS_KEY"
+        key = "SECRET_TOKEN"
         return GiskardClient(url, key), self.mocked_requests
 
     def __exit__(self, exc_type, exc_val, exc_tb):
