@@ -176,9 +176,9 @@ First, install the Giskard server by following [this documentation](https://docs
 
 ```python
 # Create a Giskard client after having installed the Giskard server (see documentation)
-token = "API_TOKEN"  # Find it in Settings in the Giskard server
+key = "API_KEY"  # Find it in Settings in the Giskard server
 client = giskard.GiskardClient(
-    url="http://localhost:19000", token=token  # URL of your Giskard instance
+    url="http://localhost:19000", key=key  # URL of your Giskard instance
 )
 
 my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")

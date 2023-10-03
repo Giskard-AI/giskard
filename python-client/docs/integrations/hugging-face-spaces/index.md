@@ -74,11 +74,11 @@ Here a comprehensive example of the upload of a test suite to the Giskard Hub in
 from giskard import GiskardClient
 
 url = "<URL of your Giskard hub Space>"
-api_token = "<Your Giskard API key>"
+api_key = "<Your Giskard API key>"
 hf_token = "<Your Giskard Space token>"
 
 # Create a giskard client to communicate with Giskard
-client = GiskardClient(url, api_token, hf_token)
+client = GiskardClient(url, api_key, hf_token)
 
 client.upload(...)
 ```

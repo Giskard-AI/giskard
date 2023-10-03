@@ -122,10 +122,10 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     from giskard import GiskardClient
 
-    token = "API_TOKEN"  # Find it in Settings in the Giskard server
+    key = "API_KEY"  # Find it in Settings in the Giskard server
     client = GiskardClient(
         url="http://localhost:19000",  # URL of your Giskard instance
-        token=token
+        key=key
     )
 
     my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
@@ -137,11 +137,11 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     .. code-block:: python
 
-        token = "API_TOKEN"  # Find it in Settings in your Giskard Hugging Face Space instance
+        key = "API_KEY"  # Find it in Settings in your Giskard Hugging Face Space instance
         hf_token = "SPACE_TOKEN"  # Find it in Upload instructions in your Giskard Hugging Face Space instance
         client = GiskardClient(
             url="https://huggingface.co/spaces/<user-id>/<space-id>",  # URL of the Space
-            token=token,
+            key=key,
             hf_token=hf_token,
         )
 

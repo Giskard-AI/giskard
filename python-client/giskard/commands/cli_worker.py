@@ -81,7 +81,6 @@ def start_stop_options(func):
 )
 @click.option(
     "--hf-token",
-    "-t",
     "hf_token",
     envvar="GSK_HF_TOKEN",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
@@ -204,7 +203,6 @@ def stop_command(is_server, url, stop_all):
 @click.option("--api-key", "-k", "api_key", help="Giskard server API key")
 @click.option(
     "--hf-token",
-    "-t",
     "hf_token",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
 )

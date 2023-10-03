@@ -146,7 +146,7 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
     if model_name not in _EXCEPTION_MODELS:
         test_suite = result.generate_test_suite()
 
-        client = GiskardClient(url="http://localhost:19000", token="API_TOKEN")  # URL of your Giskard instance
+        client = GiskardClient(url="http://localhost:19000", key="API_KEY")  # URL of your Giskard instance
 
         try:
             client.create_project("testing_UI", "testing_UI", "testing_UI")

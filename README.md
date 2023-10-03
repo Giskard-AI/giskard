@@ -181,14 +181,14 @@ You can then **upload the test suite** created using the `giskard` Python librar
 
 2. Then execute the ML worker in your notebook:
     ```python
-       !giskard worker start -d -k YOUR_TOKEN
+       !giskard worker start -d -k YOUR_KEY
     ```
 
 3. Finally upload your test suite to the giskard server using the following code:
     ```python
-    token = "API_TOKEN"  # Find it in Settings in the Giskard server
+    key = "API_KEY"  # Find it in Settings in the Giskard server
     client = GiskardClient(
-        url="http://localhost:19000", token=token  # URL of your Giskard instance
+        url="http://localhost:19000", key=key  # URL of your Giskard instance
     )
     
     my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
@@ -222,7 +222,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
   <summary>If Giskard server is installed on an external server</summary>
 
   ```python
-    !giskard worker start -d -k YOUR_TOKEN -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
+    !giskard worker start -d -k YOUR_KEY -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
   ```
 </details>
 

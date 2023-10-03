@@ -35,7 +35,7 @@ def explain_error(err_resp):
     code = err_resp.get("message")
     message = None
     if status == 401:
-        message = "Access token is invalid or expired. Please generate a new one"
+        message = "Access key is invalid or expired. Please generate a new one"
 
     if message is None:
         if "title" in err_resp or err_resp.get("detail"):
@@ -73,12 +73,12 @@ class BearerAuth(AuthBase):
 
 
 class GiskardClient:
-    def __init__(self, url: str, token: str, hf_token: str = None):
+    def __init__(self, url: str, key: str, hf_token: str = None):
         self.host_url = url
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
         self._session.mount(base_url, ErrorHandlingAdapter())
-        self._session.auth = BearerAuth(token)
+        self._session.auth = BearerAuth(key)
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
