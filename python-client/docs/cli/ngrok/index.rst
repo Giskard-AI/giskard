@@ -22,7 +22,7 @@ Copy the following key:
 
 3. Expose the giskard server
 ^^^^^^^^^^^^^^^^^^^^^^^
-Now you can run :code:`giskard server expose --token <ngrok_API_key>` which should prompt you with the following instructions:::
+Now you can run :code:`giskard server expose --ngrok-token <ngrok_API_key>` which should prompt you with the following instructions:::
 
     Exposing Giskard Server to the internet...
     Giskard Server is now exposed to the internet.

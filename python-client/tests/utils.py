@@ -2,10 +2,11 @@ import glob
 import logging
 import os
 import re
-import requests
-import requests_mock
 import tarfile
 from pathlib import Path
+
+import requests
+import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
@@ -67,8 +68,8 @@ class MockedClient:
         )
 
         url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        return GiskardClient(url, token), self.mocked_requests
+        key = "SECRET_TOKEN"
+        return GiskardClient(url, key), self.mocked_requests
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.mocked_requests:
@@ -94,8 +95,8 @@ def verify_model_upload(my_model, my_data):
         )
 
         url = "http://giskard-host:12345"
-        token = "SECRET_TOKEN"
-        client = GiskardClient(url, token)
+        key = "SECRET_TOKEN"
+        client = GiskardClient(url, key)
         my_model.upload(client, "test-project", my_data)
 
         tests.utils.match_model_id(my_model.id)
