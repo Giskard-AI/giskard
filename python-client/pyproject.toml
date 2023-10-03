@@ -166,6 +166,7 @@ llm = [
     # pdm lock -G:all doesn't work without fixing these two versions
     "datasets>=2.13.0",
     "bert-score>=0.3.13",
+    "rapidfuzz"
 ]
 server = [
     "tenacity>=4.11.0",
