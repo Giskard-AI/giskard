@@ -1,4 +1,4 @@
-name: Tag release
+name: Post release - Push to Pipy 
 
 on:
   repository_dispatch:

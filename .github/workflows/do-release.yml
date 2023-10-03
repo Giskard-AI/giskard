@@ -1,4 +1,4 @@
-name: Tag release
+name: Do Github release
 
 on:
   push:
