@@ -2,10 +2,11 @@ import glob
 import logging
 import os
 import re
-import requests
-import requests_mock
 import tarfile
 from pathlib import Path
+
+import requests
+import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
@@ -13,7 +14,7 @@ from giskard.client.giskard_client import GiskardClient
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
 
-headers_to_match = {"Authorization": "Bearer API_ACCESS_KEY", "Content-Type": "application/json"}
+headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
 
 
 def match_model_id(my_model_id):
