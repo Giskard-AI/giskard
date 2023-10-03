@@ -1,8 +1,9 @@
 import logging
+from unittest import mock
+
 import numpy as np
 import pandas as pd
 import pytest
-from unittest import mock
 
 from giskard import Dataset
 from giskard.scanner.issues import Issue
@@ -57,6 +58,16 @@ def test_performance_bias_detector_with_tabular(german_credit_model, german_cred
     issues = detector.run(german_credit_model, german_credit_data)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
+
+    # Check that descriptions are coherent
+    assert (
+        issues[0].description
+        == 'For records in your dataset where `purpose` == "business", the Precision is 5.33% lower than the global Precision.'
+    )
+    for issue in issues:
+        assert issue.meta["metric"] in issue.description
+        assert f'{issue.meta["abs_deviation_perc"]}%' in issue.description
+        assert str(issue.slicing_fn) in issue.description
 
 
 @pytest.mark.slow

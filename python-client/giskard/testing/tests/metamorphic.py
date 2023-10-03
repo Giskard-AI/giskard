@@ -18,7 +18,7 @@ from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed
 from giskard.scanner.llm.utils import LLMImportError
-from . import debug_prefix
+from . import debug_prefix, debug_description_prefix
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -203,7 +203,10 @@ def _test_metamorphic(
     )
 
 
-@test(name="Invariance (proportion)")
+@test(
+    name="Invariance (proportion)",
+    debug_description=debug_description_prefix + "that are <b>non-invariant after perturbation</b>.",
+)
 def test_metamorphic_invariance(
     model: BaseModel,
     dataset: Dataset,
@@ -270,7 +273,10 @@ def test_metamorphic_invariance(
     )
 
 
-@test(name="Increasing (proportion)")
+@test(
+    name="Increasing (proportion)",
+    debug_description=debug_description_prefix + "that are <b>non-increasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_increasing(
     model: BaseModel,
@@ -335,7 +341,10 @@ def test_metamorphic_increasing(
     )
 
 
-@test(name="Decreasing (proportion)")
+@test(
+    name="Decreasing (proportion)",
+    debug_description=debug_description_prefix + "that are <b>non-decreasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_decreasing(
     model: BaseModel,
@@ -440,7 +449,10 @@ def _create_test_result(critical_quantile, dataset, debug, direction, messages, 
     )
 
 
-@test(name="Decreasing (t-test)")
+@test(
+    name="Decreasing (t-test)",
+    debug_description=debug_description_prefix + "that are <b>non-decreasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_decreasing_t_test(
     model: BaseModel,
@@ -505,7 +517,10 @@ def test_metamorphic_decreasing_t_test(
     )
 
 
-@test(name="Increasing (t-test)")
+@test(
+    name="Increasing (t-test)",
+    debug_description=debug_description_prefix + "that are <b>non-increasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_increasing_t_test(
     model: BaseModel,
@@ -570,7 +585,10 @@ def test_metamorphic_increasing_t_test(
     )
 
 
-@test(name="Invariance (t-test)")
+@test(
+    name="Invariance (t-test)",
+    debug_description=debug_description_prefix + "that are <b>non-invariant after perturbation</b>.",
+)
 def test_metamorphic_invariance_t_test(
     model: BaseModel,
     dataset: Dataset,
@@ -661,7 +679,10 @@ def _test_metamorphic_wilcoxon(
     return _create_test_result(critical_quantile, dataset, debug, direction, messages, model, p_value, result_df)
 
 
-@test(name="Decreasing (Wilcoxon)")
+@test(
+    name="Decreasing (Wilcoxon)",
+    debug_description=debug_description_prefix + "that are <b>non-decreasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_decreasing_wilcoxon(
     model: BaseModel,
@@ -726,7 +747,10 @@ def test_metamorphic_decreasing_wilcoxon(
     )
 
 
-@test(name="Increasing (Wilcoxon)")
+@test(
+    name="Increasing (Wilcoxon)",
+    debug_description=debug_description_prefix + "that are <b>non-increasing after perturbation</b>.",
+)
 @validate_classification_label
 def test_metamorphic_increasing_wilcoxon(
     model: BaseModel,
@@ -791,7 +815,10 @@ def test_metamorphic_increasing_wilcoxon(
     )
 
 
-@test(name="Invariance (Wilcoxon)")
+@test(
+    name="Invariance (Wilcoxon)",
+    debug_description=debug_description_prefix + "that are <b>non-invariant after perturbation</b>.",
+)
 def test_metamorphic_invariance_wilcoxon(
     model: BaseModel,
     dataset: Dataset,

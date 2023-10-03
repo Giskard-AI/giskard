@@ -61,7 +61,7 @@
 
 import {computed, onMounted, ref} from 'vue';
 import {api} from '@/api';
-import {FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
+import {TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
 import {chain} from 'lodash';
 import {useMainStore} from "@/stores/main";
@@ -70,6 +70,8 @@ import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.
 import mixpanel from 'mixpanel-browser';
 import {anonymize} from "@/utils";
 import {useRouter} from 'vue-router/composables';
+import {FunctionInputDTO, SuiteTestDTO} from "@/generated/client";
+import {openapi} from "@/api-v2";
 
 const router = useRouter();
 
@@ -121,7 +123,6 @@ async function submit(close) {
   })
 
   const suiteTest: SuiteTestDTO = {
-    test,
     testUuid: test.uuid,
     functionInputs: chain(testInputs.value)
         .omitBy(({value}) => value === null
@@ -130,7 +131,11 @@ async function submit(close) {
         .value() as { [name: string]: FunctionInputDTO }
   }
 
-  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
+  await openapi.testSuite.addTestToSuite({
+    projectId,
+    suiteId: selectedSuite.value!,
+    suiteTestDTO: suiteTest
+  });
   mainStore.addNotification({
     content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
     color: TYPE.SUCCESS

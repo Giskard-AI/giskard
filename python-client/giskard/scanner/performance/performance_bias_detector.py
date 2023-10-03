@@ -212,9 +212,7 @@ class IssueFinder:
 
             if is_issue:
                 level = IssueLevel.MAJOR if abs(relative_delta) > 2 * self.threshold else IssueLevel.MEDIUM
-                desc = (
-                    "For records in your dataset where {slicing_fn}, the recall is 96.8% lower than the global recall."
-                )
+                desc = "For records in your dataset where {slicing_fn}, the {metric} is {abs_deviation_perc}% {comparison_op} than the global {metric}."
 
                 issue = Issue(
                     model=model,
@@ -229,6 +227,9 @@ class IssueFinder:
                         "slice_metric": slice_metric,
                         "reference_metric": ref_metric,
                         "deviation": f"{relative_delta*100:+.2f}% than global",
+                        "deviation_perc": round(relative_delta * 100, 2),
+                        "abs_deviation_perc": round(abs(relative_delta) * 100, 2),
+                        "comparison_op": "lower" if metric.greater_is_better else "greater",
                         "slice_size": len(sliced_dataset),
                         "threshold": self.threshold,
                         "p_value": p_value,

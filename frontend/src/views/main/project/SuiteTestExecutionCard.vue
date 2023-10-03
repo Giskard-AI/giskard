@@ -27,7 +27,7 @@
           <v-icon class='mr-1'>{{ TEST_RESULT_DATA[result.status].icon }}</v-icon>
           {{ TEST_RESULT_DATA[result.status].capitalized }}
         </v-chip>
-        <v-btn color='primary' @click='debugTest' outlined small :disabled='!canBeDebugged' :loading='loading'>
+        <v-btn color='primary' @click='debugDescDialog = true' outlined small :disabled='!canBeDebugged' :loading='loading'>
           <v-icon small>info</v-icon>
           Debug
         </v-btn>
@@ -80,6 +80,40 @@
         </v-card>
       </v-dialog>
     </div>
+    <div>
+      <v-dialog
+          v-model="debugDescDialog"
+          width="auto"
+      >
+        <v-card>
+          <v-card-title>
+            Debug the {{ suiteTest.test?.displayName }} test
+          </v-card-title>
+          <v-card-text>
+            <!-- //NOSONAR --><p v-html="suiteTest.test.debugDescription"/>
+            <p>
+              This will enable you to:
+              <ul>
+                <li>Understand why the test fail looking at model explanation</li>
+                <li>Create new tests by looking at the model insights <v-icon>mdi-alert-outline</v-icon></li>
+                <li>Collect feedback to integrate domain knowledge <v-icon>mdi-comment-multiple</v-icon></li>
+              </ul>
+            </p>
+
+            Start debugging?
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="error" text @click="debugDescDialog = false;">
+              No
+            </v-btn>
+            <v-btn color="primary" text @click="debugDescDialog = false; debugTest()">
+              Yes
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -117,6 +151,7 @@ const props = defineProps<{
 const loading = ref<boolean>(false);
 const modelDialog = ref<boolean>(false);
 const selectedModel = ref<string>("");
+const debugDescDialog = ref<boolean>(false);
 
 const params = computed(() => props.isPastExecution && props.result
     ? props.result?.inputs

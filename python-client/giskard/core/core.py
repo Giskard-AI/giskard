@@ -196,7 +196,9 @@ class CallableMeta(SavableMeta, ABC):
     def populate_tags(self, tags=None):
         tags = [] if not tags else tags.copy()
 
-        if self.full_name.partition(".")[0] == "giskard":
+        if self.name == "<lambda>":
+            tags.append("lambda")
+        elif self.full_name.partition(".")[0] == "giskard":
             tags.append("giskard")
         else:
             tags.append("custom")
@@ -276,10 +278,35 @@ def __repr__(self) -> str:
 
 
 class TestFunctionMeta(CallableMeta):
+    debug_description: str
+
+    def __init__(
+        self,
+        callable_obj: Union[Callable, Type] = None,
+        name: Optional[str] = None,
+        tags: List[str] = None,
+        debug_description: str = None,
+        version: Optional[int] = None,
+        type: str = None,
+    ):
+        super().__init__(callable_obj, name, tags, version, type)
+        self.debug_description = debug_description
+
     def extract_parameters(self, callable_obj):
         parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
 
         return {p.name: p for p in parameters}
+
+    def to_json(self):
+        json = super().to_json()
+        return {
+            **json,
+            "debug_description": self.debug_description,
+        }
+
+    def init_from_json(self, json: Dict[str, Any]):
+        super().init_from_json(json)
+        self.debug_description = json["debug_description"] if "debug_description" in json.keys() else None
 
 
 class DatasetProcessFunctionType(Enum):

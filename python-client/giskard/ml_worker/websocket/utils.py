@@ -104,11 +104,12 @@ def map_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
+            debugDescription=test.debug_description,
         )
         for test in tests_registry.get_all().values()
-        if test.type == callable_type
+        if test.type == callable_type and "giskard" in test.tags
     }
 
 
@@ -145,14 +146,14 @@ def map_dataset_process_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
             cellLevel=test.cell_level,
             columnType=test.column_type,
             processType=test.process_type.name,
         )
         for test in tests_registry.get_all().values()
-        if test.type == callable_type
+        if test.type == callable_type and "giskard" in test.tags
     }
 
 

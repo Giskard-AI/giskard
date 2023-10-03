@@ -153,7 +153,7 @@ def enron_model(enron_data) -> SKLearnModel:
             ("text_Mail", text_transformer, "Content"),
         ]
     )
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100))])
+    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))])
 
     Y = enron_data.df["Target"]
     X = enron_data.df.drop(columns="Target")

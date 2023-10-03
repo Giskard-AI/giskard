@@ -74,7 +74,12 @@ public class MailService {
         try {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage, isMultipart, StandardCharsets.UTF_8.name());
             message.setTo(to);
-            message.setFrom(applicationProperties.getEmailFrom());
+
+            if (applicationProperties.getEmailFrom() != null) {
+                message.setFrom(applicationProperties.getEmailFrom());
+            } else {
+                message.setFrom("noreply@giskard.ai");
+            }
             message.setSubject(subject);
             message.setText(content, isHtml);
             javaMailSender.send(mimeMessage);

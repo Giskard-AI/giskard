@@ -65,7 +65,7 @@ def hotel_text_model(hotel_text_data) -> SKLearnModel:
         steps=[
             ("vectorizer_adapter", FunctionTransformer(adapt_vectorizer_input)),
             ("vectorizer", TfidfVectorizer(max_features=10000)),
-            ("regressor", GradientBoostingRegressor(n_estimators=5)),
+            ("regressor", GradientBoostingRegressor(random_state=30, n_estimators=5)),
         ]
     )
 
