@@ -23,7 +23,7 @@ on:
         description: 'Just to identify manual dispatch'
         required: true
         type: boolean
-        default: true  
+        default: true
   workflow_call:
     inputs:
       run-integration-tests:
@@ -86,10 +86,10 @@ jobs:
         uses: r-lib/actions/setup-pandoc@v2
         with:
           pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
-  
+
       - name: Cache Giskard test resources
         uses: actions/cache@v3
-        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }} 
+        if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
         with:
           path: ~/.giskard
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('python-client/tests/fixtures/**/*py')}}
@@ -116,7 +116,7 @@ jobs:
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
         run: pdm run test-fast
-  
+
       - name: Build doc
         if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
         run: pdm run doc
@@ -129,9 +129,30 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: dist/*whl
-          
+
       - name: Run integration tests for python
         if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
         run: pdm run test -m 'slow'
+  install-poetry:
+    name: "Check if wheel is able to be installed using Poetry"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: '3.10'
+          cache: false
+      - name: Build wheel
+        run: pdm build
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Create new project and install wheel
+        run: |
+          poetry new ./install-test
+          cd ./install-test
+          sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
+          poetry add "$(ls ../dist/*.whl)[server]"
