@@ -4,34 +4,29 @@
 :maxdepth: 1
 :hidden:
 
-getting-started/index
-getting-started/quickstart_tabular
-getting-started/quickstart_nlp
-getting-started/quickstart_llm
+getting_started/index
+getting_started/quickstart_tabular
+getting_started/quickstart_nlp
+getting_started/quickstart_llm
 ```
 
 ```{toctree}
-:caption: Guides
+:caption: Open-Source Library
 :name: mastertoc
 :maxdepth: 1
 :hidden:
 
-guides/installation_library/index
-guides/wrap_dataset/index
-guides/wrap_model/index
-guides/scan/index
-guides/slice/index
-guides/transformation/index
-guides/test-suite/index
-guides/talk_to_your_model/index
-guides/cicd/pipeline
-guides/installation_app/index
-guides/upload/index
-contribute/index
+open_source/installation_library/index
+open_source/scan_tabular/index
+open_source/scan_nlp/index
+open_source/scan_llm/index
+open_source/customize_tests
+open_source/integrate_tests
+open_source/talk_to_your_model
 ```
 
 ```{toctree}
-:caption: Tutorials
+:caption: Giskard Hub
 :name: mastertoc
 :maxdepth: 1
 :hidden:
