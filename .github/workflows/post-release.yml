@@ -36,5 +36,8 @@ jobs:
           python-version: '3.10'
           cache: false
 
+      - name: Build wheel
+        run: pdm build
+
       - name: Push to Pipy
-        run: pdm publish --username ${{ secrets.PIPY_USERNAME }} --password ${{ secrets.PIPY_PASSWORD }}
+        run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"
