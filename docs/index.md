@@ -31,9 +31,28 @@ open_source/talk_to_your_model
 :maxdepth: 1
 :hidden:
 
-tutorials/libraries/index
-tutorials/tasks/index
-tutorials/data-types/index
+giskard_hub/installation_hub/index
+giskard_hub/upgrade_hub_version/index
+giskard_hub/upload/index
+giskard_hub/write_and_debug_tests/index
+giskard_hub/inspect/index
+giskard_hub/compare_models/index
+giskard_hub/collaborate/index
+```
+
+```{toctree}
+:caption: Tutorials
+:name: mastertoc
+:maxdepth: 1
+:hidden:
+
+giskard_hub/installation_hub/index
+giskard_hub/upgrade_hub_version/index
+giskard_hub/upload/index
+giskard_hub/write_and_debug_tests/index
+giskard_hub/inspect/index
+giskard_hub/compare_models/index
+giskard_hub/collaborate/index
 ```
 
 ```{toctree}
