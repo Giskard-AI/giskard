@@ -1,5 +1,7 @@
 # Integrations
 
+[//]: # (TODO: find all the links of pages where the integrations have been placed so when users click on one of these logos, they go directly to that page &#40;example: W&B is now under open-source/integrate_tests&#41;)
+
 ```{toctree}
 :caption: Table of Contents
 :name: mastertoc
