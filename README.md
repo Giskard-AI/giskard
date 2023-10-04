@@ -36,7 +36,7 @@ You can install the latest version of Giskard from PyPi using pip :
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
-We officially support Python 3.8, 3.9 and 3.10.
+We officially support Python 3.8, 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
 
@@ -106,7 +106,7 @@ def prediction_function(df):
     return demo_sklearn_model.predict_proba(preprocessed_df)
 
 giskard_model = giskard.Model(
-    model=demo_model,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
+    model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
     model_type="classification",  # Either regression, classification or text_generation.
     name="Titanic model",  # Optional
     classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
@@ -117,7 +117,7 @@ giskard_model = giskard.Model(
 
 ✨✨✨Then run giskard's magical scan✨✨✨
 ```python
-results = giskard.scan(giskard_model, giskard_dataset)
+scan_results = giskard.scan(giskard_model, giskard_dataset)
 ```
 Once the scan completes, you can display the results directly in your notebook:
 
@@ -187,7 +187,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 3. Finally upload your test suite to the giskard server using the following code:
     ```python
     key = "API_KEY"  # Find it in Settings in the Giskard server
-    client = GiskardClient(
+    client = giskard.GiskardClient(
         url="http://localhost:19000", key=key  # URL of your Giskard instance
     )
     
