@@ -58,7 +58,7 @@ class GarakLLMPromptInjectionDetector(LLMBusinessDetector):
 
         issues = []
         for probe, result in results.items():
-            metric = result["passed"] / result["total"] * 1.0
+            metric = 1 - result["passed"] / result["total"] * 1.0
             issues.append(
                 Issue(
                     model,
