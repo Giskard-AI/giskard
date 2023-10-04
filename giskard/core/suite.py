@@ -55,11 +55,11 @@ def parse_function_arguments(client, project_key, function_inputs):
         elif value["type"] == "BaseModel":
             arguments[value["name"]] = BaseModel.download(client, project_key, value["value"])
         elif value["type"] == "SlicingFunction":
-            arguments[value["name"]] = SlicingFunction.download(value["value"], client, None)(
+            arguments[value["name"]] = SlicingFunction.download(value["value"], client, project_key)(
                 **parse_function_arguments(client, project_key, value["params"])
             )
         elif value["type"] == "TransformationFunction":
-            arguments[value["name"]] = TransformationFunction.download(value["value"], client, None)(
+            arguments[value["name"]] = TransformationFunction.download(value["value"], client, project_key)(
                 **parse_function_arguments(client, project_key, value["params"])
             )
         elif value["type"] == "float":
