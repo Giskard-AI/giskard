@@ -163,10 +163,10 @@ dependencies = [
 [project.optional-dependencies]
 llm = [
     "transformers",
-    "torch", 
-    "langchain", 
-    "evaluate", 
-    "bert-score", 
+    "torch",
+    "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
+    "evaluate",
+    "bert-score",
     "datasets"
 ]
 
@@ -176,6 +176,8 @@ server = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
+    "llvmlite>=0.40.0", # Needed to be installable for Poetry
+    "numba>=0.50.0", # Needed to be installable for Poetry
     "lockfile>=0.12.2",
     "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
