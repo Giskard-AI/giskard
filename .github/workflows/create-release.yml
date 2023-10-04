@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
         version:
-          description: 'Tag to be created, in the form vX.Y.Z'
+          description: 'Tag to be created, in the form X.Y.Z'
           required: true
           type: string
 
@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Edit pyproject.toml
-        run:  sed -i "s/\^(version *= *\).*$/\1${{ inputs.version }}/" pyproject.toml
+        run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
 
       - name: Configure git
         run:  |
@@ -46,10 +46,10 @@ jobs:
       - name: Adding file
         run:  |
           git add pyproject.toml
-          git commit -m "${{ inputs.version }}"
-          git tag ${{ inputs.version }}
+          git commit -m "v${{ inputs.version }}" --allow-empty
+          git tag v${{ inputs.version }}
 
       - name: Push to main and tags
         run: |
           git push origin main
-          git push origin ${{ inputs.version }}
+          git push origin v${{ inputs.version }}

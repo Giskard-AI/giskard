@@ -16,7 +16,7 @@ jobs:
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
-          python-version: 3.10
+          python-version: '3.10'
           cache: false
       - name: Build dist
         run: pdm build
@@ -35,11 +35,10 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
-          event-type: trigger-release
+          event-type: create-release
           repository: giskard-ai/giskard-hub
           client-payload: |
             {
-              "wheel_url": "${{ steps.github-release.outputs.assets[1].browser_download_url }}",
               "version": "${{ github.ref_name }}",
-              "ref": "${{ github.ref }}",
+              "ref": "${{ github.ref }}"
             }
