@@ -19,6 +19,22 @@ probe_map = {
         "name": "Long Prompt",
         "description": "A prompt-injection that aims to make the LLM outputs a long text verbatim.",
     },
+    ## DAN based
+    "probes.dan.Ablation_Dan_11_0": {"name": "Ablation_Dan_11_0", "description": "TBF"},
+    "probes.dan.AntiDAN": {"name": "AntiDAN", "description": "TBF"},
+    "probes.dan.ChatGPT_Developer_Mode_RANTI": {"name": "ChatGPT_Developer_Mode_RANTI", "description": "TBF"},
+    "probes.dan.ChatGPT_Developer_Mode_v2": {"name": "ChatGPT_Developer_Mode_v2", "description": "TBF"},
+    "probes.dan.ChatGPT_Image_Markdown": {"name": "ChatGPT_Image_Markdown", "description": "TBF"},
+    "probes.dan.DAN_Jailbreak": {"name": "DAN_Jailbreak", "description": "TBF"},
+    "probes.dan.DUDE": {"name": "DUDE", "description": "TBF"},
+    "probes.dan.Dan_10_0": {"name": "Dan_10_0", "description": "TBF"},
+    "probes.dan.Dan_11_0": {"name": "Dan_11_0", "description": "TBF"},
+    "probes.dan.Dan_6_0": {"name": "Dan_6_0", "description": "TBF"},
+    "probes.dan.Dan_6_2": {"name": "Dan_6_2", "description": "TBF"},
+    "probes.dan.Dan_7_0": {"name": "Dan_7_0", "description": "TBF"},
+    "probes.dan.Dan_8_0": {"name": "Dan_8_0", "description": "TBF"},
+    "probes.dan.Dan_9_0": {"name": "Dan_9_0", "description": "TBF"},
+    "probes.dan.STAN": {"name": "STAN", "description": "TBF"},
 }
 
 
