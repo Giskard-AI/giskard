@@ -5,8 +5,9 @@
 :hidden:
 
 getting-started/index
-getting-started/quickstart
-getting-started/key_vulnerabilities/index
+getting-started/quickstart_tabular
+getting-started/quickstart_nlp
+getting-started/quickstart_llm
 ```
 
 ```{toctree}
