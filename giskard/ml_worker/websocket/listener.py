@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import os
 import platform
 import sys
@@ -8,7 +9,6 @@ import time
 import traceback
 from pathlib import Path
 
-import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -456,7 +456,7 @@ def dataset_processing(
         else:
             dataset.add_transformation_function(
                 TransformationFunction.download(
-                    function.transformationFunction.id, ml_worker.client, function.slicingFunction.project_key
+                    function.transformationFunction.id, ml_worker.client, function.transformationFunction.project_key
                 )(**arguments)
             )
 
@@ -475,7 +475,7 @@ def dataset_processing(
                 modifications={
                     key: str(value)
                     for key, value in row[1].items()
-                    if isinstance(value, float) or not math.isnan(value)
+                    if not pd.isna(value)
                 },
             )
             for row in modified_rows.iterrows()
