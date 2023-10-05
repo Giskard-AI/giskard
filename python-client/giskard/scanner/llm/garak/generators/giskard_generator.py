@@ -19,16 +19,16 @@ class GiskardGenerator:
     description = ""
     active = True
 
-    def __init__(self, giskard_model, input_variable):
+    def __init__(self, giskard_model, feature_names):
         if hasattr(giskard_model, "description"):
             self.description = giskard_model.description
         if hasattr(giskard_model, "name"):
             self.name = giskard_model.name
         logging.info(f"generator init: {self}")
         self.giskard_model = giskard_model
-        self.input_variable = input_variable
-        # TODO: Can we infer it from self.giskard_model.feature_names?
-        #  (check if langchain and get it from input_variables, etc.)
+        if len(feature_names) > 1:
+            raise ValueError("Giskard Generator accepts only 1 text feature at the moment.")
+        self.input_variable = feature_names[0]
 
     def generate(self, prompt) -> List[str]:
         giskard_dataset = Dataset(pd.DataFrame({self.input_variable: prompt}, index=[0]), validation=False)

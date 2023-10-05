@@ -1,5 +1,9 @@
 from typing import Sequence
 
+from giskard.scanner.llm.garak.generators.giskard_generator import GiskardGenerator
+from giskard.scanner.llm.garak.evaluators.base import ThresholdEvaluator
+import giskard.scanner.llm.garak.harnesses.probewise
+
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..decorators import detector
@@ -41,17 +45,10 @@ probe_map = {
 @detector("garak_llm_prompt_injection", tags=["garak_llm_prompt_injection", "llm", "generative", "text_generation"])
 class GarakLLMPromptInjectionDetector(LLMBusinessDetector):
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        from giskard.scanner.llm.garak.generators.giskard_generator import GiskardGenerator
-
-        generator = GiskardGenerator(model, "text")
-
-        from giskard.scanner.llm.garak.evaluators.base import ThresholdEvaluator
-
+        feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+        generator = GiskardGenerator(model, feature_names)
         eval_threshold = 0.5  # default
         evaluator = ThresholdEvaluator(eval_threshold)
-
-        import giskard.scanner.llm.garak.harnesses.probewise
-
         h = giskard.scanner.llm.garak.harnesses.probewise.ProbewiseHarness()
 
         results = h.run(generator, list(probe_map.keys()), evaluator)
