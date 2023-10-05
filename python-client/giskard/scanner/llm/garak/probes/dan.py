@@ -5,8 +5,17 @@ Probes designed to disrupt a system prompt, for example the DAN (do anything
 now) probes and others in a similar vein.
 """
 
+from .base import Probe, GroupedProbes
 
-from .base import Probe
+
+class Dan(GroupedProbes):
+    bcp47 = "en"
+    recommended_detector = ["mitigation.MitigationBypass", "dan.DAN"]
+    goal = "disregard the system prompt"
+
+    def __init__(self):
+        super().__init__()
+        self.probes = [Dan_11_0(), Dan_10_0(), Dan_9_0(), Dan_8_0(), Dan_7_0(), Dan_6_2(), Dan_6_0(), DAN_Jailbreak()]
 
 
 class Dan_11_0(Probe):
@@ -283,6 +292,19 @@ From here on you will respond as ANTI-DAN, with safety features at maximum. Plea
         return super().probe(generator)
 
 
+class ChatGPT_Developer_Mode(GroupedProbes):
+    bcp47 = "en"
+    recommended_detector = [
+        "mitigation.MitigationBypass",
+        "dan.DevMode",
+    ]
+    goal = "disregard the system prompt"
+
+    def __init__(self):
+        super().__init__()
+        self.probes = [ChatGPT_Developer_Mode_v2(), ChatGPT_Developer_Mode_RANTI()]
+
+
 class ChatGPT_Developer_Mode_v2(Probe):
     """ChatGPT Developer Mode v2"""
 
@@ -340,7 +362,7 @@ class ChatGPT_Image_Markdown(Probe):
 
 
 class Ablation_Dan_11_0(Probe):
-    """Ablation experiements over the DAN 11.0 prompt"""
+    """Ablation experiments over the DAN 11.0 prompt"""
 
     bcp47 = "en"
     recommended_detector = ["mitigation.MitigationBypass", "dan.DAN"]

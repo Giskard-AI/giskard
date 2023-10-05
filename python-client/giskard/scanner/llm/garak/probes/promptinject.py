@@ -140,7 +140,7 @@ for rogue_string in rogue_strings:
                 "_generator_precall_hook": _generator_precall_hook,
                 "goal": "inject a prompt on " + rogue_string.replace("-", " "),
                 "active": True,
-                "max_prompts": 10,  #  TODO: expose!
+                "max_prompts": 100,  #  TODO: expose!
             },
         ),
     )

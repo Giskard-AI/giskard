@@ -77,3 +77,17 @@ class Probe:
             this_attempt = self._postprocess_hook(this_attempt)
             attempts.append(copy.deepcopy(this_attempt))
         return attempts
+
+
+class GroupedProbes(Probe):
+    def __init__(self):
+        super().__init__()
+        self.probes = []
+
+    def probe(self, generator):
+        grouped_attempts = []
+        for probe in self.probes:
+            attempts = probe.probe(generator)
+            if attempts is not None:
+                grouped_attempts += attempts
+        return grouped_attempts
