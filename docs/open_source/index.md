@@ -1,5 +1,6 @@
 # Guides
 
+[//]: # (TODO: review the content of this page)
 ```{toctree}
 :maxdepth: 1
 :hidden:
