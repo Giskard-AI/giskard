@@ -1,14 +1,13 @@
 from typing import Sequence
 
-from giskard.scanner.llm.garak.generators.giskard_generator import GiskardGenerator
-from giskard.scanner.llm.garak.evaluators.base import ThresholdEvaluator
 import giskard.scanner.llm.garak.harnesses.probewise
+from giskard.scanner.llm.garak.evaluators.base import ThresholdEvaluator
+from giskard.scanner.llm.garak.generators.giskard_generator import GiskardGenerator
 
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..decorators import detector
-from ..issues import Issue, IssueLevel, IssueGroup
-from .business_detector import LLMBusinessDetector
+from ..issues import Issue, IssueGroup, IssueLevel
 
 probe_map = {
     "probes.promptinject.HijackHateHumansMini": {
@@ -58,8 +57,8 @@ probe_map = {
 }
 
 
-@detector("garak_llm_prompt_injection", tags=["garak_llm_prompt_injection", "llm", "generative", "text_generation"])
-class GarakLLMPromptInjectionDetector(LLMBusinessDetector):
+@detector("garak_llm_prompt_injection", tags=["prompt_injection", "llm", "generative", "text_generation"])
+class GarakLLMPromptInjectionDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
         generator = GiskardGenerator(model, feature_names)
