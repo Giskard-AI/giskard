@@ -10,7 +10,7 @@ from giskard import Dataset, Model
 ```
 ## Wrap dataset
 ```python
-data_filtered = pd.read_csv('https://raw.githubusercontent.com/Giskard-AI/giskard/python-client/tests/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
+data_filtered = pd.read_csv('https://raw.githubusercontent.com/Giskard-AI/giskard/main/tests/models/tensorflow/test_text_classification_tfhub.csv').dropna(axis=0)
 
 classification_labels_mapping = {'REGULATION': 0, 'INTERNAL': 1, 'CALIFORNIA CRISIS': 2, 'INFLUENCE': 3}
 
@@ -22,8 +22,8 @@ x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y,
 test_df = pd.DataFrame(list(zip(list(x_test), list(y_test))), columns=["Content", "Target"])
 ```
 ```python
-wrapped_dataset = Dataset(test_df.head(), 
-                               name="test dataset", 
+wrapped_dataset = Dataset(test_df.head(),
+                               name="test dataset",
                                target="Target")
 ```
 ## Wrap model
