@@ -24,7 +24,7 @@
 </p>
 <h3 align="center">
    <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
-   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
   <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
@@ -38,7 +38,7 @@ pip install "giskard[server]>=2.0.0b" -U
 ```
 We officially support Python 3.8, 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
-[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb)
+[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb)
 
 ______________________________________________________________________
 
@@ -49,7 +49,7 @@ ______________________________________________________________________
 Giskard is a Python library that automatically **detects vulnerabilities** of AI models, from tabular models to LLM, including: performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
 
 It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
- 
+
 <p align="center">
   <img src="readme/scan_example.gif" alt="Scan Example" width="800">
 </p>
@@ -156,7 +156,7 @@ If you are interested in learning more about Giskard's premium offering, please 
 
 ## 1. Start the Giskard server
 
-To start the **Giskard server**, run the following command: 
+To start the **Giskard server**, run the following command:
 ```sh
 giskard server start
 ```
@@ -171,10 +171,10 @@ You can then **upload the test suite** created using the `giskard` Python librar
 - Create more domain-specific tests relevant to your use-case
 - Share results, and collaborate with your team to integrate business feedback
 
-1. First, make sure Giskard server is installed 
+1. First, make sure Giskard server is installed
     <details>
       <summary>How to check if the Giskard server is running</summary>
-      
+
       - check if http://localhost:19000 is running
       - or use `giskard server status`
     </details>
@@ -190,9 +190,9 @@ You can then **upload the test suite** created using the `giskard` Python librar
     client = giskard.GiskardClient(
         url="http://localhost:19000", key=key  # URL of your Giskard instance
     )
-    
+
     my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
-    
+
     # Upload to the current project
     test_suite.upload(client, "my_project")
     ```
@@ -203,12 +203,12 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>What is a ML worker?</summary>
 
-  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal. 
+  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal.
   </details>
 
 <details>
   <summary>How to get the API key</summary>
-  
+
   Access the API key in the Settings tab of the Giskard server.
 </details>
 
