@@ -12,8 +12,7 @@ from giskard.models.langchain import LangchainModel
 
 def test_vectorstore():
     response = "The president said that she is one of the nation's top legal minds, a former top litigator in private practice, a former federal public defender, and from a family of public school educators and police officers. He also said that she is a consensus builder and has received a broad range of support, from the Fraternal Order of Police to former judges appointed by Democrats and Republicans."
-    responses = [response]
-    llm = FakeListLLM(responses=responses)
+    llm = FakeListLLM(responses=[response])
 
     loader = TextLoader("./tests/models/langchain/state_of_the_union.txt")
     documents = loader.load()
@@ -42,7 +41,7 @@ def test_vectorstore():
 
     responses = model.predict(dataset)
 
-    assert qa.run(query) == responses.raw[0]
+    assert response == responses.raw[0]
 
     import tempfile
 
@@ -50,4 +49,4 @@ def test_vectorstore():
         model.save(tmpdirname)
         loaded_model = LangchainModel.load(tmpdirname)
 
-        assert qa.run(query) == loaded_model.predict(dataset).raw[0]
+        assert response == loaded_model.predict(dataset).raw[0]
