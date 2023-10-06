@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Callable, Iterable, Optional
 
 import mlflow
@@ -21,6 +22,8 @@ class LangchainModel(MLFlowSerializableModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
+            save_db: Optional[Callable[[str], Any]] = None,
+            loader_fn: Optional[Callable[[str], Any]] = None,
         **kwargs,
     ) -> None:
         assert (
@@ -28,6 +31,9 @@ class LangchainModel(MLFlowSerializableModel):
         ), "LangchainModel only support text_generation ModelType"
 
         from langchain import LLMChain
+
+        self.save_db = save_db
+        self.loader_fn = loader_fn
 
         super().__init__(
             model=model,
@@ -45,14 +51,18 @@ class LangchainModel(MLFlowSerializableModel):
         )
 
     def save_model(self, local_path, mlflow_meta):
-        mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
+        mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta, loader_fn=self.loader_fn,
+                                    persist_dir=local_path)
+
+        if self.save_db is not None:
+            self.save_db(str(Path(local_path) / 'persist_dir_data'))
 
     @classmethod
     def load_model(cls, local_dir):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict("records")]
+        return [self.model.run(**data) for data in df.to_dict("records")]
 
     def rewrite_prompt(self, template, input_variables=None, **kwargs):
         from langchain import LLMChain
@@ -78,4 +88,5 @@ class LangchainModel(MLFlowSerializableModel):
         return self.__class__(chain, **model_kwargs)
 
     def to_mlflow(self, artifact_path: str = "langchain-model-from-giskard", **kwargs):
-        return mlflow.langchain.log_model(self.model, artifact_path, **kwargs)
+        return mlflow.langchain.log_model(self.model, artifact_path, loader_fn=self.loader_fn,
+                                          persist_dir=artifact_path, **kwargs)

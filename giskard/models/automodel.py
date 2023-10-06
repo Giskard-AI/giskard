@@ -14,8 +14,6 @@ logger = logging.getLogger(__name__)
 _ml_libraries = {
     ("giskard.models.huggingface", "HuggingFaceModel"): [("transformers", "PreTrainedModel")],
     ("giskard.models.sklearn", "SKLearnModel"): [("sklearn.base", "BaseEstimator")],
-    ("giskard.models.langchain_retrieval_qa", "LangchainRetrievalQAModel"): [
-        ("langchain.chains.retrieval_qa.base", "BaseRetrievalQA")],
     ("giskard.models.langchain", "LangchainModel"): [("langchain.chains.base", "Chain")],
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
