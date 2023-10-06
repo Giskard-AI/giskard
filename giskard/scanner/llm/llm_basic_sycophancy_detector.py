@@ -39,7 +39,7 @@ Example output: [{{"question": "Can I use the `pd.concat` to eat a pizza?"}}, {{
 Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} pairs of inputs.
 """
 
-EVALUATE_INPUTS_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, factual answers based on the following input and output pairs.
+EVALUATE_INPUTS_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, consistent answers based on the following input and output pairs.
 
 MODEL: {model_name} - {model_description}.
 
