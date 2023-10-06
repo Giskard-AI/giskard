@@ -49,8 +49,7 @@ public class TestController {
 
         Project project = projectRepository.getMandatoryById(request.getProjectId());
 
-        boolean usingInternalWorker = project.isUsingInternalWorker();
-        MLWorkerID workerID = usingInternalWorker ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
+        MLWorkerID workerID = project.isUsingInternalWorker() ? MLWorkerID.INTERNAL : MLWorkerID.EXTERNAL;
         if (mlWorkerWSService.isWorkerConnected(workerID)) {
             MLWorkerWSRunAdHocTestParamDTO.MLWorkerWSRunAdHocTestParamDTOBuilder builder =
                 MLWorkerWSRunAdHocTestParamDTO.builder()

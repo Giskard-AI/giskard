@@ -174,6 +174,76 @@ def test_save_suite(german_credit_data: Dataset, german_credit_model: BaseModel)
     scan(german_credit_model, german_credit_data)
 
 
+def test_remove_by_id():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
+
+    suite.remove_test(1)
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
+
+    suite.remove_test(-1)
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "F1"
+
+
+def test_remove_by_name():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
+
+    suite.remove_test("AUC")
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
+
+    suite.remove_test("AUC")
+    assert len(suite.tests) == 2
+
+    suite.remove_test("Diff F1")
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "F1"
+
+
+def test_remove_by_reference():
+    suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
+
+    assert len(suite.tests) == 3
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
+
+    suite.remove_test(test_auc)
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
+
+    suite.remove_test(test_auc)
+    assert len(suite.tests) == 2
+
+    suite.remove_test(test_diff_f1)
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "F1"
+
+
+def test_update_params():
+    suite = Suite().add_test(_test_a_greater_b(1, 2))
+
+    assert not suite.run().passed
+
+    suite.update_test_params(0, a=3)
+
+    assert suite.run().passed
+
+
 @pytest.mark.skip(reason="For active testing")
 def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model: BaseModel):
     from giskard.testing import test_metamorphic_invariance, test_auc, test_diff_accuracy

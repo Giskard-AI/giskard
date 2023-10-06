@@ -16,11 +16,6 @@ import java.nio.file.Path;
 @Getter
 @ConfigurationProperties(prefix = "giskard", ignoreUnknownFields = false)
 public class ApplicationProperties {
-    private String mlWorkerHost;
-    private int mlWorkerPort;
-    private int externalMlWorkerEntrypointPort;
-    private String externalMlWorkerEntrypointHost;
-    private boolean externalMlWorkerEnabled;
     private int apiTokenValidityInDays;
     private int invitationTokenValidityInDays;
     private int maxInboundMLWorkerMessageMB = 1024;
@@ -40,6 +35,10 @@ public class ApplicationProperties {
     private long tokenValidityInSeconds = 1800; // 30 minutes;
     private long tokenValidityInSecondsForRememberMe = 2592000; // 30 days;
     private CorsConfiguration cors = new CorsConfiguration();
+
+    private String defaultApiKey;
+    private String hfDemoSpaceUnlockToken;
+    private String mixpanelProjectKey;
 }
 
 

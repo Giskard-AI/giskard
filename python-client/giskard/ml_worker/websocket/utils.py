@@ -2,9 +2,10 @@ import logging
 import os
 import posixpath
 import shutil
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from pathlib import Path
 from typing import List, Dict, Any
+
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.core.suite import ModelInput, DatasetInput, SuiteInput
 from giskard.datasets.base import Dataset
@@ -28,6 +29,7 @@ from giskard.ml_worker.websocket import (
     DatasetProcessingParam,
     GenerateTestSuiteParam,
     RunModelForDataFrameParam,
+    GetPushParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -58,6 +60,8 @@ def parse_action_param(action, params):
         return EchoMsg.parse_obj(params)
     elif action == MLWorkerAction.generateTestSuite:
         return GenerateTestSuiteParam.parse_obj(params)
+    elif action == MLWorkerAction.getPush:
+        return GetPushParam.parse_obj(params)
     return params
 
 
@@ -100,7 +104,7 @@ def map_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
         )
         for test in tests_registry.get_all().values()
@@ -141,7 +145,7 @@ def map_dataset_process_function_meta_ws(callable_type):
                     default=str(a.default),
                     argOrder=a.argOrder,
                 )
-                for a in test.args.values()
+                for a in (test.args.values() if test.args else [])  # args could be None
             ],
             cellLevel=test.cell_level,
             columnType=test.column_type,
@@ -172,12 +176,12 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
         elif arg.model is not None:
             arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
         elif arg.slicingFunction is not None:
-            arguments[arg.name] = SlicingFunction.download(arg.slicingFunction.id, ml_worker.client, None)(
-                **parse_function_arguments(ml_worker, arg.args)
-            )
+            arguments[arg.name] = SlicingFunction.download(
+                arg.slicingFunction.id, ml_worker.client, arg.slicingFunction.project_key
+            )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
-                arg.transformationFunction.id, ml_worker.client, None
+                arg.transformationFunction.id, ml_worker.client, arg.transformationFunction.project_key
             )(**parse_function_arguments(ml_worker, arg.args))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
@@ -238,7 +242,6 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
 
 
 def do_run_adhoc_test(client, arguments, test, debug_info=None):
-
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
     test_result = test.get_builder()(**arguments).execute()
     if test_result.output_df is not None:  # i.e. if debug is True and test has failed

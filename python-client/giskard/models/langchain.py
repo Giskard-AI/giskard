@@ -3,7 +3,7 @@ from typing import Any, Callable, Iterable, Optional
 import mlflow
 import pandas as pd
 
-from giskard.core.core import ModelType, SupportedModelTypes
+from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import MLFlowSerializableModel
 
@@ -11,25 +11,31 @@ from giskard.models.base import MLFlowSerializableModel
 class LangchainModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: SupportedModelTypes,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ) -> None:
         assert (
-                model_type == SupportedModelTypes.TEXT_GENERATION
+            model_type == SupportedModelTypes.TEXT_GENERATION
         ), "LangchainModel only support text_generation ModelType"
+
+        from langchain import LLMChain
 
         super().__init__(
             model=model,
             model_type=model_type,
             name=name,
+            description=str(model.prompt.dict())
+            if description is None and isinstance(model, LLMChain)
+            else description,
             data_preprocessing_function=data_preprocessing_function,
             model_postprocessing_function=model_postprocessing_function,
             feature_names=feature_names,

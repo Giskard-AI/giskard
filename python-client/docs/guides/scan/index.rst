@@ -40,14 +40,14 @@ To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset
 
     # Replace this with your own data & model creation.
     df = giskard.demo.titanic_df()
-    data_preprocessor, clf = giskard.demo.titanic_pipeline()
+    demo_data_processing_function, demo_sklearn_model = giskard.demo.titanic_pipeline()
 
     # Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
     giskard_dataset = giskard.Dataset(
         df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
         target="Survived",  # Ground truth variable
         name="Titanic dataset", # Optional
-        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # Optional, but is a MUST if available. Inferred automatically if not.
+        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
     )
 
     # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
@@ -55,14 +55,14 @@ To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset
     # for classification, regression & text generation.
     def prediction_function(df):
         # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-        preprocessed_df = data_preprocessor(df)
-        return clf.predict_proba(preprocessed_df)
+        preprocessed_df = demo_data_processing_function(df)
+        return demo_sklearn_model.predict_proba(preprocessed_df)
 
     giskard_model = giskard.Model(
         model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
         model_type="classification",  # Either regression, classification or text_generation.
         name="Titanic model",  # Optional
-        classification_labels=clf.classes_,  # Their order MUST be identical to the prediction_function's output order
+        classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
         feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
         # classification_threshold=0.5,  # Default: 0.5
     )
@@ -132,7 +132,19 @@ You can then upload the test suite to the local Giskard server. This will enable
 
     # Upload to the current project ✉️
     test_suite.upload(client, "my_project")
-    
+
+.. warning:: You may need another token (SPACE_TOKEN) in order to upload your test suite to a private Space on Hugging Face Spaces. To create your Giskard Client, please use the following code instead:
+
+    .. code-block:: python
+
+        token = "API_TOKEN"  # Find it in Settings in your Giskard Hugging Face Space instance
+        hf_token = "SPACE_TOKEN"  # Find it in Upload instructions in your Giskard Hugging Face Space instance
+        client = GiskardClient(
+            url="https://huggingface.co/spaces/<user-id>/<space-id>",  # URL of the Space
+            token=token,
+            hf_token=hf_token,
+        )
+
 For more information on uploading to your local Giskard server, go to the `Upload an object to the Giskard server <../../guides/upload/index.md>`_ page.
 
 .. note::

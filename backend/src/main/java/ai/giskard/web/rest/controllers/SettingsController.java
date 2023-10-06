@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -96,10 +95,9 @@ public class SettingsController {
                 .buildCommitTime(buildCommitTime)
                 .planCode(currentLicense.getPlanCode())
                 .planName(currentLicense.getPlanName())
-                .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
-                .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
-                .hfSpaceId(GeneralSettingsService.hfSpaceId)
-                .isRunningOnHfSpaces(GeneralSettingsService.isRunningInHFSpaces)
+                .hfSpaceId(GeneralSettingsService.HF_SPACE_ID)
+                .isRunningOnHfSpaces(GeneralSettingsService.IS_RUNNING_IN_HFSPACES)
+                .isDemoHfSpace(GeneralSettingsService.IS_RUNNING_IN_DEMO_HF_SPACES)
                 .roles(roles)
                 .build())
             .user(userDTO)
@@ -111,8 +109,6 @@ public class SettingsController {
         String currentUser = SecurityUtils.getCurrentAuthenticatedUserLogin();
 
         return MLWorkerConnectionInfoDTO.builder()
-            .externalMlWorkerEntrypointHost(applicationProperties.getExternalMlWorkerEntrypointHost())
-            .externalMlWorkerEntrypointPort(applicationProperties.getExternalMlWorkerEntrypointPort())
             .instanceId(settingsService.getSettings().getInstanceId())
             .serverVersion(buildVersion)
             .user(currentUser)
@@ -121,7 +117,7 @@ public class SettingsController {
     }
 
     @GetMapping("/api/v2/settings/license")
-    public LicenseDTO getLicense() throws IOException {
+    public LicenseDTO getLicense() {
         LicenseDTO.LicenseDTOBuilder dtoBuilder = LicenseDTO.builder();
         License currentLicense = licenseService.getCurrentLicense();
 

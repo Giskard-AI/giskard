@@ -42,10 +42,10 @@ public class AppConfigDTO {
         private String buildCommitId;
         private Instant buildCommitTime;
         private GeneralSettings generalSettings;
-        private int externalMlWorkerEntrypointPort;
-        private String externalMlWorkerEntrypointHost;
         private String hfSpaceId;
         @JsonProperty(value = "isRunningOnHfSpaces")
         private boolean isRunningOnHfSpaces;
+        @JsonProperty(value = "isDemoHfSpace")
+        private boolean isDemoHfSpace;
     }
 }

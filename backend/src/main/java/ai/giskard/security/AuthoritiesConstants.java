@@ -23,8 +23,6 @@ public final class AuthoritiesConstants {
         ADMIN, "Admin"
     );
 
-    public static final String[] AUTHORITIES = AUTHORITY_NAMES.keySet().toArray(new String[0]);
-
     private AuthoritiesConstants() {
     }
 }

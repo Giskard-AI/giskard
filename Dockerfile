@@ -21,18 +21,20 @@ WORKDIR /app
 COPY python-client python-client
 COPY frontend frontend
 COPY backend backend
-COPY common common
 COPY gradle gradle
 # Copying .git to make gradle-git-properties gradle plugin work
 COPY .git .git
 
 COPY build.gradle.kts gradle.properties gradlew settings.gradle.kts ./
 
-RUN ./gradlew clean install -Pprod --parallel --info --stacktrace
+RUN ./gradlew clean -Pprod --parallel --info --stacktrace
 RUN ./gradlew :backend:package -Pprod --parallel --info --stacktrace
 RUN ./gradlew :frontend:package -Pprod --parallel --info --stacktrace
-RUN ./gradlew :python-client:package -Pprod --parallel --info --stacktrace
-
+RUN pip install pdm==2.8.2 urllib3==1.26.15 certifi==2023.7.22 && \
+    cd /app/python-client && \
+    pdm install --prod -G:all && \
+    pdm build && \
+    cd /app
 
 # Create an environment and install giskard wheel. Some dependencies may require gcc which is only installed in build
 # stage, but not in the production one
@@ -71,6 +73,8 @@ COPY --from=build /app/python-client/dist $GSK_DIST_PATH/python-client
 COPY --from=build /app/python-client/.venv-prod $VENV_PATH
 COPY --from=build /app/backend/build/libs/backend*.jar $GSK_DIST_PATH/backend/giskard.jar
 COPY --from=build /app/frontend/dist $GSK_DIST_PATH/frontend/dist
+COPY scripts/file-guard.sh $GSK_DIST_PATH/file-guard.sh
+COPY scripts/start-*.sh $GSK_DIST_PATH/
 
 COPY supervisord.conf ./
 COPY packaging/nginx.conf.template $GSK_DIST_PATH/frontend/

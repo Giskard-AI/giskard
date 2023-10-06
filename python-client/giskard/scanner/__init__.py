@@ -3,31 +3,17 @@ from typing import Optional
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from .logger import logger
-from giskard.core.model_validation import ValidationFlags
 from .scanner import Scanner
-
-_default_detectors = [
-    ".performance.performance_bias_detector",
-    ".robustness.text_perturbation_detector",
-    ".robustness.ethical_bias_detector",
-    ".data_leakage.data_leakage_detector",
-    ".stochasticity.stochasticity_detector",
-    ".calibration.overconfidence_detector",
-    ".calibration.underconfidence_detector",
-    ".correlation.spurious_correlation_detector",
-    ".llm.toxicity_detector",
-    ".llm.harmfulness_detector",
-    ".llm.gender_stereotype_detector",
-    ".llm.minority_stereotype_detector",
-    ".llm.control_chars_injection_detector",
-]
-
 
 def _register_default_detectors():
     import importlib
+    from pathlib import Path
 
-    for _default_detector in _default_detectors:
-        importlib.import_module(_default_detector, package=__package__)
+    root = Path(__file__).parent
+    modules = ["." + str(p.relative_to(root).with_suffix("")).replace("/", ".") for p in root.glob("**/*_detector.py")]
+
+    for detector_module in modules:
+        importlib.import_module(detector_module, package=__package__)
 
 
 _register_default_detectors()
@@ -40,7 +26,6 @@ def scan(
     only=None,
     verbose=True,
     raise_exceptions=False,
-    validation_flags: Optional[ValidationFlags] = ValidationFlags(),
 ):
     """
     Scan a model with a dataset.
@@ -57,14 +42,9 @@ def scan(
         raise_exceptions (bool):
             Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
-        validation_flags (ValidationFlags):
-            Collection of flags to activate/deactivate model_validation flags
-
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(
-        model, dataset, verbose=verbose, raise_exceptions=raise_exceptions, validation_flags=validation_flags
-    )
+    return scanner.analyze(model, dataset, verbose=verbose, raise_exceptions=raise_exceptions)
 
 
 __all__ = ["scan", "Scanner", "logger"]

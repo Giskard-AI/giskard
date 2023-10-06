@@ -16,15 +16,16 @@ import ai.giskard.utils.FunctionArguments;
 import ai.giskard.web.dto.*;
 import ai.giskard.web.dto.mapper.GiskardMapper;
 import ai.giskard.web.dto.ml.DatasetDTO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -67,6 +68,14 @@ public class DatasetsController {
     public DatasetDTO getDatasetMeta(@PathVariable("projectKey") @NotNull String projectKey,
                                      @PathVariable("datasetId") @NotNull UUID datasetId) {
         return giskardMapper.datasetToDatasetDTO(datasetRepository.getMandatoryById(datasetId));
+    }
+
+    @PostMapping("project/{projectKey}/datasets/{datasetId}/rows")
+    @PreAuthorize("@permissionEvaluator.canWriteProjectKey(#projectKey)")
+    public DatasetDTO addRow(@PathVariable("projectKey") @NotNull String projectKey,
+                             @PathVariable("datasetId") @NotNull UUID datasetId,
+                             @Valid @RequestBody @NotNull Map<@NotNull String, @NotNull String> row) {
+        throw new NotImplementedException("This feature is not available ATM");
     }
 
 
@@ -159,8 +168,9 @@ public class DatasetsController {
                 MLWorkerWSArtifactRefDTO artifactRef = MLWorkerWSArtifactRefDTO.builder()
                     .id(callable.getUuid().toString())
                     .build();
-                if (callable.getProjectKey() != null) {
-                    artifactRef.setProjectKey(callable.getProjectKey());
+
+                if (!callable.getProjects().isEmpty()) {
+                    artifactRef.setProjectKey(project.getKey());
                 }
 
                 if (callable instanceof SlicingFunction) {

@@ -89,6 +89,7 @@ class SavableMeta:
 @dataclass
 class ModelMeta:
     name: Optional[str]
+    description: Optional[str]
     model_type: SupportedModelTypes
     feature_names: List[str]
     classification_labels: List[str]
@@ -148,6 +149,7 @@ class CallableMeta(SavableMeta, ABC):
         self.module_doc = None
         self.full_name = None
         self.args = None
+
         if callable_obj:
             from giskard.ml_worker.testing.registry.registry import get_object_uuid
 

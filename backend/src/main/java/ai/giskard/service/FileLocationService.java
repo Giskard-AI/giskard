@@ -69,6 +69,10 @@ public class FileLocationService {
         return giskardHome().resolve(projectHome(projectKey));
     }
 
+    public Path globalPath() {
+        return giskardHome().resolve(projectHome("global"));
+    }
+
     public Path resolvedTmpPath() {
         return giskardHome().resolve("tmp");
     }

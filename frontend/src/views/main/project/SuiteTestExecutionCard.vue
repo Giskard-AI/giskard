@@ -2,7 +2,7 @@
   <div class='test-container'>
     <div class='d-flex flex-row flex-wrap align-center test-card-header'>
       <span class='test-name text-black'>
-          Test {{ suiteTest.test.displayName ?? suiteTest.test.name }}
+          Test {{ suiteTest.displayName ?? suiteTest.test.displayName ?? suiteTest.test.name }}
           <span v-if='transformationFunction'> to {{
               transformationFunction.displayName ?? transformationFunction.name
             }}</span>
@@ -84,21 +84,23 @@
 </template>
 
 <script lang='ts' setup>
-import { SuiteTestDTO, SuiteTestExecutionDTO } from '@/generated-sources';
-import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useCatalogStore } from '@/stores/catalog';
-import { $vfm } from 'vue-final-modal';
+import {SuiteTestExecutionDTO} from '@/generated-sources';
+import {computed, ref} from 'vue';
+import {storeToRefs} from 'pinia';
+import {useCatalogStore} from '@/stores/catalog';
+import {$vfm} from 'vue-final-modal';
 import SuiteTestInfoModal from '@/views/main/project/modals/SuiteTestInfoModal.vue';
-import { useTestSuiteStore } from '@/stores/test-suite';
-import { useDebuggingSessionsStore } from '@/stores/debugging-sessions';
+import {useTestSuiteStore} from '@/stores/test-suite';
+import {useDebuggingSessionsStore} from '@/stores/debugging-sessions';
 import ExecutionLogsModal from '@/views/main/project/modals/ExecutionLogsModal.vue';
 import mixpanel from 'mixpanel-browser';
-import { TEST_RESULT_DATA } from '@/utils/tests.utils';
-import { api } from '@/api';
+import {TEST_RESULT_DATA} from '@/utils/tests.utils';
+import {api} from '@/api';
 import router from '@/router';
 import ModelSelector from '@/views/main/utils/ModelSelector.vue';
-import { chain } from 'lodash';
+import {chain} from 'lodash';
+import {$tags} from "@/utils/nametags.utils";
+import {SuiteTestDTO} from "@/generated/client";
 
 const {slicingFunctionsByUuid, transformationFunctionsByUuid} = storeToRefs(useCatalogStore());
 const {models, datasets} = storeToRefs(useTestSuiteStore());
@@ -123,7 +125,10 @@ const params = computed(() => props.isPastExecution && props.result
         .filter(input => !input.isAlias)
         .reduce((r, input) => ({...r, [input.name]: input.value}), {}));
 
-function mapValue(value: string, type: string): string {
+function mapValue(value: string, type: string): string | null {
+  if (value == null) {
+    return null;
+  }
   if (type === 'SlicingFunction') {
     const slicingFunction = slicingFunctionsByUuid.value[value];
     return slicingFunction?.displayName ?? slicingFunction?.name ?? value;
@@ -135,7 +140,7 @@ function mapValue(value: string, type: string): string {
     return model.name ?? value;
   } else if (type === 'Dataset') {
     const dataset = datasets.value[value];
-    return dataset.name ?? value;
+    return $tags(dataset.name) ?? value;
   }
   return value;
 }

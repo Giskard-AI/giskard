@@ -1,5 +1,6 @@
 <template>
-  <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content" v-on="$listeners">
+  <vue-final-modal v-slot="{ close }" v-bind="$attrs" classes="modal-container" content-class="modal-content"
+                   v-on="$listeners">
     <v-form @submit.prevent="">
       <ValidationObserver ref="observer" v-slot="{ invalid }">
         <v-card class="modal-card">
@@ -11,11 +12,13 @@
             <v-row>
               <v-col cols=12>
                 <ValidationProvider name="Test suite" mode="eager" rules="required" v-slot="{ errors }">
-                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'" :item-value="'id'" dense hide-details>
+                  <v-select outlined label="Test suite" v-model="selectedSuite" :items="testSuites" :item-text="'name'"
+                            :item-value="'id'" dense hide-details>
                     <template v-slot:append-item>
                       <v-divider></v-divider>
                       <v-list-item link @click="createTestSuite" class="pt-1">
-                        <v-list-item-avatar color="grey lighten-4" class="my-1 mr-2" style="height: 25px;min-width: 25px;width: 25px;">
+                        <v-list-item-avatar color="grey lighten-4" class="my-1 mr-2"
+                                            style="height: 25px;min-width: 25px;width: 25px;">
                           <v-icon small>
                             mdi-plus
                           </v-icon>
@@ -29,10 +32,13 @@
                     </template>
                   </v-select>
                 </ValidationProvider>
-                <p class="text-h6 pt-4">Fixed inputs</p>
-                <p>Specify inputs that will be constant during each execution of the test.<br />
-                  The inputs left blank will have to be provided at test execution time.</p>
-                <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs" :model-value="testInputs" :doc="doc" />
+                <template v-if="!hideFixedInputs">
+                  <p class="text-h6 pt-4">Fixed inputs</p>
+                  <p>Specify inputs that will be constant during each execution of the test.<br/>
+                    The inputs left blank will have to be provided at test execution time.</p>
+                  <SuiteInputListSelector class="pt-4" :editing="true" :project-id="projectId" :inputs="inputs"
+                                          :model-value="testInputs" :doc="doc"/>
+                </template>
               </v-col>
             </v-row>
           </v-card-text>
@@ -53,25 +59,28 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, ref } from 'vue';
-import { api } from '@/api';
-import { FunctionInputDTO, SuiteTestDTO, TestFunctionDTO, TestSuiteDTO } from '@/generated-sources';
+import {computed, onMounted, ref} from 'vue';
+import {api} from '@/api';
+import {TestFunctionDTO, TestSuiteDTO} from '@/generated-sources';
 import SuiteInputListSelector from '@/components/SuiteInputListSelector.vue';
-import { chain } from 'lodash';
-import { useMainStore } from "@/stores/main";
-import { TYPE } from 'vue-toastification';
-import { extractArgumentDocumentation, ParsedDocstring } from "@/utils/python-doc.utils";
+import {chain} from 'lodash';
+import {useMainStore} from "@/stores/main";
+import {TYPE} from 'vue-toastification';
+import {extractArgumentDocumentation, ParsedDocstring} from "@/utils/python-doc.utils";
 import mixpanel from 'mixpanel-browser';
-import { anonymize } from "@/utils";
-import { useRouter } from 'vue-router/composables';
+import {anonymize} from "@/utils";
+import {useRouter} from 'vue-router/composables';
+import {FunctionInputDTO, SuiteTestDTO} from "@/generated/client";
+import {openapi} from "@/api-v2";
 
 const router = useRouter();
 
-const { projectId, test, suiteId, testArguments } = defineProps<{
+const {projectId, test, suiteId, testArguments} = defineProps<{
   projectId: number,
   test: TestFunctionDTO,
   suiteId?: number,
-  testArguments: { [name: string]: FunctionInputDTO }
+  testArguments: { [name: string]: FunctionInputDTO },
+  hideFixedInputs?: boolean
 }>();
 
 const dialog = ref<boolean>(false);
@@ -83,7 +92,7 @@ const doc = ref<ParsedDocstring | null>(null);
 async function loadData() {
   doc.value = extractArgumentDocumentation(test)
   testSuites.value = await api.getTestSuites(projectId);
-  selectedSuite.value = testSuites.value.find(({ id }) => id === suiteId)?.id ?? null
+  selectedSuite.value = testSuites.value.find(({id}) => id === suiteId)?.id ?? null
   testInputs.value = test.args.reduce((result, arg) => {
     result[arg.name] = testArguments[arg.name] ?? {
       name: arg.name,
@@ -98,10 +107,10 @@ async function loadData() {
 
 
 const inputs = computed(() =>
-  chain(test.args)
-    .keyBy('name')
-    .mapValues('type')
-    .value()
+    chain(test.args)
+        .keyBy('name')
+        .mapValues('type')
+        .value()
 );
 
 const mainStore = useMainStore();
@@ -114,18 +123,21 @@ async function submit(close) {
   })
 
   const suiteTest: SuiteTestDTO = {
-    test,
     testUuid: test.uuid,
     functionInputs: chain(testInputs.value)
-      .omitBy(({ value }) => value === null
-        || (typeof value === 'string' && value.trim() === '')
-        || (typeof value === 'number' && Number.isNaN(value)))
-      .value() as { [name: string]: FunctionInputDTO }
+        .omitBy(({value}) => value === null
+            || (typeof value === 'string' && value.trim() === '')
+            || (typeof value === 'number' && Number.isNaN(value)))
+        .value() as { [name: string]: FunctionInputDTO }
   }
 
-  await api.addTestToSuite(projectId, selectedSuite.value!, suiteTest);
+  await openapi.testSuite.addTestToSuite({
+    projectId,
+    suiteId: selectedSuite.value!,
+    suiteTestDTO: suiteTest
+  });
   mainStore.addNotification({
-    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({ id }) => id === selectedSuite.value)!.name}'`,
+    content: `'${test.displayName ?? test.name}' has been added to '${testSuites.value.find(({id}) => id === selectedSuite.value)!.name}'`,
     color: TYPE.SUCCESS
   });
 
@@ -142,12 +154,12 @@ async function submit(close) {
   close();
 
   mixpanel.track('Add test to test suite',
-    {
-      suiteId: selectedSuite.value,
-      projectId: projectId,
-      testUuid: test.uuid,
-      testName: test.displayName ?? test.name
-    });
+      {
+        suiteId: selectedSuite.value,
+        projectId: projectId,
+        testUuid: test.uuid,
+        testName: test.displayName ?? test.name
+      });
 }
 
 async function createTestSuite() {
@@ -163,11 +175,11 @@ async function createTestSuite() {
   });
 
   mixpanel.track('Create test suite',
-    {
-      id: suite,
-      projectKey: project.key,
-      screen: 'Test catalog (Add test to suite modal)'
-    });
+      {
+        id: suite,
+        projectKey: project.key,
+        screen: 'Test catalog (Add test to suite modal)'
+      });
 
   await loadData();
 

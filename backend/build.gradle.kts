@@ -1,5 +1,12 @@
+import org.gradle.api.tasks.testing.TestResult.ResultType
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.io.FileWriter
 import java.util.*
+
 
 group = "ai.giskard"
 description = "Giskard main java backend"
@@ -29,6 +36,8 @@ plugins {
     id("io.freefair.lombok") version "6.5.0.3"
     id("org.liquibase.gradle") version "2.1.1"
     id("com.github.andygoossens.gradle-modernizer-plugin") version "1.6.2"
+    id("org.openapi.generator") version "7.0.0"
+    id("org.springdoc.openapi-gradle-plugin") version "1.7.0"
 }
 
 
@@ -134,6 +143,22 @@ gitProperties {
     keys = listOf("git.branch", "git.commit.id.abbrev", "git.commit.id.describe", "git.commit.time")
 }
 
+openApi {
+    apiDocsUrl.set("http://localhost:11337/v3/api-docs")
+    outputDir.set(file("$buildDir/docs"))
+    outputFileName.set("openapi.json")
+    waitTimeInSeconds.set(60)
+    customBootRun {
+        args.set(
+            listOf(
+                "--spring.profiles.active=dev",
+                "--server.port=11337",
+                "--giskard.home=" + outputDir.dir("giskard-home-"+ Instant.now().toEpochMilli()).get().toString(),
+            )
+        )
+    }
+}
+
 val liquibaseHibernate6Version: String by project.extra.properties
 val jaxbRuntimeVersion: String by project.extra.properties
 val archunitJunit5Version: String by project.extra.properties
@@ -150,6 +175,7 @@ dependencies {
     compileOnly("org.mapstruct:mapstruct:${mapstructVersion}")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+    implementation("com.mixpanel:mixpanel-java:1.5.2")
     implementation("com.fasterxml.jackson.core:jackson-annotations")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-hibernate6")
@@ -223,6 +249,10 @@ tasks {
         finalizedBy(jacocoTestReport)
     }
 
+    build {
+        finalizedBy("generateWebClient")
+    }
+
     jacocoTestReport {
         dependsOn(test)
     }
@@ -244,9 +274,12 @@ tasks {
     test {
         exclude("**/*IT*", "**/*IntTest*")
         testLogging {
-            events.add(org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED)
-            events.add(org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED)
+            events = setOf(
+                TestLogEvent.FAILED,
+                TestLogEvent.SKIPPED
+            )
         }
+
         jvmArgs?.add("-Djava.security.egd=file:/dev/./urandom -Xmx256m")
         reports.html.required.set(false)
     }
@@ -259,17 +292,70 @@ tasks {
         description = "Execute integration tests."
         group = "verification"
         include("**/*IT*", "**/*IntTest*")
+
         testLogging {
             events = setOf(
-                org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-                org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+                TestLogEvent.FAILED,
+                TestLogEvent.SKIPPED
             )
         }
+        // Improvement ? 
+        // https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time#answer-36130467
+        // https://gist.github.com/serpro69/c987a4016fb59f6ca2ff9f8d8464561d
+
         jvmArgs?.add("-Djava.security.egd=file:/dev/./urandom -Xmx256m")
         if (project.hasProperty("testcontainers")) {
             environment = mapOf("spring.profiles.active" to "testcontainers")
         }
         reports.html.required.set(false)
+
+        beforeSuite(KotlinClosure0({  ->
+            val report_path = System.getenv("GITHUB_STEP_SUMMARY") ?: "local_report.md"
+            val file = File(report_path)
+            if(file.exists()) {
+                file.delete();
+            }
+        }))
+
+        afterTest(KotlinClosure2({ testDescriptor: TestDescriptor, result: TestResult ->
+            // https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/testing/TestResult.html$
+            // https://docs.gradle.org/current/javadoc/org/gradle/api/tasks/testing/TestFailure.html
+            if (result.getResultType() == ResultType.FAILURE) {
+                val report_path = System.getenv("GITHUB_STEP_SUMMARY") ?: "local_report.md"
+                var report = File(report_path)
+                var test_name = testDescriptor.getName()
+                report.appendText("\n\n#### ${testDescriptor}\n\n")
+
+                for (failure in result.getFailures()) {
+                    report.appendText("<details>\n")
+                    report.appendText("<summary>${failure.getDetails().getMessage() ?: ""}</summary>\n\n")
+                    report.appendText("\n\n```java\n")
+                    report.appendText(failure.getDetails().getStacktrace() ?: "")
+                    report.appendText("\n```\n")
+                    report.appendText("\n</details>\n\n")
+
+                }
+            }
+        }))
+
+        afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+            if (desc.parent == null) { // will match the outermost suite
+                val report_path = System.getenv("GITHUB_STEP_SUMMARY") ?: "local_report.md"
+                val report_content = if (File(report_path).exists()) File(report_path).readText() else ""
+                FileWriter(report_path).use {
+                    it.write("### Gradle Test report\n")
+                    it.write("Test results: ${result.resultType}\n")
+                    it.write("\n| Status |Count |")
+                    it.write("\n| :---: | :---: |")
+                    it.write("\n| Successful | ${result.successfulTestCount} |")
+                    it.write("\n| Failed | ${result.failedTestCount} |")
+                    it.write("\n| Skipped | ${result.skippedTestCount} |")
+                    it.write("\n| Skipped | ${result.skippedTestCount} |\n\n")
+                    it.write(report_content)
+                }
+                                
+            }
+        }))
     }
 
     create<TestReport>("testReport") {
@@ -283,6 +369,9 @@ tasks {
 
     create<Delete>("distClean") {
         delete(buildDir)
+    }
+    create<Delete>("cleanOpenApiDocs") {
+        delete(file("$buildDir/docs/openapi.json"))
     }
     create<Delete>("deleteLiquibaseH2DB") {
         delete(liquibaseH2db)
@@ -327,14 +416,14 @@ tasks {
     register("package") {
         dependsOn("bootJar")
     }
+
+    create<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("generateWebClient") {
+        dependsOn("compileJava", "cleanOpenApiDocs", "generateOpenApiDocs")
+
+        generatorName.set("typescript-fetch")
+        inputSpec.set(file("$buildDir/docs/openapi.json").toString())
+        outputDir.set("$buildDir/../../frontend/src/generated/client")
+    }
 }
 
 defaultTasks("bootRun")
-
-
-
-
-
-
-
-

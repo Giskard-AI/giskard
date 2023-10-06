@@ -18,6 +18,7 @@ public class License {
     private List<String> features;
 
     private Integer projectLimit;
+    private Integer modelPerProjectLimit;
     private Integer userLimit;
     private Instant expiresOn;
 

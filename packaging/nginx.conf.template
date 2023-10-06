@@ -1,4 +1,4 @@
-error_log stderr info;
+error_log stderr notice;
 pid "${GSK_HOME}/run/nginx/nginx.pid";
 daemon off;
 working_directory "${GSK_HOME}/run/nginx";
@@ -43,6 +43,15 @@ http {
         }
 
         location /api/v2 {
+            client_max_body_size   16G;
+            proxy_pass http://localhost:9000;
+
+            proxy_connect_timeout              360000s;
+            proxy_send_timeout                 360000s;
+            proxy_read_timeout                 360000s;
+        }
+
+        location /public-api {
             client_max_body_size   16G;
             proxy_pass http://localhost:9000;
 

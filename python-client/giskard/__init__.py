@@ -1,7 +1,7 @@
 # type: ignore[attr-defined]
 """Inspect your AI models visually, find bugs, give feedback 🕵️‍♀️ 💬"""
 
-import sys
+from importlib import metadata as importlib_metadata
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.project import Project
@@ -17,16 +17,14 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.utils.logging import configure_logging
 from giskard.models.automodel import Model
 from giskard.models.model_explanation import explain_with_shap
+from giskard import push
 from . import demo
+from .llm.config import llm_config
 from .ml_worker.utils.network import check_latest_giskard_version
 from .scanner import scan
 from .utils.analytics_collector import analytics
 
 configure_logging()
-if sys.version_info >= (3, 8):
-    from importlib import metadata as importlib_metadata
-else:
-    import importlib_metadata
 
 
 def get_version() -> str:
@@ -46,6 +44,7 @@ __all__ = [
     "Dataset",
     "GiskardClient",
     "test",
+    "push",
     "Model",
     "Suite",
     "slicing_function",
@@ -58,4 +57,5 @@ __all__ = [
     "TestResult",
     "GiskardTest",
     "demo",
+    "llm_config",
 ]

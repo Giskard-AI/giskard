@@ -4,6 +4,7 @@ import ai.giskard.config.ApplicationProperties;
 import ai.giskard.service.FileLocationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters;
 import org.bouncycastle.crypto.signers.Ed25519Signer;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
@@ -36,7 +36,7 @@ public class LicenseService {
      * Also initialize default license (for now)
      */
     @PostConstruct
-    public void init() throws IOException {
+    public void init() {
         try {
             this.currentLicense = readLicenseFromFile();
         } catch (LicenseException e) {
@@ -44,10 +44,14 @@ public class LicenseService {
         }
     }
 
-    public synchronized License readLicenseFromFile() throws IOException {
+    public synchronized License readLicenseFromFile() {
         if (Files.exists(fileLocationService.licensePath())) {
-            String licenseFile = Files.readString(fileLocationService.licensePath());
-            return readLicense(licenseFile);
+            try {
+                String licenseFile = Files.readString(fileLocationService.licensePath());
+                return readLicense(licenseFile);
+            } catch (IOException e) {
+                log.warn("Invalid license file", e);
+            }
         }
         return new License();
     }

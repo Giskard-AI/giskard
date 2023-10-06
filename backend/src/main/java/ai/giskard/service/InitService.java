@@ -12,6 +12,7 @@ import ai.giskard.repository.ml.ModelRepository;
 import ai.giskard.security.AuthoritiesConstants;
 import ai.giskard.service.ee.FeatureFlag;
 import ai.giskard.service.ee.LicenseService;
+import ai.giskard.utils.GalleryUnlockIndicator;
 import ai.giskard.web.dto.DataUploadParamsDTO;
 import ai.giskard.web.dto.ModelUploadParamsDTO;
 import ai.giskard.web.dto.mapper.GiskardMapper;
@@ -74,8 +75,9 @@ public class InitService {
     private final GeneralSettingsService generalSettingsService;
     private final FileLocationService fileLocationService;
     private final LicenseService licenseService;
+    private final ApiKeyService apiKeyService;
     private Map<String, ProjectConfig> projects;
-    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITIES).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
+    String[] mockKeys = stream(AuthoritiesConstants.AUTHORITY_NAMES.keySet().toArray(new String[0])).map(key -> key.replace("ROLE_", "")).toArray(String[]::new);
     private final Map<String, String> users = stream(mockKeys).collect(Collectors.toMap(String::toLowerCase, String::toLowerCase));
     private final DatasetRepository datasetRepository;
     private final ModelRepository modelRepository;
@@ -143,6 +145,10 @@ public class InitService {
         return projects.entrySet().stream().filter(e -> e.getValue().creator.equals(login)).findFirst().orElseThrow().getValue().name;
     }
 
+    static final GalleryUnlockIndicator lockIndicator = new GalleryUnlockIndicator();
+    public static boolean isUnlocked() { return lockIndicator.isUnlocked(); }
+    public static void setUnlocked(boolean unlocked) { lockIndicator.setUnlocked(unlocked); }
+
     /**
      * Initializing first authorities, mock users, and mock projects
      */
@@ -150,12 +156,15 @@ public class InitService {
     public void init() {
         projects = createProjectConfigMap();
         generalSettingsService.saveIfNotExists(new GeneralSettings());
+        // change readonly
         initAuthorities();
         initUsers();
+        apiKeyService.initDefaultApiKey();
         List<String> profiles = Arrays.asList(env.getActiveProfiles());
         if (!profiles.contains("prod") && !profiles.contains("dev")) {
             initProjects();
         }
+        lockIndicator.setUnlocked(false);
     }
 
     /**
@@ -183,7 +192,7 @@ public class InitService {
      * Initiating authorities with AuthoritiesConstants values
      */
     public void initAuthorities() {
-        stream(AuthoritiesConstants.AUTHORITIES).forEach(authName -> {
+        stream(AuthoritiesConstants.AUTHORITY_NAMES.keySet().toArray(new String[0])).forEach(authName -> {
             if (roleRepository.findByName(authName).isPresent()) {
                 logger.info("Authority {} already exists", authName);
                 return;

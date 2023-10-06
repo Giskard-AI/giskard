@@ -18,6 +18,10 @@ export const saveLocalHFToken = (token: string) => localStorage.setItem('hf_toke
 
 export const removeLocalHFToken = () => localStorage.removeItem('hf_token');
 
+export const isFirstVisited = () => localStorage.getItem('visited') != "true";
+
+export const setVisited = () => localStorage.setItem('visited', "true");
+
 export const getUserFullDisplayName = (user: UserDTO): string => {
   return user.displayName ? `${user.displayName} (${user.user_id})` : user.user_id;
 };

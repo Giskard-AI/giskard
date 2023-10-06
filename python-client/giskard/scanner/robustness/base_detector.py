@@ -1,21 +1,20 @@
 from abc import abstractmethod
+from typing import Optional, Sequence
+
 import numpy as np
 import pandas as pd
-from typing import Sequence, Optional
-
-from ..llm.utils import LLMImportError
 
 from .text_transformations import TextTransformation
-from ..issues import Issue
+from ..issues import Issue, IssueLevel, Robustness
+from ..llm.utils import LLMImportError
+from ..logger import logger
+from ..registry import Detector
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from ..registry import Detector
-from .issues import RobustnessIssue, RobustnessIssueInfo
-from ..logger import logger
 
 
 class BaseTextPerturbationDetector(Detector):
-    _issue_cls = RobustnessIssue
+    _issue_group = Robustness
 
     def __init__(
         self,
@@ -29,7 +28,7 @@ class BaseTextPerturbationDetector(Detector):
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [
             col
@@ -63,9 +62,11 @@ class BaseTextPerturbationDetector(Detector):
         transformation: TextTransformation,
         features: Sequence[str],
     ) -> Sequence[Issue]:
-        num_samples = self.num_samples or _get_default_num_samples(model)
-        output_sensitivity = self.output_sensitivity or _get_default_output_sensitivity(model)
-        threshold = self.threshold or _get_default_threshold(model)
+        num_samples = self.num_samples if self.num_samples is not None else _get_default_num_samples(model)
+        output_sensitivity = (
+            self.output_sensitivity if self.output_sensitivity is not None else _get_default_output_sensitivity(model)
+        )
+        threshold = self.threshold if self.threshold is not None else _get_default_threshold(model)
 
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
@@ -123,32 +124,69 @@ class BaseTextPerturbationDetector(Detector):
             else:
                 raise NotImplementedError("Only classification, regression, or text generation models are supported.")
 
-            pass_ratio = passed.mean()
-            fail_ratio = 1 - pass_ratio
+            pass_rate = passed.mean()
+            fail_rate = 1 - pass_rate
             logger.info(
-                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_ratio:.3f}"
+                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
             )
 
-            if fail_ratio >= threshold:
-                info = RobustnessIssueInfo(
-                    feature=feature,
-                    fail_ratio=fail_ratio,
-                    transformation_fn=transformation_fn,
-                    perturbed_data_slice=perturbed_data,
-                    perturbed_data_slice_predictions=perturbed_pred,
-                    fail_data_idx=original_data.df[~passed].index.values,
-                    threshold=threshold,
-                    output_sensitivity=output_sensitivity,
-                )
-                issue = self._issue_cls(
+            if fail_rate >= threshold:
+                # Severity
+                issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
+
+                # Prepare examples dataframe
+                examples = original_data.df.loc[~passed, (feature,)].copy()
+                examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
+                examples["Original prediction"] = original_pred.prediction[~passed]
+                examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
+
+                # Description
+                desc = "When we perturb the content of feature “{feature}” with the transformation “{transformation_fn}” (see examples below), your model changes its prediction in about {fail_rate_percent}% of the cases. We expected the predictions not to be affected by this transformation."
+
+                issue = Issue(
                     model,
                     dataset,
-                    level="major" if fail_ratio >= 2 * threshold else "medium",
-                    info=info,
+                    group=self._issue_group,
+                    level=issue_level,
+                    transformation_fn=transformation_fn,
+                    description=desc,
+                    meta={
+                        "feature": feature,
+                        "domain": f"Feature `{feature}`",
+                        "deviation": f"{round(fail_rate * 100, 2)}% of tested samples changed prediction after perturbation",
+                        "fail_rate": fail_rate,
+                        "fail_rate_percent": round(fail_rate * 100, 2),
+                        "metric": "Fail rate",
+                        "metric_value": fail_rate,
+                        "threshold": threshold,
+                        "output_sentitivity": output_sensitivity,
+                        "perturbed_data_slice": perturbed_data,
+                        "perturbed_data_slice_predictions": perturbed_pred,
+                    },
+                    importance=fail_rate,
+                    examples=examples,
+                    tests=_generate_robustness_tests,
                 )
+
                 issues.append(issue)
 
         return issues
+
+
+def _generate_robustness_tests(issue: Issue):
+    from ...testing.tests.metamorphic import test_metamorphic_invariance
+
+    # Only generates a single metamorphic test
+    return {
+        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
+            model=issue.model,
+            dataset=issue.dataset,
+            transformation_function=issue.transformation_fn,
+            slicing_function=None,
+            threshold=1 - issue.meta["threshold"],
+            output_sensitivity=issue.meta["output_sentitivity"],
+        )
+    }
 
 
 def _relative_delta(actual, reference):

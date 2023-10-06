@@ -69,10 +69,10 @@
 </template>
 
 <script setup lang="ts">
-import { Filter, ModelType } from "@/generated-sources";
-import { isClassification } from "@/ml-utils";
-import MultiSelector from "@/views/main/utils/MultiSelector.vue";
-import { computed, onMounted, getCurrentInstance } from "vue";
+import { Filter, ModelType } from '@/generated-sources';
+import { isClassification } from '@/ml-utils';
+import MultiSelector from '@/views/main/utils/MultiSelector.vue';
+import { computed, getCurrentInstance, onMounted } from 'vue';
 
 const instance = getCurrentInstance();
 

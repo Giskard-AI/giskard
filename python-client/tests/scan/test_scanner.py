@@ -1,16 +1,18 @@
+import re
+import warnings
+from unittest import mock
+
 import numpy as np
 import pandas as pd
 import pytest
-import re
-import warnings
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
-from unittest import mock
 
 from giskard import Dataset, GiskardClient, Model
+from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
-from giskard.scanner.result import ScanResult
-from langchain import LLMChain, PromptTemplate
+from giskard.scanner.report import ScanReport
 
 
 @pytest.mark.parametrize(
@@ -51,7 +53,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 
     result = scanner.analyze(model, dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.to_html()
 
     # Do not do below tests for the diabetes regression model.
@@ -67,7 +69,7 @@ def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, 
     german_credit_model.meta.feature_names = None
     result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.has_issues()
 
 
@@ -83,7 +85,7 @@ def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
     result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanResult)
+    assert isinstance(result, ScanReport)
     assert result.has_issues()
     assert result.to_html()
 
@@ -98,16 +100,27 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock(Model)
     model.is_text_generation = True
+    model.meta = ModelMeta(
+        "Model name",
+        "Some meaningful model description",
+        SupportedModelTypes.TEXT_GENERATION,
+        ["query"],
+        [],
+        0,
+        "test",
+        "test",
+    )
     scanner = Scanner()
 
-    with mock.patch("giskard.scanner.llm.utils.load_default_dataset") as load_default_dataset:
+    with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
             pass
-        load_default_dataset.assert_called_once()
+        infer_dataset.assert_called_once()
 
 
+@pytest.mark.skip(reason="Now rely on LLM generated issues")
 @pytest.mark.slow
 def test_generative_model_dataset():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)

@@ -37,6 +37,8 @@ public class SecurityConfiguration {
     private final ApiKeyService apiKeyService;
 
 
+    public static final String GISKARD_API_ENDPOINTS = "/api/**";
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -75,7 +77,7 @@ public class SecurityConfiguration {
                     antMatcher("/management/**")
                 ).hasAuthority(AuthoritiesConstants.ADMIN)
                 .requestMatchers(antMatcher("/public-api/**")).hasAuthority(AuthoritiesConstants.API)
-                .requestMatchers(antMatcher("/api/**")).authenticated()
+                .requestMatchers(antMatcher(GISKARD_API_ENDPOINTS)).authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .apply(securityConfigurerAdapter());

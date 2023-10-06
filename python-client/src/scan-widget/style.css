@@ -30,6 +30,7 @@ table.dataframe {
 
 .dataframe tr {
     border-bottom: 1px solid #555;
+    vertical-align: top;
 }
 
 .dataframe td,
@@ -39,4 +40,12 @@ table.dataframe {
 
 .dataframe th {
     text-align: left !important;
+}
+
+.prose p {
+    @apply my-1;
+}
+
+.prose ul {
+    @apply list-disc ml-4 my-1;
 }

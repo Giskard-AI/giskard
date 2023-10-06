@@ -1,6 +1,6 @@
 <template>
   <v-container fluid v-if="model && dataset" class="vc overflow-x-hidden">
-    <ValidationObserver ref="dataFormObserver" v-slot="{ dirty }">
+    <ValidationObserver ref="dataFormObserver" v-slot="{ changed }">
       <v-row v-if='modelFeatures.length'>
         <v-col cols="12" md="6">
           <v-card outlined>
@@ -8,10 +8,10 @@
             <v-card-title>
               Input Data
               <v-spacer></v-spacer>
-              <v-chip v-show="dirty || isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
+              <v-chip v-show="isInputNotOriginal" small label outlined color="accent" class="mx-1 pa-1">
                 modified
               </v-chip>
-              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'" :disabled="!(dirty || isInputNotOriginal)">reset
+              <v-btn text small @click="resetInput" v-track-click="'Inspection feature reset'" :disabled="!(changed || isInputNotOriginal)">reset
               </v-btn>
               <v-menu left bottom offset-y :close-on-content-click="false">
                 <template v-slot:activator="{ on, attrs }">
@@ -36,26 +36,36 @@
               <div class="caption error--text">{{ dataErrorMsg }}</div>
               <v-form lazy-validation>
                 <div v-for="c in datasetNonTargetColumns" :key="c.name" v-show="featuresToView.includes(c.name)">
-                  <ValidationProvider :name="c.name" v-slot="{ dirty }">
+                  <ValidationProvider :name="c.name" v-slot="{ changed }">
                     <div class="py-1 d-flex" v-if="isFeatureEditable(c.name)">
                       <label class="info--text">{{ c.name }}</label>
                       <input type="number" v-if="c.type === 'numeric'" v-model="inputData[c.name]" class="common-style-input" :class="{
-                        'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                        'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || Number(inputData[c.name]) !== originalData[c.name]
                       }" @change="onValuePerturbation(c)" required />
                       <textarea v-if="c.type === 'text'" v-model="inputData[c.name]" :rows="!inputData[c.name] ? 1 : Math.min(15, parseInt(inputData[c.name].length / 40) + 1)" class="common-style-input" :class="{
-                        'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                        'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || inputData[c.name] !== originalData[c.name]
                       }" @change="onValuePerturbation(c)" required></textarea>
                       <select v-if="c.type === 'category'" v-model="inputData[c.name]" class="common-style-input" :class="{
-                        'is-transformed': !dirty && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
-                        'is-dirty': dirty || inputData[c.name] !== originalData[c.name]
+                        'is-transformed': !changed && transformationModifications.hasOwnProperty(c.name) && inputData[c.name] === transformationModifications[c.name],
+                        'is-changed': changed || inputData[c.name] !== originalData[c.name]
                       }" @change="onValuePerturbation(c)" required>
                         <option v-for="k in c.values" :key="k" :value="k">{{ k }}</option>
                       </select>
                       <div class="d-flex flex-column">
-                        <FeedbackPopover v-if="!isMiniMode" :inputLabel="c.name" :inputValue="inputData[c.name]" :originalValue="originalData[c.name]" :inputType="c.type" @submit="emit(dirty ? 'submitValueVariationFeedback' : 'submitValueFeedback', $event)" />
+                        <FeedbackPopover v-if="!isMiniMode" :inputLabel="c.name" :inputValue="inputData[c.name]" :originalValue="originalData[c.name]" :inputType="c.type" @submit="emit(changed ? 'submitValueVariationFeedback' : 'submitValueFeedback', $event)" />
                         <TransformationPopover v-if="catalogStore.transformationFunctionsByColumnType.hasOwnProperty(c.type)" :column="c.name" :column-type="c.type" />
+                        <PushPopover
+                            type="contribution"
+                            :column="c.name"
+                            key="a"
+                        />
+                        <PushPopover
+                            type="perturbation"
+                            :column="c.name"
+                            key="b"
+                        />
                       </div>
                     </div>
                     <div class="py-1 d-flex" v-else>
@@ -75,42 +85,19 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <PredictionResults :model="model" :dataset-id="dataset.id" :targetFeature="dataset.target" :modelFeatures="modelFeatures" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modified="dirty || isInputNotOriginal" :debouncingTimeout="debouncingTimeout" @result="setResult" />
-          <v-card class="mb-4" outlined>
-            <v-card-title>
-              Explanation
-            </v-card-title>
-            <v-card-text>
-              <v-tabs :class="{ 'no-tab-header': !isClassification(model.modelType) || textFeatureNames.length === 0 }">
-                <v-tab v-if='modelFeatures.length > 1'>
-                  <v-icon left>mdi-align-horizontal-left</v-icon>
-                  Global
-                </v-tab>
-
-                <v-tooltip bottom :disabled="textFeatureNames.length !== 0">
-                  <template v-slot:activator="{ on, attrs }">
-                    <div class="d-flex" v-on="on" v-bind="attrs">
-                      <v-tab :disabled="!textFeatureNames.length">
-                        <v-icon left>text_snippet</v-icon>
-                        Text
-                      </v-tab>
-                    </div>
-                  </template>
-                  <span>Text explanation is not available because your model does not contain any text features</span>
-                </v-tooltip>
-
-
-                <v-tab-item v-if='modelFeatures.length > 1'>
-
-                  <PredictionExplanations :modelId="model.id" :datasetId="dataset.id" :targetFeature="dataset.target" :classificationLabels="model.classificationLabels" :predictionTask="model.modelType" :inputData="inputData" :modelFeatures="modelFeatures" :debouncingTimeout="debouncingTimeout" />
-                </v-tab-item>
-                <v-tab-item v-if='textFeatureNames.length'>
-                  <TextExplanation v-if='model.modelType == ModelType.CLASSIFICATION' :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :classificationLabels='model.classificationLabels' :classificationResult='classificationResult' :inputData='inputData' />
-                  <RegressionTextExplanation v-else :modelId='model.id' :datasetId='dataset.id' :textFeatureNames='textFeatureNames' :inputData='inputData' />
-                </v-tab-item>
-              </v-tabs>
-            </v-card-text>
-          </v-card>
+          <PredictionResults v-if='InspectorUtils.hasFeature(InspectorFeature.PREDICTION_RESULT, model)' :model='model'
+                             :dataset-id='dataset.id' :targetFeature='dataset.target' :modelFeatures='modelFeatures'
+                             :classificationLabels='model.classificationLabels' :predictionTask='model.modelType'
+                             :inputData='inputData' :modified='changed || isInputNotOriginal'
+                             :debouncingTimeout='debouncingTimeout' @result='setResult' />
+          <GenerationResults v-if='InspectorUtils.hasFeature(InspectorFeature.GENERATION_RESULT, model)' :model='model'
+                             :dataset-id='dataset.id' :modelFeatures='modelFeatures'
+                             :inputData='inputData' :modified='changed || isInputNotOriginal'
+                             :debouncingTimeout='debouncingTimeout' @result='setResult' />
+          <InspectorExplanation v-if='InspectorUtils.hasFeature(InspectorFeature.EXPLANATION, model)'
+                                :dataset='dataset' :model='model' :input-data='inputData'
+                                :classification-result='classificationResult' :model-features='modelFeatures'
+                                :input-meta-data='inputMetaData' />
         </v-col>
       </v-row>
     </ValidationObserver>
@@ -120,18 +107,19 @@
 <script setup lang="ts">
 import OverlayLoader from '@/components/OverlayLoader.vue';
 import PredictionResults from './PredictionResults.vue';
-import PredictionExplanations from './PredictionExplanations.vue';
-import TextExplanation from './TextExplanation.vue';
-import RegressionTextExplanation from '@/views/main/project/RegressionTextExplanation.vue';
 import FeedbackPopover from '@/components/FeedbackPopover.vue';
-import { DatasetDTO, ModelDTO, ModelType } from '@/generated-sources';
-import { isClassification } from '@/ml-utils';
+import { DatasetDTO, ModelType } from '@/generated-sources';
 import mixpanel from 'mixpanel-browser';
 import { anonymize } from '@/utils';
 import _ from 'lodash';
-import TransformationPopover from "@/components/TransformationPopover.vue";
-import { useCatalogStore } from "@/stores/catalog";
-import { onMounted, ref, computed, watch } from 'vue';
+import TransformationPopover from '@/components/TransformationPopover.vue';
+import { useCatalogStore } from '@/stores/catalog';
+import { computed, onMounted, ref, watch } from 'vue';
+import PushPopover from '@/components/PushPopover.vue';
+import InspectorExplanation from '@/views/main/project/InspectorExplanation.vue';
+import { InspectorFeature, InspectorUtils } from '@/utils/inspector-utils';
+import { ModelDTO } from '@/generated/client';
+import GenerationResults from '@/views/main/project/GenerationResults.vue';
 
 const catalogStore = useCatalogStore();
 
@@ -146,7 +134,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isMiniMode: false
-})
+});
 
 const debouncingTimeout: number = 500;
 
@@ -171,12 +159,37 @@ const inputMetaData = computed(() => {
     }))
 })
 
-const isInputNotOriginal = computed(() => {
-  return JSON.stringify(props.inputData) !== JSON.stringify({ ...props.originalData, ...props.transformationModifications })
+const parseIfNumber = (value: any, giskardType: string) => {
+  if (giskardType === 'numeric') {
+    return Number(value);
+  }
+  return value;
+}
+
+const inputDataFormatted = computed(() => {
+  let result = {};
+  for (const [name, value] of Object.entries(props.inputData)) {
+    result[name] = parseIfNumber(value, props.dataset.columnTypes[name]);
+  }
+  return result;
 })
 
-const textFeatureNames = computed(() => {
-  return inputMetaData.value.filter(e => e.type == 'text').map(e => e.name)
+const originalDataFormatted = computed(() => {
+  let result = {};
+  for (const [name, value] of Object.entries(props.originalData)) {
+    result[name] = parseIfNumber(value, props.dataset.columnDtypes[name]);
+  }
+  return result;
+})
+
+const isInputNotOriginal = computed(() => {
+  const result = JSON.stringify(originalDataFormatted.value) !== JSON.stringify({ ...inputDataFormatted.value, ...props.transformationModifications })
+
+  if (!result) {
+    dataFormObserver.value && (dataFormObserver.value as HTMLFormElement).reset();
+  }
+
+  return result;
 })
 
 const modelFeatures = computed(() => {
@@ -193,7 +206,7 @@ const datasetNonTargetColumns = computed(() => {
 })
 
 function setResult(r: string) {
-  if (isClassification(props.model.modelType)) {
+  if (props.model.modelType === ModelType.CLASSIFICATION) {
     classificationResult.value = r
   }
 }
@@ -270,7 +283,7 @@ select.common-style-input {
   background-size: .65em auto, 100%;
 }
 
-.common-style-input.is-dirty {
+.common-style-input.is-changed {
   background-color: #AD14572B;
   /* accent color but with opacity */
 }

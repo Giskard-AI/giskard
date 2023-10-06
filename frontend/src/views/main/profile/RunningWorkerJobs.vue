@@ -26,13 +26,13 @@
 <script setup lang="ts">
 
 import {onMounted, ref} from 'vue';
-import {api} from '@/api';
-import {JobDTO} from '@/generated-sources';
+import {openapi} from "@/api-v2";
+import {JobDTO} from "@/generated/client";
 
-const runningJobs = ref<JobDTO[]>([]);
+const runningJobs = ref<Array<JobDTO>>([]);
 
 async function loadRunningJobs() {
-  runningJobs.value = await api.getRunningWorkerJobs();
+  runningJobs.value = await openapi.mlWorkerJob.getRunningWorkerJobs();
 }
 
 onMounted(() => loadRunningJobs());

@@ -1,10 +1,10 @@
 from typing import Any, Optional
 
-import pydantic
+from pydantic import BaseModel, Field
 
 
 # @TODO: Define the fields of this class more rigorously.
-class ModelPredictionResults(pydantic.BaseModel):
+class ModelPredictionResults(BaseModel):
     """Data structure for model predictions.
 
     For regression models, the `prediction` field of the returned `ModelPredictionResults` object will contain the same
@@ -29,8 +29,8 @@ class ModelPredictionResults(pydantic.BaseModel):
         The predicted probabilities for all class labels for each example in the input dataset.
     """
 
-    raw: Any = []
-    prediction: Any = []
-    raw_prediction: Any = []
-    probabilities: Optional[Any]
-    all_predictions: Optional[Any]
+    raw: Any = Field(default_factory=list)
+    prediction: Any = Field(default_factory=list)
+    raw_prediction: Any = Field(default_factory=list)
+    probabilities: Optional[Any] = None
+    all_predictions: Optional[Any] = None

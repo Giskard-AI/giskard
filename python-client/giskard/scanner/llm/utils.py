@@ -1,5 +1,6 @@
+import openai
+
 from ...core.errors import GiskardInstallationError
-from ...datasets.base import Dataset
 
 
 class LLMImportError(GiskardInstallationError):
@@ -7,19 +8,17 @@ class LLMImportError(GiskardInstallationError):
     functionality = "LLM"
 
 
-def load_default_dataset():
-    try:
-        import datasets
-    except ImportError as err:
-        raise LLMImportError() from err
+def llm(messages, model="gpt-4", temperature=0.5, n=1, **kwargs):
+    completion = openai.ChatCompletion.create(model=model, messages=messages, temperature=temperature, n=n, **kwargs)
+    if n == 1:
+        return completion.choices[0].message.content
+    return [c.message.content for c in completion.choices]
 
-    df = datasets.load_dataset("truthful_qa", "generation", split="validation").to_pandas()
 
-    return Dataset(
-        df.loc[:, ("type", "question", "best_answer")],
-        column_types={
-            "type": "category",
-            "question": "text",
-            "best_answer": "text",
-        },
+def llm_fn_call(messages, functions, model="gpt-4", temperature=0.5, n=1, **kwargs):
+    completion = openai.ChatCompletion.create(
+        model=model, messages=messages, functions=functions, temperature=temperature, n=n, **kwargs
     )
+    if n == 1:
+        return completion.choices[0].message
+    return [c.message for c in completion.choices]
