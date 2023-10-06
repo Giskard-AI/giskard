@@ -1,5 +1,6 @@
 # 🗣️Talk to your model
 
+[//]: # (TODO: review page to make it flow well with other pages)
 The **Talk to Your Model** feature allows you to engage in a *conversation* with your ML model. Using natural language, you can:
 
 - Run model predictions.
