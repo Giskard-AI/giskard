@@ -1,5 +1,6 @@
-# ⬆️ Upload an object to the Giskard server
+# ↕️ Upload an object to the Giskard server
 
+[//]: # (TODO: review content and make sure flow is ok)
 You can easily upload to the Giskard server objects, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
 
 Uploading objects to the Giskard server will help you:
