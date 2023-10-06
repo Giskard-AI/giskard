@@ -5,9 +5,9 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
-import pandas as pd
 
 from giskard.client.python_utils import warning
+from .llm.data_generation import generate_test_dataset
 
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
@@ -174,7 +174,8 @@ class Scanner:
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
-            return model, Dataset(pd.DataFrame(), validation=False)
+            logger.debug("Automatically generating test dataset.")
+            return model, generate_test_dataset(model)
         if dataset is None:
             raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")
 
