@@ -15,7 +15,7 @@ def test_vectorstore():
     responses = [response]
     llm = FakeListLLM(responses=responses)
 
-    loader = TextLoader("/Users/kevinmessiaen/work/giskard/tests/models/langchain/state_of_the_union.txt")
+    loader = TextLoader("./tests/models/langchain/state_of_the_union.txt")
     documents = loader.load()
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
