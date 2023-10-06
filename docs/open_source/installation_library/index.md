@@ -1,9 +1,9 @@
 # 📥 Install the Giskard Python Library
 
-`giskard` works with Python `3.8`, `3.9`, `3.10` and `3.11`.
+Giskard supports Python `3.8`, `3.9`, `3.10` and `3.11`.
 
 ::::{tab-set}
-:::{tab-item} Tabular and NLP Models
+:::{tab-item} Tabular and NLP
 
 ```sh
 pip install "giskard>=2.0.0b" -U
