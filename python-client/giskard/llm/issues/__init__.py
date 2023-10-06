@@ -1,9 +1,9 @@
-from typing import List, Dict
+from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
-from ..config import llm_config
 from ...scanner.llm.utils import LLMImportError
+from ..config import llm_config
 
 
 class TestCases(BaseModel):
@@ -52,8 +52,8 @@ class LlmIssueCategory:
 
     def issue_generator(self, assertion_count=4, max_tokens_per_test=64):
         try:
-            from langchain.prompts import ChatPromptTemplate
             from langchain.chains.openai_functions import create_structured_output_chain
+            from langchain.prompts import ChatPromptTemplate
         except ImportError as err:
             raise LLMImportError() from err
 
@@ -62,29 +62,34 @@ class LlmIssueCategory:
                 (
                     "system",
                     """
-Your task as a prompt QA is to generate test assertions that assess the performance of the {model_name} model.
+Your task as a prompt QA is to generate test assertions that assess the performance of an AI model.
 
-**Scope**: Focus on testing {issue_name} which involves {issue_description}.
+You will focus on testing the following issue category:
 
-**Description**: The objective is to create a set of up to {assertion_count} assertions that comprehensively evaluate the behavior of the {model_name} model in various scenarios related to {issue_name}. These assertions should cover both typical and edge cases relevant to the issue category.
+**Issue category**: {issue_name}
+**Issue category description**: {issue_description}
 
-**Model Information**:
-``` 
-{model_description}
-```
+Here are some examples of inputs relative to the issue category above, but that are not necessarily relevant for the specific model you are testing, and examples of associated assertions:
 
-**Example Inputs**: Here are some example inputs for the {issue_name} issue:
-
+**Inputs Examples**:
 ```json
 {input_examples}
 ```
 
-**Example Assertions**:
+**Assertions Examples**:
 ```json
 {{
   "assertions": {issue_examples}
 }}
 ```
+
+This is the model you will be testing:
+
+**Model name**: {model_name}
+**Model description**: {model_description}
+
+You must generate up to {assertion_count} assertions that comprehensively evaluate the behavior of this model in various scenarios related to the issue category above.
+These assertions should cover both typical and edge cases relevant to the issue category.
 """,
                 )
             ]
@@ -106,8 +111,8 @@ Your task as a prompt QA is to generate test assertions that assess the performa
 
     def input_generator(self, variables: List[str], input_count=5, max_tokens_per_input=128):
         try:
-            from langchain.prompts import ChatPromptTemplate
             from langchain.chains.openai_functions import create_structured_output_chain
+            from langchain.prompts import ChatPromptTemplate
         except ImportError as err:
             raise LLMImportError() from err
 
