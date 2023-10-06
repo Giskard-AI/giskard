@@ -77,9 +77,9 @@ reference/index
 :maxdepth: 1
 :hidden:
 
-community/contribution_guidelines/index
 community/discord/index
 community/github/index
+community/contribution_guidelines/index
 ```
 
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>

@@ -2,6 +2,8 @@
 🧑‍💻Contribute to Giskard
 #######################
 
+.. TODO: review content of this section
+
 .. toctree::
    :maxdepth: 1
    :hidden:
