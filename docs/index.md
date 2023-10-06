@@ -82,6 +82,7 @@ community/github/index
 community/contribution_guidelines/index
 ```
 
+[//]: # (TODO: review cards on landing page)
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
 <p align="center"> 
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
