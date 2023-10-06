@@ -1,5 +1,9 @@
-# Collaborate
+# 🤝 Collaborate
 
-- Provide feedback on your models
+[//]: # (TODO: create content, needs to include screenshots and instructions)
 
-- invite stakeholders (share, manage rights)
+- Invite stakeholders
+    - share
+    - Manage rights
+- Collect feedbacks
+    - How to create feedback?
