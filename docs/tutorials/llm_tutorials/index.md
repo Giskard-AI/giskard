@@ -1,4 +1,9 @@
-# Tutorials
+# LLM Tutorials
+
+[//]: # (TODO: reformat page for this section)
+New split to implement within this tutorial section:
+1. By ML Use case (churn, comment generation, etc.)
+2. By ML Libraries (Hugging Face, PyTorch, etc.)
 
 ```{toctree}
 :caption: Table of Contents
