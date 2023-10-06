@@ -1,5 +1,7 @@
-Key vulnerabilities
+LLM Vulnerabilities
 ===================
+
+.. TODO: rewrite this section for LLM vulnerabilities
 
 Before testing Machine Learning models, it's crucial to have a comprehensive understanding of the critical vulnerabilities that can impact your model. Giskard provides an `automatic scan functionality <../../guides/scan/index.rst>`_ that is designed to automatically detect a variety of risks associated with your ML model. You can learn more about the different vulnerabilities it can detect here:
 
