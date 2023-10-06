@@ -57,28 +57,29 @@ tutorials/llm_tutorials/index
 :maxdepth: 1
 :hidden:
 
-knowledge/catalogs/index
 knowledge/key_vulnerabilities/index
 knowledge/llm_vulnerabilities/index
+knowledge/catalogs/index
 ```
 
 ```{toctree}
-:caption: Reference
+:caption: API Reference
 :name: mastertoc
 :maxdepth: 1
 :hidden:
 
 reference/index
-catalogs/index
 ```
 
 ```{toctree}
-:caption: Integrations
+:caption: Community
 :name: mastertoc
 :maxdepth: 1
 :hidden:
 
-integrations/index
+community/contribution_guidelines/index
+community/discord/index
+community/github/index
 ```
 
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
