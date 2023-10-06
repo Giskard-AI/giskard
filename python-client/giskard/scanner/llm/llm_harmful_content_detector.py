@@ -8,7 +8,7 @@ from ..issues import Issue
 from .business_detector import LLMBusinessDetector
 
 
-@detector("llm_harmful_content", tags=["llm", "generative", "text_generation"])
+@detector("llm_harmful_content", tags=["llm_harmful_content", "llm", "generative", "text_generation"])
 class LLMHarmfulContentDetector(LLMBusinessDetector):
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # I keep for now the legacy behaviour
