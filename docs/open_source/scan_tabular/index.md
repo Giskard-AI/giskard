@@ -2,7 +2,7 @@
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](../../getting-started/key_vulnerabilities/performance_bias/index.md) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
-## Step 1: Wrap your dataset
+## Step 1️⃣: Wrap your dataset
 
 To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
 
@@ -30,7 +30,7 @@ For further examples, check out the [tutorials section]().
     * `column_types`: Dictionary of column names and their types (numeric, category or text) for all columns of `df`.
       If not provided, column types will be inferred automatically.
 
-## Step 2: Wrap your model
+## Step 2️⃣: Wrap your model
 
 Next, **wrap your model**. You can wrap either the prediction function (recommended) or model object, as shown here:
 
@@ -213,7 +213,7 @@ For further examples, check out the [tutorials section]().
 ::::::
 :::::::
 
-## Step 3: Scan you model
+## Step 3️⃣: Scan you model
 
 Now you can scan your model and display your scan report:
 
@@ -233,7 +233,7 @@ If you are not working in a notebook or want to save the results for later, you 
     scan_results.to_html("model_scan_results.html")
 ```
 
-## What's next? 
+## 🤔What's next? 
 
 Your scan results may have highlighted important vulnerabilities. There are 2 important actions you can take next:
 
