@@ -5,6 +5,7 @@ from ..models.base import BaseModel
 from .logger import logger
 from .scanner import Scanner
 
+
 def _register_default_detectors():
     import importlib
     from pathlib import Path
