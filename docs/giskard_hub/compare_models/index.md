@@ -1,1 +1,3 @@
-# Compare your models using test suite
+# ⚖️ Compare models
+
+[//]: # (TODO: create content, needs to include screenshots and instructions)
