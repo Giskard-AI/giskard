@@ -20,9 +20,9 @@ open_source/installation_library/index
 open_source/scan_tabular/index
 open_source/scan_nlp/index
 open_source/scan_llm/index
-open_source/customize_tests
-open_source/integrate_tests
-open_source/talk_to_your_model
+open_source/customize_tests/index
+open_source/integrate_tests/index
+open_source/talk_to_your_model/index
 ```
 
 ```{toctree}
