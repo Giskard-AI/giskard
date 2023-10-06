@@ -458,7 +458,7 @@ def dataset_processing(
         else:
             dataset.add_transformation_function(
                 TransformationFunction.download(
-                    function.transformationFunction.id, ml_worker.client, function.slicingFunction.project_key
+                    function.transformationFunction.id, ml_worker.client, function.transformationFunction.project_key
                 )(**arguments)
             )
 
@@ -477,7 +477,7 @@ def dataset_processing(
                 modifications={
                     key: str(value)
                     for key, value in row[1].items()
-                    if isinstance(value, float) or not math.isnan(value)
+                    if not pd.isna(value)
                 },
             )
             for row in modified_rows.iterrows()
@@ -657,22 +657,22 @@ def get_push(ml_worker: MLWorker, params: websocket.GetPushParam, *args, **kwarg
             or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
         ):
             push.slicing_function.meta.tags.append("generated")
-            object_uuid = push.slicing_function.upload(ml_worker.client)
+            object_uuid = push.slicing_function.upload(ml_worker.client, project_key)
         if params.cta_kind == CallToActionKind.SAVE_PERTURBATION:
             for perturbation in push.transformation_function:
-                object_uuid = perturbation.upload(ml_worker.client)
+                object_uuid = perturbation.upload(ml_worker.client, project_key)
         if params.cta_kind == CallToActionKind.SAVE_EXAMPLE:
             object_uuid = push.saved_example.upload(ml_worker.client, project_key)
         if params.cta_kind == CallToActionKind.CREATE_TEST or params.cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
             for test in push.tests:
-                object_uuid = test.upload(ml_worker.client)
+                object_uuid = test.upload(ml_worker.client, project_key)
             # create empty dict
             object_params = {}
             # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
             for test_param_name in push.test_params:
                 test_param = push.test_params[test_param_name]
                 if isinstance(test_param, RegistryArtifact):
-                    object_params[test_param_name] = test_param.upload(ml_worker.client)
+                    object_params[test_param_name] = test_param.upload(ml_worker.client, project_key)
                 elif isinstance(test_param, Dataset):
                     object_params[test_param_name] = test_param.upload(ml_worker.client, project_key)
                 else:
