@@ -1,7 +1,8 @@
-# 🔍 Scan a Tabular Model
+# 🔍 Scan a NLP Model
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](../../getting-started/key_vulnerabilities/performance_bias/index.md) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
+[//]: # (TODO: adapt whole page to a NLP use-case &#40;all code snippets&#41;)
 ## Step 1: Wrap your dataset
 
 To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
