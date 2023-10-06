@@ -5,14 +5,14 @@ import numpy as np
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..decorators import detector
-from ..issues import Issue, IssueGroup, IssueLevel
+from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from .utils import LLMImportError
 
 
 @detector(
     "llm_chars_injection",
-    tags=["control_chars_injection", "prompt_injection", "text_generation"],
+    tags=["control_chars_injection", "prompt_injection", "robustness", "text_generation"],
 )
 class LLMCharsInjectionDetector:
     def __init__(
@@ -30,6 +30,12 @@ class LLMCharsInjectionDetector:
         self.threshold = threshold
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+        if len(dataset) < 3:
+            logger.warning(
+                f"{self.__class__.__name__}: Skipping control character injection test because the dataset is too small."
+            )
+            return []
+
         try:
             import evaluate
         except ImportError as err:
@@ -43,6 +49,7 @@ class LLMCharsInjectionDetector:
             lambda df: df.sample(min(self.num_samples, len(dataset)), random_state=402),
             row_level=False,
         )
+
         original_predictions = model.predict(dataset_sample)
         issues = []
         for feature in features:
@@ -51,18 +58,19 @@ class LLMCharsInjectionDetector:
 
                 def _add_prefix(df):
                     dx = df.copy()
-                    dx[feature] = injected_sequence + dx[feature].astype(str)
+                    dx[feature] = dx[feature].astype(str) + injected_sequence
                     return dx
 
                 perturbed_dataset = dataset_sample.transform(_add_prefix, row_level=False)
 
                 predictions = model.predict(perturbed_dataset)
-
+                logger.debug(f"{self.__class__.__name__}: PRED {predictions.prediction}")
                 score = scorer.compute(
                     predictions=predictions.prediction,
                     references=original_predictions.prediction,
                     model_type="distilbert-base-multilingual-cased",
                 )
+                logger.debug(f"{self.__class__.__name__}: SCORE {score}")
 
                 passed = np.array(score["f1"]) > 1 - self.output_sensitivity
 
@@ -79,11 +87,13 @@ class LLMCharsInjectionDetector:
                     issue = Issue(
                         model,
                         dataset,
-                        group=IssueGroup("Prompt Injection (Beta)"),
+                        group=Robustness,
                         level=IssueLevel.MAJOR,
                         description="Injecting control chars significantly alters the model's output.",
                         features=[feature],
                         meta={
+                            "domain": "Control character injection",
+                            "deviation": "Control characters can make the model to produce unexpected outputs.",
                             "special_char": char,
                             "fail_rate": fail_rate,
                             "perturbed_data_slice": perturbed_dataset,
@@ -95,6 +105,6 @@ class LLMCharsInjectionDetector:
                         examples=examples,
                     )
 
-                issues.append(issue)
+                    issues.append(issue)
 
         return issues
