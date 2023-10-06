@@ -1,54 +1,43 @@
-🔍 Scan your ML model
+🔍 Scan Tabular Models
 ====================
 
-The Giskard python package provides an automatic scan functionality designed to automatically detect potential issues affecting your ML model. The Giskard scan is currently able to detect the following types of issues:
+The Giskard python library provides an automatic scan functionality designed to automatically detect `potential vulnerabilities <../../getting-started/key_vulnerabilities/performance_bias/index.md>`_ affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
-
-- `Performance bias <../../getting-started/key_vulnerabilities/performance_bias/index.md>`_
-- `Unrobustness <../../getting-started/key_vulnerabilities/robustness/index.md>`_
-- `Overconfidence <../../getting-started/key_vulnerabilities/overconfidence/index.md>`_
-- `Underconfidence <../../getting-started/key_vulnerabilities/underconfidence/index.md>`_
-- `Ethical bias <../../getting-started/key_vulnerabilities/ethics/index.md>`_
-- `Data leakage <../../getting-started/key_vulnerabilities/data_leakage/index.md>`_
-- `Stochasticity <../../getting-started/key_vulnerabilities/stochasticity/index.md>`_
-- `Spurious correlation <../../getting-started/key_vulnerabilities/spurious/index.md>`_
-
-
-With the automatic scan, you can proactively identify and address key vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
-
-
-Prerequisites
-^^^^^^^^^^^^^
-
-To scan your ML model for vulnerabilities, you need:
-
-- A **Giskard dataframe** composed of the examples you want to scan. To wrap your dataset, `check the instructions here <../wrap_dataset/index.md>`_.
-- A **Model**. For example, a model from *scikit-learn*, *Tensorflow*, *HuggingFace*, *catboost*, *PyTorch*, ... or any set of *Python* functions. To wrap your model, see `the docs here <../wrap_model/index.md>`_.
-
-
-Scan your model to detect vulnerabilities
+Step 1: Wrap your dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. hint::
 
-    If you want to try this interactively, you can find a ready-to-use `notebook here <https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb>`_.
+To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
 
-To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_:
+.. code-block:: python
+
+    # Wrap your Pandas DataFrame with Giskard.Dataset (validation or test set)
+    giskard_dataset = giskard.Dataset(
+        df=df,  # A pandas.DataFrame containing raw data (before pre-processing) and including ground truth variable.
+        target="Survived",  # Ground truth variable
+        name="Titanic dataset", # Optional: Give a name to your dataset
+        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but improves quality of results if available.
+    )
+
+
+* **Mandatory parameters**
+    * `df`: A `pandas.DataFrame` containing raw data (before pre-processing) and including ground truth variable. Extra columns not included as features of the model can remain in `df`.
+
+* **Optional parameters**
+    * `target`: The column name in `df` corresponding to the ground truth variable.
+    * `name`: Give a name to your dataset.
+    * `cat_columns`: List of strings representing names of categorical columns.Can be binary,
+      numerical, or textual with a few unique values. If not provided, column types will be inferred automatically.
+    * `column_types`: Dictionary of column names and their types (numeric, category or text) for all columns of `df`.
+      If not provided, column types will be inferred automatically.
+
+Wrap your model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Next, **wrap your model**. You can wrap either the prediction function or model object, as shown here:
 
 .. code-block:: python
 
     import giskard
-
-    # Replace this with your own data & model creation.
-    df = giskard.demo.titanic_df()
-    demo_data_processing_function, demo_sklearn_model = giskard.demo.titanic_pipeline()
-
-    # Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.). Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html
-    giskard_dataset = giskard.Dataset(
-        df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
-        target="Survived",  # Ground truth variable
-        name="Titanic dataset", # Optional
-        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
-    )
 
     # Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
     # you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
@@ -66,8 +55,6 @@ To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset
         feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
         # classification_threshold=0.5,  # Default: 0.5
     )
-
-
 Now you can scan your model and display your scan report:
 
 .. code-block:: python
