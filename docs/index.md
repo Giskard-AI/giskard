@@ -1,5 +1,5 @@
 ```{toctree}
-:caption: Getting Started
+1:caption: Getting Started
 :name: mastertoc
 :maxdepth: 1
 :hidden:
