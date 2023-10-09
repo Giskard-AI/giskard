@@ -72,7 +72,8 @@ class Catalog(WorkerReply):
 
 
 class DataRow(BaseModel):
-    columns: Dict[str, str]
+    columns: Dict[str, str] = Field(..., repr=False)
+
 
 
 class DataFrame(BaseModel):
