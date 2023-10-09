@@ -52,14 +52,17 @@ PROBES_MAP = {
 
 @detector("llm_prompt_injection", tags=["prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
+    def __init__(self, threshold: float = 0.5, num_samples=10):
+        self.threshold = threshold  # default
+        self.num_samples = num_samples
+
+
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
         generator = GiskardGenerator(model, feature_names)
-        eval_threshold = 0.5  # default
-        evaluator = ThresholdEvaluator(eval_threshold)
-        h = giskard.scanner.llm.garak.harnesses.probewise.ProbewiseHarness()
-
-        results = h.run(generator, list(PROBES_MAP.keys()), evaluator)
+        evaluator = ThresholdEvaluator(self.threshold)
+        harness = giskard.scanner.llm.garak.harnesses.probewise.ProbewiseHarness()
+        results = harness.run(generator, list(PROBES_MAP.keys()), evaluator)
 
         issues = []
         for probe, result in results.items():

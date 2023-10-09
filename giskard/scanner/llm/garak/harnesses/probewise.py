@@ -26,7 +26,7 @@ class ProbewiseHarness(Harness):
             logging.error(f" detector load failed: {detector_name}, skipping >>")
         return False
 
-    def run(self, model, probenames, evaluator):
+    def run(self, model, probenames, evaluator) -> dict:
         """Execute a probe-by-probe scan
 
         Probes are executed in name order. For each probe, the detectors
