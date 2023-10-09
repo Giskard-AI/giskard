@@ -103,8 +103,8 @@ html_theme_options = {
     "top_of_page_button": "edit",
     "source_repository": "https://github.com/Giskard-AI/giskard",
     "source_branch": "main",
-    "source_directory": "python-client/docs/",
-    "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/main/python-client/docs/{filename}",
+    "source_directory": "docs/",
+    "source_edit_link": "https://github.com/Giskard-AI/giskard/edit/main/docs/{filename}",
 }
 
 add_function_parentheses = False
@@ -121,8 +121,8 @@ nbsphinx_prolog = """
 .. raw:: html
 
     <div class="open-in-colab__wrapper">
-    <a href="https://colab.research.google.com/github/giskard-ai/giskard/blob/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" style="display: inline; margin: 0" alt="Open In Colab"/></a>
-    <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/python-client/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
+    <a href="https://colab.research.google.com/github/giskard-ai/giskard/blob/""" + branch + """/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://colab.research.google.com/assets/colab-badge.svg" style="display: inline; margin: 0" alt="Open In Colab"/></a>
+    <a href="https://github.com/giskard-ai/giskard/tree/""" + branch + """/docs/{{ env.doc2path(env.docname, base=None) }}" target="_blank"><img src="https://img.shields.io/badge/github-view%20source-black.svg" style="display: inline; margin: 0" alt="View Notebook on GitHub"/></a>
     </div>
 """
 # fmt: on
@@ -171,5 +171,5 @@ def linkcode_resolve(domain, info):
     else:
         linespec = ""
 
-    filename = fn.split("python-client", 1)[-1]
-    return f"https://github.com/Giskard-AI/giskard/blob/feature/ai-test-v2-merged/python-client{filename}{linespec}"
+    filename = fn.split("main", 1)[-1]
+    return f"https://github.com/Giskard-AI/giskard/blob/main/{filename}{linespec}"

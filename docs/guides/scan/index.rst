@@ -30,7 +30,7 @@ Scan your model to detect vulnerabilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. hint::
 
-    If you want to try this interactively, you can find a ready-to-use `notebook here <https://colab.research.google.com/github/giskard-ai/giskard/blob/main/python-client/docs/getting-started/quickstart.ipynb>`_.
+    If you want to try this interactively, you can find a ready-to-use `notebook here <https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb>`_.
 
 To scan your model, wrap first your `model <../wrap_model/index.md>`_ & `dataset <../wrap_dataset/index.md>`_:
 
@@ -117,7 +117,7 @@ You can then upload the test suite to the local Giskard server. This will enable
 
 .. code-block:: python
 
-    # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers. 
+    # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
     # Create a Giskard client after having installed the Giskard server (see documentation)
 
     from giskard import GiskardClient
