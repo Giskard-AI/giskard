@@ -54,7 +54,7 @@ Example:
 """,
         ),
         (
-            "user",
+            "human",
             """
 ```json
 {prompt}
