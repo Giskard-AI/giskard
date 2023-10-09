@@ -29,3 +29,11 @@ At Giskard, we believe that Machine Learning needs its own testing framework. Cr
 <br>
 
   ![](/_static/catalog_example.png)
+
+<br>
+
+:::{info}
+**The Giskard server is installed on your infrastructure.**
+
+Giskard as a company does not have access to your datasets and models, so you can keep everything private.
+:::
