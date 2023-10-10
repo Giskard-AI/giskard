@@ -1,17 +1,20 @@
+from typing import Any, Callable, Dict, List
+
 import logging
 import warnings
-from typing import Callable, Dict, List, Any
 
 import numpy as np
 import pandas as pd
 
-from giskard.datasets.base import Dataset
-from giskard.models.base import BaseModel
-from giskard.ml_worker.utils.logging import timer
 from giskard.core.errors import GiskardImportError
+from giskard.datasets.base import Dataset
+from giskard.ml_worker.utils.logging import timer
+from giskard.models.base import BaseModel
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 logger = logging.getLogger(__name__)
+
+MAX_LENGTH_TEXT_EXPLANATION = 20_000
 
 
 def _get_background_example(df: pd.DataFrame, feature_types: Dict[str, str]) -> pd.DataFrame:
@@ -189,6 +192,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bo
 
     try:
         from shap import Explanation
+
         from giskard.models.shap_result import ShapResult
     except ImportError as e:
         raise GiskardImportError("shap") from e
@@ -244,14 +248,14 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str):
     try:
-        from shap.maskers import Text
         from shap import Explainer
+        from shap.maskers import Text
     except ImportError as e:
         raise GiskardImportError("shap") from e
     try:
         masker = Text(tokenizer=r"\W+")
         text_explainer = Explainer(text_explanation_prediction_wrapper(model.predict_df, input_df, text_column), masker)
-        shap_values = text_explainer(pd.Series([text_document]))
+        shap_values = text_explainer(pd.Series([text_document[:MAX_LENGTH_TEXT_EXPLANATION]]))
 
         return (
             (shap_values[0].data, [shap_values[0].values[:, i] for i in range(shap_values[0].values.shape[1])])
