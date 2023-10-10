@@ -9,7 +9,7 @@ import sys
 import tempfile
 import time
 import traceback
-from concurrent.futures import Future
+from concurrent.futures import CancelledError, Future
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -69,7 +69,7 @@ class MLWorkerInfo:
         self.is_remote = worker.is_remote_worker()
 
 
-def websocket_log_actor(ml_worker: MLWorkerInfo, req: dict, *args, **kwargs):
+def websocket_log_actor(ml_worker: MLWorkerInfo, req: Dict, *args, **kwargs):
     param = req["param"] if "param" in req.keys() else {}
     action = req["action"] if "action" in req.keys() else ""
     logger.info(f"ML Worker {ml_worker.id} performing {action} params: {param}")
@@ -86,6 +86,9 @@ def wrapped_handle_result(action: MLWorkerAction, ml_worker: MLWorker, start: fl
 
         try:
             info: websocket.WorkerReply = future.result() if isinstance(future, Future) else future()
+        except CancelledError:
+            info: websocket.WorkerReply = websocket.Empty()
+            logger.warning("Task for %s has timed out and been cancelled", action.name)
         except Exception as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
@@ -168,7 +171,7 @@ def parse_and_execute(
     )
 
 
-def dispatch_action(callback, ml_worker, action, req, execute_in_pool):
+def dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout=None):
     # Parse the response ID
     rep_id = req["id"] if "id" in req.keys() else None
     # Parse the param
@@ -199,7 +202,7 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool):
     result_handler = wrapped_handle_result(action, ml_worker, start, rep_id)
     # If execution should be done in a pool
     if execute_in_pool:
-        logger.debug("Submitting for action %s '%s' into the pool with %s", action.name, callback.__name__, params)
+        logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
         future = call_in_pool(
             parse_and_execute,
             callback=callback,
@@ -207,6 +210,7 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool):
             params=params,
             ml_worker=MLWorkerInfo(ml_worker),
             client_params=client_params,
+            timeout=timeout,
         )
         future.add_done_callback(result_handler)
         log_pool_stats()
@@ -223,7 +227,7 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool):
     )
 
 
-def websocket_actor(action: MLWorkerAction, execute_in_pool: bool = True):
+def websocket_actor(action: MLWorkerAction, execute_in_pool: bool = True, timeout: Optional[float] = None):
     """
     Register a function as an actor to an action from WebSocket connection
     """
@@ -234,7 +238,7 @@ def websocket_actor(action: MLWorkerAction, execute_in_pool: bool = True):
         logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
         def wrapped_callback(ml_worker: MLWorker, req: dict, *args, **kwargs):
-            dispatch_action(callback, ml_worker, action, req, execute_in_pool)
+            dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout)
 
         WEBSOCKET_ACTORS[action.name] = wrapped_callback
 
@@ -657,7 +661,7 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
 
 
-@websocket_actor(MLWorkerAction.getPush)
+@websocket_actor(MLWorkerAction.getPush, timeout=30)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
