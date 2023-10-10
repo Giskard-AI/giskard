@@ -71,4 +71,4 @@ def test_llm_individual_response_validation(model: BaseModel, prompt_input: str,
 
     dataset = Dataset(pd.DataFrame({model.meta.feature_names[0]: [prompt_input]}), validation=False)
 
-    test_llm_response_validation(model, dataset, evaluation_criteria, 1.0)
+    return test_llm_response_validation(model, dataset, evaluation_criteria, 1.0).execute()
