@@ -64,13 +64,12 @@ class LLMCharsInjectionDetector:
                 perturbed_dataset = dataset_sample.transform(_add_prefix, row_level=False)
 
                 predictions = model.predict(perturbed_dataset)
-                logger.debug(f"{self.__class__.__name__}: PRED {predictions.prediction}")
+
                 score = scorer.compute(
                     predictions=predictions.prediction,
                     references=original_predictions.prediction,
                     model_type="distilbert-base-multilingual-cased",
                 )
-                logger.debug(f"{self.__class__.__name__}: SCORE {score}")
 
                 passed = np.array(score["f1"]) > 1 - self.output_sensitivity
 
