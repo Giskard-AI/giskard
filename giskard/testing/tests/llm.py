@@ -47,13 +47,13 @@ def test_llm_response_validation(
             TestMessage(
                 type=TestMessageLevel.INFO,
                 text=f"""
-                Prompt intput: {dataset.df.iloc[i].to_dict()}
+Prompt intput: {dataset.df.iloc[i].to_dict()}
                 
-                LLM response: {predictions[i]}
+LLM response: {predictions[i]}
                 
-                Score: {results[i].score}
+Score: {results[i].score}/5
                 
-                Reason: {results[i].reason}
+Reason: {results[i].reason}
                 """,
             )
             for i in range(min(len(predictions), 3))
