@@ -452,14 +452,17 @@ def upgrade(version):
     if not version:
         version = latest_version
 
-    installed_version = _get_settings().get("version")
+    installed_version = _get_settings().get("version") if _get_settings() else None
     if installed_version == version:
         logger.info(f"Giskard server is already running version {version}")
         return
 
     logger.info(f"Updating Giskard Server {installed_version} -> {version}")
     _pull_image(version)
-    _write_settings({**_get_settings(), **{"version": version}})
+    if _get_settings():
+        _write_settings({**_get_settings(), **{"version": version}})
+    else:
+        _write_settings({**{"version": version}})
     logger.info(f"Giskard Server upgraded to {version}")
 
 
