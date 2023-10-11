@@ -83,7 +83,3 @@ def validate_test_case_with_reason(model: BaseModel, test_case: str, df, predict
     ]
 
     return [chain.run(**input) for input in inputs]
-
-
-def validate_test_case(model: BaseModel, test_case: str, df, predictions: List[str]) -> List[bool]:
-    return [res.score >= 3 for res in validate_test_case_with_reason(model, test_case, df, predictions)]

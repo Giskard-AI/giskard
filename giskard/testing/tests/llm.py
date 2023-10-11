@@ -2,7 +2,7 @@ import pandas as pd
 
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.decorators import test
-from ...ml_worker.testing.test_result import TestResult
+from ...ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from ...models.base import BaseModel
 
 
@@ -31,17 +31,33 @@ def test_llm_response_validation(
               - Answer to pandas documentation
         threshold(float, optional): The threshold for good response rate, i.e. the min ratio of responses that pass the assertion. Default is 0.50 (50%).
     """
-    from ...llm.utils.validate_test_case import validate_test_case
+    from ...llm.utils.validate_test_case import validate_test_case_with_reason
 
     predictions = model.predict(dataset).prediction
 
-    passed = validate_test_case(model, evaluation_criteria, dataset.df, predictions)
+    results = validate_test_case_with_reason(model, evaluation_criteria, dataset.df, predictions)
+    passed = [res.score >= 3 for res in results]
     metric = len([result for result in passed if result]) / len(predictions)
 
     return TestResult(
         actual_slices_size=[len(dataset)],
         metric=metric,
         passed=bool(metric >= threshold),
+        messages=[
+            TestMessage(
+                type=TestMessageLevel.INFO,
+                text=f"""
+                Prompt intput: {dataset.df.iloc[i].to_dict()}
+                
+                LLM response: {predictions[i]}
+                
+                Score: {results[i].score}
+                
+                Reason: {results[i].reason}
+                """,
+            )
+            for i in range(min(len(predictions), 3))
+        ],
     )
 
 
