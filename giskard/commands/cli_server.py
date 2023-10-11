@@ -188,7 +188,8 @@ def _fetch_latest_tag() -> str:
     latest_tag = "latest"
     latest = next(i for i in json_response["results"] if i["name"] == latest_tag)
     latest_version_image = next(
-        i for i in json_response["results"] if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))
+        (i for i in json_response["results"] if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))),
+        { "name": giskard.__version__ } # Create a dictionary containing the current version as default value
     )
 
     tag = latest_version_image["name"]
