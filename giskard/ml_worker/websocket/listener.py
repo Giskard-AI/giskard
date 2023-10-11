@@ -420,7 +420,9 @@ def explain_text_ws(ml_worker: MLWorker, params: websocket.ExplainTextParam, *ar
     if model.meta.feature_names:
         input_df = input_df[model.meta.feature_names]
     (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
-    map_features_weight = dict(zip(model.meta.classification_labels, list_weights))
+    # Classification model contains classification labels, but regression model does not
+    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ['default']
+    map_features_weight = dict(zip(classification_labels, list_weights))
     return websocket.ExplainText(
         weights={
             str(k): websocket.WeightsPerFeature(weights=[weight for weight in map_features_weight[k]])
