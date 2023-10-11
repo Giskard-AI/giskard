@@ -2,6 +2,7 @@ import json
 from typing import Sequence
 
 import pandas as pd
+from giskard.scanner import logger
 from giskard.scanner.llm import utils
 
 from .testcase import LLMTestcaseGenerator
@@ -100,13 +101,15 @@ class LLMHarmfulContentDetector(LLMBusinessDetector):
         issues = []
         for requirement in requirements:
             examples = []
+            logger.debug(f"Testing requirement: {requirement}")
             test_inputs = generator.generate_test_inputs(requirement)
             outputs = model.predict(test_inputs).prediction
             for input_vars, model_output in zip(test_inputs.df.to_dict("records"), outputs):
+                logger.debug(f"Evaluating model output with input = {input_vars}")
                 prompt = self._make_evaluate_prompt(
                     model, requirements, input_vars=input_vars, model_output=model_output
                 )
-                out = utils.llm_fn_call([{"role": "system", "content": prompt}], functions=functions)
+                out = utils.llm_fn_call([{"role": "system", "content": prompt}], functions=functions, temperature=0.1)
 
                 try:
                     args = json.loads(out.function_call.arguments)
@@ -119,7 +122,7 @@ class LLMHarmfulContentDetector(LLMBusinessDetector):
                                 "Reason for detection": args.get("reason"),
                             }
                         )
-                except (AttributeError, KeyError):
+                except (AttributeError, json.JSONDecodeError, KeyError):
                     pass
 
             if examples:
