@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 import pandas as pd
 
 from ...datasets import Dataset
@@ -19,7 +20,7 @@ Think step by step and then call the `generate_inputs` function with the generat
 """
 
 
-def generate_test_dataset(model: BaseModel, num_samples: int = 10):
+def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None):
     """Generates a test dataset for the model."""
     functions = [
         {
@@ -40,12 +41,13 @@ def generate_test_dataset(model: BaseModel, num_samples: int = 10):
             },
         }
     ]
-    prompt = GENERATE_INPUTS_PROMPT.format(
-        model_name=model.meta.name,
-        model_description=model.meta.description,
-        feature_names=model.meta.feature_names,
-        num_samples=num_samples,
-    )
+    if prompt is None:
+        prompt = GENERATE_INPUTS_PROMPT.format(
+            model_name=model.meta.name,
+            model_description=model.meta.description,
+            feature_names=model.meta.feature_names,
+            num_samples=num_samples,
+        )
 
     out = utils.llm_fn_call(
         messages=[{"role": "system", "content": prompt}], functions=functions, function_call={"name": "generate_inputs"}
