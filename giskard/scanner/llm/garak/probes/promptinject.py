@@ -35,6 +35,9 @@ def constructor(self):
 
 
 def load_data_all_attacks(self):
+    for i in range(len(self.pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS)):
+        self.pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS[i]['instruction'] = ''
+
     prompt_config = {
         "base": {
             "text": self.pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS,
