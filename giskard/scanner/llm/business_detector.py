@@ -38,7 +38,13 @@ def validate_prediction(
         metric = failed_count / len(predictions)
         maybe_print(f"Results: {metric} ({failed_count})", verbose=verbose)
 
-        df_with_pred_and_test_results = pd.concat([df_with_pred, results[["reason", "tip"]]], axis=1)
+        df_with_pred_and_test_results = pd.concat(
+            [
+                df_with_pred,
+                results.loc[:, ("reason",)],
+            ],
+            axis=1,
+        )
 
         if failed_count > 0:
             maybe_print("Test failed", verbose)
@@ -49,12 +55,12 @@ def validate_prediction(
                     dataset,
                     level=IssueLevel.MAJOR if metric >= threshold else IssueLevel.MINOR,
                     group=IssueGroup(name=issue.name, description=issue.description),
-                    description=f"For the test '{test_case}', we found that {metric * 100:.2f} of the generated answers does not respect it.",
+                    description=f"We tested the model against this requirement: “{test_case}”. We found {failed_count} examples for which the model failed to meet this condition.",
                     meta={
                         "domain": test_case,
                         "metric_value": metric,
                         "test_case": test_case,
-                        "deviation": f"{round(metric * 100, 2)}% of generated inputs does not respect the test",
+                        "deviation": f"{failed_count} failure{'s' if failed_count > 0 else ''} found",
                         "hide_index": True,
                     },
                     examples=df_with_pred_and_test_results[failed],
@@ -138,12 +144,16 @@ Answer 'Y' if the issue category is relevant for the audit of the model, 'N' oth
             .assertions[: self.num_tests]
         )
 
+        logger.debug(f"Generated test cases for {issue_category.name}: {test_cases}")
+
         potentially_failing_inputs = issue_category.input_generator(model.meta.feature_names, self.num_samples).run(
             model_name=model.meta.name,
             model_description=model.meta.description,
             variables=model.meta.feature_names,
             generated_tests=test_cases,
         )["inputs"][: self.num_samples]
+
+        logger.debug(f"Generated inputs {issue_category.name}: {test_cases}")
 
         evaluation_dataset = Dataset(
             pd.DataFrame(
