@@ -22,11 +22,11 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
+from ...ml_worker.exceptions.giskard_exception import GiskardException
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
-from ...ml_worker.exceptions.giskard_exception import GiskardException
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -435,7 +435,7 @@ class BaseModel(ABC):
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
                 name=file_meta["name"],
-                description=file_meta["description"],
+                description=None if "description" not in file_meta else file_meta["description"],
                 model_type=SupportedModelTypes[file_meta["model_type"]],
                 feature_names=file_meta["feature_names"],
                 classification_labels=file_meta["classification_labels"],
