@@ -32,8 +32,8 @@ notebook = "jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --notebook-di
 check-deps = "deptry ."
 debug-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker start"
 worker = "python3 giskard/cli.py worker start"
-debug-internal-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker -s start"
-internal-worker = "python3 giskard/cli.py worker -s start"
+debug-internal-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker start -s"
+internal-worker = "python3 giskard/cli.py worker start -s"
 
 [tool.pdm.dev-dependencies]
 dev = [
