@@ -501,7 +501,7 @@ def explain_text_ws(
         input_df = input_df[model.meta.feature_names]
     (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
     # Classification model contains classification labels, but regression model does not
-    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ['default']
+    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ["WEIGHTS"]
     list_weights = list_weights if model.meta.classification_labels else [list_weights]
     map_features_weight = dict(zip(classification_labels, list_weights))
     return websocket.ExplainText(
