@@ -109,7 +109,7 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_w
     )
     api_key = initialize_api_key(api_key, is_server)
     hf_token = initialize_hf_token(hf_token, is_server)
-    _start_command(is_server, url, api_key, is_daemon, hf_token, nb_workers)
+    _start_command(is_server, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
 
 
 def initialize_api_key(api_key, is_server):

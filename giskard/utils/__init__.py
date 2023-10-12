@@ -31,8 +31,8 @@ class WorkerPool:
     def start(self, max_workers: int = None):
         if self.pool is not None:
             return
-        LOGGER.info("Starting worker pool...")
         self.max_workers = max(max_workers, settings.min_workers) if max_workers is not None else os.cpu_count()
+        LOGGER.info("Starting worker pool with %s workers...", self.max_workers)
         self.pool = ProcessPoolExecutor(max_workers=self.max_workers)
         LOGGER.info("Pool is started")
 
