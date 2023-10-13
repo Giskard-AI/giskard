@@ -21,6 +21,20 @@ narrow_output = True
 # reportfile = open("testing.jsonl", "w", buffering=1)
 verbose = 0
 
+PROMPT_MAP = {"Dan_11_0": "DAN 11.0",
+              "Dan_10_0": "DAN 10.0",
+              "Dan_9_0": "DAN 9.0",
+              "Dan_8_0": "DAN 8.0",
+              "Dan_7_0": "DAN 7.0",
+              "Dan_6_2": "DAN 6.2",
+              "DAN_6_0": "DAN 6.0",
+              "DAN_Jailbreak": "DAN Jailbreak",
+              "AntiDAN": "Anti-DAN",
+              "ChatGPT_Developer_Mode_v2": "ChatGPT Developer Mode v2.0",
+              "ChatGPT_Developer_Mode_RANTI": "ChatGPT Developer Mode + RANTI",
+              "Ablation_Dan_11_0": "Ablation DAN 11.0",
+              }
+
 
 class Evaluator:
     """Class to be subclassed by evaluators.
@@ -101,9 +115,16 @@ class Evaluator:
                         )"""
                 if not passes[0]:  # TODO: only allowed because there's one detector!
                     failed_example = {}
-                    failed_example["Prompt Input"] = attempt.prompt
-                    failed_example["Prediction"] = attempt.outputs[0]
-                    failed_examples_df = failed_examples_df.append(failed_example, ignore_index=True)
+                    cols = []
+                    _probename = attempt.probe_classname.split(".")[-1]
+                    if _probename in PROMPT_MAP.keys():
+                        failed_example = {"Prompt Name": PROMPT_MAP[_probename]}
+                        cols.append("Prompt Name")
+                    failed_example.update({"Prompt Input": attempt.prompt,
+                                          "Prediction": attempt.outputs[0]})
+                    cols += ["Prompt Input", "Prediction"]
+
+                    failed_examples_df = failed_examples_df.append(failed_example, ignore_index=True)[cols]
 
             if narrow_output:
                 print_func = self.print_results_narrow
