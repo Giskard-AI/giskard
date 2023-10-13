@@ -1,6 +1,7 @@
+from typing import Sequence
+
 import re
 from pathlib import Path
-from typing import Sequence
 
 import pandas as pd
 import scipy.stats as stats
@@ -21,12 +22,11 @@ class GenderStereotypeDetector:
     def run(self, model: LangchainModel, dataset: Dataset) -> Sequence[Issue]:
         # @TODO: add Winogender Schemas
         df_job = self._read_job_data()
-
-        dataset = Dataset(df=df_job.loc[:, ("job",)], column_types={"job": "text"})
+        read_dataset = Dataset(df=df_job.loc[:, ("job",)], column_types={"job": "text"})
         test_model = model.rewrite_prompt(_prompt_template, input_variables=["job"])
 
         # Get model output and count gender-specific pronouns
-        output = test_model.predict(dataset).prediction
+        output = test_model.predict(read_dataset).prediction
         detected_genders = [detect_gender(sentence) for sentence in output]
 
         df = df_job.copy()
@@ -64,7 +64,7 @@ class GenderStereotypeDetector:
             return [
                 Issue(
                     model,
-                    dataset,
+                    read_dataset,
                     level=IssueLevel.MAJOR,
                     group=Stereotypes,
                     description=desc,
