@@ -28,7 +28,7 @@ def test_start_stop():
     assert len(pool._processes) == 1
     worker_process: SpawnProcess = list(pool._processes.values())[0]
     assert worker_process.is_alive()
-    exit_codes = pool.shutdown(wait=True)
+    exit_codes = pool.shutdown(wait=True, timeout=10)
     assert exit_codes == [0]
 
 
@@ -49,10 +49,10 @@ def test_submit_one_task(one_worker_pool: WorkerPoolExecutor):
 
 @pytest.mark.concurrency
 def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
-    future = one_worker_pool.schedule(sleep_add_one, [1000, 1], timeout=1)
+    future = one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=1)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-        assert "Task took too long" in str(exc_info)
+    assert "Task took too long" in str(exc_info)
 
 
 @pytest.mark.concurrency
@@ -61,7 +61,7 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     pid = set(one_worker_pool._running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-        assert "Task took too long" in str(exc_info)
+    assert "Task took too long" in str(exc_info)
     new_pid = set(one_worker_pool._running_process.keys())
     assert pid != new_pid
     future = one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=10)
@@ -80,7 +80,7 @@ def test_after_cancel_should_shutdown_nicely():
     pid = set(one_worker_pool._running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-        assert "Task took too long" in str(exc_info)
+    assert "Task took too long" in str(exc_info)
     new_pid = set(one_worker_pool._running_process.keys())
     assert pid != new_pid
     future = one_worker_pool.submit(add_one, 4)
