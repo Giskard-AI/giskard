@@ -136,6 +136,7 @@ def initialize_hf_token(hf_token, is_server):
 def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
+    os.environ["TQDM_DISABLE"] = "1"
     start_msg = "Starting ML Worker"
     start_msg += " server" if is_server else " client"
     if is_daemon:
