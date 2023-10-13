@@ -2,15 +2,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import logging
 import os
-import signal
 import time
-from collections import namedtuple
-from collections.abc import Callable
-from concurrent.futures import Executor, Future, ProcessPoolExecutor
-from concurrent.futures.process import BrokenProcessPool
-from dataclasses import Field, dataclass, field
+from concurrent.futures import Executor, Future
+from dataclasses import dataclass, field
 from enum import Enum
-from multiprocessing import Manager, Process, Queue, SimpleQueue, cpu_count, get_context
+from multiprocessing import Queue, SimpleQueue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
 from threading import Thread
@@ -166,7 +162,7 @@ class WorkerPoolExecutor(Executor):
         while not self._running_tasks_queue.empty():
             try:
                 self._running_tasks_queue.get_nowait()
-            except:
+            except BaseException:
                 pass
         # Try to nicely stop the worker
         for _ in range(self._nb_workers):
@@ -211,7 +207,7 @@ def _results_thread(
         if future.cancelled():
             try:
                 del executor._futures_mapping[result.id]
-            except:
+            except BaseException:
                 pass
             continue
         if result.result is not None:
@@ -221,7 +217,7 @@ def _results_thread(
             future.set_exception(RuntimeError(result.exception))
         try:
             del executor._futures_mapping[result.id]
-        except:
+        except BaseException:
             pass
 
 
@@ -263,7 +259,7 @@ def _killer_thread(
             task_id, end_time = timeout_data
             if task_id not in executor._futures_mapping:
                 # Task is already completed, do not wait for it
-                clean_up.add(timeout_data)
+                clean_up.append(timeout_data)
             elif time.monotonic() > end_time:
                 # Task has timed out, we should kill it
                 try:

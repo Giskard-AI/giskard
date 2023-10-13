@@ -1,5 +1,4 @@
 import logging
-from concurrent.futures import CancelledError
 from multiprocessing.context import SpawnProcess
 from time import sleep
 
@@ -44,18 +43,20 @@ def test_submit_one_task(one_worker_pool: WorkerPoolExecutor):
     assert future.result(timeout=5) == 2
 
 
+@pytest.mark.concurrency
 def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
     future = one_worker_pool.schedule(sleep_add_one, [1000], timeout=1)
     with pytest.raises(TimeoutError) as exc_info:
-        res = future.result()
+        future.result()
         assert "Task took too long" in str(exc_info)
 
 
+@pytest.mark.concurrency
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     future = one_worker_pool.schedule(sleep_add_one, [100], timeout=1)
     pid = set(one_worker_pool._running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
-        res = future.result()
+        future.result()
         assert "Task took too long" in str(exc_info)
     new_pid = set(one_worker_pool._running_process.keys())
     assert pid != new_pid
@@ -67,13 +68,14 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     assert future.result() == 5
 
 
+@pytest.mark.concurrency
 def test_after_cancel_should_shutdown_nicely():
     one_worker_pool = WorkerPoolExecutor(nb_workers=1)
     sleep(3)
     future = one_worker_pool.schedule(sleep_add_one, [100], timeout=1)
     pid = set(one_worker_pool._running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
-        res = future.result()
+        future.result()
         assert "Task took too long" in str(exc_info)
     new_pid = set(one_worker_pool._running_process.keys())
     assert pid != new_pid

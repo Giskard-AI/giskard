@@ -112,6 +112,9 @@ jobs:
           pdm run pip freeze | grep '^pydantic'
           pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v2 && '2' || '1' }}\.'
 
+      - name: Test code (concurrency)
+        run: pdm run test-worker
+
       - name: Test code
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
