@@ -23,7 +23,8 @@ _.env = { GSK_DISABLE_ANALYTICS = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
 test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
-test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+test-fast.cmd = "pytest -n auto -m 'not slow' -m 'not concurrency' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+test-worker.cmd = "pytest -m 'concurrency' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
@@ -264,6 +265,7 @@ norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".g
 doctest_optionflags = ["ELLIPSIS", "NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "concurrency: test that should not be run with parallelism (no xdist)",
 ]
 
 # Extra options:
