@@ -161,6 +161,7 @@ class MLWorker:
                 # as described in https://github.com/jasonrbriggs/stomp.py/issues/424
                 # and https://github.com/websocket-client/websocket-client/issues/930
                 logger.warn(f"WebSocket connection may not be properly closed: {e}")
+                logger.exception(e)
 
     def stop(self):
         if self.ws_conn:
