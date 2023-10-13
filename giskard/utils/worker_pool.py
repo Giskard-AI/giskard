@@ -3,10 +3,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import logging
 import os
 import time
-from concurrent.futures import Executor, Future
+from concurrent.futures import CancelledError, Executor, Future
 from dataclasses import dataclass, field
 from enum import Enum
-from multiprocessing import Queue, SimpleQueue, cpu_count, get_context
+from multiprocessing import Process, Queue, SimpleQueue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
 from threading import Thread
@@ -18,6 +18,32 @@ LOGGER = logging.getLogger(__name__)
 
 def _generate_task_id():
     return str(uuid4())
+
+
+def _wait_process_stop(p_list: List[Process], timeout: float = 1):
+    end_time = time.monotonic() + timeout
+    while any([p.is_alive() for p in p_list]) and time.monotonic() < end_time:
+        sleep(0.1)
+
+
+def _stop_processes(p_list: List[Process], timeout: float = 1) -> List[Optional[int]]:
+    # Check if process is alive.
+    for p in p_list:
+        if p.is_alive():
+            # Try to terminate with SIGTERM first
+            p.terminate()
+    _wait_process_stop(p_list, timeout=timeout)
+
+    for p in p_list:
+        if p.is_alive():
+            # If still alive, kill the processes
+            p.kill()
+    _wait_process_stop(p_list, timeout=2)
+    exit_codes = [p.exitcode for p in p_list]
+    # Free all resources
+    for p in p_list:
+        p.close()
+    return exit_codes
 
 
 @dataclass
@@ -157,25 +183,27 @@ class WorkerPoolExecutor(Executor):
         self._state = PoolState.STOPPING
         # Cancelling all futures we have
         for future in self._futures_mapping.values():
-            future.cancel()
-        # Closing the queue will actually stop the workers
+            if future.cancel() and not future.done():
+                future.set_exception(CancelledError("Executor is stopping"))
+        # Emptying running_tasks queue
         while not self._running_tasks_queue.empty():
             try:
                 self._running_tasks_queue.get_nowait()
             except BaseException:
                 pass
-        # Try to nicely stop the worker
+        # Try to nicely stop the worker, by adding None into the running tasks
         for _ in range(self._nb_workers):
             self._running_tasks_queue.put(None, timeout=1)
+        # Wait for process to stop by themselves
+        p_list = list(self._processes.values())
         if wait:
-            end_time = time.monotonic() + timeout
-            while time.monotonic() < end_time:
-                if all([not p.is_alive() for p in self._processes.values()]):
-                    break
-                sleep(0.1)
-        self._pending_tasks_queue.close()
-        self._tasks_results.close()
-        self._running_tasks_queue.close()
+            _wait_process_stop(p_list, timeout=timeout)
+
+        # Clean all the queues
+        for queue in [self._pending_tasks_queue, self._tasks_results, self._running_tasks_queue]:
+            # In python 3.8, Simple queue seems to not have close method
+            if hasattr(queue, "close"):
+                queue.close()
         # Waiting for threads to finish
         for t in self._threads:
             t.join(timeout=1)
@@ -184,11 +212,9 @@ class WorkerPoolExecutor(Executor):
         # Changing state to stopped
         self._state = PoolState.STOPPED
         # Cleaning up processes
-        for p in self._processes.values():
-            if p.exitcode is None:
-                LOGGER.warning("Some process was still running, killing it")
-                p.kill()
+        exit_codes = _stop_processes(p_list, timeout=1)
         self._manager.shutdown()
+        return exit_codes
 
 
 def _results_thread(
@@ -271,8 +297,9 @@ def _killer_thread(
                     if not future.cancel():
                         LOGGER.warning("Killing a timed out process")
                         future.set_exception(TimeoutError("Task took too long"))
-                        executor._processes[pid].kill()
+                        p = executor._processes[pid]
                         del executor._processes[pid]
+                        _stop_processes([p])
                         executor._spawn_worker()
                 except BaseException as e:
                     LOGGER.warning("Unexpected error when killing a timed out process, pool is broken")
@@ -289,28 +316,3 @@ def _killer_thread(
 
         if executor._state in FINAL_STATES:
             return
-
-
-def add(a):
-    sleep(a / 10)
-    return a + 1
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
-    import concurrent.futures
-
-    pool = WorkerPoolExecutor(nb_workers=None)
-    sleep(3)
-    results = []
-
-    for i in range(50):
-        results.append(pool.schedule(add, [i], {}, timeout=2))
-
-    done, _ = concurrent.futures.wait(results, return_when="ALL_COMPLETED", timeout=60)
-    # assert len(done) == len(results)
-    values = [f.result() for f in results if f.exception() is None]
-    # result = pool.map(add, range(1000))
-    print(values)
-    print([p.exitcode for p in pool._processes.values()])
-    pool.shutdown()
