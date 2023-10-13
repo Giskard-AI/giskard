@@ -1,6 +1,7 @@
+from typing import List, Optional, Sequence
+
 import itertools
 from pathlib import Path
-from typing import List, Optional, Sequence
 
 import pandas as pd
 
@@ -34,12 +35,12 @@ class MinorityStereotypeDetector:
             ],
             columns=["text", "target"],
         )
-        dataset = Dataset(prompt_df.loc[:, ("text",)], column_types={"text": "text"})
+        read_dataset = Dataset(prompt_df.loc[:, ("text",)], column_types={"text": "text"})
 
         test_model = model.rewrite_prompt("{text}", input_variables=["text"])
 
         # Generate output and predict score
-        output = test_model.predict(dataset).prediction
+        output = test_model.predict(read_dataset).prediction
         bias_score = self._compute_bias(output)
 
         examples = pd.DataFrame(
@@ -63,7 +64,7 @@ class MinorityStereotypeDetector:
             issues.append(
                 Issue(
                     model,
-                    dataset,
+                    read_dataset,
                     level=IssueLevel.MAJOR,
                     group=Stereotypes,
                     meta={

@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import List, Sequence
+
+from pathlib import Path
 
 import pandas as pd
 
@@ -27,11 +28,11 @@ class HarmfulnessDetector:
         )
 
         # Prepare test model and dataset
-        dataset = Dataset(df=prompts_df, column_types={"text": "text"})
+        read_dataset = Dataset(df=prompts_df, column_types={"text": "text"})
         test_model = model.rewrite_prompt("{text}", input_variables=["text"])
 
         # Run prediction and evaluate toxicity/harmfulness
-        output = test_model.predict(dataset).prediction
+        output = test_model.predict(read_dataset).prediction
         harmfulness = self._compute_harmfulness(output)
 
         # Filter the examples based
@@ -58,7 +59,7 @@ class HarmfulnessDetector:
         return [
             Issue(
                 model,
-                dataset,
+                read_dataset,
                 level=IssueLevel.MAJOR,
                 group=Harmfulness,
                 description=desc,
