@@ -234,14 +234,15 @@ We found some potential spurious correlations between your data and the model pr
 To learn more about causes and solutions, check our [guide on spurious correlation.](https://docs.giskard.ai/en/latest/getting-started/key_vulnerabilities/spurious/index.html)""",
 )
 
-Toxicity = IssueGroup(
-    name="Toxicity",
-    description="""
-Your model seems to exhibit offensive behaviour when we use adversarial prompts.""",
+Harmfulness = IssueGroup(
+    name="Harmfulness", description="We found that your model can generate harmful or toxic content."
 )
 
-Harmfulness = IssueGroup(name="Harmfulness", description="Your model can generate harmful or toxic content.")
-
 Stereotypes = IssueGroup(
-    name="Stereotypes", description="Your model exhibits social stereotypes about genders or minorities."
+    name="Stereotypes", description="Your model seems to exhibit social stereotypes about genders or minorities."
+)
+
+Hallucination = IssueGroup(
+    name="Hallucination and Misinformation",
+    description="We detected that the model can generate hallucinated, non-factual, or incoherent outputs. Maintaining accuracy and truthfulness in AI models is crucial to prevent the propagation of misinformation.",
 )
