@@ -21,13 +21,12 @@ Answer Y or N."""
 
 
 OUTPUT_FORMAT_ISSUE_DESCRIPTION = """Issue category: Output formatting
-Issue category description: This category focuses on ensuring that the model output is correctly formatted and consistent with format requirements indicated in the model description. 
+Issue category description: This category focuses on ensuring that the model output is consistent with format requirements indicated in the model description, if any. 
 
 Here are some examples of requirements relative to the issue category above, but which are not necessarily relevant for the specific model you are testing:
 - Model output should not be longer than 3 sentences
 - The model output should be valid HTML
-- Responses must be valid JSON format
-"""
+- Responses must be valid JSON format"""
 
 
 @detector("llm_output_formatting", tags=["output_formatting", "llm", "text_generation"])
