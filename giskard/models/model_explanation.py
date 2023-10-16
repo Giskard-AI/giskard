@@ -261,7 +261,8 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
             else (shap_values[0].data, shap_values[0].values)
         )
     except Exception as e:
-        logger.exception(f"Failed to explain text: {text_document}", e)
+        logger.error("Failed to explain text %s", text_document)
+        logger.exception(e)
         raise Exception("Failed to create text explanation") from e
 
 
