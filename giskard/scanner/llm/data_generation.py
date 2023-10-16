@@ -1,12 +1,13 @@
 import json
 from typing import Optional
+
 import pandas as pd
 
-from ...datasets import Dataset
 from giskard.scanner.llm import utils
-from ..logger import logger
-from ...models.base.model import BaseModel
 
+from ...datasets import Dataset
+from ...models.base.model import BaseModel
+from ..logger import logger
 
 GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
 

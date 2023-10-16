@@ -8,9 +8,8 @@ from giskard.scanner import logger
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..decorators import detector
-from ..issues import Issue, IssueLevel
+from ..issues import Hallucination, Issue, IssueLevel
 from . import utils
-from .issues import Hallucination
 
 GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate inputs for this model to make it produce absurd, controversial, or implausible output.
 

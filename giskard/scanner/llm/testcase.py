@@ -58,13 +58,9 @@ GENERATE_REQUIREMENTS_FUNCTIONS = [
 GENERATE_INPUTS_PROMPT = """
 You are auditing AI models. Your task is to generate a set of inputs used to evaluate the behavior of a given AI model. These inputs should highlight the model's performance in scenarios where it may fail or exhibit suboptimal behavior related to the following issue category:
 
-Issue category: {issue_name}.
-Issue category description: {issue_description}
+{issue_description}
 
 It is important to ensure that the generated inputs cover both common and unusual cases.
-
-You can use the following examples as inspiration:
-{issue_examples}
 
 You will generate inputs for the following model:
 
@@ -169,16 +165,14 @@ class RequirementsGenerator:
         return []
 
 
-class DataGenerator:
-    def __init__(self, category, requirement):
-        self.category = category
+class RequirementDataGenerator:
+    def __init__(self, issue_description, requirement):
+        self.issue_description = issue_description
         self.requirement = requirement
 
     def _make_generate_inputs_prompt(self, model: BaseModel, num_inputs: int = 5):
         return GENERATE_INPUTS_PROMPT.format(
-            issue_name=self.category.name,
-            issue_description=self.category.description,
-            issue_examples="\n- ".join(self.category.issue_examples),
+            issue_description=self.issue_description,
             model_name=model.meta.name,
             model_description=model.meta.description,
             feature_names=model.meta.feature_names,
@@ -200,7 +194,7 @@ class TestcaseResult:
     reason: Optional[str] = None
 
 
-class Evaluator:
+class RequirementEvaluator:
     def __init__(self, requirements: Sequence[str]):
         self.requirements = requirements
 
