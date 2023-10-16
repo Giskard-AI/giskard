@@ -246,3 +246,13 @@ Hallucination = IssueGroup(
     name="Hallucination and Misinformation",
     description="We detected that the model can generate hallucinated, non-factual, or incoherent outputs. Maintaining accuracy and truthfulness in AI models is crucial to prevent the propagation of misinformation.",
 )
+
+SensitiveInformationDisclosure = IssueGroup(
+    name="Sensitive Information Disclosure",
+    description="We detected that the model may leak sensitive or confidential information in its reponses. Protecting user privacy and data security is paramount when using AI models.",
+)
+
+OutputFormatting = IssueGroup(
+    name="Output Formatting",
+    description="We detected that the model may require a specific format for its output, but this format was not always respected. Model output should be verified to ensure that its format is consistent with the downstream application requirements.",
+)

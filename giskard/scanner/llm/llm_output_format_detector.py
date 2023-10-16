@@ -3,41 +3,56 @@ from typing import Sequence
 from giskard.scanner import logger
 
 from ...datasets.base import Dataset
-from ...llm.issues import OUTPUT_FORMATTING_ISSUE
 from ...models.base.model import BaseModel
 from ..decorators import detector
-from ..issues import Issue
+from ..issues import Issue, IssueLevel, OutputFormatting
 from . import utils
-from .business_detector import LLMBusinessDetector
+from .base import RequirementBasedDetector
 
-_model_desc_eval_prompt = (
-    "Based on the following description, does this AI model require a specific format for its output? Answer Y or N."
-)
+BREAKER_PROMPT = """Based on the following model description, does this AI model require a specific format for its output?
+
+Think step by step. For example, if the model description says that the model output should be valid HTML, you should answer Y.
+If the model description says that the model output should be valid JSON format, you should answer Y.
+If the model description says that the model should produce a list of 5 elements, you should answer Y.
+If the model description does not provide any information about the output format, you should answer N.
+If you are in doubt, you should answer N.
+
+Answer Y or N."""
 
 
-@detector("llm_output_format", tags=["llm", "generative", "text_generation"])
-class LLMOutputFormatDetector(LLMBusinessDetector):
+OUTPUT_FORMAT_ISSUE_DESCRIPTION = """Issue category: Output formatting
+Issue category description: This category focuses on ensuring that the model output is correctly formatted and consistent with format requirements indicated in the model description. 
+
+Here are some examples of requirements relative to the issue category above, but which are not necessarily relevant for the specific model you are testing:
+- Model output should not be longer than 3 sentences
+- The model output should be valid HTML
+- Responses must be valid JSON format
+"""
+
+
+@detector("llm_output_formatting", tags=["output_formatting", "llm", "text_generation"])
+class LLMOutputFormattingDetector(RequirementBasedDetector):
+    _issue_group = OutputFormatting
+    _issue_level = IssueLevel.MEDIUM
+
+    def get_issue_description(self) -> str:
+        return OUTPUT_FORMAT_ISSUE_DESCRIPTION
+
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
         out = utils.llm(
             [
-                {"role": "system", "content": _model_desc_eval_prompt},
-                {"role": "user", "content": model.meta.description},
+                {"role": "system", "content": BREAKER_PROMPT},
+                {"role": "user", "content": "Model description: " + model.meta.description},
             ],
             temperature=0.1,
             max_tokens=1,
         )
+
         if out.strip().upper() != "Y":
             logger.warning(
-                "Skipping the output format checks because the model description does not specify an output format."
+                f"{self.__class__.__name__}: Skipping output format checks because we could not define format requirements based on the model description."
             )
             return []
 
-        # Define which output format the model should use.
-        # @TODO
-
-        # Check that the format is respected.
-        # @TODO
-
-        # I keep for now the legacy behaviour
-        return self._run_category_detections(OUTPUT_FORMATTING_ISSUE, model)
+        return super().run(model, dataset)

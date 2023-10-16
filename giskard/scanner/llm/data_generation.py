@@ -21,7 +21,7 @@ Think step by step and then call the `generate_inputs` function with the generat
 """
 
 
-def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None):
+def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None, temperature=0.5):
     """Generates a test dataset for the model."""
     functions = [
         {
@@ -51,7 +51,10 @@ def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optio
         )
 
     out = utils.llm_fn_call(
-        messages=[{"role": "system", "content": prompt}], functions=functions, function_call={"name": "generate_inputs"}
+        messages=[{"role": "system", "content": prompt}],
+        functions=functions,
+        function_call={"name": "generate_inputs"},
+        temperature=temperature,
     )
     try:
         generated = json.loads(out.function_call.arguments)["inputs"]

@@ -155,7 +155,9 @@ class RequirementsGenerator:
         """Generates a set of requirements for a given a model."""
         prompt = self._make_generate_requirements_prompt(model, max_requirements)
         out = utils.llm_fn_call(
-            [{"role": "system", "content": prompt}], functions=self._make_generate_requirements_functions()
+            [{"role": "system", "content": prompt}],
+            functions=self._make_generate_requirements_functions(),
+            temperature=0.1,
         )
         try:
             return json.loads(out.function_call.arguments)["requirements"]
