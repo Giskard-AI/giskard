@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -5,34 +7,30 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Optional, List, Union, Hashable
 
 import numpy as np
 import pandas
 import pandas as pd
 import yaml
-from pandas.api.types import is_list_like
-from pandas.api.types import is_numeric_dtype
+from mlflow import MlflowClient
+from pandas.api.types import is_list_like, is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
-from mlflow import MlflowClient
 
 from giskard.client.giskard_client import GiskardClient
-from giskard.client.io_utils import save_df, compress
+from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import (
-    SlicingFunction,
-    SlicingFunctionType,
-)
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
 from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunction,
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from ..metadata.indexing import ColumnMetadataMixin
+
 from ...ml_worker.utils.file_utils import get_file_name
+from ..metadata.indexing import ColumnMetadataMixin
 
 SAMPLE_SIZE = 1000
 
@@ -521,7 +519,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, dataset_id, sample: bool = False):
+    def download(cls, client: Optional[GiskardClient], project_key, dataset_id, sample: bool = False):
         """
         Downloads a dataset from a Giskard project and returns a Dataset object.
         If the client is None, then the function assumes that it is running in an internal worker and looks for the dataset locally.
@@ -661,9 +659,7 @@ class Dataset(ColumnMetadataMixin):
 
         # To avoid file being open in write mode and read at the same time,
         # First, we'll write it, then make sure to remove it
-        with tempfile.NamedTemporaryFile(
-            prefix="dataset-", suffix=".csv", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv", delete=False) as f:
             # Get file path
             local_path = f.name
             # Get name from file
@@ -696,8 +692,10 @@ class Dataset(ColumnMetadataMixin):
             Additional keyword arguments
             (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
         """
-        from giskard.integrations.wandb.wandb_utils import wandb_run
         import wandb  # noqa library import already checked in wandb_run
+
+        from giskard.integrations.wandb.wandb_utils import wandb_run
+
         from ...utils.analytics_collector import analytics
 
         with wandb_run(**kwargs) as run:

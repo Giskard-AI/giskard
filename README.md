@@ -197,6 +197,10 @@ You can then **upload the test suite** created using the `giskard` Python librar
     test_suite.upload(client, "my_project")
     ```
 
+> **The Giskard server is installed on your infrastructure.**
+>
+> Giskard as a company does not have access to your datasets and models, so you can keep everything private.
+
 # ❓ Where can I get more help?
 
 

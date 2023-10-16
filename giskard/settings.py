@@ -34,6 +34,7 @@ class Settings(BaseModel):
     loglevel: str = "INFO"
     cache_dir: str = "cache"
     disable_analytics: bool = False
+    min_workers: int = 2
 
     class Config:
         env_prefix = "GSK_"
