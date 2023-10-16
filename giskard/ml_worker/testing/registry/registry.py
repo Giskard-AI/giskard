@@ -11,15 +11,11 @@ from typing import Optional, Dict
 import cloudpickle
 
 from giskard.core.core import SavableMeta
-from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
 from giskard.settings import expand_env_var, settings
 
 
 def find_plugin_location():
-    if udf_repo_available:
-        return udf_root
-    else:
-        return Path(expand_env_var(settings.home)) / "plugins"
+    return Path(expand_env_var(settings.home)) / "plugins"
 
 
 logger = logging.getLogger(__name__)
