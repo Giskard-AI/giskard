@@ -6,7 +6,7 @@ groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:c70904f3797fbf1cfa8210e44bf2d918a2ac759167fa44a2cf1e1f8967523c31"
+content_hash = "sha256:5cb3f4e006515172f5e06621f4a279c5bda239c40bdec5b8e60726d8658e8fbb"
 
 [[package]]
 name = "absl-py"
@@ -3054,6 +3054,21 @@ summary = "A generic, spec-compliant, thorough implementation of the OAuth reque
 files = [
     {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
     {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
+]
+
+[[package]]
+name = "openai"
+version = "0.28.1"
+requires_python = ">=3.7.1"
+summary = "Python client library for the OpenAI API"
+dependencies = [
+    "aiohttp",
+    "requests>=2.20",
+    "tqdm",
+]
+files = [
+    {file = "openai-0.28.1-py3-none-any.whl", hash = "sha256:d18690f9e3d31eedb66b57b88c2165d760b24ea0a01f150dd3f068155088ce68"},
+    {file = "openai-0.28.1.tar.gz", hash = "sha256:4be1dad329a65b4ce1a660fe6d5431b438f429b5855c883435f0f7fcb6d2dcc8"},
 ]
 
 [[package]]

@@ -173,6 +173,7 @@ llm = [
     "bert-score",
     "rapidfuzz", # needed for garak
     "colorama" # needed for garak
+    "openai>=0.28.1",
 ]
 
 server = [
