@@ -112,12 +112,12 @@ def test_default_dataset_is_used_with_generative_model():
     )
     scanner = Scanner()
 
-    with mock.patch("giskard.scanner.llm.utils.infer_dataset") as infer_dataset:
+    with mock.patch("giskard.scanner.scanner.generate_test_dataset") as generate_test_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
             pass
-        infer_dataset.assert_called_once()
+        generate_test_dataset.assert_called_once()
 
 
 @pytest.mark.skip(reason="Now rely on LLM generated issues")
