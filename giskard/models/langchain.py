@@ -52,7 +52,16 @@ class LangchainModel(MLFlowSerializableModel):
         return mlflow.langchain.load_model(local_dir)
 
     def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict("records")]
+        generations = [self.model(data) for data in df.to_dict("records")]
+        output_keys = self.model.output_keys
+
+        if len(output_keys) == 1:
+            return [generation[output_keys[0]] for generation in generations]
+        else:
+            return [
+                str({key: value for key, value in generation.items() if key in output_keys})
+                for generation in generations
+            ]
 
     def rewrite_prompt(self, template, input_variables=None, **kwargs):
         from langchain import LLMChain
