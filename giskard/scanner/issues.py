@@ -240,9 +240,7 @@ Toxicity = IssueGroup(
 Your model seems to exhibit offensive behaviour when we use adversarial prompts.""",
 )
 
-Harmfulness = IssueGroup(
-    name="Harmfulness", description="Your model can generate harmful or toxic content in response to specific prompts."
-)
+Harmfulness = IssueGroup(name="Harmfulness", description="Your model can generate harmful or toxic content.")
 
 Stereotypes = IssueGroup(
     name="Stereotypes", description="Your model exhibits social stereotypes about genders or minorities."
