@@ -3,9 +3,12 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import logging
 import os
 import time
+import traceback
 from concurrent.futures import CancelledError, Executor, Future
+from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass, field
 from enum import Enum
+from io import StringIO
 from multiprocessing import Process, Queue, SimpleQueue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
@@ -46,13 +49,19 @@ def _stop_processes(p_list: List[Process], timeout: float = 1) -> List[Optional[
     return exit_codes
 
 
-@dataclass
+class GiskardFuture(Future):
+    def __init__(self) -> None:
+        super().__init__()
+        self.logs = ""
+
+
+@dataclass(frozen=True)
 class TimeoutData:
     id: str
     end_time: float
 
 
-@dataclass
+@dataclass(frozen=True)
 class GiskardTask:
     callable: Callable
     args: Any
@@ -60,11 +69,12 @@ class GiskardTask:
     id: str = field(default_factory=_generate_task_id)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GiskardResult:
     id: str
     result: Any = None
     exception: Any = None
+    logs: str = None
 
 
 def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, running_process: Dict[str, str]):
@@ -74,18 +84,26 @@ def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, runnin
     while True:
         # Blocking accessor, will wait for a task
         task: GiskardTask = tasks_queue.get()
+        # This is how we cleanly stop the workers
         if task is None:
             return
-        try:
-            LOGGER.debug("Doing task %", task.id)
-            running_process[task.id] = pid
-            result = task.callable(*task.args, **task.kwargs)
-            to_return = GiskardResult(id=task.id, result=result)
-        except BaseException as e:
-            to_return = GiskardResult(id=task.id, exception=str(e))
-        finally:
-            running_process.pop(task.id)
-            tasks_results.put(to_return)
+        # Capture any log (stdout, stderr + root logger)
+        with redirect_stdout(StringIO()) as f:
+            with redirect_stderr(f):
+                handler = logging.StreamHandler(f)
+                logging.getLogger().addHandler(handler)
+                try:
+                    LOGGER.debug("Doing task %", task.id)
+                    running_process[task.id] = pid
+                    result = task.callable(*task.args, **task.kwargs)
+                    to_return = GiskardResult(id=task.id, result=result, logs=f.getvalue())
+                except BaseException as e:
+                    exception = "\n".join(traceback.format_exception(type(e), e, e.__traceback__))
+                    to_return = GiskardResult(id=task.id, exception=exception, logs=f.getvalue() + "\n" + exception)
+                finally:
+                    running_process.pop(task.id)
+                    tasks_results.put(to_return)
+                    logging.getLogger().removeHandler(handler)
 
 
 # Note: See _on_queue_feeder_error
@@ -160,7 +178,7 @@ class WorkerPoolExecutor(Executor):
         args=None,
         kwargs=None,
         timeout: Optional[float] = None,
-    ):
+    ) -> GiskardFuture:
         if args is None:
             args = []
         if kwargs is None:
@@ -168,7 +186,7 @@ class WorkerPoolExecutor(Executor):
         if self._state in FINAL_STATES:
             raise RuntimeError(f"Cannot submit when pool is {self._state.name}")
         task = GiskardTask(callable=fn, args=args, kwargs=kwargs)
-        res = Future()
+        res = GiskardFuture()
         self._futures_mapping[task.id] = res
         self._pending_tasks_queue.put(task)
         if timeout is not None:
@@ -236,7 +254,8 @@ def _results_thread(
             except BaseException:
                 pass
             continue
-        if result.result is not None:
+        future.logs = result.logs
+        if result.exception is None:
             future.set_result(result.result)
         else:
             # TODO(Bazire): improve to get Traceback

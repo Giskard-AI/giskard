@@ -1,3 +1,5 @@
+import logging
+import sys
 from multiprocessing.context import SpawnProcess
 from time import sleep
 
@@ -39,6 +41,48 @@ def add_one(elt):
 def sleep_add_one(timer, value):
     sleep(timer)
     return value + 1
+
+
+def print_stuff():
+    print("stuff stdout")
+    print("other stuff", file=sys.stderr)
+    logging.getLogger().info("info log")
+    logging.getLogger("truc").error("toto")
+    logging.getLogger(__name__).warning("Warning")
+    return
+
+
+def bugged_code():
+    print("Before raising")
+    return 1 / 0
+
+
+@pytest.mark.concurrency
+def test_handle_log(one_worker_pool: WorkerPoolExecutor):
+    future = one_worker_pool.submit(print_stuff)
+    assert future.result(timeout=5) is None
+    print(future.logs)
+    assert "stuff stdout" in future.logs
+    assert "other stuff" in future.logs
+    assert "info log" in future.logs
+    assert "toto" in future.logs
+    assert "Warning" in future.logs
+
+
+@pytest.mark.concurrency
+def test_handle_exception_log(one_worker_pool: WorkerPoolExecutor):
+    future = one_worker_pool.submit(bugged_code)
+    exception = future.exception(timeout=5)
+    assert exception is not None
+    print(exception)
+    assert "ZeroDivisionError: division by zero" in str(exception)
+    assert "in bugged_code" in str(exception)
+    assert "return 1 / 0" in str(exception)
+    print(future.logs)
+    assert "Before raising" in future.logs
+    assert "ZeroDivisionError: division by zero" in future.logs
+    assert "in bugged_code" in future.logs
+    assert "return 1 / 0" in future.logs
 
 
 @pytest.mark.concurrency
