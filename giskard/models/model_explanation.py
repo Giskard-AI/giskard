@@ -306,11 +306,12 @@ def text_explanation_prediction_wrapper(
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)
-        if num_documents <= 1:
-            df_with_text_documents = pd.DataFrame(input_example)
-        else:
-            df_with_text_documents = pd.concat([input_example] * (num_documents), ignore_index=True)
-        df_with_text_documents[text_column] = pd.DataFrame(text_documents)
+        df_with_text_documents = (
+            input_example.copy()
+            if num_documents == 1
+            else pd.concat([input_example] * num_documents, ignore_index=True)
+        )
+        df_with_text_documents[text_column] = text_documents
         return prediction_function(df_with_text_documents)
 
     return text_predict
