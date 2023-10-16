@@ -1,171 +1,144 @@
-from typing import Optional
+from typing import Optional, Union
 
+import json
 import logging
-import random
-import secrets
-import time
+import math
 
-import stomp
 from pydantic import AnyHttpUrl
-from websocket._exceptions import WebSocketBadStatusException, WebSocketException
+from websockets.client import WebSocketClientProtocol
 
-import giskard
 from giskard.cli_utils import validate_url
-from giskard.client.giskard_client import GiskardClient
+from giskard.ml_worker.stomp.client import StompWSClient
+from giskard.ml_worker.stomp.constants import HeaderType
+from giskard.ml_worker.stomp.parsing import Frame, StompFrame
 from giskard.ml_worker.testing.registry.registry import load_plugins
+from giskard.ml_worker.websocket.action import MLWorkerAction
+from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
+from giskard.ml_worker.websocket.utils import fragment_message
 from giskard.settings import settings
 from giskard.utils import shutdown_pool, start_pool
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 INTERNAL_WORKER_ID = "INTERNAL"
 EXTERNAL_WORKER_ID = "EXTERNAL"
-
-websocket_loop_callback: callable = None
-
-
-def websocket_use_main_thread(callback):
-    # Expose and run the WebSocket loop in main thread
-    global websocket_loop_callback
-    websocket_loop_callback = callback
-    return "WebSocket ML Worker loop"
+MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
-class MLWorker:
-    token_file_location: str
-    ws_conn: stomp.WSStompConnection
-    ws_stopping: bool = False
-    ws_attempts: int = 0
-    ws_max_attemps: int = 10
-    ws_max_reply_payload_size: int = 8192
-    ml_worker_id: str
-    client: GiskardClient
-
+class MLWorker(StompWSClient):
     def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
-        client = None if is_server else GiskardClient(str(backend_url), api_key, hf_token)
-        self.client = client
-
-        ws_conn = self._create_websocket_client(backend_url, is_server, hf_token)
-
-        if not is_server:
-            logger.info("Remote server host and port are specified, connecting as an external ML Worker")
-
-        self.ws_conn = ws_conn
-
-    def _create_websocket_client(self, backend_url: AnyHttpUrl = None, is_server=False, hf_token=None):
-        from giskard.ml_worker.websocket.listener import MLWorkerWebSocketListener
+        headers = {}
+        connect_headers = {"COOKIE": f"spaces-jwt={hf_token};"} if hf_token is not None else None
 
         if is_server:
             # Retrieve from settings for internal ML Worker
-            self.ml_worker_id = INTERNAL_WORKER_ID
+            self._worker_type = INTERNAL_WORKER_ID
             backend_url = validate_url(None, None, f"http://{settings.host}:{settings.ws_port}{settings.ws_path}")
         else:
             # External ML worker: URL should be provided
-            self.ml_worker_id = EXTERNAL_WORKER_ID
-            # Use the URL path component provided by settings
+            self._worker_type = EXTERNAL_WORKER_ID
+            headers["api-key"] = api_key
 
-            # Use 80 port by default
-            port = backend_url.port if backend_url.port else 80
-            # Fix 443 port if https and no given port
-            if backend_url.scheme == "https" and backend_url.port is None:
-                port = 443
-            backend_url = validate_url(
-                None, None, f"{backend_url.scheme}://{backend_url.host}:{port}{settings.ws_path}"
-            )
-        ws_conn = stomp.WSStompConnection(
-            [(backend_url.host, backend_url.port)],
-            ws_path=backend_url.path,
-            reconnect_attempts_max=1,  # Reconnection managed by our Listener
-            header={"COOKIE": f"spaces-jwt={hf_token};" if hf_token else ""},  # To access a private HF Spaces
-        )
-        if backend_url.scheme == "https":
-            # Enable SSL/TLS
-            ws_conn.set_ssl([(backend_url.host, backend_url.port)])
-        ws_conn.transport.override_threading(websocket_use_main_thread)  # Expose WebSocket loop function to ML Worker
-        ws_conn.set_listener("ml-worker-action-listener", MLWorkerWebSocketListener(self))
-        return ws_conn
-
-    def connect_websocket_client(self):
-        if self.ws_attempts >= self.ws_max_attemps:
-            logger.warn("Maximum reconnection attemps reached, please retry.")
-            # Exit the process
-            self.stop()
-            return
-        try:
-            self._connect_websocket_client(self.ml_worker_id == INTERNAL_WORKER_ID)
-        except Exception as e:
-            time.sleep(1 + random.random() * 2)  # noqa NOSONAR - we won't be affected by the waiting time
-            self.ws_attempts += 1
-            logger.debug(f"Disconnected due to {e}, reconnecting...")
-            self.connect_websocket_client()
+        # Use the URL path component provided by settings
+        if backend_url.port is not None:
+            port = backend_url.port
+        elif backend_url.scheme == "https":
+            port = 443
         else:
-            self.ws_attempts = 0
+            port = 80
+        backend_url = validate_url(None, None, f"{backend_url.scheme}://{backend_url.host}:{port}{settings.ws_path}")
+        ws_str = f"{'ws' if backend_url.scheme == 'http' else 'wss'}://{backend_url.host}:{port}{settings.ws_path}"
 
-    def _connect_websocket_client(self, is_server=False):
-        if self.ws_stopping:
-            return
-
-        try:
-            if not is_server:
-                # External ML Worker: use API key
-                self.ws_conn.connect(
-                    with_connect_command=True,
-                    wait=False,
-                    headers={
-                        "api-key": self.client.session.auth.token,
-                    },
-                )
-            else:
-                # Internal ML Worker
-                internal_ml_worker_token = secrets.token_hex(16)
-                with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
-                    f.write(internal_ml_worker_token)
-                self.ws_conn.connect(
-                    with_connect_command=True,
-                    wait=False,
-                    headers={
-                        "token": internal_ml_worker_token,
-                    },
-                )
-        except (WebSocketException, WebSocketBadStatusException) as e:
-            logger.warn(f"Connection to Giskard Backend failed: {e.__class__.__name__}")
-            if isinstance(e, WebSocketBadStatusException):
-                if e.status_code == 404:
-                    # Backend may need upgrade or private HF Spaces
-                    logger.error(
-                        f"Please make sure that the version of Giskard server is above '{giskard.__version__}'"
-                    )
-                else:
-                    logger.error(
-                        f"WebSocket connection error {e.status_code}: "
-                        f"Please make sure that you are using {settings.ws_path} as the WebSocket endpoint"
-                    )
-                self.stop()
+        super().__init__(ws_str, headers, connect_headers)
+        self._backend_url = f"{backend_url.scheme}://{backend_url.host}:{port}"
+        self._ws_max_reply_payload_size = MAX_STOMP_ML_WORKER_REPLY_SIZE
+        self._api_key = api_key
+        self._hf_token = hf_token
+        self._worker_info = MLWorkerInfo(id=self._worker_type, is_remote=self.is_remote_worker())
 
     def is_remote_worker(self):
-        return self.ml_worker_id is not INTERNAL_WORKER_ID
+        return self._worker_type is not INTERNAL_WORKER_ID
+
+    async def config_handler(self, frame: Frame) -> None:
+        req = json.loads(frame.body)
+        if req["config"] == "MAX_STOMP_ML_WORKER_REPLY_SIZE" and "value" in req.keys():
+            mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
+            try:
+                mtu = max(mtu, int(req["value"]))
+            except ValueError:
+                mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
+            self._ws_max_reply_payload_size = mtu
+            LOGGER.info("MAX_STOMP_ML_WORKER_REPLY_SIZE set to %s", mtu)
+
+        return []
+
+    async def action_handler(self, frame: Frame) -> None:
+        req = json.loads(frame.body)
+        if "action" not in req.keys() or req["action"] not in WEBSOCKET_ACTORS:
+            raise ValueError(f"Invalid action frame received, {frame}")
+        action = MLWorkerAction[req["action"]]
+
+        # Dispatch the action
+        client_params = (
+            {
+                "url": self._backend_url,
+                "key": self._api_key,
+                "hf_token": self._hf_token,
+            }
+            if self._backend_url is not None
+            else None
+        )
+        if action == MLWorkerAction.stopWorker:
+            LOGGER.info("Marking worker as stopping...")
+            self._is_stopping = True
+
+        payload: Union[str, Frame] = await WEBSOCKET_ACTORS[action.name](req, client_params, self._worker_info)
+        # We want to be able to send directly frame also (ie, disconnect frame for example)
+        if isinstance(payload, Frame):
+            return [payload]
+
+        # Else we do the chunking thing (should be handled by websocket protocol transport, but nevermind)
+        frag_count = math.ceil(len(payload) / self._ws_max_reply_payload_size)
+
+        return [
+            StompFrame.SEND.build_frame(
+                headers={
+                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/rep",
+                },
+                body=json.dumps(
+                    {
+                        "id": req["id"],
+                        "action": req["action"],
+                        "payload": fragment_message(payload, frag_i, self._ws_max_reply_payload_size),
+                        "f_index": frag_i,
+                        "f_count": frag_count,
+                    }
+                ),
+            )
+            for frag_i in range(frag_count)
+        ]
+
+    async def setup(self, websocket: WebSocketClientProtocol):
+        LOGGER.info("Subscribing for action...")
+        await self.subscribe(
+            websocket,
+            f"/ml-worker/{self._worker_type}/action",
+            f"ws-worker-{self._worker_type}-action",
+            self.action_handler,
+        )
+        LOGGER.info("Subscribing for config...")
+        await self.subscribe(
+            websocket,
+            f"/ml-worker/{self._worker_type}/config",
+            f"ws-worker-{self._worker_type}-config",
+            self.config_handler,
+        )
 
     async def start(self, nb_workers: Optional[int] = None):
         load_plugins()
         start_pool(nb_workers)
-        if self.ws_conn:
-            self.ws_stopping = False
-            self.connect_websocket_client()
-
-        while not self.ws_stopping:
-            global websocket_loop_callback
-            try:
-                if websocket_loop_callback:
-                    websocket_loop_callback()
-            except TypeError as e:
-                # Catch TypeError due to an issue in stompy.py
-                # as described in https://github.com/jasonrbriggs/stomp.py/issues/424
-                # and https://github.com/websocket-client/websocket-client/issues/930
-                logger.warn(f"WebSocket connection may not be properly closed: {e}")
-                logger.exception(e)
+        await super().start()
 
     def stop(self):
-        if self.ws_conn:
-            self.ws_stopping = True
-            self.ws_conn.disconnect()
+        super().stop()
         shutdown_pool()

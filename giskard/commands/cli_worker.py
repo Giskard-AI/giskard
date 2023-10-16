@@ -1,6 +1,5 @@
 from typing import Optional
 
-import asyncio
 import functools
 import logging
 import os
@@ -162,7 +161,13 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
             run_daemon(is_server, url, api_key, hf_token)
         else:
             ml_worker = MLWorker(is_server, url, api_key, hf_token)
-            asyncio.get_event_loop().run_until_complete(ml_worker.start(nb_workers))
+            started = ml_worker.start(nb_workers)
+            if sys.platform == "win32":
+                from asyncio import run
+            else:
+                from uvloop import run
+
+            run(started)
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
