@@ -1,35 +1,34 @@
+from typing import Any, Dict, List, Optional
+
 import logging
 import os
 import posixpath
 import shutil
 from pathlib import Path
-from typing import List, Dict, Any
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
-from giskard.core.suite import ModelInput, DatasetInput, SuiteInput
+from giskard.client.giskard_client import GiskardClient
+from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import (
-    TransformationFunction,
-)
-from giskard.ml_worker.testing.test_result import TestResult, TestMessageLevel
+from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
+    DatasetProcessingParam,
     EchoMsg,
     ExplainParam,
+    ExplainTextParam,
+    GenerateTestSuiteParam,
     GetInfoParam,
+    GetPushParam,
+    RunAdHocTestParam,
+    RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
-    ExplainTextParam,
-    RunAdHocTestParam,
-    DatasetProcessingParam,
-    GenerateTestSuiteParam,
-    RunModelForDataFrameParam,
-    GetPushParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -38,7 +37,7 @@ from giskard.path_utils import projects_dir
 logger = logging.getLogger(__name__)
 
 
-def parse_action_param(action, params):
+def parse_action_param(action: MLWorkerAction, params):
     # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
@@ -157,7 +156,7 @@ def map_dataset_process_function_meta_ws(callable_type):
     }
 
 
-def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websocket.FuncArgument]):
+def parse_function_arguments(client: Optional[GiskardClient], request_arguments: List[websocket.FuncArgument]):
     arguments = dict()
 
     # Processing empty list
@@ -169,21 +168,21 @@ def parse_function_arguments(ml_worker: MLWorker, request_arguments: List[websoc
             continue
         if arg.dataset is not None:
             arguments[arg.name] = Dataset.download(
-                ml_worker.client,
+                client,
                 arg.dataset.project_key,
                 arg.dataset.id,
                 arg.dataset.sample,
             )
         elif arg.model is not None:
-            arguments[arg.name] = BaseModel.download(ml_worker.client, arg.model.project_key, arg.model.id)
+            arguments[arg.name] = BaseModel.download(client, arg.model.project_key, arg.model.id)
         elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(
-                arg.slicingFunction.id, ml_worker.client, arg.slicingFunction.project_key
-            )(**parse_function_arguments(ml_worker, arg.args))
+                arg.slicingFunction.id, client, arg.slicingFunction.project_key
+            )(**parse_function_arguments(client, arg.args))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
-                arg.transformationFunction.id, ml_worker.client, arg.transformationFunction.project_key
-            )(**parse_function_arguments(ml_worker, arg.args))
+                arg.transformationFunction.id, client, arg.transformationFunction.project_key
+            )(**parse_function_arguments(client, arg.args))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
         elif arg.int_arg is not None:
@@ -246,7 +245,6 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
     test_result = test.get_builder()(**arguments).execute()
     if test_result.output_df is not None:  # i.e. if debug is True and test has failed
-
         if debug_info is None:
             raise ValueError(
                 "You have requested to debug the test, "

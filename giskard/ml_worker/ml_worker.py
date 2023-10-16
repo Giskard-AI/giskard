@@ -1,16 +1,20 @@
+from typing import Optional
+
 import logging
 import random
 import secrets
-import stomp
 import time
+
+import stomp
 from pydantic import AnyHttpUrl
-from websocket._exceptions import WebSocketException, WebSocketBadStatusException
+from websocket._exceptions import WebSocketBadStatusException, WebSocketException
 
 import giskard
+from giskard.cli_utils import validate_url
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.settings import settings
-from giskard.cli_utils import validate_url
+from giskard.utils import shutdown_pool, start_pool
 
 logger = logging.getLogger(__name__)
 
@@ -140,9 +144,9 @@ class MLWorker:
     def is_remote_worker(self):
         return self.ml_worker_id is not INTERNAL_WORKER_ID
 
-    async def start(self):
+    async def start(self, nb_workers: Optional[int] = None):
         load_plugins()
-
+        start_pool(nb_workers)
         if self.ws_conn:
             self.ws_stopping = False
             self.connect_websocket_client()
@@ -162,3 +166,4 @@ class MLWorker:
         if self.ws_conn:
             self.ws_stopping = True
             self.ws_conn.disconnect()
+        shutdown_pool()

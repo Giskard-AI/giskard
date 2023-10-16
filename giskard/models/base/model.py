@@ -1,3 +1,5 @@
+from typing import Iterable, Optional, Union
+
 import builtins
 import importlib
 import logging
@@ -8,16 +10,12 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterable, Optional, Union
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
 
-from .model_prediction import ModelPredictionResults
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -27,6 +25,9 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
+from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -379,7 +380,7 @@ class BaseModel(ABC):
         return str(self.id)
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key, model_id):
+    def download(cls, client: Optional[GiskardClient], project_key, model_id):
         """
         Downloads the specified model from the Giskard server and loads it into memory.
 
@@ -482,8 +483,8 @@ class BaseModel(ABC):
         raise NotImplementedError
 
     def _llm_agent(self, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
-        from ...llm.talk.talk import create_ml_llm
         from ...llm.config import llm_config
+        from ...llm.talk.talk import create_ml_llm
 
         data_source_tools = []
         if allow_dataset_queries:

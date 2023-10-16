@@ -1,10 +1,11 @@
+from typing import Optional
+
 import asyncio
 import functools
 import logging
 import os
 import platform
 import sys
-from typing import Optional
 
 import click
 import lockfile
@@ -13,19 +14,19 @@ from click import INT, STRING
 from lockfile.pidlockfile import PIDLockFile, read_pid_from_pidfile, remove_existing_pidfile
 from pydantic import AnyHttpUrl
 
-from giskard.cli_utils import common_options
 from giskard.cli_utils import (
+    common_options,
     create_pid_file_path,
+    follow_file,
+    get_log_path,
     remove_stale_pid_file,
     run_daemon,
-    get_log_path,
     tail,
-    follow_file,
     validate_url,
 )
 from giskard.path_utils import run_dir
 from giskard.settings import settings
-from giskard.utils.analytics_collector import anonymize, analytics
+from giskard.utils.analytics_collector import analytics, anonymize
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,13 @@ def start_stop_options(func):
     envvar="GSK_HF_TOKEN",
     help="Access token for Giskard hosted in a private Hugging Face Spaces",
 )
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token):
+@click.option(
+    "--parallelism",
+    "nb_workers",
+    default=None,
+    help="Number of processes to use for parallelism (None for number of cpu)",
+)
+def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers):
     """\b
     Start ML Worker.
 
@@ -102,7 +109,7 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token):
     )
     api_key = initialize_api_key(api_key, is_server)
     hf_token = initialize_hf_token(hf_token, is_server)
-    _start_command(is_server, url, api_key, is_daemon, hf_token)
+    _start_command(is_server, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
 
 
 def initialize_api_key(api_key, is_server):
@@ -126,7 +133,7 @@ def initialize_hf_token(hf_token, is_server):
     return hf_token
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None):
+def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
     start_msg = "Starting ML Worker"
@@ -154,7 +161,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
             run_daemon(is_server, url, api_key, hf_token)
         else:
             ml_worker = MLWorker(is_server, url, api_key, hf_token)
-            asyncio.get_event_loop().run_until_complete(ml_worker.start())
+            asyncio.get_event_loop().run_until_complete(ml_worker.start(nb_workers))
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
