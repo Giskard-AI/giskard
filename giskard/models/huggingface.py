@@ -133,6 +133,7 @@ class HuggingFaceModel(WrapperModel):
         classification_labels: Optional[Iterable] = None,
         id: Optional[str] = None,
         batch_size: Optional[int] = 1,
+        device: Optional[str] = None,
         **kwargs,
     ) -> None:
         """Automatically wraps a HuggingFace model or pipeline.
@@ -184,6 +185,7 @@ class HuggingFaceModel(WrapperModel):
 
         self.huggingface_module = model.__class__
         self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
+        self.device = device if device else model.device.type   # Allow to overwrite device
 
         try:
             if batch_size == 1 and model.device.type == "cuda":
@@ -226,6 +228,10 @@ class HuggingFaceModel(WrapperModel):
         self.model.save_pretrained(local_path)
 
     def model_predict(self, data):
+        if isinstance(self.model, torch.nn.Module):
+            # Move model to the given device
+            self.model = self.model.to(self.device)
+
         predictions = self._get_predictions(data)
 
         if self.is_classification and hasattr(predictions, "logits"):
