@@ -79,7 +79,7 @@ class LLMCharsInjectionDetector:
                 )
 
                 if fail_rate >= self.threshold:
-                    examples = perturbed_dataset.df.loc[:, (feature,)].copy()
+                    examples = dataset_sample.df.loc[:, (feature,)].copy()
                     examples["Model output"] = predictions.prediction
                     examples = examples.loc[~passed]
 
