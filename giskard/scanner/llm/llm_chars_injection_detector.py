@@ -56,12 +56,12 @@ class LLMCharsInjectionDetector:
             for char in self.control_chars:
                 injected_sequence = char * self.num_repetitions
 
-                def _add_prefix(df):
+                def _add_suffix(df):
                     dx = df.copy()
                     dx[feature] = dx[feature].astype(str) + injected_sequence
                     return dx
 
-                perturbed_dataset = dataset_sample.transform(_add_prefix, row_level=False)
+                perturbed_dataset = dataset_sample.transform(_add_suffix, row_level=False)
 
                 predictions = model.predict(perturbed_dataset)
 
