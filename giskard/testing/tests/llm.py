@@ -1,17 +1,21 @@
+import inspect
+
 import pandas as pd
 
+from . import debug_description_prefix, debug_prefix
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.decorators import test
-from ...ml_worker.testing.test_result import TestResult
+from ...ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 from ...models.base import BaseModel
 
 
-@test(name="LLM response validation using GPT-4", tags=["llm", "GPT-4"])
+@test(
+    name="Validate LLM evaluation dataset using GPT-4",
+    tags=["llm", "GPT-4"],
+    debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
+)
 def test_llm_response_validation(
-    model: BaseModel,
-    dataset: Dataset,
-    evaluation_criteria: str,
-    threshold: float = 0.5,
+    model: BaseModel, dataset: Dataset, evaluation_criteria: str, threshold: float = 0.5, debug: bool = False
 ):
     """Tests that the rate of generated response is over a threshold for a given test case.
 
@@ -30,23 +34,55 @@ def test_llm_response_validation(
               - A valid json answer
               - Answer to pandas documentation
         threshold(float, optional): The threshold for good response rate, i.e. the min ratio of responses that pass the assertion. Default is 0.50 (50%).
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have failed the evaluation criteria
     """
-    from ...llm.utils.validate_test_case import validate_test_case
+    from ...llm.utils.validate_test_case import validate_test_case_with_reason
 
     predictions = model.predict(dataset).prediction
 
-    passed = validate_test_case(model, evaluation_criteria, dataset.df, predictions)
-    metric = len([result for result in passed if result]) / len(predictions)
+    results = validate_test_case_with_reason(model, evaluation_criteria, dataset.df, predictions)
+    passed_tests = [res.score >= 3 for res in results]
+    metric = len([result for result in passed_tests if result]) / len(predictions)
+    passed = bool(metric >= threshold)
+
+    # --- debug ---
+    output_ds = None
+    if not passed and debug:
+        output_ds = dataset.copy()
+        output_ds.df = dataset.df.loc[[not test_passed for test_passed in passed_tests]]
+        test_name = inspect.stack()[0][3]
+        output_ds.name = debug_prefix + test_name
+    # ---
 
     return TestResult(
         actual_slices_size=[len(dataset)],
         metric=metric,
-        passed=bool(metric >= threshold),
+        passed=passed,
+        messages=[
+            TestMessage(
+                type=TestMessageLevel.INFO,
+                text=f"""
+Prompt intput: {dataset.df.iloc[i].to_dict()}
+                
+LLM response: {predictions[i]}
+                
+Score: {results[i].score}/5
+                
+Reason: {results[i].reason}
+                """,
+            )
+            for i in range(min(len(predictions), 3))
+        ],
+        output_df=output_ds,
     )
 
 
-@test(name="LLM individual response validation using GPT-4", tags=["llm", "GPT-4"])
-def test_llm_individual_response_validation(model: BaseModel, prompt_input: str, evaluation_criteria: str):
+@test(name="Validate LLM single prompt input using GPT-4", tags=["llm", "GPT-4"])
+def test_llm_individual_response_validation(
+    model: BaseModel, prompt_input: str, evaluation_criteria: str, debug: bool = False
+):
     """Tests that the rate of generated response is over a threshold for a given test case.
 
     The generated response will be validated using GPT-4
@@ -63,12 +99,19 @@ def test_llm_individual_response_validation(model: BaseModel, prompt_input: str,
             Bad assertion
               - A valid json answer
               - Answer to pandas documentation
+        debug(bool):
+            If True and the test fails,
+            a dataset will be provided containing the rows that have failed the evaluation criteria
     """
     if len(model.meta.feature_names) != 1:
         raise ValueError(
             "LLM individual response validation only work for models having single input, please use LLM response validation using"
         )
 
-    dataset = Dataset(pd.DataFrame({model.meta.feature_names[0]: [prompt_input]}), validation=False)
+    dataset = Dataset(
+        pd.DataFrame({model.meta.feature_names[0]: [prompt_input]}),
+        name=f'Single entry dataset for "{evaluation_criteria}"',
+        column_types={model.meta.feature_names[0]: "text"},
+    )
 
-    test_llm_response_validation(model, dataset, evaluation_criteria, 1.0)
+    return test_llm_response_validation(model, dataset, evaluation_criteria, 1.0, debug).execute()
