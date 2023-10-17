@@ -1,6 +1,6 @@
 # Giskard developer readme
 
-🚧  **WORK IN PROGRESS** 🚧 
+🚧  **WORK IN PROGRESS** 🚧
 This readme is in process of creation, some information can be subject to change
 
 ## Requirements
@@ -19,7 +19,7 @@ After running the command above there will be 3 modules running:
 - backend
 - ml-worker
 
-> When running Giskard in "dev mode" (as above) there's an H2 database that's used instead of a real one, the default location of this H2 database is `$HOME/giskard-home/database` 
+> When running Giskard in "dev mode" (as above) there's an H2 database that's used instead of a real one, the default location of this H2 database is `$HOME/giskard-home/database`
 
 To build the project use
 ```shell
@@ -58,7 +58,7 @@ docker-compose logs backend
 ## Python client
 To install the latest version of python library `giskard` the following script can be used:
 ```shell
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/Giskard-AI/giskard/main/python-client/scripts/install-giskard-client-dev.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Giskard-AI/giskard/main/scripts/install-giskard-client-dev.sh)"
 ```
 it will use the default `pip` available in the environment. To install `giskard` using a specific `pip` you can modify the command above, like
 ```shell

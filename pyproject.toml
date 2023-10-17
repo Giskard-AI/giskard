@@ -1,0 +1,279 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["giskard*"]
+exclude = ["docs*", "tests*"]
+
+[tool.setuptools.package-data]
+giskard = ["**/*.md", "**/*.html", "**/*.css", "**/*.js", "**/*.json", "**/*titanic.csv","**/*prompts.csv","**/*.txt"]
+
+
+
+
+[[tool.pdm.source]]
+type = "find_links"
+url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
+name = "torch"
+
+
+[tool.pdm.scripts]
+_.env = { GSK_DISABLE_ANALYTICS = "True" }
+# add "-n auto" to the pytest command to parallelize the execution
+test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+# for some reason github runners don't work when calling 'pdm test -m "not slow"'
+test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+lint = "ruff giskard tests"
+doc = "sphinx-build docs docs/_build/html"
+watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
+clean = "rm -rf coverage.xml coverage* .coverage*"
+notebook = "jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --notebook-dir ./docs/reference/notebooks --NotebookApp.token=''"
+check-deps = "deptry ."
+debug-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker start"
+worker = "python3 giskard/cli.py worker start"
+debug-internal-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker start -s"
+internal-worker = "python3 giskard/cli.py worker start -s"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "typing-extensions>=4.5.0",
+    "jupyter>=1.0.0",
+    "jupyterlab>=3.4.2",
+    "pre-commit>=2.19.0",
+    "mypy>=0.982",
+    "deptry>=0.5.13",
+    "ruff>=0.0.271",
+    "mlflow>2",
+    "black[d]>=22.12.0",
+    "pip>=23.1.2",
+]
+ml_runtime = [
+    "langchain>=0.0.187",
+    "nltk>=3.8.1",
+    "xgboost>=1.7.5",
+    "lightgbm>=3.3.5",
+    "imbalanced-learn>=0.10.1",
+    "catboost>=1.1.1",
+    "requests-mock>=1.10.0",
+    "tensorflow-hub>=0.12.0",
+    "transformers>=4.33, <4.34", # https://github.com/huggingface/transformers/issues/23352
+    "absl-py", # Needed for 3.11 transformers
+    "sentencepiece", # needed for some transformers stuff with tokenizer
+    "torch>=2.0.0",
+    "torchdata>=0.6.0",
+    "portalocker>=2.0.0", # Needed by torchdata for test_newspaper_classification_pytorch_dataset
+    "torchtext>=0.15.1",
+    "tensorflow-macos>=2.13.0, <2.14; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow>=2.13, <2.14",
+    # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
+    "tensorflow-text>=2.13, <2.14; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+    "mlflow>2",
+    "wandb",
+    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+]
+test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1"]
+doc = [
+    "furo>=2023.5.20",
+    "myst-parser>=1.0.0",
+    "sphinx-autobuild>=2021.3.14",
+    "sphinx>=6.1.3",
+    "sphinxcontrib-napoleon>=0.7",
+    "sphinx-autoapi>=2.1.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "sphinx-tabs>=3.4.1",
+    "sphinx-design>=0.4.1",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-click>=4.4.0",
+    "nbsphinx>=0.9.2",
+    "ipython==8.12.0",
+]
+
+[project.scripts]
+giskard = "giskard.cli:cli"
+
+[project.entry-points."mlflow.model_evaluator"]
+giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
+
+[project.urls]
+"Homepage" = "https://giskard.ai"
+"Source Code" = "https://github.com/Giskard-AI/giskard"
+"Bug Tracker" = "https://github.com/Giskard-AI/giskard/issues"
+"Documentation" = "https://docs.giskard.ai/"
+"Discord" = "https://discord.gg/ABvfpbu69R"
+"Linkedin" = "https://www.linkedin.com/company/giskard-ai"
+"Mastodon" = "https://fosstodon.org/@Giskard"
+"Twitter" = "https://twitter.com/giskard_ai"
+
+
+[project]
+name = "giskard"
+readme = "README.md"
+license = { text = "Apache Software License 2.0" }
+version = "2.0.0b26"
+description = "The testing framework dedicated to ML models, from tabular to LLMs"
+authors = [
+    { name = "Giskard AI", email = "hello@giskard.ai" },
+]
+keywords = [
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Quality",
+    "MLOps"
+]
+
+# Pypi classifiers: https://pypi.org/classifiers/
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+requires-python = ">=3.8.1, <3.12"
+dependencies = [
+    "cloudpickle>=1.1.1",
+    "zstandard>=0.10.0",
+    "mlflow-skinny>=2",
+    "gitpython",
+    "protobuf<3.21",            # Not compatible with transformers/tensorflow
+    "numpy>=1.22.0",
+    "scikit-learn>=1.0",
+    "scipy>=1.7.3",
+    "mixpanel>=4.4.0",
+    "requests>=2.19",
+    "pydantic<3,>1",
+    "pandas>=1.3.4,<2",
+    "xxhash>=3.2.0",
+    "langdetect>=1.0.9",
+    "chardet",                  # text metadata
+    "jinja2>=3",                # scan template
+    "requests-toolbelt>=0.9.1",
+    "stomp-py>=8.1.0",
+    "setuptools",               # used in ml worker for pkg_resources
+    "typing_extensions",        # used in registry/decorators, for python <3.10
+    "websocket-client",         # used in worker, to get exception from stomp
+    "pyyaml",                   # cli_server
+    "packaging",                # cli_server
+    "markdown",                 # needed for display of scan results in notebook
+]
+
+[project.optional-dependencies]
+llm = [
+    "transformers",
+    "torch",
+    "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
+    "evaluate",
+    "bert-score",
+    "datasets"
+]
+
+server = [
+    "tenacity>=4.11.0",
+    "psutil>=5.4.6",
+    "click>=7.0",
+    "docker>=6.0.0",
+    "shap>=0.41.0",
+    "llvmlite>=0.40.0", # Needed to be installable for Poetry
+    "numba>=0.50.0", # Needed to be installable for Poetry
+    "lockfile>=0.12.2",
+    "python-daemon>=2.2.2,<3",
+    "pycryptodome>=3.6.1",
+    "pyngrok>=6.0.0",
+]
+
+[tool.ruff]
+line-length = 120
+ignore = ["E501"]
+
+[tool.black]
+# https://github.com/psf/black
+target-version = ['py38', 'py39', 'py310']
+line-length = 120
+color = true
+
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | env
+    | venv
+    | giskard/ml_worker/generated
+)/
+'''
+
+[tool.isort]
+# https://github.com/timothycrosley/isort/
+py_version = 38
+line_length = 100
+
+known_typing = ["typing", "types", "typing_extensions", "mypy", "mypy_extensions"]
+sections = ["FUTURE", "TYPING", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+include_trailing_comma = true
+profile = "black"
+multi_line_output = 3
+indent = 4
+color_output = true
+
+[tool.mypy]
+# https://mypy.readthedocs.io/en/latest/config_file.html#using-a-pyproject-toml-file
+python_version = 3.8
+pretty = true
+show_traceback = true
+color_output = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+plugins = ["pydantic.mypy"]
+
+allow_redefinition = false
+check_untyped_defs = false # TODO: Andrey: fix it gradually
+disallow_untyped_defs = false # TODO: Andrey: fix it gradually
+disallow_any_generics = false # TODO: Andrey: fix it gradually
+disallow_incomplete_defs = false # TODO: Andrey: fix it gradually
+ignore_missing_imports = true
+implicit_reexport = false
+no_implicit_optional = false # TODO: Andrey: fix it gradually
+strict_equality = false # TODO: Andrey: fix it gradually
+strict_optional = false # TODO: Andrey: fix it gradually
+warn_no_return = false
+warn_redundant_casts = true
+warn_return_any = false
+warn_unreachable = true
+warn_unused_configs = false
+warn_unused_ignores = false
+
+[tool.pytest.ini_options]
+# https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
+# Directories that are not visited by pytest collector:
+testpaths = ["tests"]
+norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
+doctest_optionflags = ["ELLIPSIS", "NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+# Extra options:
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "--doctest-modules",
+    "--doctest-continue-on-failure",
+]
+
+[tool.deptry]
+extend_exclude = [".history"]
+ignore_notebooks = true

@@ -5,18 +5,13 @@
 
 version: 2
 updates:
-  - package-ecosystem: "gradle"
-    directory: "/backend"
-    schedule:
-      interval: "monthly"
-
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/"
     schedule:
       interval: "monthly"
 
   - package-ecosystem: "pip"
-    directory: "/python-client"
+    directory: "/"
     schedule:
       interval: "monthly"
 
