@@ -6,7 +6,7 @@ groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:f09a5f08659f9de4b02fd4a9575ff5b152ec17c5df5eb15636fc3b39280c1620"
+content_hash = "sha256:083d82ec087f84c859b3fc88939aa4506dc4ca62c45d3e33725966a0ac1ccebb"
 
 [[package]]
 name = "absl-py"
@@ -342,6 +342,26 @@ dependencies = [
 files = [
     {file = "beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
     {file = "beautifulsoup4-4.12.2.tar.gz", hash = "sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da"},
+]
+
+[[package]]
+name = "bert-score"
+version = "0.3.13"
+requires_python = ">=3.6"
+summary = "PyTorch implementation of BERT score"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "packaging>=20.9",
+    "pandas>=1.0.1",
+    "requests",
+    "torch>=1.0.0",
+    "tqdm>=4.31.1",
+    "transformers>=3.0.0",
+]
+files = [
+    {file = "bert_score-0.3.13-py3-none-any.whl", hash = "sha256:bbbb4c7fcdaa46d7681aff49f37f96faa09ed74e1b150e659bdc6b58a66989b9"},
+    {file = "bert_score-0.3.13.tar.gz", hash = "sha256:8ffe5838eac8cdd988b8b1a896af7f49071188c8c011a1ed160d71a9899a2ba4"},
 ]
 
 [[package]]
@@ -1048,6 +1068,30 @@ summary = "Discover and load entry points from installed packages."
 files = [
     {file = "entrypoints-0.4-py3-none-any.whl", hash = "sha256:f174b5ff827504fd3cd97cc3f8649f3693f51538c7e4bdf3ef002c8429d42f9f"},
     {file = "entrypoints-0.4.tar.gz", hash = "sha256:b706eddaa9218a19ebcd67b56818f05bb27589b1ca9e8d797b74affad4ccacd4"},
+]
+
+[[package]]
+name = "evaluate"
+version = "0.4.1"
+requires_python = ">=3.7.0"
+summary = "HuggingFace community-driven open-source library of evaluation"
+dependencies = [
+    "datasets>=2.0.0",
+    "dill",
+    "fsspec[http]>=2021.05.0",
+    "huggingface-hub>=0.7.0",
+    "multiprocess",
+    "numpy>=1.17",
+    "packaging",
+    "pandas",
+    "requests>=2.19.0",
+    "responses<0.19",
+    "tqdm>=4.62.1",
+    "xxhash",
+]
+files = [
+    {file = "evaluate-0.4.1-py3-none-any.whl", hash = "sha256:3ff079ab09572c0a2c1e6d749887c19f6783ab993320412cd39f6fe501d28510"},
+    {file = "evaluate-0.4.1.tar.gz", hash = "sha256:d721d9f2059ced79770d8a0509e954fbd1bbac96a8f9160e29888d8073cda3d9"},
 ]
 
 [[package]]
@@ -4081,6 +4125,20 @@ dependencies = [
 files = [
     {file = "requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6"},
     {file = "requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06"},
+]
+
+[[package]]
+name = "responses"
+version = "0.18.0"
+requires_python = ">=3.7"
+summary = "A utility library for mocking out the `requests` Python library."
+dependencies = [
+    "requests<3.0,>=2.0",
+    "urllib3>=1.25.10",
+]
+files = [
+    {file = "responses-0.18.0-py3-none-any.whl", hash = "sha256:15c63ad16de13ee8e7182d99c9334f64fd81f1ee79f90748d527c28f7ca9dd51"},
+    {file = "responses-0.18.0.tar.gz", hash = "sha256:380cad4c1c1dc942e5e8a8eaae0b4d4edf708f4f010db8b7bcfafad1fcd254ff"},
 ]
 
 [[package]]
