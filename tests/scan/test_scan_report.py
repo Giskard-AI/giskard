@@ -10,7 +10,7 @@ def test_scan_report_exports_to_html():
     model = Mock()
     dataset = Mock()
 
-    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)], dataset=dataset)
+    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)])
 
     # HTML report
     html = report.to_html()
@@ -35,7 +35,7 @@ def test_scan_report_exports_to_markdown():
     model = Mock()
     dataset = Mock()
 
-    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)], dataset=dataset)
+    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)])
 
     # Markdown report
     markdown = report.to_markdown()
