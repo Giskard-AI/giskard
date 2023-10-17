@@ -186,6 +186,8 @@ class HuggingFaceModel(WrapperModel):
         self.huggingface_module = model.__class__
         self.pipeline_task = model.task if isinstance(model, pipelines.Pipeline) else None
         self.device = device if device else model.device.type   # Allow to overwrite device
+        if not self.device:
+            self.deivce = "cpu"
 
         try:
             if batch_size == 1 and model.device.type == "cuda":
@@ -214,6 +216,7 @@ class HuggingFaceModel(WrapperModel):
                 {
                     "huggingface_module": self.huggingface_module,
                     "pipeline_task": self.pipeline_task,
+                    "device": self.device,
                 },
                 f,
                 default_flow_style=False,
