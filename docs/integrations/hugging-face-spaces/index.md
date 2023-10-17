@@ -83,6 +83,38 @@ client = GiskardClient(url, api_key, hf_token)
 client.upload(...)
 ```
 
+## ML worker on Hugging Face Spaces
+
+Giskard executes your model using a worker that runs the model directly in your Python environment, with all the dependencies required by your model.
+
+![Preview of ML worker on Hugging Face Spaces]()
+
+We also support running an ML worker on Hugging Face Spaces. Click [here](https://huggingface.co/spaces/giskardai/ml-worker?duplicate=true) to duplicate it to create your own instance.
+
+In the popup, you can set the URL to the Giskard Hub(`GSK_HUB_URL`), the API key of the Giskard Hub(`GSK_HUB_KEY`), and the token to access a private Hugging Face Space(`GSK_HUB_TOKEN`).
+
+![Secrets]()
+
+You can also set them later in the Web UI.
+
+In order to install the dependencies, you need to modify the `requirements.txt`. The simplest way is to execute `pip freeze` in your local Python environment and paste them to the file.
+
+![Installing dependencies]()
+
+:::{warn}
+Make sure that the version of the dependencies matches them in your local environment. Otherwise, you may see exceptions due to the missing attributes on the ML worker side.
+:::
+
+After setting up, you can then click on the `Run` button to start the  ML worker. If everything goes well, you will see "ML worker serving <your-giskard-hub-url>" on top right. You can also stop it by clicking on the `Stop` button or from the Giskard Hub.
+
+:::{hint}
+You will need a Giskard Space Token to connect to a private Giskard Hub instance on Hugging Face Spaces. The token is only validated during 24 hours. Re-generate it from your Giskard Hub if you cannot connect the ML worker to the Giskard Hub.
+:::
+
+### Levraging GPUs on Hugging Face Spaces
+
+Once you are able to wrap your model and run the wrapper model in your Jupyter notebook, the support of NVIDIA GPU by Giskard comes out-of-box, after uploading the model to the Giskard Hub. Remember to carefully process the depedencies for your ML worker on Hugging Face Spaces.
+
 ## Feedback and support
 
 If you have suggestions or need specialized support, please join us on the [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).

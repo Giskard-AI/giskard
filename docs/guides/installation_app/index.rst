@@ -92,7 +92,8 @@ Giskard executes your model using a worker that runs the model directly in your 
 
 - From your **local notebook** within the kernel that contains all the dependencies of your model
 - From **Google Colab** within the kernel that contains all the dependencies of your model
-- Or from **your terminal** within the Python environment that contains all the dependencies of your model
+- From **your terminal** within the Python environment that contains all the dependencies of your model
+- Or from `Hugging Face Spaces <../../integrations/hugging-face-spaces/index.md#ml-worker-on-hugging-face-spaces>`_
 
 .. tab-set::
 
