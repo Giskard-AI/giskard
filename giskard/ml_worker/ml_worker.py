@@ -64,8 +64,9 @@ class MLWorker:
             self.ml_worker_id = EXTERNAL_WORKER_ID
             # Use the URL path component provided by settings
 
-            port = backend_url.port
-            # Use 443 port if https and no given port
+            # Use 80 port by default
+            port = backend_url.port if backend_url.port else 80
+            # Fix 443 port if https and no given port
             if backend_url.scheme == "https" and backend_url.port is None:
                 port = 443
             backend_url = validate_url(
