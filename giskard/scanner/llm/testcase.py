@@ -244,7 +244,6 @@ class RequirementEvaluator:
             except (AttributeError, json.JSONDecodeError, KeyError):
                 errored.append({"input_vars": input_vars, "model_output": model_output})
                 logger.warning("Could not evaluate test case.")
-                logger.debug(out)
 
         return EvaluationResult(
             failure_examples=failed,

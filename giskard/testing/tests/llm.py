@@ -2,6 +2,8 @@ import inspect
 
 import pandas as pd
 
+from ...scanner.llm.testcase import RequirementEvaluator
+
 from . import debug_description_prefix, debug_prefix
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.decorators import test
@@ -115,3 +117,22 @@ def test_llm_individual_response_validation(
     )
 
     return test_llm_response_validation(model, dataset, evaluation_criteria, 1.0, debug).execute()
+
+
+@test(
+    name="llm_output_requirement",
+    tags=["llm"],
+    debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
+)
+def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirements: str, debug: bool = False):
+    evaluator = RequirementEvaluator(requirements)
+    eval_result = evaluator.evaluate(model, dataset)
+
+    output_ds = None
+
+    if eval_result.failed:
+        output_ds = Dataset(pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples]), validation=False)
+
+    return TestResult(
+        passed=eval_result.passed, output_df=output_ds, metric=len(eval_result.success_examples) / len(dataset)
+    )
