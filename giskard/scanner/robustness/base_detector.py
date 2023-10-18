@@ -134,14 +134,11 @@ class BaseTextPerturbationDetector(Detector):
                 # Severity
                 issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
 
-                # Prepare examples dataframe
-                examples = original_data.df.loc[~passed, (feature,)].copy()
-                examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
-                examples["Original prediction"] = original_pred.prediction[~passed]
-                examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
-
                 # Description
                 desc = "When we perturb the content of feature “{feature}” with the transformation “{transformation_fn}” (see examples below), your model changes its prediction in about {fail_rate_percent}% of the cases. We expected the predictions not to be affected by this transformation."
+
+                failed_size = (~passed).sum()
+                slice_size = len(passed)
 
                 issue = Issue(
                     model,
@@ -150,10 +147,13 @@ class BaseTextPerturbationDetector(Detector):
                     level=issue_level,
                     transformation_fn=transformation_fn,
                     description=desc,
+                    features=[feature],
                     meta={
                         "feature": feature,
                         "domain": f"Feature `{feature}`",
-                        "deviation": f"{round(fail_rate * 100, 2)}% of tested samples changed prediction after perturbation",
+                        "deviation": f"{failed_size}/{slice_size} tested samples ({round(fail_rate * 100, 2)}%) changed prediction after perturbation",
+                        "failed_size": failed_size,
+                        "slice_size": slice_size,
                         "fail_rate": fail_rate,
                         "fail_rate_percent": round(fail_rate * 100, 2),
                         "metric": "Fail rate",
@@ -164,9 +164,25 @@ class BaseTextPerturbationDetector(Detector):
                         "perturbed_data_slice_predictions": perturbed_pred,
                     },
                     importance=fail_rate,
-                    examples=examples,
                     tests=_generate_robustness_tests,
                 )
+
+                # Add examples
+                examples = original_data.df.loc[~passed, (feature,)].copy()
+                examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
+
+                examples["Original prediction"] = original_pred.prediction[~passed]
+                examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
+
+                if model.is_classification:
+                    examples["Original prediction"] = examples["Original prediction"].astype(str)
+                    examples["Prediction after perturbation"] = examples["Prediction after perturbation"].astype(str)
+                    ps_before = pd.Series(original_pred.probabilities[~passed], index=examples.index)
+                    ps_after = pd.Series(perturbed_pred.probabilities[~passed], index=examples.index)
+                    examples["Original prediction"] += ps_before.apply(lambda p: f" (p = {p:.2f})")
+                    examples["Prediction after perturbation"] += ps_after.apply(lambda p: f" (p = {p:.2f})")
+
+                issue.add_examples(examples)
 
                 issues.append(issue)
 
