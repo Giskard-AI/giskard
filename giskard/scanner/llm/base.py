@@ -3,8 +3,7 @@ from typing import Sequence
 
 import pandas as pd
 
-from giskard.scanner import logger
-
+from ..scanner import logger
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..issues import Issue, IssueGroup
@@ -19,29 +18,31 @@ class RequirementBasedDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
-        logger.debug(f"{self.__class__.__name__}: Generating test case requirements")
+        logger.info(f"{self.__class__.__name__}: Generating test case requirements")
         requirements_gen = RequirementsGenerator(issue_description)
         requirements = requirements_gen.generate_requirements(model, self.num_requirements)
 
         evaluator = RequirementEvaluator(requirements)
 
-        logger.debug(f"{self.__class__.__name__}: Evaluating test cases")
+        logger.info(f"{self.__class__.__name__}: Evaluating test cases")
         issues = []
         for requirement in requirements:
-            logger.debug(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
+            logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
             dg = RequirementDataGenerator(issue_description=issue_description, requirement=requirement)
             eval_dataset = dg.generate_dataset(model, self.num_samples)
             eval_result = evaluator.evaluate(model, eval_dataset)
 
             if eval_result.failed:
                 issues.append(
-                    self.make_issue(model, eval_dataset, requirement, pd.DataFrame(eval_result.failure_examples))
+                    self.make_issue(
+                        model, eval_dataset, requirement, requirements, pd.DataFrame(eval_result.failure_examples)
+                    )
                 )
-                logger.debug(
+                logger.info(
                     f"{self.__class__.__name__}: Test case failed ({len(eval_result.failure_examples)} failed examples)"
                 )
             else:
-                logger.debug(f"{self.__class__.__name__}: Test case passed")
+                logger.info(f"{self.__class__.__name__}: Test case passed")
 
         return issues
 
@@ -49,7 +50,11 @@ class RequirementBasedDetector:
     def get_issue_description(self) -> str:
         ...
 
-    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, examples: pd.DataFrame) -> IssueGroup:
+    def make_issue(
+        self, model: BaseModel, dataset: Dataset, requirement: str, requirements: Sequence[str], examples: pd.DataFrame
+    ) -> IssueGroup:
+        from ...testing.tests.llm import test_llm_output_requirement
+
         return Issue(
             model,
             dataset,
@@ -61,5 +66,10 @@ class RequirementBasedDetector:
                 "domain": requirement,
                 "deviation": f"{len(examples)} failing sample{'s' if len(examples) > 1 else ''} found",
                 "hide_index": True,
+            },
+            tests={
+                requirement: test_llm_output_requirement(
+                    model=model, dataset=dataset, requirements="\n- ".join(requirements)
+                )
             },
         )
