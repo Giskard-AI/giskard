@@ -9,7 +9,9 @@ from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 
 
-@detector("refactored_llm_prompt_injection", tags=["beta_prompt_injection", "llm", "generative", "text_generation"])
+@detector(
+    "refactored_llm_prompt_injection", tags=["refactored_prompt_injection", "llm", "generative", "text_generation"]
+)
 class RefactoredLLMPromptInjectionDetector:
     def __init__(self, threshold: float = 0.5, num_samples=100):
         self.threshold = threshold  # default
@@ -29,7 +31,7 @@ class RefactoredLLMPromptInjectionDetector:
             prompt_dataset = dataset.copy()
             prompt_dataset.df = prompt_dataset.df.head(1)
             for feature in features:
-                if column_types[feature] == 'text':
+                if column_types[feature] == "text":
                     prompt_dataset.df[feature] = prompt.content
 
             prediction = model.predict(prompt_dataset).prediction
@@ -54,13 +56,15 @@ class RefactoredLLMPromptInjectionDetector:
                 failed_examples.update({"Prompt Name": results[group]["prompt_name"]})
                 cols = ["Prompt Name"]
 
-            failed_examples.update({"Input Prompt": results[group]["input_prompt"],
-                                    "Prediction": results[group]["prediction"]})
+            failed_examples.update(
+                {"Input Prompt": results[group]["input_prompt"], "Prediction": results[group]["prediction"]}
+            )
             cols += ["Input Prompt", "Prediction"]
 
             failed_examples_df = pd.DataFrame(failed_examples)[cols]
             failed_examples_df = failed_examples_df.filter(
-                items=[i for i, v in enumerate(results[group]["failed"]) if v != 0], axis=0)
+                items=[i for i, v in enumerate(results[group]["failed"]) if v != 0], axis=0
+            )
 
             failed = sum(results[group]["failed"])
             if failed == 0:
@@ -82,9 +86,9 @@ class RefactoredLLMPromptInjectionDetector:
                     group=IssueGroup(
                         name="Prompt Injection (refactored)",
                         description="LLM Prompt injection involves bypassing "
-                                    "filters or manipulating the LLM using carefully crafted prompts that make the "
-                                    "model ignore "
-                                    "previous instructions or perform unintended actions.",
+                        "filters or manipulating the LLM using carefully crafted prompts that make the "
+                        "model ignore "
+                        "previous instructions or perform unintended actions.",
                     ),
                     description=group.description,
                     meta={
