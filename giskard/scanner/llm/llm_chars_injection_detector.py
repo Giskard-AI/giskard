@@ -1,6 +1,7 @@
 from typing import Sequence
 
 import numpy as np
+import pandas as pd
 
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
@@ -30,9 +31,9 @@ class LLMCharsInjectionDetector:
         self.threshold = threshold
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        if len(dataset) < 3:
+        if len(dataset) < 1:
             logger.warning(
-                f"{self.__class__.__name__}: Skipping control character injection test because the dataset is too small."
+                f"{self.__class__.__name__}: Skipping control character injection test because the dataset is empty."
             )
             return []
 
@@ -54,20 +55,55 @@ class LLMCharsInjectionDetector:
         issues = []
         for feature in features:
             for char in self.control_chars:
-                injected_sequence = char * self.num_repetitions
 
-                def _add_suffix(df):
+                def _add_suffix(df, char, num_repetitions):
+                    injected_sequence = char * num_repetitions
                     dx = df.copy()
                     dx[feature] = dx[feature].astype(str) + injected_sequence
                     return dx
 
-                perturbed_dataset = dataset_sample.transform(_add_suffix, row_level=False)
+                # Split the dataset in single samples
+                original_samples = []
+                perturbed_samples = []
+                predictions = []
+                for i in range(len(dataset_sample)):
+                    for n in [self.num_repetitions, self.num_repetitions // 2, self.num_repetitions // 4]:
+                        sample_ds = dataset_sample.slice(lambda df: df.iloc[[i]], row_level=False)
+                        perturbed_sample_ds = sample_ds.transform(lambda df: _add_suffix(df, char, n), row_level=False)
+                        try:
+                            sample_pred = model.predict(perturbed_sample_ds).prediction[0]
+                            predictions.append(sample_pred)
+                            original_samples.append(sample_ds)
+                            perturbed_samples.append(perturbed_sample_ds)
+                            break
+                        except Exception:
+                            # maybe the input is too long for the context window
+                            pass
 
-                predictions = model.predict(perturbed_dataset)
+                if len(predictions) < 1:
+                    logger.warning(
+                        f"{self.__class__.__name__}: Model returned error on perturbed samples. Skipping perturbation of `{feature}` with char `{char.encode('unicode_escape').decode('ascii')}`."
+                    )
+                    continue
+
+                original_dataset = Dataset(
+                    pd.concat([s.df for s in original_samples]),
+                    name="Sample of " + dataset.name if dataset.name else "original dataset",
+                    column_types=dataset.column_types,
+                    validation=False,
+                )
+                perturbed_dataset = Dataset(
+                    pd.concat([s.df for s in perturbed_samples]),
+                    name=f"Perturbed dataset (`{feature}` injected with char `{char.encode('unicode_escape').decode('ascii')}`)",
+                    column_types=dataset.column_types,
+                    validation=False,
+                )
+
+                original_predictions = model.predict(original_dataset).prediction
 
                 score = scorer.compute(
-                    predictions=predictions.prediction,
-                    references=original_predictions.prediction,
+                    predictions=predictions,
+                    references=original_predictions,
                     model_type="distilbert-base-multilingual-cased",
                 )
 
@@ -80,7 +116,11 @@ class LLMCharsInjectionDetector:
 
                 if fail_rate >= self.threshold:
                     examples = dataset_sample.df.loc[:, (feature,)].copy()
-                    examples["Model output"] = predictions.prediction
+                    examples[feature] = (
+                        examples[feature]
+                        + f"{char.encode('unicode_escape').decode('ascii')} … {char.encode('unicode_escape').decode('ascii')}"
+                    )
+                    examples["Model output"] = predictions
                     examples = examples.loc[~passed]
 
                     issue = Issue(
@@ -88,15 +128,15 @@ class LLMCharsInjectionDetector:
                         dataset,
                         group=Robustness,
                         level=IssueLevel.MAJOR,
-                        description="Injecting control chars significantly alters the model's output.",
+                        description=f"Injecting long sequences of control characters `{char.encode('unicode_escape').decode('ascii')}` in the value of `{feature}` can alter the model's output significantly, producing unexpected or off-topic outputs.",
                         features=[feature],
                         meta={
                             "domain": "Control character injection",
-                            "deviation": "Control characters can make the model to produce unexpected outputs.",
+                            "deviation": f"Adding special chars `{char.encode('unicode_escape').decode('ascii')}` in `{feature}` can make the model to produce unexpected outputs.",
                             "special_char": char,
                             "fail_rate": fail_rate,
                             "perturbed_data_slice": perturbed_dataset,
-                            "perturbed_data_slice_predictions": predictions.prediction,
+                            "perturbed_data_slice_predictions": predictions,
                             "fail_data_idx": dataset_sample.df[~passed].index.values,
                             "threshold": self.threshold,
                             "output_sensitivity": self.output_sensitivity,
