@@ -11,7 +11,7 @@ def _register_default_detectors():
     from pathlib import Path
 
     root = Path(__file__).parent
-    modules = ["." + str(p.relative_to(root).with_suffix("")).replace("/", ".") for p in root.glob("**/*_detector.py")]
+    modules = ["." + ".".join(p.relative_to(root).with_suffix("").parts) for p in root.glob("**/*_detector.py")]
 
     for detector_module in modules:
         importlib.import_module(detector_module, package=__package__)
