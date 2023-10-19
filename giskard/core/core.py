@@ -334,7 +334,7 @@ class DatasetProcessFunctionMeta(CallableMeta):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
         self.process_type = process_type
-        self.clauses = clauses
+        self.clauses = clauses or []
 
         if cell_level:
             if inspect.isclass(callable_obj):
