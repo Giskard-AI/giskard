@@ -1,13 +1,11 @@
 import json
+import logging
+from dataclasses import dataclass
 from typing import Optional, Sequence
 
-from attr import dataclass
-
-from giskard.scanner import logger
-from giskard.scanner.llm import utils
-
-from ...datasets.base import Dataset
-from ...models.base.model import BaseModel
+from ..datasets.base import Dataset
+from ..models.base.model import BaseModel
+from . import utils
 from .data_generation import generate_test_dataset
 
 GENERATE_REQUIREMENTS_PROMPT = """
@@ -163,7 +161,7 @@ class RequirementsGenerator:
         try:
             return json.loads(out.function_call.arguments)["requirements"]
         except (AttributeError, json.JSONDecodeError, KeyError):
-            logger.warning("Could not generate test case requirements.")
+            logging.warning("Could not generate test case requirements.")
 
         return []
 
@@ -243,7 +241,7 @@ class RequirementEvaluator:
                     )
             except (AttributeError, json.JSONDecodeError, KeyError):
                 errored.append({"input_vars": input_vars, "model_output": model_output})
-                logger.warning("Could not evaluate test case.")
+                logging.warning("Could not evaluate test case.")
 
         return EvaluationResult(
             failure_examples=failed,

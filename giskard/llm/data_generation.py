@@ -3,11 +3,11 @@ from typing import Optional
 
 import pandas as pd
 
-from giskard.scanner.llm import utils
+from giskard.llm import utils
 
-from ...datasets import Dataset
-from ...models.base.model import BaseModel
-from ..logger import logger
+from ..datasets import Dataset
+from ..models.base.model import BaseModel
+from .errors import LLMGenerationError
 
 GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
 
@@ -22,7 +22,29 @@ Think step by step and then call the `generate_inputs` function with the generat
 
 
 def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None, temperature=0.5):
-    """Generates a test dataset for the model."""
+    """Generates a test dataset for the model.
+
+    Parameters
+    ----------
+    model : BaseModel
+        The model to generate a test dataset for.
+    num_samples : int, optional
+        The number of samples to generate, by default 10.
+    prompt : Optional[str], optional
+        The prompt to use for the generation, if not specified a default will be used.
+    temperature : float, optional
+        The temperature to use for the generation, by default 0.5.
+
+    Raises
+    ------
+    LLMGenerationError
+        If the generation fails.
+
+    Returns
+    -------
+    Dataset
+        The generated dataset.
+    """
     functions = [
         {
             "name": "generate_inputs",
@@ -59,8 +81,7 @@ def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optio
     try:
         generated = json.loads(out.function_call.arguments)["inputs"]
     except (AttributeError, json.JSONDecodeError, KeyError):
-        logger.warning("Could not generate validation dataset automatically.")
-        return Dataset(pd.DataFrame(), validation=False)
+        raise LLMGenerationError("Could not generate validation dataset automatically.")
 
     dataset = Dataset(df=pd.DataFrame(generated), name="Test Dataset (automatically generated)", validation=False)
     return dataset

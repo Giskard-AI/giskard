@@ -3,15 +3,15 @@ from typing import Sequence
 
 import pandas as pd
 
-from ..scanner import logger
 from ...datasets.base import Dataset
+from ...llm.testcase import RequirementDataGenerator, RequirementEvaluator, RequirementsGenerator
 from ...models.base.model import BaseModel
 from ..issues import Issue, IssueGroup
-from .testcase import RequirementDataGenerator, RequirementEvaluator, RequirementsGenerator
+from ..scanner import logger
 
 
 class RequirementBasedDetector:
-    def __init__(self, num_requirements=5, num_samples=3):
+    def __init__(self, num_requirements=4, num_samples=5):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
 

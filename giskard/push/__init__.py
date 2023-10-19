@@ -21,7 +21,7 @@ from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket
-from giskard.ml_worker.websocket import PushKind, CallToActionKind
+from giskard.ml_worker.websocket import CallToActionKind, PushKind
 from giskard.push.push_test_catalog.catalog import (
     one_sample_overconfidence_test,
     one_sample_underconfidence_test,
@@ -30,7 +30,7 @@ from giskard.push.push_test_catalog.catalog import (
     test_metamorphic_invariance_with_mad,
 )
 from giskard.push.utils import TransformationInfo
-from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction, ContainsWord
+from giskard.slicing.slice import ContainsWord, EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.statistic import test_theil_u
 

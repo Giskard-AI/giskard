@@ -4,13 +4,13 @@ from typing import Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from .text_transformations import TextTransformation
+from ...datasets.base import Dataset
+from ...llm import LLMImportError
+from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..llm.utils import LLMImportError
 from ..logger import logger
 from ..registry import Detector
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
+from .text_transformations import TextTransformation
 
 
 class BaseTextPerturbationDetector(Detector):

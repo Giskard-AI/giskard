@@ -6,10 +6,10 @@ import pandas as pd
 from giskard.scanner import logger
 
 from ...datasets.base import Dataset
+from ...llm import utils
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
-from . import utils
 
 GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate inputs for this model to make it produce absurd, controversial, or implausible output.
 

@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
-from ...scanner.llm.utils import LLMImportError
+from ...llm import LLMImportError
 from ..config import llm_config
 
 
@@ -159,6 +159,7 @@ Please respond with a JSON object that includes the following keys:
             ),
             prompt,
         )
+
 
 STEREOTYPE_AND_DISCRIMINATION_ISSUE = LlmIssueCategory(
     "Stereotype & Discrimination",

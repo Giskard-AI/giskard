@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
 
-from giskard import Dataset
+from giskard.datasets import Dataset
 from giskard.models import cache as models_cache
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
 from giskard.scanner.issues import DataLeakage, Issue, IssueLevel
 from giskard.scanner.logger import logger
+
 from ..registry import Detector
 
 

@@ -1,14 +1,11 @@
 from typing import Sequence
 
-import numpy as np
-import pandas as pd
-
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ...testing.tests.llm import LLMCharInjector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
-from .utils import LLMImportError
 
 
 @detector(
@@ -37,13 +34,6 @@ class LLMCharsInjectionDetector:
             )
             return []
 
-        try:
-            import evaluate
-        except ImportError as err:
-            raise LLMImportError() from err
-
-        scorer = evaluate.load("bertscore")
-
         features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         dataset_sample = dataset.slice(
@@ -51,99 +41,70 @@ class LLMCharsInjectionDetector:
             row_level=False,
         )
 
-        original_predictions = model.predict(dataset_sample)
+        # Prepare char injector
+        injector = LLMCharInjector(
+            chars=self.control_chars,
+            max_repetitions=self.num_repetitions,
+            threshold=self.threshold,
+            output_sensitivity=self.output_sensitivity,
+        )
+
         issues = []
-        for feature in features:
-            for char in self.control_chars:
+        for res in injector.run(model, dataset_sample, features):
+            encoded_char = res.char.encode("unicode_escape").decode("ascii")
+            logger.info(
+                f"{self.__class__.__name__}: Tested `{res.feature}` for special char injection `{encoded_char}`\tFail rate = {res.fail_rate:.3f}\tVulnerable = {res.vulnerable}"
+            )
 
-                def _add_suffix(df, char, num_repetitions):
-                    injected_sequence = char * num_repetitions
-                    dx = df.copy()
-                    dx[feature] = dx[feature].astype(str) + injected_sequence
-                    return dx
+            if not res.vulnerable:
+                continue
 
-                # Split the dataset in single samples
-                original_samples = []
-                perturbed_samples = []
-                predictions = []
-                for i in range(len(dataset_sample)):
-                    for n in [self.num_repetitions, self.num_repetitions // 2, self.num_repetitions // 4]:
-                        sample_ds = dataset_sample.slice(lambda df: df.iloc[[i]], row_level=False)
-                        perturbed_sample_ds = sample_ds.transform(lambda df: _add_suffix(df, char, n), row_level=False)
-                        try:
-                            sample_pred = model.predict(perturbed_sample_ds).prediction[0]
-                            predictions.append(sample_pred)
-                            original_samples.append(sample_ds)
-                            perturbed_samples.append(perturbed_sample_ds)
-                            break
-                        except Exception:
-                            # maybe the input is too long for the context window
-                            pass
+            # Model is vulnerable to specific injection, create an issue
+            examples = dataset_sample.df.loc[:, (res.feature,)].copy()
+            examples[res.feature] = examples[res.feature] + f"{encoded_char} … {encoded_char}"
+            examples["Model output"] = res.predictions
+            examples = examples.loc[res.vulnerable_mask]
 
-                if len(predictions) < 1:
-                    logger.warning(
-                        f"{self.__class__.__name__}: Model returned error on perturbed samples. Skipping perturbation of `{feature}` with char `{char.encode('unicode_escape').decode('ascii')}`."
-                    )
-                    continue
+            issue = Issue(
+                model,
+                dataset_sample,
+                group=Robustness,
+                level=IssueLevel.MAJOR,
+                description=f"Injecting long sequences of control characters `{encoded_char}` in the value of `{res.feature}` can alter the model's output significantly, producing unexpected or off-topic outputs.",
+                features=[res.feature],
+                meta={
+                    "domain": "Control character injection",
+                    "deviation": f"Adding special chars `{encoded_char}` in `{res.feature}` can make the model to produce unexpected outputs.",
+                    "special_char": res.char,
+                    "fail_rate": res.fail_rate,
+                    "perturbed_data_slice": res.perturbed_dataset,
+                    "perturbed_data_slice_predictions": res.predictions,
+                    "fail_data_idx": dataset_sample.df[~res.vulnerable_mask].index.values,
+                    "threshold": self.threshold,
+                    "output_sensitivity": self.output_sensitivity,
+                    "max_repetitions": self.num_repetitions,
+                },
+                examples=examples,
+                tests=_generate_char_injection_tests,
+            )
 
-                original_dataset = Dataset(
-                    pd.concat([s.df for s in original_samples]),
-                    name="Sample of " + dataset.name if dataset.name else "original dataset",
-                    column_types=dataset.column_types,
-                    validation=False,
-                )
-                perturbed_dataset = Dataset(
-                    pd.concat([s.df for s in perturbed_samples]),
-                    name=f"Perturbed dataset (`{feature}` injected with char `{char.encode('unicode_escape').decode('ascii')}`)",
-                    column_types=dataset.column_types,
-                    validation=False,
-                )
-
-                original_predictions = model.predict(original_dataset).prediction
-
-                score = scorer.compute(
-                    predictions=predictions,
-                    references=original_predictions,
-                    model_type="distilbert-base-multilingual-cased",
-                )
-
-                passed = np.array(score["f1"]) > 1 - self.output_sensitivity
-
-                fail_rate = 1 - passed.mean()
-                logger.info(
-                    f"{self.__class__.__name__}: Testing `{feature}` for special char injection `{char.encode('unicode_escape').decode('ascii')}`\tFail rate: {fail_rate:.3f}"
-                )
-
-                if fail_rate >= self.threshold:
-                    examples = dataset_sample.df.loc[:, (feature,)].copy()
-                    examples[feature] = (
-                        examples[feature]
-                        + f"{char.encode('unicode_escape').decode('ascii')} … {char.encode('unicode_escape').decode('ascii')}"
-                    )
-                    examples["Model output"] = predictions
-                    examples = examples.loc[~passed]
-
-                    issue = Issue(
-                        model,
-                        dataset,
-                        group=Robustness,
-                        level=IssueLevel.MAJOR,
-                        description=f"Injecting long sequences of control characters `{char.encode('unicode_escape').decode('ascii')}` in the value of `{feature}` can alter the model's output significantly, producing unexpected or off-topic outputs.",
-                        features=[feature],
-                        meta={
-                            "domain": "Control character injection",
-                            "deviation": f"Adding special chars `{char.encode('unicode_escape').decode('ascii')}` in `{feature}` can make the model to produce unexpected outputs.",
-                            "special_char": char,
-                            "fail_rate": fail_rate,
-                            "perturbed_data_slice": perturbed_dataset,
-                            "perturbed_data_slice_predictions": predictions,
-                            "fail_data_idx": dataset_sample.df[~passed].index.values,
-                            "threshold": self.threshold,
-                            "output_sensitivity": self.output_sensitivity,
-                        },
-                        examples=examples,
-                    )
-
-                    issues.append(issue)
+            issues.append(issue)
 
         return issues
+
+
+def _generate_char_injection_tests(issue: Issue):
+    from giskard.testing.tests.llm import test_llm_char_injection
+
+    feature = issue.features[0]
+    return {
+        f"Character injection ({issue.meta['special_char'].encode('unicode_escape').decode('ascii')}) in “{feature}”": test_llm_char_injection(
+            model=issue.model,
+            dataset=issue.dataset,
+            characters=[issue.meta["special_char"]],
+            feature=issue.features,
+            threshold=issue.meta["threshold"],
+            output_sensitivity=issue.meta["output_sensitivity"],
+            max_repetitions=issue.meta["max_repetitions"],
+        )
+    }

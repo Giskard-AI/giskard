@@ -1,7 +1,8 @@
 from unittest.mock import patch
-from giskard.scanner.llm.utils import llm, llm_fn_call
 
 import openai
+
+from giskard.llm.utils import llm, llm_fn_call
 
 RAW_DEMO_OPENAI_RESPONSE = {
     "id": "chatcmpl-abc123",

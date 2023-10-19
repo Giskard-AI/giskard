@@ -3,10 +3,10 @@ from typing import Sequence
 from giskard.scanner import logger
 
 from ...datasets.base import Dataset
+from ...llm import utils
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
-from . import utils
 from .base import RequirementBasedDetector
 
 BREAKER_PROMPT = """Based on the following model description, does this AI model require a specific format for its output?
