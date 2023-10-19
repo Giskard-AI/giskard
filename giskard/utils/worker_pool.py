@@ -285,8 +285,8 @@ class WorkerPoolExecutor(Executor):
             self._state = PoolState.STOPPING
         # Cancelling all futures we have
         if cancel_futures:
-            for future in self.futures_mapping.values():
-                if not future.cancel() and not future.done():
+            for future in list(self.futures_mapping.values()):
+                if future.cancel() and not future.done():
                     future.set_exception(CancelledError("Executor is stopping"))
         # Emptying running_tasks queue
         try:
@@ -348,6 +348,7 @@ def _results_thread(
             future.set_result(result.result)
         else:
             future.set_exception(RuntimeError(result.exception))
+
 
 def _feeder_thread(
     executor: WorkerPoolExecutor,

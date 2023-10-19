@@ -17,6 +17,7 @@ from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
 from giskard.ml_worker.websocket.utils import fragment_message
 from giskard.settings import settings
 from giskard.utils import shutdown_pool, start_pool
+from giskard.utils.analytics_collector import analytics
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +27,13 @@ MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
 class MLWorker(StompWSClient):
-    def __init__(self, is_server=False, backend_url: AnyHttpUrl = None, api_key=None, hf_token=None) -> None:
+    def __init__(
+        self,
+        is_server=False,
+        backend_url: AnyHttpUrl = None,
+        api_key: Optional[str] = None,
+        hf_token: Optional[str] = None,
+    ) -> None:
         headers = {}
         connect_headers = {"COOKIE": f"spaces-jwt={hf_token};"} if hf_token is not None else None
 
@@ -90,15 +97,31 @@ class MLWorker(StompWSClient):
         )
         if action == MLWorkerAction.stopWorker:
             LOGGER.info("Marking worker as stopping...")
-            self._is_stopping = True
+            self.stop()
 
-        payload: Union[str, Frame] = await WEBSOCKET_ACTORS[action.name](req, client_params, self._worker_info)
+        payload: Optional[Union[str, Frame]] = await WEBSOCKET_ACTORS[action.name](
+            req, client_params, self._worker_info
+        )
+        # If no rep_id
+        if payload is None:
+            return []
         # We want to be able to send directly frame also (ie, disconnect frame for example)
         if isinstance(payload, Frame):
             return [payload]
 
         # Else we do the chunking thing (should be handled by websocket protocol transport, but nevermind)
         frag_count = math.ceil(len(payload) / self._ws_max_reply_payload_size)
+        analytics.track(
+            "mlworker:websocket:action:reply",
+            {
+                "name": action.name,
+                "worker": self._worker_info.id,
+                "language": "PYTHON",
+                "frag_len": self._ws_max_reply_payload_size,
+                "frag_count": frag_count,
+                "reply_len": len(payload),
+            },
+        )
 
         return [
             StompFrame.SEND.build_frame(

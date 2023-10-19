@@ -9,11 +9,13 @@ from websockets.client import WebSocketClientProtocol, connect
 from websockets.exceptions import ConnectionClosed
 
 from giskard.ml_worker.stomp.constants import HeaderType, StompCommand
-from giskard.ml_worker.stomp.parsing import Frame, FrameParser, StompFrame
-
-MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
+from giskard.ml_worker.stomp.parsing import Frame, FrameParser, StompFrame, StompProtocolError
 
 LOGGER = logging.getLogger(__name__)
+
+
+class StompClientError(RuntimeError):
+    pass
 
 
 class StompWSClient:
@@ -34,10 +36,10 @@ class StompWSClient:
             if self._is_stopping:
                 return
             try:
-                frame = FrameParser.parse(message)
+                frame = StompFrame.from_string(message)
                 await self._receiver_queue.put(frame)
-                LOGGER.info("Received frame %s", frame)
-            except ValueError as e:
+                LOGGER.debug("Received frame %s", frame)
+            except StompProtocolError as e:
                 LOGGER.error("Error when parsing message %s", message)
                 LOGGER.exception(e)
 
@@ -46,9 +48,11 @@ class StompWSClient:
             frame = await self._sender_queue.get()
             await websocket.send(frame.to_bytes())
 
-    async def send_frame(self, websocket: WebSocketClientProtocol, frame: Frame):
-        LOGGER.info("Sending frame...")
-        LOGGER.info(frame.to_bytes())
+    async def _send_frame(self, websocket: WebSocketClientProtocol, frame: Frame):
+        LOGGER.debug("Sending frame...")
+        LOGGER.debug(frame.to_bytes())
+        if not StompFrame[frame.command].is_client_command():
+            raise StompClientError(f"Should only send client type frame, got {frame.command}")
         await websocket.send(frame.to_bytes())
 
     async def _frame_handler(self):
@@ -58,27 +62,22 @@ class StompWSClient:
             # Also, if we don't have anything pending, we wait on the queue
             while not self._receiver_queue.empty() or len(pending) == 0:
                 frame = await self._receiver_queue.get()
-                pending.add(asyncio.create_task(self.process_frame(frame)))
+                pending.add(asyncio.create_task(self._process_frame(frame)))
 
             # Wait a bit and check what is done
             # We want to be done asap, since we'll keep checking on it
             done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED, timeout=0.01)
             for task in done:
-                try:
-                    # Now we can await it, since it's done
-                    frames = await task
-                    # Add the frames to send back
-                    for frame in frames:
-                        await self._sender_queue.put(frame)
-                except KeyboardInterrupt as e:
-                    raise e
-                except BaseException as e:
-                    LOGGER.exception(e)
+                # Now we can await it, since it's done
+                frames = await task
+                # Add the frames to send back
+                for frame in frames:
+                    await self._sender_queue.put(frame)
 
-    async def process_frame(self, frame: Frame) -> List[Frame]:
+    async def _process_frame(self, frame: Frame) -> List[Frame]:
         subscription = frame.headers[HeaderType.SUBSCRIPTION]
         if subscription not in self._subscriptions:
-            raise ValueError(f"Unknown subscription {subscription}")
+            raise StompClientError(f"Unknown subscription {subscription}")
         result = await self._subscriptions[subscription](frame)
         return result
 
@@ -87,8 +86,8 @@ class StompWSClient:
         raise NotImplementedError()
 
     async def _connect(self, websocket):
-        LOGGER.info("Sending CONNECT...")
-        await self.send_frame(
+        LOGGER.info("Sending CONNECT frame...")
+        await self._send_frame(
             websocket,
             StompFrame.CONNECT.build_frame(
                 {
@@ -102,9 +101,9 @@ class StompWSClient:
 
     async def unsubscribe(self, websocket, id_sub):
         if id_sub not in self._subscriptions:
-            raise ValueError("Cannot un-subscribe unknown id")
+            raise StompClientError("Cannot un-subscribe unknown id")
         del self._subscriptions[id_sub]
-        return await self.send_frame(
+        return await self._send_frame(
             websocket,
             StompFrame.UNSUBSCRIBE.build_frame(
                 {
@@ -115,9 +114,9 @@ class StompWSClient:
 
     async def subscribe(self, websocket, destination, id_sub, handler):
         if id_sub in self._subscriptions:
-            raise ValueError("Cannot subscribe with the same id several times")
+            raise StompClientError("Cannot subscribe with the same id several times")
         self._subscriptions[id_sub] = handler
-        return await self.send_frame(
+        return await self._send_frame(
             websocket,
             StompFrame.SUBSCRIBE.build_frame(
                 {
@@ -130,7 +129,6 @@ class StompWSClient:
     async def start(
         self,
     ):
-        handler_task = asyncio.create_task(self._frame_handler())
         # For look to ensure for reconnection
         LOGGER.info("Connecting to %s", self._host_url)
         async for websocket in connect(self._host_url, extra_headers=self._connect_headers):
@@ -139,16 +137,16 @@ class StompWSClient:
 
             LOGGER.info("Connected !")
             try:
-                LOGGER.info("Sending CONNECT...")
+                LOGGER.debug("Sending CONNECT...")
                 await self._connect(websocket)
-                LOGGER.info("Waiting for CONNECTED...")
+                LOGGER.debug("Waiting for CONNECTED...")
                 message = await asyncio.wait_for(websocket.recv(), timeout=30)
 
                 frame: Frame = FrameParser.parse(message)
-                LOGGER.info("Received %s", frame)
+                LOGGER.debug("Received %s", frame)
 
                 if frame.command != StompCommand.CONNECTED:
-                    raise ValueError(f"Should have CONNECTED, got {frame}")
+                    raise StompProtocolError(f"Should have CONNECTED, got {frame}")
                 # In case of re-connection, let's redo the subscription
                 for sub_id in list(self._subscriptions.keys()):
                     await self.unsubscribe(websocket, sub_id)
@@ -160,12 +158,16 @@ class StompWSClient:
                 producer_task = asyncio.create_task(self._sender(websocket=websocket))
                 handler_task = asyncio.create_task(self._frame_handler())
 
-                _, pending = await asyncio.wait(
+                done, pending = await asyncio.wait(
                     [consumer_task, producer_task, handler_task],
                     return_when=asyncio.FIRST_COMPLETED,
                 )
                 for task in pending:
                     task.cancel()
+                for task in done:
+                    exception = task.exception()
+                    if exception is not None:
+                        raise exception
             except ConnectionClosed:
                 LOGGER.warning("Connection closed", exc_info=1)
                 if self._is_stopping:

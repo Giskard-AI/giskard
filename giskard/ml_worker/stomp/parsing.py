@@ -1,8 +1,8 @@
-from enum import Enum
 from typing import Dict, Optional, Set, Union
 
 import re
 from dataclasses import dataclass
+from enum import Enum
 
 from giskard.ml_worker.stomp.constants import (
     NULL_BYTE,
@@ -18,13 +18,15 @@ from giskard.ml_worker.stomp.utils import (
     validate_header_part,
 )
 
-
 # A frame looks like
 # COMMAND
 # header1:value1
 # header2:value2
 
+
 # Body^@
+class StompProtocolError(ValueError):
+    pass
 
 
 @dataclass(frozen=True)
@@ -71,7 +73,9 @@ class FrameParser:
         self.known_headers: Set[str] = set()
 
     @classmethod
-    def parse(cls, frame: str) -> Frame:
+    def parse(cls, frame: Union[str, bytes]) -> Frame:
+        if isinstance(frame, bytes):
+            frame = frame.decode(UTF_8)
         return cls(frame).read_command().read_headers().read_body().build_frame()
 
     def read_command(self) -> "FrameParser":
@@ -81,7 +85,7 @@ class FrameParser:
         try:
             self.command = StompCommand[command]
         except KeyError as e:
-            raise ValueError(f"{command} not in allowed values of ServerCommand: {list(StompCommand)}") from e
+            raise StompProtocolError(f"{command} not in allowed values of ServerCommand: {list(StompCommand)}") from e
 
         return self
 
@@ -93,7 +97,7 @@ class FrameParser:
         while header_line != "":
             header_splitted = header_line.split(":", 1)
             if len(header_splitted) == 1:
-                raise ValueError(f"Header should contains : to separate key and value, got'{header_line}'")
+                raise StompProtocolError(f"Header should contains : to separate key and value, got'{header_line}'")
             if should_untransform:
                 header_name, header_value = map(untransform_header_data, map(validate_header_part, header_splitted))
             else:
@@ -108,7 +112,9 @@ class FrameParser:
                     header_value, charset = header_value.split(";", 1)
                     name, encoding = charset.split("=", 1)
                     if name != "charset":
-                        raise ValueError(f"Unexpected value in content type after, expected charset, got {name}")
+                        raise StompProtocolError(
+                            f"Unexpected value in content type after, expected charset, got {name}"
+                        )
                 if encoding is None and (
                     header_value.startswith("text/") or header_value in ["application/json", "application/xml"]
                 ):
@@ -123,7 +129,9 @@ class FrameParser:
                     self.content_length = int(header_value)
                     self.headers[HeaderType.CONTENT_LENGTH] = header_value
                 except ValueError as e:
-                    raise ValueError(f"Invalid content length given, expected an integer, got {header_value}") from e
+                    raise StompProtocolError(
+                        f"Invalid content length given, expected an integer, got {header_value}"
+                    ) from e
             else:
                 self.headers[header_name] = header_value
             self.known_headers.add(header_name)
@@ -134,20 +142,16 @@ class FrameParser:
     def read_body(self) -> "FrameParser":
         # Decode data from utf-8
         raw_data = self.to_parse.encode(encoding=UTF_8)
-        if self.content_length is not None and self.content_length + 1 > len(raw_data):
-            raise ValueError(f"Content length is longer than data: '{self.content_length}' >  '{len(raw_data)}'")
+        if self.content_length is not None and self.content_length > len(raw_data):
+            raise StompProtocolError(
+                f"Content length is longer than data: '{self.content_length}' >  '{len(raw_data)}'"
+            )
         if self.content_length is None:
-            # index = raw_data.find(NULL_BYTE)
-            # if index == -1:
-            #     raise RuntimeError("Could not find NULL byte into the data")
             self.content_length = len(raw_data)
-
-        # if raw_data[self.content_length] != NULL_BYTE:
-        #     raise ValueError("Did not find expected NULL byte")
 
         footer = raw_data[self.content_length + 1 :].decode(UTF_8)
         if re.sub("\n|\r", "", footer) != "":
-            raise ValueError(f"Got data after content length, '{footer}'")
+            raise StompProtocolError(f"Got data after content length, '{footer}'")
 
         if self.encoding is None:
             # Assuming binary type ?
@@ -193,17 +197,20 @@ class StompFrame(Enum):
     RECEIPT = (StompCommand.RECEIPT, CommandType.SERVER, {HeaderType.RECEIPT_ID})
     ERROR = (StompCommand.ERROR, CommandType.SERVER, set(), True)
 
+    def is_client_command(self) -> bool:
+        return self._command_type == CommandType.CLIENT
+
     def validate(self, frame: Frame):
         missing_headers = self._mandatory_headers - set(frame.headers.keys())
         if len(missing_headers) > 0:
-            raise ValueError(f"Missing mandatory headers in frame, {missing_headers}")
+            raise StompProtocolError(f"Missing mandatory headers in frame, {missing_headers}")
         if not self._allow_body and frame.body is not None:
-            raise ValueError(f"Cannot have body for command {frame.command}, got '{frame.body}'")
+            raise StompProtocolError(f"Cannot have body for command {frame.command}, got '{frame.body}'")
 
     @classmethod
-    def from_string(cls, raw_frame: str) -> Frame:
+    def from_string(cls, raw_frame: Union[str, bytes]) -> Frame:
         frame = FrameParser.parse(raw_frame)
-        cls[frame.command].validate()
+        cls[frame.command].validate(frame)
         return frame
 
     def build_frame(

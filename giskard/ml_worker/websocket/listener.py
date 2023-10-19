@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import asyncio
 import logging
@@ -71,7 +71,9 @@ def websocket_log_actor(ml_worker: MLWorkerInfo, req: Dict, *args, **kwargs):
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
 
-def wrapped_handle_result(action: MLWorkerAction, start: float, rep_id: Optional[str], ignore_timeout: bool):
+def wrapped_handle_result(
+    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
+):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
 
@@ -81,8 +83,7 @@ def wrapped_handle_result(action: MLWorkerAction, start: float, rep_id: Optional
                 if isinstance(future, Future)
                 else future()
             )
-            # info: websocket.WorkerReply = future.result() if isinstance(future, Future) else future()
-        except CancelledError as e:
+        except (CancelledError, asyncio.exceptions.CancelledError) as e:
             if ignore_timeout:
                 info: websocket.WorkerReply = websocket.Empty()
                 logger.warning("Task for %s has timed out and been cancelled", action.name)
@@ -101,7 +102,7 @@ def wrapped_handle_result(action: MLWorkerAction, start: float, rep_id: Optional
                 "mlworker:websocket:action",
                 {
                     "name": action.name,
-                    # "worker": ml_worker.ml_worker_id,
+                    "worker": worker_info.id,
                     "language": "PYTHON",
                     "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
                     "action_time": time.process_time() - start,
@@ -135,7 +136,16 @@ def parse_and_execute(
     )
 
 
-async def dispatch_action(callback, action, req, client_params, worker_info, execute_in_pool, timeout=None, ignore_timeout=False):
+async def dispatch_action(
+    callback: Callable,
+    action: MLWorkerAction,
+    req: Dict[str, Any],
+    client_params: Dict[str, Any],
+    worker_info: MLWorkerInfo,
+    execute_in_pool: bool,
+    timeout: Optional[float] = None,
+    ignore_timeout=False,
+):
     # Parse the response ID
     rep_id = req["id"] if "id" in req.keys() else None
     # Parse the param
@@ -152,7 +162,7 @@ async def dispatch_action(callback, action, req, client_params, worker_info, exe
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, rep_id, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
     if execute_in_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
@@ -192,7 +202,9 @@ def websocket_actor(
         logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
 
         async def wrapped_callback(req: Dict, client_params: Dict, worker_info, *args, **kwargs):
-            return await dispatch_action(callback, action, req, client_params, worker_info, execute_in_pool, timeout, ignore_timeout)
+            return await dispatch_action(
+                callback, action, req, client_params, worker_info, execute_in_pool, timeout, ignore_timeout
+            )
 
         WEBSOCKET_ACTORS[action.name] = wrapped_callback
 

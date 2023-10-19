@@ -42,7 +42,6 @@
 import re
 from enum import Enum
 
-
 NULL_BYTE = b"\x00"
 LF = "\n"
 CR = "\r"
