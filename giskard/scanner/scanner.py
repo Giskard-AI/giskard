@@ -5,11 +5,13 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
-from giskard.client.python_utils import warning
+import pandas as pd
 
+from ..client.python_utils import warning
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
 from ..llm.data_generation import generate_test_dataset
+from ..llm.errors import LLMGenerationError
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
@@ -174,7 +176,14 @@ class Scanner:
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
             logger.debug("Automatically generating test dataset.")
-            return model, generate_test_dataset(model)
+            try:
+                return model, generate_test_dataset(model)
+            except LLMGenerationError:
+                warning(
+                    "Failed to generate test dataset. Trying to run the scan with an empty dataset. For improved results, please provide a test dataset."
+                )
+                return model, Dataset(pd.DataFrame([], columns=model.meta.feature_names))
+
         if dataset is None:
             raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")
 
