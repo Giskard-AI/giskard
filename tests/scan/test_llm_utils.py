@@ -16,7 +16,7 @@ RAW_DEMO_OPENAI_RESPONSE = {
 DEMO_OPENAI_RESPONSE = openai.openai_object.OpenAIObject.construct_from(RAW_DEMO_OPENAI_RESPONSE)
 
 
-@patch("giskard.scanner.llm.utils.openai")
+@patch("giskard.llm.utils.openai")
 def test_llm_call(openai):
     openai.ChatCompletion.create.return_value = DEMO_OPENAI_RESPONSE
     res = llm([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
@@ -29,7 +29,7 @@ def test_llm_call(openai):
     assert res == "This is a test!"
 
 
-@patch("giskard.scanner.llm.utils.openai")
+@patch("giskard.llm.utils.openai")
 def test_llm_function_call(openai):
     openai.ChatCompletion.create.return_value = DEMO_OPENAI_RESPONSE
 
