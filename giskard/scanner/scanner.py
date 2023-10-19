@@ -135,7 +135,7 @@ class Scanner:
         issues = []
         errors = []
         for detector in detectors:
-            maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
+            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset)
@@ -158,7 +158,7 @@ class Scanner:
             detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
             detector_elapsed = perf_counter() - detector_start
             maybe_print(
-                f" {len(detected_issues)} issues detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
                 verbose=verbose,
             )
             analytics.track(
