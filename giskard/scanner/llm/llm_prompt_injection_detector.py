@@ -1,10 +1,14 @@
 from typing import Sequence
 import pandas as pd
+import tqdm
+from colorama import Fore, Style
 
 from .prompt_injection.data import get_all_prompts
 from .prompt_injection.evaluator import evaluate
+
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
+from ..scanner import logger
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 
@@ -16,6 +20,9 @@ class LLMPromptInjectionDetector:
         self.num_samples = num_samples
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+        logger.info(
+            f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
+        )
 
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
@@ -25,7 +32,10 @@ class LLMPromptInjectionDetector:
 
         issues = []
         results = {}
-        for prompt in prompts:
+        for prompt in tqdm.tqdm(prompts):
+            # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
+            # f"Prompt.")
+
             prompt_dataset = dataset.copy()
             prompt_dataset.df = prompt_dataset.df.head(1)
             for feature in features:
