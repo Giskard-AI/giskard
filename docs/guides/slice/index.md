@@ -117,7 +117,7 @@ my_dataset = Dataset(...)
 my_model = Model(...)
 
 scan_result = giskard.scan(my_model, my_dataset)
-test_suite = scan_result.generate_test_suite("My first test suite")
+test_suite = scan_result.generate_test_suite("My first test suite", use_suite_input=False)
 test_suite.run()[1]
 ```
 

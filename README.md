@@ -130,7 +130,7 @@ display(scan_results)
 If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
 
 ```python
-test_suite = scan_results.generate_test_suite("My first test suite")
+test_suite = scan_results.generate_test_suite("My first test suite", use_suite_input=False)
 ```
 You can then run the test suite locally to verify that it reproduces the issues:
 ```python

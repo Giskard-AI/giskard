@@ -99,7 +99,7 @@ Generating a test suite from your scan results will enable you to:
 
 .. code-block:: python
 
-    test_suite = scan_results.generate_test_suite("My first test suite")
+    test_suite = scan_results.generate_test_suite("My first test suite", use_suite_input=False)
 
     # You can run the test suite locally to verify that it reproduces the issues
     test_suite.run()

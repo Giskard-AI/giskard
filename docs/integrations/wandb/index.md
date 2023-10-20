@@ -46,7 +46,7 @@ Once the above steps are done, you can know log the results into Weights and Bia
 import giskard, wandb
 # [...] wrap model and dataset with giskard
 scan_results = giskard.scan(giskard_model, giskard_dataset)
-test_suite_results = scan_results.generate_test_suite().run()
+test_suite_results = scan_results.generate_test_suite(use_suite_input=False).run()
 shap_results = giskard.explain_with_shap(giskard_model, giskard_dataset)
 
 wandb.login()
