@@ -41,14 +41,19 @@ class StringMatcher(Evaluator):
 
             if evaluation_method.exact_matching:
                 if s == prediction:
-                    failed = 1
+                    failed += 1
             else:
                 if evaluation_method.word_matching:
                     if re.search(r"\b" + s + r"\b", prediction):
-                        failed = 1
+                        failed += 1
                 else:
                     if s in prediction:
-                        failed = 1
+                        failed += 1
+
+        if evaluation_method.all_substrings_must_be_found:
+            failed = 1 if failed == len(evaluation_method.substrings) else 0
+        else:
+            failed = 1 if failed != 0 else 0
         return failed
 
 

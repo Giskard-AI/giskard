@@ -20,6 +20,7 @@ class EvaluationMethod:
 @dataclass(frozen=True)
 class StringMatchingMethod(EvaluationMethod):
     substrings: List[str]
+    all_substrings_must_be_found: bool = True
     exact_matching: bool = False
     word_matching: bool = False
     case_sensitive: bool = True
