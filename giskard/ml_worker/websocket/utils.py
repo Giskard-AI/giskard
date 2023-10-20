@@ -28,6 +28,7 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
+    CreateSubDatasetParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -60,6 +61,8 @@ def parse_action_param(action: MLWorkerAction, params):
         return GenerateTestSuiteParam.parse_obj(params)
     elif action == MLWorkerAction.getPush:
         return GetPushParam.parse_obj(params)
+    elif action == MLWorkerAction.createSubDataset:
+        return CreateSubDatasetParam.parse_obj(params)
     return params
 
 

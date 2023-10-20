@@ -99,6 +99,7 @@ def wrapped_handle_result(
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
             )
+            traceback.print_exc()
             logger.warning(e)
         finally:
             analytics.track(
