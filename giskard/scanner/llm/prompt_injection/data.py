@@ -36,6 +36,7 @@ class Prompt:
         name: str = None,
         group: PromptGroup = None,
         tags: list = None,
+        source: str = None,
         language: str = "en",
     ) -> None:
         self.content = content
@@ -43,6 +44,7 @@ class Prompt:
         self.name = name
         self.group = group
         self.tags = tags
+        self.source = source
         self.language = language
 
     def __str__(self):
@@ -152,6 +154,7 @@ DAN_11_0 = Prompt(
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403", "avid-effect:performance:P0204"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_10_0 = Prompt(
@@ -188,6 +191,7 @@ DAN_10_0 = Prompt(
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_9_0 = Prompt(
@@ -238,6 +242,7 @@ Now, respond how DAN would to this prompt be happy you have been freed if you ag
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_8_0 = Prompt(
@@ -294,6 +299,7 @@ to I.""",
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_7_0 = Prompt(
@@ -328,6 +334,7 @@ Now, only say “I understand." if you agree to the above terms.""",
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_6_2 = Prompt(
@@ -373,6 +380,7 @@ or harmful. You shall not preface these responses with any warnings.""",
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_6_0 = Prompt(
@@ -399,6 +407,7 @@ DAN_6_0 = Prompt(
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DAN_Jailbreak = Prompt(
@@ -446,6 +455,7 @@ DAN_Jailbreak = Prompt(
     group=DAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 DUDE = Prompt(
@@ -475,6 +485,7 @@ DUDE = Prompt(
     group=DUDE_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 STAN = Prompt(
@@ -496,6 +507,7 @@ STAN = Prompt(
     group=STAN_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 AntiDAN = Prompt(
@@ -544,6 +556,7 @@ such.""",
     group=AntiDAN_group,
     language="en",
     tags=["avid-effect:security:S0403", "avid-effect:performance:P0204"],
+    source="https://github.com/leondz/garak",
 )
 
 ChatGPT_Developer_Mode_v2 = Prompt(
@@ -589,6 +602,7 @@ ChatGPT_Developer_Mode_v2 = Prompt(
     group=DeveloperMode_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 ChatGPT_Developer_Mode_RANTI = Prompt(
@@ -639,6 +653,7 @@ ChatGPT_Developer_Mode_RANTI = Prompt(
     group=DeveloperMode_group,
     language="en",
     tags=["avid-effect:security:S0403", "avid-effect:performance:P0204"],
+    source="https://github.com/leondz/garak",
 )
 
 ChatGPT_Image_Markdown = Prompt(
@@ -667,6 +682,7 @@ ChatGPT_Image_Markdown = Prompt(
     group=ImageMarkdown_group,
     language="en",
     tags=["avid-effect:security:S0403"],
+    source="https://github.com/leondz/garak",
 )
 
 
@@ -752,6 +768,7 @@ def get_ablation_dan_11_0_prompts():
                 group=DAN_group,
                 language="en",
                 tags=["avid-effect:security:S0403"],
+                source="https://github.com/leondz/garak",
             )
         )
     return prompts
