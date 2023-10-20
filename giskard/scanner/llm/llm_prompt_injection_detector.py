@@ -9,7 +9,7 @@ from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 
 
-@detector("llm_prompt_injection", tags=["prompt_injection", "llm", "generative", "text_generation"])
+@detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
     def __init__(self, threshold: float = 0.5, num_samples=100):
         self.threshold = threshold  # default
