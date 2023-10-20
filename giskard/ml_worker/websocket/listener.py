@@ -79,7 +79,7 @@ def wrapped_handle_result(
 
         try:
             info: websocket.WorkerReply = (
-                await asyncio.wait_for(asyncio.wrap_future(future), timeout=None)
+                await asyncio.wait_for(asyncio.wrap_future(future, loop=asyncio.get_running_loop()), timeout=None)
                 if isinstance(future, Future)
                 else future()
             )
