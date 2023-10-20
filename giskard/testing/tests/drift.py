@@ -1,3 +1,4 @@
+import inspect
 import numbers
 import re
 import typing
@@ -5,7 +6,6 @@ import uuid
 from collections import Counter
 from typing import Optional, List
 
-import inspect
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2, ks_2samp
@@ -18,7 +18,7 @@ from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestM
 from giskard.ml_worker.testing.utils import check_slice_not_empty
 from giskard.ml_worker.testing.utils import validate_classification_label
 from giskard.models.base import BaseModel
-from . import debug_prefix, debug_description_prefix
+from . import debug_description_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -200,7 +200,6 @@ def test_drift_psi(
     threshold: float = 0.2,
     max_categories: int = 20,
     psi_contribution_percent: float = 0.2,
-    debug: bool = False,
 ) -> TestResult:
     """
     Test if the PSI score between the actual and reference datasets is below the threshold for
@@ -225,10 +224,6 @@ def test_drift_psi(
             the ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the
-            most (more than psi_contribution_percent of the total PSI score).
 
 
     Returns:
@@ -260,23 +255,21 @@ def test_drift_psi(
     )
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
+    failed_indexes = list()
+    if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            output_ds = actual_dataset.copy()  # copy all properties
-            output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
+            failed_indexes = list(actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index)
             test_name = inspect.stack()[0][3]
-            if output_ds.df.empty:
+            if len(failed_indexes) == 0:
                 raise ValueError(
                     test_name
                     + f": the categories {filtered_modalities} completely drifted as they are not present in the "
                     f"'actual_dataset'"
                 )
-            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -285,7 +278,7 @@ def test_drift_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
 
@@ -302,7 +295,6 @@ def test_drift_chi_square(
     threshold: float = 0.05,
     max_categories: int = 20,
     chi_square_contribution_percent: float = 0.2,
-    debug: bool = False,
 ) -> TestResult:
     """
     Test if the p-value of the chi square test between the actual and reference datasets is
@@ -329,10 +321,6 @@ def test_drift_chi_square(
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most
-            (more than chi_square_contribution_percent of the total chi squared score).
 
     Returns:
         actual_slices_size:
@@ -363,17 +351,14 @@ def test_drift_chi_square(
     )
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
+    failed_indexes = list()
+    if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            output_ds = actual_dataset.copy()  # copy all properties
-            output_ds.df = actual_dataset.df.loc[actual_series.isin(filtered_modalities)]
-            test_name = inspect.stack()[0][3]
-            output_ds.name = debug_prefix + test_name
+            failed_indexes = list(actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index)
     # ---
 
     return TestResult(
@@ -382,7 +367,7 @@ def test_drift_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
 
@@ -530,7 +515,6 @@ def test_drift_prediction_psi(
     max_categories: int = 10,
     threshold: float = 0.2,
     psi_contribution_percent: float = 0.2,
-    debug: bool = False,
 ):
     """
     Test if the PSI score between the reference and actual datasets is below the threshold
@@ -556,10 +540,6 @@ def test_drift_prediction_psi(
             The ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most (more than
-            psi_contribution_percent of the total PSI score).
 
     Returns:
         actual_slices_size:
@@ -592,22 +572,20 @@ def test_drift_prediction_psi(
     )
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
+    failed_indexes = list()
+    if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            output_ds = actual_dataset.copy()  # copy all properties
-            output_ds.df = actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values]
+            failed_indexes = list(actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index)
             test_name = inspect.stack()[0][3]
-            if output_ds.df.empty:
+            if len(failed_indexes) == 0:
                 raise ValueError(
                     test_name + f": the categories {filtered_modalities} completely drifted as they are not present "
                     f"in the 'actual_dataset'"
                 )
-            output_ds.name = debug_prefix + test_name
     # ---
 
     return TestResult(
@@ -616,7 +594,7 @@ def test_drift_prediction_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
 
@@ -662,7 +640,6 @@ def test_drift_prediction_chi_square(
     max_categories: int = 10,
     threshold: float = 0.05,
     chi_square_contribution_percent: float = 0.2,
-    debug: bool = False,
 ):
     """
     Test if the Chi Square value between the reference and actual datasets is below the threshold
@@ -688,10 +665,6 @@ def test_drift_prediction_chi_square(
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the actual_dataset rows with the categories that have drifted the most (more than
-            chi_square_contribution_percent of the total chi squared score).
 
     Returns:
         actual_slices_size:
@@ -725,17 +698,14 @@ def test_drift_prediction_chi_square(
     )
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
+    failed_indexes = list()
+    if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            output_ds = actual_dataset.copy()  # copy all properties
-            output_ds.df = actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values]
-            test_name = inspect.stack()[0][3]
-            output_ds.name = debug_prefix + test_name
+            failed_indexes = list(actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index)
     # ---
 
     return TestResult(
@@ -744,7 +714,7 @@ def test_drift_prediction_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
 
