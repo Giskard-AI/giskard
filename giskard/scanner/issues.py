@@ -93,6 +93,14 @@ class Issue:
         return self.level == IssueLevel.MAJOR
 
     @property
+    def is_medium(self) -> bool:
+        return self.level == IssueLevel.MEDIUM
+
+    @property
+    def is_minor(self) -> bool:
+        return self.level == IssueLevel.MINOR
+
+    @property
     def features(self) -> List[str]:
         if self._features is not None:
             return self._features
