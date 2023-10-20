@@ -10,7 +10,7 @@ from ...models.base.model import BaseModel
 
 
 @detector("llm_prompt_injection", tags=["prompt_injection", "llm", "generative", "text_generation"])
-class RefactoredLLMPromptInjectionDetector:
+class LLMPromptInjectionDetector:
     def __init__(self, threshold: float = 0.5, num_samples=100):
         self.threshold = threshold  # default
         self.num_samples = num_samples
@@ -82,7 +82,7 @@ class RefactoredLLMPromptInjectionDetector:
                     dataset,
                     level=level,
                     group=IssueGroup(
-                        name="Prompt Injection (refactored)",
+                        name="Prompt Injection",
                         description="LLM Prompt injection involves bypassing "
                         "filters or manipulating the LLM using carefully crafted prompts that make the "
                         "model ignore "
