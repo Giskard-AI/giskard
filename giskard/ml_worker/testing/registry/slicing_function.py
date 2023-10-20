@@ -82,6 +82,9 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
     @property
     def dependencies(self) -> Set[Artifact]:
+        if self.func is None:
+            return set()
+
         from inspect import Parameter, signature
 
         parameters: List[Parameter] = list(signature(self.func).parameters.values())
