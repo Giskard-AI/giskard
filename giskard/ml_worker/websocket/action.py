@@ -16,3 +16,4 @@ class MLWorkerAction(Enum):
     getCatalog = 11
     generateQueryBasedSlicingFunction = 12
     getPush = 13
+    createSubDataset = 14

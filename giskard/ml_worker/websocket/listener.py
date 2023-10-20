@@ -789,3 +789,22 @@ def get_push(
 
 def push_to_ws(push: Push):
     return push.to_ws() if push is not None else None
+
+
+@websocket_actor(MLWorkerAction.createSubDataset)
+def create_sub_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *args, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = Dataset.download(
+        client,
+        params.dataset.project_key,
+        params.dataset.id,
+        sample=params.dataset.sample,
+    ).copy()
+
+    dataset.name = params.name
+    dataset.df = dataset.df.loc[params.rowIndexes]
+
+    dataset.upload(client, params.projectKey)
+
+    return websocket.CreateSubDataset(datasetUuid=str(dataset.id))

@@ -368,3 +368,14 @@ class GetPushResponse(BaseModel):
     overconfidence: Optional[Push] = None
     borderline: Optional[Push] = None
     action: Optional[PushAction] = None
+
+
+class CreateSubDatasetParam(BaseModel):
+    dataset: ArtifactRef
+    projectKey: str = None
+    name: str = None
+    rowIndexes: List[int]
+
+
+class CreateSubDataset(WorkerReply):
+    datasetUuid: str
