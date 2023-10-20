@@ -131,17 +131,17 @@ def _metric_to_test_object(metric_name):
         return None
 
 
-def _generate_spurious_corr_tests(issue):
+def _generate_spurious_corr_tests(issue, overwrite_inputs={}):
     test_fn = _metric_to_test_object(issue.meta["method"])
 
     if test_fn is None:
         return []
 
+    inputs = {
+        "model": issue.model, "dataset": issue.dataset, "slicing_function": issue.slicing_fn, "threshold": issue.meta["threshold"]
+    }
+    inputs.update(overwrite_inputs)
+
     return {
-        f"{issue.meta['metric']} on data slice “{issue.slicing_fn}”": test_fn(
-            model=issue.model,
-            dataset=issue.dataset,
-            slicing_function=issue.slicing_fn,
-            threshold=issue.meta["threshold"],
-        )
+        f"{issue.meta['metric']} on data slice “{issue.slicing_fn}”": test_fn(**inputs)
     }

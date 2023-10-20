@@ -277,7 +277,7 @@ def _metric_to_test_object(metric: PerformanceMetric):
         return None
 
 
-def _generate_performance_tests(issue: Issue):
+def _generate_performance_tests(issue: Issue, overwrite_inputs={}):
     metric = issue.meta["slice_metric"].metric
     test_fn = _metric_to_test_object(metric)
 
@@ -288,10 +288,13 @@ def _generate_performance_tests(issue: Issue):
     delta = (metric.greater_is_better * 2 - 1) * issue.meta["threshold"] * issue.meta["reference_metric"].value
     abs_threshold = issue.meta["reference_metric"].value - delta
 
+    inputs = {
+        "model": issue.model, "dataset": issue.dataset, "slicing_function": issue.slicing_fn, "threshold": abs_threshold
+    }
+    inputs.update(overwrite_inputs)
+
     return {
-        f"{metric.name} on data slice “{issue.slicing_fn}”": test_fn(
-            model=issue.model, dataset=issue.dataset, slicing_function=issue.slicing_fn, threshold=abs_threshold
-        )
+        f"{metric.name} on data slice “{issue.slicing_fn}”": test_fn(**inputs)
     }
 
 

@@ -121,19 +121,22 @@ def _filter_examples(issue, dataset):
     return dataset.slice(lambda df: df.loc[fail_idx], row_level=False)
 
 
-def _generate_underconfidence_tests(issue):
+def _generate_underconfidence_tests(issue, overwrite_inputs={}):
     from ...testing.tests.calibration import test_underconfidence_rate
 
     abs_threshold = issue.meta["metric_reference_value"] * (1 + issue.meta["threshold"])
 
+    inputs = {
+        "model": issue.model,
+        "dataset": issue.dataset,
+        "slicing_function": issue.slicing_fn,
+        "threshold": abs_threshold,
+        "p_threshold": issue.meta["p_threshold"],
+    }
+    inputs.update(overwrite_inputs)
+
     tests = {
-        f"Underconfidence on data slice “{issue.slicing_fn}”": test_underconfidence_rate(
-            model=issue.model,
-            dataset=issue.dataset,
-            slicing_function=issue.slicing_fn,
-            threshold=abs_threshold,
-            p_threshold=issue.meta["p_threshold"],
-        )
+        f"Underconfidence on data slice “{issue.slicing_fn}”": test_underconfidence_rate(**inputs)
     }
 
     return tests

@@ -189,19 +189,22 @@ class BaseTextPerturbationDetector(Detector):
         return issues
 
 
-def _generate_robustness_tests(issue: Issue):
+def _generate_robustness_tests(issue: Issue, overwrite_inputs={}):
     from ...testing.tests.metamorphic import test_metamorphic_invariance
+
+    inputs = {
+        "model": issue.model,
+        "dataset": issue.dataset,
+        "transformation_function": issue.transformation_fn,
+        "slicing_function": None,
+        "threshold": 1 - issue.meta["threshold"],
+        "output_sensitivity": issue.meta["output_sentitivity"],
+    }
+    inputs.update(overwrite_inputs)
 
     # Only generates a single metamorphic test
     return {
-        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
-            model=issue.model,
-            dataset=issue.dataset,
-            transformation_function=issue.transformation_fn,
-            slicing_function=None,
-            threshold=1 - issue.meta["threshold"],
-            output_sensitivity=issue.meta["output_sentitivity"],
-        )
+        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(**inputs)
     }
 
 

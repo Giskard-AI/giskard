@@ -126,8 +126,8 @@ class Issue:
         else:
             self._examples = pd.concat([self._examples, examples])
 
-    def generate_tests(self, with_names=False) -> list:
-        tests = self._tests(self) if callable(self._tests) else self._tests
+    def generate_tests(self, with_names=False, overwrite_inputs={}) -> list:
+        tests = self._tests(self, overwrite_inputs=overwrite_inputs) if callable(self._tests) else self._tests
 
         if tests is None:
             return []
