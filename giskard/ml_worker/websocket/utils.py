@@ -1,10 +1,9 @@
-from typing import Any, Dict, List, Optional
-
 import logging
 import os
 import posixpath
 import shutil
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -229,11 +228,10 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
-            output_df_id=result.output_df_id,
+            failed_indexes=result.failed_indexes,
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
@@ -241,29 +239,9 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
 
 
-def do_run_adhoc_test(client, arguments, test, debug_info=None):
+def do_run_adhoc_test(arguments, test):
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-    test_result = test.get_builder()(**arguments).execute()
-    if test_result.output_df is not None:  # i.e. if debug is True and test has failed
-        if debug_info is None:
-            raise ValueError(
-                "You have requested to debug the test, "
-                + "but extract_debug_info did not return the information needed."
-            )
-
-        test_result.output_df.name += debug_info["suffix"]
-
-        test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
-        # We won't return output_df from WS, rather upload it
-        test_result.output_df = None
-    elif arguments["debug"]:
-        raise ValueError(
-            "This test does not return any examples to debug. "
-            "Check the debugging method associated to this test at "
-            "https://docs.giskard.ai/en/latest/reference/tests/index.html"
-        )
-
-    return test_result
+    return test.get_builder()(**arguments).execute()
 
 
 def map_suite_input_ws(i: websocket.SuiteInput):

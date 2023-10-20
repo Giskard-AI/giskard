@@ -1,5 +1,3 @@
-from typing import Callable, Dict, Optional, Union
-
 import json
 import logging
 import math
@@ -12,6 +10,7 @@ import traceback
 from concurrent.futures import CancelledError, Future
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -36,7 +35,6 @@ from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_run_adhoc_test,
-    extract_debug_info,
     fragment_message,
     function_argument_to_ws,
     log_artifact_local,
@@ -580,10 +578,11 @@ def run_ad_hoc_test(
 
     arguments = parse_function_arguments(client, params.arguments)
 
-    arguments["debug"] = params.debug if params.debug else None
-    debug_info = extract_debug_info(params.arguments) if params.debug else None
+    # TODO: how to send to back all the time?
+    # arguments["debug"] = params.debug if params.debug else None
+    # debug_info = extract_debug_info(params.arguments) if params.debug else None
 
-    test_result = do_run_adhoc_test(client, arguments, test, debug_info)
+    test_result = do_run_adhoc_test(arguments, test)
 
     return websocket.RunAdHocTest(
         results=[
