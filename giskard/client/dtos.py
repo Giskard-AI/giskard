@@ -20,3 +20,4 @@ class TestSuiteDTO(BaseModel):
     name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]
+    function_inputs: List[TestInputDTO]
