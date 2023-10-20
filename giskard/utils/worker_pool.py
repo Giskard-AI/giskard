@@ -94,12 +94,14 @@ class GiskardResult:
 
 def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, running_process: Dict[str, str]):
     pid = os.getpid()
+    LOGGER.info("Process %s started", pid)
 
     while True:
         # Blocking accessor, will wait for a task
         task: GiskardTask = tasks_queue.get()
         # This is how we cleanly stop the workers
         if task is None:
+            LOGGER.info("Process %s stopping", pid)
             return
         # Capture any log (stdout, stderr + root logger)
         with redirect_stdout(StringIO()) as f:

@@ -3,6 +3,7 @@ import os
 from concurrent.futures import Future
 from functools import wraps
 from threading import Lock, Thread
+from time import sleep
 
 from giskard.settings import settings
 from giskard.utils.worker_pool import WorkerPoolExecutor
@@ -66,6 +67,9 @@ def start_pool(max_workers: int = None):
         max_workers (int, optional): _description_. Defaults to None.
     """
     POOL.start(max_workers=max_workers)
+    # Warmup the pool
+    for _ in range(100):
+        call_in_pool(sleep, [0])
 
 
 def shutdown_pool():
