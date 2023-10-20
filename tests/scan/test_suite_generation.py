@@ -31,10 +31,20 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
     ]
     print(issues[0].generate_tests())
     result = ScanReport(issues)
-    test_suite = result.generate_test_suite("Custom name")
+    test_suite = result.generate_test_suite("Custom name", use_suite_input=False)
 
     assert isinstance(test_suite, Suite)
     assert test_suite.name == "Custom name"
     assert len(test_suite.tests) == 1
 
     test_suite.run()
+
+    # Test `use_suite_input` is True, pass model and dataset as suite inputs
+    test_suite = result.generate_test_suite("Custom name with suite inputs")
+
+    assert isinstance(test_suite, Suite)
+    assert test_suite.name == "Custom name with suite inputs"
+    assert len(test_suite.tests) == 1
+
+    test_suite.run(model=german_credit_model, dataset=german_credit_data)
+

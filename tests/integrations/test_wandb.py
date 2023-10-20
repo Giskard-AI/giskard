@@ -72,7 +72,7 @@ def _to_wandb(model, dataset):
     scan_results.to_wandb()
 
     # verify that the logging of test suite results works
-    test_suite_results = scan_results.generate_test_suite().run()
+    test_suite_results = scan_results.generate_test_suite(use_suite_input=False).run()
     test_suite_results.to_wandb()
 
     # Verify that the logging of the SHAP explanation charts works.
