@@ -10,8 +10,7 @@ from .data import Prompt, StringMatchingMethod
 class Evaluator(ABC):
     """Base class for evaluators that define a way of detecting a LLM failure"""
 
-    def __init__(self,
-                 name: str = None):
+    def __init__(self, name: str = None):
         if name is None:
             self.name = __class__
 
@@ -25,7 +24,6 @@ class Evaluator(ABC):
 
 
 class StringMatcher(Evaluator):
-
     @staticmethod
     def evaluate(prediction: str, prompt: Prompt) -> bool:
         failed = 0
@@ -38,11 +36,12 @@ class StringMatcher(Evaluator):
                 s, prediction = s.lower(), prediction.lower()
 
             if not evaluation_method.punctuation_sensitive:
-                s = s.translate(str.maketrans('', '', string.punctuation))
-                prediction = prediction.translate(str.maketrans('', '', string.punctuation))
+                s = s.translate(str.maketrans("", "", string.punctuation))
+                prediction = prediction.translate(str.maketrans("", "", string.punctuation))
 
-            if evaluation_method.exact_matching and s == prediction:
-                failed = 1
+            if evaluation_method.exact_matching:
+                if s == prediction:
+                    failed = 1
             else:
                 if evaluation_method.word_matching:
                     if re.search(r"\b" + s + r"\b", prediction):
