@@ -19,7 +19,10 @@ def threaded(fn):
     return wrapper
 
 
-class WorkerPool:
+NOT_STARTED = "Pool is not started"
+
+
+class SingletonWorkerPool:
     "Utility class to wrap a Process pool"
 
     def __init__(self):
@@ -30,9 +33,7 @@ class WorkerPool:
         if self.pool is not None:
             return
         self.max_workers = max(max_workers, settings.min_workers) if max_workers is not None else os.cpu_count()
-        LOGGER.info("Starting worker pool with %s workers...", self.max_workers)
         self.pool = WorkerPoolExecutor(nb_workers=self.max_workers)
-        LOGGER.info("Pool is started")
 
     def shutdown(self, wait=True):
         if self.pool is None:
@@ -41,21 +42,21 @@ class WorkerPool:
 
     def schedule(self, fn, args=None, kwargs=None, timeout=None) -> Future:
         if self.pool is None:
-            raise ValueError("Pool is not started")
+            raise RuntimeError(NOT_STARTED)
         return self.pool.schedule(fn, args=args, kwargs=kwargs, timeout=timeout)
 
     def submit(self, *args, **kwargs) -> Future:
         if self.pool is None:
-            raise ValueError("Pool is not started")
+            raise RuntimeError(NOT_STARTED)
         return self.pool.submit(*args, **kwargs)
 
     def map(self, *args, **kwargs):
         if self.pool is None:
-            raise ValueError("Pool is not started")
+            raise RuntimeError(NOT_STARTED)
         return self.pool.map(*args, **kwargs)
 
 
-POOL = WorkerPool()
+POOL = SingletonWorkerPool()
 
 
 def start_pool(max_workers: int = None):
