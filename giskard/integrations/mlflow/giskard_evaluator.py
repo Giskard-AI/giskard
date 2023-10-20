@@ -85,10 +85,10 @@ class GiskardEvaluator(ModelEvaluator):
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             ) from e
 
-    def _generate_test_suite(self, scan_results):
+    def _generate_test_suite(self, scan_results, suite_inputs={}):
         try:
             test_suite = scan_results.generate_test_suite("scan test suite")
-            test_suite_results = test_suite.run()
+            test_suite_results = test_suite.run(**suite_inputs)
 
             # log metrics resulting from scan
             metrics = test_suite_results.to_mlflow(mlflow_client=self.client, mlflow_run_id=self.run_id)
@@ -144,7 +144,11 @@ class GiskardEvaluator(ModelEvaluator):
             )
 
         # Generate test suite
-        _, metrics = self._generate_test_suite(scan_results)
+        suite_inputs = {
+            "model": giskard_model,
+            "dataset": giskard_dataset,
+        }
+        _, metrics = self._generate_test_suite(scan_results, suite_inputs=suite_inputs)
 
         print(
             "The evaluation with giskard ran successfully! You can now visualise the results by running 'mlflow ui' "
