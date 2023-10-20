@@ -31,8 +31,8 @@
     </td>
     {% endif %}
     {% if "deviation" in issue.meta %}
-    <td class="p-3">
-        <span class="{{'text-red-400' if issue.is_major else 'text-amber-200'}}">
+    <td class="p-3">        
+        <span class="{% if issue.is_major %}text-red-400{% elif issue.is_medium %}text-amber-200{% else %}text-blue-200{% endif %}">
             {{ issue.meta.deviation }}
         </span>
     </td>
