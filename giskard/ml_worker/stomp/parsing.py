@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from enum import Enum
 
 from giskard.ml_worker.stomp.constants import (
-    NULL_BYTE,
     UTF_8,
     CommandType,
     HeaderType,
@@ -57,7 +56,7 @@ class Frame:
                 ]
             ).encode(UTF_8)
             + body
-            + NULL_BYTE
+            # + NULL_BYTE
         )
 
 
