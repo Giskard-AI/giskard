@@ -12,8 +12,8 @@ from io import StringIO
 from multiprocessing import Process, Queue, SimpleQueue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
-from queue import Empty
-from threading import Thread
+from queue import Empty, Full
+from threading import Thread, current_thread
 from time import sleep
 from uuid import uuid4
 
@@ -108,6 +108,7 @@ def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, runnin
             with redirect_stderr(f):
                 handler = logging.StreamHandler(f)
                 logging.getLogger().addHandler(handler)
+                to_return = None
                 try:
                     LOGGER.debug("Doing task %s", task.id)
                     running_process[task.id] = pid
@@ -122,7 +123,6 @@ def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, runnin
                     logging.getLogger().removeHandler(handler)
 
 
-# Note: See _on_queue_feeder_error
 class PoolState(Enum):
     STARTING = 0
     STARTED = 1
@@ -146,22 +146,22 @@ class WorkerPoolExecutor(Executor):
         # Forcing spawn context, to have same behaviour between all os
         self._mp_context: SpawnContext = get_context("spawn")
         # Map of pids to processes
-        self._processes: Dict[int, SpawnProcess] = {}
+        self.processes: Dict[int, SpawnProcess] = {}
         # Manager to handle shared object
         self._manager: SyncManager = self._mp_context.Manager()
         # Mapping of the running tasks and worker pids
-        self._running_process: Dict[str, str] = self._manager.dict()
+        self.running_process: Dict[str, str] = self._manager.dict()
         # Mapping of the running tasks and worker pids
-        self._with_timeout_tasks: List[TimeoutData] = []
+        self.with_timeout_tasks: List[TimeoutData] = []
         # Queue with tasks to run
-        self._pending_tasks_queue: Queue[GiskardTask] = self._mp_context.Queue()
+        self.pending_tasks_queue: Queue[GiskardTask] = self._mp_context.Queue()
         # Queue with tasks to be consumed asap
         # As in ProcessPool, add one more to avoid idling process
-        self._running_tasks_queue: Queue[Optional[GiskardTask]] = self._mp_context.Queue(maxsize=self._nb_workers + 1)
+        self.running_tasks_queue: Queue[Optional[GiskardTask]] = self._mp_context.Queue(maxsize=self._nb_workers + 1)
         # Queue with results to notify
-        self._tasks_results: Queue[GiskardResult] = self._mp_context.Queue()
+        self.tasks_results: Queue[GiskardResult] = self._mp_context.Queue()
         # Mapping task_id with future
-        self._futures_mapping: Dict[str, Future] = dict()
+        self.futures_mapping: Dict[str, Future] = dict()
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")
 
         self._threads = [
@@ -175,30 +175,73 @@ class WorkerPoolExecutor(Executor):
 
         # Startup workers
         for _ in range(self._nb_workers):
-            self._spawn_worker()
+            self.spawn_worker()
         LOGGER.info("WorkerPoolExecutor is started")
 
+    def terminated(self) -> bool:
+        return self._state in FINAL_STATES
+
+    def safe_get(self, queue: Queue, timeout: float = 1) -> Tuple[Any, bool]:
+        try:
+            result = queue.get(timeout=timeout)
+        except Empty:
+            result = None
+        except ValueError as e:
+            # If queue is closed
+            if not self.terminated():
+                LOGGER.error("Queue is closed, and executor not in final state")
+                self._state = PoolState.BROKEN
+                raise e
+            return None, True
+        if self.terminated():
+            return None, True
+        return result, False
+
     def health_check(self):
-        if self._state in FINAL_STATES:
+        if self.terminated():
             return
-        if any([not _safe_is_alive(p) for p in self._processes.values()]):
+        if any([not _safe_is_alive(p) for p in self.processes.values()]):
             LOGGER.warning("At least one process died for an unknown reason, marking pool as broken")
+            LOGGER.warning(
+                "Non null exit codes: %s",
+                [_safe_exit_code(p) for p in self.processes.values() if _safe_exit_code(p) != 0],
+            )
             self._state = PoolState.BROKEN
             self.shutdown(wait=False, timeout=1)
 
-    def _spawn_worker(self):
+    def spawn_worker(self):
         # Daemon means process are linked to main one, and will be stopped if current process is stopped
         p = self._mp_context.Process(
             target=_process_worker,
             name=f"{self._prefix}_worker_process",
-            args=(self._running_tasks_queue, self._tasks_results, self._running_process),
+            args=(self.running_tasks_queue, self.tasks_results, self.running_process),
             daemon=True,
         )
         p.start()
-        self._processes[p.pid] = p
+        self.processes[p.pid] = p
         LOGGER.info("Starting a new worker %s", p.pid)
 
-    def submit(self, fn, *args, **kwargs):
+    def kill_task(self, task_id: str) -> Optional[BaseException]:
+        # Task has timed out, we should kill it
+        try:
+            future = self.futures_mapping.pop(task_id, None)
+            if future is not None and not future.cancel():
+                LOGGER.warning("Killing a timed out process")
+                future.set_exception(TimeoutError("Task took too long"))
+                pid = self.running_process.pop(task_id, None)
+                if pid is not None:
+                    p = self.processes.pop(pid)
+                    _stop_processes([p])
+                    if not self.terminated():
+                        self.spawn_worker()
+        except BaseException as e:
+            # This is probably an OSError, but we want to be extra safe
+            LOGGER.warning("Unexpected error when killing a timed out process, pool is broken")
+            LOGGER.exception(e)
+            self._state = PoolState.BROKEN
+            return e
+
+    def submit(self, fn, /, *args, **kwargs):
         return self.schedule(fn, args=args, kwargs=kwargs, timeout=None)
 
     def schedule(
@@ -212,84 +255,65 @@ class WorkerPoolExecutor(Executor):
             args = []
         if kwargs is None:
             kwargs = {}
-        if self._state in FINAL_STATES:
+        if self.terminated():
             raise RuntimeError(f"Cannot submit when pool is {self._state.name}")
         task = GiskardTask(callable=fn, args=args, kwargs=kwargs)
         res = GiskardFuture()
-        self._futures_mapping[task.id] = res
-        self._pending_tasks_queue.put(task)
+        self.futures_mapping[task.id] = res
+        self.pending_tasks_queue.put(task)
         if timeout is not None:
-            self._with_timeout_tasks.append(TimeoutData(task.id, time.monotonic() + timeout))
+            self.with_timeout_tasks.append(TimeoutData(task.id, time.monotonic() + timeout))
         return res
 
-    def shutdown(self, wait=True, timeout: float = 5, force=False):
-        if self._state in FINAL_STATES and not force:
+    def shutdown(self, wait=True, *, cancel_futures=True, timeout: float = 5, force=False):
+        if self.terminated() and not force:
             return
         # Changing state, so that thread will stop
-        # Killer thread will also do cleanup
         if not force:
             self._state = PoolState.STOPPING
         # Cancelling all futures we have
-        for future in self._futures_mapping.values():
-            if future.cancel() and not future.done():
-                future.set_exception(CancelledError("Executor is stopping"))
+        if cancel_futures:
+            for future in self.futures_mapping.values():
+                if future.cancel() and not future.done():
+                    future.set_exception(CancelledError("Executor is stopping"))
         # Emptying running_tasks queue
-        while not self._running_tasks_queue.empty():
+        while not self.running_tasks_queue.empty():
             try:
-                self._running_tasks_queue.get_nowait()
-            except ValueError as e:
-                # This happens if queues is closed
-                LOGGER.warning("Running task queue is already closed")
-                LOGGER.exception(e)
-            except Empty as e:
-                # May happen if a process consume an element
-                LOGGER.warning("Queue was empty, skipping")
+                self.running_tasks_queue.get_nowait()
+            except (ValueError, Empty) as e:
+                LOGGER.warning("Error while emptying running queue")
                 LOGGER.exception(e)
         # Try to nicely stop the worker, by adding None into the running tasks
         try:
             for _ in range(self._nb_workers):
-                self._running_tasks_queue.put(None, timeout=1)
-        except OSError as e:
-            # This happens if queues is closed
-            LOGGER.warning("Running task queue is already closed")
+                self.running_tasks_queue.put(None, timeout=1)
+        except (ValueError, Full) as e:
+            LOGGER.warning("Error while trying to feed None task to running queue")
             LOGGER.exception(e)
         # Wait for process to stop by themselves
-        p_list = list(self._processes.values())
+        p_list = list(self.processes.values())
         if wait:
             _wait_process_stop(p_list, timeout=timeout)
         # Clean all the queues
-        for queue in [self._pending_tasks_queue, self._tasks_results, self._running_tasks_queue]:
+        for queue in [self.pending_tasks_queue, self.tasks_results, self.running_tasks_queue]:
             # In python 3.8, Simple queue seems to not have close method
             if hasattr(queue, "close"):
                 queue.close()
         # Waiting for threads to finish
         for t in self._threads:
+            if t is current_thread():
+                # To avoid killer thread to join itself
+                continue
             t.join(timeout=1)
             if t.is_alive():
                 LOGGER.warning("Thread %s still alive at shutdown", t.name)
         # Changing state to stopped
-        self._state = PoolState.STOPPED
+        if not force:
+            self._state = PoolState.STOPPED
         # Cleaning up processes
         exit_codes = _stop_processes(p_list, timeout=1)
         self._manager.shutdown()
         return exit_codes
-
-
-def _safe_get(queue: Queue, executor: WorkerPoolExecutor, timeout: float = 1) -> Tuple[Any, bool]:
-    try:
-        result = queue.get(timeout=1)
-    except Empty:
-        result = None
-    except ValueError as e:
-        # If queue is closed
-        if executor._state not in FINAL_STATES:
-            LOGGER.error("Queue is closed, and executor not in final state")
-            executor._state = PoolState.BROKEN
-            raise e
-        return None, True
-    if executor._state in FINAL_STATES:
-        return None, True
-    return result, False
 
 
 def _results_thread(
@@ -297,14 +321,14 @@ def _results_thread(
 ):
     # Goal of this thread is to feed the running tasks from pending one as soon as possible
     # while True:
-    while executor._state not in FINAL_STATES:
-        result, should_stop = _safe_get(executor._tasks_results, executor)
+    while not executor.terminated():
+        result, should_stop = executor.safe_get(executor.tasks_results)
         if should_stop:
             return
         if result is None:
             continue
 
-        future = executor._futures_mapping.pop(result.id, None)
+        future = executor.futures_mapping.pop(result.id, None)
         if future is None or future.cancelled():
             continue
         future.logs = result.logs
@@ -318,67 +342,48 @@ def _feeder_thread(
     executor: WorkerPoolExecutor,
 ):
     # Goal of this thread is to feed the running tasks from pending one as soon as possible
-    while executor._state not in FINAL_STATES:
-        task, should_stop = _safe_get(executor._pending_tasks_queue, executor)
+    while not executor.terminated():
+        task, should_stop = executor.safe_get(executor.pending_tasks_queue)
         if should_stop:
             return
         if task is None:
             continue
 
-        future = executor._futures_mapping.get(task.id)
+        future = executor.futures_mapping.get(task.id)
         if future is None:
             continue
         if future.set_running_or_notify_cancel():
-            executor._running_tasks_queue.put(task)
+            executor.running_tasks_queue.put(task)
         else:
             # Future has been cancelled already, nothing to do
-            executor._futures_mapping.pop(task.id, False)
+            executor.futures_mapping.pop(task.id, False)
 
 
 def _killer_thread(
     executor: WorkerPoolExecutor,
 ):
-    while executor._state not in FINAL_STATES:
-        while len(executor._with_timeout_tasks) == 0 and executor._state not in FINAL_STATES:
+    while not executor.terminated():
+        while len(executor.with_timeout_tasks) == 0 and not executor.terminated():
             # No need to be too active
             sleep(1)
-            if executor._state not in FINAL_STATES:
-                executor.health_check()
-        if executor._state in FINAL_STATES:
+            executor.health_check()
+        if executor.terminated():
             return
 
         clean_up: List[TimeoutData] = []
         exception = None
-        for timeout_data in executor._with_timeout_tasks:
-            if timeout_data.id not in executor._futures_mapping:
+        for timeout_data in executor.with_timeout_tasks:
+            if timeout_data.id not in executor.futures_mapping:
                 # Task is already completed, do not wait for it
                 clean_up.append(timeout_data)
             elif time.monotonic() > timeout_data.end_time:
-                # Task has timed out, we should kill it
-                try:
-                    future = executor._futures_mapping.pop(timeout_data.id, None)
-                    if future is not None and not future.cancel():
-                        LOGGER.warning("Killing a timed out process")
-                        future.set_exception(TimeoutError("Task took too long"))
-                        pid = executor._running_process.pop(timeout_data.id, None)
-                        if pid is not None:
-                            p = executor._processes.pop(pid)
-                            _stop_processes([p])
-                            if executor._state not in FINAL_STATES:
-                                executor._spawn_worker()
-                except BaseException as e:
-                    # This is probably an OSError, but we want to be extra safe
-                    LOGGER.warning("Unexpected error when killing a timed out process, pool is broken")
-                    LOGGER.exception(e)
-                    exception = e
-                    executor._state = PoolState.BROKEN
-                finally:
-                    clean_up.append(timeout_data)
+                exception = executor.kill_task(timeout_data.id)
+                clean_up.append(timeout_data)
         for elt in clean_up:
-            executor._with_timeout_tasks.remove(elt)
+            executor.with_timeout_tasks.remove(elt)
 
         if exception is not None:
             raise exception
 
-        if executor._state in FINAL_STATES:
+        if executor.terminated():
             return
