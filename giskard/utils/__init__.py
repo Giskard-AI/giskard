@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 def threaded(fn):
     def wrapper(*args, **kwargs):
-        thread = Thread(target=fn, args=args, kwargs=kwargs)
+        thread = Thread(target=fn, daemon=True, args=args, kwargs=kwargs)
         thread.start()
         return thread
 
