@@ -450,7 +450,7 @@ class Suite:
                 )
             )
 
-        return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests)
+        return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests, function_inputs=list())
 
     def add_test(
         self, test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params

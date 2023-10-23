@@ -79,7 +79,9 @@ ml_runtime = [
     "wandb",
     "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                                   # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
-test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1", "datasets"]
+
+test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1", "datasets", "polyfactory"]
+
 doc = [
     "furo>=2023.5.20",
     "myst-parser>=1.0.0",

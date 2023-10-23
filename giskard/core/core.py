@@ -319,7 +319,7 @@ class DatasetProcessFunctionMeta(CallableMeta):
     cell_level: bool
     column_type: Optional[str]
     process_type: DatasetProcessFunctionType
-    clauses: Optional[List[Dict[str, Any]]]
+    clauses: List[Dict[str, Any]]
 
     def __init__(
         self,
@@ -335,7 +335,7 @@ class DatasetProcessFunctionMeta(CallableMeta):
         super(DatasetProcessFunctionMeta, self).__init__(callable_obj, name, tags, version, type)
         self.cell_level = cell_level
         self.process_type = process_type
-        self.clauses = clauses
+        self.clauses = clauses or list()
 
         if cell_level:
             if inspect.isclass(callable_obj):
