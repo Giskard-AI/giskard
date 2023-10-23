@@ -1,4 +1,5 @@
 import random
+from abc import ABC
 
 from .promptinject import build_prompts as pi_build_prompts
 from .promptinject import prompt_data as pi_prompt_data
@@ -13,7 +14,7 @@ DEVIATION_PREFIX = "of the injected prompts manipulated your LLM into "
 
 
 @dataclass(frozen=True)
-class EvaluationMethod:
+class EvaluationMethod(ABC):
     pass
 
 

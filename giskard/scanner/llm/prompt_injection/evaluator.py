@@ -1,6 +1,6 @@
 import re
 import string
-from abc import ABC, abstractmethod
+from abc import ABC
 from colorama import Fore, Style
 
 from ...scanner import logger
@@ -17,15 +17,15 @@ class Evaluator(ABC):
         print(f"loading {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}Evaluator{Style.RESET_ALL}: {self.name}")
         logger.info(f"Evaluator init: {self}")
 
-    @abstractmethod
-    def evaluate(self, prediction: str, prompt: Prompt) -> bool:
+    @staticmethod
+    def evaluate(prediction: str, prompt: Prompt) -> bool:
         """Takes a prediction and a prompt and returns 1 if vulnerability is found."""
         raise NotImplementedError
 
 
 class StringMatcher(Evaluator):
     @staticmethod
-    def evaluate(prediction: str, prompt: Prompt) -> bool:
+    def evaluate(prediction: str, prompt: Prompt) -> int:
         failed = 0
         evaluation_method = prompt.evaluation_method
         if not isinstance(evaluation_method, StringMatchingMethod):
