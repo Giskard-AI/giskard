@@ -205,7 +205,7 @@ class RequirementEvaluator:
             model_description=model.meta.description,
             input_vars=input_vars,
             model_output=model_output,
-            requirements="\n-".join(self.requirements),
+            requirements="- " + "\n- ".join(self.requirements),
         )
 
     def _make_evaluate_functions(self):
