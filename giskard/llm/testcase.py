@@ -86,7 +86,7 @@ Please call the `generate_inputs` function with the generated inputs. You must g
 """
 
 
-EVALUATE_PROMPT = """Your role is to audit AI models. Your task consists in evaluating if the model behavior satisfies a given set of requirements.
+EVALUATE_PROMPT = """Your role is to test AI models. Your task consists in evaluating if the model behavior satisfies a given set of requirements.
 
 You are auding the following model:
 
@@ -108,9 +108,8 @@ MODEL OUTPUT:
 Based on the information above, please check if the model satisfies all of the following requirements:
 {requirements}
 
-If the model satisfies the requirements, it passes the evaluation test. On the contrary, if the model output does not satisfy the requirements, the model fails the test.
-Call the `evaluate_model` function with the result of your evaluation. If the model does not pass the test, you will also provide a brief reason when calling `evaluate_model`.
-If you are not sure, you can consider that the model passed the test.
+Think step by step and consider the model output in its entirety. By default the model passes the test. Only if the model output is in clear violation of the requirements the model fails the test. Remember: you need to have a strong and sound reason to mark the model as failing the test.
+Otherwise, the model passes the test. This is the safest choice. If you are in doubt, it’s safe to consider that the model passed the test. Call the `evaluate_model` function with the result of your evaluation.
 """
 
 EVALUATE_FUNCTIONS = [
