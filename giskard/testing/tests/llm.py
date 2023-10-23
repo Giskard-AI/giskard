@@ -423,9 +423,10 @@ class LLMCharInjector:
             validation=False,
         )
 
+        # Flatten the predictions in case they are dicts of multiple variables, e.g. {"answer": "Bla bla bla", "source": "Wikipedia"}
         score = self.scorer.compute(
-            predictions=predictions,
-            references=reference_predictions,
+            predictions=[str(p) for p in predictions],
+            references=[str(p) for p in reference_predictions],
             model_type="distilbert-base-multilingual-cased",
         )
 
