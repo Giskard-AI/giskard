@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from giskard import Model
 from giskard.core.core import SupportedModelTypes
@@ -57,3 +58,36 @@ def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regres
 
         assert np.all(np.equal(predictions.raw, second_predictions.raw))
         assert nb_of_prediction_calls[0] == 1
+
+
+def test_model_save_and_load_not_overriden():
+    def model_fn(df):
+        return [True] * len(df)
+
+    call_count = dict({"save": 0, "load": 0})
+
+    class MyCustomModel(Model):
+        def save_model(self, path):
+            call_count["save"] = call_count["save"] + 1
+            Path(path).joinpath("custom_data").touch()
+
+        @classmethod
+        def load_model(cls, path, **kwargs):
+            call_count["load"] = call_count["load"] + 1
+
+            def model(x):
+                return [True] * len(x)
+
+            return model
+
+        def model_predict(self, df: pd.DataFrame):
+            return self.model(df)
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        gsk_model = MyCustomModel(model_fn, model_type="regression")
+
+        gsk_model.save(tmpdirname)
+        assert call_count["save"] == 1
+
+        MyCustomModel.load(tmpdirname)
+        assert call_count["load"] == 1
