@@ -7,6 +7,7 @@ import mlflow
 
 from .wrapper import WrapperModel
 
+
 # @TODO: decouple the serialization logic from models. These abstract classes
 # could be implemented as mixins and then used in the models that need them.
 # The logic of saving the model should be moved to the serialization classes.
@@ -48,7 +49,7 @@ class CloudpickleSerializableModel(WrapperModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, **kwargs):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():

@@ -60,21 +60,21 @@ class TorchMinimalDataset(torch_dataset):
 
 class PyTorchModel(MLFlowSerializableModel):
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            torch_dtype: TorchDType = "float32",
-            device="cpu",
-            name: Optional[str] = None,
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
-            iterate_dataset: bool = True,
-            id: Optional[str] = None,
-            batch_size: Optional[int] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        torch_dtype: TorchDType = "float32",
+        device="cpu",
+        name: Optional[str] = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+        iterate_dataset: bool = True,
+        id: Optional[str] = None,
+        batch_size: Optional[int] = None,
+        **kwargs,
     ) -> None:
         """Automatically wraps a PyTorch model.
 
@@ -138,7 +138,7 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, **kwargs):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):

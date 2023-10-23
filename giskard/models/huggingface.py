@@ -103,7 +103,6 @@ from scipy import special
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
-
 from ..client.python_utils import warning
 
 try:
@@ -195,7 +194,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, **kwargs):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:

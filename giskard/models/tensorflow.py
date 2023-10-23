@@ -4,9 +4,9 @@ from typing import Any, Callable, Iterable, Optional
 import mlflow
 import pandas as pd
 
+from .base import MLFlowSerializableModel
 from ..core.core import ModelType
 from ..core.validation import configured_validate_arguments
-from .base import MLFlowSerializableModel
 
 logger = logging.getLogger(__name__)
 
@@ -14,17 +14,17 @@ logger = logging.getLogger(__name__)
 class TensorFlowModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
+        model_postprocessing_function: Callable[[Any], Any] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ):
         super().__init__(
             model=model,
@@ -40,7 +40,7 @@ class TensorFlowModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, **kwargs):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
