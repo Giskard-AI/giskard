@@ -277,17 +277,17 @@ class WorkerPoolExecutor(Executor):
                 if future.cancel() and not future.done():
                     future.set_exception(CancelledError("Executor is stopping"))
         # Emptying running_tasks queue
-        while not self.running_tasks_queue.empty():
-            try:
+        try:
+            while not self.running_tasks_queue.empty():
                 self.running_tasks_queue.get_nowait()
-            except (ValueError, Empty) as e:
-                LOGGER.warning("Error while emptying running queue")
-                LOGGER.exception(e)
+        except (ValueError, Empty, OSError) as e:
+            LOGGER.warning("Error while emptying running queue")
+            LOGGER.exception(e)
         # Try to nicely stop the worker, by adding None into the running tasks
         try:
             for _ in range(self._nb_workers):
                 self.running_tasks_queue.put(None, timeout=1)
-        except (ValueError, Full) as e:
+        except (ValueError, Full, OSError) as e:
             LOGGER.warning("Error while trying to feed None task to running queue")
             LOGGER.exception(e)
         # Wait for process to stop by themselves

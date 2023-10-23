@@ -17,6 +17,7 @@ def many_worker_pool():
     sleep(3)
     yield pool
     pool.shutdown(wait=True)
+    pool.shutdown(wait=False, force=True)
 
 
 @pytest.fixture(scope="function")
@@ -25,6 +26,7 @@ def one_worker_pool():
     sleep(3)
     yield pool
     pool.shutdown(wait=True)
+    pool.shutdown(wait=False, force=True)
 
 
 @pytest.mark.concurrency
@@ -35,6 +37,17 @@ def test_start_stop():
     assert worker_process.is_alive()
     exit_codes = pool.shutdown(wait=True, timeout=10)
     assert exit_codes == [0]
+
+
+@pytest.mark.concurrency
+def test_froce_stopping_should_always_succeed():
+    pool = WorkerPoolExecutor(nb_workers=1)
+    assert len(pool.processes) == 1
+    worker_process: SpawnProcess = list(pool.processes.values())[0]
+    assert worker_process.is_alive()
+    exit_codes = pool.shutdown(wait=True, timeout=10)
+    assert exit_codes == [0]
+    pool.shutdown(wait=False, force=True)
 
 
 def create_file(path: Path):
