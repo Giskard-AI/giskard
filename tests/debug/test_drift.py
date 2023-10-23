@@ -1,11 +1,16 @@
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 import pytest
-from collections import Counter
 
 from giskard.datasets.base import Dataset
-from giskard.testing.tests.drift import test_drift_psi, test_drift_chi_square, \
-    test_drift_prediction_chi_square, test_drift_prediction_psi
+from giskard.testing.tests.drift import (
+    test_drift_psi,
+    test_drift_chi_square,
+    test_drift_prediction_chi_square,
+    test_drift_prediction_psi,
+)
 
 
 @pytest.mark.skip(reason="Pure data drift tests are not supported for debug")
@@ -14,15 +19,15 @@ def test_data_drift_psi_detailed(dataset, male_drift_samples, request):
     dataset = request.getfixturevalue(dataset)
     actual_dataset = Dataset(
         df=pd.concat(
-            [dataset.df[dataset.df.sex == 'female'], dataset.df[dataset.df.sex == 'male'].sample(male_drift_samples)],
-            axis=0),
+            [dataset.df[dataset.df.sex == "female"], dataset.df[dataset.df.sex == "male"].sample(male_drift_samples)],
+            axis=0,
+        ),
         target=dataset.target,
-        column_types=dataset.column_types)
-    reference_dataset = Dataset(df=dataset.df,
-                                target=dataset.target,
-                                column_types=dataset.column_types)
+        column_types=dataset.column_types,
+    )
+    reference_dataset = Dataset(df=dataset.df, target=dataset.target, column_types=dataset.column_types)
 
-    column_name = 'sex'
+    column_name = "sex"
     reference_series = reference_dataset.df[column_name]
     actual_series = actual_dataset.df[column_name]
 
@@ -65,16 +70,14 @@ def test_data_drift_psi_detailed(dataset, male_drift_samples, request):
 
     if male_drift_samples == 0:
         with pytest.raises(ValueError, match="test_drift_psi: the categories .* completely drifted as they.*"):
-            test_drift_psi(actual_dataset=actual_dataset,
-                           reference_dataset=reference_dataset,
-                           column_name=column_name,
-                           debug=True).execute()
+            test_drift_psi(
+                actual_dataset=actual_dataset, reference_dataset=reference_dataset, column_name=column_name, debug=True
+            ).execute()
 
     else:
-        results = test_drift_psi(actual_dataset=actual_dataset,
-                                 reference_dataset=reference_dataset,
-                                 column_name=column_name,
-                                 debug=True).execute()
+        results = test_drift_psi(
+            actual_dataset=actual_dataset, reference_dataset=reference_dataset, column_name=column_name, debug=True
+        ).execute()
         assert list(results.output_df.df.index.values) == list(benchmark_failed_df.index.values)
         assert len(results.output_df.df) == male_drift_samples
 
@@ -84,21 +87,16 @@ def test_data_drift_psi_detailed(dataset, male_drift_samples, request):
 def test_data_drift_globally(dataset, male_drift_samples, request):
     dataset = request.getfixturevalue(dataset)
     actual_df = pd.concat(
-        [dataset.df[dataset.df.sex == 'female'], dataset.df[dataset.df.sex == 'male'].sample(male_drift_samples)],
-        axis=0)
-    actual_dataset = Dataset(
-        df=actual_df,
-        target=dataset.target,
-        column_types=dataset.column_types)
-    reference_dataset = Dataset(df=dataset.df,
-                                target=dataset.target,
-                                column_types=dataset.column_types)
+        [dataset.df[dataset.df.sex == "female"], dataset.df[dataset.df.sex == "male"].sample(male_drift_samples)],
+        axis=0,
+    )
+    actual_dataset = Dataset(df=actual_df, target=dataset.target, column_types=dataset.column_types)
+    reference_dataset = Dataset(df=dataset.df, target=dataset.target, column_types=dataset.column_types)
 
-    column_name = 'sex'
-    results = test_drift_chi_square(actual_dataset=actual_dataset,
-                                    reference_dataset=reference_dataset,
-                                    column_name=column_name,
-                                    debug=True).execute()
+    column_name = "sex"
+    results = test_drift_chi_square(
+        actual_dataset=actual_dataset, reference_dataset=reference_dataset, column_name=column_name, debug=True
+    ).execute()
 
     assert len(results.output_df.df) == len(actual_df)
 
@@ -108,27 +106,19 @@ def test_prediction_drift_globally(model, dataset, request):
     model = request.getfixturevalue(model)
     dataset = request.getfixturevalue(dataset)
 
-    actual_df = dataset.df[dataset.df.default == 'Default']
-    reference_df = dataset.df[dataset.df.default == 'Not default']
-    actual_dataset = Dataset(
-        df=actual_df,
-        target=dataset.target,
-        column_types=dataset.column_types)
-    reference_dataset = Dataset(
-        df=reference_df,
-        target=dataset.target,
-        column_types=dataset.column_types)
+    actual_df = dataset.df[dataset.df.default == "Default"]
+    reference_df = dataset.df[dataset.df.default == "Not default"]
+    actual_dataset = Dataset(df=actual_df, target=dataset.target, column_types=dataset.column_types)
+    reference_dataset = Dataset(df=reference_df, target=dataset.target, column_types=dataset.column_types)
 
-    results = test_drift_prediction_psi(model=model,
-                                        actual_dataset=actual_dataset,
-                                        reference_dataset=reference_dataset,
-                                        debug=True).execute()
-    assert len(results.output_df.df) == len(actual_df)
+    results = test_drift_prediction_psi(
+        model=model, actual_dataset=actual_dataset, reference_dataset=reference_dataset, debug=True
+    ).execute()
+    assert len(results.failed_indexes) == len(actual_df)
 
     actual_prediction = pd.Series(model.predict(actual_dataset).prediction)
     benchmark_len = len(actual_dataset.df.loc[actual_prediction.isin(["Default"]).values])
-    results = test_drift_prediction_chi_square(model=model,
-                                               actual_dataset=actual_dataset,
-                                               reference_dataset=reference_dataset,
-                                               debug=True).execute()
-    assert len(results.output_df.df) == benchmark_len
+    results = test_drift_prediction_chi_square(
+        model=model, actual_dataset=actual_dataset, reference_dataset=reference_dataset, debug=True
+    ).execute()
+    assert len(results.failed_indexes) == benchmark_len

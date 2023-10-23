@@ -146,12 +146,7 @@ def _test_diff_prediction(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        if result_reference.output_df is None:
-            failed_indexes = list(result_actual.failed_indexes)
-        elif result_actual.output_df is None:
-            failed_indexes = list(result_reference.failed_indexes)
-        else:
-            failed_indexes = list(set(result_reference.failed_indexes + result_actual.failed_indexes))
+        failed_indexes = list(set(result_reference.failed_indexes + result_actual.failed_indexes))
     # ---
 
     return TestResult(
