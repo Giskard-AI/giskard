@@ -102,19 +102,24 @@ def _is_backend_ready(endpoint) -> bool:
         return False
 
 
-def _wait_backend_ready(port: int) -> bool:
-    endpoint = f"http://localhost:{port}/management/health"
+def wait_backend_ready(port: int, host="localhost", is_cli=True, wait_sec=3 * 60) -> bool:
+    endpoint = f"http://{host}:{port}/management/health"
     backoff_time = 2
-    max_duration_second = 3 * 60
     started_time = time.time()
     up = False
 
-    while not up and time.time() - started_time <= max_duration_second:
-        time.sleep(backoff_time)
+    while not up and time.time() - started_time <= wait_sec:
         up = _is_backend_ready(endpoint)
-        click.echo(".", nl=False)
+        if is_cli:
+            click.echo(".", nl=False)
+        else:
+            logger.info("Waiting for Hub backend to be ready...")
+        time.sleep(backoff_time)
 
-    click.echo(".")
+    if is_cli:
+        click.echo(".")
+    else:
+        logger.info("Hub backend is ready")
     return up
 
 
@@ -155,7 +160,7 @@ We recommend you to upgrade giskard by running `giskard server stop && giskard s
         )
     container.start()
 
-    up = _wait_backend_ready(port)
+    up = wait_backend_ready(port)
 
     if up:
         logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
