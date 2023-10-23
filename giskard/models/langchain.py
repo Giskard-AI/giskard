@@ -43,16 +43,27 @@ class LangchainModel(WrapperModel):
         self.save_model(local_path)
 
     def save_model(self, local_path: Union[str, Path]) -> None:
-        self.model.save(Path(local_path) / "chain.json")
+        path = Path(local_path)
+        self.model.save(path / "chain.json")
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, **kwargs):
         from langchain.chains import load_chain
 
-        return load_chain(Path(local_dir) / "chain.json")
+        path = Path(local_dir)
+        return load_chain(path / "chain.json", **kwargs)
 
     def model_predict(self, df):
-        return [self.model.predict(**data) for data in df.to_dict("records")]
+        generations = [self.model(data) for data in df.to_dict("records")]
+        output_keys = self.model.output_keys
+
+        if len(output_keys) == 1:
+            return [generation[output_keys[0]] for generation in generations]
+        else:
+            return [
+                str({key: value for key, value in generation.items() if key in output_keys})
+                for generation in generations
+            ]
 
     def rewrite_prompt(self, template, input_variables=None, **kwargs):
         from langchain import LLMChain

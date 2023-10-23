@@ -3,7 +3,7 @@ import pickle
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Union, Dict
 
 import cloudpickle
 import mlflow
@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .model import BaseModel
+from ..utils import warn_once
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
-from ..utils import warn_once
-from .model import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +210,7 @@ class WrapperModel(BaseModel, ABC):
             self.save_data_preprocessing_function(local_path)
         if self.model_postprocessing_function:
             self.save_model_postprocessing_function(local_path)
+        self.save_artifacts(Path(local_path) / "artifacts")
 
     @abstractmethod
     def save_model(self, path: Union[str, Path]) -> None:
@@ -230,6 +231,9 @@ class WrapperModel(BaseModel, ABC):
         with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
+    def save_artifacts(self, artifact_dir) -> None:
+        ...
+
     def save_wrapper_meta(self, local_path):
         with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w") as f:
             yaml.dump(
@@ -247,17 +251,20 @@ class WrapperModel(BaseModel, ABC):
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
         params.update(kwargs)
 
+        artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
+        params.update(artifacts)
+
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
         constructor_params["id"] = model_id
         constructor_params = constructor_params.copy()
         constructor_params.update(params)
 
-        return cls(model=cls.load_model(local_dir), **constructor_params)
+        return cls(model=cls.load_model(local_dir, **params), **constructor_params)
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: Union[str, Path]):
+    def load_model(cls, path: Union[str, Path], **kwargs):
         """Loads the wrapped ``model`` object.
 
         Parameters
@@ -284,6 +291,10 @@ class WrapperModel(BaseModel, ABC):
             with open(file_path, "rb") as f:
                 return cloudpickle.load(f)
         return None
+
+    @classmethod
+    def load_artifacts(cls, local_path: Union[str, Path]) -> Optional[Dict[str, Any]]:
+        ...
 
     @classmethod
     def load_wrapper_meta(cls, local_dir):
