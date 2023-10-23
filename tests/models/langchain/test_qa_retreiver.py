@@ -1,16 +1,24 @@
 from typing import Optional, Callable, Any, Iterable, Dict
 
 import pandas as pd
+import pytest
 from langchain.chains import RetrievalQA
 from langchain.document_loaders import TextLoader
 from langchain.embeddings import FakeEmbeddings
 from langchain.llms.fake import FakeListLLM
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores.faiss import FAISS
 
 import giskard
 from giskard.core.core import SupportedModelTypes
 from giskard.models.langchain import LangchainModel
+
+try:
+    from langchain.vectorstores.faiss import FAISS
+
+    found_faiss = True
+except ImportError:
+    FAISS = None
+    found_faiss = False
 
 
 class FaissRetrieverModel(LangchainModel):
@@ -46,11 +54,14 @@ class FaissRetrieverModel(LangchainModel):
 
     @classmethod
     def load_artifacts(cls, local_dir) -> Optional[Dict[str, Any]]:
+        from langchain.vectorstores.faiss import FAISS
+
         embeddings = FakeEmbeddings(size=1352)
         vectorstore = FAISS.load_local(local_dir, embeddings)
         return {"retriever": vectorstore.as_retriever()}
 
 
+@pytest.mark.skipif(not found_faiss, reason="FAISS not installed.")
 def test_vectorstore():
     response = "The president said that she is one of the nation's top legal minds, a former top litigator in private practice, a former federal public defender, and from a family of public school educators and police officers. He also said that she is a consensus builder and has received a broad range of support, from the Fraternal Order of Police to former judges appointed by Democrats and Republicans."
     llm = FakeListLLM(responses=[response])
