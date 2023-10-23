@@ -13,11 +13,14 @@ from giskard.core.core import SupportedModelTypes
 from giskard.models.langchain import LangchainModel
 
 try:
-    from langchain.vectorstores.faiss import FAISS
+    from langchain.vectorstores.faiss import FAISS, dependable_faiss_import
+
+    dependable_faiss_import()
 
     found_faiss = True
 except ImportError:
     FAISS = None
+    dependable_faiss_import = None
     found_faiss = False
 
 
