@@ -48,7 +48,7 @@ defaults:
     shell: bash
 jobs:
   build-python:
-    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v2 && ' (Pydantic V2)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
+    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v2 && ' (Pydantic V2)' || ''}} on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Do not stop when any job fails
