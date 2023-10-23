@@ -9,7 +9,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass, field
 from enum import Enum
 from io import StringIO
-from multiprocessing import Process, Queue, SimpleQueue, cpu_count, get_context
+from multiprocessing import Process, Queue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
 from queue import Empty, Full
@@ -92,13 +92,16 @@ class GiskardResult:
     exception: Any = None
 
 
-def _process_worker(tasks_queue: SimpleQueue, tasks_results: SimpleQueue, running_process: Dict[str, str]):
+def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str]):
     pid = os.getpid()
     LOGGER.info("Process %s started", pid)
 
     while True:
         # Blocking accessor, will wait for a task
-        task: GiskardTask = tasks_queue.get()
+        try:
+            task: Optional[GiskardTask] = tasks_queue.get(timeout=1)
+        except Empty:
+            continue
         # This is how we cleanly stop the workers
         if task is None:
             LOGGER.info("Process %s stopping", pid)
@@ -154,12 +157,12 @@ class WorkerPoolExecutor(Executor):
         # Mapping of the running tasks and worker pids
         self.with_timeout_tasks: List[TimeoutData] = []
         # Queue with tasks to run
-        self.pending_tasks_queue: Queue[GiskardTask] = self._mp_context.Queue()
+        self.pending_tasks_queue: Queue = self._mp_context.Queue()
         # Queue with tasks to be consumed asap
         # As in ProcessPool, add one more to avoid idling process
-        self.running_tasks_queue: Queue[Optional[GiskardTask]] = self._mp_context.Queue(maxsize=self._nb_workers + 1)
+        self.running_tasks_queue: Queue = self._mp_context.Queue(maxsize=self._nb_workers + 1)
         # Queue with results to notify
-        self.tasks_results: Queue[GiskardResult] = self._mp_context.Queue()
+        self.tasks_results: Queue = self._mp_context.Queue()
         # Mapping task_id with future
         self.futures_mapping: Dict[str, Future] = dict()
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")

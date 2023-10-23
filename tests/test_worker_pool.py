@@ -129,6 +129,7 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
+    sleep(1)
     new_pid = set(one_worker_pool.running_process.keys())
     assert pid != new_pid
     future = one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=10)
@@ -148,6 +149,7 @@ def test_after_cancel_should_shutdown_nicely():
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
+    sleep(1)
     new_pid = set(one_worker_pool.running_process.keys())
     assert pid != new_pid
     future = one_worker_pool.submit(add_one, 4)
