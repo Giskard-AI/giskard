@@ -1,29 +1,29 @@
-from typing import Any, Callable, Iterable, Optional
+from pathlib import Path
+from typing import Any, Callable, Iterable, Optional, Union
 
-import mlflow
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowSerializableModel
+from giskard.models.base import WrapperModel
 
 
-class LangchainModel(MLFlowSerializableModel):
+class LangchainModel(WrapperModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: SupportedModelTypes,
-            name: Optional[str] = None,
-            data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
-            model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: SupportedModelTypes,
+        name: Optional[str] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        **kwargs,
     ) -> None:
         assert (
-                model_type == SupportedModelTypes.TEXT_GENERATION
+            model_type == SupportedModelTypes.TEXT_GENERATION
         ), "LangchainModel only support text_generation ModelType"
 
         super().__init__(
@@ -38,12 +38,18 @@ class LangchainModel(MLFlowSerializableModel):
             **kwargs,
         )
 
-    def save_model(self, local_path, mlflow_meta):
-        mlflow.langchain.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
+        self.save_model(local_path)
+
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        self.model.save(Path(local_path) / "chain.json")
 
     @classmethod
     def load_model(cls, local_dir):
-        return mlflow.langchain.load_model(local_dir)
+        from langchain.chains import load_chain
+
+        return load_chain(Path(local_dir) / "chain.json")
 
     def model_predict(self, df):
         return [self.model.predict(**data) for data in df.to_dict("records")]
@@ -70,6 +76,3 @@ class LangchainModel(MLFlowSerializableModel):
         model_kwargs.update(kwargs)
 
         return self.__class__(chain, **model_kwargs)
-
-    def to_mlflow(self, artifact_path: str = "langchain-model-from-giskard", **kwargs):
-        return mlflow.langchain.log_model(self.model, artifact_path, **kwargs)
