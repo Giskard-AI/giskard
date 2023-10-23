@@ -54,8 +54,6 @@ class FaissRetrieverModel(LangchainModel):
 
     @classmethod
     def load_artifacts(cls, local_dir) -> Optional[Dict[str, Any]]:
-        from langchain.vectorstores.faiss import FAISS
-
         embeddings = FakeEmbeddings(size=1352)
         vectorstore = FAISS.load_local(local_dir, embeddings)
         return {"retriever": vectorstore.as_retriever()}
