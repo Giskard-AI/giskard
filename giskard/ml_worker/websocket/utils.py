@@ -276,8 +276,6 @@ def function_argument_to_ws(value: Dict[str, Any]):
                 args=function_argument_to_ws(obj.params),
                 none=False,
             )
-        #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
-        #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, TransformationFunction):
             funcargs = websocket.FuncArgument(
                 name=v,
@@ -285,11 +283,9 @@ def function_argument_to_ws(value: Dict[str, Any]):
                 args=function_argument_to_ws(obj.params),
                 none=False,
             )
-        #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
-        #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, float):
             funcargs = websocket.FuncArgument(name=v, float=obj, none=False)
-        elif isinstance(obj, int):
+        elif isinstance(obj, int) and not isinstance(obj, bool):  # Avoid bool being considered as int
             funcargs = websocket.FuncArgument(name=v, int=obj, none=False)
         elif isinstance(obj, str):
             funcargs = websocket.FuncArgument(name=v, str=obj, none=False)
