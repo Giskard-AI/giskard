@@ -16,8 +16,7 @@ def many_worker_pool():
     pool = WorkerPoolExecutor(nb_workers=4)
     sleep(3)
     yield pool
-    pool.shutdown(wait=True)
-    pool.shutdown(wait=False, force=True)
+    pool.shutdown(wait=True, force=True, timeout=10)
 
 
 @pytest.fixture(scope="function")
@@ -25,8 +24,7 @@ def one_worker_pool():
     pool = WorkerPoolExecutor(nb_workers=1)
     sleep(3)
     yield pool
-    pool.shutdown(wait=True)
-    pool.shutdown(wait=False, force=True)
+    pool.shutdown(wait=True, force=True, timeout=10)
 
 
 @pytest.mark.concurrency

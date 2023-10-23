@@ -189,7 +189,7 @@ class WorkerPoolExecutor(Executor):
             result = queue.get(timeout=timeout)
         except Empty:
             result = None
-        except ValueError as e:
+        except (ValueError, OSError) as e:
             # If queue is closed
             if not self.terminated():
                 LOGGER.error("Queue is closed, and executor not in final state")
@@ -314,7 +314,7 @@ class WorkerPoolExecutor(Executor):
         if not force:
             self._state = PoolState.STOPPED
         # Cleaning up processes
-        exit_codes = _stop_processes(p_list, timeout=1)
+        exit_codes = _stop_processes(p_list, timeout=timeout)
         self._manager.shutdown()
         return exit_codes
 
@@ -387,6 +387,3 @@ def _killer_thread(
 
         if exception is not None:
             raise exception
-
-        if executor.terminated():
-            return
