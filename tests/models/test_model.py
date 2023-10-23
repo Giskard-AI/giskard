@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import giskard
 from giskard import Model
 from giskard.core.core import SupportedModelTypes
 
@@ -91,3 +92,26 @@ def test_model_save_and_load_not_overriden():
 
         MyCustomModel.load(tmpdirname)
         assert call_count["load"] == 1
+
+
+def test_model_loaded():
+    def model_fn(df):
+        return range(len(df))
+
+    class MyCustomModel(Model):
+        def model_predict(self, df: pd.DataFrame):
+            return self.model(df)
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        gsk_model = MyCustomModel(model_fn, model_type="regression")
+        dataset = giskard.Dataset(pd.DataFrame({"test": range(10)}))
+
+        predicted = gsk_model.predict(dataset)
+        assert list(predicted.raw) == list(map(lambda x: 1.0 * x, range(10)))
+
+        gsk_model.save(tmpdirname)
+        loaded_model = MyCustomModel.load(tmpdirname)
+
+        predicted_from_loaded = loaded_model.predict(dataset)
+
+        assert list(predicted_from_loaded.raw) == list(predicted.raw)
