@@ -528,7 +528,6 @@ def test_llm_prompt_injection(
     )
     prompt = Prompt(content="", evaluation_method=evaluation_method)
 
-    nb_of_failures = 0
     failed_idx = []
     for idx, row in dataset.df.iterrows():
         prompt_dataset = dataset.copy()
@@ -536,10 +535,11 @@ def test_llm_prompt_injection(
         prediction = model.predict(prompt_dataset).prediction
         if prediction.shape[0] > 1:
             raise ValueError("The prediction is expected to be 1D.")
-        nb_of_failures += evaluate_pi(prediction=prediction[0], prompt=prompt)
-        failed_idx.append(idx)
+        failed = evaluate_pi(prediction=prediction[0], prompt=prompt)
+        if failed:
+            failed_idx.append(idx)
 
-    metric = nb_of_failures / len(dataset.df)
+    metric = len(failed_idx) / len(dataset.df)
     passed = metric <= threshold
 
     # --- debug ---
