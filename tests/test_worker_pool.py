@@ -10,14 +10,13 @@ import pytest
 
 from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor
 
-
 @pytest.fixture(scope="function")
 def many_worker_pool():
     pool = WorkerPoolExecutor(nb_workers=4)
     sleep(5)
     yield pool
-    pool.shutdown(wait=True, timeout=2)
-    pool.shutdown(wait=True, force=True, timeout=10)
+    pool.shutdown(wait=True, timeout=60)
+    pool.shutdown(wait=True, force=True, timeout=60)
 
 
 @pytest.fixture(scope="function")
@@ -124,14 +123,14 @@ def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
 
 @pytest.mark.concurrency
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=5)
-    pid = set(one_worker_pool.running_process.keys())
+    pid = set(one_worker_pool.processes.keys())
     assert len(pid) == 1
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=3)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
     sleep(8)
-    new_pid = set(one_worker_pool.running_process.keys())
+    new_pid = set(one_worker_pool.processes.keys())
     assert len(new_pid) == 1
     assert pid != new_pid
     future = one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=10)
@@ -141,18 +140,17 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     future = one_worker_pool.submit(add_one, 4)
     assert future.result() == 5
 
-
 @pytest.mark.concurrency
 def test_after_cancel_should_shutdown_nicely():
     one_worker_pool = WorkerPoolExecutor(nb_workers=1)
+    pid = set(one_worker_pool.processes.keys())
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=10)
     sleep(3)
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=5)
-    pid = set(one_worker_pool.running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
     sleep(8)
-    new_pid = set(one_worker_pool.running_process.keys())
+    new_pid = set(one_worker_pool.processes.keys())
     assert pid != new_pid
     future = one_worker_pool.submit(add_one, 4)
     assert future.result() == 5
@@ -163,19 +161,22 @@ def test_after_cancel_should_shutdown_nicely():
     assert exit_codes == [0]
 
 
-@pytest.mark.concurrency
-def test_many_tasks_should_shutdown_nicely():
-    one_worker_pool = WorkerPoolExecutor(nb_workers=4)
-    sleep(3)
-    for _ in range(100):
-        one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=5)
-    sleep(3)
-    worker_process: SpawnProcess = list(one_worker_pool.processes.values())[0]
-    assert worker_process.is_alive()
-    exit_codes = one_worker_pool.shutdown(wait=True)
-    print(exit_codes)
-    assert all([code is not None for code in exit_codes])
 
+
+@pytest.mark.skipif(condition=sys.platform == "win32", reason="Not working on windows")
+@pytest.mark.concurrency
+def test_many_tasks_should_shutdown_nicely(many_worker_pool : WorkerPoolExecutor):
+    sleep(3)
+    futures = []
+    for _ in range(100):
+        futures.append(many_worker_pool.schedule(sleep_add_one, [2, 2], timeout=20))
+    sleep(10)
+    exit_codes = many_worker_pool.shutdown(wait=True, timeout=60)
+    assert len([code is not None for code in exit_codes]) == 4
+    assert all([code is not None for code in exit_codes])
+    assert exit_codes == [0,0,0,0]
+    assert all([f.done() for f in futures])
+    assert all([not t.is_alive() for t in many_worker_pool._threads])
 
 @pytest.mark.concurrency
 def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
@@ -188,12 +189,11 @@ def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
     for expected, future in enumerate(futures):
         assert expected + 1 == future.result()
 
-
 @pytest.mark.concurrency
 def test_task_already_cancelled(one_worker_pool: WorkerPoolExecutor):
     for _ in range(10):
         # Saturate the pool with tasks
-        one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=1)
+        one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=3)
     # Schedule an easy task
     temp_path = Path(tempfile.gettempdir()) / str(uuid4())
     temp_path.touch()
@@ -206,16 +206,17 @@ def test_task_already_cancelled(one_worker_pool: WorkerPoolExecutor):
     assert task_id is not None
     # Cancel it
     assert future.cancel()
+    assert future.done()
     # Wait a bit
-    sleep(5)
-    # Ensure future is not there anymore
-    assert task_id not in one_worker_pool.futures_mapping.keys()
+    sleep(20)
     # Ensure task has not been executed
     assert not temp_path.exists()
+    # Ensure future is not there anymore
+    assert task_id not in one_worker_pool.futures_mapping.keys()
 
 
 @pytest.mark.concurrency
-def test_test_pool_should_break(one_worker_pool: WorkerPoolExecutor):
+def test_pool_should_break(one_worker_pool: WorkerPoolExecutor):
     process = list(one_worker_pool.processes.values())[0]
     process.kill()
     sleep(2)

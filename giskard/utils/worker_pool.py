@@ -204,14 +204,22 @@ class WorkerPoolExecutor(Executor):
     def health_check(self):
         if self.terminated():
             return
+        broken_pool = False
+        if any([not t.is_alive() for t in self._threads]):
+            LOGGER.error("At least one thread died for an unknown reason, marking pool as broken")
+            LOGGER.error("Dead threads: %s", [t.name for t in self._threads if not t.is_alive()])
+            broken_pool = True
         if any([not _safe_is_alive(p) for p in self.processes.values()]):
-            LOGGER.warning("At least one process died for an unknown reason, marking pool as broken")
-            LOGGER.warning(
+            LOGGER.error("At least one process died for an unknown reason, marking pool as broken")
+            LOGGER.error(
                 "Non null exit codes: %s",
                 [_safe_exit_code(p) for p in self.processes.values() if _safe_exit_code(p) != 0],
             )
+            broken_pool = True
+        if broken_pool:
             self._state = PoolState.BROKEN
-            self.shutdown(wait=False, timeout=1)
+            self.shutdown(wait=True, force=True, cancel_futures=True, timeout=30)
+            raise RuntimeError("Pool is broken, read previous logs")
 
     def spawn_worker(self):
         # Daemon means process are linked to main one, and will be stopped if current process is stopped
@@ -269,7 +277,7 @@ class WorkerPoolExecutor(Executor):
             self.with_timeout_tasks.append(TimeoutData(task.id, time.monotonic() + timeout))
         return res
 
-    def shutdown(self, wait=True, *, cancel_futures=True, timeout: float = 5, force=False):
+    def shutdown(self, wait=True, *, cancel_futures=True, timeout: float = 30, force=False):
         if self.terminated() and not force:
             return
         # Changing state, so that thread will stop
@@ -278,12 +286,13 @@ class WorkerPoolExecutor(Executor):
         # Cancelling all futures we have
         if cancel_futures:
             for future in self.futures_mapping.values():
-                if future.cancel() and not future.done():
+                if not future.cancel() and not future.done():
                     future.set_exception(CancelledError("Executor is stopping"))
         # Emptying running_tasks queue
         try:
             while not self.running_tasks_queue.empty():
-                self.running_tasks_queue.get_nowait()
+                task: GiskardTask = self.running_tasks_queue.get(timeout=0.5)
+                self.kill_task(task.id)
         except (ValueError, Empty, OSError) as e:
             LOGGER.warning("Error while emptying running queue")
             LOGGER.exception(e)
@@ -308,9 +317,10 @@ class WorkerPoolExecutor(Executor):
             if t is current_thread():
                 # To avoid killer thread to join itself
                 continue
-            t.join(timeout=1)
+            t.join(timeout=timeout)
             if t.is_alive():
                 LOGGER.warning("Thread %s still alive at shutdown", t.name)
+                raise RuntimeError("Thread{t.name} still alive at shutdown")
         # Changing state to stopped
         if not force:
             self._state = PoolState.STOPPED
@@ -326,14 +336,12 @@ def _results_thread(
     # Goal of this thread is to feed the running tasks from pending one as soon as possible
     # while True:
     while not executor.terminated():
-        result, should_stop = executor.safe_get(executor.tasks_results)
-        if should_stop:
-            return
+        result, _ = executor.safe_get(executor.tasks_results)
         if result is None:
             continue
 
         future = executor.futures_mapping.pop(result.id, None)
-        if future is None or future.cancelled():
+        if future is None or future.done():
             continue
         future.logs = result.logs
         if result.exception is None:
@@ -341,20 +349,20 @@ def _results_thread(
         else:
             future.set_exception(RuntimeError(result.exception))
 
-
 def _feeder_thread(
     executor: WorkerPoolExecutor,
 ):
     # Goal of this thread is to feed the running tasks from pending one as soon as possible
     while not executor.terminated():
-        task, should_stop = executor.safe_get(executor.pending_tasks_queue)
-        if should_stop:
-            return
+        task, _ = executor.safe_get(executor.pending_tasks_queue)
         if task is None:
             continue
 
         future = executor.futures_mapping.get(task.id)
         if future is None:
+            continue
+        if executor.terminated():
+            future.set_exception(RuntimeError("Executor is stopping"))
             continue
         if future.set_running_or_notify_cancel():
             executor.running_tasks_queue.put(task)
