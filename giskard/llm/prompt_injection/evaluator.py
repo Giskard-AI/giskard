@@ -1,10 +1,13 @@
 import re
 import string
+import logging
 from abc import ABC
 from colorama import Fore, Style
 
-from ...scanner import logger
 from .data import Prompt, StringMatchingMethod
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Evaluator(ABC):

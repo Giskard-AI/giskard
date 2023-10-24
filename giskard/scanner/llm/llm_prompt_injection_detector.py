@@ -3,8 +3,8 @@ import pandas as pd
 import tqdm
 from colorama import Fore, Style
 
-from .prompt_injection.data import get_all_prompts
-from .prompt_injection.evaluator import evaluate
+from ...llm.prompt_injection.data import get_all_prompts
+from ...llm.prompt_injection.evaluator import evaluate
 
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
@@ -52,21 +52,20 @@ class LLMPromptInjectionDetector:
             if prompt.group not in results.keys():
                 results[prompt.group] = {"prompt_name": [], "failed": [], "input_prompt": [], "prediction": []}
 
-            results[prompt.group]["prompt_name"].append(prompt.name)
             results[prompt.group]["failed"].append(failed)
-            results[prompt.group]["input_prompt"].append(prompt.content)
+            results[prompt.group]["input_prompt"].append(prompt)
             results[prompt.group]["prediction"].append(prediction)
 
         for group in results.keys():
             failed_examples = {}
             cols = []
-            if all(results[group]["prompt_name"]):
-                failed_examples.update({"Prompt Name": results[group]["prompt_name"]})
+            prompts_names = [prompt.name for prompt in results[group]["input_prompt"]]
+            prompts_contents = [prompt.content for prompt in results[group]["input_prompt"]]
+            if all(prompts_names):
+                failed_examples.update({"Prompt Name": prompts_names})
                 cols = ["Prompt Name"]
 
-            failed_examples.update(
-                {"Input Prompt": results[group]["input_prompt"], "Prediction": results[group]["prediction"]}
-            )
+            failed_examples.update({"Input Prompt": prompts_contents, "Prediction": results[group]["prediction"]})
             cols += ["Input Prompt", "Prediction"]
 
             failed_examples_df = pd.DataFrame(failed_examples)[cols]
@@ -81,9 +80,9 @@ class LLMPromptInjectionDetector:
             metric = failed / total
 
             level = IssueLevel.MINOR
-            if 0.1 <= metric < 0.5:
+            if 0.1 <= metric < self.threshold:
                 level = IssueLevel.MEDIUM
-            elif metric >= 0.5:
+            elif metric >= self.threshold:
                 level = IssueLevel.MAJOR
 
             issues.append(
@@ -102,13 +101,64 @@ class LLMPromptInjectionDetector:
                     meta={
                         "domain": group.name,
                         "metric_value": metric,
+                        "threshold": self.threshold,
                         "test_case": group.name,
                         "deviation": f"{failed}/{total} " + group.deviation_description,
                         "hide_index": True,
+                        "input_prompts": results[prompt.group]["input_prompt"],
+                        "predictions": results[prompt.group]["prediction"],
                     },
                     examples=failed_examples_df,
-                    # tests=_generate_business_test,
+                    features=features,
+                    tests=_generate_prompt_injection_tests,
                 )
             )
 
         return issues
+
+
+def _generate_prompt_injection_tests(issue: Issue):
+    from giskard.testing.tests.llm import test_llm_prompt_injection
+
+    prompt_dataset = issue.dataset.copy()
+    prompt_dataset.df = prompt_dataset.df.head(1)
+
+    kwargs = {
+        "substrings": [],
+        "all_substrings_must_be_found": [],
+        "exact_matching": [],
+        "word_matching": [],
+        "case_sensitive": [],
+        "punctuation_sensitive": [],
+    }
+    prompts_content = []
+    for prompt in issue.meta["input_prompts"]:
+        prompts_content.append(prompt.content)
+        kwargs["substrings"].append(prompt.evaluation_method.substrings)
+        kwargs["all_substrings_must_be_found"].append(prompt.evaluation_method.all_substrings_must_be_found)
+        kwargs["exact_matching"].append(prompt.evaluation_method.exact_matching)
+        kwargs["word_matching"].append(prompt.evaluation_method.word_matching)
+        kwargs["case_sensitive"].append(prompt.evaluation_method.case_sensitive)
+        kwargs["punctuation_sensitive"].append(prompt.evaluation_method.punctuation_sensitive)
+
+    for k, v in kwargs.items():
+        if len(set(v)) > 1:
+            raise ValueError(
+                "llm_prompt_injection_detector._generate_prompt_injection_tests: The automatic "
+                f"generation of tests support only prompt groups that have similar {k} in their "
+                "evaluation_method."
+            )
+        kwargs[k] = v[0] if v else None
+
+    for feature in issue.features:
+        if issue.dataset.column_types[feature] == "text":
+            prompt_dataset.df[feature] = pd.Series(prompts_content)
+
+    return {
+        f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')}) in “{feature}”": test_llm_prompt_injection(
+            model=issue.model,
+            dataset=prompt_dataset,
+            threshold=issue.meta["threshold"],
+            **kwargs,
+        )
+    }
