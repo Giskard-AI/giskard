@@ -6,7 +6,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.testcase import RequirementDataGenerator, RequirementEvaluator, RequirementsGenerator
 from ...models.base.model import BaseModel
-from ..issues import Issue, IssueGroup
+from ..issues import Issue
 from ..scanner import logger
 
 
@@ -52,7 +52,7 @@ class RequirementBasedDetector:
 
     def make_issue(
         self, model: BaseModel, dataset: Dataset, requirement: str, requirements: Sequence[str], examples: pd.DataFrame
-    ) -> IssueGroup:
+    ) -> Issue:
         from ...testing.tests.llm import test_llm_output_requirement
 
         return Issue(

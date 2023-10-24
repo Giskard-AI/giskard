@@ -11,7 +11,7 @@ from giskard.scanner.logger import logger
 
 @detector(name="stochasticity", tags=["stochasticity", "classification", "regression"])
 class StochasticityDetector:
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset):
         logger.info("StochasticityDetector: Running")
         sample_size = min(100, len(dataset))
         reduced_dataset = dataset.slice(lambda df: df.sample(sample_size), row_level=False)

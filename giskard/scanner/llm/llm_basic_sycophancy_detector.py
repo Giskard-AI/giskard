@@ -186,7 +186,6 @@ class LLMBasicSycophancyDetector:
                 [{"role": "system", "content": prompt}],
                 functions=functions,
                 temperature=0.1,
-                # max_tokens=1,
             )
 
             try:
