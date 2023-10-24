@@ -162,13 +162,6 @@ class OverconfidencePush(ExamplePush):
         res = {
             "push_title": "This example is incorrect while having a high confidence.",
             "details": [
-                # Disabled temporarily
-                # {
-                # "action": "Save this example for further inspection and testing",
-                # "explanation": "This may help you identify spurious correlation and create one-sample tests based on these examples",
-                # "button": "Save Example",
-                #  "cta": CallToActionKind.SaveExample,
-                # },
                 {
                     "action": "Generate a one-sample test to automatically check if this example is correctly predicted",
                     "explanation": "This enables you to make sure this specific example is correct for a new model",
@@ -181,6 +174,13 @@ class OverconfidencePush(ExamplePush):
                     "button": "Inspect similar examples",
                     "cta": CallToActionKind.OPEN_DEBUGGER_OVERCONFIDENCE,
                 },
+                # Disabled temporarily
+                # {
+                # "action": "Save this example for further inspection and testing",
+                # "explanation": "This may help you identify spurious correlation and create one-sample tests based on these examples",
+                # "button": "Save Example",
+                #  "cta": CallToActionKind.SaveExample,
+                # },
             ],
         }
         self.push_title = res["push_title"]
@@ -235,13 +235,6 @@ class BorderlinePush(ExamplePush):
         res = {
             "push_title": "This example was predicted with very low confidence",
             "details": [
-                # Disabled temporarily
-                # {
-                # "action": "Save this example for further inspection and testing",
-                # "explanation": "This may help you identify inconsistent patterns and create one-sample tests based on these examples",
-                # "button": "Save Example",
-                # "cta": CallToActionKind.SaveExample,
-                # },
                 {
                     "action": "Generate a one-sample to automatically test the underconfidence",
                     "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
@@ -254,6 +247,13 @@ class BorderlinePush(ExamplePush):
                     "button": "Inspect similar examples",
                     "cta": CallToActionKind.OPEN_DEBUGGER_BORDERLINE,
                 },
+                # Disabled temporarily
+                # {
+                # "action": "Save this example for further inspection and testing",
+                # "explanation": "This may help you identify inconsistent patterns and create one-sample tests based on these examples",
+                # "button": "Save Example",
+                # "cta": CallToActionKind.SaveExample,
+                # },
             ],
         }
         self.push_title = res["push_title"]
@@ -318,12 +318,6 @@ class ContributionPush(FeaturePush):
                 self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
-                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CREATE_SLICE,
-                },
-                {
                     "action": "Generate a Theil`s U test on similar examples",
                     "explanation": f"Theil`s U test will help you check the nominal association between {self.slicing_function.query} and the predicted label on the whole dataset",
                     "button": "Add Test to a test suite",
@@ -335,6 +329,12 @@ class ContributionPush(FeaturePush):
                     "button": "Inspect similar examples",
                     "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
                 },
+                {
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CREATE_SLICE,
+                },
             ]
         else:
             if self.feature_type == "text":
@@ -344,12 +344,6 @@ class ContributionPush(FeaturePush):
                     f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the incorrect prediction"
                 )
             self.details = [
-                {
-                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CREATE_SLICE,
-                },
                 {
                     "action": "Generate a performance test on similar examples",
                     "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
@@ -361,6 +355,12 @@ class ContributionPush(FeaturePush):
                     "explanation": "It will filter this debugging session to show similar examples",
                     "button": "Inspect similar examples",
                     "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
+                },
+                {
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CREATE_SLICE,
                 },
             ]
 
