@@ -311,22 +311,28 @@ class Suite:
             A mapping of suite parameters with their corresponding SuiteInput objects.
         name : str
             A string representing the name of the suite.
+        default_params : Dict[str, Any]
+            A dictionary containing the default parameters for the tests in the suite.
     """
 
     id: int
     tests: List[TestPartial]
     name: str
+    default_params: Dict[str, Any]
 
-    def __init__(self, name=None) -> None:
+    def __init__(self, name=None, **default_params) -> None:
         """Create a new Test Suite instance with a given name.
 
         Parameters
         ----------
         name : str, optional
             The name of the test suite.
+        ** default_params : dict, optional
+            Any arguments passed here will be applied to all the tests in the suite if 
         """
         self.tests = list()
         self.name = name
+        self.default_params = default_params
 
     def run(self, verbose: bool = True, **suite_run_args):
         """Execute all the tests that have been added to the test suite through the `add_test` method.
@@ -345,14 +351,17 @@ class Suite:
         TestSuiteResult
             containing test execution information
         """
+        run_args = self.default_params.copy()
+        run_args.update(suite_run_args)
+
         results: List[(str, TestResult, Dict[str, Any])] = list()
         required_params = self.find_required_params()
-        undefined_params = {k: v for k, v in required_params.items() if k not in suite_run_args}
+        undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
         if len(undefined_params):
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
-            test_params = self.create_test_params(test_partial, suite_run_args)
+            test_params = self.create_test_params(test_partial, run_args)
 
             try:
                 result = test_partial.giskard_test.get_builder()(**test_params).execute()
