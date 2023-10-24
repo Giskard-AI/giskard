@@ -426,6 +426,12 @@ class Suite:
         """
         if self.name is None:
             self.name = "Unnamed test suite"
+        
+        # Upload the default parameters if they are model or dataset
+        for arg in self.default_params.values():
+            if isinstance(arg, BaseModel) or isinstance(arg, Dataset):
+                arg.upload(client, project_key)
+
         self.id = client.save_test_suite(self.to_dto(client, project_key))
         project_id = client.get_project(project_key).project_id
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
