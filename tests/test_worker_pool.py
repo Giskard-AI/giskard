@@ -14,16 +14,18 @@ from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor
 @pytest.fixture(scope="function")
 def many_worker_pool():
     pool = WorkerPoolExecutor(nb_workers=4)
-    sleep(3)
+    sleep(5)
     yield pool
+    pool.shutdown(wait=True, timeout=2)
     pool.shutdown(wait=True, force=True, timeout=10)
 
 
 @pytest.fixture(scope="function")
 def one_worker_pool():
     pool = WorkerPoolExecutor(nb_workers=1)
-    sleep(3)
+    sleep(5)
     yield pool
+    pool.shutdown(wait=True, timeout=2)
     pool.shutdown(wait=True, force=True, timeout=10)
 
 
@@ -38,7 +40,7 @@ def test_start_stop():
 
 
 @pytest.mark.concurrency
-def test_froce_stopping_should_always_succeed():
+def test_force_stopping_should_always_succeed():
     pool = WorkerPoolExecutor(nb_workers=1)
     assert len(pool.processes) == 1
     worker_process: SpawnProcess = list(pool.processes.values())[0]
@@ -122,13 +124,15 @@ def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
 
 @pytest.mark.concurrency
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=1)
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=5)
     pid = set(one_worker_pool.running_process.keys())
+    assert len(pid) == 1
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
-    sleep(1)
+    sleep(8)
     new_pid = set(one_worker_pool.running_process.keys())
+    assert len(new_pid) == 1
     assert pid != new_pid
     future = one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=10)
     assert future.result() == 3
@@ -142,12 +146,12 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
 def test_after_cancel_should_shutdown_nicely():
     one_worker_pool = WorkerPoolExecutor(nb_workers=1)
     sleep(3)
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=1)
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=5)
     pid = set(one_worker_pool.running_process.keys())
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
-    sleep(1)
+    sleep(8)
     new_pid = set(one_worker_pool.running_process.keys())
     assert pid != new_pid
     future = one_worker_pool.submit(add_one, 4)

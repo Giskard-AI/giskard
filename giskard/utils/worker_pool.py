@@ -193,6 +193,7 @@ class WorkerPoolExecutor(Executor):
             # If queue is closed
             if not self.terminated():
                 LOGGER.error("Queue is closed, and executor not in final state")
+                LOGGER.exception(e)
                 self._state = PoolState.BROKEN
                 raise e
             return None, True
