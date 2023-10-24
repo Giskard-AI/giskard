@@ -226,7 +226,7 @@ class GiskardAnalyticsCollector:
 
 
 def add_exception_hook(original_hook=None):
-    def _exception_hook(type: Type[BaseException], value: BaseException, traceback: Optional[TracebackType] | None):
+    def _exception_hook(type: Type[BaseException], value: BaseException, traceback: Optional[TracebackType]):
         try:
             _report_error(value)
         except BaseException:  # noqa NOSONAR
