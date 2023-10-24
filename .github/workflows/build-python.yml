@@ -113,7 +113,7 @@ jobs:
         if: ${{ matrix.pydantic_v1 }}
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
-          pdm run pip install "pydantic>=1<+2"
+          pdm run pip install "pydantic>=1,<2"
 
       - name: Check Pydantic installed version
         run: |
