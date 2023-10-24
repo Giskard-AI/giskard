@@ -113,13 +113,10 @@ def wait_backend_ready(port: int, host="localhost", is_cli=True, wait_sec=3 * 60
         if is_cli:
             click.echo(".", nl=False)
         else:
-            logger.info("Waiting for Hub backend to be ready...")
+            logger.info("Waiting for Giskard Hub backend to be ready...")
         time.sleep(backoff_time)
 
-    if is_cli:
-        click.echo(".")
-    else:
-        logger.info("Hub backend is ready")
+    click.echo(".")
     return up
 
 
