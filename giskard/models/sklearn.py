@@ -66,7 +66,7 @@ class SKLearnModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_dir, **kwargs):
+    def load_model(cls, local_dir):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Union, Dict
 
 import pandas as pd
 
@@ -41,10 +41,23 @@ class LangchainModel(WrapperModel):
     def save(self, local_path: Union[str, Path]) -> None:
         super().save(local_path)
         self.save_model(local_path)
+        self.save_artifacts(Path(local_path) / "artifacts")
 
     def save_model(self, local_path: Union[str, Path]) -> None:
         path = Path(local_path)
         self.model.save(path / "chain.json")
+
+    def save_artifacts(self, artifact_dir) -> None:
+        ...
+
+    @classmethod
+    def load(cls, local_dir, **kwargs):
+        constructor_params = cls.load_constructor_params(local_dir, **kwargs)
+
+        artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
+        constructor_params.update(artifacts)
+
+        return cls(model=cls.load_model(local_dir, **artifacts), **constructor_params)
 
     @classmethod
     def load_model(cls, local_dir, **kwargs):
@@ -52,6 +65,10 @@ class LangchainModel(WrapperModel):
 
         path = Path(local_dir)
         return load_chain(path / "chain.json", **kwargs)
+
+    @classmethod
+    def load_artifacts(cls, local_path: Union[str, Path]) -> Optional[Dict[str, Any]]:
+        ...
 
     def model_predict(self, df):
         generations = [self.model(data) for data in df.to_dict("records")]

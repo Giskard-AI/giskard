@@ -17,7 +17,7 @@ def test_wrapper_model_handles_batching():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path, **kwargs):
+        def load_model(cls, path):
             pass
 
         def save_model(self, path):
@@ -62,7 +62,7 @@ def test_wrapper_model_saves_and_loads_batch_size():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path, **kwargs):
+        def load_model(cls, path):
             pass
 
         def save_model(self, path):

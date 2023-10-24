@@ -73,7 +73,7 @@ def test_model_save_and_load_not_overriden():
             Path(path).joinpath("custom_data").touch()
 
         @classmethod
-        def load_model(cls, path, **kwargs):
+        def load_model(cls, path):
             call_count["load"] = call_count["load"] + 1
 
             def model(x):

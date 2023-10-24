@@ -10,10 +10,10 @@ import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from ..client.python_utils import warning
-from ..core.core import ModelType
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
+from ..client.python_utils import warning
+from ..core.core import ModelType
 
 TorchDType = Literal[
     "float32",
@@ -138,7 +138,7 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, **kwargs):
+    def load_model(cls, local_dir):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):

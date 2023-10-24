@@ -194,7 +194,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path, **kwargs):
+    def load_model(cls, local_path):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
