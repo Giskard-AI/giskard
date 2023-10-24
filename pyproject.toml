@@ -169,7 +169,6 @@ dependencies = [
 [project.optional-dependencies]
 llm = [
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "rapidfuzz",          # needed for garak
     "colorama",           # needed for garak
     "openai>=0.28.1",
     "evaluate>=0.4.1",
