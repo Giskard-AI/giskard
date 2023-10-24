@@ -286,7 +286,7 @@ class WorkerPoolExecutor(Executor):
         # Cancelling all futures we have
         if cancel_futures:
             for future in list(self.futures_mapping.values()):
-                if future.cancel() and not future.done():
+                if not future.cancel() and not future.done():
                     future.set_exception(CancelledError("Executor is stopping"))
         # Emptying running_tasks queue
         try:
