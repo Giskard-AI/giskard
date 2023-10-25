@@ -1,9 +1,10 @@
-import json
 from typing import Sequence
 
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
-from .. import utils
+from ..client import LLMClient
+from ..client import llm_client as default_llm_client
+from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult
 
 EVALUATE_PROMPT = """Your role is to test AI models. Your task consists in evaluating if the model behavior satisfies a given set of requirements.
@@ -34,8 +35,9 @@ Otherwise, the model passes the test. This is the safest choice. If you are in d
 
 
 class RequirementEvaluator:
-    def __init__(self, requirements: Sequence[str]):
+    def __init__(self, requirements: Sequence[str], llm_client: LLMClient = None):
         self.requirements = requirements
+        self.llm_client = llm_client if llm_client is not None else default_llm_client
 
     def _make_evaluate_prompt(self, model, input_vars, model_output):
         return EVALUATE_PROMPT.format(
@@ -58,27 +60,31 @@ class RequirementEvaluator:
         for input_vars, model_output in zip(
             dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs
         ):
+            sample = {"input_vars": input_vars, "model_output": model_output}
             prompt = self._make_evaluate_prompt(model, input_vars, model_output)
             funcs = self._make_evaluate_functions()
-            out = utils.llm_fn_call(
-                [{"role": "system", "content": prompt}],
-                functions=funcs,
-                function_call={"name": "evaluate_model"},
-                temperature=0.1,
-            )
-
             try:
-                args = json.loads(out.function_call.arguments)
-                if args["passed_test"]:
-                    succeded.append(
-                        {"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")}
-                    )
-                else:
-                    failed.append(
-                        {"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")}
-                    )
-            except (AttributeError, json.JSONDecodeError, KeyError):
-                errored.append({"input_vars": input_vars, "model_output": model_output})
+                out = self.llm_client.complete(
+                    [{"role": "system", "content": prompt}],
+                    functions=funcs,
+                    function_call={"name": "evaluate_model"},
+                    temperature=0.1,
+                )
+                if (
+                    out.function_call is None
+                    or out.function_call.function != "evaluate_model"
+                    or "passed_test" not in out.function_call.args
+                ):
+                    raise LLMGenerationError("Invalid function call")
+            except LLMGenerationError:
+                errored.append(sample)
+                continue
+
+            args = out.function_call.args
+            if args["passed_test"]:
+                succeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
+            else:
+                failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
             failure_examples=failed,
