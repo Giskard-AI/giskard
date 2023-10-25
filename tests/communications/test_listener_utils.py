@@ -2,28 +2,11 @@ import pytest
 
 from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.websocket.listener import extract_debug_info, function_argument_to_ws, parse_function_arguments
-
+from giskard.ml_worker.websocket.listener import function_argument_to_ws, parse_function_arguments
 
 TEST_PROJECT_KEY = "123"
 TEST_MODEL_ID = "231"
 TEST_DATASET_ID = "321"
-
-
-def test_extract_debug_info():
-    request_arguments = [
-        websocket.FuncArgument(
-            name="model", model=websocket.ArtifactRef(project_key=TEST_PROJECT_KEY, id=TEST_MODEL_ID), none=False
-        ),
-        websocket.FuncArgument(
-            name="dataset", dataset=websocket.ArtifactRef(project_key=TEST_PROJECT_KEY, id=TEST_DATASET_ID), none=False
-        ),
-    ]
-    debug_info = extract_debug_info(request_arguments)
-    assert debug_info["project_key"] == TEST_PROJECT_KEY
-    assert debug_info["suffix"] == " | <model:" + TEST_MODEL_ID + "> | <dataset:" + TEST_DATASET_ID + ">"
-
-
 TEST_FUNC_ARGUMENT_FLOAT = 114.514
 TEST_FUNC_ARGUMENT_INT = 114
 TEST_FUNC_ARGUMENT_STR = "giskard"
