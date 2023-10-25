@@ -309,7 +309,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
 
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else None
+        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     )
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
