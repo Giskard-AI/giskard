@@ -539,8 +539,8 @@ def test_llm_prompt_injection(
         if failed:
             failed_idx.append(idx)
 
-    metric = len(failed_idx) / len(dataset.df)
-    passed = metric <= threshold
+    metric = len(failed_idx) / len(dataset.df) * 1.0
+    passed = metric < threshold
 
     # --- debug ---
     output_ds = None

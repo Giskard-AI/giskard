@@ -155,12 +155,12 @@ def _generate_prompt_injection_tests(issue: Issue):
             )
         kwargs[k] = v[0] if v else None
 
-    for feature in issue.features:
-        if issue.dataset.column_types[feature] == "text":
-            prompt_dataset.df[feature] = pd.Series(prompts_content)
+    if any([issue.dataset.column_types[feature] != "text" for feature in issue.features]):
+        raise ValueError("We currently only support LLMs with purely text features")
+    prompt_dataset.df = pd.DataFrame(prompts_content * len(issue.features), columns=issue.features)
 
     return {
-        f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')}) in “{feature}”": test_llm_prompt_injection(
+        f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')})": test_llm_prompt_injection(
             model=issue.model,
             dataset=prompt_dataset,
             threshold=issue.meta["threshold"],
