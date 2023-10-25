@@ -4,11 +4,11 @@ import os
 import platform
 import sys
 import threading
-from traceback import TracebackException
-from types import TracebackType
 import uuid
 from functools import wraps
 from threading import ExceptHookArgs, Lock
+from traceback import TracebackException
+from types import TracebackType
 from typing import Dict, Optional, Type
 
 import requests
@@ -31,11 +31,8 @@ def analytics_method(f):
 
         try:
             return f(*args, **kwargs)
-        except BaseException as e:  # NOSONAR
-            try:
-                _report_error(e, error_type="tracking error")
-            except BaseException:  # NOSONAR
-                pass
+        except BaseException:  # NOSONAR
+            pass
 
     return inner_function
 
@@ -149,6 +146,7 @@ class GiskardAnalyticsCollector:
         return self._track(event_name, properties=properties, meta=meta, force=force)
 
     @threaded
+    @analytics_method
     def _track(self, event_name, properties=None, meta=None, force=False):
         self.initialize_giskard_version()
         self.initialize_user_properties()

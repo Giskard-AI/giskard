@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+import pytest
 
 from giskard.core.suite import Suite
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -37,4 +38,54 @@ def test_generate_test_suite_from_scan_result(german_credit_data, german_credit_
     assert test_suite.name == "Custom name"
     assert len(test_suite.tests) == 1
 
+    with pytest.raises(ValueError):
+        test_suite.run()
+    with pytest.raises(ValueError):
+        test_suite.run(model=german_credit_model)
+    with pytest.raises(ValueError):
+        test_suite.run(dataset=german_credit_data)
+    # Provide model and dataset
+    test_suite.run(model=german_credit_model, dataset=german_credit_data)
+
+    # Test ScanReport creation with model
+    result = ScanReport(issues, model=german_credit_model)
+    test_suite = result.generate_test_suite("Custom name with model")
+
+    assert isinstance(test_suite, Suite)
+    assert test_suite.name == "Custom name with model"
+    assert len(test_suite.tests) == 1
+
+    with pytest.raises(ValueError):
+        test_suite.run()
+    with pytest.raises(ValueError):
+        test_suite.run(model=german_credit_model)
+    test_suite.run(dataset=german_credit_data)
+    test_suite.run(model=german_credit_model, dataset=german_credit_data)
+
+    # Test ScanReport creation with dataset
+    result = ScanReport(issues, dataset=german_credit_data)
+    test_suite = result.generate_test_suite("Custom name with dataset")
+
+    assert isinstance(test_suite, Suite)
+    assert test_suite.name == "Custom name with dataset"
+    assert len(test_suite.tests) == 1
+
+    with pytest.raises(ValueError):
+        test_suite.run()
+    test_suite.run(model=german_credit_model)
+    with pytest.raises(ValueError):
+        test_suite.run(dataset=german_credit_data)
+    test_suite.run(model=german_credit_model, dataset=german_credit_data)
+
+    # Test ScanReport creation with model and dataset
+    result = ScanReport(issues, model=german_credit_model, dataset=german_credit_data)
+    test_suite = result.generate_test_suite("Custom name with model and dataset")
+
+    assert isinstance(test_suite, Suite)
+    assert test_suite.name == "Custom name with model and dataset"
+    assert len(test_suite.tests) == 1
+
     test_suite.run()
+    test_suite.run(model=german_credit_model)
+    test_suite.run(dataset=german_credit_data)
+    test_suite.run(model=german_credit_model, dataset=german_credit_data)
