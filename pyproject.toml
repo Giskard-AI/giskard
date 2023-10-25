@@ -19,7 +19,6 @@ giskard = [
 ]
 
 
-
 [[tool.pdm.source]]
 type = "find_links"
 url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
@@ -43,6 +42,7 @@ debug-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 
 worker = "python3 giskard/cli.py worker start"
 debug-internal-worker = "python3 -Xfrozen_modules=off -m debugpy --listen localhost:5678 --wait-for-client giskard/cli.py worker start -s"
 internal-worker = "python3 giskard/cli.py worker start -s"
+update-lock = "docker run --platform linux/amd64 --rm -it -w /work -v ${PWD}/pdm.lock:/work/pdm.lock -v ${PWD}/pyproject.toml:/work/pyproject.toml python:3.10-slim bash -c \"apt update && apt install curl -y && curl -sSL https://pdm.fming.dev/install-pdm.py | python3 - && /root/.local/bin/pdm lock -G :all -v\""
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -82,7 +82,12 @@ ml_runtime = [
     "wandb",
     "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                                   # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
-test = ["pytest-cov>=4.0.0", "pytest>=7.1.2", "pytest-xdist>=3.3.1", "polyfactory"]
+test = [
+    "pytest-cov>=4.0.0",
+    "pytest>=7.1.2",
+    "pytest-xdist>=3.3.1",
+    "polyfactory",
+]
 doc = [
     "furo>=2023.5.20",
     "myst-parser>=1.0.0",
@@ -173,13 +178,12 @@ llm = [
     "datasets",
 ]
 
-worker = [ # TODO(Bazire) Should we do it in a separate package ?
-    "websockets>=11.0", # Not sure what is the minimal version, let's say 11 to handle python 3.11
-    "uvloop>=0.18.0; sys_platform != 'win32'",
-    "setuptools",       # used in ml worker for pkg_resources
-]
-
 server = [
+    # Worker deps
+    "websockets>=11.0",                        # Not sure what is the minimal version, let's say 11 to handle python 3.11
+    "uvloop>=0.18.0; sys_platform != 'win32'",
+    "setuptools",                              # used in ml worker for pkg_resources
+    # Server deps
     "tenacity>=4.11.0",
     "psutil>=5.4.6",
     "click>=7.0",
