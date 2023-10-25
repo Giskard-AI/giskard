@@ -72,6 +72,13 @@ run.finish()
 :link: wandb-tabular-example.ipynb
 :::
 :::::
+
+:::::{grid-item}
+:::{card} <br><h3><center>📝 LLM</center></h3>
+:link: wandb-llm-example.ipynb
+:::
+:::::
+
 ::::::
 
 ```{toctree}
@@ -81,4 +88,5 @@ run.finish()
 :hidden:
 
 wandb-tabular-example
+wandb-llm-example
 ```
