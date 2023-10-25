@@ -1,6 +1,23 @@
 import os
 from typing import Tuple
 
+_openai_api_key = None
+_openai_organization = None
+
+
+def set_openai_key(key: str):
+    global _openai_api_key
+    _openai_api_key = key
+
+
+def set_openai_organization(organization: str):
+    global _openai_organization
+    _openai_organization = organization
+
+
+class LLMConfigurationError(ValueError):
+    """Raised when the LLM client is not configured properly."""
+
 
 def _get_openai():
     if "OPENAI_API_KEY" not in os.environ:
