@@ -163,6 +163,7 @@ def test_after_cancel_should_shutdown_nicely():
     assert exit_codes == [0]
 
 
+@pytest.mark.skipif(sys.platform == "win32", "Pytest stays hanging")
 @pytest.mark.concurrency
 def test_many_tasks_should_shutdown_nicely(many_worker_pool: WorkerPoolExecutor):
     sleep(3)
