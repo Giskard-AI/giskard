@@ -36,7 +36,7 @@ class MLWorker:
     ws_conn: stomp.WSStompConnection
     ws_stopping: bool = False
     ws_attempts: int = 0
-    ws_max_attemps: int = 10
+    ws_max_attemps: int = settings.worker_ws_max_attemps
     ws_max_reply_payload_size: int = 8192
     ml_worker_id: str
     client: GiskardClient
@@ -87,7 +87,7 @@ class MLWorker:
 
     def connect_websocket_client(self):
         if self.ws_attempts >= self.ws_max_attemps:
-            logger.warn("Maximum reconnection attemps reached, please retry.")
+            logger.warning("Maximum reconnection attempts reached, please retry.")
             # Exit the process
             self.stop()
             return
