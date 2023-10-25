@@ -4741,9 +4741,30 @@ version = "2.14.0"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 dependencies = [
+    "absl-py>=1.0.0",
+    "astunparse>=1.6.0",
+    "flatbuffers>=23.5.26",
+    "gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1",
+    "google-pasta>=0.1.1",
+    "grpcio<2.0,>=1.24.3",
+    "h5py>=2.9.0",
+    "keras<2.15,>=2.14.0",
+    "libclang>=13.0.0",
+    "ml-dtypes==0.2.0",
+    "numpy>=1.23.5",
+    "opt-einsum>=2.3.2",
+    "packaging",
+    "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
+    "setuptools",
+    "six>=1.12.0",
+    "tensorboard<2.15,>=2.14",
     "tensorflow-cpu-aws==2.14.0; platform_system == \"Linux\" and (platform_machine == \"arm64\" or platform_machine == \"aarch64\")",
+    "tensorflow-estimator<2.15,>=2.14.0",
     "tensorflow-intel==2.14.0; platform_system == \"Windows\"",
-    "tensorflow-macos==2.14.0; platform_system == \"Darwin\" and platform_machine == \"arm64\"",
+    "tensorflow-io-gcs-filesystem>=0.23.1",
+    "termcolor>=1.1.0",
+    "typing-extensions>=3.6.6",
+    "wrapt<1.15,>=1.11.0",
 ]
 files = [
     {file = "tensorflow-2.14.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:318b21b18312df6d11f511d0f205d55809d9ad0f46d5f9c13d8325ce4fe3b159"},
