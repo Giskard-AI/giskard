@@ -1,8 +1,13 @@
+import uuid
 import pytest
+from giskard.settings import settings
 
+from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
+from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
+from giskard.models.base.model import BaseModel
 
 from tests.utils import MockedWebSocketMLWorker
 
@@ -102,3 +107,39 @@ def test_websocket_actor_get_catalog():
         # The filter condition
         assert t.type == "TRANSFORMATION"
         assert "giskard" in t.tags
+
+
+@pytest.mark.parametrize("data,model,sample", [
+    ("enron_data", "enron_model", False),
+    ("enron_data", "enron_model", True),
+    ("enron_data", "enron_model", None),
+    ("hotel_text_data", "hotel_text_model", False)
+])
+def test_websocket_actor_run_model_internal(data, model, sample, request):
+    dataset: Dataset = request.getfixturevalue(data)
+    model: BaseModel = request.getfixturevalue(model)
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    inspection_id = 0
+
+    # Prepare dataset and model
+    local_path = settings.home_dir / settings.cache_dir / project_key
+    local_path_dataset = (local_path / "datasets" / str(dataset.id))
+    local_path_dataset.mkdir(parents=True)
+    local_path_model = (local_path / "models" / str(model.id))
+    local_path_model.mkdir(parents=True)
+    dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
+    model.save(local_path=local_path_model)
+    params = websocket.RunModelParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
+        inspectionId=inspection_id,
+        project_key=project_key,
+    )
+    # Internal worker does not have client
+    reply = listener.run_model(client=None, params=params)
+    assert isinstance(reply, websocket.Empty)
+    # Inspection
+    inspection_path = settings.home_dir / "projects" / project_key / "models" / "inspections" / str(inspection_id)
+    assert (inspection_path / get_file_name("predictions", "csv", sample)).exists()
+    assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
