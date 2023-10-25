@@ -5,9 +5,9 @@ from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
-from ..core.core import ModelType, SupportedModelTypes
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
+from ..core.core import ModelType, SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
@@ -128,8 +128,6 @@ class Model(CloudpickleSerializableModel):
                     giskard_cls = CloudpickleSerializableModel
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
-                possibly_overriden_cls.save_model = giskard_cls.save_model
-                possibly_overriden_cls.load_model = giskard_cls.load_model
                 possibly_overriden_cls.should_save_model_class = True
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
