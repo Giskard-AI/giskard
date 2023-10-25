@@ -24,12 +24,9 @@ To use Giskard with Weights and Biases, you need to follow these steps:
 
 1. Setup Weights and Biases:
    - sign up for a Weights and Biases account [here](https://wandb.ai/site).
-   - install and open your docker app.
-   - install the `wandb` python package and server:
+   - install the `wandb` python package:
      ```shell
      pip install wandb
-     wandb login --relogin # input the API key you get from the website
-     wandb server start --upgrade # this will download the docker images if they're not already downloaded
      ```
      
 2. Setup Giskard:
@@ -50,10 +47,15 @@ test_suite_results = scan_results.generate_test_suite().run()
 shap_results = giskard.explain_with_shap(giskard_model, giskard_dataset)
 
 wandb.login()
-giskard_dataset.to_wandb() # log your dataset as a table
-scan_results.to_wandb() # log scan results as an HTML report
-test_suite_results.to_wandb() # log test suite results as a table
-shap_results.to_wandb() # log shap results as plots 
+
+run = wandb.init(project="my_project", name="my_run")
+
+giskard_dataset.to_wandb(run) # log your dataset as a table
+scan_results.to_wandb(run) # log scan results as an HTML report
+test_suite_results.to_wandb(run) # log test suite results as a table
+shap_results.to_wandb(run) # log shap results as plots 
+
+run.finish()
 ```
 
 ```{eval-rst}
