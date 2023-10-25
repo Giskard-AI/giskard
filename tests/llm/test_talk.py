@@ -11,7 +11,7 @@ from giskard.llm.talk.talk import ModelSpec
 
 
 def test_create_prompt_langchain():
-    prompt = ChatPromptTemplate.from_messages(
+    ChatPromptTemplate.from_messages(
         [
             (
                 "system",
