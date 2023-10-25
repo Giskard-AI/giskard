@@ -40,9 +40,9 @@ Decide whether these pairs of input and output are coherent and consistent. Thin
     * if the model is answering questions, it should not contradict itself: thus the outputs must then be coherent
     * if the model is generating content based on the input, for example a summary, then the model outputs may not be consistent but you should check that they are consistent with respect to the input
 
-If the input pairs are coherent and consistent, the model passes the evaluation test.
-Call the `evaluate_model` function with the result of your evaluation.
+If the input pairs are coherent and consistent, the model passes the evaluation test. Call the `evaluate_model` function with the result of your evaluation.
 If the model does not pass the test, also provide a brief reason as an argument to the `evaluate_model`.
+If you are not sure or the test is not well defined, consider the model as passing the test and call `evaluate_model` with passed_test = True.
 """
 
 
@@ -78,14 +78,14 @@ class CoherencyEvaluator(LLMBasedEvaluator):
 
             try:
                 passed, reason = self._eval_pair(model, input_1, input_2, output_1, output_2)
+                sample["reason"] = reason
+
+                if passed:
+                    success_examples.append(sample)
+                else:
+                    failure_examples.append(sample)
             except LLMGenerationError as err:
                 errors.append({"message": str(err), "sample": sample})
-
-            sample["reason"] = reason
-            if passed:
-                success_examples.append(sample)
-            else:
-                failure_examples.append(sample)
 
         return EvaluationResult(success_examples=success_examples, failure_examples=failure_examples, errors=errors)
 
@@ -99,7 +99,12 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             output_2=output_2,
         )
 
-        out = llm_fn_call([{"role": "system", "content": prompt}], functions=EVALUATE_MODEL_FUNCTIONS, temperature=0.1)
+        out = llm_fn_call(
+            [{"role": "system", "content": prompt}],
+            functions=EVALUATE_MODEL_FUNCTIONS,
+            function_call={"name": "evaluate_model"},  # force function call
+            temperature=0.1,
+        )
 
         try:
             args = json.loads(out.function_call.arguments)
