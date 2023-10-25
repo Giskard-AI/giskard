@@ -48,29 +48,37 @@ defaults:
     shell: bash
 jobs:
   build-python:
-    name: "Python ${{ matrix.python-version }}${{ matrix.pydantic_v2 && ' (Pydantic V2)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
+    name: "Python ${{ matrix.python-version }}${{ matrix.pandas_v1 && ' (Pandas V1)' || ''}}${{ matrix.pydantic_v1 && ' (Pydantic V1)' || ''}} on ${{ matrix.os }}${{matrix.experimental && ' (Non failing)' || '' }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: [ "3.8", "3.9", "3.10", "3.11" ]
+        python-version: [ "3.9", "3.10", "3.11" ]
         os: [ubuntu-latest]
-        pydantic_v2: [false]
+        pydantic_v1: [false]
+        pandas_v1: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
           - python-version: "3.10"
             os: windows-2019
-            pydantic_v2: false
+            pydantic_v1: false
+            pandas_v1: false
           - python-version: "3.10"
             os: windows-2022
-            pydantic_v2: false
+            pydantic_v1: false
+            pandas_v1: false
           - python-version: "3.10"
             os: macos-latest
-            pydantic_v2: false
+            pydantic_v1: false
+            pandas_v1: false
           - python-version: "3.10"
             os: ubuntu-latest
-            pydantic_v2: true
-
+            pydantic_v1: true
+            pandas_v1: false
+          - python-version: "3.10"
+            os: ubuntu-latest
+            pydantic_v1: false
+            pandas_v1: true
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
@@ -101,16 +109,27 @@ jobs:
       - name: Lint code
         run: pdm run lint
 
-      - name: Install pydantic v2
-        if: ${{ matrix.pydantic_v2 }}
+      - name: Install pydantic v1
+        if: ${{ matrix.pydantic_v1 }}
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
-          pdm run pip install "pydantic>=2<3"
+          pdm run pip install "pydantic>=1,<2"
 
       - name: Check Pydantic installed version
         run: |
           pdm run pip freeze | grep '^pydantic'
-          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v2 && '2' || '1' }}\.'
+          pdm run pip freeze | grep -q '^pydantic==${{ matrix.pydantic_v1 && '1' || '2' }}\.'
+
+      - name: Install pandas v1
+        if: ${{ matrix.pandas_v1 }}
+        run: |
+          pdm run pip uninstall pandas -y
+          pdm run pip install "pandas<2"
+
+      - name: Check Pandas installed version
+        run: |
+          pdm run pip freeze | grep '^pandas'
+          pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
 
       - name: Test code
         env:
