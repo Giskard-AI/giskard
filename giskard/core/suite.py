@@ -320,15 +320,15 @@ class Suite:
     name: str
     default_params: Dict[str, Any]
 
-    def __init__(self, name=None, **default_params) -> None:
+    def __init__(self, name=None, default_params=Dict()) -> None:
         """Create a new Test Suite instance with a given name.
 
         Parameters
         ----------
         name : str, optional
             The name of the test suite.
-        ** default_params : dict, optional
-            Any arguments passed here will be applied to all the tests in the suite if 
+        default_params : dict, optional
+            Any arguments passed will be applied to the tests in the suite, if runtime params with the same name are not set.
         """
         self.tests = list()
         self.name = name
