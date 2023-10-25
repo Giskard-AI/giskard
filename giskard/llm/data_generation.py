@@ -21,7 +21,9 @@ Think step by step and then call the `generate_inputs` function with the generat
 """
 
 
-def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None, temperature=0.5):
+def generate_test_dataset(
+    model: BaseModel, num_samples: int = 10, prompt: Optional[str] = None, temperature=0.5, column_types=None
+):
     """Generates a test dataset for the model.
 
     Parameters
@@ -83,5 +85,10 @@ def generate_test_dataset(model: BaseModel, num_samples: int = 10, prompt: Optio
     except (AttributeError, json.JSONDecodeError, KeyError):
         raise LLMGenerationError("Could not generate validation dataset automatically.")
 
-    dataset = Dataset(df=pd.DataFrame(generated), name="Test Dataset (automatically generated)", validation=False)
+    dataset = Dataset(
+        df=pd.DataFrame(generated),
+        name="Test Dataset (automatically generated)",
+        validation=False,
+        column_types=column_types,
+    )
     return dataset

@@ -4,7 +4,8 @@ from typing import Sequence
 import pandas as pd
 
 from ...datasets.base import Dataset
-from ...llm.testcase import RequirementDataGenerator, RequirementEvaluator, RequirementsGenerator
+from ...llm.testcase import RequirementDataGenerator, RequirementsGenerator
+from ...llm.evaluators import RequirementEvaluator
 from ...models.base.model import BaseModel
 from ..issues import Issue
 from ..scanner import logger
