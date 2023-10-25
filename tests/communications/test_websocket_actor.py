@@ -1,5 +1,6 @@
+import pytest
+
 from giskard.ml_worker import ml_worker, websocket
-from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 
@@ -38,7 +39,7 @@ def test_websocket_actor_get_info():
         params=without_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
-    assert server_ml_worker_info.isRemote == False
+    assert not server_ml_worker_info.isRemote
     assert server_ml_worker_info.mlWorkerId == ml_worker.INTERNAL_WORKER_ID
     assert 0 == len(server_ml_worker_info.installedPackages.values())
 
@@ -48,7 +49,7 @@ def test_websocket_actor_get_info():
         params=with_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
-    assert server_ml_worker_info.isRemote == False
+    assert not server_ml_worker_info.isRemote
     assert server_ml_worker_info.mlWorkerId == ml_worker.INTERNAL_WORKER_ID
     assert 0 != len(server_ml_worker_info.installedPackages.values())
 
@@ -58,7 +59,7 @@ def test_websocket_actor_get_info():
         params=without_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.isRemote == True
+    assert remote_ml_worker_info.isRemote
     assert remote_ml_worker_info.mlWorkerId == ml_worker.EXTERNAL_WORKER_ID
     assert 0 == len(remote_ml_worker_info.installedPackages.values())
 
@@ -68,7 +69,7 @@ def test_websocket_actor_get_info():
         params=with_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.isRemote == True
+    assert remote_ml_worker_info.isRemote
     assert remote_ml_worker_info.mlWorkerId == ml_worker.EXTERNAL_WORKER_ID
     assert 0 != len(remote_ml_worker_info.installedPackages.values())
 
