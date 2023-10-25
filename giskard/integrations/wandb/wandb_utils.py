@@ -15,7 +15,7 @@ except ImportError as e:
 def get_wandb_run(run):
     if run is None:
         if wandb.run is None:
-            raise ValueError("There's currently no active runs available in wandb. Please follow the following "
+            raise ValueError("There are currently no active wandb runs available. Please follow the following "
                              "documentation: https://docs.wandb.ai/ref/python/run to initiate a run. Once initiated, "
                              "you can choose to pass is as follows 'to_wandb(run)', if not we will retrieve internally "
                              "the 'wandb.run'.")
