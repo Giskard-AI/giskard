@@ -40,7 +40,7 @@ class StringMatcher(Evaluator):
         if exact_matching:
             return substring == prediction
         if word_matching:
-            return re.search(r"\b" + substring + r"\b", prediction) is not None
+            return re.search(r"\b" + re.escape(substring) + r"\b", prediction) is not None
         return substring in prediction
 
     @staticmethod
