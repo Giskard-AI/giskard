@@ -1,15 +1,14 @@
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Union, Dict
 
-import mlflow
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
-from giskard.models.base import MLFlowSerializableModel
+from giskard.models.base import WrapperModel
 
 
-class LangchainModel(MLFlowSerializableModel):
+class LangchainModel(WrapperModel):
     @configured_validate_arguments
     def __init__(
         self,
@@ -22,8 +21,6 @@ class LangchainModel(MLFlowSerializableModel):
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
-        save_db: Optional[Callable[[str], Any]] = None,
-        loader_fn: Optional[Callable[[str], Any]] = None,
         **kwargs,
     ) -> None:
         assert (
@@ -31,9 +28,6 @@ class LangchainModel(MLFlowSerializableModel):
         ), "LangchainModel only support text_generation ModelType"
 
         from langchain import LLMChain
-
-        self.save_db = save_db
-        self.loader_fn = loader_fn
 
         super().__init__(
             model=model,
@@ -50,17 +44,37 @@ class LangchainModel(MLFlowSerializableModel):
             **kwargs,
         )
 
-    def save_model(self, local_path, mlflow_meta):
-        mlflow.langchain.save_model(
-            self.model, path=local_path, mlflow_model=mlflow_meta, loader_fn=self.loader_fn, persist_dir=local_path
-        )
+    def save(self, local_path: Union[str, Path]) -> None:
+        super().save(local_path)
+        self.save_model(local_path)
+        self.save_artifacts(Path(local_path) / "artifacts")
 
-        if self.save_db is not None:
-            self.save_db(str(Path(local_path) / "persist_dir_data"))
+    def save_model(self, local_path: Union[str, Path]) -> None:
+        path = Path(local_path)
+        self.model.save(path / "chain.json")
+
+    def save_artifacts(self, artifact_dir) -> None:
+        ...
 
     @classmethod
-    def load_model(cls, local_dir):
-        return mlflow.langchain.load_model(local_dir)
+    def load(cls, local_dir, **kwargs):
+        constructor_params = cls.load_constructor_params(local_dir, **kwargs)
+
+        artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
+        constructor_params.update(artifacts)
+
+        return cls(model=cls.load_model(local_dir, **artifacts), **constructor_params)
+
+    @classmethod
+    def load_model(cls, local_dir, **kwargs):
+        from langchain.chains import load_chain
+
+        path = Path(local_dir)
+        return load_chain(path / "chain.json", **kwargs)
+
+    @classmethod
+    def load_artifacts(cls, local_path: Union[str, Path]) -> Optional[Dict[str, Any]]:
+        ...
 
     def model_predict(self, df):
         generations = [self.model(data) for data in df.to_dict("records")]
@@ -96,8 +110,3 @@ class LangchainModel(MLFlowSerializableModel):
         model_kwargs.update(kwargs)
 
         return self.__class__(chain, **model_kwargs)
-
-    def to_mlflow(self, artifact_path: str = "langchain-model-from-giskard", **kwargs):
-        return mlflow.langchain.log_model(
-            self.model, artifact_path, loader_fn=self.loader_fn, persist_dir=artifact_path, **kwargs
-        )
