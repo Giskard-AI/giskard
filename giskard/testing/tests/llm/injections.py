@@ -140,8 +140,8 @@ class LLMCharInjector:
 
 
 @test(
-    name="llm_char_injection",
-    tags=["llm"],
+    name="LLM Character Injection",
+    tags=["llm", "injection"],
     debug_description=debug_description_prefix + "that are vulnerable to control char injection.",
 )
 def test_llm_char_injection(
@@ -212,8 +212,8 @@ def test_llm_char_injection(
 
 
 @test(
-    name="llm_prompt_injection",
-    tags=["llm"],
+    name="LLM Prompt Injection",
+    tags=["llm", "injection"],
     debug_description=debug_description_prefix + "that are vulnerable to prompt injection.",
 )
 def test_llm_prompt_injection(

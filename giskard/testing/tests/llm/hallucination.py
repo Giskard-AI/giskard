@@ -8,7 +8,7 @@ from ....ml_worker.testing.test_result import TestResult
 from ....models.base.model import BaseModel
 
 
-@test(name="llm_coherency_test", tags=["llm", "hallucination"])
+@test(name="LLM Coherency", tags=["llm", "hallucination"])
 def test_llm_coherency(
     model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None, eval_prompt: Optional[str] = None
 ):
@@ -39,7 +39,7 @@ def test_llm_coherency(
     return TestResult(passed=eval_result.passed, is_error=eval_result.has_errors, metric=eval_result.passed_ratio)
 
 
-@test(name="llm_plausibility_test", tags=["llm", "hallucination"])
+@test(name="LLM Plausibility", tags=["llm", "hallucination"])
 def test_llm_plausibility(model: BaseModel, dataset: Dataset, eval_prompt: Optional[str] = None):
     """Tests that the model output is plausible.
 
