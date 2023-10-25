@@ -1,6 +1,5 @@
-from typing import Dict, List, Optional
-
 from enum import Enum
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -280,7 +279,7 @@ class RunModelForDataFrame(WorkerReply):
 class RunModelForDataFrameParam(BaseModel):
     model: ArtifactRef
     dataframe: DataFrame
-    target: Optional[str]
+    target: Optional[str] = None
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
 
