@@ -32,35 +32,41 @@ class TestFunctionArgument(BaseModel):
     argOrder: int
 
 
-# CallableMeta shows that all fields can be none
+# CallableMeta shows that all fields can be none,
+# but we have a pre-check here for Database constraints:
+# referring to `ai.giskard.domain.Callable` and `ai.giskard.domain.TestFunction`.
 class FunctionMeta(BaseModel):
     uuid: str
-    name: Optional[str] = None
+    name: str
     displayName: Optional[str] = None
-    version: Optional[int] = None
+    version: int
     module: Optional[str] = None
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
-    code: Optional[str] = None
+    code: str
     type: Optional[str] = None
     debugDescription: Optional[str] = None
 
 
+# CallableMeta shows that all fields can be none,
+# but we have a pre-check here for Database constraints:
+# referring to `ai.giskard.domain.Callable`, `ai.giskard.domain.SlicingFunction`,
+# `ai.giskard.domain.TransformationFunction` and `ai.giskard.domain.DatasetProcessFunction`.
 class DatasetProcessFunctionMeta(BaseModel):
     uuid: str
-    name: Optional[str] = None
+    name: str
     displayName: Optional[str] = None
-    version: Optional[int] = None  # For backward compatibility
+    version: int
     module: Optional[str] = None
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
-    code: Optional[str] = None
+    code: str
     type: Optional[str] = None
-    cellLevel: Optional[bool] = None
+    cellLevel: bool
     columnType: Optional[str] = None
     processType: Optional[str] = None
 
