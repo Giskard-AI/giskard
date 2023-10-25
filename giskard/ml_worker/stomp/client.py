@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Set
 
 import asyncio
 import logging
@@ -130,25 +130,41 @@ class StompWSClient:
             ),
         )
 
+    async def _handle_connect(self, websocket: WebSocketClientProtocol):
+        LOGGER.debug("Sending CONNECT...")
+        await self._connect(websocket)
+        LOGGER.debug("Waiting for CONNECTED...")
+        message = await asyncio.wait_for(websocket.recv(), timeout=30)
+
+        frame: Frame = FrameParser.parse(message)
+        LOGGER.debug("Received %s", frame)
+
+        if frame.command != StompCommand.CONNECTED:
+            raise StompProtocolError(f"Should have CONNECTED, got {frame}")
+
+    async def _handle_partial_end(self, done: Set[asyncio.Task], pending: Set[asyncio.Task]):
+        # If we are stopping,
+        # we let other stuff finish, ie sending last disconnect frame and so on.
+        if self._is_stopping:
+            other_done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED, timeout=5)
+            for t in other_done:
+                done.add(t)
+        # If there are still pending task, cancel them
+        for task in pending:
+            task.cancel()
+        # If there are any error, then raise the first one encountered
+        for task in done:
+            exception = task.exception()
+            if exception is not None:
+                raise exception
+
     async def start(self, restart=False):
         # For look to ensure for reconnection
         LOGGER.info("Connecting to %s", self._host_url)
         async for websocket in connect(self._host_url, extra_headers=self._connect_headers):
-            if self._is_stopping:
-                return
-
             LOGGER.info("Connected !")
             try:
-                LOGGER.debug("Sending CONNECT...")
-                await self._connect(websocket)
-                LOGGER.debug("Waiting for CONNECTED...")
-                message = await asyncio.wait_for(websocket.recv(), timeout=30)
-
-                frame: Frame = FrameParser.parse(message)
-                LOGGER.debug("Received %s", frame)
-
-                if frame.command != StompCommand.CONNECTED:
-                    raise StompProtocolError(f"Should have CONNECTED, got {frame}")
+                await self._handle_connect(websocket)
                 # In case of re-connection, let's redo the subscription
                 for sub_id in list(self._subscriptions.keys()):
                     await self.unsubscribe(websocket, sub_id)
@@ -164,25 +180,14 @@ class StompWSClient:
                     [consumer_task, producer_task, handler_task],
                     return_when=asyncio.FIRST_COMPLETED,
                 )
-                if self._is_stopping:
-                    # We let other stuff finish, ie sending last disconnect frame and so on.
-                    other_done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED, timeout=5)
-                    for t in other_done:
-                        done.add(t)
-                for task in pending:
-                    task.cancel()
-                for task in done:
-                    exception = task.exception()
-                    if exception is not None:
-                        raise exception
+                await self._handle_partial_end(done, pending)
             except ConnectionClosed as e:
                 LOGGER.warning("Connection closed", exc_info=1)
-                if self._is_stopping:
-                    return
-                if restart:
-                    continue
-                raise RuntimeError("Connection closed") from e
-            if not restart:
+                # Raise only if we should not restart
+                if not self._is_stopping and not restart:
+                    raise RuntimeError("Connection closed") from e
+            # In case on normal disconnect from the server, check if we should reconnect or not
+            if not restart or self._is_stopping:
                 return
 
     def stop(self):

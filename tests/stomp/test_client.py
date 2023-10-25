@@ -39,7 +39,7 @@ async def test_setup():
 
         client = TestClient(WS_URL, {})
 
-        await client.start()
+        await client.start(restart=True)
         assert client.nb_call == 1
         assert len(received_list) == 1
         assert received_list[0].command == StompCommand.CONNECT

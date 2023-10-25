@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Set, Union
+from typing import Dict, Optional, Set, Tuple, Union
 
 import re
 from dataclasses import dataclass
@@ -36,7 +36,6 @@ class Frame:
     body: Optional[Union[str, bytes]] = None
 
     def to_bytes(self) -> bytes:
-        headers = [self.headers.items()]
         if self.command not in [StompCommand.CONNECT, StompCommand.CONNECTED]:
             headers = [f"{transform_header_data(k)}:{transform_header_data(v)}" for k, v in self.headers.items()]
         else:
@@ -89,41 +88,45 @@ class FrameParser:
 
         return self
 
+    def _handle_content_type(self, header_value: str):
+        encoding = None
+        if ";" in header_value:
+            header_value, charset = header_value.split(";", 1)
+            name, encoding = charset.split("=", 1)
+            if name != "charset":
+                raise StompProtocolError(f"Unexpected value in content type after, expected charset, got {name}")
+        if encoding is None and (
+            header_value.startswith("text/") or header_value in ["application/json", "application/xml"]
+        ):
+            encoding = UTF_8
+        self.encoding = encoding
+        self.content_type = header_value.casefold()
+        self.headers[HeaderType.CONTENT_TYPE] = self.content_type
+        if self.encoding is not None:
+            self.headers[HeaderType.CONTENT_TYPE] += f";charset={self.encoding}"
+
+    def _prepare_header(self, header_line: str) -> Tuple[str, str]:
+        should_untransform = self.command not in [StompCommand.CONNECT, StompCommand.CONNECTED]
+        header_splitted = header_line.split(":", 1)
+        if len(header_splitted) == 1:
+            raise StompProtocolError(f"Header should contains : to separate key and value, got'{header_line}'")
+        if should_untransform:
+            header_name, header_value = map(untransform_header_data, map(validate_header_part, header_splitted))
+        else:
+            header_name, header_value = header_splitted
+        header_name = header_name.casefold()
+        return header_name, header_value
+
     def read_headers(self) -> "FrameParser":
         # Reading headers
-        should_untransform = self.command not in [StompCommand.CONNECT, StompCommand.CONNECTED]
-
         header_line, self.to_parse = read_line(self.to_parse)
         while header_line != "":
-            header_splitted = header_line.split(":", 1)
-            if len(header_splitted) == 1:
-                raise StompProtocolError(f"Header should contains : to separate key and value, got'{header_line}'")
-            if should_untransform:
-                header_name, header_value = map(untransform_header_data, map(validate_header_part, header_splitted))
-            else:
-                header_name, header_value = header_splitted
-            header_name = header_name.casefold()
+            header_name, header_value = self._prepare_header(header_line)
+            # Skip header, if already exist (protocol)
             if header_name in self.known_headers:
                 continue
-
             if header_name == HeaderType.CONTENT_TYPE:
-                encoding = None
-                if ";" in header_value:
-                    header_value, charset = header_value.split(";", 1)
-                    name, encoding = charset.split("=", 1)
-                    if name != "charset":
-                        raise StompProtocolError(
-                            f"Unexpected value in content type after, expected charset, got {name}"
-                        )
-                if encoding is None and (
-                    header_value.startswith("text/") or header_value in ["application/json", "application/xml"]
-                ):
-                    encoding = UTF_8
-                self.encoding = encoding
-                self.content_type = header_value.casefold()
-                self.headers[HeaderType.CONTENT_TYPE] = self.content_type
-                if self.encoding is not None:
-                    self.headers[HeaderType.CONTENT_TYPE] += f";charset={self.encoding}"
+                self._handle_content_type(header_value)
             elif header_name == HeaderType.CONTENT_LENGTH:
                 try:
                     self.content_length = int(header_value)
@@ -152,7 +155,7 @@ class FrameParser:
             self.content_length = len(raw_data)
 
         footer = raw_data[self.content_length + 1 :].decode(UTF_8)
-        if re.sub("\n|\r", "", footer) != "":
+        if re.sub("[\n\r]", "", footer) != "":
             raise StompProtocolError(f"Got data after content length, '{footer}'")
 
         if self.encoding is None:

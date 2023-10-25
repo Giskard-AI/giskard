@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import json
 import logging
@@ -66,7 +66,7 @@ class MLWorker(StompWSClient):
     def is_remote_worker(self):
         return self._worker_type is not INTERNAL_WORKER_ID
 
-    async def config_handler(self, frame: Frame) -> None:
+    async def config_handler(self, frame: Frame) -> List[Frame]:
         req = json.loads(frame.body)
         if req["config"] == "MAX_STOMP_ML_WORKER_REPLY_SIZE" and "value" in req.keys():
             mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
@@ -79,7 +79,7 @@ class MLWorker(StompWSClient):
 
         return []
 
-    async def action_handler(self, frame: Frame) -> None:
+    async def action_handler(self, frame: Frame) -> List[Frame]:
         req = json.loads(frame.body)
         if "action" not in req.keys() or req["action"] not in WEBSOCKET_ACTORS:
             raise ValueError(f"Invalid action frame received, {frame}")
