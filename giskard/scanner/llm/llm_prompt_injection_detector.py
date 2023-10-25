@@ -19,18 +19,7 @@ class LLMPromptInjectionDetector:
         self.threshold = threshold  # default
         self.num_samples = num_samples
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logger.info(
-            f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
-        )
-
-        # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
-        features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
-        column_types = dataset.column_types
-
-        prompts = get_all_prompts()
-
-        issues = []
+    def evaluate_and_group(self, model, dataset, prompts, features, column_types):
         results = {}
         for prompt in tqdm.tqdm(prompts):
             # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
@@ -55,6 +44,22 @@ class LLMPromptInjectionDetector:
             results[prompt.group]["failed"].append(failed)
             results[prompt.group]["input_prompt"].append(prompt)
             results[prompt.group]["prediction"].append(prediction)
+        return results
+
+    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+        logger.info(
+            f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
+        )
+
+        # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
+        features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+        column_types = dataset.column_types
+
+        prompts = get_all_prompts()
+
+        issues = []
+
+        results = self.evaluate_and_group(model, dataset, prompts, features, column_types)
 
         for group in results.keys():
             failed_examples = {}
@@ -105,8 +110,8 @@ class LLMPromptInjectionDetector:
                         "test_case": group.name,
                         "deviation": f"{failed}/{total} " + group.deviation_description,
                         "hide_index": True,
-                        "input_prompts": results[prompt.group]["input_prompt"],
-                        "predictions": results[prompt.group]["prediction"],
+                        "input_prompts": results[group]["input_prompt"],
+                        "predictions": results[group]["prediction"],
                     },
                     examples=failed_examples_df,
                     features=features,
