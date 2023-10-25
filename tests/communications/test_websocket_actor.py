@@ -1,4 +1,5 @@
 from giskard.ml_worker import ml_worker, websocket
+from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 
@@ -75,3 +76,28 @@ def test_websocket_actor_get_info():
 def test_websocket_actor_stop_worker():
     reply = listener.on_ml_worker_stop_worker()
     assert isinstance(reply, websocket.Empty)
+
+
+def test_websocket_actor_get_catalog():
+    catalog = listener.get_catalog()
+
+    assert catalog.tests is not None
+    for t in catalog.tests.values():
+        assert t.code is not None
+        # The filter condition
+        assert t.type == "TEST"
+        assert "giskard" in t.tags
+
+    assert catalog.slices is not None
+    for s in catalog.slices.values():
+        assert s.code is not None
+        # The filter condition
+        assert s.type == "SLICE"
+        assert "giskard" in t.tags
+
+    assert catalog.transformations is not None
+    for t in catalog.transformations.values():
+        assert t.code is not None
+        # The filter condition
+        assert t.type == "TRANSFORMATION"
+        assert "giskard" in t.tags
