@@ -10,6 +10,7 @@ import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
+from giskard.ml_worker import ml_worker
 
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
@@ -115,3 +116,18 @@ def get_email_files():
         os.makedirs(out_path, exist_ok=True)
         file.extractall(path=out_path)
     return [f.replace(".cats", "") for f in glob.glob(str(enron_path) + "/*/*.cats")]
+
+
+class MockedWebSocketMLWorker:
+    def __init__(self, is_server=False, backend_url= None, api_key=None, hf_token=None) -> None:
+        client = None if is_server else MockedClient(mock_all=True)
+        self.client = client
+
+        self.backend_url = backend_url
+        self.api_key = api_key
+        self.hf_token = hf_token
+
+        self.ml_worker_id = ml_worker.INTERNAL_WORKER_ID if is_server else ml_worker.EXTERNAL_WORKER_ID
+
+    def is_remote_worker(self):
+        return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
