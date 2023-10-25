@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from giskard.ml_worker.stomp.constants import (
+    NULL_BYTE,
     UTF_8,
     CommandType,
     HeaderType,
@@ -56,7 +57,7 @@ class Frame:
                 ]
             ).encode(UTF_8)
             + body
-            # + NULL_BYTE
+            + NULL_BYTE
         )
 
 
@@ -141,6 +142,8 @@ class FrameParser:
     def read_body(self) -> "FrameParser":
         # Decode data from utf-8
         raw_data = self.to_parse.encode(encoding=UTF_8)
+        if len(raw_data) > 0 and raw_data[-1:] == NULL_BYTE:
+            raw_data = raw_data[:-1]
         if self.content_length is not None and self.content_length > len(raw_data):
             raise StompProtocolError(
                 f"Content length is longer than data: '{self.content_length}' >  '{len(raw_data)}'"

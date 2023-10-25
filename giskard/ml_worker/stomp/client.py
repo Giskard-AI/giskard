@@ -44,7 +44,8 @@ class StompWSClient:
                 LOGGER.exception(e)
 
     async def _sender(self, websocket: WebSocketClientProtocol):
-        while not self._is_stopping:
+        # We send the remaining message before stopping
+        while not self._sender_queue.empty() or not self._is_stopping:
             frame = await self._sender_queue.get()
             await websocket.send(frame.to_bytes())
 
@@ -73,6 +74,9 @@ class StompWSClient:
                 # Add the frames to send back
                 for frame in frames:
                     await self._sender_queue.put(frame)
+            # Handle disconnect frame
+            if self._is_stopping:
+                await self._sender_queue.put(StompFrame.DISCONNECT.build_frame({}))
 
     async def _process_frame(self, frame: Frame) -> List[Frame]:
         subscription = frame.headers[HeaderType.SUBSCRIPTION]
@@ -126,9 +130,7 @@ class StompWSClient:
             ),
         )
 
-    async def start(
-        self,
-    ):
+    async def start(self, restart=False):
         # For look to ensure for reconnection
         LOGGER.info("Connecting to %s", self._host_url)
         async for websocket in connect(self._host_url, extra_headers=self._connect_headers):
@@ -162,17 +164,26 @@ class StompWSClient:
                     [consumer_task, producer_task, handler_task],
                     return_when=asyncio.FIRST_COMPLETED,
                 )
+                if self._is_stopping:
+                    # We let other stuff finish, ie sending last disconnect frame and so on.
+                    other_done, pending = await asyncio.wait(pending, return_when=asyncio.ALL_COMPLETED, timeout=5)
+                    for t in other_done:
+                        done.add(t)
                 for task in pending:
                     task.cancel()
                 for task in done:
                     exception = task.exception()
                     if exception is not None:
                         raise exception
-            except ConnectionClosed:
+            except ConnectionClosed as e:
                 LOGGER.warning("Connection closed", exc_info=1)
                 if self._is_stopping:
                     return
-                continue
+                if restart:
+                    continue
+                raise RuntimeError("Connection closed") from e
+            if not restart:
+                return
 
     def stop(self):
         self._is_stopping = True

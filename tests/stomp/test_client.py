@@ -76,7 +76,7 @@ async def test_subscribe():
                 assert frame.command == StompCommand.MESSAGE
                 assert frame.body == b"Some content"
                 self.stop()
-                return [StompFrame.DISCONNECT.build_frame({})]
+                return []
 
             async def setup(self, websocket: WebSocketClientProtocol):
                 await self.subscribe(websocket, "/my-sub", "id1", self.handle_my_sub)
@@ -167,7 +167,7 @@ async def test_long_task_should_not_block():
                 assert frame.command == StompCommand.MESSAGE
                 assert frame.body == b"Some content"
                 self.stop()
-                return [StompFrame.DISCONNECT.build_frame({})]
+                return []
 
             async def setup(self, websocket: WebSocketClientProtocol):
                 await self.subscribe(websocket, "/my-sub", "id1", self.handle_my_sub)

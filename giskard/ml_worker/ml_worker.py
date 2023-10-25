@@ -157,10 +157,10 @@ class MLWorker(StompWSClient):
             self.config_handler,
         )
 
-    async def start(self, nb_workers: Optional[int] = None):
+    async def start(self, nb_workers: Optional[int] = None, restart: bool = False):
         load_plugins()
         start_pool(nb_workers)
-        await super().start()
+        await super().start(restart=restart)
 
     def stop(self):
         super().stop()

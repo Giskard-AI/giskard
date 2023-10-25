@@ -25,7 +25,7 @@ from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.savable import RegistryArtifact
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.stomp.parsing import Frame, StompFrame
+from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
@@ -92,7 +92,7 @@ def wrapped_handle_result(
                     error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
                 )
                 logger.warning(e)
-        except Exception as e:
+        except BaseException as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
             )
@@ -246,7 +246,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
 def on_ml_worker_stop_worker(*args, **kwargs) -> websocket.Empty:
     # Stop the server properly after sending disconnect
     logger.info("Stopping ML Worker")
-    return StompFrame.DISCONNECT.build_frame({})
+    return None
 
 
 def run_classification_mode(model, dataset, prediction_results):

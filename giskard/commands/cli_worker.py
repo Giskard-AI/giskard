@@ -161,7 +161,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
             run_daemon(is_server, url, api_key, hf_token)
         else:
             ml_worker = MLWorker(is_server, url, api_key, hf_token)
-            started = ml_worker.start(nb_workers)
+            started = ml_worker.start(nb_workers, restart=True)
             if sys.platform == "win32":
                 from asyncio import run
             else:
