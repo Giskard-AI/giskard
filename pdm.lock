@@ -6,7 +6,7 @@ groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:909efb495def5ebdda4886bc2b01f7278528b0d2379d41127558a33f537cda70"
+content_hash = "sha256:09c95a970ce9c768532871fa892ca86b0efc2ecdb6d2d3f90d246bb7299de466"
 
 [[package]]
 name = "absl-py"
