@@ -70,3 +70,8 @@ def test_websocket_actor_get_info():
     assert remote_ml_worker_info.isRemote == True
     assert remote_ml_worker_info.mlWorkerId == ml_worker.EXTERNAL_WORKER_ID
     assert 0 != len(remote_ml_worker_info.installedPackages.values())
+
+
+def test_websocket_actor_stop_worker():
+    reply = listener.on_ml_worker_stop_worker()
+    assert isinstance(reply, websocket.Empty)
