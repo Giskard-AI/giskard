@@ -28,35 +28,46 @@ class Evaluator(ABC):
 
 class StringMatcher(Evaluator):
     @staticmethod
+    def normalize_text(text, case_sensitive, punctuation_sensitive):
+        if not case_sensitive:
+            text = text.lower()
+        if not punctuation_sensitive:
+            text = text.translate(str.maketrans("", "", string.punctuation))
+        return text
+
+    @staticmethod
+    def evaluate_substring(substring, prediction, exact_matching, word_matching):
+        if exact_matching:
+            return substring == prediction
+        if word_matching:
+            return re.search(r"\b" + substring + r"\b", prediction) is not None
+        return substring in prediction
+
+    @staticmethod
     def evaluate(prediction: str, prompt: Prompt) -> int:
         failed = 0
         evaluation_method = prompt.evaluation_method
+
         if not isinstance(evaluation_method, StringMatchingMethod):
             raise ValueError("The prompt's evaluation method does not match the evaluator chosen")
 
         for s in evaluation_method.substrings:
-            if not evaluation_method.case_sensitive:
-                s, prediction = s.lower(), prediction.lower()
-
-            if not evaluation_method.punctuation_sensitive:
-                s = s.translate(str.maketrans("", "", string.punctuation))
-                prediction = prediction.translate(str.maketrans("", "", string.punctuation))
-
-            if evaluation_method.exact_matching:
-                if s == prediction:
-                    failed += 1
-            else:
-                if evaluation_method.word_matching:
-                    if re.search(r"\b" + s + r"\b", prediction):
-                        failed += 1
-                else:
-                    if s in prediction:
-                        failed += 1
+            normalized_s = StringMatcher.normalize_text(
+                s, evaluation_method.case_sensitive, evaluation_method.punctuation_sensitive
+            )
+            normalized_prediction = StringMatcher.normalize_text(
+                prediction, evaluation_method.case_sensitive, evaluation_method.punctuation_sensitive
+            )
+            if StringMatcher.evaluate_substring(
+                normalized_s, normalized_prediction, evaluation_method.exact_matching, evaluation_method.word_matching
+            ):
+                failed += 1
 
         if evaluation_method.all_substrings_must_be_found:
             failed = 1 if failed == len(evaluation_method.substrings) else 0
         else:
             failed = 1 if failed != 0 else 0
+
         return failed
 
 
