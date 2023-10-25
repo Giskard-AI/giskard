@@ -320,7 +320,7 @@ class Suite:
     name: str
     default_params: Dict[str, Any]
 
-    def __init__(self, name=None, default_params=Dict()) -> None:
+    def __init__(self, name=None, default_params=None) -> None:
         """Create a new Test Suite instance with a given name.
 
         Parameters
@@ -332,7 +332,7 @@ class Suite:
         """
         self.tests = list()
         self.name = name
-        self.default_params = default_params
+        self.default_params = default_params if default_params else dict()
 
     def run(self, verbose: bool = True, **suite_run_args):
         """Execute all the tests that have been added to the test suite through the `add_test` method.
