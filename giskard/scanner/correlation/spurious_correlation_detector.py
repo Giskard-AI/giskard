@@ -139,8 +139,6 @@ def _generate_spurious_corr_tests(issue):
 
     return {
         f"{issue.meta['metric']} on data slice “{issue.slicing_fn}”": test_fn(
-            model=issue.model,
-            dataset=issue.dataset,
             slicing_function=issue.slicing_fn,
             threshold=issue.meta["threshold"],
         )
