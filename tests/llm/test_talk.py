@@ -4,9 +4,26 @@ import sys
 import pytest
 from langchain.agents import AgentExecutor
 from langchain.llms import FakeListLLM
+from langchain.prompts.chat import ChatPromptTemplate
 
 from giskard import llm_config
 from giskard.llm.talk.talk import ModelSpec
+
+
+def test_create_prompt_langchain():
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                """
+    Your task is to critisize an article based on its summary.
+    Please remember to always give unbiased and respectful critisize.
+    You should always starts with: "I believe this article is really ..."
+    """,
+            ),
+            ("user", "Article: {article_summary}"),
+        ]
+    )
 
 
 def test_predict(german_credit_test_data, german_credit_model):
