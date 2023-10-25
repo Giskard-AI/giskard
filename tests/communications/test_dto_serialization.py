@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
+from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -81,6 +80,8 @@ MANDATORY_FIELDS = {
     "TestSuiteParam": [],
     "WeightsPerFeature": [],
     "WorkerReply": [],
+    "CreateSubDataset": ["datasetUuid"],
+    "CreateSubDatasetParam": ["dataset", "projectKey", "name", "rowIndexes"],
 }
 
 OPTIONAL_FIELDS = {
@@ -176,11 +177,10 @@ OPTIONAL_FIELDS = {
         "partial_unexpected_index_list",
         "partial_unexpected_counts",
         "unexpected_index_list",
-        "output_df",
         "number_of_perturbed_rows",
         "actual_slices_size",
         "reference_slices_size",
-        "output_df_id",
+        "failed_indexes",
     ],
     "SuiteInput": ["modelMeta", "datasetMeta"],
     "SuiteTestArgument": ["arguments"],
@@ -190,6 +190,8 @@ OPTIONAL_FIELDS = {
     "TestSuiteParam": ["tests", "globalArguments"],
     "WeightsPerFeature": ["weights"],
     "WorkerReply": [],
+    "CreateSubDataset": [],
+    "CreateSubDatasetParam": [],
 }
 ALIASED_FIELDS = {
     "FuncArgument": {"float_arg": "float", "int_arg": "int", "str_arg": "str", "bool_arg": "bool", "is_none": "none"}

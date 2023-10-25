@@ -372,8 +372,8 @@ class GetPushResponse(BaseModel):
 
 class CreateSubDatasetParam(BaseModel):
     dataset: ArtifactRef
-    projectKey: str = None
-    name: str = None
+    projectKey: str
+    name: str
     rowIndexes: List[int]
 
 
