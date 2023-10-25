@@ -125,8 +125,6 @@ def _generate_overconfidence_tests(issue):
 
     tests = {
         f"Overconfidence on data slice “{issue.slicing_fn}”": test_overconfidence_rate(
-            model=issue.model,
-            dataset=issue.dataset,
             slicing_function=issue.slicing_fn,
             threshold=abs_threshold,
             p_threshold=issue.meta["p_threshold"],
