@@ -9,6 +9,7 @@ from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
+from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
@@ -99,16 +100,27 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 def test_default_dataset_is_used_with_generative_model():
     model = mock.MagicMock(Model)
     model.is_text_generation = True
+    model.meta = ModelMeta(
+        "Model name",
+        "Some meaningful model description",
+        SupportedModelTypes.TEXT_GENERATION,
+        ["query"],
+        [],
+        0,
+        "test",
+        "test",
+    )
     scanner = Scanner()
 
-    with mock.patch("giskard.scanner.llm.utils.load_default_dataset") as load_default_dataset:
+    with mock.patch("giskard.scanner.scanner.generate_test_dataset") as generate_test_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
             pass
-        load_default_dataset.assert_called_once()
+        generate_test_dataset.assert_called_once()
 
 
+@pytest.mark.skip(reason="Now rely on LLM generated issues")
 @pytest.mark.slow
 def test_generative_model_dataset():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don't want to know."] * 100)

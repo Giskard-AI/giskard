@@ -1,9 +1,11 @@
 import inspect
-import re
 import logging
+import re
 
-from giskard import Model, Dataset, scan
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets import Dataset
+from giskard.models import Model
+from giskard.scanner import scan
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +110,6 @@ def setup_model(model, model_type, feature_names, evaluator_config):
 
 
 def setup_scan(giskard_model, giskard_dataset, evaluator_config):
-
     scan_config = evaluator_config.get("scan_config", None)
     if scan_config is None:
         return scan(model=giskard_model, dataset=giskard_dataset)

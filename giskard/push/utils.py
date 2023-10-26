@@ -14,11 +14,11 @@ Functions:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Union, Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
-from giskard import Dataset
+from giskard.datasets import Dataset
 
 
 class SupportedPerturbationType(Enum):

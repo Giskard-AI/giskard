@@ -157,6 +157,7 @@ def validate_model_loading_and_saving(model: BaseModel):
 
             meta = ModelMeta(
                 name=saved_meta["name"],
+                description=saved_meta["description"],
                 model_type=SupportedModelTypes[saved_meta["model_type"]],
                 feature_names=saved_meta["feature_names"],
                 classification_labels=saved_meta["classification_labels"],
