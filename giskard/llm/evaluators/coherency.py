@@ -1,10 +1,10 @@
-import json
 from typing import Optional
 
 from ...datasets.base import Dataset
-from ...llm.utils import llm_fn_call
 from ...models import cache as model_cache
 from ...models.base import BaseModel
+from ..client import LLMClient
+from ..client import llm_client as default_llm_client
 from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 
@@ -47,8 +47,9 @@ If you are not sure or the test is not well defined, consider the model as passi
 
 
 class CoherencyEvaluator(LLMBasedEvaluator):
-    def __init__(self, eval_prompt=None):
+    def __init__(self, eval_prompt=None, llm_client: LLMClient = None):
         self.eval_prompt = eval_prompt or COHERENCY_EVAL_PROMPT
+        self.llm_client = llm_client if llm_client is not None else default_llm_client
 
     def evaluate(self, model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None) -> EvaluationResult:
         if dataset_2 is not None and len(dataset_1) != len(dataset_2):
@@ -99,18 +100,14 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             output_2=output_2,
         )
 
-        out = llm_fn_call(
+        out = self.llm_client.complete(
             [{"role": "system", "content": prompt}],
             functions=EVALUATE_MODEL_FUNCTIONS,
             function_call={"name": "evaluate_model"},  # force function call
             temperature=0.1,
         )
 
-        try:
-            args = json.loads(out.function_call.arguments)
-            return (
-                args["passed_test"],
-                args.get("reason"),
-            )
-        except (AttributeError, KeyError, json.JSONDecodeError) as err:
-            raise LLMGenerationError("LLM evaluation function did not return the expected arguments.") from err
+        if out.function_call is None or "passed_test" not in out.function_call.args:
+            raise LLMGenerationError("Invalid function call arguments received")
+
+        return out.function_call.args["passed_test"], out.function_call.args.get("reason")
