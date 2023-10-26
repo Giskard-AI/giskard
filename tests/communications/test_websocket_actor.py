@@ -292,3 +292,25 @@ def test_websocket_actor_explain_text_ws_classification_internal(request):
     # Classification labels
     for label in model.meta.classification_labels:
         assert label in reply.weights.keys()
+
+
+def test_websocket_actor_dataset_processing_empty_internal(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare dataset
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    params = websocket.DatasetProcessingParam(
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        functions=None,
+    )
+    reply = listener.dataset_processing(client=None, params=params)
+    assert isinstance(reply, websocket.DatasetProcessing)
+    assert reply.datasetId == str(dataset.id)
+    assert reply.totalRows == len(list(dataset.df.index))   
+    # No line filtered
+    assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
+    # No line modified
+    assert reply.modifications is not None and 0 == len(reply.modifications)
