@@ -1,11 +1,11 @@
+import inspect
 import numbers
 import re
 import typing
 import uuid
 from collections import Counter
-from typing import Optional, List
+from typing import List, Optional
 
-import inspect
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2, ks_2samp
@@ -14,11 +14,11 @@ from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
-from giskard.ml_worker.testing.utils import check_slice_not_empty
-from giskard.ml_worker.testing.utils import validate_classification_label
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
-from . import debug_prefix, debug_description_prefix
+
+from . import debug_description_prefix, debug_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 

@@ -1,18 +1,17 @@
 import datetime
-from time import perf_counter
-import pandas as pd
-from typing import Sequence
 from abc import abstractmethod
+from time import perf_counter
+from typing import Sequence
 
-from ...slicing.slice_finder import SliceFinder
+import pandas as pd
 
+from ..issues import Issue
+from ..logger import logger
 from ..registry import Detector
-
-from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..logger import logger
-from ..issues import Issue
+from ...models.base import BaseModel
+from ...slicing.slice_finder import SliceFinder
 
 
 class LossBasedDetector(Detector):
@@ -22,7 +21,7 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         if self._needs_target and dataset.target is None:
             logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
             return []

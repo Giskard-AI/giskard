@@ -1,16 +1,15 @@
-import numpy as np
-import pandas as pd
 import inspect
 from typing import Optional
 
-from ...ml_worker.testing.registry.decorators import test
+import numpy as np
+import pandas as pd
 
-from ...ml_worker.testing.test_result import TestResult
-
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...datasets.base import Dataset
+from ...ml_worker.testing.registry.decorators import test
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...ml_worker.testing.test_result import TestResult
 from ...models.base import BaseModel
-from . import debug_prefix, debug_description_prefix
+from . import debug_description_prefix, debug_prefix
 
 
 def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
