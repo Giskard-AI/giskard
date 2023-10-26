@@ -1,6 +1,6 @@
-# Weights and Biases
+# 🐝 Evaluate & log with Weights & Biases
 
-Weights and Biases, often abbreviated as "wandb," is a platform and toolkit designed for machine learning experimentation 
+Weights and Biases, often abbreviated as "wandb", is a platform and toolkit designed for machine learning experimentation 
 and collaboration. It provides tools for tracking and visualizing machine learning experiments, managing machine learning 
 projects, and sharing results with team members or the broader community. Key features of Weights and Biases include:
 
@@ -71,12 +71,3 @@ shap_results.to_wandb() # log shap results as plots
 :::
 :::::
 ::::::
-
-```{toctree}
-:caption: Table of Contents
-:name: mastertoc
-:maxdepth: 2
-:hidden:
-
-wandb-tabular-example
-```
