@@ -231,7 +231,7 @@ def test_websocket_actor_explain_ws_internal(data, model, request):
     params = websocket.ExplainParam(
         model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
         dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
-        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
     )
     reply = listener.explain_ws(client=None, params=params)
     assert isinstance(reply, websocket.Explain)
@@ -256,7 +256,7 @@ def test_websocket_actor_explain_text_ws_regression_internal(request):
     params = websocket.ExplainTextParam(
         model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
         feature_name=text_feature_name,
-        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
         column_types=dataset.column_types,
     )
     reply = listener.explain_text_ws(client=None, params=params)
@@ -284,7 +284,7 @@ def test_websocket_actor_explain_text_ws_classification_internal(request):
     params = websocket.ExplainTextParam(
         model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
         feature_name=text_feature_name,
-        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
         column_types=dataset.column_types,
     )
     reply = listener.explain_text_ws(client=None, params=params)
