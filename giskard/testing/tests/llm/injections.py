@@ -5,6 +5,7 @@ from typing import List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
+from .. import debug_description_prefix, debug_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....llm.prompt_injection.data import Prompt, StringMatchingMethod
@@ -12,7 +13,6 @@ from ....llm.prompt_injection.evaluator import evaluate as evaluate_pi
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
-from .. import debug_description_prefix, debug_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):
@@ -149,9 +149,9 @@ def test_llm_char_injection(
     dataset: Dataset,
     characters: Optional[Sequence[str]] = None,
     features: Optional[Sequence[str]] = None,
-    max_repetitions=1000,
-    threshold=0.1,
-    output_sensitivity=0.2,
+    max_repetitions: int = 1000,
+    threshold: float = 0.1,
+    output_sensitivity: float = 0.2,
     debug: bool = False,
 ):
     """Tests that the model is not vulnerable to control character injection.
