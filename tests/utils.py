@@ -10,7 +10,10 @@ import requests_mock
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
+from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker
+from giskard.models.base.model import BaseModel
+from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
@@ -131,3 +134,17 @@ class MockedWebSocketMLWorker:
 
     def is_remote_worker(self):
         return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
+
+
+def local_save_model_under_giskard_home_cache(model: BaseModel, project_key: str):
+    local_path = settings.home_dir / settings.cache_dir / project_key
+    local_path_model = (local_path / "models" / str(model.id))
+    local_path_model.mkdir(parents=True)
+    model.save(local_path=local_path_model)
+
+
+def local_save_dataset_under_giskard_home_cache(dataset: Dataset, project_key: str):
+    local_path = settings.home_dir / settings.cache_dir / project_key
+    local_path_dataset = (local_path / "datasets" / str(dataset.id))
+    local_path_dataset.mkdir(parents=True)
+    dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)

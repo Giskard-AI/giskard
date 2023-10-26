@@ -1,6 +1,5 @@
 import uuid
 import pytest
-from giskard.settings import settings
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
@@ -8,8 +7,10 @@ from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
+from giskard.settings import settings
 
 from tests.utils import MockedWebSocketMLWorker
+from tests import utils
 
 
 NOT_USED_WEBSOCKET_ACTOR = [
@@ -123,13 +124,9 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
     inspection_id = 0
 
     # Prepare dataset and model
-    local_path = settings.home_dir / settings.cache_dir / project_key
-    local_path_dataset = (local_path / "datasets" / str(dataset.id))
-    local_path_dataset.mkdir(parents=True)
-    local_path_model = (local_path / "models" / str(model.id))
-    local_path_model.mkdir(parents=True)
-    dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
-    model.save(local_path=local_path_model)
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
     params = websocket.RunModelParam(
         model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
         dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
@@ -152,10 +149,7 @@ def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
     # Prepare model
-    local_path = settings.home_dir / settings.cache_dir / project_key
-    local_path_model = (local_path / "models" / str(model.id))
-    local_path_model.mkdir(parents=True)
-    model.save(local_path=local_path_model)
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
 
     # Prepare dataframe
     dataframe = websocket.DataFrame(
@@ -191,10 +185,7 @@ def test_websocket_actor_run_model_for_data_frame_classification_internal(reques
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
     # Prepare model
-    local_path = settings.home_dir / settings.cache_dir / project_key
-    local_path_model = (local_path / "models" / str(model.id))
-    local_path_model.mkdir(parents=True)
-    model.save(local_path=local_path_model)
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
 
     # Prepare dataframe
     dataframe = websocket.DataFrame(
