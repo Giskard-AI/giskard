@@ -31,6 +31,7 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.utils.cache import SimpleCache
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
@@ -54,10 +55,8 @@ from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
-
-
+push_cache = SimpleCache(max_results=20)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
-
 
 @dataclass
 class MLWorkerInfo:
@@ -674,53 +673,20 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
 
 
-@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
+@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True, execute_in_pool=False)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
     object_uuid = ""
     object_params = {}
     project_key = params.model.project_key
-    try:
-        model = BaseModel.download(client, params.model.project_key, params.model.id)
-        dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id)
 
-        df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
-        if params.column_dtypes:
-            for missing_column in [
-                column_name for column_name in params.column_dtypes.keys() if column_name not in df.columns
-            ]:
-                df[missing_column] = np.nan
-            df = Dataset.cast_column_to_dtypes(df, params.column_dtypes)
-
-    except ValueError as e:
-        if "unsupported pickle protocol" in str(e):
-            raise ValueError(
-                "Unable to unpickle object, "
-                "Make sure that Python version of client code is the same as the Python version in ML Worker."
-                "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
-                f"\nOriginal Error: {e}"
-            ) from e
-        raise e
-    except ModuleNotFoundError as e:
-        raise GiskardException(
-            f"Failed to import '{e.name}'. "
-            f"Make sure it's installed in the ML Worker environment."
-            "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
-        ) from e
-
-    # if df is empty, return early
-    if df.empty:
-        return
-
-    from giskard.push.contribution import create_contribution_push
-    from giskard.push.perturbation import create_perturbation_push
-    from giskard.push.prediction import create_borderline_push, create_overconfidence_push
-
-    contribs = create_contribution_push(model, dataset, df)
-    perturbs = create_perturbation_push(model, dataset, df)
-    overconf = create_overconfidence_push(model, dataset, df)
-    borderl = create_borderline_push(model, dataset, df)
+    cached_result_tuple = push_cache.get_result(params)
+    if cached_result_tuple is None:
+        contribs, perturbs, overconf, borderl = get_push_objects(client, params)
+        push_cache.add_result(params, (contribs, perturbs, overconf, borderl))
+    else:
+        contribs, perturbs, overconf, borderl = cached_result_tuple
 
     contrib_ws = push_to_ws(contribs)
     perturb_ws = push_to_ws(perturbs)
@@ -790,3 +756,51 @@ def get_push(
 
 def push_to_ws(push: Push):
     return push.to_ws() if push is not None else None
+
+
+def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushParam):
+    try:
+        model = BaseModel.download(client, params.model.project_key, params.model.id)
+        dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id)
+
+        df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
+        if params.column_dtypes:
+            for missing_column in [
+                column_name for column_name in params.column_dtypes.keys() if column_name not in df.columns
+            ]:
+                df[missing_column] = np.nan
+            df = Dataset.cast_column_to_dtypes(df, params.column_dtypes)
+
+    except ValueError as e:
+        if "unsupported pickle protocol" in str(e):
+            raise ValueError(
+                "Unable to unpickle object, "
+                "Make sure that Python version of client code is the same as the Python version in ML Worker."
+                "To change Python version, please refer to https://docs.giskard.ai/start/guides/configuration"
+                f"\nOriginal Error: {e}"
+            ) from e
+        raise e
+    except ModuleNotFoundError as e:
+        raise GiskardException(
+            f"Failed to import '{e.name}'. "
+            f"Make sure it's installed in the ML Worker environment."
+            "To have more information on ML Worker, please see: https://docs.giskard.ai/start/guides/installation/ml-worker"
+        ) from e
+
+    # if df is empty, return early
+    if df.empty:
+        return None, None, None, None
+
+    from giskard.push.contribution import create_contribution_push
+    from giskard.push.perturbation import create_perturbation_push
+    from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+
+    push_functions = {
+        None: (create_contribution_push, create_perturbation_push, create_overconfidence_push, create_borderline_push),
+        PushKind.CONTRIBUTION: (create_contribution_push, None, None, None),
+        PushKind.PERTURBATION: (None, create_perturbation_push, None, None),
+        PushKind.OVERCONFIDENCE: (None, None, create_overconfidence_push, None),
+        PushKind.BORDERLINE: (None, None, None, create_borderline_push)
+    }
+
+    return (func(model, dataset, df) if func else None for func in push_functions[params.push_kind])
