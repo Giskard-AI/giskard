@@ -82,6 +82,7 @@ class OpenAIClient(LLMClient):
                 model=model,
                 messages=messages,
                 functions=functions,
+                function_call=function_call,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 api_key=self.openai_api_key,
