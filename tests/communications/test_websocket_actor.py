@@ -155,7 +155,7 @@ def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
     dataframe = websocket.DataFrame(
         rows=[
             websocket.DataRow(columns={
-                k: v for k, v in row.items()
+                str(k): str(v) for k, v in row.items()
             }) for _, row in dataset.df.iterrows()
         ],
     )
@@ -191,7 +191,7 @@ def test_websocket_actor_run_model_for_data_frame_classification_internal(reques
     dataframe = websocket.DataFrame(
         rows=[
             websocket.DataRow(columns={
-                k: v for k, v in row.items()
+                str(k): str(v) for k, v in row.items()
             }) for _, row in dataset.df.iterrows()
         ],
     )
