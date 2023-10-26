@@ -7,12 +7,13 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
 from giskard.llm import utils
-from .. import debug_description_prefix, debug_prefix
+
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
+from .. import debug_description_prefix, debug_prefix
 
 
 class EvalTestResult(PydanticBaseModel):
@@ -237,7 +238,7 @@ def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirements
         df = pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples])
         output_ds = Dataset(
             df,
-            name=f"Test dataset failing criteria {requirements} (automatically generated)",
+            name="Test dataset for requirement (automatically generated)",
             column_types=dataset.column_types,
             validation=False,
         )
