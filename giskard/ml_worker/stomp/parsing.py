@@ -42,10 +42,10 @@ class Frame:
             headers = [f"{k}:{v}" for k, v in self.headers.items()]
         if self.body is not None:
             body = self.body.encode(UTF_8)
-            headers.append(f"{HeaderType.CONTENT_LENGTH}:{len(body)}")
+            headers.append(f"{HeaderType.CONTENT_LENGTH.value}:{len(body)}")
         else:
             body = b""
-            headers.append(f"{HeaderType.CONTENT_LENGTH}:0")
+            headers.append(f"{HeaderType.CONTENT_LENGTH.value}:0")
         # Todo : verify headers
         return (
             "\n".join(
@@ -130,7 +130,6 @@ class FrameParser:
             elif header_name == HeaderType.CONTENT_LENGTH:
                 try:
                     self.content_length = int(header_value)
-                    self.headers[HeaderType.CONTENT_LENGTH] = header_value
                 except ValueError as e:
                     raise StompProtocolError(
                         f"Invalid content length given, expected an integer, got {header_value}"

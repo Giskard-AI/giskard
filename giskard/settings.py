@@ -35,6 +35,7 @@ class Settings(BaseModel):
     cache_dir: str = "cache"
     disable_analytics: bool = False
     min_workers: int = 2
+    use_pool: bool = True  # For testing/debugging only, do not disable
 
     class Config:
         env_prefix = "GSK_"

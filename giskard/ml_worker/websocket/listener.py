@@ -47,6 +47,7 @@ from giskard.ml_worker.websocket.utils import (
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
+from giskard.settings import settings
 from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 
@@ -164,7 +165,7 @@ async def dispatch_action(
 
     result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
-    if execute_in_pool:
+    if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
         kwargs = {
             "callback": callback,
