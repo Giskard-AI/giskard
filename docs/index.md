@@ -5,9 +5,9 @@
 :hidden:
 
 getting_started/index
+getting_started/quickstart_llm
 getting_started/quickstart_tabular
 getting_started/quickstart_nlp
-getting_started/quickstart_llm
 ```
 
 ```{toctree}
@@ -17,9 +17,9 @@ getting_started/quickstart_llm
 :hidden:
 
 open_source/installation_library/index
+open_source/scan_llm/index
 open_source/scan_tabular/index
 open_source/scan_nlp/index
-open_source/scan_llm/index
 open_source/customize_tests/index
 open_source/integrate_tests/index
 open_source/talk_to_your_model/index
